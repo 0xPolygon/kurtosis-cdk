@@ -1,0 +1,20 @@
+{
+    "admin":"{{.zkevm_l2_admin_address}}",
+    "deployerPvtKey": "{{.zkevm_l2_admin_private_key}}",
+    "emergencyCouncilAddress":"{{.zkevm_l2_admin_address}}",
+    "initialZkEVMDeployerOwner": "{{.zkevm_l2_admin_address}}",
+    "maxFeePerGas": "",
+    "maxPriorityFeePerGas": "",
+    "minDelayTimelock": 3600,
+    "multiplierGas": "",
+    "pendingStateTimeout": 604799,
+    "polTokenAddress":"",
+    "salt": "{{.zkevm_deployment_salt}}",
+    "timelockAdminAddress": "{{.zkevm_l2_admin_address}}",
+    "trustedSequencer": "{{.zkevm_l2_sequencer_address}}",
+    "trustedSequencerURL": "http://zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_rpc_http_port}}",
+    "trustedAggregator":"{{.zkevm_l2_aggregator_address}}",
+    "trustedAggregatorTimeout": 604799,
+    "forkID": {{.zkevm_fork_id}},
+    "test": "{{.zkevm_test_deployment}}"
+}

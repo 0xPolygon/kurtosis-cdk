@@ -1,4 +1,79 @@
-* Hi
+* Polygon CDK Kurtosis Package
+
+To get started you'll want to get everything [[https://docs.kurtosis.com/install/][installed]]. Once that's
+good and installed on your system, you can ~cd~ into this directory
+and run:
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 . --args-file cdk-params.yml
+#+end_src
+
+This command will take a few minutes but will basically run an entire
+CDK deployment locally. Assuming everything worked, you can do a few
+things to quickly play around with your test CDK. The steps below will
+assume you have the [[https://book.getfoundry.sh/getting-started/installation][Foundry toolchain]] installed.
+
+Let's just do a simple RPC call. First you'll need to figure out which
+port Kurtosis is using for RPC. You can get a generall feel for the
+entire network layout by running:
+
+#+begin_src bash
+kurtosis enclave inspect cdk-v1
+#+end_src
+
+That output is quite useful might might also be a little
+overwhelming. If we want to simply see the port mapping within the
+~cdk-v1~ enclave for the ~zkevm-node-rpc~ service and the
+~trusted-rpc~ port, we can run this command.
+
+#+begin_src bash
+kurtosis port print cdk-v1 zkevm-node-rpc-001 trusted-rpc
+#+end_src
+
+For the sake of this document, I'm going to map that value to an
+environment variable.
+
+#+begin_src bash
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 trusted-rpc)"
+#+end_src
+
+That is the same environment variable that ~cast~ uses, so now I
+should be able to run this command.
+
+#+begin_src bash
+cast block-number
+#+end_src
+
+By default, the CDK is configured in test mode which means there is
+some pre-funded value in the admin account with address
+~0xE34aaF64b29273B7D567FCFc40544c014EEe9970~.
+
+#+begin_src bash
+cast balance --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+#+end_src
+
+Okay let's send some transactions...
+
+#+begin_src bash
+cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
+#+end_src
+
+Okay let's... send even [[https://github.com/maticnetwork/polygon-cli][more transactions]].
+
+#+begin_src bash
+polycli loadtest --requests 500 --legacy --rpc-url $ETH_RPC_URL --verbosity 700 --rate-limit 5 --mode t --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625
+polycli loadtest --requests 500 --legacy --rpc-url $ETH_RPC_URL --verbosity 700 --rate-limit 10 --mode t --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625
+polycli loadtest --requests 500 --legacy --rpc-url $ETH_RPC_URL --verbosity 700 --rate-limit 10 --mode 2 --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625
+polycli loadtest --requests 500 --legacy --rpc-url $ETH_RPC_URL --verbosity 700 --rate-limit 3 --mode uniswapv3 --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625
+cast nonce 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+#+end_src
+
+When everything is done, you might want to clean up with this command
+which stopps everything and deletes it.
+
+#+begin_src bash
+kurtosis clean -a
+#+end_src
 
 ** License
 
