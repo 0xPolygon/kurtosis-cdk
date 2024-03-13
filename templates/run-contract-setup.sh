@@ -102,6 +102,10 @@ tomlq --slurpfile c combined.json -t '.L1.RollupManagerContract = $c[0].polygonR
 
 cast send --private-key {{.zkevm_l2_sequencer_private_key}} --legacy --rpc-url {{.l1_rpc_url}} "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000 &> approval.out
 
+# Grant the aggregator role to the agglayer
+# cast keccak "TRUSTED_AGGREGATOR_ROLE"
+cast send --private-key {{.zkevm_l2_admin_private_key}} --rpc-url {{.l1_rpc_url}} "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' 0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4 {{.zkevm_l2_agglayer_address}}
+
 polycli parseethwallet --hexkey {{.zkevm_l2_sequencer_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
 chmod a+r sequencer.keystore

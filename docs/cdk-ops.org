@@ -1,0 +1,21 @@
+
+#+begin_src bash
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
+
+kurtosis files download cdk-v1 zkevm /tmp
+pol_addr=$(cat /tmp/zkevm/combined.json | jq -r '.polTokenAddress')
+rollup_addr=$(cat /tmp/zkevm/combined.json | jq -r '.rollupAddress')
+
+cast call $pol_addr 'balanceOf(address)(uint256)' 0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
+
+# do an approval for spend
+cast send --private-key 0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181 $pol_addr 'mint(address,uint256)' $rollup_addr 10000000000000000000000000
+#+end_src
+
+
+#+begin_src bash
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 trusted-rpc)"
+cast rpc zkevm_batchNumber
+cast rpc zkevm_virtualBatchNumber
+cast rpc zkevm_verifiedBatchNumber
+#+end_src

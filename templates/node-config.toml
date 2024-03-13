@@ -3,7 +3,7 @@ IsTrustedSequencer = true
 
 [Log]
 Environment = "production" # "production" or "development"
-Level = "info"
+Level = "debug"
 Outputs = ["stderr"]
 
 [State]
@@ -135,8 +135,9 @@ L1BlockTimestampMargin = "5s"
 MaxTxSizeForL1 = 131072
 L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
 PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-        [SequenceSender.StreamClient]
-                Server = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
+SenderAddress = "{{.zkevm_l2_sequencer_address}}"
+[SequenceSender.StreamClient]
+# Server = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
 
 [Aggregator]
 Host = "0.0.0.0"
@@ -146,7 +147,7 @@ VerifyProofInterval = "10s"
 TxProfitabilityCheckerType = "acceptall"
 TxProfitabilityMinReward = "1.1"
 ProofStatePollingInterval = "5s"
-SenderAddress = "{{.zkevm_l2_aggregator_address}}" # this will be the aggregator key in some cases or the agglayer key in other cases
+
 CleanupLockedProofsInterval = "2m"
 GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
@@ -159,6 +160,9 @@ SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zk
 SettlementBackend = "l1" # "agglayer"
 AggLayerTxTimeout = "600s"
 AggLayerURL = "http://zkevm-agglayer{{.deployment_idx}}:{{.zkevm_agglayer_port}}"
+SenderAddress = "{{.zkevm_l2_agglayer_address}}"
+{{else}}
+SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 {{end}}
 
 [EthTxManager]

@@ -70,8 +70,16 @@ cast nonce 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 
 Pretty often we'll want to check the output from the service. We can
 grab some logs:
+
 #+begin_src bash
 kurtosis service logs cdk-v1 zkevm-agglayer-001
+#+end_src
+
+In other cases, if we see an error we might want to get a shell in the
+container to be able to poke around.
+
+#+begin_src bash
+kurtosis service shell cdk-v1 zkevm-node-sequencer-001
 #+end_src
 
 When everything is done, you might want to clean up with this command

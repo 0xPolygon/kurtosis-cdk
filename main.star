@@ -141,6 +141,14 @@ def run(plan, args):
         ),
     )
 
+    plan.add_service(
+        name = "netshoot-debug",
+        config = ServiceConfig(
+            image = "nicolaka/netshoot",
+        ),
+    )
+
+
     # check if the contracts were already initialized.. I'm leaving
     # this here for now, but it's not useful
     contract_init_stat = plan.exec(
