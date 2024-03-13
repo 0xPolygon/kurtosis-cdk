@@ -1,0 +1,56 @@
+[Log]
+Level = "info"
+Environment = "production"
+Outputs = ["stderr"]
+
+[SyncDB]
+Database = "postgres"
+User = "{{.zkevm_db_bridge_user}}"
+Name = "{{.zkevm_db_bridge_name}}"
+Password = "{{.zkevm_db_bridge_password}}"
+Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
+Port = "{{.zkevm_db_postgres_port}}"
+MaxConns = 20
+
+[Etherman]
+l1URL = "{{.l1_rpc_url}}"
+L2URLs = ["http://zkevm-node-rpc{{.deployment_idx}}:{{.zkevm_rpc_http_port}}"]
+
+[Synchronizer]
+SyncInterval = "5s"
+SyncChunkSize = 100
+
+[BridgeController]
+Store = "postgres"
+Height = 32
+
+[BridgeServer]
+GRPCPort = "{{.zkevm_bridge_grpc_port}}"
+HTTPPort = "{{.zkevm_bridge_rpc_port}}"
+DefaultPageLimit = 25
+MaxPageLimit = 100
+BridgeVersion = "v1"
+    # Read only
+    [BridgeServer.DB]
+    Database = "postgres"
+    User = "{{.zkevm_db_bridge_user}}"
+    Name = "{{.zkevm_db_bridge_name}}"
+    Password = "{{.zkevm_db_bridge_password}}"
+    Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
+    Port = "{{.zkevm_db_postgres_port}}"
+    MaxConns = 20
+
+[NetworkConfig]
+GenBlockNumber = "###zkevm_l1_deployment_block###"
+PolygonBridgeAddress = "###zkevm_l1_bridge_addr###"
+PolygonZkEVMGlobalExitRootAddress = "###zkevm_l1_global_exit_root_addr###"
+PolygonRollupManagerAddress = "###zkevm_l1_rollup_manager_addr###"
+PolygonZkEVMAddress = "###zkevm_l1_rollup_addr###"
+L2PolygonBridgeAddresses = ["###zkevm_l1_bridge_addr###"]
+
+[ClaimTxManager]
+FrequencyToMonitorTxs = "5s"
+PrivateKey = {Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+Enabled = true
+RetryInterval = "1s"
+RetryNumber = 10
