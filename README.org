@@ -5,7 +5,7 @@ good and installed on your system, you can ~cd~ into this directory
 and run:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 . --args-file cdk-params.yml
+kurtosis run --enclave cdk-v1 --args-file cdk-params.yml .
 #+end_src
 
 This command will take a few minutes but will basically run an entire

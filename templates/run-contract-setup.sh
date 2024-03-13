@@ -16,11 +16,17 @@ curl -s -L https://foundry.paradigm.xyz | bash
 source /root/.bashrc
 foundryup &> /dev/null
 
-# TODO replace with version variable
+cpu_arch="{{.cpu_arch}}"
+if [[ "$cpu_arch" == "aarch64" ]]; then
+    cpu_arch="arm64"
+elif [[ "$cpu_arch" == "x86_64" ]]; then
+    cpu_arch="amd64"
+fi
 pushd /opt || exit 1
-wget -q 'https://github.com/maticnetwork/polygon-cli/releases/download/v0.1.42/polycli_v0.1.42_linux_amd64.tar.gz'
-tar xzf polycli_v0.1.42_linux_amd64.tar.gz
-cp polycli_v0.1.42_linux_amd64 /usr/local/bin/polycli
+wget "https://github.com/maticnetwork/polygon-cli/releases/download/{{.polycli_version}}/polycli_{{.polycli_version}}_linux_$cpu_arch.tar.gz"
+tar xzf "polycli_{{.polycli_version}}_linux_$cpu_arch.tar.gz"
+cp "polycli_{{.polycli_version}}_linux_$cpu_arch" /usr/local/bin/polycli
+polycli version
 popd
 
 2>&1 echo "Funding important accounts on l1"

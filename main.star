@@ -10,6 +10,13 @@ def run(plan, args):
 
     deployment_label = args["deployment_idx"]
 
+    # Determine system architecture.
+    cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
+    cpu_arch = cpu_arch_result.output
+    plan.print("Running on {} architecture".format(cpu_arch))
+    if not "cpu_arch" in args:
+        args["cpu_arch"] = cpu_arch
+
     # Make ethereum package availabile. For now we'll stick with most
     # of the defaults
     ethereum_package.run(plan, {
@@ -165,10 +172,11 @@ def run(plan, args):
                 "/etc/": zkevm_configs,
             },
             entrypoint = [
-                "/usr/local/bin/zkProver",
+                "/bin/bash", "-c"
             ],
             cmd = [
-                "-c", "/etc/zkevm/prover-config.json",
+                "[[ \"{0}\" == \"aarch64\" || \"{0}\" == \"arm64\" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
+                /usr/local/bin/zkProver -c /etc/zkevm/prover-config.json".format(cpu_arch),
             ],
         ),
     )
