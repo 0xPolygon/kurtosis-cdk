@@ -122,7 +122,8 @@ StateConsistencyCheckInterval = "5s"
                 SequentialProcessL2Block = true
         [Sequencer.StreamServer]
                 Port = {{.zkevm_data_streamer_port}}
-                Filename = "/datastream.bin"
+                # FIXME: This might be a weird path, we should probably ensure we mount to a persistent volume
+                Filename = "/tmp/datastream.bin"
                 Version = 1
                 ChainID = {{.l1_network_id}}
                 Enabled = true
@@ -150,6 +151,15 @@ CleanupLockedProofsInterval = "2m"
 GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
 BatchProofL1BlockConfirmations = 2
+{{if .is_cdk}}
+## CDK Validium Specific Settings
+
+# We should double check if this is necessary. I don't remember why the aggregator needs this
+SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+SettlementBackend = "l1" # "agglayer"
+AggLayerTxTimeout = "600s"
+AggLayerURL = "http://zkevm-agglayer{{.deployment_idx}}:{{.zkevm_agglayer_port}}"
+{{end}}
 
 [EthTxManager]
 ForcedGas = 0

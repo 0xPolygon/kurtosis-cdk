@@ -17,6 +17,10 @@ def run(plan, args):
     if not "cpu_arch" in args:
         args["cpu_arch"] = cpu_arch
 
+    args["is_cdk"] = False
+    if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
+        args["is_cdk"] = True
+
     # Make ethereum package availabile. For now we'll stick with most
     # of the defaults
     ethereum_package.run(plan, {
@@ -204,6 +208,7 @@ def run(plan, args):
             ],
         ),
     )
+
     plan.add_service(
         name = "zkevm-node-sequencer"+args["deployment_idx"],
         config = ServiceConfig(

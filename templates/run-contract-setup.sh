@@ -101,14 +101,17 @@ cast send --private-key {{.zkevm_l2_sequencer_private_key}} --legacy --rpc-url {
 
 polycli parseethwallet --hexkey {{.zkevm_l2_sequencer_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
+chmod a+r sequencer.keystore
 rm -rf tmp.keys
 
 polycli parseethwallet --hexkey {{.zkevm_l2_aggregator_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
 mv tmp.keys/UTC* aggregator.keystore
+chmod a+r aggregator.keystore
 rm -rf tmp.keys
 
 polycli parseethwallet --hexkey {{.zkevm_l2_claimtxmanager_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
 mv tmp.keys/UTC* claimtxmanager.keystore
+chmod a+r claimtxmanager.keystore
 rm -rf tmp.keys
 
 touch .init-complete.lock
