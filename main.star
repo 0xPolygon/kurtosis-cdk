@@ -91,6 +91,20 @@ def run(plan, args):
             )
         }
     )
+
+    # agglayer configuration
+    agglayer_config_template = read_file(
+        src = "./templates/agglayer-config.toml"
+    )
+    agglayer_config_artifact = plan.render_templates(
+        config = {
+            "agglayer-config.toml": struct(
+                template=agglayer_config_template,
+                data=args
+            )
+        }
+    )
+
     # Prover configuration
     prover_config_template = read_file(
         src = "./templates/prover-config.json"
@@ -120,6 +134,7 @@ def run(plan, args):
                         node_config_artifact,
                         prover_config_artifact,
                         bridge_config_artifact,
+                        agglayer_config_artifact,
                     ]
                 )
             },
@@ -163,7 +178,6 @@ def run(plan, args):
 
     add_databases(plan, args)
 
-    # TODO do a big sed for all of these hard coded ports and make them configurable
     plan.add_service(
         name = "zkevm-prover"+args["deployment_idx"],
         config = ServiceConfig(
@@ -184,6 +198,27 @@ def run(plan, args):
             ],
         ),
     )
+    plan.add_service(
+        name = "zkevm-agglayer"+args["deployment_idx"],
+        config = ServiceConfig(
+            image = args["zkevm_agglayer_image"],
+            ports = {
+                "agglayer": PortSpec(args["zkevm_agglayer_port"], application_protocol="http"),
+                "prometheus": PortSpec(args["zkevm_prometheus_port"], application_protocol="http"),
+            },
+            files = {
+                "/etc/": zkevm_configs,
+            },
+            entrypoint = [
+                "/app/agglayer",
+            ],
+            cmd = [
+                "run",
+                "--cfg", "/etc/zkevm/agglayer-config.toml"
+            ],
+        ),
+    )
+
 
     plan.add_service(
         name = "zkevm-node-synchronizer"+args["deployment_idx"],
@@ -469,4 +504,17 @@ def add_databases(plan, args):
             },
         ),
     )
-
+    agglayer_db = plan.add_service(
+        name = args["zkevm_db_agglayer_hostname"]+args["deployment_idx"],
+        config = ServiceConfig(
+            image = POSTGRES_IMAGE,
+            ports = {
+                POSTGRES_PORT_ID: PortSpec(args["zkevm_db_postgres_port"], application_protocol = "postgresql"),
+            },
+            env_vars = {
+                "POSTGRES_DB": args["zkevm_db_agglayer_name"],
+                "POSTGRES_USER": args["zkevm_db_agglayer_user"],
+                "POSTGRES_PASSWORD": args["zkevm_db_agglayer_password"],
+            },
+        ),
+    )

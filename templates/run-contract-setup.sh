@@ -68,8 +68,9 @@ cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 cp /opt/contract-deploy/node-config.toml /opt/zkevm/
-cp /opt/contract-deploy/bridge-config.toml /opt/zkevm/
 cp /opt/contract-deploy/prover-config.json /opt/zkevm/
+cp /opt/contract-deploy/bridge-config.toml /opt/zkevm/
+cp /opt/contract-deploy/agglayer-config.toml /opt/zkevm/
 popd
 
 pushd /opt/zkevm/ || exit 1
@@ -97,6 +98,8 @@ tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonRollupManagerAddress
 tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMAddress = $c[0].rollupAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
 tomlq --slurpfile c combined.json -t '.NetworkConfig.L2PolygonBridgeAddresses = [$c[0].polygonZkEVMBridgeAddress]' bridge-config.toml > b.json; mv b.json bridge-config.toml
 
+tomlq --slurpfile c combined.json -t '.L1.RollupManagerContract = $c[0].polygonRollupManagerAddress' agglayer-config.toml > a.json; mv a.json agglayer-config.toml
+
 cast send --private-key {{.zkevm_l2_sequencer_private_key}} --legacy --rpc-url {{.l1_rpc_url}} "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000 &> approval.out
 
 polycli parseethwallet --hexkey {{.zkevm_l2_sequencer_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
@@ -112,6 +115,11 @@ rm -rf tmp.keys
 polycli parseethwallet --hexkey {{.zkevm_l2_claimtxmanager_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
 mv tmp.keys/UTC* claimtxmanager.keystore
 chmod a+r claimtxmanager.keystore
+rm -rf tmp.keys
+
+polycli parseethwallet --hexkey {{.zkevm_l2_agglayer_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
+mv tmp.keys/UTC* agglayer.keystore
+chmod a+r agglayer.keystore
 rm -rf tmp.keys
 
 touch .init-complete.lock

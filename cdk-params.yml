@@ -2,6 +2,7 @@
 deployment_idx: "-001"
 zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13
+zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
 zkevm_contracts_branch: develop
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
 
@@ -15,9 +16,9 @@ zkevm_rpc_http_port: 8123
 zkevm_rpc_ws_port: 8133
 zkevm_bridge_rpc_port: 8080
 zkevm_bridge_grpc_port: 9090
-zkevm_aggalyer_port: 4444
+zkevm_agglayer_port: 4444
 
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 6 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 7 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
 zkevm_l2_sequencer_address: "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
 zkevm_l2_sequencer_private_key: "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181"
 
@@ -35,6 +36,9 @@ zkevm_l2_admin_private_key: "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab
 
 zkevm_l2_loadtest_address: "0x81457240ff5b49CaF176885ED07e3E7BFbE9Fb81"
 zkevm_l2_loadtest_private_key: "0xd7df6d64c569ffdfe7c56e6b34e7a2bdc7b7583db74512a9ffe26fe07faaa5de"
+
+zkevm_l2_agglayer_address: "0x351e560852ee001d5D19b5912a269F849f59479a"
+zkevm_l2_agglayer_private_key: "0x1d45f90c0a9814d8b8af968fa0677dab2a8ff0266f33b136e560fe420858a419"
 
 zkevm_l2_keystore_password: "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m"
 
@@ -65,6 +69,11 @@ zkevm_db_bridge_user: "bridge_user"
 zkevm_db_bridge_password: "aXPqaRvgo5DfnTbHtpYS9rMhVpjvb6tY"
 zkevm_db_bridge_name: "bridge_db"
 zkevm_db_bridge_hostname: "bridge-db"
+
+zkevm_db_agglayer_user: "agglayer_user"
+zkevm_db_agglayer_password: "PzycR2uB6PQv8ahj465ExvdyRLkknRNW"
+zkevm_db_agglayer_name: "agglayer_db"
+zkevm_db_agglayer_hostname: "agglayer-db"
 
 zkevm_deployment_salt: "0x000000000000000000000000000000000000000000000000000000000000002B"
 zkevm_l2_timelock_address:
