@@ -78,27 +78,25 @@ pushd /opt/zkevm/ || exit 1
 2>&1 echo "Preping deploy outputs"
 cp genesis.json genesis.original.json
 
-# shellcheck disable=SC2154
-jq --slurpfile rollup create_rollup_output.json ". + ${rollup[0]}" deploy_output.json > combined.json
+jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
 
 # NOTE there is a disconnect in the necessary configurations here between the validium node and the zkevm node
-# shellcheck disable=SC2154
-jq --slurpfile c combined.json ".rollupCreationBlockNumber = ${c[0]}.createRollupBlockNumber" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".rollupManagerCreationBlockNumber = ${c[0]}.upgradeToULxLyBlockNumber" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".genesisBlockNumber = ${c[0]}.createRollupBlockNumber" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".L1Config = {chainId:{{.l1_network_id}}}" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".L1Config.polygonZkEVMGlobalExitRootAddress = ${c[0]}.polygonZkEVMGlobalExitRootAddress" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".L1Config.polygonRollupManagerAddress = ${c[0]}.polygonRollupManagerAddress" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".L1Config.polTokenAddress = ${c[0]}.polTokenAddress" genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json ".L1Config.polygonZkEVMAddress = ${c[0]}.rollupAddress" genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = $c[0].upgradeToULxLyBlockNumber' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.genesisBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config = {chainId:{{.l1_network_id}}}' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c[0].polygonZkEVMGlobalExitRootAddress' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
 # note this particular setting is different for the bridge service!!
-tomlq --slurpfile c combined.json -t ".NetworkConfig.GenBlockNumber = ${c[0]}.deploymentRollupManagerBlockNumber" bridge-config.toml > b.json; mv b.json bridge-config.toml
-tomlq --slurpfile c combined.json -t ".NetworkConfig.PolygonBridgeAddress = ${c[0]}.polygonZkEVMBridgeAddress" bridge-config.toml > b.json; mv b.json bridge-config.toml
-tomlq --slurpfile c combined.json -t ".NetworkConfig.PolygonZkEVMGlobalExitRootAddress = ${c[0]}.polygonZkEVMGlobalExitRootAddress" bridge-config.toml > b.json; mv b.json bridge-config.toml
-tomlq --slurpfile c combined.json -t ".NetworkConfig.PolygonRollupManagerAddress = ${c[0]}.polygonRollupManagerAddress" bridge-config.toml > b.json; mv b.json bridge-config.toml
-tomlq --slurpfile c combined.json -t ".NetworkConfig.PolygonZkEVMAddress = ${c[0]}.rollupAddress" bridge-config.toml > b.json; mv b.json bridge-config.toml
-tomlq --slurpfile c combined.json -t ".NetworkConfig.L2PolygonBridgeAddresses = [${c[0]}.polygonZkEVMBridgeAddress]" bridge-config.toml > b.json; mv b.json bridge-config.toml
+tomlq --slurpfile c combined.json -t '.NetworkConfig.GenBlockNumber = $c[0].deploymentRollupManagerBlockNumber' bridge-config.toml > b.json; mv b.json bridge-config.toml
+tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonBridgeAddress = $c[0].polygonZkEVMBridgeAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMGlobalExitRootAddress = $c[0].polygonZkEVMGlobalExitRootAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMAddress = $c[0].rollupAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+tomlq --slurpfile c combined.json -t '.NetworkConfig.L2PolygonBridgeAddresses = [$c[0].polygonZkEVMBridgeAddress]' bridge-config.toml > b.json; mv b.json bridge-config.toml
 
 cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" "approve(address,uint256)(bool)" "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000 &> approval.out
 
