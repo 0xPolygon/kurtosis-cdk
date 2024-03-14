@@ -215,6 +215,33 @@ def run(plan, args):
         ),
     )
 
+    # Start permissionless prover
+    # TODO do a big sed for all of these hard coded ports and make them configurable
+    plan.add_service(
+        name="zkevm-permissionless-prover" + args["deployment_idx"],
+        config=ServiceConfig(
+            image=args["zkevm_prover_image"],
+            ports={
+                "hash-db-server": PortSpec(
+                    args["zkevm_hash_db_port"], application_protocol="grpc"
+                ),
+                "executor-server": PortSpec(
+                    args["zkevm_executor_port"], application_protocol="grpc"
+                ),
+            },
+            files={
+                "/etc/": zkevm_configs,
+            },
+            entrypoint=["/bin/bash", "-c"],
+            cmd=[
+                '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
+                /usr/local/bin/zkProver -c /etc/zkevm/permissionless-prover-config.json'.format(
+                    cpu_arch
+                ),
+            ],
+        ),
+    )
+
     # Start synchronizer
     plan.add_service(
         name="zkevm-node-synchronizer" + args["deployment_idx"],
