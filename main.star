@@ -463,6 +463,7 @@ def run(plan, args):
         ),
     )
 
+
 def start_trusted_node_databases(plan, args):
     postgres_port = args["zkevm_db_postgres_port"]
 
