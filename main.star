@@ -79,6 +79,15 @@ def run(plan, args):
             )
         }
     )
+    # Create permissionless configuration
+    permissionless_node_config_template = read_file(src="./templates/permissionless-node-config.toml")
+    permissionless_node_config_artifact = plan.render_templates(
+        config={
+            "permissionless-node-config.toml": struct(
+                template=permissionless_node_config_template, data=args
+            )
+        }
+    )
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     bridge_config_artifact = plan.render_templates(
