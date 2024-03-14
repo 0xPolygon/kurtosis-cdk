@@ -23,7 +23,7 @@ def run(plan, args):
     if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
         args["is_cdk"] = True
 
-    # Make ethereum package availabile. For now we'll stick with most
+    # Make ethereum package available. For now we'll stick with most
     # of the defaults
     ethereum_package.run(
         plan,
