@@ -185,8 +185,18 @@ def run(plan, args):
     # )
 
     # Start databases
-    start_trusted_node_databases(plan, args)
-    start_permissionless_node_databases(plan, args)
+    prover_db_init_script = plan.upload_files(
+        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
+    )
+    event_db_init_script = plan.upload_files(
+        src="./templates/event-db-init.sql", name="event-db-init.sql"
+    )
+    start_trusted_node_databases(
+        plan, args, prover_db_init_script, event_db_init_script
+    )
+    start_permissionless_node_databases(
+        plan, args, prover_db_init_script, event_db_init_script
+    )
 
     # Start prover
     # TODO do a big sed for all of these hard coded ports and make them configurable
@@ -553,13 +563,12 @@ def run(plan, args):
     )
 
 
-def start_trusted_node_databases(plan, args):
+def start_trusted_node_databases(
+    plan, args, prover_db_init_script, event_db_init_script
+):
     postgres_port = args["zkevm_db_postgres_port"]
 
     # Start prover db
-    prover_db_init_script = plan.upload_files(
-        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
-    )
     start_postgres_db(
         plan,
         name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
@@ -581,9 +590,6 @@ def start_trusted_node_databases(plan, args):
     )
 
     # Start event db
-    event_db_init_script = plan.upload_files(
-        src="./templates/event-db-init.sql", name="event-db-init.sql"
-    )
     start_postgres_db(
         plan,
         name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
@@ -615,13 +621,12 @@ def start_trusted_node_databases(plan, args):
     )
 
 
-def start_permissionless_node_databases(plan, args):
+def start_permissionless_node_databases(
+    plan, args, prover_db_init_script, event_db_init_script
+):
     postgres_port = args["zkevm_db_postgres_port"]
 
     # Start permissionless prover db
-    prover_db_init_script = plan.upload_files(
-        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
-    )
     start_postgres_db(
         plan,
         name=args["zkevm_permissionless_db_prover_hostname"] + args["deployment_idx"],
@@ -643,9 +648,6 @@ def start_permissionless_node_databases(plan, args):
     )
 
     # Start permissionless event db
-    event_db_init_script = plan.upload_files(
-        src="./templates/event-db-init.sql", name="event-db-init.sql"
-    )
     start_postgres_db(
         plan,
         name=args["zkevm_permissionless_db_event_hostname"] + args["deployment_idx"],
