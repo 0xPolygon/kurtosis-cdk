@@ -20,6 +20,15 @@ cast rpc zkevm_virtualBatchNumber
 cast rpc zkevm_verifiedBatchNumber
 #+end_src
 
+Check DAC and Sequencing
+#+begin_src bash
+kurtosis files download cdk-v1 zkevm /tmp
+cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) $(jq -r .rollupAddress /tmp/zkevm/combined.json) 'dataAvailabilityProtocol()(address)'
+cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) $(jq -r .polygonDataCommitteeAddress /tmp/zkevm/combined.json) 'requiredAmountOfSignatures()(uint256)'
+
+cat *.json | jq '.abi[] | select(.type != "receive")' | jq -s | polycli abi decode | sort -t: -k3 -u
+docker run -it --net=container:f0ce09999e30 nicolaka/netshoot:latest /bin/bash
+#+end_src
 
 * Chaos
 

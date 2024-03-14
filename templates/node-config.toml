@@ -156,7 +156,7 @@ BatchProofL1BlockConfirmations = 2
 
 # We should double check if this is necessary. I don't remember why the aggregator needs this
 SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-SettlementBackend = "l1" # "agglayer"
+SettlementBackend = "agglayer" # "l1"
 AggLayerTxTimeout = "600s"
 AggLayerURL = "http://zkevm-agglayer{{.deployment_idx}}:{{.zkevm_agglayer_port}}"
 SenderAddress = "{{.zkevm_l2_agglayer_address}}"

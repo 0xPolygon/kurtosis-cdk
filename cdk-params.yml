@@ -4,7 +4,7 @@ zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13
 zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
 zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
-zkevm_contracts_branch: develop
+zkevm_contracts_branch: v4.0.0-fork.7 # 311be35a565745df92669f51b8a509e65e3ba4ed
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
 
 zkevm_hash_db_port: 50061
