@@ -1,0 +1,5 @@
+---
+strict-labels: true # Do not permit labels other than specified in `label-schema`.
+label-schema:
+  author: email
+  description: text

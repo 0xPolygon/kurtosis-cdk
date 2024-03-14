@@ -13,6 +13,7 @@ fi
 apt update
 apt-get -y install socat jq yq
 curl -s -L https://foundry.paradigm.xyz | bash
+# shellcheck disable=SC1091
 source /root/.bashrc
 foundryup &> /dev/null
 
@@ -32,14 +33,14 @@ popd
 2>&1 echo "Funding important accounts on l1"
 
 # FIXME this look might never finish.. Add a counter
-until cast send --rpc-url {{.l1_rpc_url}} --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 {{.zkevm_l2_sequencer_address}}; do
+until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}"; do
      2>&1 echo "l1 rpc might nto be ready"
      sleep 5
 done
 
-cast send --rpc-url {{.l1_rpc_url}} --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether {{.zkevm_l2_sequencer_address}}
-cast send --rpc-url {{.l1_rpc_url}} --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether {{.zkevm_l2_aggregator_address}}
-cast send --rpc-url {{.l1_rpc_url}} --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether {{.zkevm_l2_admin_address}}
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether "{{.zkevm_l2_sequencer_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether "{{.zkevm_l2_aggregator_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether "{{.zkevm_l2_admin_address}}"
 
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
@@ -90,26 +91,32 @@ jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddres
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
 # note this particular setting is different for the bridge service!!
+# shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.GenBlockNumber = $c[0].deploymentRollupManagerBlockNumber' bridge-config.toml > b.json; mv b.json bridge-config.toml
+# shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonBridgeAddress = $c[0].polygonZkEVMBridgeAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+# shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMGlobalExitRootAddress = $c[0].polygonZkEVMGlobalExitRootAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+# shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+# shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMAddress = $c[0].rollupAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
+# shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.L2PolygonBridgeAddresses = [$c[0].polygonZkEVMBridgeAddress]' bridge-config.toml > b.json; mv b.json bridge-config.toml
 
-cast send --private-key {{.zkevm_l2_sequencer_private_key}} --legacy --rpc-url {{.l1_rpc_url}} "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000 &> approval.out
+cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" "approve(address,uint256)(bool)" "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000 &> approval.out
 
-polycli parseethwallet --hexkey {{.zkevm_l2_sequencer_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
+polycli parseethwallet --hexkey "{{.zkevm_l2_sequencer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
 chmod a+r sequencer.keystore
 rm -rf tmp.keys
 
-polycli parseethwallet --hexkey {{.zkevm_l2_aggregator_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
+polycli parseethwallet --hexkey "{{.zkevm_l2_aggregator_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* aggregator.keystore
 chmod a+r aggregator.keystore
 rm -rf tmp.keys
 
-polycli parseethwallet --hexkey {{.zkevm_l2_claimtxmanager_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
+polycli parseethwallet --hexkey "{{.zkevm_l2_claimtxmanager_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* claimtxmanager.keystore
 chmod a+r claimtxmanager.keystore
 rm -rf tmp.keys
