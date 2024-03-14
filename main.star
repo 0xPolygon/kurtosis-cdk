@@ -163,65 +163,7 @@ def run(plan, args):
     # )
 
     # Start databases
-    postgres_port = args["zkevm_db_postgres_port"]
-
-    # Start prover db
-    prover_db_init_script = plan.upload_files(
-        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
-    )
-    start_postgres_db(
-        plan,
-        name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_prover_name"],
-        user=args["zkevm_db_prover_user"],
-        password=args["zkevm_db_prover_password"],
-        init_script_artifact_name=event_db_init_script,
-    )
-
-    # Start pool db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_pool_name"],
-        user=args["zkevm_db_pool_user"],
-        password=args["zkevm_db_pool_password"],
-    )
-
-    # Start event db
-    event_db_init_script = plan.upload_files(
-        src="./templates/event-db-init.sql", name="event-db-init.sql"
-    )
-    start_postgres_db(
-        plan,
-        name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_event_name"],
-        user=args["zkevm_db_event_user"],
-        password=args["zkevm_db_event_password"],
-        init_script_artifact_name=event_db_init_script,
-    )
-
-    # Start state db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_db_state_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_state_name"],
-        user=args["zkevm_db_state_user"],
-        password=args["zkevm_db_state_password"],
-    )
-
-    # Start bridge db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_db_bridge_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_bridge_name"],
-        user=args["zkevm_db_bridge_user"],
-        password=args["zkevm_db_bridge_password"],
-    )
+    start_trusted_node_databases(plan, args)
 
     # Start prover
     # TODO do a big sed for all of these hard coded ports and make them configurable
@@ -519,6 +461,67 @@ def run(plan, args):
             ],
             cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
         ),
+    )
+
+def start_trusted_node_databases(plan, args):
+    postgres_port = args["zkevm_db_postgres_port"]
+
+    # Start prover db
+    prover_db_init_script = plan.upload_files(
+        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
+    )
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_prover_name"],
+        user=args["zkevm_db_prover_user"],
+        password=args["zkevm_db_prover_password"],
+        init_script_artifact_name=event_db_init_script,
+    )
+
+    # Start pool db
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_pool_name"],
+        user=args["zkevm_db_pool_user"],
+        password=args["zkevm_db_pool_password"],
+    )
+
+    # Start event db
+    event_db_init_script = plan.upload_files(
+        src="./templates/event-db-init.sql", name="event-db-init.sql"
+    )
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_event_name"],
+        user=args["zkevm_db_event_user"],
+        password=args["zkevm_db_event_password"],
+        init_script_artifact_name=event_db_init_script,
+    )
+
+    # Start state db
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_state_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_state_name"],
+        user=args["zkevm_db_state_user"],
+        password=args["zkevm_db_state_password"],
+    )
+
+    # Start bridge db
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_bridge_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_bridge_name"],
+        user=args["zkevm_db_bridge_user"],
+        password=args["zkevm_db_bridge_password"],
     )
 
 
