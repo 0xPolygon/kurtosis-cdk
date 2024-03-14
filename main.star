@@ -79,8 +79,10 @@ def run(plan, args):
             )
         }
     )
-    # Create permissionless configuration
-    permissionless_node_config_template = read_file(src="./templates/permissionless-node-config.toml")
+    # Create permissionless node configuration
+    permissionless_node_config_template = read_file(
+        src="./templates/permissionless-node-config.toml"
+    )
     permissionless_node_config_artifact = plan.render_templates(
         config={
             "permissionless-node-config.toml": struct(
@@ -100,6 +102,17 @@ def run(plan, args):
     prover_config_artifact = plan.render_templates(
         config={
             "prover-config.json": struct(template=prover_config_template, data=args)
+        }
+    )
+    # Create permissionless prover configuration
+    permissionless_prover_config_template = read_file(
+        src="./templates/permissionless-prover-config.json"
+    )
+    permissionless_prover_config_artifact = plan.render_templates(
+        config={
+            "permissionless-prover-config.json": struct(
+                template=permissionless_prover_config_template, data=args
+            )
         }
     )
 
