@@ -164,13 +164,13 @@ def run(plan, args):
 
     # Start databases
     start_prover_db(plan, args)
-    start_pool_db(
+    start_postgres_db(
         plan,
         name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
+        db=args["zkevm_db_pool_name"],
         user=args["zkevm_db_pool_user"],
         password=args["zkevm_db_pool_password"],
-        db=args["zkevm_db_pool_name"],
     )
 
     start_event_db(plan, args)
@@ -501,23 +501,6 @@ def start_prover_db(plan, args):
     )
 
 
-def start_pool_db(plan, name, port, user, password, db):
-    plan.add_service(
-        name=name,
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(port, application_protocol="postgresql"),
-            },
-            env_vars={
-                "POSTGRES_DB": db,
-                "POSTGRES_USER": user,
-                "POSTGRES_PASSWORD": password,
-            },
-        ),
-    )
-
-
 def start_event_db(plan, args):
     init_script = plan.upload_files(
         src="./templates/event-db-init.sql", name="event-db-init.sql"
@@ -577,5 +560,27 @@ def start_bridge_db(plan, args):
                 "POSTGRES_USER": args["zkevm_db_bridge_user"],
                 "POSTGRES_PASSWORD": args["zkevm_db_bridge_password"],
             },
+        ),
+    )
+
+
+def start_postgres_db(plan, name, port, db, user, password, init_script=""):
+    files = {}
+    if init_script != "":
+        files["/docker-entrypoint-initdb.d/"] = init_script
+
+    plan.add_service(
+        name=name,
+        config=ServiceConfig(
+            image=POSTGRES_IMAGE,
+            ports={
+                POSTGRES_PORT_ID: PortSpec(port, application_protocol="postgresql"),
+            },
+            env_vars={
+                "POSTGRES_DB": db,
+                "POSTGRES_USER": user,
+                "POSTGRES_PASSWORD": password,
+            },
+            files=files,
         ),
     )
