@@ -92,9 +92,7 @@ def run(plan, args):
     # dac configuration
     dac_config_template = read_file(src="./templates/dac-config.toml")
     dac_config_artifact = plan.render_templates(
-        config={
-            "dac-config.toml": struct(template=dac_config_template, data=args)
-        }
+        config={"dac-config.toml": struct(template=dac_config_template, data=args)}
     )
 
     # Prover configuration
@@ -232,9 +230,7 @@ def run(plan, args):
         config=ServiceConfig(
             image=args["zkevm_dac_image"],
             ports={
-                "dac": PortSpec(
-                    args["zkevm_dac_port"], application_protocol="http"
-                ),
+                "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
                 # Does the DAC have prometheus?!
                 # "prometheus": PortSpec(
                 #     args["zkevm_prometheus_port"], application_protocol="http"
@@ -643,4 +639,3 @@ def add_databases(plan, args):
             },
         ),
     )
-
