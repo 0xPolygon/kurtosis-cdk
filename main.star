@@ -71,13 +71,13 @@ def run(plan, args):
     )
 
     # Create node configuration
-    node_config_template = read_file(src="./templates/node-config.toml")
-    node_config_data = args
-    node_config_data["is_trusted_sequencer"] = True
-    node_config_artifact = plan.render_templates(
+    trusted_node_config_template = read_file(src="./templates/trusted-node-config.toml")
+    trusted_node_config_data = args
+    trusted_node_config_data["is_trusted_sequencer"] = True
+    trusted_node_config_artifact = plan.render_templates(
         config={
-            "node-config.toml": struct(
-                template=node_config_template, data=node_config_data
+            "trusted-node-config.toml": struct(
+                template=trusted_node_config_template, data=trusted_node_config_data
             )
         }
     )
@@ -109,7 +109,7 @@ def run(plan, args):
                         deploy_parameters_artifact,
                         create_rollup_parameters_artifact,
                         contract_deployment_script_artifact,
-                        node_config_artifact,
+                        trusted_node_config_artifact,
                         prover_config_artifact,
                         bridge_config_artifact,
                     ]
@@ -215,7 +215,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
@@ -254,7 +254,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
@@ -287,7 +287,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
@@ -323,7 +323,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
@@ -362,7 +362,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
@@ -399,7 +399,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
@@ -430,7 +430,7 @@ def run(plan, args):
             cmd=[
                 "run",
                 "--cfg",
-                "/etc/zkevm/node-config.toml",
+                "/etc/zkevm/trusted-node-config.toml",
                 "--network",
                 "custom",
                 "--custom-network-file",
