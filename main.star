@@ -89,6 +89,13 @@ def run(plan, args):
             "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
         }
     )
+    # dac configuration
+    dac_config_template = read_file(src="./templates/dac-config.toml")
+    dac_config_artifact = plan.render_templates(
+        config={
+            "dac-config.toml": struct(template=dac_config_template, data=args)
+        }
+    )
 
     # Prover configuration
     prover_config_template = read_file(src="./templates/prover-config.json")
@@ -115,6 +122,7 @@ def run(plan, args):
                         prover_config_artifact,
                         bridge_config_artifact,
                         agglayer_config_artifact,
+                        dac_config_artifact,
                     ]
                 ),
             },
@@ -171,10 +179,6 @@ def run(plan, args):
         description="These are the files needed to start various node services",
     )
 
-    # plan.stop_service(
-    #     name = "contracts"+args["deployment_idx"]
-    # )
-
     add_databases(plan, args)
 
     plan.add_service(
@@ -221,6 +225,28 @@ def run(plan, args):
                 "/app/agglayer",
             ],
             cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
+        ),
+    )
+    plan.add_service(
+        name="zkevm-dac" + args["deployment_idx"],
+        config=ServiceConfig(
+            image=args["zkevm_dac_image"],
+            ports={
+                "dac": PortSpec(
+                    args["zkevm_dac_port"], application_protocol="http"
+                ),
+                # Does the DAC have prometheus?!
+                # "prometheus": PortSpec(
+                #     args["zkevm_prometheus_port"], application_protocol="http"
+                # ),
+            },
+            files={
+                "/etc/": zkevm_configs,
+            },
+            entrypoint=[
+                "/app/cdk-data-availability",
+            ],
+            cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
         ),
     )
 
@@ -296,7 +322,7 @@ def run(plan, args):
         ),
     )
     plan.add_service(
-        name="zkevm-node-sequencersender" + args["deployment_idx"],
+        name="zkevm-node-sequencesender" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             files={
@@ -322,7 +348,7 @@ def run(plan, args):
                 "--custom-network-file",
                 "/etc/zkevm/genesis.json",
                 "--components",
-                "sequencersender",
+                "sequence-sender",
             ],
         ),
     )
@@ -598,6 +624,22 @@ def add_databases(plan, args):
                 "POSTGRES_DB": args["zkevm_db_agglayer_name"],
                 "POSTGRES_USER": args["zkevm_db_agglayer_user"],
                 "POSTGRES_PASSWORD": args["zkevm_db_agglayer_password"],
+            },
+        ),
+    )
+    dac_db = plan.add_service(
+        name=args["zkevm_db_dac_hostname"] + args["deployment_idx"],
+        config=ServiceConfig(
+            image=POSTGRES_IMAGE,
+            ports={
+                POSTGRES_PORT_ID: PortSpec(
+                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
+                ),
+            },
+            env_vars={
+                "POSTGRES_DB": args["zkevm_db_dac_name"],
+                "POSTGRES_USER": args["zkevm_db_dac_user"],
+                "POSTGRES_PASSWORD": args["zkevm_db_dac_password"],
             },
         ),
     )
