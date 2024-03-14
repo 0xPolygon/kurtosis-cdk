@@ -201,6 +201,7 @@ def run(plan, args):
             ],
         ),
     )
+
     plan.add_service(
         name="zkevm-agglayer" + args["deployment_idx"],
         config=ServiceConfig(
@@ -600,3 +601,4 @@ def add_databases(plan, args):
             },
         ),
     )
+

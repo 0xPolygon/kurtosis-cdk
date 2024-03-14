@@ -136,8 +136,8 @@ MaxTxSizeForL1 = 131072
 L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
 PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 SenderAddress = "{{.zkevm_l2_sequencer_address}}"
-[SequenceSender.StreamClient]
-# Server = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
+        [SequenceSender.StreamClient]
+                Server = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
 
 [Aggregator]
 Host = "0.0.0.0"
@@ -147,7 +147,6 @@ VerifyProofInterval = "10s"
 TxProfitabilityCheckerType = "acceptall"
 TxProfitabilityMinReward = "1.1"
 ProofStatePollingInterval = "5s"
-
 CleanupLockedProofsInterval = "2m"
 GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
