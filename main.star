@@ -12,7 +12,7 @@ POSTGRES_PORT_ID = "postgres"
 def run(plan, args):
     deployment_label = args["deployment_idx"]
 
-    # Determine system architecture.
+    # Determine system architecture
     cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
     cpu_arch = cpu_arch_result.output
     plan.print("Running on {} architecture".format(cpu_arch))
@@ -23,8 +23,8 @@ def run(plan, args):
     if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
         args["is_cdk"] = True
 
-    # Make ethereum package availabile. For now we'll stick with most
-    # of the defaults
+    # Deploy L1 chain
+    # For now we'll stick with most of the defaults
     ethereum_package.run(
         plan,
         {
@@ -38,7 +38,7 @@ def run(plan, args):
         },
     )
 
-    # Deploy Parameters
+    # Create deploy parameters
     deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
     deploy_parameters_artifact = plan.render_templates(
         config={
@@ -47,7 +47,7 @@ def run(plan, args):
             )
         }
     )
-    # Create Rollup Paramaters
+    # Create rollup paramaters
     create_rollup_parameters_template = read_file(
         src="./templates/create_rollup_parameters.json"
     )
@@ -58,7 +58,7 @@ def run(plan, args):
             )
         }
     )
-    # Contract Deployment script
+    # Create contract deployment script
     contract_deployment_script_template = read_file(
         src="./templates/run-contract-setup.sh"
     )
@@ -69,19 +69,20 @@ def run(plan, args):
             )
         }
     )
-    # Node configuration
+
+    # Create node configuration
     node_config_template = read_file(src="./templates/node-config.toml")
     node_config_artifact = plan.render_templates(
         config={"node-config.toml": struct(template=node_config_template, data=args)}
     )
-    # Bridge configuration
+    # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     bridge_config_artifact = plan.render_templates(
         config={
             "bridge-config.toml": struct(template=bridge_config_template, data=args)
         }
     )
-    # Prover configuration
+    # Create prover configuration
     prover_config_template = read_file(src="./templates/prover-config.json")
     prover_config_artifact = plan.render_templates(
         config={
@@ -89,8 +90,8 @@ def run(plan, args):
         }
     )
 
+    # Create helper service to deploy contracts
     zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
-
     plan.add_service(
         name="contracts" + args["deployment_idx"],
         config=ServiceConfig(
@@ -111,14 +112,14 @@ def run(plan, args):
         ),
     )
 
-    # check if the contracts were already initialized.. I'm leaving
-    # this here for now, but it's not useful
+    # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
     contract_init_stat = plan.exec(
         service_name="contracts" + args["deployment_idx"],
         acceptable_codes=[0, 1],
         recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
     )
 
+    # Deploy contracts
     plan.exec(
         service_name="contracts" + args["deployment_idx"],
         recipe=ExecRecipe(
@@ -140,26 +141,25 @@ def run(plan, args):
             command=["chmod", "a+x", "/opt/contract-deploy/run-contract-setup.sh"]
         ),
     )
-
     plan.print("Running zkEVM contract deployment. This might take some time...")
     plan.exec(
         service_name="contracts" + args["deployment_idx"],
         recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
     )
-
     zkevm_configs = plan.store_service_files(
         service_name="contracts" + args["deployment_idx"],
         src="/opt/zkevm",
         name="zkevm",
         description="These are the files needed to start various node services",
     )
-
     # plan.stop_service(
     #     name = "contracts"+args["deployment_idx"]
     # )
 
+    # Start databases
     add_databases(plan, args)
 
+    # Start prover
     # TODO do a big sed for all of these hard coded ports and make them configurable
     plan.add_service(
         name="zkevm-prover" + args["deployment_idx"],
@@ -186,6 +186,7 @@ def run(plan, args):
         ),
     )
 
+    # Start synchronizer
     plan.add_service(
         name="zkevm-node-synchronizer" + args["deployment_idx"],
         config=ServiceConfig(
@@ -218,6 +219,7 @@ def run(plan, args):
         ),
     )
 
+    # Start sequencer
     plan.add_service(
         name="zkevm-node-sequencer" + args["deployment_idx"],
         config=ServiceConfig(
@@ -289,6 +291,7 @@ def run(plan, args):
         ),
     )
 
+    # Start aggregator
     plan.add_service(
         name="zkevm-node-aggregator" + args["deployment_idx"],
         config=ServiceConfig(
@@ -324,6 +327,7 @@ def run(plan, args):
         ),
     )
 
+    # Start trusted RPC
     plan.add_service(
         name="zkevm-node-rpc" + args["deployment_idx"],
         config=ServiceConfig(
@@ -364,6 +368,9 @@ def run(plan, args):
         ),
     )
 
+    # TODO: Start permissionless RPC
+
+    # Start eth-tx-manager and l2-gas-pricer
     plan.add_service(
         name="zkevm-node-eth-tx-manager" + args["deployment_idx"],
         config=ServiceConfig(
@@ -427,6 +434,7 @@ def run(plan, args):
         ),
     )
 
+    # Start bridge
     plan.add_service(
         name="zkevm-bridge-service" + args["deployment_idx"],
         config=ServiceConfig(
