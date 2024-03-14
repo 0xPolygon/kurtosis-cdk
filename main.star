@@ -629,7 +629,7 @@ def start_permissionless_node_databases(plan, args):
         db=args["zkevm_permissionless_db_prover_name"],
         user=args["zkevm_permissionless_db_prover_user"],
         password=args["zkevm_permissionless_db_prover_password"],
-        init_script_artifact_name=event_db_init_script,
+        init_script_artifact_name=prover_db_init_script,
     )
 
     # Start permissionless pool db
