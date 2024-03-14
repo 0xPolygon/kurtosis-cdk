@@ -164,6 +164,8 @@ def run(plan, args):
 
     # Start databases
     postgres_port = args["zkevm_db_postgres_port"]
+
+    # Start prover db
     prover_db_init_script = plan.upload_files(
         src="./templates/prover-db-init.sql", name="prover-db-init.sql"
     )
@@ -174,9 +176,10 @@ def run(plan, args):
         db=args["zkevm_db_prover_name"],
         user=args["zkevm_db_prover_user"],
         password=args["zkevm_db_prover_password"],
-        init_script_artifact_name=prover_db_init_script,
+        init_script_artifact_name=event_db_init_script,
     )
 
+    # Start pool db
     start_postgres_db(
         plan,
         name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
@@ -186,9 +189,39 @@ def run(plan, args):
         password=args["zkevm_db_pool_password"],
     )
 
-    start_event_db(plan, args)
-    start_state_db(plan, args)
-    start_bridge_db(plan, args)
+    # Start event db
+    event_db_init_script = plan.upload_files(
+        src="./templates/event-db-init.sql", name="event-db-init.sql"
+    )
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_event_name"],
+        user=args["zkevm_db_event_user"],
+        password=args["zkevm_db_event_password"],
+        init_script_artifact_name=event_db_init_script,
+    )
+
+    # Start state db
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_state_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_state_name"],
+        user=args["zkevm_db_state_user"],
+        password=args["zkevm_db_state_password"],
+    )
+
+    # Start bridge db
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_bridge_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_bridge_name"],
+        user=args["zkevm_db_bridge_user"],
+        password=args["zkevm_db_bridge_password"],
+    )
 
     # Start prover
     # TODO do a big sed for all of these hard coded ports and make them configurable
@@ -489,70 +522,9 @@ def run(plan, args):
     )
 
 
-def start_event_db(plan, args):
-    init_script = plan.upload_files(
-        src="./templates/event-db-init.sql", name="event-db-init.sql"
-    )
-    plan.add_service(
-        name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
-            },
-            env_vars={
-                "POSTGRES_DB": args["zkevm_db_event_name"],
-                "POSTGRES_USER": args["zkevm_db_event_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_event_password"],
-            },
-            files={
-                "/docker-entrypoint-initdb.d/": init_script,
-            },
-        ),
-    )
-
-
-def start_state_db(plan, args):
-    plan.add_service(
-        name=args["zkevm_db_state_hostname"] + args["deployment_idx"],
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
-            },
-            env_vars={
-                "POSTGRES_DB": args["zkevm_db_state_name"],
-                "POSTGRES_USER": args["zkevm_db_state_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_state_password"],
-            },
-        ),
-    )
-
-
-def start_bridge_db(plan, args):
-    plan.add_service(
-        name=args["zkevm_db_bridge_hostname"] + args["deployment_idx"],
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
-            },
-            env_vars={
-                "POSTGRES_DB": args["zkevm_db_bridge_name"],
-                "POSTGRES_USER": args["zkevm_db_bridge_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_bridge_password"],
-            },
-        ),
-    )
-
-
-def start_postgres_db(plan, name, port, db, user, password, init_script_artifact_name=""):
+def start_postgres_db(
+    plan, name, port, db, user, password, init_script_artifact_name=""
+):
     files = {}
     if init_script_artifact_name != "":
         files["/docker-entrypoint-initdb.d/"] = init_script_artifact_name
