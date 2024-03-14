@@ -75,7 +75,11 @@ def run(plan, args):
     node_config_data = args
     node_config_data["is_trusted_sequencer"] = True
     node_config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=node_config_template, data=node_config_data)}
+        config={
+            "node-config.toml": struct(
+                template=node_config_template, data=node_config_data
+            )
+        }
     )
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
@@ -159,7 +163,11 @@ def run(plan, args):
     # )
 
     # Start databases
-    add_databases(plan, args)
+    start_prover_db(plan, args)
+    start_pool_db(plan, args)
+    start_event_db(plan, args)
+    start_state_db(plan, args)
+    start_bridge_db(plan, args)
 
     # Start prover
     # TODO do a big sed for all of these hard coded ports and make them configurable
@@ -460,12 +468,11 @@ def run(plan, args):
     )
 
 
-def add_databases(plan, args):
-    prover_db_init_artifact = plan.upload_files(
+def start_prover_db(plan, args):
+    init_script = plan.upload_files(
         src="./templates/prover-db-init.sql", name="prover-db-init.sql"
     )
-
-    prover_db = plan.add_service(
+    plan.add_service(
         name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
         config=ServiceConfig(
             image=POSTGRES_IMAGE,
@@ -480,11 +487,14 @@ def add_databases(plan, args):
                 "POSTGRES_PASSWORD": args["zkevm_db_prover_password"],
             },
             files={
-                "/docker-entrypoint-initdb.d/": prover_db_init_artifact,
+                "/docker-entrypoint-initdb.d/": init_script,
             },
         ),
     )
-    pool_db = plan.add_service(
+
+
+def start_pool_db(plan, args):
+    plan.add_service(
         name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
         config=ServiceConfig(
             image=POSTGRES_IMAGE,
@@ -501,11 +511,12 @@ def add_databases(plan, args):
         ),
     )
 
-    event_db_init_artifact = plan.upload_files(
+
+def start_event_db(plan, args):
+    init_script = plan.upload_files(
         src="./templates/event-db-init.sql", name="event-db-init.sql"
     )
-
-    event_db = plan.add_service(
+    plan.add_service(
         name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
         config=ServiceConfig(
             image=POSTGRES_IMAGE,
@@ -520,12 +531,14 @@ def add_databases(plan, args):
                 "POSTGRES_PASSWORD": args["zkevm_db_event_password"],
             },
             files={
-                "/docker-entrypoint-initdb.d/": event_db_init_artifact,
+                "/docker-entrypoint-initdb.d/": init_script,
             },
         ),
     )
 
-    state_db = plan.add_service(
+
+def start_state_db(plan, args):
+    plan.add_service(
         name=args["zkevm_db_state_hostname"] + args["deployment_idx"],
         config=ServiceConfig(
             image=POSTGRES_IMAGE,
@@ -541,7 +554,10 @@ def add_databases(plan, args):
             },
         ),
     )
-    bridge_db = plan.add_service(
+
+
+def start_bridge_db(plan, args):
+    plan.add_service(
         name=args["zkevm_db_bridge_hostname"] + args["deployment_idx"],
         config=ServiceConfig(
             image=POSTGRES_IMAGE,
