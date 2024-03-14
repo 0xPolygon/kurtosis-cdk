@@ -38,10 +38,10 @@ until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemo
      sleep 5
 done
 
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_sequencer_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_aggregator_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_admin_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_agglayer_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_sequencer_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_aggregator_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_admin_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_agglayer_address}}"
 
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
@@ -122,21 +122,21 @@ tomlq --slurpfile c combined.json -t '.L1.PolygonValidiumAddress = $c[0].rollupA
 tomlq --slurpfile c combined.json -t '.L1.DataCommitteeAddress = $c[0].polygonDataCommitteeAddress' dac-config.toml > a.json; mv a.json dac-config.toml
 
 
-cast send --private-key {{.zkevm_l2_sequencer_private_key}} --legacy --rpc-url {{.l1_rpc_url}} "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000
+cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
 # Setup dac with 1 sig for now
-cast send --private-key {{.zkevm_l2_admin_private_key}} --rpc-url {{.l1_rpc_url}} $(jq -r '.polygonDataCommitteeAddress' combined.json) \
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
         'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
         1 ["http://zkevm-dac{{.deployment_idx}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
 # Enable Dac
-cast send --private-key {{.zkevm_l2_admin_private_key}} --rpc-url {{.l1_rpc_url}} $(jq -r '.rollupAddress' combined.json) 'setDataAvailabilityProtocol(address)' $(jq -r '.polygonDataCommitteeAddress' combined.json)
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url" {{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 
 # Grant the aggregator role to the agglayer
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
-cast send --private-key {{.zkevm_l2_admin_private_key}} --rpc-url {{.l1_rpc_url}} "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' 0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4 {{.zkevm_l2_agglayer_address}}
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 
-polycli parseethwallet --hexkey {{.zkevm_l2_sequencer_private_key}} --password {{.zkevm_l2_keystore_password}} --keystore tmp.keys
+polycli parseethwallet --hexkey "{{.zkevm_l2_sequencer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
 chmod a+r sequencer.keystore
 rm -rf tmp.keys
