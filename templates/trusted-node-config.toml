@@ -1,5 +1,5 @@
 # https://github.com/0xPolygonHermez/zkevm-node/blob/v0.5.13/test/config/test.node.config.toml
-IsTrustedSequencer = "{{.is_trusted_sequencer}}"
+IsTrustedSequencer = true
 
 [Log]
 Environment = "production" # "production" or "development"

@@ -70,14 +70,12 @@ def run(plan, args):
         }
     )
 
-    # Create node configuration
+    # Create trusted node configuration
     trusted_node_config_template = read_file(src="./templates/trusted-node-config.toml")
-    trusted_node_config_data = args
-    trusted_node_config_data["is_trusted_sequencer"] = True
     trusted_node_config_artifact = plan.render_templates(
         config={
             "trusted-node-config.toml": struct(
-                template=trusted_node_config_template, data=trusted_node_config_data
+                template=trusted_node_config_template, data=args
             )
         }
     )
