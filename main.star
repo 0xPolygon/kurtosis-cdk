@@ -131,6 +131,8 @@ def run(plan, args):
                         contract_deployment_script_artifact,
                         trusted_node_config_artifact,
                         prover_config_artifact,
+                        permissionless_node_config_artifact,
+                        permissionless_prover_config_artifact,
                         bridge_config_artifact,
                     ]
                 ),
