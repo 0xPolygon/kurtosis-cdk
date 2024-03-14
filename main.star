@@ -164,7 +164,15 @@ def run(plan, args):
 
     # Start databases
     start_prover_db(plan, args)
-    start_pool_db(plan, args)
+    start_pool_db(
+        plan,
+        name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
+        port=args["zkevm_db_postgres_port"],
+        user=args["zkevm_db_pool_user"],
+        password=args["zkevm_db_pool_password"],
+        db=args["zkevm_db_pool_name"],
+    )
+
     start_event_db(plan, args)
     start_state_db(plan, args)
     start_bridge_db(plan, args)
@@ -493,20 +501,18 @@ def start_prover_db(plan, args):
     )
 
 
-def start_pool_db(plan, args):
+def start_pool_db(plan, name, port, user, password, db):
     plan.add_service(
-        name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
+        name=name,
         config=ServiceConfig(
             image=POSTGRES_IMAGE,
             ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
+                POSTGRES_PORT_ID: PortSpec(port, application_protocol="postgresql"),
             },
             env_vars={
-                "POSTGRES_DB": args["zkevm_db_pool_name"],
-                "POSTGRES_USER": args["zkevm_db_pool_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_pool_password"],
+                "POSTGRES_DB": db,
+                "POSTGRES_USER": user,
+                "POSTGRES_PASSWORD": password,
             },
         ),
     )
