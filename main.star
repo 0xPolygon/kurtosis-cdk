@@ -163,11 +163,24 @@ def run(plan, args):
     # )
 
     # Start databases
-    start_prover_db(plan, args)
+    postgres_port = args["zkevm_db_postgres_port"]
+    prover_db_init_script = plan.upload_files(
+        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
+    )
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
+        port=postgres_port,
+        db=args["zkevm_db_prover_name"],
+        user=args["zkevm_db_prover_user"],
+        password=args["zkevm_db_prover_password"],
+        init_script_artifact_name=prover_db_init_script,
+    )
+
     start_postgres_db(
         plan,
         name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
-        port=args["zkevm_db_postgres_port"],
+        port=postgres_port,
         db=args["zkevm_db_pool_name"],
         user=args["zkevm_db_pool_user"],
         password=args["zkevm_db_pool_password"],
@@ -476,31 +489,6 @@ def run(plan, args):
     )
 
 
-def start_prover_db(plan, args):
-    init_script = plan.upload_files(
-        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
-    )
-    plan.add_service(
-        name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
-            },
-            env_vars={
-                "POSTGRES_DB": args["zkevm_db_prover_name"],
-                "POSTGRES_USER": args["zkevm_db_prover_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_prover_password"],
-            },
-            files={
-                "/docker-entrypoint-initdb.d/": init_script,
-            },
-        ),
-    )
-
-
 def start_event_db(plan, args):
     init_script = plan.upload_files(
         src="./templates/event-db-init.sql", name="event-db-init.sql"
@@ -564,11 +552,10 @@ def start_bridge_db(plan, args):
     )
 
 
-def start_postgres_db(plan, name, port, db, user, password, init_script=""):
+def start_postgres_db(plan, name, port, db, user, password, init_script_artifact_name=""):
     files = {}
-    if init_script != "":
-        files["/docker-entrypoint-initdb.d/"] = init_script
-
+    if init_script_artifact_name != "":
+        files["/docker-entrypoint-initdb.d/"] = init_script_artifact_name
     plan.add_service(
         name=name,
         config=ServiceConfig(
