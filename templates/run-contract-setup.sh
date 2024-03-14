@@ -41,6 +41,7 @@ done
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_sequencer_address}}"
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_aggregator_address}}"
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_admin_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value {{.l1_funding_amount}} "{{.zkevm_l2_agglayer_address}}"
 
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
