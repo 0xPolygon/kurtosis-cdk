@@ -46,20 +46,40 @@ zkevm_db_prover_password: "SR5xq2KZPgvQkPDranCRhvkv6pnqfo77"
 zkevm_db_prover_name: "prover_db"
 zkevm_db_prover_hostname: "prover-db"
 
+zkevm_permissionless_db_prover_user: "permissionless_prover_user"
+zkevm_permissionless_db_prover_password: "fJc3BNTnURMNtie4w3HUhtQbe7omWn23"
+zkevm_permissionless_db_prover_name: "permissionless_prover_db"
+zkevm_permissionless_db_prover_hostname: "permissionless-prover-db"
+
 zkevm_db_pool_user: "pool_user"
 zkevm_db_pool_password: "Qso5wMcLAN3oF7EfaawzgWKUUKWM3Vov"
 zkevm_db_pool_name: "pool_db"
 zkevm_db_pool_hostname: "pool-db"
+
+zkevm_permissionless_db_pool_user: "permissionless_pool_user"
+zkevm_permissionless_db_pool_password: "hkqvUnE65RvFjxaurXxNTDf4j6ozkejn"
+zkevm_permissionless_db_pool_name: "permissionless_pool_db"
+zkevm_permissionless_db_pool_hostname: "permissionless-pool-db"
 
 zkevm_db_event_user: "event_user"
 zkevm_db_event_password: "rJXJN6iUAczh4oz8HRKYbVM8yC7tPeZm"
 zkevm_db_event_name: "event_db"
 zkevm_db_event_hostname: "event-db"
 
+zkevm_permissionless_db_event_user: "permissionless_event_user"
+zkevm_permissionless_db_event_password: "d3GSJ8dkWxtMpNbP7w4Za7dF3Gh23XwM"
+zkevm_permissionless_db_event_name: "permissionless_event_db"
+zkevm_permissionless_db_event_hostname: "permissionless-event-db"
+
 zkevm_db_state_user: "state_user"
 zkevm_db_state_password: "rHTX7EpajF8zYDPatN32rH3B2pn89dmq"
 zkevm_db_state_name: "state_db"
 zkevm_db_state_hostname: "state-db"
+
+zkevm_permissionless_db_state_user: "permissionless_state_user"
+zkevm_permissionless_db_state_password: "BXeRf7Y4QgkB4Z6c7w6mtXzkdptvwixR"
+zkevm_permissionless_db_state_name: "permissionless_state_db"
+zkevm_permissionless_db_state_hostname: "permissionless-state-db"
 
 zkevm_db_bridge_user: "bridge_user"
 zkevm_db_bridge_password: "aXPqaRvgo5DfnTbHtpYS9rMhVpjvb6tY"
