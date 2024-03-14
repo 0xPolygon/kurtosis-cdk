@@ -72,8 +72,10 @@ def run(plan, args):
 
     # Create node configuration
     node_config_template = read_file(src="./templates/node-config.toml")
+    node_config_data = args
+    node_config_data["is_trusted_sequencer"] = True
     node_config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=node_config_template, data=args)}
+        config={"node-config.toml": struct(template=node_config_template, data=node_config_data)}
     )
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
