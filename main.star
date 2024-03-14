@@ -424,7 +424,46 @@ def run(plan, args):
         ),
     )
 
-    # TODO: Start permissionless RPC
+    # Start permissionless RPC
+    plan.add_service(
+        name="zkevm-permissionless-node-rpc" + args["deployment_idx"],
+        config=ServiceConfig(
+            image=args["zkevm_node_image"],
+            ports={
+                "permissionless-rpc": PortSpec(
+                    args["zkevm_rpc_http_port"], application_protocol="http"
+                ),
+                "permissionless-ws": PortSpec(
+                    args["zkevm_rpc_ws_port"], application_protocol="ws"
+                ),
+                "pprof": PortSpec(
+                    args["zkevm_pprof_port"], application_protocol="http"
+                ),
+                "prometheus": PortSpec(
+                    args["zkevm_prometheus_port"], application_protocol="http"
+                ),
+            },
+            files={
+                "/etc/": zkevm_configs,
+            },
+            entrypoint=[
+                "/app/zkevm-node",
+            ],
+            cmd=[
+                "run",
+                "--cfg",
+                "/etc/zkevm/permissionless-node-config.toml",
+                "--network",
+                "custom",
+                "--custom-network-file",
+                "/etc/zkevm/genesis.json",
+                "--components",
+                "rpc",
+                "--http.api",
+                "eth,net,debug,zkevm,txpool,web3",
+            ],
+        ),
+    )
 
     # Start eth-tx-manager and l2-gas-pricer
     plan.add_service(
