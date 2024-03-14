@@ -52,7 +52,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
 set -x
 # https://github.com/nodejs/docker-node/issues/1668
-npm ci || npm ci --no-audit --maxsockets 1
+npm i
 npx hardhat compile
 set +x
 

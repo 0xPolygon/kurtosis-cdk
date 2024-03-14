@@ -19,3 +19,11 @@ cast rpc zkevm_batchNumber
 cast rpc zkevm_virtualBatchNumber
 cast rpc zkevm_verifiedBatchNumber
 #+end_src
+
+
+* Chaos
+
+#+begin_src bash
+apt install iproute2
+
+#+end_src
