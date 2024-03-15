@@ -10,7 +10,7 @@ Outputs = ["stderr"]
         [State.DB]
         User = "{{.zkevm_permissionless_db_state_user}}"
         Password = "{{.zkevm_permissionless_db_state_password}}"
-        Name = "{{.zkevm_permissionless_db_state_name}}"
+        Name = "{{.zkevm_db_state_name}}"
         Host = "{{.zkevm_permissionless_db_state_hostname}}{{.deployment_idx}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
@@ -54,7 +54,7 @@ GlobalQueue = 1024
         [Pool.DB]
         User = "{{.zkevm_permissionless_db_pool_user}}"
         Password = "{{.zkevm_permissionless_db_pool_password}}"
-        Name = "{{.zkevm_permissionless_db_pool_name}}"
+        Name = "{{.zkevm_db_pool_name}}"
         Host = "{{.zkevm_permissionless_db_pool_hostname}}{{.deployment_idx}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
@@ -133,7 +133,7 @@ ProfilingEnabled = true
         [EventLog.DB]
         User = "{{.zkevm_permissionless_db_event_user}}"
         Password = "{{.zkevm_permissionless_db_event_password}}"
-        Name = "{{.zkevm_permissionless_db_event_name}}"
+        Name = "{{.zkevm_db_event_name}}"
         Host = "{{.zkevm_permissionless_db_event_hostname}}{{.deployment_idx}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = true
@@ -142,7 +142,7 @@ ProfilingEnabled = true
 [HashDB]
 User = "{{.zkevm_permissionless_db_prover_user}}"
 Password = "{{.zkevm_permissionless_db_prover_password}}"
-Name = "{{.zkevm_permissionless_db_prover_name}}"
+Name = "{{.zkevm_db_prover_name}}"
 Host = "{{.zkevm_permissionless_db_prover_hostname}}{{.deployment_idx}}"
 Port = "{{.zkevm_db_postgres_port}}"
 EnableLog = false
