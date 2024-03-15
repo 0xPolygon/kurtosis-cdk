@@ -130,7 +130,7 @@ cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_u
         1 ["http://zkevm-dac{{.deployment_idx}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
 # Enable Dac
-cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url" {{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 
 # Grant the aggregator role to the agglayer
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
