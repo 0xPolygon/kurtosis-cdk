@@ -75,7 +75,7 @@ WriteTimeout = "60s"
 BatchRequestsEnabled = true
 BatchRequestsLimit = 500
 MaxRequestsPerIPAndSecond = 5000
-SequencerNodeURI = ""
+SequencerNodeURI = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
 EnableL2SuggestedGasPricePolling = true
         [RPC.WebSockets]
                 Enabled = true
@@ -99,70 +99,6 @@ L1SynchronizationMode = "sequential"
                 [Synchronizer.L1ParallelSynchronization.PerformanceWarning]
                         AceptableInacctivityTime = "5s"
                         ApplyAfterNumRollupReceived = 10
-
-[Sequencer]
-DeletePoolTxsL1BlockConfirmations = 100
-DeletePoolTxsCheckInterval = "12h"
-TxLifetimeCheckInterval = "10m"
-TxLifetimeMax = "3h"
-LoadPoolTxsCheckInterval = "500ms"
-StateConsistencyCheckInterval = "5s"
-        [Sequencer.Finalizer]
-                NewTxsWaitInterval = "100ms"
-                ForcedBatchesTimeout = "5s"
-                ForcedBatchesL1BlockConfirmations = 0
-                ForcedBatchesCheckInterval = "10s"
-                L1InfoTreeL1BlockConfirmations = 0
-                L1InfoTreeCheckInterval = "10s"
-                BatchMaxDeltaTimestamp = "20s"
-                L2BlockMaxDeltaTimestamp = "4s"
-                ResourceExhaustedMarginPct = 10
-                HaltOnBatchNumber = 0
-                SequentialBatchSanityCheck = false
-                SequentialProcessL2Block = true
-        [Sequencer.StreamServer]
-                Port = {{.zkevm_data_streamer_port}}
-                # FIXME: This might be a weird path, we should probably ensure we mount to a persistent volume
-                Filename = "/tmp/datastream.bin"
-                Version = 1
-                ChainID = {{.l1_network_id}}
-                Enabled = true
-
-[SequenceSender]
-WaitPeriodSendSequence = "15s"
-LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
-L1BlockTimestampMargin = "5s"
-MaxTxSizeForL1 = 131072
-L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
-PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-SenderAddress = "{{.zkevm_l2_sequencer_address}}"
-        [SequenceSender.StreamClient]
-                Server = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
-
-[Aggregator]
-Host = "0.0.0.0"
-Port = {{.zkevm_aggregator_port}}
-RetryTime = "5s"
-VerifyProofInterval = "10s"
-TxProfitabilityCheckerType = "acceptall"
-TxProfitabilityMinReward = "1.1"
-ProofStatePollingInterval = "5s"
-CleanupLockedProofsInterval = "2m"
-GeneratingProofCleanupThreshold = "10m"
-UpgradeEtrogBatchNumber = 0
-BatchProofL1BlockConfirmations = 2
-{{if .is_cdk}}
-## CDK Validium Specific Settings
-
-# We should double check if this is necessary. I don't remember why the aggregator needs this
-SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-SettlementBackend = "agglayer" # "l1"
-AggLayerTxTimeout = "600s"
-AggLayerURL = "http://zkevm-agglayer{{.deployment_idx}}:{{.zkevm_agglayer_port}}"
-SenderAddress = "{{.zkevm_l2_agglayer_address}}"
-{{else}}
-SenderAddress = "{{.zkevm_l2_aggregator_address}}"
-{{end}}
 
 [EthTxManager]
 ForcedGas = 0
