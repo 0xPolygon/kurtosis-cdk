@@ -539,7 +539,7 @@ def run(plan, args):
                 "--cfg=/etc/zkevm/permissionless-node-config.toml",
                 "--network=custom",
                 "--custom-network-file=/etc/zkevm/genesis.json",
-                "--components=rpc",
+                "--components=rpc,synchronizer",
                 "--http.api=eth,net,debug,zkevm,txpool,web3",
             ],
         ),
