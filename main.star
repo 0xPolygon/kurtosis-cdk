@@ -218,7 +218,6 @@ def run(plan, args):
     )
 
     # Start prover
-    # TODO do a big sed for all of these hard coded ports and make them configurable
     plan.add_service(
         name="zkevm-prover" + args["deployment_idx"],
         config=ServiceConfig(

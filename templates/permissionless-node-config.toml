@@ -102,10 +102,6 @@ L1SynchronizationMode = "sequential"
 
 [EthTxManager]
 ForcedGas = 0
-PrivateKeys = [
-        {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
-        {Path = "/etc/zkevm/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-]
 
 [L2GasPriceSuggester]
 Type = "default"
