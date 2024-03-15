@@ -38,9 +38,10 @@ until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemo
      sleep 5
 done
 
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether "{{.zkevm_l2_sequencer_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether "{{.zkevm_l2_aggregator_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 100ether "{{.zkevm_l2_admin_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_sequencer_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_aggregator_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_admin_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_agglayer_address}}"
 
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
@@ -53,7 +54,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
 set -x
 # https://github.com/nodejs/docker-node/issues/1668
-npm ci || npm ci --no-audit --maxsockets 1
+npm i
 npx hardhat compile
 set +x
 
@@ -68,9 +69,7 @@ mkdir -p /opt/zkevm
 cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
-cp /opt/contract-deploy/node-config.toml /opt/zkevm/
-cp /opt/contract-deploy/bridge-config.toml /opt/zkevm/
-cp /opt/contract-deploy/prover-config.json /opt/zkevm/
+cp /opt/contract-deploy/*-config.* /opt/zkevm/
 popd
 
 pushd /opt/zkevm/ || exit 1
@@ -79,6 +78,16 @@ pushd /opt/zkevm/ || exit 1
 cp genesis.json genesis.original.json
 
 jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
+
+# There are a bunch of fields that need to be renamed in order for the
+# older fork7 code to be compatibile with some of the fork8
+# automations. This schema matching can be dropped once this is
+# versioned up to 8
+jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
+jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
+jq '.upgradeToULxLyBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
+jq '.polygonDataCommitteeAddress = .polygonDataCommittee' combined.json > c.json; mv c.json combined.json
+jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
 
 # NOTE there is a disconnect in the necessary configurations here between the validium node and the zkevm node
 jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
@@ -104,7 +113,28 @@ tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMAddress = $c[0]
 # shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.NetworkConfig.L2PolygonBridgeAddresses = [$c[0].polygonZkEVMBridgeAddress]' bridge-config.toml > b.json; mv b.json bridge-config.toml
 
-cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" "approve(address,uint256)(bool)" "$(jq -r '.rollupAddress' combined.json)"  1000000000000000000000000000 &> approval.out
+# shellcheck disable=SC2016
+tomlq --slurpfile c combined.json -t '.L1.RollupManagerContract = $c[0].polygonRollupManagerAddress' agglayer-config.toml > a.json; mv a.json agglayer-config.toml
+
+# shellcheck disable=SC2016
+tomlq --slurpfile c combined.json -t '.L1.PolygonValidiumAddress = $c[0].rollupAddress' dac-config.toml > a.json; mv a.json dac-config.toml
+# shellcheck disable=SC2016
+tomlq --slurpfile c combined.json -t '.L1.DataCommitteeAddress = $c[0].polygonDataCommitteeAddress' dac-config.toml > a.json; mv a.json dac-config.toml
+
+
+cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+
+# Setup dac with 1 sig for now
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
+        'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
+        1 ["http://zkevm-dac{{.deployment_idx}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+
+# Enable Dac
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+
+# Grant the aggregator role to the agglayer
+# cast keccak "TRUSTED_AGGREGATOR_ROLE"
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 
 polycli parseethwallet --hexkey "{{.zkevm_l2_sequencer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
@@ -119,6 +149,16 @@ rm -rf tmp.keys
 polycli parseethwallet --hexkey "{{.zkevm_l2_claimtxmanager_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* claimtxmanager.keystore
 chmod a+r claimtxmanager.keystore
+rm -rf tmp.keys
+
+polycli parseethwallet --hexkey "{{.zkevm_l2_agglayer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
+mv tmp.keys/UTC* agglayer.keystore
+chmod a+r agglayer.keystore
+rm -rf tmp.keys
+
+polycli parseethwallet --hexkey "{{.zkevm_l2_dac_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
+mv tmp.keys/UTC* dac.keystore
+chmod a+r dac.keystore
 rm -rf tmp.keys
 
 touch .init-complete.lock
