@@ -271,7 +271,7 @@ def run(plan, args):
         ),
     )
 
-    # Start synchronizer
+    # Start AggLayer
     plan.add_service(
         name="zkevm-agglayer" + args["deployment_idx"],
         config=ServiceConfig(
@@ -293,6 +293,8 @@ def run(plan, args):
             cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
         ),
     )
+
+    # Start DAC
     plan.add_service(
         name="zkevm-dac" + args["deployment_idx"],
         config=ServiceConfig(
@@ -314,6 +316,7 @@ def run(plan, args):
         ),
     )
 
+    # Start synchronizer
     plan.add_service(
         name="zkevm-node-synchronizer" + args["deployment_idx"],
         config=ServiceConfig(
