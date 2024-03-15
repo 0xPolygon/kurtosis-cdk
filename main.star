@@ -272,6 +272,14 @@ def run(plan, args):
     )
 
     # Start AggLayer
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_agglayer_hostname"] + args["deployment_idx"],
+        port=args["zkevm_db_postgres_port"],
+        db=args["zkevm_db_agglayer_name"],
+        user=args["zkevm_db_agglayer_user"],
+        password=args["zkevm_db_agglayer_password"],
+    )
     plan.add_service(
         name="zkevm-agglayer" + args["deployment_idx"],
         config=ServiceConfig(
@@ -295,6 +303,14 @@ def run(plan, args):
     )
 
     # Start DAC
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_dac_hostname"] + args["deployment_idx"],
+        port=args["zkevm_db_postgres_port"],
+        db=args["zkevm_db_dac_name"],
+        user=args["zkevm_db_dac_user"],
+        password=args["zkevm_db_dac_password"],
+    )
     plan.add_service(
         name="zkevm-dac" + args["deployment_idx"],
         config=ServiceConfig(
@@ -752,37 +768,5 @@ def start_postgres_db(
                 "POSTGRES_PASSWORD": password,
             },
             files=files,
-        ),
-    )
-    agglayer_db = plan.add_service(
-        name=args["zkevm_db_agglayer_hostname"] + args["deployment_idx"],
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
-            },
-            env_vars={
-                "POSTGRES_DB": args["zkevm_db_agglayer_name"],
-                "POSTGRES_USER": args["zkevm_db_agglayer_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_agglayer_password"],
-            },
-        ),
-    )
-    dac_db = plan.add_service(
-        name=args["zkevm_db_dac_hostname"] + args["deployment_idx"],
-        config=ServiceConfig(
-            image=POSTGRES_IMAGE,
-            ports={
-                POSTGRES_PORT_ID: PortSpec(
-                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
-                ),
-            },
-            env_vars={
-                "POSTGRES_DB": args["zkevm_db_dac_name"],
-                "POSTGRES_USER": args["zkevm_db_dac_user"],
-                "POSTGRES_PASSWORD": args["zkevm_db_dac_password"],
-            },
         ),
     )
