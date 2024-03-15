@@ -8,10 +8,28 @@ def run(plan, args):
     plan.print("Running on {} CPU architecture".format(cpu_arch))
 
     start_databases(plan, args)
-    config = ""  # TODO
-    start_prover(plan, args, cpu_arch, config)
-    start_synchronizer(plan, args, config)
-    start_rpc(plan, args, config)
+    start_permissionless_prover(plan, args, cpu_arch)
+
+    genesis_file = read_file(src="./files/genesis.json")
+    genesis_artifact = plan.render_templates(
+        name="genesis", config={"genesis.json": struct(template=genesis_file, data={})}
+    )
+
+    permissionless_node_config_template = read_file(
+        src="./templates/permissionless-node-config.toml"
+    )
+    permissionless_node_config_artifact = plan.render_templates(
+        name="permissionless-node-config",
+        config={
+            "permissionless-node-config.toml": struct(
+                template=permissionless_node_config_template, data=args
+            )
+        },
+    )
+    start_synchronizer(
+        plan, args, permissionless_node_config_artifact, genesis_artifact
+    )
+    start_rpc(plan, args, permissionless_node_config_artifact, genesis_artifact)
 
 
 def determine_cpu_architecture(plan):
@@ -93,9 +111,20 @@ def start_postgres_db(
     )
 
 
-def start_prover(plan, args, cpu_arch, config):
+def start_permissionless_prover(plan, args, cpu_arch):
+    permissionless_prover_config_template = read_file(
+        src="./templates/permissionless-prover-config.json"
+    )
+    permissionless_prover_config_artifact = plan.render_templates(
+        name="permissionless-prover-config",
+        config={
+            "permissionless-prover-config.json": struct(
+                template=permissionless_prover_config_template, data=args
+            )
+        },
+    )
     plan.add_service(
-        name="zkevm-prover-" + args["deployment_idx"],
+        name="zkevm-permissionless-prover-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
             ports={
@@ -107,12 +136,12 @@ def start_prover(plan, args, cpu_arch, config):
                 ),
             },
             files={
-                "/etc/": config,
+                "/etc/zkevm": permissionless_prover_config_artifact,
             },
             entrypoint=["/bin/bash", "-c"],
             cmd=[
                 '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
-                /usr/local/bin/zkProver -c /etc/zkevm/prover-config.json'.format(
+                /usr/local/bin/zkProver -c /etc/zkevm/permissionless-prover-config.json'.format(
                     cpu_arch
                 ),
             ],
@@ -120,9 +149,9 @@ def start_prover(plan, args, cpu_arch, config):
     )
 
 
-def start_synchronizer(plan, args, config):
+def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     plan.add_service(
-        name="zkevm-node-synchronizer-" + args["deployment_idx"],
+        name="zkevm-permissionless-node-synchronizer-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -134,14 +163,16 @@ def start_synchronizer(plan, args, config):
                 ),
             },
             files={
-                "/etc/": config,
+                "/etc/zkevm": Directory(
+                    artifact_names=[config_artifact, genesis_artifact]
+                ),
             },
             entrypoint=[
                 "/app/zkevm-node",
             ],
             cmd=[
                 "run",
-                "--cfg=/etc/zkevm/node-config.toml",
+                "--cfg=/etc/zkevm/permissionless-node-config.toml",
                 "--network=custom",
                 "--custom-network-file=/etc/zkevm/genesis.json",
                 "--components=synchronizer",
@@ -151,9 +182,9 @@ def start_synchronizer(plan, args, config):
     )
 
 
-def start_rpc(plan, args, config):
+def start_rpc(plan, args, config_artifact, genesis_artifact):
     plan.add_service(
-        name="zkevm-node-rpc-" + args["deployment_idx"],
+        name="zkevm-permissionless-node-rpc-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -169,14 +200,16 @@ def start_rpc(plan, args, config):
                 ),
             },
             files={
-                "/etc/": config,
+                "/etc/zkevm": Directory(
+                    artifact_names=[config_artifact, genesis_artifact]
+                ),
             },
             entrypoint=[
                 "/app/zkevm-node",
             ],
             cmd=[
                 "run",
-                "--cfg=/etc/zkevm/node-config.toml",
+                "--cfg=/etc/zkevm/permissionless-node-config.toml",
                 "--network=custom",
                 "--custom-network-file=/etc/zkevm/genesis.json",
                 "--components=rpc",
