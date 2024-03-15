@@ -1,6 +1,18 @@
 ---
 deployment_idx: "001"
 
+# Repositories
+zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13
+zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
+
+# Ports
+zkevm_hash_db_port: 50061
+zkevm_executor_port: 50071
+zkevm_pprof_port: 6060
+zkevm_prometheus_port: 9091
+zkevm_rpc_http_port: 8123
+zkevm_rpc_ws_port: 8133
+
 # Databases
 zkevm_db_postgres_port: 5432
 
