@@ -58,7 +58,7 @@
 
     "aggregatorServerPort": {{.zkevm_aggregator_port}},
     "aggregatorClientPort": {{.zkevm_aggregator_port}},
-    "aggregatorClientHost": "zkevm-permissionless-node-aggregator{{.deployment_idx}}",
+    "aggregatorClientHost": "zkevm-node-aggregator{{.deployment_idx}}",
 
     "mapConstPolsFile": false,
     "mapConstantsTreeFile": false,
