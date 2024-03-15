@@ -179,10 +179,10 @@ DefaultGasPriceWei = 1000000000
 MaxGasPriceWei = 0
 
 [MTClient]
-URI  = "zkevm-prover{{.deployment_idx}}:{{.zkevm_hash_db_port}}"
+URI  = "zkevm-permissionless-prover{{.deployment_idx}}:{{.zkevm_hash_db_port}}"
 
 [Executor]
-URI = "zkevm-prover{{.deployment_idx}}:{{.zkevm_executor_port}}"
+URI = "zkevm-permissionless-prover{{.deployment_idx}}:{{.zkevm_executor_port}}"
 MaxGRPCMessageSize = 100000000
 
 [Metrics]
