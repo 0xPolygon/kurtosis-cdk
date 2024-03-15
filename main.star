@@ -81,6 +81,20 @@ def run(plan, args):
             "bridge-config.toml": struct(template=bridge_config_template, data=args)
         }
     )
+
+    # agglayer configuration
+    agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
+    agglayer_config_artifact = plan.render_templates(
+        config={
+            "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
+        }
+    )
+    # dac configuration
+    dac_config_template = read_file(src="./templates/dac-config.toml")
+    dac_config_artifact = plan.render_templates(
+        config={"dac-config.toml": struct(template=dac_config_template, data=args)}
+    )
+
     # Prover configuration
     prover_config_template = read_file(src="./templates/prover-config.json")
     prover_config_artifact = plan.render_templates(
@@ -105,9 +119,18 @@ def run(plan, args):
                         node_config_artifact,
                         prover_config_artifact,
                         bridge_config_artifact,
+                        agglayer_config_artifact,
+                        dac_config_artifact,
                     ]
                 ),
             },
+        ),
+    )
+
+    plan.add_service(
+        name="netshoot-debug",
+        config=ServiceConfig(
+            image="nicolaka/netshoot",
         ),
     )
 
@@ -154,13 +177,8 @@ def run(plan, args):
         description="These are the files needed to start various node services",
     )
 
-    # plan.stop_service(
-    #     name = "contracts"+args["deployment_idx"]
-    # )
-
     add_databases(plan, args)
 
-    # TODO do a big sed for all of these hard coded ports and make them configurable
     plan.add_service(
         name="zkevm-prover" + args["deployment_idx"],
         config=ServiceConfig(
@@ -183,6 +201,48 @@ def run(plan, args):
                     cpu_arch
                 ),
             ],
+        ),
+    )
+
+    plan.add_service(
+        name="zkevm-agglayer" + args["deployment_idx"],
+        config=ServiceConfig(
+            image=args["zkevm_agglayer_image"],
+            ports={
+                "agglayer": PortSpec(
+                    args["zkevm_agglayer_port"], application_protocol="http"
+                ),
+                "prometheus": PortSpec(
+                    args["zkevm_prometheus_port"], application_protocol="http"
+                ),
+            },
+            files={
+                "/etc/": zkevm_configs,
+            },
+            entrypoint=[
+                "/app/agglayer",
+            ],
+            cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
+        ),
+    )
+    plan.add_service(
+        name="zkevm-dac" + args["deployment_idx"],
+        config=ServiceConfig(
+            image=args["zkevm_dac_image"],
+            ports={
+                "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
+                # Does the DAC have prometheus?!
+                # "prometheus": PortSpec(
+                #     args["zkevm_prometheus_port"], application_protocol="http"
+                # ),
+            },
+            files={
+                "/etc/": zkevm_configs,
+            },
+            entrypoint=[
+                "/app/cdk-data-availability",
+            ],
+            cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
         ),
     )
 
@@ -258,7 +318,7 @@ def run(plan, args):
         ),
     )
     plan.add_service(
-        name="zkevm-node-sequencersender" + args["deployment_idx"],
+        name="zkevm-node-sequencesender" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             files={
@@ -284,7 +344,7 @@ def run(plan, args):
                 "--custom-network-file",
                 "/etc/zkevm/genesis.json",
                 "--components",
-                "sequencersender",
+                "sequence-sender",
             ],
         ),
     )
@@ -544,6 +604,38 @@ def add_databases(plan, args):
                 "POSTGRES_DB": args["zkevm_db_bridge_name"],
                 "POSTGRES_USER": args["zkevm_db_bridge_user"],
                 "POSTGRES_PASSWORD": args["zkevm_db_bridge_password"],
+            },
+        ),
+    )
+    agglayer_db = plan.add_service(
+        name=args["zkevm_db_agglayer_hostname"] + args["deployment_idx"],
+        config=ServiceConfig(
+            image=POSTGRES_IMAGE,
+            ports={
+                POSTGRES_PORT_ID: PortSpec(
+                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
+                ),
+            },
+            env_vars={
+                "POSTGRES_DB": args["zkevm_db_agglayer_name"],
+                "POSTGRES_USER": args["zkevm_db_agglayer_user"],
+                "POSTGRES_PASSWORD": args["zkevm_db_agglayer_password"],
+            },
+        ),
+    )
+    dac_db = plan.add_service(
+        name=args["zkevm_db_dac_hostname"] + args["deployment_idx"],
+        config=ServiceConfig(
+            image=POSTGRES_IMAGE,
+            ports={
+                POSTGRES_PORT_ID: PortSpec(
+                    args["zkevm_db_postgres_port"], application_protocol="postgresql"
+                ),
+            },
+            env_vars={
+                "POSTGRES_DB": args["zkevm_db_dac_name"],
+                "POSTGRES_USER": args["zkevm_db_dac_user"],
+                "POSTGRES_PASSWORD": args["zkevm_db_dac_password"],
             },
         ),
     )
