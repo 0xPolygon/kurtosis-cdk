@@ -4,6 +4,7 @@ l1_rpc_url: "http://127.0.0.1:52374"
 trusted_sequencer_node_uri: "datastream://127.0.0.1:52056"
 zkevm_aggregator_host: "grpc://127.0.0.1:52088"
 zkevm_aggregator_port: 52088
+genesis_file: "genesis.json"
 
 # Repositories
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13

@@ -10,7 +10,7 @@ def run(plan, args):
     start_databases(plan, args)
     start_permissionless_prover(plan, args, cpu_arch)
 
-    genesis_file = read_file(src="./files/genesis.json")
+    genesis_file = read_file(src=args["genesis_file"])
     genesis_artifact = plan.render_templates(
         name="genesis", config={"genesis.json": struct(template=genesis_file, data={})}
     )
