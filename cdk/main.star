@@ -79,17 +79,6 @@ def run(plan, args):
             )
         }
     )
-    # Create permissionless node configuration
-    permissionless_node_config_template = read_file(
-        src="./templates/permissionless-node-config.toml"
-    )
-    permissionless_node_config_artifact = plan.render_templates(
-        config={
-            "permissionless-node-config.toml": struct(
-                template=permissionless_node_config_template, data=args
-            )
-        }
-    )
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     bridge_config_artifact = plan.render_templates(
@@ -116,17 +105,6 @@ def run(plan, args):
             "prover-config.json": struct(template=prover_config_template, data=args)
         }
     )
-    # Create permissionless prover configuration
-    permissionless_prover_config_template = read_file(
-        src="./templates/permissionless-prover-config.json"
-    )
-    permissionless_prover_config_artifact = plan.render_templates(
-        config={
-            "permissionless-prover-config.json": struct(
-                template=permissionless_prover_config_template, data=args
-            )
-        }
-    )
 
     # Create helper service to deploy contracts
     zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
@@ -143,8 +121,6 @@ def run(plan, args):
                         contract_deployment_script_artifact,
                         trusted_node_config_artifact,
                         prover_config_artifact,
-                        permissionless_node_config_artifact,
-                        permissionless_prover_config_artifact,
                         bridge_config_artifact,
                         agglayer_config_artifact,
                         dac_config_artifact,
@@ -213,9 +189,6 @@ def run(plan, args):
     start_trusted_node_databases(
         plan, args, prover_db_init_script, event_db_init_script
     )
-    start_permissionless_node_databases(
-        plan, args, prover_db_init_script, event_db_init_script
-    )
 
     # Start prover
     plan.add_service(
@@ -237,33 +210,6 @@ def run(plan, args):
             cmd=[
                 '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
                 /usr/local/bin/zkProver -c /etc/zkevm/prover-config.json'.format(
-                    cpu_arch
-                ),
-            ],
-        ),
-    )
-
-    # Start permissionless prover
-    # TODO do a big sed for all of these hard coded ports and make them configurable
-    plan.add_service(
-        name="zkevm-permissionless-prover" + args["deployment_idx"],
-        config=ServiceConfig(
-            image=args["zkevm_prover_image"],
-            ports={
-                "hash-db-server": PortSpec(
-                    args["zkevm_hash_db_port"], application_protocol="grpc"
-                ),
-                "executor-server": PortSpec(
-                    args["zkevm_executor_port"], application_protocol="grpc"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=["/bin/bash", "-c"],
-            cmd=[
-                '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
-                /usr/local/bin/zkProver -c /etc/zkevm/permissionless-prover-config.json'.format(
                     cpu_arch
                 ),
             ],
@@ -508,42 +454,6 @@ def run(plan, args):
         ),
     )
 
-    # Start permissionless RPC
-    plan.add_service(
-        name="zkevm-permissionless-node-rpc" + args["deployment_idx"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            ports={
-                "permissionless-rpc": PortSpec(
-                    args["zkevm_rpc_http_port"], application_protocol="http"
-                ),
-                "permissionless-ws": PortSpec(
-                    args["zkevm_rpc_ws_port"], application_protocol="ws"
-                ),
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg=/etc/zkevm/permissionless-node-config.toml",
-                "--network=custom",
-                "--custom-network-file=/etc/zkevm/genesis.json",
-                "--components=rpc,synchronizer",
-                "--http.api=eth,net,debug,zkevm,txpool,web3",
-            ],
-        ),
-    )
-
     # Start eth-tx-manager and l2-gas-pricer
     plan.add_service(
         name="zkevm-node-eth-tx-manager" + args["deployment_idx"],
@@ -687,54 +597,6 @@ def start_trusted_node_databases(
         db=args["zkevm_db_bridge_name"],
         user=args["zkevm_db_bridge_user"],
         password=args["zkevm_db_bridge_password"],
-    )
-
-
-def start_permissionless_node_databases(
-    plan, args, prover_db_init_script, event_db_init_script
-):
-    postgres_port = args["zkevm_db_postgres_port"]
-
-    # Start permissionless prover db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_permissionless_db_prover_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_prover_name"],
-        user=args["zkevm_permissionless_db_prover_user"],
-        password=args["zkevm_permissionless_db_prover_password"],
-        init_script_artifact_name=prover_db_init_script,
-    )
-
-    # Start permissionless pool db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_permissionless_db_pool_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_pool_name"],
-        user=args["zkevm_permissionless_db_pool_user"],
-        password=args["zkevm_permissionless_db_pool_password"],
-    )
-
-    # Start permissionless event db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_permissionless_db_event_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_event_name"],
-        user=args["zkevm_permissionless_db_event_user"],
-        password=args["zkevm_permissionless_db_event_password"],
-        init_script_artifact_name=event_db_init_script,
-    )
-
-    # Start permissionless state db
-    start_postgres_db(
-        plan,
-        name=args["zkevm_permissionless_db_state_hostname"] + args["deployment_idx"],
-        port=postgres_port,
-        db=args["zkevm_db_state_name"],
-        user=args["zkevm_permissionless_db_state_user"],
-        password=args["zkevm_permissionless_db_state_password"],
     )
 
 
