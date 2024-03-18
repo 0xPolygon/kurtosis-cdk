@@ -6,28 +6,28 @@ def run(plan, args):
     plan.print("Running on {} CPU architecture".format(cpu_arch))
 
     start_databases(plan, args)
-    start_permissionless_prover(plan, args, cpu_arch)
+    start_executor(plan, args, cpu_arch)
 
     genesis_file = read_file(src=args["genesis_file"])
     genesis_artifact = plan.render_templates(
         name="genesis", config={"genesis.json": struct(template=genesis_file, data={})}
     )
 
-    permissionless_node_config_template = read_file(
-        src="./templates/permissionless-node-config.toml"
+    node_config_template = read_file(
+        src="./templates/node-config.toml"
     )
-    permissionless_node_config_artifact = plan.render_templates(
-        name="permissionless-node-config",
+    node_config_artifact = plan.render_templates(
+        name="node-config",
         config={
-            "permissionless-node-config.toml": struct(
-                template=permissionless_node_config_template, data=args
+            "node-config.toml": struct(
+                template=node_config_template, data=args
             )
         },
     )
     start_synchronizer(
-        plan, args, permissionless_node_config_artifact, genesis_artifact
+        plan, args, node_config_artifact, genesis_artifact
     )
-    start_rpc(plan, args, permissionless_node_config_artifact, genesis_artifact)
+    start_rpc(plan, args, node_config_artifact, genesis_artifact)
 
 
 def determine_cpu_architecture(plan):
@@ -42,10 +42,7 @@ def start_databases(plan, args):
     )
     start_postgres_db(
         plan,
-        name="permissionless-"
-        + args["zkevm_db_event_hostname"]
-        + "-"
-        + args["deployment_idx"],
+        name=args["zkevm_db_event_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="event_db",
         user=args["zkevm_db_event_user"],
@@ -56,40 +53,31 @@ def start_databases(plan, args):
     # Start pool database
     start_postgres_db(
         plan,
-        name="permissionless-"
-        + args["zkevm_db_pool_hostname"]
-        + "-"
-        + args["deployment_idx"],
+        name=args["zkevm_db_pool_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="pool_db",
         user=args["zkevm_db_pool_user"],
         password=args["zkevm_db_pool_password"],
     )
 
-    # Start prover database
-    prover_db_init_script = plan.upload_files(
-        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
+    # Start executor database
+    executor_db_init_script = plan.upload_files(
+        src="./templates/executor-db-init.sql", name="executor-db-init.sql"
     )
     start_postgres_db(
         plan,
-        name="permissionless-"
-        + args["zkevm_db_prover_hostname"]
-        + "-"
-        + args["deployment_idx"],
+        name=args["zkevm_db_executor_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
-        db="prover_db",
-        user=args["zkevm_db_prover_user"],
-        password=args["zkevm_db_prover_password"],
-        init_script_artifact_name=prover_db_init_script,
+        db="executor_db",
+        user=args["zkevm_db_executor_user"],
+        password=args["zkevm_db_executor_password"],
+        init_script_artifact_name=executor_db_init_script,
     )
 
     # Start state database
     start_postgres_db(
         plan,
-        name="permissionless-"
-        + args["zkevm_db_state_hostname"]
-        + "-"
-        + args["deployment_idx"],
+        name=args["zkevm_db_state_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="state_db",
         user=args["zkevm_db_state_user"],
@@ -121,22 +109,22 @@ def start_postgres_db(
     )
 
 
-def start_permissionless_prover(plan, args, cpu_arch):
-    permissionless_prover_config_template = read_file(
-        src="./templates/permissionless-prover-config.json"
+def start_executor(plan, args, cpu_arch):
+    executor_config_template = read_file(
+        src="./templates/executor-config.json"
     )
-    permissionless_prover_config_artifact = plan.render_templates(
-        name="permissionless-prover-config",
+    executor_config_artifact = plan.render_templates(
+        name="executor-config",
         config={
-            "permissionless-prover-config.json": struct(
-                template=permissionless_prover_config_template, data=args
+            "executor-config.json": struct(
+                template=executor_config_template, data=args
             )
         },
     )
     plan.add_service(
-        name="zkevm-permissionless-prover-" + args["deployment_idx"],
+        name="zkevm-executor-" + args["deployment_idx"],
         config=ServiceConfig(
-            image=args["zkevm_prover_image"],
+            image=args["zkevm_executor_image"],
             ports={
                 "hash-db-server": PortSpec(
                     args["zkevm_hash_db_port"], application_protocol="grpc"
@@ -146,12 +134,12 @@ def start_permissionless_prover(plan, args, cpu_arch):
                 ),
             },
             files={
-                "/etc/zkevm": permissionless_prover_config_artifact,
+                "/etc/zkevm": executor_config_artifact,
             },
             entrypoint=["/bin/bash", "-c"],
             cmd=[
                 '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
-                /usr/local/bin/zkProver -c /etc/zkevm/permissionless-prover-config.json'.format(
+                /usr/local/bin/zkProver -c /etc/zkevm/executor-config.json'.format(
                     cpu_arch
                 ),
             ],
@@ -161,7 +149,7 @@ def start_permissionless_prover(plan, args, cpu_arch):
 
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     plan.add_service(
-        name="zkevm-node-permissionless-synchronizer-" + args["deployment_idx"],
+        name="zkevm-node-synchronizer-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -183,7 +171,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
             ],
             cmd=[
                 "run",
-                "--cfg=/etc/zkevm/permissionless-node-config.toml",
+                "--cfg=/etc/zkevm/node-config.toml",
                 "--network=custom",
                 "--custom-network-file=/etc/zkevm/genesis.json",
                 "--components=synchronizer",
@@ -195,7 +183,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
 
 def start_rpc(plan, args, config_artifact, genesis_artifact):
     plan.add_service(
-        name="zkevm-node-permissionless-rpc-" + args["deployment_idx"],
+        name="zkevm-node-rpc-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -220,7 +208,7 @@ def start_rpc(plan, args, config_artifact, genesis_artifact):
             ],
             cmd=[
                 "run",
-                "--cfg=/etc/zkevm/permissionless-node-config.toml",
+                "--cfg=/etc/zkevm/node-config.toml",
                 "--network=custom",
                 "--custom-network-file=/etc/zkevm/genesis.json",
                 "--components=rpc",

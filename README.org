@@ -91,6 +91,12 @@ which stopps everything and deletes it.
 kurtosis clean -a
 #+end_src
 
+** Permissionless Node
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file permissionless-node/params.yml permissionless-node
+#+end_src
+
 ** License
 
 Copyright (c) 2024 PT Services DMCC
