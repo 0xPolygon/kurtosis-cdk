@@ -10,8 +10,6 @@ POSTGRES_PORT_ID = "postgres"
 
 
 def run(plan, args):
-    deployment_label = args["deployment_idx"]
-
     # Determine system architecture
     cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
     cpu_arch = cpu_arch_result.output
@@ -192,7 +190,7 @@ def run(plan, args):
 
     # Start prover
     plan.add_service(
-        name="zkevm-prover" + args["deployment_idx"],
+        name="zkevm-trusted-prover" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
             ports={
@@ -279,7 +277,7 @@ def run(plan, args):
 
     # Start synchronizer
     plan.add_service(
-        name="zkevm-node-synchronizer" + args["deployment_idx"],
+        name="zkevm-node-trusted-synchronizer" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             files={
@@ -312,7 +310,7 @@ def run(plan, args):
 
     # Start sequencer
     plan.add_service(
-        name="zkevm-node-sequencer" + args["deployment_idx"],
+        name="zkevm-node-trusted-sequencer" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             files={
@@ -351,7 +349,7 @@ def run(plan, args):
         ),
     )
     plan.add_service(
-        name="zkevm-node-sequencesender" + args["deployment_idx"],
+        name="zkevm-node-trusted-sequencesender" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             files={
@@ -384,7 +382,7 @@ def run(plan, args):
 
     # Start aggregator
     plan.add_service(
-        name="zkevm-node-aggregator" + args["deployment_idx"],
+        name="zkevm-node-trusted-aggregator" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -420,7 +418,7 @@ def run(plan, args):
 
     # Start trusted RPC
     plan.add_service(
-        name="zkevm-node-rpc" + args["deployment_idx"],
+        name="zkevm-node-trusted-rpc" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -550,7 +548,7 @@ def start_trusted_node_databases(
     # Start prover db
     start_postgres_db(
         plan,
-        name=args["zkevm_db_prover_hostname"] + args["deployment_idx"],
+        name="trusted-" + args["zkevm_db_prover_hostname"] + args["deployment_idx"],
         port=postgres_port,
         db=args["zkevm_db_prover_name"],
         user=args["zkevm_db_prover_user"],
@@ -561,7 +559,7 @@ def start_trusted_node_databases(
     # Start pool db
     start_postgres_db(
         plan,
-        name=args["zkevm_db_pool_hostname"] + args["deployment_idx"],
+        name="trusted-" + args["zkevm_db_pool_hostname"] + args["deployment_idx"],
         port=postgres_port,
         db=args["zkevm_db_pool_name"],
         user=args["zkevm_db_pool_user"],
@@ -571,7 +569,7 @@ def start_trusted_node_databases(
     # Start event db
     start_postgres_db(
         plan,
-        name=args["zkevm_db_event_hostname"] + args["deployment_idx"],
+        name="trusted-" + args["zkevm_db_event_hostname"] + args["deployment_idx"],
         port=postgres_port,
         db=args["zkevm_db_event_name"],
         user=args["zkevm_db_event_user"],
@@ -582,7 +580,7 @@ def start_trusted_node_databases(
     # Start state db
     start_postgres_db(
         plan,
-        name=args["zkevm_db_state_hostname"] + args["deployment_idx"],
+        name="trusted-" + args["zkevm_db_state_hostname"] + args["deployment_idx"],
         port=postgres_port,
         db=args["zkevm_db_state_name"],
         user=args["zkevm_db_state_user"],

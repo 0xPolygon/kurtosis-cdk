@@ -11,7 +11,7 @@ Outputs = ["stderr"]
         User = "{{.zkevm_db_state_user}}"
         Password = "{{.zkevm_db_state_password}}"
         Name = "{{.zkevm_db_state_name}}"
-        Host = "{{.zkevm_db_state_hostname}}{{.deployment_idx}}"
+        Host = "trusted-{{.zkevm_db_state_hostname}}{{.deployment_idx}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
         MaxConns = 200
@@ -55,7 +55,7 @@ GlobalQueue = 1024
         User = "{{.zkevm_db_pool_user}}"
         Password = "{{.zkevm_db_pool_password}}"
         Name = "{{.zkevm_db_pool_name}}"
-        Host = "{{.zkevm_db_pool_hostname}}{{.deployment_idx}}"
+        Host = "trusted-{{.zkevm_db_pool_hostname}}{{.deployment_idx}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
         MaxConns = 200
@@ -137,7 +137,7 @@ L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
 PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 SenderAddress = "{{.zkevm_l2_sequencer_address}}"
         [SequenceSender.StreamClient]
-                Server = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
+                Server = "zkevm-node-trusted-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
 
 [Aggregator]
 Host = "0.0.0.0"
@@ -179,10 +179,10 @@ DefaultGasPriceWei = 1000000000
 MaxGasPriceWei = 0
 
 [MTClient]
-URI  = "zkevm-prover{{.deployment_idx}}:{{.zkevm_hash_db_port}}"
+URI  = "zkevm-trusted-prover{{.deployment_idx}}:{{.zkevm_hash_db_port}}"
 
 [Executor]
-URI = "zkevm-prover{{.deployment_idx}}:{{.zkevm_executor_port}}"
+URI = "zkevm-trusted-prover{{.deployment_idx}}:{{.zkevm_executor_port}}"
 MaxGRPCMessageSize = 100000000
 
 [Metrics]
@@ -198,7 +198,7 @@ ProfilingEnabled = true
         User = "{{.zkevm_db_event_user}}"
         Password = "{{.zkevm_db_event_password}}"
         Name = "{{.zkevm_db_event_name}}"
-        Host = "{{.zkevm_db_event_hostname}}{{.deployment_idx}}"
+        Host = "trusted-{{.zkevm_db_event_hostname}}{{.deployment_idx}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = true
         MaxConns = 200
@@ -207,7 +207,7 @@ ProfilingEnabled = true
 User = "{{.zkevm_db_prover_user}}"
 Password = "{{.zkevm_db_prover_password}}"
 Name = "{{.zkevm_db_prover_name}}"
-Host = "{{.zkevm_db_prover_hostname}}{{.deployment_idx}}"
+Host = "trusted-{{.zkevm_db_prover_hostname}}{{.deployment_idx}}"
 Port = "{{.zkevm_db_postgres_port}}"
 EnableLog = false
 MaxConns = 200

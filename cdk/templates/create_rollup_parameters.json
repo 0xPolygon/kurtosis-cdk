@@ -13,6 +13,6 @@
     "networkName": "{{.zkevm_rollup_name}}",
     "realVerifier": "{{.zkevm_rollup_real_verifier}}",
     "trustedSequencer": "{{.zkevm_l2_sequencer_address}}",
-    "trustedSequencerURL": "http://zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_rpc_http_port}}",
+    "trustedSequencerURL": "http://zkevm-node-trusted-sequencer{{.deployment_idx}}:{{.zkevm_rpc_http_port}}",
     "trustedAggregator":"{{.zkevm_l2_aggregator_address}}"
 }

@@ -42,7 +42,7 @@ def start_databases(plan, args):
     )
     start_postgres_db(
         plan,
-        name=args["zkevm_db_event_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-" + args["zkevm_db_event_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="event_db",
         user=args["zkevm_db_event_user"],
@@ -53,7 +53,7 @@ def start_databases(plan, args):
     # Start pool database
     start_postgres_db(
         plan,
-        name=args["zkevm_db_pool_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-" + args["zkevm_db_pool_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="pool_db",
         user=args["zkevm_db_pool_user"],
@@ -66,7 +66,7 @@ def start_databases(plan, args):
     )
     start_postgres_db(
         plan,
-        name=args["zkevm_db_prover_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-" + args["zkevm_db_prover_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="prover_db",
         user=args["zkevm_db_prover_user"],
@@ -77,7 +77,7 @@ def start_databases(plan, args):
     # Start state database
     start_postgres_db(
         plan,
-        name=args["zkevm_db_state_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-" + args["zkevm_db_state_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="state_db",
         user=args["zkevm_db_state_user"],
@@ -122,7 +122,7 @@ def start_permissionless_prover(plan, args, cpu_arch):
         },
     )
     plan.add_service(
-        name="zkevm-permissionless-prover-" + args["deployment_idx"],
+        name="zkevm-prover-permissionless-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
             ports={
@@ -149,7 +149,7 @@ def start_permissionless_prover(plan, args, cpu_arch):
 
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     plan.add_service(
-        name="zkevm-permissionless-node-synchronizer-" + args["deployment_idx"],
+        name="zkevm-node-permissionless-synchronizer-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
@@ -183,7 +183,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
 
 def start_rpc(plan, args, config_artifact, genesis_artifact):
     plan.add_service(
-        name="zkevm-permissionless-node-rpc-" + args["deployment_idx"],
+        name="zkevm-node-permissionless-rpc-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
