@@ -1,9 +1,11 @@
 ---
 deployment_idx: "001"
-l1_rpc_url: "http://127.0.0.1:52374"
-trusted_sequencer_node_uri: "datastream://127.0.0.1:52056"
-zkevm_aggregator_host: "grpc://127.0.0.1:52088"
-zkevm_aggregator_port: 52088
+
+# Components to connect to
+l1_rpc_url: "http://el-1-geth-lighthouse:8545"
+trusted_sequencer_node_uri: "datastream://zkevm-node-sequencer-001:6900"
+zkevm_aggregator_host: "zkevm-node-aggregator-001"
+zkevm_aggregator_port: 50081
 genesis_file: "genesis.json"
 
 # Repositories
