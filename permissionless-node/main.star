@@ -42,7 +42,10 @@ def start_databases(plan, args):
     )
     start_postgres_db(
         plan,
-        name="permissionless-" + args["zkevm_db_event_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-"
+        + args["zkevm_db_event_hostname"]
+        + "-"
+        + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="event_db",
         user=args["zkevm_db_event_user"],
@@ -53,7 +56,10 @@ def start_databases(plan, args):
     # Start pool database
     start_postgres_db(
         plan,
-        name="permissionless-" + args["zkevm_db_pool_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-"
+        + args["zkevm_db_pool_hostname"]
+        + "-"
+        + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="pool_db",
         user=args["zkevm_db_pool_user"],
@@ -66,7 +72,10 @@ def start_databases(plan, args):
     )
     start_postgres_db(
         plan,
-        name="permissionless-" + args["zkevm_db_prover_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-"
+        + args["zkevm_db_prover_hostname"]
+        + "-"
+        + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="prover_db",
         user=args["zkevm_db_prover_user"],
@@ -77,7 +86,10 @@ def start_databases(plan, args):
     # Start state database
     start_postgres_db(
         plan,
-        name="permissionless-" + args["zkevm_db_state_hostname"] + "-" + args["deployment_idx"],
+        name="permissionless-"
+        + args["zkevm_db_state_hostname"]
+        + "-"
+        + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
         db="state_db",
         user=args["zkevm_db_state_user"],
