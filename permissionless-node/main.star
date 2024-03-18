@@ -13,20 +13,12 @@ def run(plan, args):
         name="genesis", config={"genesis.json": struct(template=genesis_file, data={})}
     )
 
-    node_config_template = read_file(
-        src="./templates/node-config.toml"
-    )
+    node_config_template = read_file(src="./templates/node-config.toml")
     node_config_artifact = plan.render_templates(
         name="node-config",
-        config={
-            "node-config.toml": struct(
-                template=node_config_template, data=args
-            )
-        },
+        config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
-    start_synchronizer(
-        plan, args, node_config_artifact, genesis_artifact
-    )
+    start_synchronizer(plan, args, node_config_artifact, genesis_artifact)
     start_rpc(plan, args, node_config_artifact, genesis_artifact)
 
 
@@ -110,15 +102,11 @@ def start_postgres_db(
 
 
 def start_executor(plan, args, cpu_arch):
-    executor_config_template = read_file(
-        src="./templates/executor-config.json"
-    )
+    executor_config_template = read_file(src="./templates/executor-config.json")
     executor_config_artifact = plan.render_templates(
         name="executor-config",
         config={
-            "executor-config.json": struct(
-                template=executor_config_template, data=args
-            )
+            "executor-config.json": struct(template=executor_config_template, data=args)
         },
     )
     plan.add_service(

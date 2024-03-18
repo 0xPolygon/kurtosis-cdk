@@ -71,11 +71,7 @@ def run(plan, args):
     # Create node configuration
     node_config_template = read_file(src="./templates/node-config.toml")
     node_config_artifact = plan.render_templates(
-        config={
-            "node-config.toml": struct(
-                template=node_config_template, data=args
-            )
-        }
+        config={"node-config.toml": struct(template=node_config_template, data=args)}
     )
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
@@ -176,9 +172,7 @@ def run(plan, args):
     event_db_init_script = plan.upload_files(
         src="./templates/event-db-init.sql", name="event-db-init.sql"
     )
-    start_node_databases(
-        plan, args, prover_db_init_script, event_db_init_script
-    )
+    start_node_databases(plan, args, prover_db_init_script, event_db_init_script)
 
     # Start prover
     plan.add_service(
@@ -532,9 +526,7 @@ def run(plan, args):
     )
 
 
-def start_node_databases(
-    plan, args, prover_db_init_script, event_db_init_script
-):
+def start_node_databases(plan, args, prover_db_init_script, event_db_init_script):
     postgres_port = args["zkevm_db_postgres_port"]
 
     # Start prover db
