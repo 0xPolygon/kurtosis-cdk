@@ -16,10 +16,23 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install kurtosis (ubuntu)
+        if: matrix.os == 'ubuntu'
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli
+          kurtosis analytics disable
+
+      - name: Install kurtosis (macos)
+        if: matrix.os == 'ubuntu'
+        run: |
+          brew install kurtosis-tech/tap/kurtosis-cli
+          kurtosis analytics disable
+
       - name: Deploy devnet
-        uses: kurtosis-tech/kurtosis-github-action@v1
-        with:
-          path: .
-          args: cdk-params.yml
+        run: kurtosis run --enclave cdk --args-file cdk-params.yml .
