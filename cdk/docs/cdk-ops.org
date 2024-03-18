@@ -30,6 +30,11 @@ cat *.json | jq '.abi[] | select(.type != "receive")' | jq -s | polycli abi deco
 docker run -it --net=container:f0ce09999e30 nicolaka/netshoot:latest /bin/bash
 #+end_src
 
+
+Confirm that we're on the correct fork
+#+begin_src bash
+cast call 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 1
+#+end_src
 * Chaos
 
 #+begin_src bash
