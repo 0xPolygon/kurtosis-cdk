@@ -11,7 +11,7 @@ Outputs = ["stderr"]
         User = "{{.zkevm_db_state_user}}"
         Password = "{{.zkevm_db_state_password}}"
         Name = "state_db"
-        Host = "{{.zkevm_db_state_hostname}}-{{.deployment_suffix}}"
+        Host = "{{.zkevm_db_state_hostname}}{{.deployment_suffix}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
         MaxConns = 200
@@ -55,7 +55,7 @@ GlobalQueue = 1024
         User = "{{.zkevm_db_pool_user}}"
         Password = "{{.zkevm_db_pool_password}}"
         Name = "pool_db"
-        Host = "{{.zkevm_db_pool_hostname}}-{{.deployment_suffix}}"
+        Host = "{{.zkevm_db_pool_hostname}}{{.deployment_suffix}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
         MaxConns = 200
@@ -111,10 +111,10 @@ DefaultGasPriceWei = 1000000000
 MaxGasPriceWei = 0
 
 [MTClient]
-URI  = "zkevm-executor-{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
+URI  = "zkevm-executor{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
 
 [Executor]
-URI = "zkevm-executor-{{.deployment_suffix}}:{{.zkevm_executor_port}}"
+URI = "zkevm-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}"
 MaxGRPCMessageSize = 100000000
 
 [Metrics]
@@ -130,7 +130,7 @@ ProfilingEnabled = true
         User = "{{.zkevm_db_event_user}}"
         Password = "{{.zkevm_db_event_password}}"
         Name = "event_db"
-        Host = "{{.zkevm_db_event_hostname}}-{{.deployment_suffix}}"
+        Host = "{{.zkevm_db_event_hostname}}{{.deployment_suffix}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = true
         MaxConns = 200
@@ -139,7 +139,7 @@ ProfilingEnabled = true
 User = "{{.zkevm_db_executor_user}}"
 Password = "{{.zkevm_db_executor_password}}"
 Name = "executor_db"
-Host = "{{.zkevm_db_executor_hostname}}-{{.deployment_suffix}}"
+Host = "{{.zkevm_db_executor_hostname}}{{.deployment_suffix}}"
 Port = "{{.zkevm_db_postgres_port}}"
 EnableLog = false
 MaxConns = 200

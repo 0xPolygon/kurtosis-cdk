@@ -1,5 +1,5 @@
 ---
-deployment_suffix: "002"
+deployment_suffix: "-pless-001"
 
 # Components to connect to
 l1_rpc_url: "http://el-1-geth-lighthouse:8545"
