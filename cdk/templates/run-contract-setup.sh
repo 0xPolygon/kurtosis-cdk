@@ -83,11 +83,14 @@ jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.j
 # older fork7 code to be compatibile with some of the fork8
 # automations. This schema matching can be dropped once this is
 # versioned up to 8
-jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
-jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
-jq '.upgradeToULxLyBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
-jq '.polygonDataCommitteeAddress = .polygonDataCommittee' combined.json > c.json; mv c.json combined.json
-jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
+fork_id={{.zkevm_fork_id}}
+if [[ fork_id -lt 8 ]]; then
+    jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
+    jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
+    jq '.upgradeToULxLyBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
+    jq '.polygonDataCommitteeAddress = .polygonDataCommittee' combined.json > c.json; mv c.json combined.json
+    jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
+fi
 
 # NOTE there is a disconnect in the necessary configurations here between the validium node and the zkevm node
 jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
