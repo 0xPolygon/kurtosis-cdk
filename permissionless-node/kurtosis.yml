@@ -1,0 +1,4 @@
+name: github.com/0xPolygon/kurtosis-cdk/permissionless-node
+description: |-
+  This package allows you to provision a CDK permissionless node within Kurtosis
+replace: {}

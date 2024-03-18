@@ -1,5 +1,0 @@
-name: github.com/0xPolygon/kurtosis-cdk
-description: |-
-  This package allows you to provision a full CDK environment within
-  Kurtosis
-replace: {}

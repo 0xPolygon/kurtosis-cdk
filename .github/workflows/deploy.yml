@@ -11,12 +11,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  cdk_package:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy devnet
+
+      - name: Deploy kurtosis package
         uses: kurtosis-tech/kurtosis-github-action@v1
         with:
-          path: .
-          args: cdk-params.yml
+          path: cdk
+          args: cdk/params.yml

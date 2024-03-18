@@ -1,0 +1,40 @@
+---
+deployment_idx: "001"
+
+# Components to connect to
+l1_rpc_url: "http://el-1-geth-lighthouse:8545"
+trusted_sequencer_node_uri: "zkevm-node-sequencer-001:6900"
+zkevm_aggregator_host: "zkevm-node-aggregator-001"
+zkevm_aggregator_port: 50081
+genesis_file: "genesis.json"
+
+# Repositories
+zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13
+zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
+
+# Ports
+zkevm_hash_db_port: 50061
+zkevm_executor_port: 50071
+zkevm_pprof_port: 6060
+zkevm_prometheus_port: 9091
+zkevm_rpc_http_port: 8123
+zkevm_rpc_ws_port: 8133
+
+# Databases
+zkevm_db_postgres_port: 5432
+
+zkevm_db_prover_hostname: "prover-db"
+zkevm_db_prover_user: "prover_user"
+zkevm_db_prover_password: "SR5xq2KZPgvQkPDranCRhvkv6pnqfo77"
+
+zkevm_db_pool_hostname: "pool-db"
+zkevm_db_pool_user: "pool_user"
+zkevm_db_pool_password: "Qso5wMcLAN3oF7EfaawzgWKUUKWM3Vov"
+
+zkevm_db_event_hostname: "event-db"
+zkevm_db_event_user: "event_user"
+zkevm_db_event_password: "rJXJN6iUAczh4oz8HRKYbVM8yC7tPeZm"
+
+zkevm_db_state_hostname: "state-db"
+zkevm_db_state_user: "state_user"
+zkevm_db_state_password: "rHTX7EpajF8zYDPatN32rH3B2pn89dmq"
