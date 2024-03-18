@@ -1,6 +1,6 @@
 [FullNodeRPCs]
 # TODO switch this to permissionless
-1 = "http://zkevm-node-trusted-rpc{{.deployment_idx}}:{{.zkevm_rpc_http_port}}"
+1 = "http://zkevm-node-rpc{{.deployment_idx}}:{{.zkevm_rpc_http_port}}"
 
 [RPC]
 Host = "0.0.0.0"
