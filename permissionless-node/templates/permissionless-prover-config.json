@@ -71,7 +71,7 @@
 
     "outputPath": "output",
 
-    "databaseURL": "postgresql://{{.zkevm_db_prover_user}}:{{.zkevm_db_prover_password}}@{{.zkevm_db_prover_hostname}}-{{.deployment_idx}}:{{.zkevm_db_postgres_port}}/prover-db",
+    "databaseURL": "postgresql://{{.zkevm_db_prover_user}}:{{.zkevm_db_prover_password}}@{{.zkevm_db_prover_hostname}}-{{.deployment_idx}}:{{.zkevm_db_postgres_port}}/prover_db",
     "dbNodesTableName": "state.nodes",
     "dbProgramTableName": "state.program",
     "dbMultiWrite": true,

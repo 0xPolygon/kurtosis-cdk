@@ -46,7 +46,7 @@ def start_databases(plan, args):
         plan,
         name=args["zkevm_db_event_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
-        db="event-db",
+        db="event_db",
         user=args["zkevm_db_event_user"],
         password=args["zkevm_db_event_password"],
         init_script_artifact_name=event_db_init_script,
@@ -57,7 +57,7 @@ def start_databases(plan, args):
         plan,
         name=args["zkevm_db_pool_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
-        db="pool-db",
+        db="pool_db",
         user=args["zkevm_db_pool_user"],
         password=args["zkevm_db_pool_password"],
     )
@@ -70,7 +70,7 @@ def start_databases(plan, args):
         plan,
         name=args["zkevm_db_prover_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
-        db="prover-db",
+        db="prover_db",
         user=args["zkevm_db_prover_user"],
         password=args["zkevm_db_prover_password"],
         init_script_artifact_name=prover_db_init_script,
@@ -81,7 +81,7 @@ def start_databases(plan, args):
         plan,
         name=args["zkevm_db_state_hostname"] + "-" + args["deployment_idx"],
         port=args["zkevm_db_postgres_port"],
-        db="state-db",
+        db="state_db",
         user=args["zkevm_db_state_user"],
         password=args["zkevm_db_state_password"],
     )
@@ -156,10 +156,10 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
             image=args["zkevm_node_image"],
             ports={
                 "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
+                    args["zkevm_pprof_port"], application_protocol="http", wait="4s"
                 ),
                 "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
+                    args["zkevm_prometheus_port"], application_protocol="http", wait="4s"
                 ),
             },
             files={
