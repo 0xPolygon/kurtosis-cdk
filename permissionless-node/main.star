@@ -134,7 +134,7 @@ def start_permissionless_prover(plan, args, cpu_arch):
         },
     )
     plan.add_service(
-        name="zkevm-prover-permissionless-" + args["deployment_idx"],
+        name="zkevm-permissionless-prover-" + args["deployment_idx"],
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
             ports={
