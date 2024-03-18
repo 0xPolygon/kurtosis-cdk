@@ -159,7 +159,9 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
                     args["zkevm_pprof_port"], application_protocol="http", wait="4s"
                 ),
                 "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http", wait="4s"
+                    args["zkevm_prometheus_port"],
+                    application_protocol="http",
+                    wait="4s",
                 ),
             },
             files={
