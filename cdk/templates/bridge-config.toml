@@ -8,7 +8,7 @@ Database = "postgres"
 User = "{{.zkevm_db_bridge_user}}"
 Name = "{{.zkevm_db_bridge_name}}"
 Password = "{{.zkevm_db_bridge_password}}"
-Host = "trusted-{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
+Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
 Port = "{{.zkevm_db_postgres_port}}"
 MaxConns = 20
 
@@ -36,7 +36,7 @@ BridgeVersion = "v1"
     User = "{{.zkevm_db_bridge_user}}"
     Name = "{{.zkevm_db_bridge_name}}"
     Password = "{{.zkevm_db_bridge_password}}"
-    Host = "trusted-{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
+    Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
     Port = "{{.zkevm_db_postgres_port}}"
     MaxConns = 20
 

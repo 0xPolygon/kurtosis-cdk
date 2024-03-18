@@ -317,7 +317,7 @@ def run(plan, args):
                 "/etc/": zkevm_configs,
             },
             ports={
-                "trusted-rpc": PortSpec(
+                "rpc": PortSpec(
                     args["zkevm_rpc_http_port"], application_protocol="http"
                 ),
                 "data-streamer": PortSpec(
@@ -386,7 +386,7 @@ def run(plan, args):
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
-                "trusted-aggregator": PortSpec(
+                "aggregator": PortSpec(
                     args["zkevm_aggregator_port"], application_protocol="grpc"
                 ),
                 "pprof": PortSpec(
@@ -422,10 +422,10 @@ def run(plan, args):
         config=ServiceConfig(
             image=args["zkevm_node_image"],
             ports={
-                "trusted-rpc": PortSpec(
+                "http-rpc": PortSpec(
                     args["zkevm_rpc_http_port"], application_protocol="http"
                 ),
-                "trusted-ws": PortSpec(
+                "ws-rpc": PortSpec(
                     args["zkevm_rpc_ws_port"], application_protocol="ws"
                 ),
                 "pprof": PortSpec(
