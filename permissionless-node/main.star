@@ -154,12 +154,11 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
             image=args["zkevm_node_image"],
             ports={
                 "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http", wait="4s"
+                    args["zkevm_pprof_port"], application_protocol="http"
                 ),
                 "prometheus": PortSpec(
                     args["zkevm_prometheus_port"],
                     application_protocol="http",
-                    wait="4s",
                 ),
             },
             files={
