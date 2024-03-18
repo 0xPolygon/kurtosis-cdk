@@ -69,7 +69,7 @@
 
     "outputPath": "output",
 
-    "databaseURL": "postgresql://{{.zkevm_db_executor_user}}:{{.zkevm_db_executor_password}}@{{.zkevm_db_executor_hostname}}-{{.deployment_idx}}:{{.zkevm_db_postgres_port}}/executor_db",
+    "databaseURL": "postgresql://{{.zkevm_db_executor_user}}:{{.zkevm_db_executor_password}}@{{.zkevm_db_executor_hostname}}-{{.deployment_suffix}}:{{.zkevm_db_postgres_port}}/executor_db",
     "dbNodesTableName": "state.nodes",
     "dbProgramTableName": "state.program",
     "dbMultiWrite": true,

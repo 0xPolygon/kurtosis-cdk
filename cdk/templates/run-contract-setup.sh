@@ -127,7 +127,7 @@ cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url
 # Setup dac with 1 sig for now
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
         'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
-        1 ["http://zkevm-dac{{.deployment_idx}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+        1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
 # Enable Dac
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
