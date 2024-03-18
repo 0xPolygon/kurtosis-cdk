@@ -11,17 +11,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  package:
+  cdk_package:
     runs-on: ubuntu-latest
     continue-on-error: true
-    strategy:
-      matrix:
-        package: ["cdk", "permissionless-node"]
     steps:
       - uses: actions/checkout@v4
 
       - name: Deploy kurtosis package
         uses: kurtosis-tech/kurtosis-github-action@v1
         with:
-          path: ${{ matrix.package }}
-          args: ${{ matrix.package }}/params.yml
+          path: cdk
+          args: cdk/params.yml
