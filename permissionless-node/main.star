@@ -2,8 +2,6 @@ POSTGRES_IMAGE = "postgres:16.2"
 
 
 def run(plan, args):
-    plan.print("Hello World!")
-
     cpu_arch = determine_cpu_architecture(plan)
     plan.print("Running on {} CPU architecture".format(cpu_arch))
 
