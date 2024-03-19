@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script is responsbile for deploying the contracts for zkEVM/CDK
+# This script is responsible for deploying the contracts for zkEVM/CDK
 # and also creating the various configuration files needed for all
 # components
 export MNEMONIC="{{.l1_preallocated_mnemonic}}"
@@ -148,11 +148,11 @@ cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_u
 # The DAC needs to be enabled with a call to set the DA protocol
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 
-# Grant the aggregator role to the agglayer so that it can also verify bathces
+# Grant the aggregator role to the agglayer so that it can also verify batches
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 
-# the parseethwallet command is creating a go-ethereum style encrypted
+# The parseethwallet command is creating a go-ethereum style encrypted
 # keystore to be used with the zkevm / cdk-validium node
 polycli parseethwallet --hexkey "{{.zkevm_l2_sequencer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
