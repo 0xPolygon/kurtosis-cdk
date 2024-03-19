@@ -1,5 +1,7 @@
 * Polygon CDK Kurtosis Package
 
+[[file:cdk/docs/architecture.png]]
+
 To get started you'll want to get everything [[https://docs.kurtosis.com/install/][installed]]. Once that's
 good and installed on your system, you can ~cd~ into this directory
 and run:
@@ -108,5 +110,3 @@ Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the
 Apache-2.0 license, shall be dual licensed as above, without any
 additional terms or conditions.
-
-
