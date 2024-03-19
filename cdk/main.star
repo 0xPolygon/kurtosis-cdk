@@ -1,7 +1,9 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
-zkevm_permissionless_node_package = import_module("github.com/0xPolygon/kurtosis-cdk/permissionless-node/main.star")
+zkevm_permissionless_node_package = import_module(
+    "github.com/0xPolygon/kurtosis-cdk/permissionless-node/main.star"
+)
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
