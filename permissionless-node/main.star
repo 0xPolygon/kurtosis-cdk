@@ -1,3 +1,5 @@
+prometheus_package = import_module("github.com/kurtosis-tech/prometheus-package/main.star") 
+
 POSTGRES_IMAGE = "postgres:16.2"
 
 
@@ -18,8 +20,23 @@ def run(plan, args):
         name="node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
-    start_synchronizer(plan, args, node_config_artifact, genesis_artifact)
-    start_rpc(plan, args, node_config_artifact, genesis_artifact)
+    synchronizer = start_synchronizer(plan, args, node_config_artifact, genesis_artifact)
+    rpc = start_rpc(plan, args, node_config_artifact, genesis_artifact)
+
+    prometheus_services = [
+        synchronizer,
+        rpc,
+    ]
+
+    metrics_jobs = [{
+        "Name": service.name,
+        "Endpoint": "{0}:{1}".format(
+            service.ip_address,
+            service.ports["prometheus"].number,
+        ),
+    } for service in prometheus_services]
+
+    prometheus_url = prometheus_package.run(plan, metrics_jobs)
 
 
 def determine_cpu_architecture(plan):
@@ -136,7 +153,7 @@ def start_executor(plan, args, cpu_arch):
 
 
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
-    plan.add_service(
+    return plan.add_service(
         name="zkevm-node-synchronizer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -170,7 +187,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
 
 
 def start_rpc(plan, args, config_artifact, genesis_artifact):
-    plan.add_service(
+    return plan.add_service(
         name="zkevm-node-rpc" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],

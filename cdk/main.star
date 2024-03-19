@@ -1,6 +1,5 @@
-ethereum_package = import_module(
-    "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
-)
+ethereum_package = import_module("github.com/kurtosis-tech/ethereum-package/main.star@2.0.0")
+prometheus_package = import_module("github.com/kurtosis-tech/prometheus-package/main.star") 
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
@@ -209,7 +208,7 @@ def run(plan, args):
         user=args["zkevm_db_agglayer_user"],
         password=args["zkevm_db_agglayer_password"],
     )
-    plan.add_service(
+    zkevm_agglayer = plan.add_service(
         name="zkevm-agglayer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_agglayer_image"],
@@ -246,10 +245,6 @@ def run(plan, args):
             image=args["zkevm_dac_image"],
             ports={
                 "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-                # Does the DAC have prometheus?!
-                # "prometheus": PortSpec(
-                #     args["zkevm_prometheus_port"], application_protocol="http"
-                # ),
             },
             files={
                 "/etc/": zkevm_configs,
@@ -262,7 +257,7 @@ def run(plan, args):
     )
 
     # Start synchronizer
-    plan.add_service(
+    zkevm_node_synchronizer = plan.add_service(
         name="zkevm-node-synchronizer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -295,7 +290,7 @@ def run(plan, args):
     )
 
     # Start sequencer
-    plan.add_service(
+    zkevm_node_sequencer = plan.add_service(
         name="zkevm-node-sequencer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -334,7 +329,7 @@ def run(plan, args):
             ],
         ),
     )
-    plan.add_service(
+    zkevm_node_sequencesender = plan.add_service(
         name="zkevm-node-sequencesender" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -367,7 +362,7 @@ def run(plan, args):
     )
 
     # Start aggregator
-    plan.add_service(
+    zkevm_node_aggregator = plan.add_service(
         name="zkevm-node-aggregator" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -403,7 +398,7 @@ def run(plan, args):
     )
 
     # Start trusted RPC
-    plan.add_service(
+    zkevm_node_rpc = plan.add_service(
         name="zkevm-node-rpc" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -439,7 +434,7 @@ def run(plan, args):
     )
 
     # Start eth-tx-manager and l2-gas-pricer
-    plan.add_service(
+    zkevm_node_eth_tx_manager = plan.add_service(
         name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -470,7 +465,7 @@ def run(plan, args):
             ],
         ),
     )
-    plan.add_service(
+    zkevm_node_l2_gas_pricer = plan.add_service(
         name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -524,6 +519,27 @@ def run(plan, args):
             cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
         ),
     )
+
+    prometheus_services = [
+        zkevm_agglayer,
+        zkevm_node_synchronizer,
+        zkevm_node_sequencer,
+        zkevm_node_sequencesender,
+        zkevm_node_aggregator,
+        zkevm_node_rpc,
+        zkevm_node_eth_tx_manager,
+        zkevm_node_l2_gas_pricer
+    ]
+
+    metrics_jobs = [{
+        "Name": service.name,
+        "Endpoint": "{0}:{1}".format(
+            service.ip_address,
+            service.ports["prometheus"].number,
+        ),
+    } for service in prometheus_services]
+
+    prometheus_url = prometheus_package.run(plan, metrics_jobs)
 
 
 def start_node_databases(plan, args, prover_db_init_script, event_db_init_script):
