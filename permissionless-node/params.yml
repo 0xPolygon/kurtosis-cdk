@@ -2,7 +2,7 @@
 # Deployment suffix that will be appended to all the resources deployed by the permissionless package.
 # WARNING: When deploying both the CDK and permissionless package, ensure the permissionless package's
 # deployment suffix differs from the CDK environment's suffix to prevent naming clashes.
-deployment_suffix: "-pless-001"
+deployment_suffix: "-pless-002"
 
 # Components to connect to
 l1_rpc_url: "http://el-1-geth-lighthouse:8545"
