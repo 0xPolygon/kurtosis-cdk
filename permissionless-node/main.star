@@ -8,10 +8,15 @@ def run(plan, args):
     start_databases(plan, args)
     start_executor(plan, args, cpu_arch)
 
-    genesis_file = read_file(src=args["genesis_file"])
-    genesis_artifact = plan.render_templates(
-        name="genesis", config={"genesis.json": struct(template=genesis_file, data={})}
-    )
+    genesis_artifact = ""
+    if "genesis_artifact" in args:
+        genesis_artifact = args["genesis_artifact"]
+    else:
+        genesis_file = read_file(src=args["genesis_file"])
+        genesis_artifact = plan.render_templates(
+            name="genesis",
+            config={"genesis.json": struct(template=genesis_file, data={})},
+        )
 
     node_config_template = read_file(src="./templates/node-config.toml")
     node_config_artifact = plan.render_templates(
