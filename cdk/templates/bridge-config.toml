@@ -8,13 +8,13 @@ Database = "postgres"
 User = "{{.zkevm_db_bridge_user}}"
 Name = "{{.zkevm_db_bridge_name}}"
 Password = "{{.zkevm_db_bridge_password}}"
-Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
+Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_suffix}}"
 Port = "{{.zkevm_db_postgres_port}}"
 MaxConns = 20
 
 [Etherman]
 l1URL = "{{.l1_rpc_url}}"
-L2URLs = ["http://zkevm-node-trusted-rpc{{.deployment_idx}}:{{.zkevm_rpc_http_port}}"]
+L2URLs = ["http://zkevm-node-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
 
 [Synchronizer]
 SyncInterval = "5s"
@@ -36,7 +36,7 @@ BridgeVersion = "v1"
     User = "{{.zkevm_db_bridge_user}}"
     Name = "{{.zkevm_db_bridge_name}}"
     Password = "{{.zkevm_db_bridge_password}}"
-    Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_idx}}"
+    Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_suffix}}"
     Port = "{{.zkevm_db_postgres_port}}"
     MaxConns = 20
 

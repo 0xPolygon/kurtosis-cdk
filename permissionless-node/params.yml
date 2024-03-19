@@ -1,5 +1,8 @@
 ---
-deployment_idx: "001"
+# Deployment suffix that will be appended to all the resources deployed by the permissionless package.
+# WARNING: When deploying both the CDK and permissionless package, ensure the permissionless package's
+# deployment suffix differs from the CDK environment's suffix to prevent naming clashes.
+deployment_suffix: "-pless-001"
 
 # Components to connect to
 l1_rpc_url: "http://el-1-geth-lighthouse:8545"
@@ -10,7 +13,7 @@ genesis_file: "genesis.json"
 
 # Repositories
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13
-zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
+zkevm_executor_image: hermeznetwork/zkevm-prover:v4.0.19
 
 # Ports
 zkevm_hash_db_port: 50061
@@ -23,9 +26,9 @@ zkevm_rpc_ws_port: 8133
 # Databases
 zkevm_db_postgres_port: 5432
 
-zkevm_db_prover_hostname: "prover-db"
-zkevm_db_prover_user: "prover_user"
-zkevm_db_prover_password: "SR5xq2KZPgvQkPDranCRhvkv6pnqfo77"
+zkevm_db_executor_hostname: "executor-db"
+zkevm_db_executor_user: "executor_user"
+zkevm_db_executor_password: "SR5xq2KZPgvQkPDranCRhvkv6pnqfo77"
 
 zkevm_db_pool_hostname: "pool-db"
 zkevm_db_pool_user: "pool_user"

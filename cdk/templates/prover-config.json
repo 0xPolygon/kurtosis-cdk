@@ -58,7 +58,7 @@
 
     "aggregatorServerPort": {{.zkevm_aggregator_port}},
     "aggregatorClientPort": {{.zkevm_aggregator_port}},
-    "aggregatorClientHost": "zkevm-node-trusted-aggregator{{.deployment_idx}}",
+    "aggregatorClientHost": "zkevm-node-aggregator{{.deployment_suffix}}",
 
     "mapConstPolsFile": false,
     "mapConstantsTreeFile": false,
@@ -71,7 +71,7 @@
 
     "outputPath": "output",
 
-    "databaseURL": "postgresql://{{.zkevm_db_prover_user}}:{{.zkevm_db_prover_password}}@trusted-{{.zkevm_db_prover_hostname}}{{.deployment_idx}}:{{.zkevm_db_postgres_port}}/{{.zkevm_db_prover_name}}",
+    "databaseURL": "postgresql://{{.zkevm_db_prover_user}}:{{.zkevm_db_prover_password}}@{{.zkevm_db_prover_hostname}}{{.deployment_suffix}}:{{.zkevm_db_postgres_port}}/{{.zkevm_db_prover_name}}",
     "dbNodesTableName": "state.nodes",
     "dbProgramTableName": "state.program",
     "dbMultiWrite": true,
