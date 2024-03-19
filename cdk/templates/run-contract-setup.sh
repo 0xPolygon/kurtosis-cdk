@@ -1,9 +1,16 @@
 #!/bin/bash
+#
+# This script is responsbile for deploying the contracts for zkEVM/CDK
+# and also creating the various configuration files needed for all
+# components
 export MNEMONIC="{{.l1_preallocated_mnemonic}}"
 
-# die if anything fails in here
+# ideally this script should stop with an error if a command fails
+# https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html#index-set
 set -e
 
+# We want to avoid running this script twice. In the future it might
+# make more sense to exit with an error code.
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
     2>&1 echo "This script has already been executed"
     exit
@@ -11,12 +18,13 @@ fi
 
 2>&1 echo "Installing dependencies"
 apt update
-apt-get -y install socat jq yq
+apt-get -y install jq yq
 curl -s -L https://foundry.paradigm.xyz | bash
 # shellcheck disable=SC1091
 source /root/.bashrc
 foundryup &> /dev/null
 
+# Detect the CPU architecture and get the right version of polycli
 cpu_arch="{{.cpu_arch}}"
 if [[ "$cpu_arch" == "aarch64" ]]; then
     cpu_arch="arm64"
@@ -38,11 +46,11 @@ until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemo
      sleep 5
 done
 
+# In the overall CDK setup, these 4 addresses need to be funded with ETH: sequencer, admin, agglayer, and potentially the aggregator
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_sequencer_address}}"
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_aggregator_address}}"
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_admin_address}}"
 cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_agglayer_address}}"
-
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
@@ -50,13 +58,11 @@ cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deplo
 pushd /opt/zkevm-contracts || exit 1
 2>&1 echo "Compiling contracts"
 
+# We're going to replace the localhost RPC with the url of our L1
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
-set -x
-# https://github.com/nodejs/docker-node/issues/1668
 npm i
 npx hardhat compile
-set +x
 
 2>&1 echo "Running full l1 contract deployment process"
 npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost &> 01_prepare_testnet.out
@@ -65,6 +71,8 @@ npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhos
 npx hardhat run deployment/v2/3_deployContracts.ts --network localhost &> 04_deploy_contracts.out
 npx hardhat run deployment/v2/4_createRollup.ts --network localhost &> 05_create_rollup.out
 
+# at this point, all of the contracts /should/ have been deployed. Now
+# we can combine all of the files and put them into the general zkevm folder
 mkdir -p /opt/zkevm
 cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
@@ -124,21 +132,28 @@ tomlq --slurpfile c combined.json -t '.L1.PolygonValidiumAddress = $c[0].rollupA
 # shellcheck disable=SC2016
 tomlq --slurpfile c combined.json -t '.L1.DataCommitteeAddress = $c[0].polygonDataCommitteeAddress' dac-config.toml > a.json; mv a.json dac-config.toml
 
-
+# The sequencer needs to pay POL when it sequences batches. This gets
+# refunded when the batches are proved. In order for this to work the
+# rollup address must be approved transfer the sequencers POL
 cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
-# Setup dac with 1 sig for now
+# The DAC needs to be configured with a required number of
+# signatures. Right now the number of DAC nodes is not
+# configurable. If we add more nodes, we'll need to make sure the urls
+# and keys are sorted.
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
         'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
         1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
-# Enable Dac
+# The DAC needs to be enabled with a call to set the DA protocol
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 
-# Grant the aggregator role to the agglayer
+# Grant the aggregator role to the agglayer so that it can also verify bathces
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 
+# the parseethwallet command is creating a go-ethereum style encrypted
+# keystore to be used with the zkevm / cdk-validium node
 polycli parseethwallet --hexkey "{{.zkevm_l2_sequencer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
 mv tmp.keys/UTC* sequencer.keystore
 chmod a+r sequencer.keystore
