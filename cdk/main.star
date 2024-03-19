@@ -1,6 +1,7 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
+zkevm_permissionless_node_package = import_module("../permissionless-node/main.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
@@ -163,6 +164,11 @@ def run(plan, args):
         src="/opt/zkevm",
         name="zkevm",
         description="These are the files needed to start various node services",
+    )
+    genesis_artifact = plan.store_service_files(
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/genesis.json",
+        name="genesis",
     )
 
     # Start databases
@@ -524,6 +530,18 @@ def run(plan, args):
             cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
         ),
     )
+
+    # Start permissionless node.
+    permissionless_args = args
+    permissionless_args["deployment_suffix"] = "-pless-001"
+    permissionless_args["trusted_sequencer_node_uri"] = "zkevm-node-sequencer-001:6900"
+    permissionless_args["zkevm_aggregator_host"] = "zkevm-node-aggregator-001"
+    permissionless_args["genesis_artifact"] = genesis_artifact
+    permissionless_args["zkevm_executor_image"] = args["zkevm_prover_image"]
+    permissionless_args["zkevm_db_executor_hostname"] = args["zkevm_db_prover_hostname"]
+    permissionless_args["zkevm_db_executor_user"] = args["zkevm_db_prover_user"]
+    permissionless_args["zkevm_db_executor_password"] = args["zkevm_db_prover_password"]
+    zkevm_permissionless_node_package.run(plan, args)
 
 
 def start_node_databases(plan, args, prover_db_init_script, event_db_init_script):
