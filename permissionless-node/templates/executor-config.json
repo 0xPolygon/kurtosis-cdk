@@ -1,6 +1,4 @@
 {
-    "_source": "https://github.com/0xPolygonHermez/zkevm-node/blob/v0.5.13/test/config/test.permissionless.prover.config.json",
-
     "runExecutorServer": true,
     "runExecutorClient": false,
     "runExecutorClientMultithread": false,
@@ -10,7 +8,7 @@
 
     "runAggregatorServer": false,
     "runAggregatorClient": false,
-    "runAggregatorClientMock": true,
+    "runAggregatorClientMock": false,
     "aggregatorClientMockTimeout": 15000000,
     "proverName": "test-prover",
 
@@ -58,7 +56,7 @@
 
     "aggregatorServerPort": {{.zkevm_aggregator_port}},
     "aggregatorClientPort": {{.zkevm_aggregator_port}},
-    "aggregatorClientHost": "zkevm-permissionless-node-aggregator{{.deployment_idx}}",
+    "aggregatorClientHost": "{{.zkevm_aggregator_host}}",
 
     "mapConstPolsFile": false,
     "mapConstantsTreeFile": false,
@@ -71,7 +69,7 @@
 
     "outputPath": "output",
 
-    "databaseURL": "postgresql://{{.zkevm_permissionless_db_prover_user}}:{{.zkevm_permissionless_db_prover_password}}@{{.zkevm_permissionless_db_prover_hostname}}{{.deployment_idx}}:{{.zkevm_db_postgres_port}}/{{.zkevm_db_prover_name}}",
+    "databaseURL": "postgresql://{{.zkevm_db_executor_user}}:{{.zkevm_db_executor_password}}@{{.zkevm_db_executor_hostname}}{{.deployment_suffix}}:{{.zkevm_db_postgres_port}}/executor_db",
     "dbNodesTableName": "state.nodes",
     "dbProgramTableName": "state.program",
     "dbMultiWrite": true,

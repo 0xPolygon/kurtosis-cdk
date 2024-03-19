@@ -7,7 +7,7 @@ good and installed on your system, you can ~cd~ into this directory
 and run:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file cdk-params.yml .
+kurtosis run --enclave cdk-v1 --args-file cdk/params.yml cdk
 #+end_src
 
 This command will take a few minutes but will basically run an entire
@@ -29,14 +29,14 @@ overwhelming. If we want to simply see the port mapping within the
 ~trusted-rpc~ port, we can run this command.
 
 #+begin_src bash
-kurtosis port print cdk-v1 zkevm-node-rpc-001 trusted-rpc
+kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc
 #+end_src
 
 For the sake of this document, I'm going to map that value to an
 environment variable.
 
 #+begin_src bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 trusted-rpc)"
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
 #+end_src
 
 That is the same environment variable that ~cast~ uses, so now I
@@ -84,11 +84,41 @@ container to be able to poke around.
 kurtosis service shell cdk-v1 zkevm-node-sequencer-001
 #+end_src
 
+One of the most common ways to check the status of the system is to
+make sure that batches are going through the normal progression of
+trusted, virtual, and verified:
+
+#+begin_src bash
+cast rpc zkevm_batchNumber
+cast rpc zkevm_virtualBatchNumber
+cast rpc zkevm_verifiedBatchNumber
+#+end_src
+
 When everything is done, you might want to clean up with this command
 which stopps everything and deletes it.
 
 #+begin_src bash
 kurtosis clean -a
+#+end_src
+
+** Permissionless Node
+
+In addition to the core stack, you can also attach and synchronize a
+permissionless node. Of course, you'll need the CDK stack running from
+the previous commands. Assuming that has run and correctly created a
+network, you'll need to pull the genesis file artifact out and add it
+to your ~permissionless-node~ kurtosis package.
+
+#+begin_src bash
+kurtosis files download cdk-v1 zkevm /tmp
+cp /tmp/zkevm/genesis.json permissionless-node/genesis.json
+#+end_src
+
+Now that we have the right genesis file, we can add a permissionless
+node to the ~cdk-v1~ enclave:
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file permissionless-node/params.yml permissionless-node
 #+end_src
 
 ** License

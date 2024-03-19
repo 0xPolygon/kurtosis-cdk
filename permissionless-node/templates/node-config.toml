@@ -8,10 +8,10 @@ Outputs = ["stderr"]
 
 [State]
         [State.DB]
-        User = "{{.zkevm_permissionless_db_state_user}}"
-        Password = "{{.zkevm_permissionless_db_state_password}}"
-        Name = "{{.zkevm_db_state_name}}"
-        Host = "{{.zkevm_permissionless_db_state_hostname}}{{.deployment_idx}}"
+        User = "{{.zkevm_db_state_user}}"
+        Password = "{{.zkevm_db_state_password}}"
+        Name = "state_db"
+        Host = "{{.zkevm_db_state_hostname}}{{.deployment_suffix}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
         MaxConns = 200
@@ -52,10 +52,10 @@ GlobalQueue = 1024
                 EthTransferL1GasPriceFactor = 0
                 L2GasPriceSuggesterFactor = 0.5
         [Pool.DB]
-        User = "{{.zkevm_permissionless_db_pool_user}}"
-        Password = "{{.zkevm_permissionless_db_pool_password}}"
-        Name = "{{.zkevm_db_pool_name}}"
-        Host = "{{.zkevm_permissionless_db_pool_hostname}}{{.deployment_idx}}"
+        User = "{{.zkevm_db_pool_user}}"
+        Password = "{{.zkevm_db_pool_password}}"
+        Name = "pool_db"
+        Host = "{{.zkevm_db_pool_hostname}}{{.deployment_suffix}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = false
         MaxConns = 200
@@ -75,7 +75,7 @@ WriteTimeout = "60s"
 BatchRequestsEnabled = true
 BatchRequestsLimit = 500
 MaxRequestsPerIPAndSecond = 5000
-SequencerNodeURI = "zkevm-node-sequencer{{.deployment_idx}}:{{.zkevm_data_streamer_port}}"
+SequencerNodeURI = "{{.trusted_sequencer_node_uri}}"
 EnableL2SuggestedGasPricePolling = true
         [RPC.WebSockets]
                 Enabled = true
@@ -111,10 +111,10 @@ DefaultGasPriceWei = 1000000000
 MaxGasPriceWei = 0
 
 [MTClient]
-URI  = "zkevm-permissionless-prover{{.deployment_idx}}:{{.zkevm_hash_db_port}}"
+URI  = "zkevm-executor{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
 
 [Executor]
-URI = "zkevm-permissionless-prover{{.deployment_idx}}:{{.zkevm_executor_port}}"
+URI = "zkevm-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}"
 MaxGRPCMessageSize = 100000000
 
 [Metrics]
@@ -127,19 +127,19 @@ ProfilingEnabled = true
 
 [EventLog]
         [EventLog.DB]
-        User = "{{.zkevm_permissionless_db_event_user}}"
-        Password = "{{.zkevm_permissionless_db_event_password}}"
-        Name = "{{.zkevm_db_event_name}}"
-        Host = "{{.zkevm_permissionless_db_event_hostname}}{{.deployment_idx}}"
+        User = "{{.zkevm_db_event_user}}"
+        Password = "{{.zkevm_db_event_password}}"
+        Name = "event_db"
+        Host = "{{.zkevm_db_event_hostname}}{{.deployment_suffix}}"
         Port = "{{.zkevm_db_postgres_port}}"
         EnableLog = true
         MaxConns = 200
 
 [HashDB]
-User = "{{.zkevm_permissionless_db_prover_user}}"
-Password = "{{.zkevm_permissionless_db_prover_password}}"
-Name = "{{.zkevm_db_prover_name}}"
-Host = "{{.zkevm_permissionless_db_prover_hostname}}{{.deployment_idx}}"
+User = "{{.zkevm_db_executor_user}}"
+Password = "{{.zkevm_db_executor_password}}"
+Name = "executor_db"
+Host = "{{.zkevm_db_executor_hostname}}{{.deployment_suffix}}"
 Port = "{{.zkevm_db_postgres_port}}"
 EnableLog = false
 MaxConns = 200
