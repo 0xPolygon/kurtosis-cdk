@@ -1,5 +1,6 @@
 ethereum_package = import_module("github.com/kurtosis-tech/ethereum-package/main.star@2.0.0")
 prometheus_package = import_module("github.com/kurtosis-tech/prometheus-package/main.star") 
+grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
@@ -540,6 +541,7 @@ def run(plan, args):
     } for service in prometheus_services]
 
     prometheus_url = prometheus_package.run(plan, metrics_jobs)
+    grafana_package.run(plan, prometheus_url, "github.com/0xPolygon/kurtosis-cdk/cdk/static-files/dashboards")
 
 
 def start_node_databases(plan, args, prover_db_init_script, event_db_init_script):

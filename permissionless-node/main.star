@@ -1,4 +1,5 @@
 prometheus_package = import_module("github.com/kurtosis-tech/prometheus-package/main.star") 
+grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
 
 POSTGRES_IMAGE = "postgres:16.2"
 
@@ -37,6 +38,7 @@ def run(plan, args):
     } for service in prometheus_services]
 
     prometheus_url = prometheus_package.run(plan, metrics_jobs)
+    grafana_package.run(plan, prometheus_url, "github.com/0xPolygon/kurtosis-cdk/permissionless-node/static-files/dashboards")
 
 
 def determine_cpu_architecture(plan):
