@@ -1,13 +1,13 @@
 * Polygon CDK Kurtosis Package
 
-[[file:cdk/docs/architecture.png]]
+[[file:docs/architecture.png]]
 
 To get started you'll want to get everything [[https://docs.kurtosis.com/install/][installed]]. Once that's
 good and installed on your system, you can ~cd~ into this directory
 and run:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file cdk/params.yml cdk
+kurtosis run --enclave cdk-v1 --args-file params.yml .
 #+end_src
 
 This command will take a few minutes but will basically run an entire
@@ -111,14 +111,14 @@ to your ~permissionless-node~ kurtosis package.
 
 #+begin_src bash
 kurtosis files download cdk-v1 zkevm /tmp
-cp /tmp/zkevm/genesis.json permissionless-node/genesis.json
+cp /tmp/zkevm/genesis.json genesis.json
 #+end_src
 
 Now that we have the right genesis file, we can add a permissionless
 node to the ~cdk-v1~ enclave:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file permissionless-node/params.yml permissionless-node
+kurtosis run --enclave cdk-v1 --args-file params.yml --main-file permissionless-node.star .
 #+end_src
 
 ** License
