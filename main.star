@@ -89,7 +89,7 @@ def run(plan, args):
         config={"dac-config.toml": struct(template=dac_config_template, data=args)}
     )
     # Create prover configuration
-    prover_config_template = read_file(src="./templates/prover-config.json")
+    prover_config_template = read_file(src="./templates/trusted-node/prover-config.json")
     prover_config_artifact = plan.render_templates(
         config={
             "prover-config.json": struct(template=prover_config_template, data=args)
@@ -177,10 +177,10 @@ def run(plan, args):
 
     # Start databases
     prover_db_init_script = plan.upload_files(
-        src="./templates/prover-db-init.sql", name="prover-db-init.sql"
+        src="./templates/databases/prover-db-init.sql", name="prover-db-init.sql"
     )
     event_db_init_script = plan.upload_files(
-        src="./templates/event-db-init.sql", name="event-db-init.sql"
+        src="./templates/databases/event-db-init.sql", name="event-db-init.sql"
     )
     start_node_databases(plan, args, prover_db_init_script, event_db_init_script)
 
@@ -391,7 +391,7 @@ def start_node_components(
     aggregator_keystore_artifact,
 ):
     # Create node configuration file.
-    config_template = read_file(src="./templates/node-config.toml")
+    config_template = read_file(src="./templates/trusted-node/node-config.toml")
     config_artifact = plan.render_templates(
         config={"node-config.toml": struct(template=config_template, data=args)}
     )
