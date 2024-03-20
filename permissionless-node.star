@@ -1,4 +1,4 @@
-zkevm_dbs_package = import_module("./lib/databases.star")
+zkevm_databases_package = import_module("./lib/databases.star")
 zkevm_node_package = import_module("./lib/node.star")
 zkevm_prover_package = import_module("./lib/prover.star")
 
@@ -13,7 +13,7 @@ def run(plan, args):
         src="./templates/databases/prover-db-init.sql",
         name="executor-db-init.sql" + args["deployment_suffix"],
     )
-    zkevm_dbs_package.start_databases(
+    zkevm_databases_package.start_databases(
         plan, args, event_db_init_script, executor_db_init_script
     )
 

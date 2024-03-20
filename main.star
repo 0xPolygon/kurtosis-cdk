@@ -1,6 +1,7 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
+zkevm_databases_package = import_module("./lib/databases.star")
 zkevm_node_package = import_module("./lib/node.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
@@ -178,13 +179,15 @@ def run(plan, args):
     )
 
     # Start databases
-    prover_db_init_script = plan.upload_files(
-        src="./templates/databases/prover-db-init.sql", name="prover-db-init.sql"
-    )
     event_db_init_script = plan.upload_files(
-        src="./templates/databases/event-db-init.sql", name="event-db-init.sql"
+        src="./templates/databases/event-db-init.sql", name="event-db-init.sql" + args["deployment_suffix"]
     )
-    start_node_databases(plan, args, prover_db_init_script, event_db_init_script)
+    prover_db_init_script = plan.upload_files(
+        src="./templates/databases/prover-db-init.sql", name="prover-db-init.sql" + args["deployment_suffix"]
+    )
+    zkevm_databases_package.start_databases(
+        plan, args, event_db_init_script, executor_db_init_script
+    )
 
     # Start prover
     plan.add_service(
