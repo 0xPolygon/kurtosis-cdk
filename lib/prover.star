@@ -5,7 +5,7 @@ def start_prover(plan, args, config_artifact):
 
 def start_executor(plan, args, config_artifact):
     name = "zkevm-executor" + args["deployment_suffix"]
-    _start_service(plan, name, config_artifact)
+    _start_service(plan, name, args, config_artifact)
 
 
 def _start_service(plan, name, args, config_artifact):
