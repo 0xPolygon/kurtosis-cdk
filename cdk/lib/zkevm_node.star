@@ -1,5 +1,3 @@
-POSTGRES_IMAGE = "postgres:16.2"
-
 NODE_COMPONENT = struct(
     synchronizer="synchronizer",
     sequencer="sequencer",
@@ -37,69 +35,59 @@ def _start_node_component(
     )
 
 
-def start_synchronizer(
-    plan, name, image, pprof_port, prometheus_port, config_artifact, genesis_artifact
-):
+def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-synchronizer" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.synchronizer,
     )
 
 
-def start_sequencer(
-    plan,
-    name,
-    image,
-    rpc_http_port,
-    data_streamer_port,
-    pprof_port,
-    prometheus_port,
-    config_artifact,
-    genesis_artifact,
-    http_api,
-):
+def start_sequencer(plan, args, config_artifact, genesis_artifact):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-sequencer" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "rpc": PortSpec(rpc_http_port, application_protocol="http"),
+            "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
             "data-streamer": PortSpec(
-                data_streamer_port, application_protocol="datastream"
+                args["zkevm_data_streamer_port"], application_protocol="datastream"
             ),
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.sequencer + "," + NODE_COMPONENT.rpc,
-        http_api=http_api,
+        http_api="eth,net,debug,zkevm,txpool,web3",
     )
 
 
 def start_sequence_sender(
     plan,
-    name,
-    image,
-    pprof_port,
-    prometheus_port,
+    args,
     config_artifact,
     genesis_artifact,
     sequencer_keystore_artifact,
 ):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-sequence-sender" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(
             artifact_names=[
@@ -114,24 +102,24 @@ def start_sequence_sender(
 
 def start_aggregator(
     plan,
-    name,
-    image,
-    aggregator_port,
-    pprof_port,
-    prometheus_port,
+    args,
     config_artifact,
     genesis_artifact,
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
 ):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-aggregator" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "aggregator": PortSpec(aggregator_port, application_protocol="grpc"),
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "aggregator": PortSpec(
+                args["zkevm_aggregator_port"], application_protocol="grpc"
+            ),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(
             artifact_names=[
@@ -145,51 +133,44 @@ def start_aggregator(
     )
 
 
-def start_rpc(
-    plan,
-    name,
-    image,
-    rpc_http_port,
-    rpc_ws_port,
-    pprof_port,
-    prometheus_port,
-    config_artifact,
-    genesis_artifact,
-    http_api,
-):
+def start_rpc(plan, args, config_artifact, genesis_artifact):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-rpc" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "http-rpc": PortSpec(rpc_http_port, application_protocol="http"),
-            "ws-rpc": PortSpec(rpc_ws_port, application_protocol="ws"),
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "http-rpc": PortSpec(
+                args["zkevm_rpc_http_port"], application_protocol="http"
+            ),
+            "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.rpc,
+        http_api="eth,net,debug,zkevm,txpool,web3",
     )
 
 
 def start_eth_tx_manager(
     plan,
-    name,
-    image,
-    pprof_port,
-    prometheus_port,
+    args,
     config_artifact,
     genesis_artifact,
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
 ):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(
             artifact_names=[
@@ -203,16 +184,16 @@ def start_eth_tx_manager(
     )
 
 
-def start_l2_gas_pricer(
-    plan, name, image, pprof_port, prometheus_port, config_artifact, genesis_artifact
-):
+def start_l2_gas_pricer(plan, args, config_artifact, genesis_artifact):
     _start_node_component(
-        plan=plan,
-        name=name,
-        image=image,
+        plan,
+        name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
         ports={
-            "pprof": PortSpec(pprof_port, application_protocol="http"),
-            "prometheus": PortSpec(prometheus_port, application_protocol="http"),
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.l2_gas_pricer,

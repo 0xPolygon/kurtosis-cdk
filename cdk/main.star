@@ -397,84 +397,31 @@ def start_node_components(
     )
 
     # Deploy components.
-    zkevm_node_package.start_synchronizer(
-        plan=plan,
-        name="zkevm-node-synchronizer" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
-    )
 
-    zkevm_node_package.start_sequencer(
-        plan=plan,
-        name="zkevm-node-sequencer" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        rpc_http_port=args["zkevm_rpc_http_port"],
-        data_streamer_port=args["zkevm_data_streamer_port"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
-        http_api="eth,net,debug,zkevm,txpool,web3",
-    )
-
+    zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
+    zkevm_node_package.start_sequencer(plan, args, config_artifact, genesis_artifact)
     zkevm_node_package.start_sequence_sender(
-        plan=plan,
-        name="zkevm-node-sequence-sender" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
-        sequencer_keystore_artifact=sequencer_keystore_artifact,
+        plan, args, config_artifact, genesis_artifact, sequencer_keystore_artifact
     )
-
     zkevm_node_package.start_aggregator(
-        plan=plan,
-        name="zkevm-node-aggregator" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        aggregator_port=args["zkevm_aggregator_port"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
-        sequencer_keystore_artifact=sequencer_keystore_artifact,
-        aggregator_keystore_artifact=aggregator_keystore_artifact,
+        plan,
+        args,
+        config_artifact,
+        genesis_artifact,
+        sequencer_keystore_artifact,
+        aggregator_keystore_artifact,
     )
-
-    zkevm_node_package.start_rpc(
-        plan=plan,
-        name="zkevm-node-rpc" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        rpc_http_port=args["zkevm_rpc_http_port"],
-        rpc_ws_port=args["zkevm_rpc_ws_port"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
-        http_api="eth,net,debug,zkevm,txpool,web3",
-    )
+    zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
 
     zkevm_node_package.start_eth_tx_manager(
-        plan=plan,
-        name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
-        sequencer_keystore_artifact=sequencer_keystore_artifact,
-        aggregator_keystore_artifact=aggregator_keystore_artifact,
+        plan,
+        args,
+        config_artifact,
+        genesis_artifact,
+        sequencer_keystore_artifact,
+        aggregator_keystore_artifact,
     )
 
     zkevm_node_package.start_l2_gas_pricer(
-        plan=plan,
-        name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
-        image=args["zkevm_node_image"],
-        pprof_port=args["zkevm_pprof_port"],
-        prometheus_port=args["zkevm_prometheus_port"],
-        config_artifact=config_artifact,
-        genesis_artifact=genesis_artifact,
+        plan, args, config_artifact, genesis_artifact
     )
