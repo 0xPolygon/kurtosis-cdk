@@ -1,5 +1,0 @@
-CREATE SCHEMA state;
-
-CREATE TABLE state.nodes (hash BYTEA PRIMARY KEY, data BYTEA NOT NULL);
-CREATE TABLE state.program (hash BYTEA PRIMARY KEY, data BYTEA NOT NULL);
-

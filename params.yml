@@ -102,7 +102,7 @@ zkevm_permissionless_db_state_user: "permissionless_state_user"
 zkevm_permissionless_db_state_password: "BXeRf7Y4QgkB4Z6c7w6mtXzkdptvwixR"
 
 ## Executor db
-genesis_file: genesis.json
+genesis_file: templates/permissionless-node/genesis.json
 zkevm_db_executor_hostname: "executor-db"
 zkevm_db_executor_user: "executor_user"
 zkevm_db_executor_password: "SR5xq2KZPgvQkPDranCRhvkv6pnqfo77"
