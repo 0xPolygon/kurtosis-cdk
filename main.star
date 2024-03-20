@@ -1,7 +1,7 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
-zkevm_node_package = import_module("./lib/zkevm_node.star")
+zkevm_node_package = import_module("./lib/node.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
