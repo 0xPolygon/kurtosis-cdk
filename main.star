@@ -181,10 +181,12 @@ def run(plan, args):
 
     # Start databases
     event_db_init_script = plan.upload_files(
-        src="./templates/databases/event-db-init.sql", name="event-db-init.sql" + args["deployment_suffix"]
+        src="./templates/databases/event-db-init.sql",
+        name="event-db-init.sql" + args["deployment_suffix"],
     )
     prover_db_init_script = plan.upload_files(
-        src="./templates/databases/prover-db-init.sql", name="prover-db-init.sql" + args["deployment_suffix"]
+        src="./templates/databases/prover-db-init.sql",
+        name="prover-db-init.sql" + args["deployment_suffix"],
     )
     zkevm_databases_package.start_databases(
         plan, args, event_db_init_script, executor_db_init_script
