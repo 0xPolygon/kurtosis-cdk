@@ -37,10 +37,17 @@ def run(plan, args):
         name="node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
-    genesis_file = read_file(src=args["genesis_file"])
-    genesis_artifact = plan.render_templates(
-        name="genesis", config={"genesis.json": struct(template=genesis_file, data={})}
-    )
+
+    genesis_artifact = ""
+    if "genesis_artifact" in args:
+        genesis_artifact = args["genesis_artifact"]
+    else:
+        genesis_file = read_file(src=args["genesis_file"])
+        genesis_artifact = plan.render_templates(
+            name="genesis",
+            config={"genesis.json": struct(template=genesis_file, data={})},
+        )
+
     zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
