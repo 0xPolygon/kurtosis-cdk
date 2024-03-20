@@ -4,6 +4,7 @@ ethereum_package = import_module(
 zkevm_databases_package = import_module("./lib/databases.star")
 zkevm_node_package = import_module("./lib/node.star")
 zkevm_prover_package = import_module("./lib/prover.star")
+zkevm_permissionless_node_package = import_module("./permissionless-node.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
@@ -264,6 +265,15 @@ def run(plan, args):
         sequencer_keystore_artifact,
         aggregator_keystore_artifact,
     )
+
+    # TODO: Start default pless node
+    permissionless_args = args
+    permissionless_args["deployment_suffix"] = "-pless-001"
+    permissionless_args["genesis_artifact"] = genesis_artifact
+
+    #permissionless_args["trusted_sequencer_node_uri"] = "zkevm-node-sequencer-001:6900"
+    #permissionless_args["zkevm_aggregator_host"] = "zkevm-node-aggregator-001"
+    zkevm_permissionless_node_package.run(plan, args)
 
     # Start bridge
     plan.add_service(
