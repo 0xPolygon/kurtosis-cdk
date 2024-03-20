@@ -18,7 +18,9 @@ def run(plan, args):
     )
 
     # Start executor.
-    executor_config_template = read_file(src="./templates/permissionless-node/executor-config.json")
+    executor_config_template = read_file(
+        src="./templates/permissionless-node/executor-config.json"
+    )
     executor_config_artifact = plan.render_templates(
         name="executor-config",
         config={
@@ -28,7 +30,9 @@ def run(plan, args):
     zkevm_prover_package.start_executor(plan, args, executor_config_artifact)
 
     # Start synchronizer and rpc.
-    node_config_template = read_file(src="./templates/permissionless-node/node-config.toml")
+    node_config_template = read_file(
+        src="./templates/permissionless-node/node-config.toml"
+    )
     node_config_artifact = plan.render_templates(
         name="node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},

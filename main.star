@@ -89,7 +89,9 @@ def run(plan, args):
         config={"dac-config.toml": struct(template=dac_config_template, data=args)}
     )
     # Create prover configuration
-    prover_config_template = read_file(src="./templates/trusted-node/prover-config.json")
+    prover_config_template = read_file(
+        src="./templates/trusted-node/prover-config.json"
+    )
     prover_config_artifact = plan.render_templates(
         config={
             "prover-config.json": struct(template=prover_config_template, data=args)
