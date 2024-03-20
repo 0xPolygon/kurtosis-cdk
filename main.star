@@ -3,6 +3,7 @@ ethereum_package = import_module(
 )
 zkevm_databases_package = import_module("./lib/databases.star")
 zkevm_node_package = import_module("./lib/node.star")
+zkevm_prover_package = import_module("./lib/prover.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
@@ -190,30 +191,7 @@ def run(plan, args):
     )
 
     # Start prover
-    plan.add_service(
-        name="zkevm-prover" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_prover_image"],
-            ports={
-                "hash-db-server": PortSpec(
-                    args["zkevm_hash_db_port"], application_protocol="grpc"
-                ),
-                "executor-server": PortSpec(
-                    args["zkevm_executor_port"], application_protocol="grpc"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=["/bin/bash", "-c"],
-            cmd=[
-                '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
-                /usr/local/bin/zkProver -c /etc/zkevm/prover-config.json'.format(
-                    cpu_arch
-                ),
-            ],
-        ),
-    )
+    zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
     # Start AggLayer
     start_postgres_db(

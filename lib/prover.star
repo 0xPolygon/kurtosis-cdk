@@ -1,9 +1,17 @@
-def start_executor(plan, args, executor_config_artifact):
+def start_prover(plan, args, config_artifact):
+    name = "zkevm-prover" + args["deployment_suffix"]
+    _start_prover(plan, name, args, config_artifact)
+
+def start_executor(plan, args, config_artifact):
+    name = "zkevm-executor" + args["deployment_suffix"]
+    _start_prover(plan, name, config_artifact)
+
+def _start_prover(plan, name, args, config_artifact):
     cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
     cpu_arch = cpu_arch_result.output
 
     plan.add_service(
-        name="zkevm-executor" + args["deployment_suffix"],
+        name,
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
             ports={
@@ -15,7 +23,7 @@ def start_executor(plan, args, executor_config_artifact):
                 ),
             },
             files={
-                "/etc/zkevm": executor_config_artifact,
+                "/etc/zkevm": config_artifact,
             },
             entrypoint=["/bin/bash", "-c"],
             cmd=[
