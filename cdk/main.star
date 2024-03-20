@@ -1,6 +1,7 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
+zkevm_node_package = import_module("./lib/zkevm_node.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"
@@ -68,11 +69,6 @@ def run(plan, args):
         }
     )
 
-    # Create node configuration
-    node_config_template = read_file(src="./templates/node-config.toml")
-    node_config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=node_config_template, data=args)}
-    )
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     bridge_config_artifact = plan.render_templates(
@@ -113,7 +109,6 @@ def run(plan, args):
                         deploy_parameters_artifact,
                         create_rollup_parameters_artifact,
                         contract_deployment_script_artifact,
-                        node_config_artifact,
                         prover_config_artifact,
                         bridge_config_artifact,
                         agglayer_config_artifact,
@@ -163,6 +158,21 @@ def run(plan, args):
         src="/opt/zkevm",
         name="zkevm",
         description="These are the files needed to start various node services",
+    )
+    genesis_artifact = plan.store_service_files(
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/genesis.json",
+        name="genesis",
+    )
+    sequencer_keystore_artifact = plan.store_service_files(
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/sequencer.keystore",
+        name="sequencer-keystore",
+    )
+    aggregator_keystore_artifact = plan.store_service_files(
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/aggregator.keystore",
+        name="aggregator-keystore",
     )
 
     # Start databases
@@ -261,245 +271,13 @@ def run(plan, args):
         ),
     )
 
-    # Start synchronizer
-    plan.add_service(
-        name="zkevm-node-synchronizer" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            files={
-                "/etc/": zkevm_configs,
-            },
-            ports={
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg",
-                "/etc/zkevm/node-config.toml",
-                "--network",
-                "custom",
-                "--custom-network-file",
-                "/etc/zkevm/genesis.json",
-                "--components",
-                "synchronizer",
-            ],
-        ),
-    )
-
-    # Start sequencer
-    plan.add_service(
-        name="zkevm-node-sequencer" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            files={
-                "/etc/": zkevm_configs,
-            },
-            ports={
-                "rpc": PortSpec(
-                    args["zkevm_rpc_http_port"], application_protocol="http"
-                ),
-                "data-streamer": PortSpec(
-                    args["zkevm_data_streamer_port"], application_protocol="datastream"
-                ),
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg",
-                "/etc/zkevm/node-config.toml",
-                "--network",
-                "custom",
-                "--custom-network-file",
-                "/etc/zkevm/genesis.json",
-                "--components",
-                "sequencer,rpc",
-                "--http.api",
-                "eth,net,debug,zkevm,txpool,web3",
-            ],
-        ),
-    )
-    plan.add_service(
-        name="zkevm-node-sequencesender" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            files={
-                "/etc/": zkevm_configs,
-            },
-            ports={
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg",
-                "/etc/zkevm/node-config.toml",
-                "--network",
-                "custom",
-                "--custom-network-file",
-                "/etc/zkevm/genesis.json",
-                "--components",
-                "sequence-sender",
-            ],
-        ),
-    )
-
-    # Start aggregator
-    plan.add_service(
-        name="zkevm-node-aggregator" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            ports={
-                "aggregator": PortSpec(
-                    args["zkevm_aggregator_port"], application_protocol="grpc"
-                ),
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg",
-                "/etc/zkevm/node-config.toml",
-                "--network",
-                "custom",
-                "--custom-network-file",
-                "/etc/zkevm/genesis.json",
-                "--components",
-                "aggregator",
-            ],
-        ),
-    )
-
-    # Start trusted RPC
-    plan.add_service(
-        name="zkevm-node-rpc" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            ports={
-                "http-rpc": PortSpec(
-                    args["zkevm_rpc_http_port"], application_protocol="http"
-                ),
-                "ws-rpc": PortSpec(
-                    args["zkevm_rpc_ws_port"], application_protocol="ws"
-                ),
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg=/etc/zkevm/node-config.toml",
-                "--network=custom",
-                "--custom-network-file=/etc/zkevm/genesis.json",
-                "--components=rpc",
-                "--http.api=eth,net,debug,zkevm,txpool,web3",
-            ],
-        ),
-    )
-
-    # Start eth-tx-manager and l2-gas-pricer
-    plan.add_service(
-        name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            files={
-                "/etc/": zkevm_configs,
-            },
-            ports={
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg",
-                "/etc/zkevm/node-config.toml",
-                "--network",
-                "custom",
-                "--custom-network-file",
-                "/etc/zkevm/genesis.json",
-                "--components",
-                "eth-tx-manager",
-            ],
-        ),
-    )
-    plan.add_service(
-        name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_node_image"],
-            files={
-                "/etc/": zkevm_configs,
-            },
-            ports={
-                "pprof": PortSpec(
-                    args["zkevm_pprof_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            entrypoint=[
-                "/app/zkevm-node",
-            ],
-            cmd=[
-                "run",
-                "--cfg",
-                "/etc/zkevm/node-config.toml",
-                "--network",
-                "custom",
-                "--custom-network-file",
-                "/etc/zkevm/genesis.json",
-                "--components",
-                "l2gaspricer",
-            ],
-        ),
+    # Start the zkevm node components
+    start_node_components(
+        plan,
+        args,
+        genesis_artifact,
+        sequencer_keystore_artifact,
+        aggregator_keystore_artifact,
     )
 
     # Start bridge
@@ -602,4 +380,101 @@ def start_postgres_db(
             },
             files=files,
         ),
+    )
+
+
+def start_node_components(
+    plan,
+    args,
+    genesis_artifact,
+    sequencer_keystore_artifact,
+    aggregator_keystore_artifact,
+):
+    # Create node configuration file.
+    config_template = read_file(src="./templates/node-config.toml")
+    config_artifact = plan.render_templates(
+        config={"node-config.toml": struct(template=config_template, data=args)}
+    )
+
+    # Deploy components.
+    zkevm_node_package.start_synchronizer(
+        plan=plan,
+        name="zkevm-node-synchronizer" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
+    )
+
+    zkevm_node_package.start_sequencer(
+        plan=plan,
+        name="zkevm-node-sequencer" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        rpc_http_port=args["zkevm_rpc_http_port"],
+        data_streamer_port=args["zkevm_data_streamer_port"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
+        http_api="eth,net,debug,zkevm,txpool,web3",
+    )
+
+    zkevm_node_package.start_sequence_sender(
+        plan=plan,
+        name="zkevm-node-sequence-sender" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
+        sequencer_keystore_artifact=sequencer_keystore_artifact,
+    )
+
+    zkevm_node_package.start_aggregator(
+        plan=plan,
+        name="zkevm-node-aggregator" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        aggregator_port=args["zkevm_aggregator_port"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
+        sequencer_keystore_artifact=sequencer_keystore_artifact,
+        aggregator_keystore_artifact=aggregator_keystore_artifact,
+    )
+
+    zkevm_node_package.start_rpc(
+        plan=plan,
+        name="zkevm-node-rpc" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        rpc_http_port=args["zkevm_rpc_http_port"],
+        rpc_ws_port=args["zkevm_rpc_ws_port"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
+        http_api="eth,net,debug,zkevm,txpool,web3",
+    )
+
+    zkevm_node_package.start_eth_tx_manager(
+        plan=plan,
+        name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
+        sequencer_keystore_artifact=sequencer_keystore_artifact,
+        aggregator_keystore_artifact=aggregator_keystore_artifact,
+    )
+
+    zkevm_node_package.start_l2_gas_pricer(
+        plan=plan,
+        name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
+        image=args["zkevm_node_image"],
+        pprof_port=args["zkevm_pprof_port"],
+        prometheus_port=args["zkevm_prometheus_port"],
+        config_artifact=config_artifact,
+        genesis_artifact=genesis_artifact,
     )
