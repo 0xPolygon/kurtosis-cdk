@@ -19,5 +19,5 @@ jobs:
       - name: Deploy kurtosis package
         uses: kurtosis-tech/kurtosis-github-action@v1
         with:
-          path: cdk
-          args: cdk/params.yml
+          path: .
+          args: params.yml

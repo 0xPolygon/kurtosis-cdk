@@ -11,12 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  package:
+  lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      matrix:
-        package: ["cdk", "permissionless-node"]
     steps:
       - uses: actions/checkout@v4
 
@@ -41,17 +37,13 @@ jobs:
 
       # Run linters
       - name: Run kurtosis linter
-        working-directory: ${{ matrix.package }}
         run: kurtosis lint .
 
       - name: Run yamllint
-        working-directory: ${{ matrix.package }}
         run: yamllint --config-file ${{ github.workspace }}/.yamllint.yml .
 
       - name: Run hadolint
-        working-directory: ${{ matrix.package }}
         run: find . -type f -name 'Dockerfile*' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
 
       - name: Run shellcheck
-        working-directory: ${{ matrix.package }}
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
