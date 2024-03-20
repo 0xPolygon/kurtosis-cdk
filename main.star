@@ -190,7 +190,7 @@ def run(plan, args):
         name="prover-db-init.sql" + args["deployment_suffix"],
     )
     zkevm_databases_package.start_databases(
-        plan, args, event_db_init_script, executor_db_init_script
+        plan, args, event_db_init_script, prover_db_init_script
     )
 
     # Start prover
