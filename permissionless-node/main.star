@@ -1,4 +1,6 @@
-prometheus_package = import_module("github.com/kurtosis-tech/prometheus-package/main.star") 
+prometheus_package = import_module(
+    "github.com/kurtosis-tech/prometheus-package/main.star"
+)
 grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
 
 POSTGRES_IMAGE = "postgres:16.2"
@@ -21,7 +23,9 @@ def run(plan, args):
         name="node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
-    synchronizer = start_synchronizer(plan, args, node_config_artifact, genesis_artifact)
+    synchronizer = start_synchronizer(
+        plan, args, node_config_artifact, genesis_artifact
+    )
     rpc = start_rpc(plan, args, node_config_artifact, genesis_artifact)
 
     prometheus_services = [
@@ -29,16 +33,23 @@ def run(plan, args):
         rpc,
     ]
 
-    metrics_jobs = [{
-        "Name": service.name,
-        "Endpoint": "{0}:{1}".format(
-            service.ip_address,
-            service.ports["prometheus"].number,
-        ),
-    } for service in prometheus_services]
+    metrics_jobs = [
+        {
+            "Name": service.name,
+            "Endpoint": "{0}:{1}".format(
+                service.ip_address,
+                service.ports["prometheus"].number,
+            ),
+        }
+        for service in prometheus_services
+    ]
 
     prometheus_url = prometheus_package.run(plan, metrics_jobs)
-    grafana_package.run(plan, prometheus_url, "github.com/0xPolygon/kurtosis-cdk/permissionless-node/static-files/dashboards")
+    grafana_package.run(
+        plan,
+        prometheus_url,
+        "github.com/0xPolygon/kurtosis-cdk/permissionless-node/static-files/dashboards",
+    )
 
 
 def determine_cpu_architecture(plan):

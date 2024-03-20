@@ -1,5 +1,9 @@
-ethereum_package = import_module("github.com/kurtosis-tech/ethereum-package/main.star@2.0.0")
-prometheus_package = import_module("github.com/kurtosis-tech/prometheus-package/main.star") 
+ethereum_package = import_module(
+    "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
+)
+prometheus_package = import_module(
+    "github.com/kurtosis-tech/prometheus-package/main.star"
+)
 grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
@@ -529,19 +533,26 @@ def run(plan, args):
         zkevm_node_aggregator,
         zkevm_node_rpc,
         zkevm_node_eth_tx_manager,
-        zkevm_node_l2_gas_pricer
+        zkevm_node_l2_gas_pricer,
     ]
 
-    metrics_jobs = [{
-        "Name": service.name,
-        "Endpoint": "{0}:{1}".format(
-            service.ip_address,
-            service.ports["prometheus"].number,
-        ),
-    } for service in prometheus_services]
+    metrics_jobs = [
+        {
+            "Name": service.name,
+            "Endpoint": "{0}:{1}".format(
+                service.ip_address,
+                service.ports["prometheus"].number,
+            ),
+        }
+        for service in prometheus_services
+    ]
 
     prometheus_url = prometheus_package.run(plan, metrics_jobs)
-    grafana_package.run(plan, prometheus_url, "github.com/0xPolygon/kurtosis-cdk/cdk/static-files/dashboards")
+    grafana_package.run(
+        plan,
+        prometheus_url,
+        "github.com/0xPolygon/kurtosis-cdk/cdk/static-files/dashboards",
+    )
 
 
 def start_node_databases(plan, args, prover_db_init_script, event_db_init_script):
