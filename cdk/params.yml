@@ -19,6 +19,7 @@ zkevm_data_streamer_port: 6900
 zkevm_rpc_http_port: 8123
 zkevm_rpc_ws_port: 8133
 zkevm_bridge_rpc_port: 8080
+zkevm_bridge_ui_port: 80
 zkevm_bridge_grpc_port: 9090
 zkevm_agglayer_port: 4444
 zkevm_dac_port: 8484
@@ -125,7 +126,7 @@ zkevm_fork_id: 8
 zkevm_test_deployment: "true"
 
 
-zkevm_l2_chain_id: 101010101
+zkevm_l2_chain_id: 10101
 zkevm_rollup_consensus: "PolygonValidiumEtrog" # "PolygonZkEVMEtrog"
 zkevm_da_protocol: "PolygonDataCommittee"
 zkevm_rollup_description: "kurtosis devnet"
@@ -133,7 +134,7 @@ zkevm_rollup_name: "kurtosis-test"
 zkevm_rollup_real_verifier: "false"
 
 
-l1_network_id: "2718281828459045"
+l1_network_id: "12721"
 l1_preallocated_mnemonic: "code code code code code code code code code code code quality"
 l1_rpc_url: http://el-1-geth-lighthouse:8545
 l1_ws_url: ws://el-1-geth-lighthouse:8546
