@@ -268,7 +268,7 @@ def run(plan, args):
 
     # TODO: Start default pless node
     permissionless_args = args
-    permissionless_args["deployment_suffix"] = "-pless-001"
+    permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
 
     # permissionless_args["trusted_sequencer_node_uri"] = "zkevm-node-sequencer-001:6900"
