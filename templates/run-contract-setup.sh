@@ -64,6 +64,22 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 npm i
 npx hardhat compile
 
+2>&1 echo "Deploying Gas Token"
+printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
+forge build
+forge create --json \
+      --rpc-url "{{.l1_rpc_url}}" \
+      --mnemonic "{{.l1_preallocated_mnemonic}}" \
+      contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
+      --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
+
+# shellcheck disable=SC1054,SC1083
+{{if .zkevm_use_gas_token_contract}}
+# In this case, we'll configure the create rollup parameters to have a gas token
+jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# shellcheck disable=SC1056,SC1072,SC1073,SC1009
+{{end}}
+
 2>&1 echo "Running full l1 contract deployment process"
 npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost &> 01_prepare_testnet.out
 npx ts-node deployment/v2/1_createGenesis.ts &> 02_create_genesis.out
