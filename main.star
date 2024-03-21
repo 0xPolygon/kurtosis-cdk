@@ -101,7 +101,7 @@ def run(plan, args):
     plan.add_service(
         name="contracts" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=CONTRACTS_IMAGE,
+            image="node:20-bookworm",
             files={
                 "/opt/zkevm": zkevm_etc_directory,
                 "/opt/contract-deploy/": Directory(
