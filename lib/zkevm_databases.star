@@ -69,7 +69,7 @@ def start_node_databases(plan, args, event_db_init_script, prover_db_init_script
 
 
 def start_bridge_database(plan, args):
-    start_postgres_db(
+    _start_postgres_db(
         plan,
         name=args["zkevm_db_bridge_hostname"] + args["deployment_suffix"],
         port=args["zkevm_db_postgres_port"],
