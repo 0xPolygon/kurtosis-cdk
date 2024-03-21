@@ -1,5 +1,5 @@
 ---
-deployment_suffix: "-pless-002"
+deployment_suffix: "-001"
 # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 zkevm_prover_image: hermeznetwork/zkevm-prover:v5.0.7
 # zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3 # hermeznetwork/zkevm-node:v0.5.13
