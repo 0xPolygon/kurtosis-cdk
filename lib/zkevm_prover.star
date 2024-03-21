@@ -5,18 +5,18 @@ PROVER_TYPE = struct(
 
 
 def start_prover(plan, args, config_artifact):
-    _start_service(plan, PROVER_TYPE.prover, args, config_artifact)
+    return _start_service(plan, PROVER_TYPE.prover, args, config_artifact)
 
 
 def start_executor(plan, args, config_artifact):
-    _start_service(plan, PROVER_TYPE.executor, args, config_artifact)
+    return _start_service(plan, PROVER_TYPE.executor, args, config_artifact)
 
 
 def _start_service(plan, type, args, config_artifact):
     cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
     cpu_arch = cpu_arch_result.output
 
-    plan.add_service(
+    return plan.add_service(
         name="zkevm-" + type + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
