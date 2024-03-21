@@ -6,12 +6,6 @@ zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 
-CONTRACTS_IMAGE = "node:20-bookworm"
-CONTRACTS_BRANCH = "develop"
-
-POSTGRES_IMAGE = "postgres:16.2"
-POSTGRES_PORT_ID = "postgres"
-
 
 def run(plan, args):
     # Determine system architecture
@@ -297,7 +291,6 @@ def start_node_components(
     )
 
     # Deploy components.
-
     zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
     zkevm_node_package.start_sequencer(plan, args, config_artifact, genesis_artifact)
     zkevm_node_package.start_sequence_sender(
