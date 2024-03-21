@@ -1,0 +1,169 @@
+# The metric namespace. This means that all metrics will be prepended with
+# the namespace.
+namespace: "panoptichain"
+
+runner:
+  # The default interval the providers will poll on. If the provider interval is
+  # not set, this will be the default that is used. For example, if the interval
+  # is set to 30, the RPC providers will update every 30 seconds by default.
+  interval: 30
+
+http:
+  # The port panoptichain will run on.
+  port: 9090
+
+  # The address panoptichain will run on. You may want to change this to
+  # "0.0.0.0" or "" if running in a container.
+  address: "0.0.0.0"
+
+  # The path where you can see the Prometheus metrics. Using the values above,
+  # you'll be able to see the raw metrics at http://localhost:9090/metrics
+  path: "/metrics"
+
+# Providers are the main components that are fetching data. They handle all
+# state storage and requests to data sources. There are currently five types of
+# providers:
+#
+# - rpc
+# - heimdall
+# - sensor_network
+# - system
+# - hash_divergence
+#
+# Providers usually will have `name`, `label`, and `interval` field.
+#
+# The name field corresponds to the name of the network you're trying to
+# observe. These are the currently known networks. See ./network/network.go for
+# details.
+#
+# - "Polygon Mumbai"
+#	- "Heimdall Mumbai"
+# - "Polygon Mainnet"
+# - "Heimdall Mainnet"
+#	- "zkEVM Mainnet"
+# - "zkEVM Testnet"
+# - "zkEVM Cardona"
+# - "zkEVM Bali"
+# - "Ethereum"
+# - "Sepolia"
+# - "Goerli"
+#
+# If you wish to have a custom network name, you should define those in the
+# network section in this file.
+#
+# The label field helps differentiate providers that share the same network. For
+# example, two RPC providers may observe Ethereum, but from different RPC
+# endpoints. Here, it would be helpful to use the RPC url as the label to help
+# differentiate them.
+#
+# The interval field is used to override the runner.interval default.
+providers:
+  # The system provider captures data for the panoptichain level system metrics.
+  # Metrics such as panoptichain uptime are captured by this provider. See
+  # ./observer/system.go and ./provider/system.go for details.
+  system:
+    interval: 30
+
+  # RPC providers will fetch data from an Ethereum based RPC server. See
+  # ./provider/rpc.go and ./observer/rpc.go for implementation details.
+  #
+  # RPC providers also have certain contracts they can observe. The contract
+  # specific metrics they can observe are:
+  #
+  # - state_sync_receiver_address   (PoS)
+  # - state_sync_sender_address     (PoS)
+  # - checkpoint_address            (PoS)
+  #
+  # - pol_token_address             (zkEVM)
+  # - global_exit_root_l2_address   (zkEVM)
+  # - global_exit_root              (zkEVM, versioned)
+  # - zkevm_bridge                  (zkEVM, versioned)
+  # - rollup_manager_address        (zkEVM)
+  #
+  # Some of these contracts are versioned contracts, which means they take in a
+  # version along with the contract address. This is because there are slight
+  # differences in the ABIs among versions.
+  rpc:
+    - name: "L2"
+      url: "{{.l2_rpc_url}}"
+      label: "L2"
+
+    - name: "L1"
+      url: "{{.l1_rpc_url}}"
+      label: "L1"
+
+# Observers control what metrics will be recorded. Remove the observer from the
+# list to not track them, causing the metrics to be omitted from the metrics
+# endpoint. You can keep all observers enabled, it shouldn't cause any problems.
+# See ./observer/observer.go for the observer mapping.
+observers:
+  - "base_fee_per_gas"
+  - "block"
+  - "block_interval"
+  - "bogon_block"
+  - "bridge_event"
+  - "checkpoint"
+  - "claim_event"
+  - "deposit_counts"
+  - "double_sign"
+  - "empty_block"
+  - "exit_roots"
+  - "gas_limit"
+  - "gas_used"
+  - "hash_divergence"
+  - "heimdall_block_interval"
+  - "heimdall_checkpoint"
+  - "heimdall_height"
+  - "heimdall_missed_block_proposal"
+  - "heimdall_missed_checkpoint_proposal"
+  - "heimdall_missed_milestone_proposal"
+  - "heimdall_signature_count"
+  - "heimdall_total_transaction_count"
+  - "heimdall_transaction_count"
+  - "milestone"
+  - "missed_block_proposal"
+  - "refresh_state_time"
+  - "reorg"
+  - "sealed_out_of_turn"
+  - "sensor_block_events"
+  - "sensor_blocks"
+  - "sensor_bogon_block"
+  - "state_sync"
+  - "stolen_block"
+  - "system"
+  - "transaction_cost"
+  - "transaction_count"
+  - "transaction_gas_fee_cap"
+  - "transaction_gas_limit"
+  - "transaction_gas_price"
+  - "transaction_gas_tip_cap"
+  - "transaction_pool"
+  - "transaction_value"
+  - "uncles"
+  - "validator_wallet_balance"
+  - "zkevm_batches"
+  - "zkevm_contract"
+
+# Networks allows you to define custom networks. If defined here, you can use it
+# in the provider as the `name` field.
+networks:
+  - name: "L1"
+    chain_id: { { .l1_network_id } }
+
+  - name: "L2"
+    chain_id: { { .zkevm_l2_chain_id } }
+
+logs:
+  # Pretty print logs. If running in production, you should probably set this to
+  # false. If false, it will print as JSON.
+  pretty: false
+
+  # Set the log level. The possible log levels are:
+  # - "trace"
+  # - "debug"
+  # - "info"
+  # - "warn"
+  # - "error"
+  # - "panic"
+  # - "fatal"
+  verbosity: "trace"
