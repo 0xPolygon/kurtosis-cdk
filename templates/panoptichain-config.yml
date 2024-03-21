@@ -148,10 +148,10 @@ observers:
 # in the provider as the `name` field.
 networks:
   - name: "L1"
-    chain_id: { { .l1_network_id } }
+    chain_id: {{.l1_network_id}}
 
   - name: "L2"
-    chain_id: { { .zkevm_l2_chain_id } }
+    chain_id: {{.zkevm_l2_chain_id}}
 
 logs:
   # Pretty print logs. If running in production, you should probably set this to
