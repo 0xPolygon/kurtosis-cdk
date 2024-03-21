@@ -121,5 +121,10 @@ zkevm_rollup_description: kurtosis devnet
 zkevm_rollup_name: kurtosis-test
 zkevm_rollup_real_verifier: false
 
+# Permissionless node configuration.
+trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
+zkevm_aggregator_host: zkevm-node-aggregator-001
+genesis_file: templates/permissionless-node/genesis.json"
+
 # Tools versions
 polycli_version: v0.1.42

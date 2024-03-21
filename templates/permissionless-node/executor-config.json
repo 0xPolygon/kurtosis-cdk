@@ -46,9 +46,9 @@
     "proverClientPort": 50051,
     "proverClientHost": "127.0.0.1",
 
-    "executorServerPort": {{.zkevm_prover_port}},
+    "executorServerPort": {{.zkevm_executor_port}},
     "executorROMLineTraces": false,
-    "executorClientPort": {{.zkevm_prover_port}},
+    "executorClientPort": {{.zkevm_executor_port}},
     "executorClientHost": "127.0.0.1",
 
     "hashDBServerPort": {{.zkevm_hash_db_port}},
