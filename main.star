@@ -32,7 +32,8 @@ def run(plan, args):
         {
             "additional_services": [],
             "network_params": {
-                "network_id": args["l1_network_id"],
+                # The ethereum package requires the network id to be a string.
+                "network_id": str(args["l1_network_id"]),
                 "preregistered_validator_keys_mnemonic": args[
                     "l1_preallocated_mnemonic"
                 ],
