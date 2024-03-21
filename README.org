@@ -110,6 +110,7 @@ network, you'll need to pull the genesis file artifact out and add it
 to your ~permissionless_node~ kurtosis package.
 
 #+begin_src bash
+rm -r /tmp/zkevm
 kurtosis files download cdk-v1 zkevm /tmp
 cp /tmp/zkevm/genesis.json templates/permissionless-node/genesis.json
 #+end_src
