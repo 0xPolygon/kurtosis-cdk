@@ -267,7 +267,8 @@ def run(plan, args):
         aggregator_keystore_artifact,
     )
 
-    # TODO: Start default pless node
+    # Start default permissionless node.
+    # Note that an additional suffix will be added to the services.
     permissionless_args = args
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact

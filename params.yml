@@ -2,8 +2,9 @@
 # Deployment parameters.
 
 # Suffix appended to service names.
-# Note: It needs to be a string.
-deployment_suffix: "-001"
+# Note: It should be a string.
+cdk_deployment_suffix: "-001"
+
 
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v5.0.7
