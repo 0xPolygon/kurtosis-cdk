@@ -5,7 +5,7 @@ NODE_COMPONENT = struct(
     aggregator="aggregator",
     rpc="rpc",
     eth_tx_manager="eth-tx-manager",
-    l2_gas_pricer="l2-gas-pricer",
+    l2_gas_pricer="l2gaspricer",
 )
 
 
