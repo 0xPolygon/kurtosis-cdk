@@ -403,7 +403,7 @@ def run(plan, args):
     )
 
     # Start trusted RPC
-    plan.add_service(
+    zkevmnoderpc = plan.add_service(
         name="zkevm-node-rpc" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_node_image"],
@@ -503,7 +503,7 @@ def run(plan, args):
     )
 
     # Start bridge
-    plan.add_service(
+    zkevmbridgeservice = plan.add_service(
         name="zkevm-bridge-service" + args["deployment_suffix"],
         config=ServiceConfig(
             image="hermeznetwork/zkevm-bridge-service:v0.4.2",
@@ -525,6 +525,47 @@ def run(plan, args):
         ),
     )
 
+    # Fetch addresses
+    ethereum_bridge_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonBridgeAddress")
+    zkevm_bridge_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonBridgeAddress") # "L2PolygonBridgeAddresses"
+    rollup_manager_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonRollupManagerAddress")
+    polygon_zkevm_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonZkEVMAddress")
+    l1_ip_address = extract_ip_address_from_service(plan, "el-1-geth-lighthouse")
+
+    # Fetch port
+    polygon_zkevm_rpc_http_port = zkevmnoderpc.ports["http-rpc"]
+    bridge_api_http_port = zkevmbridgeservice.ports["bridge-rpc"]
+
+    # Start bridge-ui
+    plan.add_service(
+        name="zkevm-bridge-ui" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image="hermeznetwork/zkevm-bridge-ui:latest",
+            ports={
+                "bridge-ui": PortSpec(
+                    args["zkevm_bridge_ui_port"], application_protocol="http"
+                ),
+            },
+            env_vars = {
+                "ETHEREUM_RPC_URL": "http://{}".format(l1_ip_address),
+                "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(zkevmnoderpc.ip_address, polygon_zkevm_rpc_http_port.number),
+                "BRIDGE_API_URL": "http://{}:{}".format(zkevmbridgeservice.ip_address, bridge_api_http_port.number),
+                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
+                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
+                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                "ETHEREUM_EXPLORER_URL": "https://sepolia.etherscan.io/",
+                "POLYGON_ZK_EVM_EXPLORER_URL": "https://sepolia.etherscan.io/",
+                "POLYGON_ZK_EVM_NETWORK_ID": "1",
+                "ENABLE_FIAT_EXCHANGE_RATES": "false",
+                "ENABLE_OUTDATED_NETWORK_MODAL": "false",
+                "ENABLE_DEPOSIT_WARNING": "true",
+                "ENABLE_REPORT_FORM": "false",
+            },
+            cmd=["run"],
+        ),
+    )
 
 def start_node_databases(plan, args, prover_db_init_script, event_db_init_script):
     postgres_port = args["zkevm_db_postgres_port"]
@@ -603,3 +644,25 @@ def start_postgres_db(
             files=files,
         ),
     )
+
+
+def extract_json_key_from_service(
+    plan, service_name, filename, key
+):
+    plan.print("Extracting contract addresses and ports...")
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat {} | grep -w '{}' | xargs -n1 | tail -1".format(filename, key)]
+    )
+    result = plan.exec(service_name=service_name, recipe=exec_recipe)
+    return result["output"]
+
+
+def extract_ip_address_from_service(
+    plan, service_name
+):
+    plan.print("Extracting IP address...")
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "echo -n $(hostname -i) ; echo -n \":8545\" "]
+    )
+    result = plan.exec(service_name=service_name, recipe=exec_recipe)
+    return result["output"]
