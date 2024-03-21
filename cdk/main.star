@@ -525,6 +525,34 @@ def run(plan, args):
         ),
     )
 
+    panoptichain_config_template = read_file(src="./templates/panoptichain-config.yml")
+    panoptichain_config_artifact = plan.render_templates(
+        config={
+            "config.yml": struct(
+                template=panoptichain_config_template, data=args.update({
+                    "l2_rpc_url": "http://{0}:{1}".format(
+                        zkevm_node_rpc.ip_address,
+                        zkevm_node_rpc.ports["http-rpc"].number,
+                    ),
+                }),
+            )
+        }
+    )
+
+    # Start panoptichain
+    panoptichain = plan.add_service(
+        name="panoptichain" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image="minhdvu/panoptichain",
+            ports={
+                "prometheus": PortSpec(9090, application_protocol="http"),
+            },
+            files={
+                "/": panoptichain_config_artifact
+            }
+        ),
+    )
+
     prometheus_services = [
         zkevm_agglayer,
         zkevm_node_synchronizer,
@@ -534,6 +562,7 @@ def run(plan, args):
         zkevm_node_rpc,
         zkevm_node_eth_tx_manager,
         zkevm_node_l2_gas_pricer,
+        panoptichain,
     ]
 
     metrics_jobs = [
