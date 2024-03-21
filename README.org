@@ -107,7 +107,7 @@ In addition to the core stack, you can also attach and synchronize a
 permissionless node. Of course, you'll need the CDK stack running from
 the previous commands. Assuming that has run and correctly created a
 network, you'll need to pull the genesis file artifact out and add it
-to your ~permissionless-node~ kurtosis package.
+to your ~permissionless_node~ kurtosis package.
 
 #+begin_src bash
 kurtosis files download cdk-v1 zkevm /tmp
@@ -118,7 +118,7 @@ Now that we have the right genesis file, we can add a permissionless
 node to the ~cdk-v1~ enclave:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml --main-file permissionless-node.star .
+kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
 
 ** License

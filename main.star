@@ -1,10 +1,10 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
-zkevm_databases_package = import_module("./lib/databases.star")
-zkevm_node_package = import_module("./lib/node.star")
-zkevm_prover_package = import_module("./lib/prover.star")
-zkevm_permissionless_node_package = import_module("./permissionless-node.star")
+zkevm_databases_package = import_module("./lib/zkevm_databases.star")
+zkevm_node_package = import_module("./lib/zkevm_node.star")
+zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 
 CONTRACTS_IMAGE = "node:20-bookworm"
 CONTRACTS_BRANCH = "develop"

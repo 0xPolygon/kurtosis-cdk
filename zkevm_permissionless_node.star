@@ -1,6 +1,6 @@
-zkevm_databases_package = import_module("./lib/databases.star")
-zkevm_node_package = import_module("./lib/node.star")
-zkevm_prover_package = import_module("./lib/prover.star")
+zkevm_databases_package = import_module("./lib/zkevm_databases.star")
+zkevm_node_package = import_module("./lib/zkevm_node.star")
+zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
 def run(plan, args):
