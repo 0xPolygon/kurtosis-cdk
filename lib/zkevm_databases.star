@@ -68,7 +68,8 @@ def start_node_databases(plan, args, event_db_init_script, prover_db_init_script
     )
 
 
-def start_bridge_database(plan, args):
+def start_peripheral_databases(plan, args):
+    # Start bridge database.
     _start_postgres_db(
         plan,
         name=args["zkevm_db_bridge_hostname"] + args["deployment_suffix"],
@@ -76,4 +77,24 @@ def start_bridge_database(plan, args):
         db=args["zkevm_db_bridge_name"],
         user=args["zkevm_db_bridge_user"],
         password=args["zkevm_db_bridge_password"],
+    )
+
+    # Start agglayer database.
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_agglayer_hostname"] + args["deployment_suffix"],
+        port=args["zkevm_db_postgres_port"],
+        db=args["zkevm_db_agglayer_name"],
+        user=args["zkevm_db_agglayer_user"],
+        password=args["zkevm_db_agglayer_password"],
+    )
+
+    # Start dac database.
+    start_postgres_db(
+        plan,
+        name=args["zkevm_db_dac_hostname"] + args["deployment_suffix"],
+        port=args["zkevm_db_postgres_port"],
+        db=args["zkevm_db_dac_name"],
+        user=args["zkevm_db_dac_user"],
+        password=args["zkevm_db_dac_password"],
     )
