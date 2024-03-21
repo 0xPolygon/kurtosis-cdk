@@ -273,9 +273,6 @@ def run(plan, args):
     permissionless_args = args
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
-
-    # permissionless_args["trusted_sequencer_node_uri"] = "zkevm-node-sequencer-001:6900"
-    # permissionless_args["zkevm_aggregator_host"] = "zkevm-node-aggregator-001"
     zkevm_permissionless_node_package.run(plan, args)
 
     # Start bridge
