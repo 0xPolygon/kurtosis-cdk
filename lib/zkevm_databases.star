@@ -67,6 +67,7 @@ def start_node_databases(plan, args, event_db_init_script, prover_db_init_script
         password=args["zkevm_db_state_password"],
     )
 
+
 def start_bridge_database(plan, args):
     start_postgres_db(
         plan,
