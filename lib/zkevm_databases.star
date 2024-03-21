@@ -80,7 +80,7 @@ def start_peripheral_databases(plan, args):
     )
 
     # Start agglayer database.
-    start_postgres_db(
+    _start_postgres_db(
         plan,
         name=args["zkevm_db_agglayer_hostname"] + args["deployment_suffix"],
         port=args["zkevm_db_postgres_port"],
@@ -90,7 +90,7 @@ def start_peripheral_databases(plan, args):
     )
 
     # Start dac database.
-    start_postgres_db(
+    _start_postgres_db(
         plan,
         name=args["zkevm_db_dac_hostname"] + args["deployment_suffix"],
         port=args["zkevm_db_postgres_port"],
