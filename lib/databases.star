@@ -24,7 +24,7 @@ def _start_postgres_db(
     )
 
 
-def start_databases(plan, args, event_db_init_script, executor_db_init_script):
+def start_databases(plan, args, event_db_init_script, prover_db_init_script):
     # Start event database.
     _start_postgres_db(
         plan,
@@ -46,15 +46,15 @@ def start_databases(plan, args, event_db_init_script, executor_db_init_script):
         password=args["zkevm_db_pool_password"],
     )
 
-    # Start executor database.
+    # Start prover database.
     _start_postgres_db(
         plan,
-        name=args["zkevm_db_executor_hostname"] + args["deployment_suffix"],
+        name=args["zkevm_db_prover_hostname"] + args["deployment_suffix"],
         port=args["zkevm_db_postgres_port"],
-        db="executor_db",
-        user=args["zkevm_db_executor_user"],
-        password=args["zkevm_db_executor_password"],
-        init_script_artifact_name=executor_db_init_script,
+        db="prover_db",
+        user=args["zkevm_db_prover_user"],
+        password=args["zkevm_db_prover_password"],
+        init_script_artifact_name=prover_db_init_script,
     )
 
     # Start state database.
