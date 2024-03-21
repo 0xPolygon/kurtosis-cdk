@@ -5,6 +5,7 @@ zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
+observability_package = import_module("./lib/observability.star")
 
 
 def run(plan, args):
@@ -222,10 +223,6 @@ def run(plan, args):
             image=args["zkevm_dac_image"],
             ports={
                 "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-                # Does the DAC have prometheus?!
-                # "prometheus": PortSpec(
-                #     args["zkevm_prometheus_port"], application_protocol="http"
-                # ),
             },
             files={
                 "/etc/": zkevm_configs,
@@ -238,7 +235,7 @@ def run(plan, args):
     )
 
     # Start the zkevm node components
-    start_node_components(
+    services = start_node_components(
         plan,
         args,
         genesis_artifact,
@@ -248,10 +245,10 @@ def run(plan, args):
 
     # Start default permissionless node.
     # Note that an additional suffix will be added to the services.
-    permissionless_args = args
+    permissionless_args = {k: v for k, v in args.items()}
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
-    zkevm_permissionless_node_package.run(plan, args)
+    services += zkevm_permissionless_node_package.run(plan, args, False)
 
     # Start bridge
     plan.add_service(
@@ -276,6 +273,8 @@ def run(plan, args):
         ),
     )
 
+    observability_package.run(plan, args, services)
+
 
 def start_node_components(
     plan,
@@ -291,30 +290,44 @@ def start_node_components(
     )
 
     # Deploy components.
-    zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
-    zkevm_node_package.start_sequencer(plan, args, config_artifact, genesis_artifact)
-    zkevm_node_package.start_sequence_sender(
-        plan, args, config_artifact, genesis_artifact, sequencer_keystore_artifact
-    )
-    zkevm_node_package.start_aggregator(
-        plan,
-        args,
-        config_artifact,
-        genesis_artifact,
-        sequencer_keystore_artifact,
-        aggregator_keystore_artifact,
-    )
-    zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
-
-    zkevm_node_package.start_eth_tx_manager(
-        plan,
-        args,
-        config_artifact,
-        genesis_artifact,
-        sequencer_keystore_artifact,
-        aggregator_keystore_artifact,
-    )
-
-    zkevm_node_package.start_l2_gas_pricer(
+    synchronizer = zkevm_node_package.start_synchronizer(
         plan, args, config_artifact, genesis_artifact
     )
+    sequencer = zkevm_node_package.start_sequencer(
+        plan, args, config_artifact, genesis_artifact
+    )
+    sequencer_sender = zkevm_node_package.start_sequence_sender(
+        plan, args, config_artifact, genesis_artifact, sequencer_keystore_artifact
+    )
+    aggregator = zkevm_node_package.start_aggregator(
+        plan,
+        args,
+        config_artifact,
+        genesis_artifact,
+        sequencer_keystore_artifact,
+        aggregator_keystore_artifact,
+    )
+    rpc = zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
+
+    eth_tx_manager = zkevm_node_package.start_eth_tx_manager(
+        plan,
+        args,
+        config_artifact,
+        genesis_artifact,
+        sequencer_keystore_artifact,
+        aggregator_keystore_artifact,
+    )
+
+    l2_gas_pricer = zkevm_node_package.start_l2_gas_pricer(
+        plan, args, config_artifact, genesis_artifact
+    )
+
+    return [
+        synchronizer,
+        sequencer,
+        sequencer_sender,
+        aggregator,
+        rpc,
+        eth_tx_manager,
+        l2_gas_pricer,
+    ]

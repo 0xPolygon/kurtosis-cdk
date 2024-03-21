@@ -1,9 +1,10 @@
 zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+observability_package = import_module("./lib/observability.star")
 
 
-def run(plan, args):
+def run(plan, args, run_observability=True):
     # Start node databases.
     event_db_init_script = plan.upload_files(
         src="./templates/databases/event-db-init.sql",
@@ -48,7 +49,19 @@ def run(plan, args):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
-    zkevm_node_package.start_synchronizer(
+    synchronizer = zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
-    zkevm_node_package.start_rpc(plan, args, node_config_artifact, genesis_artifact)
+    rpc = zkevm_node_package.start_rpc(
+        plan, args, node_config_artifact, genesis_artifact
+    )
+
+    services = [
+        synchronizer,
+        rpc,
+    ]
+
+    if run_observability:
+        observability_package.run(plan, args, services)
+
+    return services
