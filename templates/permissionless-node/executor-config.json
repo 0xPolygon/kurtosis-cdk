@@ -46,9 +46,9 @@
     "proverClientPort": 50051,
     "proverClientHost": "127.0.0.1",
 
-    "executorServerPort": {{.zkevm_executor_port}},
+    "executorServerPort": {{.zkevm_prover_port}},
     "executorROMLineTraces": false,
-    "executorClientPort": {{.zkevm_executor_port}},
+    "executorClientPort": {{.zkevm_prover_port}},
     "executorClientHost": "127.0.0.1",
 
     "hashDBServerPort": {{.zkevm_hash_db_port}},
@@ -69,7 +69,7 @@
 
     "outputPath": "output",
 
-    "databaseURL": "postgresql://{{.zkevm_db_executor_user}}:{{.zkevm_db_executor_password}}@{{.zkevm_db_executor_hostname}}{{.deployment_suffix}}:{{.zkevm_db_postgres_port}}/executor_db",
+    "databaseURL": "postgresql://{{.zkevm_db_prover_user}}:{{.zkevm_db_prover_password}}@{{.zkevm_db_prover_hostname}}{{.deployment_suffix}}:{{.zkevm_db_postgres_port}}/{{.zkevm_db_prover_name}}",
     "dbNodesTableName": "state.nodes",
     "dbProgramTableName": "state.program",
     "dbMultiWrite": true,
