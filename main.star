@@ -257,7 +257,7 @@ def run(plan, args):
     plan.add_service(
         name="zkevm-bridge-service" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="hermeznetwork/zkevm-bridge-service:v0.4.2",
+            image=args["zkevm_bridge_service_image"],
             ports={
                 "bridge-rpc": PortSpec(
                     args["zkevm_bridge_rpc_port"], application_protocol="http"
@@ -275,6 +275,54 @@ def run(plan, args):
             cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
         ),
     )
+
+    # Fetch addresses
+    zkevm_bridge_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonBridgeAddress") # "L2PolygonBridgeAddresses"
+    rollup_manager_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonRollupManagerAddress")
+    polygon_zkevm_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonZkEVMAddress")
+    l1_ip_address = extract_ip_address_from_service(plan, "el-1-geth-lighthouse")
+
+    # Fetch port
+    polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
+    bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
+
+    # Start bridge-ui
+    plan.add_service(
+        name="zkevm-bridge-ui" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image=args["zkevm_bridge_ui_image"],
+            ports={
+                "bridge-ui": PortSpec(
+                    args["zkevm_bridge_ui_port"], application_protocol="http"
+                ),
+            },
+            env_vars = {
+                "ETHEREUM_RPC_URL": "http://{}".format(l1_ip_address),
+                "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number),
+                "BRIDGE_API_URL": "http://{}:{}".format(zkevm_bridge_service.ip_address, bridge_api_http_port.number),
+                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
+                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
+                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                "ETHEREUM_EXPLORER_URL": "https://sepolia.etherscan.io/",
+                "POLYGON_ZK_EVM_EXPLORER_URL": "https://sepolia.etherscan.io/",
+                "POLYGON_ZK_EVM_NETWORK_ID": "1",
+                "ENABLE_FIAT_EXCHANGE_RATES": "false",
+                "ENABLE_OUTDATED_NETWORK_MODAL": "false",
+                "ENABLE_DEPOSIT_WARNING": "true",
+                "ENABLE_REPORT_FORM": "false",
+            },
+            cmd=["run"],
+        ),
+    )
+
+    # Start default permissionless node.
+    # Note that an additional suffix will be added to the services.
+    permissionless_args = args
+    permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
+    permissionless_args["genesis_artifact"] = genesis_artifact
+    zkevm_permissionless_node_package.run(plan, args)
 
 
 def start_node_components(
