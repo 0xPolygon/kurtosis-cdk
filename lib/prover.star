@@ -3,6 +3,7 @@ PROVER_TYPE = struct(
     executor="executor",
 )
 
+
 def start_prover(plan, args, config_artifact):
     _start_service(plan, PROVER_TYPE.prover, args, config_artifact)
 
