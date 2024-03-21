@@ -126,5 +126,13 @@ trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
 zkevm_aggregator_host: zkevm-node-aggregator-001
 genesis_file: templates/permissionless-node/genesis.json
 
+# CDK erigon node configuration.
+l1_rollup_address: "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
+l1_polygon_rollup_manager_address: "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+l1_matic_contract_address: "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
+l1_ger_manager_contract_address: "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
+l2_sequencer_rpc_url: http://zkevm-node-sequencer-001:8545
+l2_datastreamer_url: zkevm-node-sequencer-001:6900
+
 # Tools versions
 polycli_version: v0.1.42

@@ -5,6 +5,7 @@ zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
+cdk_erigon_node_package = import_module("./cdk_erigon_node.star")
 
 
 def run(plan, args):
@@ -97,9 +98,10 @@ def run(plan, args):
     )
 
     # Create helper service to deploy contracts
+    contracts_service_name = "contracts" + args["deployment_suffix"]
     zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
     plan.add_service(
-        name="contracts" + args["deployment_suffix"],
+        name=contracts_service_name,
         config=ServiceConfig(
             image="node:20-bookworm",
             files={
@@ -121,14 +123,14 @@ def run(plan, args):
 
     # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
     contract_init_stat = plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         acceptable_codes=[0, 1],
         recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
     )
 
     # Deploy contracts
     plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[
                 "git",
@@ -143,34 +145,34 @@ def run(plan, args):
         ),
     )
     plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=["chmod", "a+x", "/opt/contract-deploy/run-contract-setup.sh"]
         ),
     )
     plan.print("Running zkEVM contract deployment. This might take some time...")
     plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
     )
     zkevm_configs = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm",
         name="zkevm",
         description="These are the files needed to start various node services",
     )
     genesis_artifact = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm/genesis.json",
         name="genesis",
     )
     sequencer_keystore_artifact = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm/sequencer.keystore",
         name="sequencer-keystore",
     )
     aggregator_keystore_artifact = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm/aggregator.keystore",
         name="aggregator-keystore",
     )
@@ -252,6 +254,33 @@ def run(plan, args):
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
     zkevm_permissionless_node_package.run(plan, args)
+
+    # Start erigon-cdk-node
+    l1_addresses_result = plan.exec(
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=["cat", "/opt/zkevm/combined.json"],
+            extract={
+                "l1_rollup_address": "fromjson | .rollupAddress",
+                "l1_polygon_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+                "l1_matic_contract_address": "fromjson | .polTokenAddress",
+                "l1_ger_manager_contract_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
+            },
+        ),
+        description="Getting L1 zkEVM contract addresses",
+    )
+
+    args["l1_rollup_address"] = l1_addresses_result["extract.l1_rollup_address"]
+    args["l1_polygon_rollup_manager_address"] = l1_addresses_result[
+        "extract.l1_polygon_rollup_manager_address"
+    ]
+    args["l1_matic_contract_address"] = l1_addresses_result[
+        "extract.l1_matic_contract_address"
+    ]
+    args["l1_ger_manager_contract_address"] = l1_addresses_result[
+        "extract.l1_ger_manager_contract_address"
+    ]
+    cdk_erigon_node_package.run(plan, args)
 
     # Start bridge
     plan.add_service(
