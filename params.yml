@@ -12,6 +12,8 @@ zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
 zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
 zkevm_contracts_branch: v5.0.1-rc.2-fork.8
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
+zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
+zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest # TODO: better tags for the bridge ui
 
 # Port configuration.
 zkevm_hash_db_port: 50061
@@ -124,7 +126,7 @@ zkevm_rollup_real_verifier: false
 
 # If this is true, we will automatically deploy an ERC20 contract on
 # L1 to be used at the gasTokenAddress
-zkevm_use_gas_token_contract: false
+zkevm_use_gas_token_contract: true
 
 # Permissionless node configuration.
 trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900

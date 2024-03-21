@@ -250,7 +250,7 @@ def run(plan, args):
     zkevm_bridge_service = plan.add_service(
         name="zkevm-bridge-service" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="hermeznetwork/zkevm-bridge-service:v0.4.2",
+            image=args["zkevm_bridge_service_image"],
             ports={
                 "bridge-rpc": PortSpec(
                     args["zkevm_bridge_rpc_port"], application_protocol="http"
@@ -283,7 +283,7 @@ def run(plan, args):
     plan.add_service(
         name="zkevm-bridge-ui" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="hermeznetwork/zkevm-bridge-ui:latest",
+            image=args["zkevm_bridge_ui_image"],
             ports={
                 "bridge-ui": PortSpec(
                     args["zkevm_bridge_ui_port"], application_protocol="http"
