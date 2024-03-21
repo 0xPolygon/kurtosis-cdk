@@ -190,9 +190,10 @@ def run(plan, args):
         src="./templates/databases/prover-db-init.sql",
         name="prover-db-init.sql" + args["deployment_suffix"],
     )
-    zkevm_databases_package.start_databases(
+    zkevm_databases_package.start_node_databases(
         plan, args, event_db_init_script, prover_db_init_script
     )
+    zkevm_databases_package.start_bridge_database(plan, args)
 
     # Start prover
     zkevm_prover_package.start_prover(plan, args, prover_config_artifact)

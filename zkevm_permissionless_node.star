@@ -13,7 +13,7 @@ def run(plan, args):
         src="./templates/databases/prover-db-init.sql",
         name="executor-db-init.sql" + args["deployment_suffix"],
     )
-    zkevm_databases_package.start_databases(
+    zkevm_databases_package.start_node_databases(
         plan, args, event_db_init_script, executor_db_init_script
     )
 
