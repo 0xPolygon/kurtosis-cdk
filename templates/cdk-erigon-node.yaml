@@ -1,0 +1,81 @@
+# User configuration for a CDK-Erigon node.
+
+# The data directory for the databases.
+datadir: /var/lib/cdk-erigon
+
+## [zkEVM configuration]
+# The RPC rate limit in requests per second.
+zkevm.rpc-ratelimit: 250
+# The stream version indicator (1: PreBigEndian, 2: BigEndian) of the zkEVM data stream.
+zkevm.datastream-version: 2
+
+## [L1 query parameters]
+# The block range used to filter verifications and sequences on L1.
+zkevm.l1-block-range: 20000
+# The delay (in ms) between queries for verifications and sequences on L1.
+zkevm.l1-query-delay: 6000
+# The first block to start syncing from on L1.
+zkevm.l1-first-block: 1
+
+
+
+# Configuration shared by all CDK-Erigon nodes.
+
+## [HTTP-RPC Server]
+# The HTTP-RPC server listening port.
+http.addr: 0.0.0.0
+# The APIs offered over the HTTP-RPC interface.
+http.api:
+  - eth
+  - debug
+  - net
+  - trace
+  - web3
+  - erigon
+  - zkevm
+
+## [Other]
+# Disable the internal txpool and block producer (experimental).
+txpool.disable: true
+# Enable external consensus.
+externalcl: true
+
+
+
+# Configuration specific for a CDK-Erigon node connecting to zkEVM Bali Testnet (built on top of Ethereum Sepolia Testnet).
+
+# The name of the testnet to join.
+# Do not change this parameter, it is hardcoded in the cdk-erigon code base.
+# https://github.com/0xPolygonHermez/cdk-erigon/blob/zkevm/params/chainspecs/hermez-dev.json#L2
+chain: hermez-dev
+
+## [L1 configuration]
+# The L1 chain id.
+zkevm.l1-chain-id: "{{.l1_network_id}}"
+# The L1 RPC endpoint
+zkevm.l1-rpc-url: "{{.l1_rpc_url}}"
+# The address of the L1 chain.
+zkevm.l1-rollup: "{{.l1_rollup_address}}"
+
+## [L1 contracts]
+# The address of the Polygon Rollup Manager contract on L1.
+zkevm.l1-polygon-rollup-manager: "{{.l1_polygon_rollup_manager_address}}"
+# The address of the Matic contract on L1.
+zkevm.l1-matic-contract-address: "{{.l1_matic_contract_address}}"
+# The address of the Global Exit Root Manager contract on L1.
+zkevm.l1-ger-manager-contract-address: "{{.l1_ger_manager_contract_address}}"
+
+## [zkEVM L1 topics]
+# The L1 topic for verification.
+zkevm.l1-topic-verification: "0xcb339b570a7f0b25afa7333371ff11192092a0aeace12b671f4c212f2815c6fe"
+# The L1 topic for sequencing.
+zkevm.l1-topic-sequence: "0x303446e6a8cb73c83dff421c0b1d5e5ce0719dab1bff13660fc254e58cc17fce"
+
+## [L2 configuration]
+# The L2 chain id.
+zkevm.l2-chain-id: "{{.l2_chain_id}}"
+# The RPC endpoint of the sequencer on L2.
+zkevm.l2-sequencer-rpc-url: "{{.l2_sequencer_rpc_url}}"
+# The URL endpoint of the datastreamer on L2.
+# This component is responsible for sending L2 blocks.
+zkevm.l2-datastreamer-url: "{{.l2_datastreamer_url}}"

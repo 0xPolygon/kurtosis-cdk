@@ -5,6 +5,7 @@ zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
+cdk_erigon_node_package = import_module("./cdk_erigon_node.star")
 
 
 def run(plan, args):
@@ -252,6 +253,33 @@ def run(plan, args):
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
     zkevm_permissionless_node_package.run(plan, args)
+
+    # Start erigon-cdk-node
+    l1_addresses_result = plan.exec(
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=["cat", "/opt/zkevm/combined.json"],
+            extract={
+                "l1_rollup_address": "fromjson | .rollupAddress",
+                "l1_polygon_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+                "l1_matic_contract_address": "fromjson | .polTokenAddress",
+                "l1_ger_manager_contract_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
+            },
+        ),
+        description="Getting L1 zkEVM contract addresses",
+    )
+
+    args["l1_rollup_address"] = l1_addresses_result["extract.l1_rollup_address"]
+    args["l1_polygon_rollup_manager_address"] = l1_addresses_result[
+        "extract.l1_polygon_rollup_manager_address"
+    ]
+    args["l1_matic_contract_address"] = l1_addresses_result[
+        "extract.l1_matic_contract_address"
+    ]
+    args["l1_ger_manager_contract_address"] = l1_addresses_result[
+        "extract.l1_ger_manager_contract_address"
+    ]
+    cdk_erigon_node_package.run(plan, args)
 
     # Start bridge
     plan.add_service(
