@@ -104,7 +104,7 @@ providers:
       url: "{{.l2_rpc_url}}"
       label: "L2"
       contracts:
-        global_exit_root_l2_address: "{{.global_exit_root_l2_address}}"
+        # global_exit_root_l2_address: "{{.global_exit_root_l2_address}}"
         zkevm_bridge:
           version: 2
           address: "{{.zkevm_bridge_address}}"
