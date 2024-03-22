@@ -21,7 +21,7 @@ def _start_node_component(
     ]
     if http_api:
         cmd.append("--http.api=" + http_api)
-    plan.add_service(
+    return plan.add_service(
         name=name,
         config=ServiceConfig(
             image=image,
@@ -36,7 +36,7 @@ def _start_node_component(
 
 
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-synchronizer" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
@@ -52,7 +52,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
 
 
 def start_sequencer(plan, args, config_artifact, genesis_artifact):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-sequencer" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
@@ -79,7 +79,7 @@ def start_sequence_sender(
     genesis_artifact,
     sequencer_keystore_artifact,
 ):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-sequence-sender" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
@@ -108,7 +108,7 @@ def start_aggregator(
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
 ):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-aggregator" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
@@ -134,7 +134,7 @@ def start_aggregator(
 
 
 def start_rpc(plan, args, config_artifact, genesis_artifact):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-rpc" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
@@ -162,7 +162,7 @@ def start_eth_tx_manager(
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
 ):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
@@ -185,7 +185,7 @@ def start_eth_tx_manager(
 
 
 def start_l2_gas_pricer(plan, args, config_artifact, genesis_artifact):
-    _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
         image=args["zkevm_node_image"],
