@@ -1,0 +1,86 @@
+* Gas Token Setup
+
+Let's walk through how you can use this package to test a CDK that
+uses a gas token. There is a lot of detailed information about this
+architecture in the [[https://github.com/0xPolygonHermez/zkevm-techdocs/blob/a6d46da98ad32ace544e5dbc31d34831f9cc1bdd/knowledge-layer/architecture/PDFs/ulxly.pdf][knowledge layer docs]]. The following section from
+the docs is a helpful explanation of the Gas Token:
+
+#+begin_quote
+If we use a token to pay the gas at a layer, we call this token, the
+gas token for the layer. If we are using a gas token at a layer, it is
+still possible to send L1 ETH to the layer. In this case, the ETH gets
+accounted in an ERC20 contract called W-ETH, which is just another
+ERC20 instance.
+#+end_quote
+
+#+CAPTION: Diagram illustrating the interchange of assets between layers, focusing on LY as a layer of interest. It depicts several scenarios, such as bridging a ERC20 token from mainnet to another ERC20 token in LY, bridging L1 ETH to the LY gas token or bridging a wrapped ERC20 token living on LX to LY ETH.
+[[file:gas-token-img/ulxly-exchanges.drawio.png]]
+
+In order to try the gas token out in your local environment, first
+edit the [[../params.yml][params.yml]] file to set ~zkevm_use_gas_token_contract~ as
+~true~. When you make this change a few things will happen during
+setup:
+
+1. During contract deployment, an ERC20 token will be deployed on L1
+2. The [[../templates/create_rollup_parameters.json][rollup creation parameters]] will be modified to set the
+   ~gasTokenAddress~ to the address of the L1 ERC20
+
+After setting the ~zkevm_use_gas_token_contract~, you should be all
+set to run Kurtosis.
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+#+end_src
+
+This will take a few minutes as the full set of contracts will be
+compiled and deployed. When this is finished you should see the full
+set of services that were deployed.
+
+[[file:gas-token-img/services.png]]
+
+For the rest of this guide I'll probably only be interested in three
+of these mapped services: the bridge UI, the L1 RPC, and the L2 RPC.
+
+To get started let's extract the generated files and take a look at
+the ~gasTokenAddress~ (note: you'll need to have [[https://jqlang.github.io/jq/][jq]] installed):
+
+#+begin_src bash
+kurtosis files download cdk-v1 zkevm /tmp
+cat /tmp/zkevm/create_rollup_parameters.json | jq '.gasTokenAddress'
+#+end_src
+
+Running this command will give us the address of our ERC20 token. In
+order to bridge, we should mint some of this token. IN order to run
+this command, you'll also need to have the [[https://book.getfoundry.sh/getting-started/installation][Foundry toolchain]]
+installed.
+
+#+begin_src bash
+cast send \
+--mnemonic "code code code code code code code code code code code quality" \
+--rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+"$(jq -r '.gasTokenAddress' /tmp/zkevm/create_rollup_parameters.json)" \
+'mint(address,uint256)' \
+0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6 1000000000000000000000000000
+#+end_src
+
+Assuming that worked we can check our token balance as well:
+#+begin_src bash
+cast call \
+--rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+"$(jq -r '.gasTokenAddress' /tmp/zkevm/create_rollup_parameters.json)" \
+'balanceOf(address)(uint256)' \
+0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6
+#+end_src
+
+Now that we have some L1 Gas Token, let's open up the bridge
+UI. You'll need to open your browser to the address of of the bridge
+ui service. Run this command to get the URL easily and then open the
+URL in your browser.
+
+#+begin_src bash
+kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
+#+end_src
+
+"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
+42b6e34dc21598a807dc19d7784c71b2a7a01f6480dc6f58258f78e539f1a1fa
