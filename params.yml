@@ -125,7 +125,7 @@ zkevm_rollup_real_verifier: false
 
 # If this is true, we will automatically deploy an ERC20 contract on
 # L1 to be used at the gasTokenAddress
-zkevm_use_gas_token_contract: true
+zkevm_use_gas_token_contract: false
 
 # Permissionless node configuration.
 trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
