@@ -81,7 +81,7 @@ URL in your browser.
 kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
 #+end_src
 
-You'll need to need to add RPCs for L1 and L2 your browser
+You'll need to need to add RPCs for L1 and L2 to your browser
 wallet. Because the URLs are using HTTP instead of HTTPS, you'll need
 to [[https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC][add the RPCs]] manually to Metamask. The URL for the L1 and L2 RPCs
 can be retrieved with these commands:
