@@ -280,7 +280,7 @@ def run(plan, args):
     zkevm_bridge_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonBridgeAddress") # "L2PolygonBridgeAddresses"
     rollup_manager_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonRollupManagerAddress")
     polygon_zkevm_address = extract_json_key_from_service(plan, "contracts" + args["deployment_suffix"], "/opt/zkevm/bridge-config.toml", "PolygonZkEVMAddress")
-    l1_ip_address = extract_ip_address_from_service(plan, "el-1-geth-lighthouse")
+    l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
 
     # Fetch port
     polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
@@ -297,7 +297,7 @@ def run(plan, args):
                 ),
             },
             env_vars = {
-                "ETHEREUM_RPC_URL": "http://{}".format(l1_ip_address),
+                "ETHEREUM_RPC_URL": "http://{}:{}".format(l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number),
                 "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number),
                 "BRIDGE_API_URL": "http://{}:{}".format(zkevm_bridge_service.ip_address, bridge_api_http_port.number),
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
@@ -366,3 +366,15 @@ def start_node_components(
     zkevm_node_package.start_l2_gas_pricer(
         plan, args, config_artifact, genesis_artifact
     )
+    return service_map
+
+def extract_json_key_from_service(
+    plan, service_name, filename, key
+):
+    plan.print("Extracting contract addresses and ports...")
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat {} | grep -w '{}' | xargs -n1 | tail -1".format(filename, key)]
+    )
+    result = plan.exec(service_name=service_name, recipe=exec_recipe)
+    return result["output"]
+
