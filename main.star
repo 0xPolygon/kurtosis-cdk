@@ -42,7 +42,8 @@ def run(plan, args):
             "deploy_parameters.json": struct(
                 template=deploy_parameters_template, data=args
             )
-        }
+        },
+        name="deploy-parameters-artifact"
     )
     # Create rollup paramaters
     create_rollup_parameters_template = read_file(
@@ -53,7 +54,8 @@ def run(plan, args):
             "create_rollup_parameters.json": struct(
                 template=create_rollup_parameters_template, data=args
             )
-        }
+        },
+        name="create-rollup-parameters-artifact"
     )
     # Create contract deployment script
     contract_deployment_script_template = read_file(
@@ -64,7 +66,8 @@ def run(plan, args):
             "run-contract-setup.sh": struct(
                 template=contract_deployment_script_template, data=args
             )
-        }
+        },
+        name="contract-deployment-script-artifact"
     )
 
     # Create bridge configuration
@@ -72,19 +75,22 @@ def run(plan, args):
     bridge_config_artifact = plan.render_templates(
         config={
             "bridge-config.toml": struct(template=bridge_config_template, data=args)
-        }
+        },
+        name="bridge-config-artifact"
     )
     # Create AggLayer configuration
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
     agglayer_config_artifact = plan.render_templates(
         config={
             "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
-        }
+        },
+        name="agglayer-config-artifact"
     )
     # Create DAC configuration
     dac_config_template = read_file(src="./templates/dac-config.toml")
     dac_config_artifact = plan.render_templates(
-        config={"dac-config.toml": struct(template=dac_config_template, data=args)}
+        config={"dac-config.toml": struct(template=dac_config_template, data=args)},
+        name="dac-config-artifact"
     )
     # Create prover configuration
     prover_config_template = read_file(
@@ -93,7 +99,8 @@ def run(plan, args):
     prover_config_artifact = plan.render_templates(
         config={
             "prover-config.json": struct(template=prover_config_template, data=args)
-        }
+        },
+        name="prover-config-artifact"
     )
 
     # Create helper service to deploy contracts
