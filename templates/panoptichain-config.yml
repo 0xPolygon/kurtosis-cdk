@@ -148,10 +148,27 @@ observers:
 # in the provider as the `name` field.
 networks:
   - name: "L1"
-    chain_id: {{.l1_network_id}}
+    chain_id: { { .l1_network_id } }
+    contracts:
+      rollup_manager_address: "{{.rollup_manager_address}}"
+      # pol_token_address: "{{.pol_token_address}}"
+      global_exit_root:
+        version: 2
+        address: "{{.global_exit_root_address}}"
+      zkevm_bridge:
+        version: 2
+        address: "{{.zkevm_bridge_address}}"
+      zkevm_contract:
+        version: 2
+        address: "{{.polygon_zkevm_address}}"
 
   - name: "L2"
-    chain_id: {{.zkevm_l2_chain_id}}
+    chain_id: { { .zkevm_l2_chain_id } }
+    contracts:
+      global_exit_root_l2_address: "{{.global_exit_root_l2_address}}"
+      zkevm_bridge:
+        version: 2
+        address: "{{.zkevm_bridge_address}}"
 
 logs:
   # Pretty print logs. If running in production, you should probably set this to

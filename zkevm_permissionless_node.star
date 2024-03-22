@@ -56,7 +56,9 @@ def run(plan, args, run_observability=True):
         plan, args, node_config_artifact, genesis_artifact
     )
 
+    services = [synchronizer, rpc]
+
     if run_observability:
-        observability_package.run(plan, args, [synchronizer, rpc])
+        observability_package.run(plan, args, services)
 
     return services

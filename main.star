@@ -267,19 +267,19 @@ def run(plan, args):
     )
 
     # Fetch addresses
-    zkevm_bridge_address = extract_json_key_from_service(
+    args["zkevm_bridge_address"]  = extract_json_key_from_service(
         plan,
         "contracts" + args["deployment_suffix"],
         "/opt/zkevm/bridge-config.toml",
-        "PolygonBridgeAddress",
-    )  # "L2PolygonBridgeAddresses"
-    rollup_manager_address = extract_json_key_from_service(
+        "PolygonBridgeAddress", # or "L2PolygonBridgeAddresses"
+    )
+    args["rollup_manager_address"] = extract_json_key_from_service(
         plan,
         "contracts" + args["deployment_suffix"],
         "/opt/zkevm/bridge-config.toml",
         "PolygonRollupManagerAddress",
     )
-    polygon_zkevm_address = extract_json_key_from_service(
+    args["polygon_zkevm_address"] = extract_json_key_from_service(
         plan,
         "contracts" + args["deployment_suffix"],
         "/opt/zkevm/bridge-config.toml",
@@ -290,6 +290,10 @@ def run(plan, args):
     # Fetch port
     polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
     bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
+
+    args["zkevm_rpc_url"] = "http://{}:{}".format(
+        service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number
+    )
 
     # Start bridge-ui
     plan.add_service(
@@ -305,17 +309,15 @@ def run(plan, args):
                 "ETHEREUM_RPC_URL": "http://{}:{}".format(
                     l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
                 ),
-                "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
-                    service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number
-                ),
+                "POLYGON_ZK_EVM_RPC_URL": args["zkevm_rpc_url"],
                 "BRIDGE_API_URL": "http://{}:{}".format(
                     zkevm_bridge_service.ip_address, bridge_api_http_port.number
                 ),
-                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
-                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": args["zkevm_bridge_address"],
+                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": args["zkevm_bridge_address"],
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
-                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
-                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": args["polygon_zkevm_address"],
+                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": args["rollup_manager_address"],
                 "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
                 "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
                 "POLYGON_ZK_EVM_NETWORK_ID": "1",
@@ -333,10 +335,10 @@ def run(plan, args):
     permissionless_args = args
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
-    zkevm_permissionless_services = zkevm_permissionless_node_package.run(plan, args)
+    zkevm_permissionless_services = zkevm_permissionless_node_package.run(plan, args, False)
 
     observability_package.run(
-        plan, args, service_map.items() + [agglayer] + zkevm_permissionless_services
+        plan, args, service_map.values() + [zkevm_agglayer] + zkevm_permissionless_services,
     )
 
 
