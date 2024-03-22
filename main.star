@@ -243,18 +243,11 @@ def run(plan, args):
         aggregator_keystore_artifact,
     )
 
-    # Start default permissionless node.
-    # Note that an additional suffix will be added to the services.
-    permissionless_args = args
-    permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
-    permissionless_args["genesis_artifact"] = genesis_artifact
-    services += zkevm_permissionless_node_package.run(plan, args, False)
-
     # Start bridge
-    plan.add_service(
+    zkevm_bridge_service = plan.add_service(
         name="zkevm-bridge-service" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="hermeznetwork/zkevm-bridge-service:v0.4.2",
+            image=args["zkevm_bridge_service_image"],
             ports={
                 "bridge-rpc": PortSpec(
                     args["zkevm_bridge_rpc_port"], application_protocol="http"
@@ -274,6 +267,74 @@ def run(plan, args):
     )
 
     observability_package.run(plan, args, services)
+    # Fetch addresses
+    zkevm_bridge_address = extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/bridge-config.toml",
+        "PolygonBridgeAddress",
+    )  # "L2PolygonBridgeAddresses"
+    rollup_manager_address = extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/bridge-config.toml",
+        "PolygonRollupManagerAddress",
+    )
+    polygon_zkevm_address = extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/bridge-config.toml",
+        "PolygonZkEVMAddress",
+    )
+    l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
+
+    # Fetch port
+    polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
+    bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
+
+    # Start bridge-ui
+    plan.add_service(
+        name="zkevm-bridge-ui" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image=args["zkevm_bridge_ui_image"],
+            ports={
+                "bridge-ui": PortSpec(
+                    args["zkevm_bridge_ui_port"], application_protocol="http"
+                ),
+            },
+            env_vars={
+                "ETHEREUM_RPC_URL": "http://{}:{}".format(
+                    l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
+                ),
+                "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
+                    service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number
+                ),
+                "BRIDGE_API_URL": "http://{}:{}".format(
+                    zkevm_bridge_service.ip_address, bridge_api_http_port.number
+                ),
+                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
+                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
+                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
+                "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
+                "POLYGON_ZK_EVM_NETWORK_ID": "1",
+                "ENABLE_FIAT_EXCHANGE_RATES": "false",
+                "ENABLE_OUTDATED_NETWORK_MODAL": "false",
+                "ENABLE_DEPOSIT_WARNING": "true",
+                "ENABLE_REPORT_FORM": "false",
+            },
+            cmd=["run"],
+        ),
+    )
+
+    # Start default permissionless node.
+    # Note that an additional suffix will be added to the services.
+    permissionless_args = args
+    permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
+    permissionless_args["genesis_artifact"] = genesis_artifact
+    zkevm_permissionless_node_package.run(plan, args)
 
 
 def start_node_components(
@@ -289,17 +350,18 @@ def start_node_components(
         config={"node-config.toml": struct(template=config_template, data=args)}
     )
 
+    service_map = {}
     # Deploy components.
-    synchronizer = zkevm_node_package.start_synchronizer(
+    service_map["synchronizer"] = zkevm_node_package.start_synchronizer(
         plan, args, config_artifact, genesis_artifact
     )
-    sequencer = zkevm_node_package.start_sequencer(
+    service_map["sequencer"] = zkevm_node_package.start_sequencer(
         plan, args, config_artifact, genesis_artifact
     )
-    sequencer_sender = zkevm_node_package.start_sequence_sender(
+    service_map["sequence_sender"] = zkevm_node_package.start_sequence_sender(
         plan, args, config_artifact, genesis_artifact, sequencer_keystore_artifact
     )
-    aggregator = zkevm_node_package.start_aggregator(
+    service_map["start_aggregator"] = zkevm_node_package.start_aggregator(
         plan,
         args,
         config_artifact,
@@ -307,27 +369,33 @@ def start_node_components(
         sequencer_keystore_artifact,
         aggregator_keystore_artifact,
     )
-    rpc = zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
-
-    eth_tx_manager = zkevm_node_package.start_eth_tx_manager(
-        plan,
-        args,
-        config_artifact,
-        genesis_artifact,
-        sequencer_keystore_artifact,
-        aggregator_keystore_artifact,
-    )
-
-    l2_gas_pricer = zkevm_node_package.start_l2_gas_pricer(
+    service_map["rpc"] = zkevm_node_package.start_rpc(
         plan, args, config_artifact, genesis_artifact
     )
 
-    return [
-        synchronizer,
-        sequencer,
-        sequencer_sender,
-        aggregator,
-        rpc,
-        eth_tx_manager,
-        l2_gas_pricer,
-    ]
+    service_map["eth_tx_manager"] = zkevm_node_package.start_eth_tx_manager(
+        plan,
+        args,
+        config_artifact,
+        genesis_artifact,
+        sequencer_keystore_artifact,
+        aggregator_keystore_artifact,
+    )
+
+    service_map["l2_gas_pricer"] = zkevm_node_package.start_l2_gas_pricer(
+        plan, args, config_artifact, genesis_artifact
+    )
+    return service_map
+
+
+def extract_json_key_from_service(plan, service_name, filename, key):
+    plan.print("Extracting contract addresses and ports...")
+    exec_recipe = ExecRecipe(
+        command=[
+            "/bin/sh",
+            "-c",
+            "cat {} | grep -w '{}' | xargs -n1 | tail -1".format(filename, key),
+        ]
+    )
+    result = plan.exec(service_name=service_name, recipe=exec_recipe)
+    return result["output"]

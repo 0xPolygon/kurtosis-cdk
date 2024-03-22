@@ -134,7 +134,7 @@ def start_aggregator(
 
 
 def start_rpc(plan, args, config_artifact, genesis_artifact):
-    rpc = _start_node_component(
+    return _start_node_component(
         plan,
         name="zkevm-node-rpc" + args["deployment_suffix"],
         image=args["zkevm_node_image"],

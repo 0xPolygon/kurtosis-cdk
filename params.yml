@@ -12,6 +12,8 @@ zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
 zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
 zkevm_contracts_branch: v5.0.1-rc.2-fork.8
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
+zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
+zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest # TODO: better tags for the bridge ui
 
 # Port configuration.
 zkevm_hash_db_port: 50061
@@ -24,6 +26,7 @@ zkevm_rpc_http_port: 8123
 zkevm_rpc_ws_port: 8133
 zkevm_bridge_rpc_port: 8080
 zkevm_bridge_grpc_port: 9090
+zkevm_bridge_ui_port: 80
 zkevm_agglayer_port: 4444
 zkevm_dac_port: 8484
 
@@ -103,23 +106,29 @@ zkevm_db_state_user: state_user
 zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
 
 # L1 configuration.
-l1_network_id: 2718281828459045
+l1_network_id: 271828
 l1_preallocated_mnemonic: code code code code code code code code code code code quality
 l1_rpc_url: http://el-1-geth-lighthouse:8545
 l1_ws_url: ws://el-1-geth-lighthouse:8546
 # TODO: If we need to fund the aggregator, sequencer, and admin accounts for posting batches.. How much should we prefund??
 l1_funding_amount: 100ether
+ethereum_explorer: "https://sepolia.etherscan.io/"
 
 # L2 configuration.
 zkevm_deployment_salt: "0x0000000000000000000000000000000000000000000000000000000000000001"
 zkevm_fork_id: 8
 zkevm_test_deployment: true
-zkevm_l2_chain_id: 101010101
+zkevm_l2_chain_id: 10101
 zkevm_rollup_consensus: PolygonValidiumEtrog # PolygonZkEVMEtrog
 zkevm_da_protocol: PolygonDataCommittee
 zkevm_rollup_description: kurtosis devnet
 zkevm_rollup_name: kurtosis-test
 zkevm_rollup_real_verifier: false
+polygon_zkevm_explorer: "https://sepolia.etherscan.io/"
+
+# If this is true, we will automatically deploy an ERC20 contract on
+# L1 to be used at the gasTokenAddress
+zkevm_use_gas_token_contract: false
 
 # Permissionless node configuration.
 trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
