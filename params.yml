@@ -111,6 +111,7 @@ l1_rpc_url: http://el-1-geth-lighthouse:8545
 l1_ws_url: ws://el-1-geth-lighthouse:8546
 # TODO: If we need to fund the aggregator, sequencer, and admin accounts for posting batches.. How much should we prefund??
 l1_funding_amount: 100ether
+ethereum_explorer: "https://sepolia.etherscan.io/"
 
 # L2 configuration.
 zkevm_deployment_salt: "0x0000000000000000000000000000000000000000000000000000000000000001"
@@ -122,6 +123,7 @@ zkevm_da_protocol: PolygonDataCommittee
 zkevm_rollup_description: kurtosis devnet
 zkevm_rollup_name: kurtosis-test
 zkevm_rollup_real_verifier: false
+polygon_zkevm_explorer: "https://sepolia.etherscan.io/"
 
 # If this is true, we will automatically deploy an ERC20 contract on
 # L1 to be used at the gasTokenAddress
