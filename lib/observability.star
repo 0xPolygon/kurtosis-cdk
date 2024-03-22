@@ -5,6 +5,7 @@ grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.s
 
 
 def run(plan, args, services):
+    # Create the panoptichain config.
     panoptichain_config_template = read_file(src="../templates/panoptichain-config.yml")
     panoptichain_config_artifact = plan.render_templates(
         name="panoptichain-config",
@@ -16,7 +17,7 @@ def run(plan, args, services):
         },
     )
 
-    # Start panoptichain
+    # Start panoptichain.
     panoptichain = plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -39,7 +40,10 @@ def run(plan, args, services):
         for service in services + [panoptichain]
     ]
 
+    # Start prometheus.
     prometheus_url = prometheus_package.run(plan, metrics_jobs)
+
+    # Start grafana.
     grafana_package.run(
         plan,
         prometheus_url,

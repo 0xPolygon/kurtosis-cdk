@@ -337,6 +337,7 @@ def run(plan, args):
     permissionless_args["genesis_artifact"] = genesis_artifact
     zkevm_permissionless_services = zkevm_permissionless_node_package.run(plan, args, False)
 
+    # Start panoptichain, prometheus, and grafana.
     observability_package.run(
         plan, args, service_map.values() + [zkevm_agglayer] + zkevm_permissionless_services,
     )
