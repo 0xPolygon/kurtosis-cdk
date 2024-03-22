@@ -43,7 +43,7 @@ def run(plan, args):
                 template=deploy_parameters_template, data=args
             )
         },
-        name="deploy-parameters-artifact"
+        name="deploy-parameters-artifact",
     )
     # Create rollup paramaters
     create_rollup_parameters_template = read_file(
@@ -55,7 +55,7 @@ def run(plan, args):
                 template=create_rollup_parameters_template, data=args
             )
         },
-        name="create-rollup-parameters-artifact"
+        name="create-rollup-parameters-artifact",
     )
     # Create contract deployment script
     contract_deployment_script_template = read_file(
@@ -67,7 +67,7 @@ def run(plan, args):
                 template=contract_deployment_script_template, data=args
             )
         },
-        name="contract-deployment-script-artifact"
+        name="contract-deployment-script-artifact",
     )
 
     # Create bridge configuration
@@ -76,7 +76,7 @@ def run(plan, args):
         config={
             "bridge-config.toml": struct(template=bridge_config_template, data=args)
         },
-        name="bridge-config-artifact"
+        name="bridge-config-artifact",
     )
     # Create AggLayer configuration
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
@@ -84,13 +84,13 @@ def run(plan, args):
         config={
             "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
         },
-        name="agglayer-config-artifact"
+        name="agglayer-config-artifact",
     )
     # Create DAC configuration
     dac_config_template = read_file(src="./templates/dac-config.toml")
     dac_config_artifact = plan.render_templates(
         config={"dac-config.toml": struct(template=dac_config_template, data=args)},
-        name="dac-config-artifact"
+        name="dac-config-artifact",
     )
     # Create prover configuration
     prover_config_template = read_file(
@@ -100,7 +100,7 @@ def run(plan, args):
         config={
             "prover-config.json": struct(template=prover_config_template, data=args)
         },
-        name="prover-config-artifact"
+        name="prover-config-artifact",
     )
 
     # Create helper service to deploy contracts
