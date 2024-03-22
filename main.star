@@ -267,11 +267,11 @@ def run(plan, args):
     )
 
     # Fetch addresses
-    args["zkevm_bridge_address"]  = extract_json_key_from_service(
+    args["zkevm_bridge_address"] = extract_json_key_from_service(
         plan,
         "contracts" + args["deployment_suffix"],
         "/opt/zkevm/bridge-config.toml",
-        "PolygonBridgeAddress", # or "L2PolygonBridgeAddresses"
+        "PolygonBridgeAddress",  # or "L2PolygonBridgeAddresses"
     )
     args["rollup_manager_address"] = extract_json_key_from_service(
         plan,
@@ -284,6 +284,12 @@ def run(plan, args):
         "contracts" + args["deployment_suffix"],
         "/opt/zkevm/bridge-config.toml",
         "PolygonZkEVMAddress",
+    )
+    args["global_exit_root_address"] = extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/bridge-config.toml",
+        "PolygonZkEVMGlobalExitRootAddress",
     )
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
 
@@ -316,7 +322,9 @@ def run(plan, args):
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": args["zkevm_bridge_address"],
                 "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": args["zkevm_bridge_address"],
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
-                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": args["polygon_zkevm_address"],
+                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": args[
+                    "polygon_zkevm_address"
+                ],
                 "ETHEREUM_ROLLUP_MANAGER_ADDRESS": args["rollup_manager_address"],
                 "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
                 "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
@@ -333,13 +341,21 @@ def run(plan, args):
     # Start default permissionless node.
     # Note that an additional suffix will be added to the services.
     permissionless_args = args
+    for k, v in args.items():
+        permissionless_args[k] = v
+
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
-    zkevm_permissionless_services = zkevm_permissionless_node_package.run(plan, args, False)
+
+    zkevm_permissionless_services = zkevm_permissionless_node_package.run(
+        plan, permissionless_args, False
+    )
 
     # Start panoptichain, prometheus, and grafana.
     observability_package.run(
-        plan, args, service_map.values() + [zkevm_agglayer] + zkevm_permissionless_services,
+        plan,
+        args,
+        service_map.values() + [zkevm_agglayer] + zkevm_permissionless_services,
     )
 
 
