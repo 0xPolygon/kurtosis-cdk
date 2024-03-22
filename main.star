@@ -194,7 +194,7 @@ def run(plan, args):
     zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
     # Start AggLayer
-    plan.add_service(
+    zkevm_agglayer = plan.add_service(
         name="zkevm-agglayer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_agglayer_image"],
@@ -235,7 +235,7 @@ def run(plan, args):
     )
 
     # Start the zkevm node components
-    services = start_node_components(
+    service_map = start_node_components(
         plan,
         args,
         genesis_artifact,
@@ -266,7 +266,6 @@ def run(plan, args):
         ),
     )
 
-    observability_package.run(plan, args, services)
     # Fetch addresses
     zkevm_bridge_address = extract_json_key_from_service(
         plan,
@@ -334,7 +333,11 @@ def run(plan, args):
     permissionless_args = args
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
-    zkevm_permissionless_node_package.run(plan, args)
+    zkevm_permissionless_services = zkevm_permissionless_node_package.run(plan, args)
+
+    observability_package.run(
+        plan, args, service_map.items() + [agglayer] + zkevm_permissionless_services
+    )
 
 
 def start_node_components(
@@ -351,6 +354,7 @@ def start_node_components(
     )
 
     service_map = {}
+
     # Deploy components.
     service_map["synchronizer"] = zkevm_node_package.start_synchronizer(
         plan, args, config_artifact, genesis_artifact
@@ -385,6 +389,7 @@ def start_node_components(
     service_map["l2_gas_pricer"] = zkevm_node_package.start_l2_gas_pricer(
         plan, args, config_artifact, genesis_artifact
     )
+
     return service_map
 
 
