@@ -62,7 +62,7 @@ providers:
   # Metrics such as panoptichain uptime are captured by this provider. See
   # ./observer/system.go and ./provider/system.go for details.
   system:
-    interval: 30
+    interval: 15
 
   # RPC providers will fetch data from an Ethereum based RPC server. See
   # ./provider/rpc.go and ./observer/rpc.go for implementation details.
@@ -101,7 +101,7 @@ providers:
           address: "{{.polygon_zkevm_address}}"
 
     - name: "L2"
-      url: "{{.l2_rpc_url}}"
+      url: "{{.zkevm_rpc_url}}"
       label: "L2"
       contracts:
         # global_exit_root_l2_address: "{{.global_exit_root_l2_address}}"
