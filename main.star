@@ -294,7 +294,8 @@ def start_node_components(
     # Create node configuration file.
     config_template = read_file(src="./templates/trusted-node/node-config.toml")
     config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=config_template, data=args)}
+        config={"node-config.toml": struct(template=config_template, data=args)},
+        name="node-config-artifact",
     )
 
     # Deploy components.
@@ -303,6 +304,7 @@ def start_node_components(
     zkevm_node_package.start_sequence_sender(
         plan, args, config_artifact, genesis_artifact, sequencer_keystore_artifact
     )
+    
     zkevm_node_package.start_aggregator(
         plan,
         args,
