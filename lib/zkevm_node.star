@@ -153,13 +153,6 @@ def start_rpc(plan, args, config_artifact, genesis_artifact):
         http_api="eth,net,debug,zkevm,txpool,web3",
     )
 
-    args["l2_rpc_url"] = "http://{0}:{1}".format(
-        rpc.ip_address,
-        rpc.ports["http-rpc"].number,
-    )
-
-    return rpc
-
 
 def start_eth_tx_manager(
     plan,
