@@ -34,7 +34,7 @@ def run(plan, args):
         src="./templates/permissionless-node/node-config.toml"
     )
     node_config_artifact = plan.render_templates(
-        name="node-config",
+        name="permissionless-node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
 

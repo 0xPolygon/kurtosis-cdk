@@ -356,7 +356,8 @@ def start_node_components(
     # Create node configuration file.
     config_template = read_file(src="./templates/trusted-node/node-config.toml")
     config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=config_template, data=args)}
+        config={"node-config.toml": struct(template=config_template, data=args)},
+        name="trusted-node-config",
     )
 
     service_map = {}
