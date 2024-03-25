@@ -32,7 +32,7 @@ def run(plan, args):
     if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
         args["is_cdk"] = True
 
-    ## STAGE 1: Deploy L1 chain
+    ## STAGE 1: Deploy L1
     # For now we'll stick with most of the defaults
     if DEPLOYMENT_STAGE.deploy_l1 in args["stages"]:
         ethereum_package.run(
@@ -51,9 +51,8 @@ def run(plan, args):
     else:
         plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_l1))
 
-    # TODO: Check that L1 has been deployed.
-
-    ## STAGE 2: Configure L1 (fund accounts, deploy cdk contracts and create config files)
+    ## STAGE 2: Configure L1
+    # Ffund accounts, deploy cdk contracts and create config files.
     if DEPLOYMENT_STAGE.configure_l1 in args["stages"]:
         # Create deploy parameters
         deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
@@ -90,41 +89,6 @@ def run(plan, args):
             name="contract-deployment-script-artifact",
         )
 
-        # Create bridge configuration
-        bridge_config_template = read_file(src="./templates/bridge-config.toml")
-        bridge_config_artifact = plan.render_templates(
-            config={
-                "bridge-config.toml": struct(template=bridge_config_template, data=args)
-            },
-            name="bridge-config-artifact",
-        )
-        # Create AggLayer configuration
-        agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
-        agglayer_config_artifact = plan.render_templates(
-            config={
-                "agglayer-config.toml": struct(
-                    template=agglayer_config_template, data=args
-                )
-            },
-            name="agglayer-config-artifact",
-        )
-        # Create DAC configuration
-        dac_config_template = read_file(src="./templates/dac-config.toml")
-        dac_config_artifact = plan.render_templates(
-            config={"dac-config.toml": struct(template=dac_config_template, data=args)},
-            name="dac-config-artifact",
-        )
-        # Create prover configuration
-        prover_config_template = read_file(
-            src="./templates/trusted-node/prover-config.json"
-        )
-        prover_config_artifact = plan.render_templates(
-            config={
-                "prover-config.json": struct(template=prover_config_template, data=args)
-            },
-            name="prover-config-artifact",
-        )
-
         # Create helper service to deploy contracts
         zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
         plan.add_service(
@@ -138,10 +102,6 @@ def run(plan, args):
                             deploy_parameters_artifact,
                             create_rollup_parameters_artifact,
                             contract_deployment_script_artifact,
-                            prover_config_artifact,
-                            bridge_config_artifact,
-                            agglayer_config_artifact,
-                            dac_config_artifact,
                         ]
                     ),
                 },
@@ -223,6 +183,15 @@ def run(plan, args):
         zkevm_databases_package.start_peripheral_databases(plan, args)
 
         # Start prover
+        prover_config_template = read_file(
+            src="./templates/trusted-node/prover-config.json"
+        )
+        prover_config_artifact = plan.render_templates(
+            config={
+                "prover-config.json": struct(template=prover_config_template, data=args)
+            },
+            name="prover-config-artifact",
+        )
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
         # Start the zkevm node components
@@ -240,7 +209,14 @@ def run(plan, args):
 
     ## STAGE 4: Deploy CDK/Bridge infra
     if DEPLOYMENT_STAGE.deploy_cdk_bridge_infra in args["stages"]:
-        # Start bridge
+        # Start bridge service.
+        bridge_config_template = read_file(src="./templates/bridge-config.toml")
+        bridge_config_artifact = plan.render_templates(
+            config={
+                "bridge-config.toml": struct(template=bridge_config_template, data=args)
+            },
+            name="bridge-config-artifact",
+        )
         plan.add_service(
             name="zkevm-bridge-service" + args["deployment_suffix"],
             config=ServiceConfig(
@@ -254,7 +230,7 @@ def run(plan, args):
                     ),
                 },
                 files={
-                    "/etc/": zkevm_configs,
+                    "/etc/zkevm": Directory(artifact_names=[bridge_config_artifact]),
                 },
                 entrypoint=[
                     "/app/zkevm-bridge",
@@ -264,6 +240,15 @@ def run(plan, args):
         )
 
         # Start AggLayer
+        agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
+        agglayer_config_artifact = plan.render_templates(
+            config={
+                "agglayer-config.toml": struct(
+                    template=agglayer_config_template, data=args
+                )
+            },
+            name="agglayer-config-artifact",
+        )
         plan.add_service(
             name="zkevm-agglayer" + args["deployment_suffix"],
             config=ServiceConfig(
@@ -277,7 +262,7 @@ def run(plan, args):
                     ),
                 },
                 files={
-                    "/etc/": zkevm_configs,
+                    "/etc/zkevm": Directory(artifact_names=[agglayer_config_artifact]),
                 },
                 entrypoint=[
                     "/app/agglayer",
@@ -287,6 +272,11 @@ def run(plan, args):
         )
 
         # Start DAC
+        dac_config_template = read_file(src="./templates/dac-config.toml")
+        dac_config_artifact = plan.render_templates(
+            config={"dac-config.toml": struct(template=dac_config_template, data=args)},
+            name="dac-config-artifact",
+        )
         plan.add_service(
             name="zkevm-dac" + args["deployment_suffix"],
             config=ServiceConfig(
@@ -301,7 +291,7 @@ def run(plan, args):
                     # ),
                 },
                 files={
-                    "/etc/": zkevm_configs,
+                    "/etc/zkevm": Directory(artifact_names=[dac_config_artifact]),
                 },
                 entrypoint=[
                     "/app/cdk-data-availability",
