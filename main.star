@@ -289,35 +289,35 @@ def run(plan, args):
         recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
     )
     zkevm_configs = plan.store_service_files(
+        name="zkevm",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm",
-        name="zkevm",
         description="These are the files needed to start various node services",
     )
     genesis_artifact = plan.store_service_files(
+        name="genesis",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/genesis.json",
-        name="genesis",
     )
     sequencer_keystore_artifact = plan.store_service_files(
+        name="sequencer-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/sequencer.keystore",
-        name="sequencer-keystore",
     )
     aggregator_keystore_artifact = plan.store_service_files(
+        name="aggregator-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/aggregator.keystore",
-        name="aggregator-keystore",
     )
 
     # Start databases
     event_db_init_script = plan.upload_files(
-        src="./templates/databases/event-db-init.sql",
         name="event-db-init.sql" + args["deployment_suffix"],
+        src="./templates/databases/event-db-init.sql",
     )
     prover_db_init_script = plan.upload_files(
-        src="./templates/databases/prover-db-init.sql",
         name="prover-db-init.sql" + args["deployment_suffix"],
+        src="./templates/databases/prover-db-init.sql",
     )
     zkevm_databases_package.start_node_databases(
         plan, args, event_db_init_script, prover_db_init_script
@@ -484,6 +484,7 @@ def start_node_components(
     # Create node configuration file.
     config_template = read_file(src="./templates/trusted-node/node-config.toml")
     config_artifact = plan.render_templates(
+        name="trusted-node-config",
         config={
             "node-config.toml": struct(
                 template=config_template,
@@ -531,7 +532,6 @@ def start_node_components(
                 },
             )
         },
-        name="trusted-node-config",
     )
 
     service_map = {}
