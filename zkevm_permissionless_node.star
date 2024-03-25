@@ -59,6 +59,6 @@ def run(plan, args, run_observability=True):
     services = [synchronizer, rpc]
 
     if run_observability:
-        observability_package.run(plan, args, services)
+        observability_package.run(plan, args, services, run_panoptichain=False)
 
     return services

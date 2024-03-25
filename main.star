@@ -307,8 +307,8 @@ def run(plan, args):
     args["pol_token_address"] = extract_from_json_file(
         plan,
         "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/genesis.json",
-        ".genesis[] | select(.contractName == 'PolygonZkEVMGlobalExitRootL2 proxy') | .address",
+        "/opt/zkevm/combined.json",
+        "polTokenAddress",
     )
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
 
@@ -359,7 +359,7 @@ def run(plan, args):
 
     # Start default permissionless node.
     # Note that an additional suffix will be added to the services.
-    permissionless_args = args
+    permissionless_args = {}
     for k, v in args.items():
         permissionless_args[k] = v
 
@@ -367,7 +367,7 @@ def run(plan, args):
     permissionless_args["genesis_artifact"] = genesis_artifact
 
     zkevm_permissionless_services = zkevm_permissionless_node_package.run(
-        plan, permissionless_args, False
+        plan, permissionless_args, run_observability=False
     )
 
     # Start panoptichain, prometheus, and grafana.
