@@ -37,7 +37,6 @@ def run(plan, args):
     # For now we'll stick with most of the defaults
     if DEPLOYMENT_STAGE.deploy_l1 in args["stages"]:
         plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_l1))
-
         ethereum_package.run(
             plan,
             {
@@ -232,8 +231,9 @@ def run(plan, args):
             "Executing stage: " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
         )
 
-        # Note that an additional suffix will be added to the services.
+        # FIXME: This will create an alias of args and not a deep copy!
         permissionless_args = args
+        # Note that an additional suffix will be added to the permissionless services.
         permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
         permissionless_args["genesis_artifact"] = genesis_artifact
         zkevm_permissionless_node_package.run(plan, args)
