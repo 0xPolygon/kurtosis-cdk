@@ -61,46 +61,47 @@ def run(plan, args):
         # Create deploy parameters
         deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
         deploy_parameters_artifact = plan.render_templates(
+            name="deploy-parameters-artifact",
             config={
                 "deploy_parameters.json": struct(
                     template=deploy_parameters_template, data=args
                 )
             },
-            name="deploy-parameters-artifact",
         )
+
         # Create rollup paramaters
         create_rollup_parameters_template = read_file(
             src="./templates/create_rollup_parameters.json"
         )
         create_rollup_parameters_artifact = plan.render_templates(
+            name="create-rollup-parameters-artifact",
             config={
                 "create_rollup_parameters.json": struct(
                     template=create_rollup_parameters_template, data=args
                 )
             },
-            name="create-rollup-parameters-artifact",
         )
+
         # Create contract deployment script
         contract_deployment_script_template = read_file(
             src="./templates/run-contract-setup.sh"
         )
         contract_deployment_script_artifact = plan.render_templates(
+            name="contract-deployment-script-artifact",
             config={
                 "run-contract-setup.sh": struct(
                     template=contract_deployment_script_template, data=args
                 )
             },
-            name="contract-deployment-script-artifact",
         )
 
         # Create helper service to deploy contracts
-        zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
         plan.add_service(
             name="contracts" + args["deployment_suffix"],
             config=ServiceConfig(
                 image="node:20-bookworm",
                 files={
-                    "/opt/zkevm": zkevm_etc_directory,
+                    "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
                     "/opt/contract-deploy/": Directory(
                         artifact_names=[
                             deploy_parameters_artifact,
@@ -146,27 +147,6 @@ def run(plan, args):
             service_name="contracts" + args["deployment_suffix"],
             recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
         )
-        zkevm_configs = plan.store_service_files(
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm",
-            name="zkevm",
-            description="These are the files needed to start various node services",
-        )
-        genesis_artifact = plan.store_service_files(
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
-            name="genesis",
-        )
-        sequencer_keystore_artifact = plan.store_service_files(
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/sequencer.keystore",
-            name="sequencer-keystore",
-        )
-        aggregator_keystore_artifact = plan.store_service_files(
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/aggregator.keystore",
-            name="aggregator-keystore",
-        )
     else:
         plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.configure_l1))
 
@@ -203,6 +183,21 @@ def run(plan, args):
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
         # Start the zkevm node components
+        genesis_artifact = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+            name="genesis",
+        )
+        sequencer_keystore_artifact = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/sequencer.keystore",
+            name="sequencer-keystore",
+        )
+        aggregator_keystore_artifact = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/aggregator.keystore",
+            name="aggregator-keystore",
+        )
         start_node_components(
             plan,
             args,
