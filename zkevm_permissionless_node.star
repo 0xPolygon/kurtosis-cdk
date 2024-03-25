@@ -24,7 +24,23 @@ def run(plan, args):
     executor_config_artifact = plan.render_templates(
         name="executor-config",
         config={
-            "executor-config.json": struct(template=executor_config_template, data=args)
+            "executor-config.json": struct(
+                template=executor_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "zkevm_aggregator_host": args["zkevm_aggregator_host"],
+                    # prover db
+                    "zkevm_db_prover_hostname": args["zkevm_db_prover_hostname"],
+                    "zkevm_db_prover_name": args["zkevm_db_prover_name"],
+                    "zkevm_db_prover_user": args["zkevm_db_prover_user"],
+                    "zkevm_db_prover_password": args["zkevm_db_prover_password"],
+                    # ports
+                    "zkevm_aggregator_port": args["zkevm_aggregator_port"],
+                    "zkevm_executor_port": args["zkevm_executor_port"],
+                    "zkevm_hash_db_port": args["zkevm_hash_db_port"],
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                },
+            )
         },
     )
     zkevm_prover_package.start_executor(plan, args, executor_config_artifact)
@@ -35,7 +51,45 @@ def run(plan, args):
     )
     node_config_artifact = plan.render_templates(
         name="permissionless-node-config",
-        config={"node-config.toml": struct(template=node_config_template, data=args)},
+        config={
+            "node-config.toml": struct(
+                template=node_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    # state db
+                    "zkevm_db_state_hostname": args["zkevm_db_state_hostname"],
+                    "zkevm_db_state_name": args["zkevm_db_state_name"],
+                    "zkevm_db_state_user": args["zkevm_db_state_user"],
+                    "zkevm_db_state_password": args["zkevm_db_state_password"],
+                    # pool db
+                    "zkevm_db_pool_hostname": args["zkevm_db_pool_hostname"],
+                    "zkevm_db_pool_name": args["zkevm_db_pool_name"],
+                    "zkevm_db_pool_user": args["zkevm_db_pool_user"],
+                    "zkevm_db_pool_password": args["zkevm_db_pool_password"],
+                    # executor db
+                    "zkevm_db_executor_hostname": args["zkevm_db_prover_hostname"],
+                    "zkevm_db_executor_name": args["zkevm_db_prover_name"],
+                    "zkevm_db_executor_user": args["zkevm_db_prover_user"],
+                    "zkevm_db_executor_password": args["zkevm_db_prover_password"],
+                    # event db
+                    "zkevm_db_event_hostname": args["zkevm_db_event_hostname"],
+                    "zkevm_db_event_name": args["zkevm_db_event_name"],
+                    "zkevm_db_event_user": args["zkevm_db_event_user"],
+                    "zkevm_db_event_password": args["zkevm_db_event_password"],
+                    # ports
+                    "zkevm_hash_db_port": args["zkevm_hash_db_port"],
+                    "zkevm_executor_port": args["zkevm_executor_port"],
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "zkevm_rpc_ws_port": args["zkevm_rpc_ws_port"],
+                    "zkevm_prometheus_port": args["zkevm_prometheus_port"],
+                    "zkevm_pprof_port": args["zkevm_pprof_port"],
+                    # permissionless node
+                    "trusted_sequencer_node_uri": args["trusted_sequencer_node_uri"],
+                },
+            )
+        },
     )
 
     genesis_artifact = ""
