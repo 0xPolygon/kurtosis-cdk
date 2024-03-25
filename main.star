@@ -76,6 +76,7 @@ def run(plan, args):
                     "zkevm_da_protocol": args["zkevm_da_protocol"],
                     "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
                     "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     "zkevm_l2_aggregator_address": args["zkevm_l2_aggregator_address"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                 },
