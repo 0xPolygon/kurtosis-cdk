@@ -206,9 +206,7 @@ def run(plan, args):
             aggregator_keystore_artifact,
         )
     else:
-        plan.print(
-            "Skipping stage " + str(DEPLOYMENT_STAGE.deploy_central_environment)
-        )
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_central_environment))
 
     ## STAGE 4: Deploy CDK/Bridge infra
     if DEPLOYMENT_STAGE.deploy_cdk_bridge_infra in args["stages"]:
@@ -233,9 +231,7 @@ def run(plan, args):
         permissionless_args["genesis_artifact"] = genesis_artifact
         zkevm_permissionless_node_package.run(plan, args)
     else:
-        plan.print(
-            "Skipping stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
-        )
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node))
 
 
 def start_node_components(
