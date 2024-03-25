@@ -287,40 +287,15 @@ def start_node_components(
 
 
 def start_bridge_service(plan, args):
-    # Fetch addresses.
-    rollup_manager_block_number = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "deploymentRollupManagerBlockNumber",
-    )
-    zkevm_bridge_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "polygonZkEVMGlobalExitRootAddress",
-    )
-    zkevm_global_exit_root_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "polygonZkEVMBridgeAddress",
-    )
-    zkevm_rollup_manager_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "polygonRollupManagerAddress",
-    )
-    zkevm_rollup_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "rollupAddress",
-    )
-
     # Create bridge config.
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
+    rollup_manager_block_number = get_key_from_config(
+        "deploymentRollupManagerBlockNumber"
+    )
+    zkevm_bridge_address = get_key_from_config("polygonZkEVMGlobalExitRootAddress")
+    zkevm_global_exit_root_address = get_key_from_config("polygonZkEVMBridgeAddress")
+    zkevm_rollup_manager_address = get_key_from_config("polygonRollupManagerAddress")
+    zkevm_rollup_address = get_key_from_config("rollupAddress")
     bridge_config_artifact = plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -378,28 +353,9 @@ def start_bridge_service(plan, args):
 def start_bridge_ui(plan, args, bridge_service):
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
     zkevm_node_rpc = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
-
-    # Fetch addresses.
-    zkevm_bridge_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonBridgeAddress",
-    )  # "L2PolygonBridgeAddresses"
-    rollup_manager_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonRollupManagerAddress",
-    )
-    polygon_zkevm_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonZkEVMAddress",
-    )
-
-    # Fetch ports.
+    zkevm_bridge_address = get_key_from_config("polygonZkEVMGlobalExitRootAddress")
+    zkevm_rollup_manager_address = get_key_from_config("polygonRollupManagerAddress")
+    zkevm_rollup_address = get_key_from_config("rollupAddress")
     polygon_zkevm_rpc_http_port = zkevm_node_rpc.ports["http-rpc"]
     bridge_api_http_port = bridge_service.ports["bridge-rpc"]
 
@@ -427,8 +383,8 @@ def start_bridge_ui(plan, args, bridge_service):
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
                 "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
-                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
-                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": zkevm_rollup_address,
+                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": zkevm_rollup_manager_address,
                 "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
                 "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
                 "POLYGON_ZK_EVM_NETWORK_ID": "1",
@@ -443,16 +399,9 @@ def start_bridge_ui(plan, args, bridge_service):
 
 
 def start_agglayer(plan, args):
-    # Fetch addresses.
-    rollup_manager_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "polygonRollupManagerAddress",
-    )
-
     # Create agglayer config.
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
+    rollup_manager_address = get_key_from_config("polygonRollupManagerAddress")
     agglayer_config_artifact = plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -506,22 +455,10 @@ def start_agglayer(plan, args):
 
 
 def start_dac(plan, args):
-    # Fetch addresses.
-    rollup_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "rollupAddress",
-    )
-    data_committee_address = service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        "polygonDataCommitteeAddress",
-    )
-
     # Create DAC config.
     dac_config_template = read_file(src="./templates/dac-config.toml")
+    rollup_address = get_key_from_config("rollupAddress")
+    data_committee_address = data_committee_address("polygonDataCommitteeAddress")
     dac_config_artifact = plan.render_templates(
         name="dac-config-artifact",
         config={
@@ -569,4 +506,13 @@ def start_dac(plan, args):
             ],
             cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
         ),
+    )
+
+
+def get_key_from_config(plan, key):
+    return service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        key,
     )
