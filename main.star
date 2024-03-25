@@ -182,46 +182,22 @@ def run(plan, args):
         )
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
-        # Fetch genesis and keystores.
-        genesis_file = service_package.read_file_from_service(
-            plan,
-            service_name="contracts" + args["deployment_suffix"],
-            filename="/opt/zkevm/genesis.json",
-        )
-        genesis_artifact = plan.render_templates(
-            name="genesis",
-            config={"genesis.json": struct(template=genesis_file, data={})},
-        )
-
-        sequencer_keystore_file = service_package.read_file_from_service(
-            plan,
-            service_name="contracts" + args["deployment_suffix"],
-            filename="/opt/zkevm/sequencer.keystore",
-        )
-        sequencer_keystore_artifact = plan.render_templates(
-            name="sequencer-keystore",
-            config={
-                "sequencer.keystore": struct(
-                    template=sequencer_keystore_artifact, data={}
-                )
-            },
-        )
-
-        aggregator_keystore_file = service_package.read_file_from_service(
-            plan,
-            service_name="contracts" + args["deployment_suffix"],
-            filename="/opt/zkevm/aggregator.keystore",
-        )
-        aggregator_keystore_artifact = plan.render_templates(
-            name="aggregator-keystore",
-            config={
-                "aggregator.keystore": struct(
-                    template=aggregator_keystore_file, data={}
-                )
-            },
-        )
-
         # Start the zkevm node components
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+        )
+        sequencer_keystore_artifact = plan.store_service_files(
+            name="sequencer-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/sequencer.keystore",
+        )
+        aggregator_keystore_artifact = plan.store_service_files(
+            name="aggregator-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/aggregator.keystore",
+        )
         start_node_components(
             plan,
             args,
