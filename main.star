@@ -36,7 +36,7 @@ def run(plan, args):
     ## STAGE 1: Deploy L1
     # For now we'll stick with most of the defaults
     if DEPLOYMENT_STAGE.deploy_l1 in args["stages"]:
-        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_l1))
+        plan.print("Executing stage " + str(DEPLOYMENT_STAGE.deploy_l1))
         ethereum_package.run(
             plan,
             {
@@ -51,12 +51,12 @@ def run(plan, args):
             },
         )
     else:
-        plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_l1))
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_l1))
 
     ## STAGE 2: Configure L1
     # Ffund accounts, deploy cdk contracts and create config files.
     if DEPLOYMENT_STAGE.configure_l1 in args["stages"]:
-        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.configure_l1))
+        plan.print("Executing stage " + str(DEPLOYMENT_STAGE.configure_l1))
 
         # Create deploy parameters
         deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
@@ -148,12 +148,12 @@ def run(plan, args):
             recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
         )
     else:
-        plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.configure_l1))
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.configure_l1))
 
     ## STAGE 3: Deploy trusted / central environment
     if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
         plan.print(
-            "Executing stage: " + str(DEPLOYMENT_STAGE.deploy_central_environment)
+            "Executing stage " + str(DEPLOYMENT_STAGE.deploy_central_environment)
         )
 
         # Start databases
@@ -207,23 +207,23 @@ def run(plan, args):
         )
     else:
         plan.print(
-            "Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_central_environment)
+            "Skipping stage " + str(DEPLOYMENT_STAGE.deploy_central_environment)
         )
 
     ## STAGE 4: Deploy CDK/Bridge infra
     if DEPLOYMENT_STAGE.deploy_cdk_bridge_infra in args["stages"]:
-        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
+        plan.print("Executing stage " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
         zkevm_bridge_service = start_bridge_service(plan, args)
         start_bridge_ui(plan, args, zkevm_bridge_service)
         start_agglayer(plan, args)
         start_dac(plan, args)
     else:
-        plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
 
     ## STAGE 5: Deploy permissionless node
     if DEPLOYMENT_STAGE.deploy_permissionless_node in args["stages"]:
         plan.print(
-            "Executing stage: " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
+            "Executing stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
         )
 
         # FIXME: This will create an alias of args and not a deep copy!
@@ -234,7 +234,7 @@ def run(plan, args):
         zkevm_permissionless_node_package.run(plan, args)
     else:
         plan.print(
-            "Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
+            "Skipping stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
         )
 
 
