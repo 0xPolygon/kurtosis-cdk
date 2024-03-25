@@ -217,7 +217,7 @@ def run(plan, args):
             },
             name="bridge-config-artifact",
         )
-        plan.add_service(
+        zkevm_bridge_service = plan.add_service(
             name="zkevm-bridge-service" + args["deployment_suffix"],
             config=ServiceConfig(
                 image="hermeznetwork/zkevm-bridge-service:v0.4.2",
@@ -239,7 +239,73 @@ def run(plan, args):
             ),
         )
 
-        # Start AggLayer
+        # Fetch addresses
+        zkevm_bridge_address = extract_json_key_from_service(
+            plan,
+            "contracts" + args["deployment_suffix"],
+            "/opt/zkevm/bridge-config.toml",
+            "PolygonBridgeAddress",
+        )  # "L2PolygonBridgeAddresses"
+        rollup_manager_address = extract_json_key_from_service(
+            plan,
+            "contracts" + args["deployment_suffix"],
+            "/opt/zkevm/bridge-config.toml",
+            "PolygonRollupManagerAddress",
+        )
+        polygon_zkevm_address = extract_json_key_from_service(
+            plan,
+            "contracts" + args["deployment_suffix"],
+            "/opt/zkevm/bridge-config.toml",
+            "PolygonZkEVMAddress",
+        )
+        l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
+
+        # Fetch port
+        zkevm_node_rpc = plan.get_service(
+            name="zkevm-node-rpc" + args["deployment_suffix"]
+        )
+        polygon_zkevm_rpc_http_port = zkevm_node_rpc.ports["http-rpc"]
+        bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
+
+        # Start bridge-ui
+        plan.add_service(
+            name="zkevm-bridge-ui" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image=args["zkevm_bridge_ui_image"],
+                ports={
+                    "bridge-ui": PortSpec(
+                        args["zkevm_bridge_ui_port"], application_protocol="http"
+                    ),
+                },
+                env_vars={
+                    "ETHEREUM_RPC_URL": "http://{}:{}".format(
+                        l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
+                    ),
+                    "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
+                        zkevm_node_rpc.ip_address,
+                        polygon_zkevm_rpc_http_port.number,
+                    ),
+                    "BRIDGE_API_URL": "http://{}:{}".format(
+                        zkevm_bridge_service.ip_address, bridge_api_http_port.number
+                    ),
+                    "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                    "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                    "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
+                    "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
+                    "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                    "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
+                    "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
+                    "POLYGON_ZK_EVM_NETWORK_ID": "1",
+                    "ENABLE_FIAT_EXCHANGE_RATES": "false",
+                    "ENABLE_OUTDATED_NETWORK_MODAL": "false",
+                    "ENABLE_DEPOSIT_WARNING": "true",
+                    "ENABLE_REPORT_FORM": "false",
+                },
+                cmd=["run"],
+            ),
+        )
+
+        # Start AggLayer.
         agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
         agglayer_config_artifact = plan.render_templates(
             config={
@@ -271,7 +337,7 @@ def run(plan, args):
             ),
         )
 
-        # Start DAC
+        # Start DAC.
         dac_config_template = read_file(src="./templates/dac-config.toml")
         dac_config_artifact = plan.render_templates(
             config={"dac-config.toml": struct(template=dac_config_template, data=args)},
@@ -297,69 +363,6 @@ def run(plan, args):
                     "/app/cdk-data-availability",
                 ],
                 cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
-            ),
-        )
-
-        # Fetch addresses
-        zkevm_bridge_address = extract_json_key_from_service(
-            plan,
-            "contracts" + args["deployment_suffix"],
-            "/opt/zkevm/bridge-config.toml",
-            "PolygonBridgeAddress",
-        )  # "L2PolygonBridgeAddresses"
-        rollup_manager_address = extract_json_key_from_service(
-            plan,
-            "contracts" + args["deployment_suffix"],
-            "/opt/zkevm/bridge-config.toml",
-            "PolygonRollupManagerAddress",
-        )
-        polygon_zkevm_address = extract_json_key_from_service(
-            plan,
-            "contracts" + args["deployment_suffix"],
-            "/opt/zkevm/bridge-config.toml",
-            "PolygonZkEVMAddress",
-        )
-        l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
-
-        # Fetch port
-        polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
-        bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
-
-        # Start bridge-ui
-        plan.add_service(
-            name="zkevm-bridge-ui" + args["deployment_suffix"],
-            config=ServiceConfig(
-                image=args["zkevm_bridge_ui_image"],
-                ports={
-                    "bridge-ui": PortSpec(
-                        args["zkevm_bridge_ui_port"], application_protocol="http"
-                    ),
-                },
-                env_vars={
-                    "ETHEREUM_RPC_URL": "http://{}:{}".format(
-                        l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
-                    ),
-                    "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
-                        service_map["rpc"].ip_address,
-                        polygon_zkevm_rpc_http_port.number,
-                    ),
-                    "BRIDGE_API_URL": "http://{}:{}".format(
-                        zkevm_bridge_service.ip_address, bridge_api_http_port.number
-                    ),
-                    "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
-                    "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
-                    "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
-                    "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
-                    "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
-                    "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
-                    "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
-                    "POLYGON_ZK_EVM_NETWORK_ID": "1",
-                    "ENABLE_FIAT_EXCHANGE_RATES": "false",
-                    "ENABLE_OUTDATED_NETWORK_MODAL": "false",
-                    "ENABLE_DEPOSIT_WARNING": "true",
-                    "ENABLE_REPORT_FORM": "false",
-                },
-                cmd=["run"],
             ),
         )
     else:
@@ -392,8 +395,8 @@ def start_node_components(
         name="trusted-node-config",
     )
 
-    service_map = {}
     # Deploy components.
+    service_map = {}
     service_map["synchronizer"] = zkevm_node_package.start_synchronizer(
         plan, args, config_artifact, genesis_artifact
     )
