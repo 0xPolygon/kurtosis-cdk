@@ -38,69 +38,197 @@ def run(plan, args):
     # Create deploy parameters
     deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
     deploy_parameters_artifact = plan.render_templates(
+        name="deploy-parameters-artifact",
         config={
             "deploy_parameters.json": struct(
-                template=deploy_parameters_template, data=args
+                template=deploy_parameters_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "zkevm_deployment_salt": args["zkevm_deployment_salt"],
+                    "zkevm_fork_id": args["zkevm_fork_id"],
+                    "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
+                    "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
+                    "zkevm_l2_aggregator_address": args["zkevm_l2_aggregator_address"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "zkevm_test_deployment": args["zkevm_test_deployment"],
+                },
             )
         },
-        name="deploy-parameters-artifact",
     )
     # Create rollup paramaters
     create_rollup_parameters_template = read_file(
         src="./templates/create_rollup_parameters.json"
     )
     create_rollup_parameters_artifact = plan.render_templates(
+        name="create-rollup-parameters-artifact",
         config={
             "create_rollup_parameters.json": struct(
-                template=create_rollup_parameters_template, data=args
+                template=create_rollup_parameters_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "zkevm_l2_chain_id": args["zkevm_l2_chain_id"],
+                    "zkevm_fork_id": args["zkevm_fork_id"],
+                    "zkevm_rollup_consensus": args["zkevm_rollup_consensus"],
+                    "zkevm_rollup_name": args["zkevm_rollup_name"],
+                    "zkevm_rollup_description": args["zkevm_rollup_description"],
+                    "zkevm_rollup_real_verifier": args["zkevm_rollup_real_verifier"],
+                    "zkevm_da_protocol": args["zkevm_da_protocol"],
+                    "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
+                    "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
+                    "zkevm_l2_aggregator_address": args["zkevm_l2_aggregator_address"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                },
             )
         },
-        name="create-rollup-parameters-artifact",
     )
     # Create contract deployment script
     contract_deployment_script_template = read_file(
         src="./templates/run-contract-setup.sh"
     )
     contract_deployment_script_artifact = plan.render_templates(
+        name="contract-deployment-script-artifact",
         config={
             "run-contract-setup.sh": struct(
-                template=contract_deployment_script_template, data=args
+                template=contract_deployment_script_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "cpu_arch": args["cpu_arch"],
+                    "polycli_version": args["polycli_version"],
+                    # l1
+                    "l1_network_id": args["l1_network_id"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_preallocated_mnemonic": args["l1_preallocated_mnemonic"],
+                    "l1_funding_amount": args["l1_funding_amount"],
+                    # zkevm
+                    "zkevm_fork_id": args["zkevm_fork_id"],
+                    "zkevm_use_gas_token_contract": args[
+                        "zkevm_use_gas_token_contract"
+                    ],
+                    "zkevm_dac_port": args["zkevm_dac_port"],
+                    "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
+                    "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
+                    "zkevm_l2_sequencer_private_key": args[
+                        "zkevm_l2_sequencer_private_key"
+                    ],
+                    "zkevm_l2_aggregator_address": args["zkevm_l2_aggregator_address"],
+                    "zkevm_l2_aggregator_private_key": args[
+                        "zkevm_l2_aggregator_private_key"
+                    ],
+                    "zkevm_l2_agglayer_address": args["zkevm_l2_agglayer_address"],
+                    "zkevm_l2_agglayer_private_key": args[
+                        "zkevm_l2_agglayer_private_key"
+                    ],
+                    "zkevm_l2_dac_address": args["zkevm_l2_dac_address"],
+                    "zkevm_l2_dac_private_key": args["zkevm_l2_dac_private_key"],
+                    "zkevm_l2_claimtxmanager_private_key": args[
+                        "zkevm_l2_claimtxmanager_private_key"
+                    ],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                },
             )
         },
-        name="contract-deployment-script-artifact",
     )
 
     # Create bridge configuration
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     bridge_config_artifact = plan.render_templates(
-        config={
-            "bridge-config.toml": struct(template=bridge_config_template, data=args)
-        },
         name="bridge-config-artifact",
+        config={
+            "bridge-config.toml": struct(
+                template=bridge_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # bridge db
+                    "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
+                    "zkevm_db_bridge_name": args["zkevm_db_bridge_name"],
+                    "zkevm_db_bridge_user": args["zkevm_db_bridge_user"],
+                    "zkevm_db_bridge_password": args["zkevm_db_bridge_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
+                    "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                },
+            )
+        },
     )
     # Create AggLayer configuration
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
     agglayer_config_artifact = plan.render_templates(
-        config={
-            "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
-        },
         name="agglayer-config-artifact",
+        config={
+            "agglayer-config.toml": struct(
+                template=agglayer_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_network_id": args["l1_network_id"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # agglayer db
+                    "zkevm_db_agglayer_hostname": args["zkevm_db_agglayer_hostname"],
+                    "zkevm_db_agglayer_name": args["zkevm_db_agglayer_name"],
+                    "zkevm_db_agglayer_user": args["zkevm_db_agglayer_user"],
+                    "zkevm_db_agglayer_password": args["zkevm_db_agglayer_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "zkevm_agglayer_port": args["zkevm_agglayer_port"],
+                    "zkevm_prometheus_port": args["zkevm_prometheus_port"],
+                },
+            )
+        },
     )
     # Create DAC configuration
     dac_config_template = read_file(src="./templates/dac-config.toml")
     dac_config_artifact = plan.render_templates(
-        config={"dac-config.toml": struct(template=dac_config_template, data=args)},
         name="dac-config-artifact",
+        config={
+            "dac-config.toml": struct(
+                template=dac_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_ws_url": args["l1_ws_url"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # dac db
+                    "zkevm_db_dac_hostname": args["zkevm_db_dac_hostname"],
+                    "zkevm_db_dac_name": args["zkevm_db_dac_name"],
+                    "zkevm_db_dac_user": args["zkevm_db_dac_user"],
+                    "zkevm_db_dac_password": args["zkevm_db_dac_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_dac_port": args["zkevm_dac_port"],
+                },
+            )
+        },
     )
     # Create prover configuration
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"
     )
     prover_config_artifact = plan.render_templates(
-        config={
-            "prover-config.json": struct(template=prover_config_template, data=args)
-        },
         name="prover-config-artifact",
+        config={
+            "prover-config.json": struct(
+                template=prover_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    # prover db
+                    "zkevm_db_prover_hostname": args["zkevm_db_prover_hostname"],
+                    "zkevm_db_prover_name": args["zkevm_db_prover_name"],
+                    "zkevm_db_prover_user": args["zkevm_db_prover_user"],
+                    "zkevm_db_prover_password": args["zkevm_db_prover_password"],
+                    # ports
+                    "zkevm_aggregator_port": args["zkevm_aggregator_port"],
+                    "zkevm_executor_port": args["zkevm_executor_port"],
+                    "zkevm_hash_db_port": args["zkevm_hash_db_port"],
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                },
+            )
+        },
     )
 
     # Create helper service to deploy contracts
@@ -356,7 +484,53 @@ def start_node_components(
     # Create node configuration file.
     config_template = read_file(src="./templates/trusted-node/node-config.toml")
     config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=config_template, data=args)},
+        config={
+            "node-config.toml": struct(
+                template=config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "is_cdk": args["is_cdk"],
+                    "l1_network_id": args["l1_network_id"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    # zkevm
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
+                    "zkevm_l2_aggregator_address": args["zkevm_l2_aggregator_address"],
+                    "zkevm_l2_agglayer_address": args["zkevm_l2_agglayer_address"],
+                    # state db
+                    "zkevm_db_state_hostname": args["zkevm_db_state_hostname"],
+                    "zkevm_db_state_name": args["zkevm_db_state_name"],
+                    "zkevm_db_state_user": args["zkevm_db_state_user"],
+                    "zkevm_db_state_password": args["zkevm_db_state_password"],
+                    # pool db
+                    "zkevm_db_pool_hostname": args["zkevm_db_pool_hostname"],
+                    "zkevm_db_pool_name": args["zkevm_db_pool_name"],
+                    "zkevm_db_pool_user": args["zkevm_db_pool_user"],
+                    "zkevm_db_pool_password": args["zkevm_db_pool_password"],
+                    # prover db
+                    "zkevm_db_prover_hostname": args["zkevm_db_prover_hostname"],
+                    "zkevm_db_prover_name": args["zkevm_db_prover_name"],
+                    "zkevm_db_prover_user": args["zkevm_db_prover_user"],
+                    "zkevm_db_prover_password": args["zkevm_db_prover_password"],
+                    # event db
+                    "zkevm_db_event_hostname": args["zkevm_db_event_hostname"],
+                    "zkevm_db_event_name": args["zkevm_db_event_name"],
+                    "zkevm_db_event_user": args["zkevm_db_event_user"],
+                    "zkevm_db_event_password": args["zkevm_db_event_password"],
+                    # ports
+                    "zkevm_aggregator_port": args["zkevm_aggregator_port"],
+                    "zkevm_data_streamer_port": args["zkevm_data_streamer_port"],
+                    "zkevm_agglayer_port": args["zkevm_agglayer_port"],
+                    "zkevm_hash_db_port": args["zkevm_hash_db_port"],
+                    "zkevm_executor_port": args["zkevm_executor_port"],
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "zkevm_rpc_ws_port": args["zkevm_rpc_ws_port"],
+                    "zkevm_prometheus_port": args["zkevm_prometheus_port"],
+                    "zkevm_pprof_port": args["zkevm_pprof_port"],
+                },
+            )
+        },
         name="trusted-node-config",
     )
 
