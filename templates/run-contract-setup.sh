@@ -94,7 +94,6 @@ cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
-cp /opt/contract-deploy/*-config.* /opt/zkevm/
 popd
 
 pushd /opt/zkevm/ || exit 1
