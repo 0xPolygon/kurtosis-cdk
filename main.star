@@ -291,6 +291,18 @@ def run(plan, args):
         "/opt/zkevm/bridge-config.toml",
         "PolygonZkEVMGlobalExitRootAddress",
     )
+    args["global_exit_root_l2_address"] = extract_from_json_file(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/genesis.json",
+        '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address',
+    )
+    args["pol_token_address"] = extract_from_json_file(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/genesis.json",
+        ".genesis[] | select(.contractName == 'PolygonZkEVMGlobalExitRootL2 proxy') | .address",
+    )
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
 
     # Fetch port
@@ -418,8 +430,27 @@ def extract_json_key_from_service(plan, service_name, filename, key):
         command=[
             "/bin/sh",
             "-c",
-            "cat {} | grep -w '{}' | xargs -n1 | tail -1".format(filename, key),
+            "cat {} | grep -w '{}' | xargs -n1 | tail -1 | tr -d '\n'".format(
+                filename, key
+            ),
         ]
     )
     result = plan.exec(service_name=service_name, recipe=exec_recipe)
     return result["output"]
+
+
+def extract_from_json_file(plan, service_name, filename, query):
+    plan.print("Extracting JSON file...")
+    exec_recipe = ExecRecipe(
+        command=[
+            "/bin/sh",
+            "-c",
+            "cat {}".format(filename),
+        ],
+        extract={"query": "fromjson | {}".format(query)},
+    )
+    result = plan.exec(
+        service_name=service_name,
+        recipe=exec_recipe,
+    )
+    return result["extract.query"]
