@@ -1,6 +1,7 @@
 ethereum_package = import_module(
     "github.com/kurtosis-tech/ethereum-package/main.star@2.0.0"
 )
+service_package = import_module("./lib/service.star")
 zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
@@ -35,6 +36,8 @@ def run(plan, args):
     ## STAGE 1: Deploy L1
     # For now we'll stick with most of the defaults
     if DEPLOYMENT_STAGE.deploy_l1 in args["stages"]:
+        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_l1))
+
         ethereum_package.run(
             plan,
             {
@@ -54,6 +57,8 @@ def run(plan, args):
     ## STAGE 2: Configure L1
     # Ffund accounts, deploy cdk contracts and create config files.
     if DEPLOYMENT_STAGE.configure_l1 in args["stages"]:
+        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.configure_l1))
+
         # Create deploy parameters
         deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
         deploy_parameters_artifact = plan.render_templates(
@@ -168,6 +173,8 @@ def run(plan, args):
 
     ## STAGE 3: Deploy trusted / central environment
     if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
+        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_central_environment))
+
         # Start databases
         event_db_init_script = plan.upload_files(
             src="./templates/databases/event-db-init.sql",
@@ -209,6 +216,8 @@ def run(plan, args):
 
     ## STAGE 4: Deploy CDK/Bridge infra
     if DEPLOYMENT_STAGE.deploy_cdk_bridge_infra in args["stages"]:
+        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
+
         # Start bridge service.
         bridge_config_template = read_file(src="./templates/bridge-config.toml")
         bridge_config_artifact = plan.render_templates(
@@ -240,19 +249,19 @@ def run(plan, args):
         )
 
         # Fetch addresses
-        zkevm_bridge_address = extract_json_key_from_service(
+        zkevm_bridge_address = service_package.extract_json_key_from_service(
             plan,
             "contracts" + args["deployment_suffix"],
             "/opt/zkevm/bridge-config.toml",
             "PolygonBridgeAddress",
         )  # "L2PolygonBridgeAddresses"
-        rollup_manager_address = extract_json_key_from_service(
+        rollup_manager_address = service_package.extract_json_key_from_service(
             plan,
             "contracts" + args["deployment_suffix"],
             "/opt/zkevm/bridge-config.toml",
             "PolygonRollupManagerAddress",
         )
-        polygon_zkevm_address = extract_json_key_from_service(
+        polygon_zkevm_address = service_package.extract_json_key_from_service(
             plan,
             "contracts" + args["deployment_suffix"],
             "/opt/zkevm/bridge-config.toml",
@@ -370,6 +379,8 @@ def run(plan, args):
 
     ## STAGE 5: Deploy permissionless node
     if DEPLOYMENT_STAGE.deploy_permissionless_node in args["stages"]:
+        plan.print("Executing stage: " + str(DEPLOYMENT_STAGE.deploy_permissionless_node))
+
         # Note that an additional suffix will be added to the services.
         permissionless_args = args
         permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
@@ -431,16 +442,3 @@ def start_node_components(
         plan, args, config_artifact, genesis_artifact
     )
     return service_map
-
-
-def extract_json_key_from_service(plan, service_name, filename, key):
-    plan.print("Extracting contract addresses and ports...")
-    exec_recipe = ExecRecipe(
-        command=[
-            "/bin/sh",
-            "-c",
-            "cat {} | grep -w '{}' | xargs -n1 | tail -1".format(filename, key),
-        ]
-    )
-    result = plan.exec(service_name=service_name, recipe=exec_recipe)
-    return result["output"]
