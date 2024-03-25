@@ -3,8 +3,8 @@ PrivateKey = {Path = "/etc/zkevm/dac.keystore", Password = "{{.zkevm_l2_keystore
 [L1]
 WsURL = "{{.l1_ws_url}}"
 RpcURL = "{{.l1_rpc_url}}"
-PolygonValidiumAddress = "###rollupAddress###"
-DataCommitteeAddress = "###polygonDataCommitteeAddress###"
+PolygonValidiumAddress = "{{.rollup_address}}"
+DataCommitteeAddress = "{{.polygon_data_committee_address}}"
 Timeout = "1m"
 RetryPeriod = "5s"
 BlockBatchSize = "64"

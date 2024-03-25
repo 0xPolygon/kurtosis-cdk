@@ -287,12 +287,67 @@ def start_node_components(
 
 
 def start_bridge_service(plan, args):
+    # Fetch addresses.
+    rollup_manager_block_number = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "deploymentRollupManagerBlockNumber",
+    )
+    zkevm_bridge_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "polygonZkEVMGlobalExitRootAddress",
+    )
+    zkevm_global_exit_root_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "polygonZkEVMBridgeAddress",
+    )
+    zkevm_rollup_manager_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "polygonRollupManagerAddress",
+    )
+    zkevm_rollup_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "rollupAddress",
+    )
+
     # Create bridge config.
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     bridge_config_artifact = plan.render_templates(
         name="bridge-config-artifact",
         config={
-            "bridge-config.toml": struct(template=bridge_config_template, data=args)
+            "bridge-config.toml": struct(
+                template=bridge_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # addresses
+                    "rollup_manager_block_number": rollup_manager_block_number,
+                    "zkevm_bridge_address": zkevm_bridge_address,
+                    "zkevm_global_exit_root_address": zkevm_global_exit_root_address,
+                    "zkevm_rollup_manager_address": zkevm_rollup_manager_address,
+                    "zkevm_rollup_address": zkevm_rollup_address,
+                    # bridge db
+                    "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
+                    "zkevm_db_bridge_name": args["zkevm_db_bridge_name"],
+                    "zkevm_db_bridge_user": args["zkevm_db_bridge_user"],
+                    "zkevm_db_bridge_password": args["zkevm_db_bridge_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
+                    "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                },
+            )
         },
     )
 
@@ -388,12 +443,41 @@ def start_bridge_ui(plan, args, bridge_service):
 
 
 def start_agglayer(plan, args):
+    # Fetch addresses.
+    rollup_manager_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "polygonRollupManagerAddress",
+    )
+
     # Create agglayer config.
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
     agglayer_config_artifact = plan.render_templates(
         name="agglayer-config-artifact",
         config={
-            "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
+            "agglayer-config.toml": struct(
+                template=agglayer_config_template,
+                # TODO: Organize those args.
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_network_id": args["l1_network_id"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # addresses
+                    "rollup_manager_address": rollup_manager_address,
+                    # agglayer db
+                    "zkevm_db_agglayer_hostname": args["zkevm_db_agglayer_hostname"],
+                    "zkevm_db_agglayer_name": args["zkevm_db_agglayer_name"],
+                    "zkevm_db_agglayer_user": args["zkevm_db_agglayer_user"],
+                    "zkevm_db_agglayer_password": args["zkevm_db_agglayer_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "zkevm_agglayer_port": args["zkevm_agglayer_port"],
+                    "zkevm_prometheus_port": args["zkevm_prometheus_port"],
+                },
+            )
         },
     )
 
@@ -422,11 +506,47 @@ def start_agglayer(plan, args):
 
 
 def start_dac(plan, args):
+    # Fetch addresses.
+    rollup_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "rollupAddress",
+    )
+    data_committee_address = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/combined.json",
+        "polygonDataCommitteeAddress",
+    )
+
     # Create DAC config.
     dac_config_template = read_file(src="./templates/dac-config.toml")
     dac_config_artifact = plan.render_templates(
         name="dac-config-artifact",
-        config={"dac-config.toml": struct(template=dac_config_template, data=args)},
+        config={
+            "dac-config.toml": struct(
+                template=dac_config_template,
+                # TODO: Organize those args.
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_ws_url": args["l1_ws_url"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # addresses
+                    "rollup_address": rollup_address,
+                    "data_committee_address": data_committee_address,
+                    # dac db
+                    "zkevm_db_dac_hostname": args["zkevm_db_dac_hostname"],
+                    "zkevm_db_dac_name": args["zkevm_db_dac_name"],
+                    "zkevm_db_dac_user": args["zkevm_db_dac_user"],
+                    "zkevm_db_dac_password": args["zkevm_db_dac_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_dac_port": args["zkevm_dac_port"],
+                },
+            )
+        },
     )
 
     # Start DAC service.
