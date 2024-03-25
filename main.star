@@ -182,22 +182,46 @@ def run(plan, args):
         )
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
-        # Start the zkevm node components
-        genesis_artifact = plan.store_service_files(
+        # Fetch genesis and keystores.
+        genesis_file = service_package.read_file_from_service(
+            plan,
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
+            filename="/opt/zkevm/genesis.json",
+        )
+        genesis_artifact = plan.render_templates(
             name="genesis",
+            config={"genesis.json": struct(template=genesis_file, data={})},
         )
-        sequencer_keystore_artifact = plan.store_service_files(
+
+        sequencer_keystore_file = service_package.read_file_from_service(
+            plan,
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/sequencer.keystore",
+            filename="/opt/zkevm/sequencer.keystore",
+        )
+        sequencer_keystore_artifact = plan.render_templates(
             name="sequencer-keystore",
+            config={
+                "sequencer.keystore": struct(
+                    template=sequencer_keystore_artifact, data={}
+                )
+            },
         )
-        aggregator_keystore_artifact = plan.store_service_files(
+
+        aggregator_keystore_file = service_package.read_file_from_service(
+            plan,
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/aggregator.keystore",
-            name="aggregator-keystore",
+            filename="/opt/zkevm/aggregator.keystore",
         )
+        aggregator_keystore_artifact = plan.render_templates(
+            name="aggregator-keystore",
+            config={
+                "aggregator.keystore": struct(
+                    template=aggregator_keystore_file, data={}
+                )
+            },
+        )
+
+        # Start the zkevm node components
         start_node_components(
             plan,
             args,
@@ -290,12 +314,18 @@ def start_bridge_service(plan, args):
     # Create bridge config.
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
     rollup_manager_block_number = get_key_from_config(
-        "deploymentRollupManagerBlockNumber"
+        plan, args, "deploymentRollupManagerBlockNumber"
     )
-    zkevm_bridge_address = get_key_from_config("polygonZkEVMGlobalExitRootAddress")
-    zkevm_global_exit_root_address = get_key_from_config("polygonZkEVMBridgeAddress")
-    zkevm_rollup_manager_address = get_key_from_config("polygonRollupManagerAddress")
-    zkevm_rollup_address = get_key_from_config("rollupAddress")
+    zkevm_bridge_address = get_key_from_config(
+        plan, args, "polygonZkEVMGlobalExitRootAddress"
+    )
+    zkevm_global_exit_root_address = get_key_from_config(
+        plan, args, "polygonZkEVMBridgeAddress"
+    )
+    zkevm_rollup_manager_address = get_key_from_config(
+        plan, args, "polygonRollupManagerAddress"
+    )
+    zkevm_rollup_address = get_key_from_config(plan, args, "rollupAddress")
     bridge_config_artifact = plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -353,9 +383,13 @@ def start_bridge_service(plan, args):
 def start_bridge_ui(plan, args, bridge_service):
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
     zkevm_node_rpc = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
-    zkevm_bridge_address = get_key_from_config("polygonZkEVMGlobalExitRootAddress")
-    zkevm_rollup_manager_address = get_key_from_config("polygonRollupManagerAddress")
-    zkevm_rollup_address = get_key_from_config("rollupAddress")
+    zkevm_bridge_address = get_key_from_config(
+        plan, args, "polygonZkEVMGlobalExitRootAddress"
+    )
+    zkevm_rollup_manager_address = get_key_from_config(
+        plan, args, "polygonRollupManagerAddress"
+    )
+    zkevm_rollup_address = get_key_from_config(plan, args, "rollupAddress")
     polygon_zkevm_rpc_http_port = zkevm_node_rpc.ports["http-rpc"]
     bridge_api_http_port = bridge_service.ports["bridge-rpc"]
 
@@ -401,7 +435,9 @@ def start_bridge_ui(plan, args, bridge_service):
 def start_agglayer(plan, args):
     # Create agglayer config.
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
-    rollup_manager_address = get_key_from_config("polygonRollupManagerAddress")
+    rollup_manager_address = get_key_from_config(
+        plan, args, "polygonRollupManagerAddress"
+    )
     agglayer_config_artifact = plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -457,8 +493,10 @@ def start_agglayer(plan, args):
 def start_dac(plan, args):
     # Create DAC config.
     dac_config_template = read_file(src="./templates/dac-config.toml")
-    rollup_address = get_key_from_config("rollupAddress")
-    data_committee_address = data_committee_address("polygonDataCommitteeAddress")
+    rollup_address = get_key_from_config(plan, args, "rollupAddress")
+    data_committee_address = get_key_from_config(
+        plan, args, "polygonDataCommitteeAddress"
+    )
     dac_config_artifact = plan.render_templates(
         name="dac-config-artifact",
         config={
@@ -509,7 +547,7 @@ def start_dac(plan, args):
     )
 
 
-def get_key_from_config(plan, key):
+def get_key_from_config(plan, args, key):
     return service_package.extract_json_key_from_service(
         plan,
         "contracts" + args["deployment_suffix"],
