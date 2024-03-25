@@ -308,7 +308,7 @@ def run(plan, args):
         plan,
         "contracts" + args["deployment_suffix"],
         "/opt/zkevm/combined.json",
-        "polTokenAddress",
+        ".polTokenAddress",
     )
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
 
