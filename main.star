@@ -7,9 +7,22 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 
 
+DEPLOYMENT_STAGE = struct(
+    deploy_l1=1,
+    configure_l1=2,
+    deploy_central_environment=3,
+    deploy_cdk_bridge_infra=4,
+    deploy_permissionless_node=5,
+)
+
+
 def run(plan, args):
+    plan.print("Deploying CDK environment for stages: " + str(args["stages"]))
+
     # Determine system architecture
-    cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
+    cpu_arch_result = plan.run_sh(
+        run="uname -m | tr -d '\n'", description="Determining CPU system architecture"
+    )
     cpu_arch = cpu_arch_result.output
     plan.print("Running on {} architecture".format(cpu_arch))
     if not "cpu_arch" in args:
@@ -19,331 +32,360 @@ def run(plan, args):
     if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
         args["is_cdk"] = True
 
-    # Deploy L1 chain
+    ## STAGE 1: Deploy L1 chain
     # For now we'll stick with most of the defaults
-    ethereum_package.run(
-        plan,
-        {
-            "additional_services": [],
-            "network_params": {
-                # The ethereum package requires the network id to be a string.
-                "network_id": str(args["l1_network_id"]),
-                "preregistered_validator_keys_mnemonic": args[
-                    "l1_preallocated_mnemonic"
+    if DEPLOYMENT_STAGE.deploy_l1 in args["stages"]:
+        ethereum_package.run(
+            plan,
+            {
+                "additional_services": [],
+                "network_params": {
+                    # The ethereum package requires the network id to be a string.
+                    "network_id": str(args["l1_network_id"]),
+                    "preregistered_validator_keys_mnemonic": args[
+                        "l1_preallocated_mnemonic"
+                    ],
+                },
+            },
+        )
+    else:
+        plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_l1))
+
+    # TODO: Check that L1 has been deployed.
+
+    ## STAGE 2: Configure L1 (fund accounts, deploy cdk contracts and create config files)
+    if DEPLOYMENT_STAGE.configure_l1 in args["stages"]:
+        # Create deploy parameters
+        deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
+        deploy_parameters_artifact = plan.render_templates(
+            config={
+                "deploy_parameters.json": struct(
+                    template=deploy_parameters_template, data=args
+                )
+            },
+            name="deploy-parameters-artifact",
+        )
+        # Create rollup paramaters
+        create_rollup_parameters_template = read_file(
+            src="./templates/create_rollup_parameters.json"
+        )
+        create_rollup_parameters_artifact = plan.render_templates(
+            config={
+                "create_rollup_parameters.json": struct(
+                    template=create_rollup_parameters_template, data=args
+                )
+            },
+            name="create-rollup-parameters-artifact",
+        )
+        # Create contract deployment script
+        contract_deployment_script_template = read_file(
+            src="./templates/run-contract-setup.sh"
+        )
+        contract_deployment_script_artifact = plan.render_templates(
+            config={
+                "run-contract-setup.sh": struct(
+                    template=contract_deployment_script_template, data=args
+                )
+            },
+            name="contract-deployment-script-artifact",
+        )
+
+        # Create bridge configuration
+        bridge_config_template = read_file(src="./templates/bridge-config.toml")
+        bridge_config_artifact = plan.render_templates(
+            config={
+                "bridge-config.toml": struct(template=bridge_config_template, data=args)
+            },
+            name="bridge-config-artifact",
+        )
+        # Create AggLayer configuration
+        agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
+        agglayer_config_artifact = plan.render_templates(
+            config={
+                "agglayer-config.toml": struct(
+                    template=agglayer_config_template, data=args
+                )
+            },
+            name="agglayer-config-artifact",
+        )
+        # Create DAC configuration
+        dac_config_template = read_file(src="./templates/dac-config.toml")
+        dac_config_artifact = plan.render_templates(
+            config={"dac-config.toml": struct(template=dac_config_template, data=args)},
+            name="dac-config-artifact",
+        )
+        # Create prover configuration
+        prover_config_template = read_file(
+            src="./templates/trusted-node/prover-config.json"
+        )
+        prover_config_artifact = plan.render_templates(
+            config={
+                "prover-config.json": struct(template=prover_config_template, data=args)
+            },
+            name="prover-config-artifact",
+        )
+
+        # Create helper service to deploy contracts
+        zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
+        plan.add_service(
+            name="contracts" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image="node:20-bookworm",
+                files={
+                    "/opt/zkevm": zkevm_etc_directory,
+                    "/opt/contract-deploy/": Directory(
+                        artifact_names=[
+                            deploy_parameters_artifact,
+                            create_rollup_parameters_artifact,
+                            contract_deployment_script_artifact,
+                            prover_config_artifact,
+                            bridge_config_artifact,
+                            agglayer_config_artifact,
+                            dac_config_artifact,
+                        ]
+                    ),
+                },
+            ),
+        )
+
+        # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
+        contract_init_stat = plan.exec(
+            service_name="contracts" + args["deployment_suffix"],
+            acceptable_codes=[0, 1],
+            recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
+        )
+
+        # Deploy contracts
+        plan.exec(
+            service_name="contracts" + args["deployment_suffix"],
+            recipe=ExecRecipe(
+                command=[
+                    "git",
+                    "clone",
+                    "--depth",
+                    "1",
+                    "-b",
+                    args["zkevm_contracts_branch"],
+                    args["zkevm_contracts_repo"],
+                    "/opt/zkevm-contracts",
+                ]
+            ),
+        )
+        plan.exec(
+            service_name="contracts" + args["deployment_suffix"],
+            recipe=ExecRecipe(
+                command=["chmod", "a+x", "/opt/contract-deploy/run-contract-setup.sh"]
+            ),
+        )
+        plan.print("Running zkEVM contract deployment. This might take some time...")
+        plan.exec(
+            service_name="contracts" + args["deployment_suffix"],
+            recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
+        )
+        zkevm_configs = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm",
+            name="zkevm",
+            description="These are the files needed to start various node services",
+        )
+        genesis_artifact = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+            name="genesis",
+        )
+        sequencer_keystore_artifact = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/sequencer.keystore",
+            name="sequencer-keystore",
+        )
+        aggregator_keystore_artifact = plan.store_service_files(
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/aggregator.keystore",
+            name="aggregator-keystore",
+        )
+    else:
+        plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.configure_l1))
+
+    ## STAGE 3: Deploy trusted / central environment
+    if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
+        # Start databases
+        event_db_init_script = plan.upload_files(
+            src="./templates/databases/event-db-init.sql",
+            name="event-db-init.sql" + args["deployment_suffix"],
+        )
+        prover_db_init_script = plan.upload_files(
+            src="./templates/databases/prover-db-init.sql",
+            name="prover-db-init.sql" + args["deployment_suffix"],
+        )
+        zkevm_databases_package.start_node_databases(
+            plan, args, event_db_init_script, prover_db_init_script
+        )
+        zkevm_databases_package.start_peripheral_databases(plan, args)
+
+        # Start prover
+        zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
+
+        # Start the zkevm node components
+        start_node_components(
+            plan,
+            args,
+            genesis_artifact,
+            sequencer_keystore_artifact,
+            aggregator_keystore_artifact,
+        )
+    else:
+        plan.print(
+            "Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_central_environment)
+        )
+
+    ## STAGE 4: Deploy CDK/Bridge infra
+    if DEPLOYMENT_STAGE.deploy_cdk_bridge_infra in args["stages"]:
+        # Start bridge
+        plan.add_service(
+            name="zkevm-bridge-service" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image="hermeznetwork/zkevm-bridge-service:v0.4.2",
+                ports={
+                    "bridge-rpc": PortSpec(
+                        args["zkevm_bridge_rpc_port"], application_protocol="http"
+                    ),
+                    "bridge-grpc": PortSpec(
+                        args["zkevm_bridge_grpc_port"], application_protocol="grpc"
+                    ),
+                },
+                files={
+                    "/etc/": zkevm_configs,
+                },
+                entrypoint=[
+                    "/app/zkevm-bridge",
                 ],
-            },
-        },
-    )
+                cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
+            ),
+        )
 
-    # Create deploy parameters
-    deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
-    deploy_parameters_artifact = plan.render_templates(
-        config={
-            "deploy_parameters.json": struct(
-                template=deploy_parameters_template, data=args
-            )
-        },
-        name="deploy-parameters-artifact",
-    )
-    # Create rollup paramaters
-    create_rollup_parameters_template = read_file(
-        src="./templates/create_rollup_parameters.json"
-    )
-    create_rollup_parameters_artifact = plan.render_templates(
-        config={
-            "create_rollup_parameters.json": struct(
-                template=create_rollup_parameters_template, data=args
-            )
-        },
-        name="create-rollup-parameters-artifact",
-    )
-    # Create contract deployment script
-    contract_deployment_script_template = read_file(
-        src="./templates/run-contract-setup.sh"
-    )
-    contract_deployment_script_artifact = plan.render_templates(
-        config={
-            "run-contract-setup.sh": struct(
-                template=contract_deployment_script_template, data=args
-            )
-        },
-        name="contract-deployment-script-artifact",
-    )
+        # Start AggLayer
+        plan.add_service(
+            name="zkevm-agglayer" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image=args["zkevm_agglayer_image"],
+                ports={
+                    "agglayer": PortSpec(
+                        args["zkevm_agglayer_port"], application_protocol="http"
+                    ),
+                    "prometheus": PortSpec(
+                        args["zkevm_prometheus_port"], application_protocol="http"
+                    ),
+                },
+                files={
+                    "/etc/": zkevm_configs,
+                },
+                entrypoint=[
+                    "/app/agglayer",
+                ],
+                cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
+            ),
+        )
 
-    # Create bridge configuration
-    bridge_config_template = read_file(src="./templates/bridge-config.toml")
-    bridge_config_artifact = plan.render_templates(
-        config={
-            "bridge-config.toml": struct(template=bridge_config_template, data=args)
-        },
-        name="bridge-config-artifact",
-    )
-    # Create AggLayer configuration
-    agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
-    agglayer_config_artifact = plan.render_templates(
-        config={
-            "agglayer-config.toml": struct(template=agglayer_config_template, data=args)
-        },
-        name="agglayer-config-artifact",
-    )
-    # Create DAC configuration
-    dac_config_template = read_file(src="./templates/dac-config.toml")
-    dac_config_artifact = plan.render_templates(
-        config={"dac-config.toml": struct(template=dac_config_template, data=args)},
-        name="dac-config-artifact",
-    )
-    # Create prover configuration
-    prover_config_template = read_file(
-        src="./templates/trusted-node/prover-config.json"
-    )
-    prover_config_artifact = plan.render_templates(
-        config={
-            "prover-config.json": struct(template=prover_config_template, data=args)
-        },
-        name="prover-config-artifact",
-    )
+        # Start DAC
+        plan.add_service(
+            name="zkevm-dac" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image=args["zkevm_dac_image"],
+                ports={
+                    "dac": PortSpec(
+                        args["zkevm_dac_port"], application_protocol="http"
+                    ),
+                    # Does the DAC have prometheus?!
+                    # "prometheus": PortSpec(
+                    #     args["zkevm_prometheus_port"], application_protocol="http"
+                    # ),
+                },
+                files={
+                    "/etc/": zkevm_configs,
+                },
+                entrypoint=[
+                    "/app/cdk-data-availability",
+                ],
+                cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
+            ),
+        )
 
-    # Create helper service to deploy contracts
-    zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
-    plan.add_service(
-        name="contracts" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image="node:20-bookworm",
-            files={
-                "/opt/zkevm": zkevm_etc_directory,
-                "/opt/contract-deploy/": Directory(
-                    artifact_names=[
-                        deploy_parameters_artifact,
-                        create_rollup_parameters_artifact,
-                        contract_deployment_script_artifact,
-                        prover_config_artifact,
-                        bridge_config_artifact,
-                        agglayer_config_artifact,
-                        dac_config_artifact,
-                    ]
-                ),
-            },
-        ),
-    )
+        # Fetch addresses
+        zkevm_bridge_address = extract_json_key_from_service(
+            plan,
+            "contracts" + args["deployment_suffix"],
+            "/opt/zkevm/bridge-config.toml",
+            "PolygonBridgeAddress",
+        )  # "L2PolygonBridgeAddresses"
+        rollup_manager_address = extract_json_key_from_service(
+            plan,
+            "contracts" + args["deployment_suffix"],
+            "/opt/zkevm/bridge-config.toml",
+            "PolygonRollupManagerAddress",
+        )
+        polygon_zkevm_address = extract_json_key_from_service(
+            plan,
+            "contracts" + args["deployment_suffix"],
+            "/opt/zkevm/bridge-config.toml",
+            "PolygonZkEVMAddress",
+        )
+        l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
 
-    # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
-    contract_init_stat = plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        acceptable_codes=[0, 1],
-        recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
-    )
+        # Fetch port
+        polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
+        bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
 
-    # Deploy contracts
-    plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=[
-                "git",
-                "clone",
-                "--depth",
-                "1",
-                "-b",
-                args["zkevm_contracts_branch"],
-                args["zkevm_contracts_repo"],
-                "/opt/zkevm-contracts",
-            ]
-        ),
-    )
-    plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=["chmod", "a+x", "/opt/contract-deploy/run-contract-setup.sh"]
-        ),
-    )
-    plan.print("Running zkEVM contract deployment. This might take some time...")
-    plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
-    )
-    zkevm_configs = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm",
-        name="zkevm",
-        description="These are the files needed to start various node services",
-    )
-    genesis_artifact = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/genesis.json",
-        name="genesis",
-    )
-    sequencer_keystore_artifact = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sequencer.keystore",
-        name="sequencer-keystore",
-    )
-    aggregator_keystore_artifact = plan.store_service_files(
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggregator.keystore",
-        name="aggregator-keystore",
-    )
+        # Start bridge-ui
+        plan.add_service(
+            name="zkevm-bridge-ui" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image=args["zkevm_bridge_ui_image"],
+                ports={
+                    "bridge-ui": PortSpec(
+                        args["zkevm_bridge_ui_port"], application_protocol="http"
+                    ),
+                },
+                env_vars={
+                    "ETHEREUM_RPC_URL": "http://{}:{}".format(
+                        l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
+                    ),
+                    "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
+                        service_map["rpc"].ip_address,
+                        polygon_zkevm_rpc_http_port.number,
+                    ),
+                    "BRIDGE_API_URL": "http://{}:{}".format(
+                        zkevm_bridge_service.ip_address, bridge_api_http_port.number
+                    ),
+                    "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                    "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
+                    "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
+                    "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
+                    "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
+                    "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
+                    "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
+                    "POLYGON_ZK_EVM_NETWORK_ID": "1",
+                    "ENABLE_FIAT_EXCHANGE_RATES": "false",
+                    "ENABLE_OUTDATED_NETWORK_MODAL": "false",
+                    "ENABLE_DEPOSIT_WARNING": "true",
+                    "ENABLE_REPORT_FORM": "false",
+                },
+                cmd=["run"],
+            ),
+        )
+    else:
+        plan.print("Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
 
-    # Start databases
-    event_db_init_script = plan.upload_files(
-        src="./templates/databases/event-db-init.sql",
-        name="event-db-init.sql" + args["deployment_suffix"],
-    )
-    prover_db_init_script = plan.upload_files(
-        src="./templates/databases/prover-db-init.sql",
-        name="prover-db-init.sql" + args["deployment_suffix"],
-    )
-    zkevm_databases_package.start_node_databases(
-        plan, args, event_db_init_script, prover_db_init_script
-    )
-    zkevm_databases_package.start_peripheral_databases(plan, args)
-
-    # Start prover
-    zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
-
-    # Start AggLayer
-    plan.add_service(
-        name="zkevm-agglayer" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_agglayer_image"],
-            ports={
-                "agglayer": PortSpec(
-                    args["zkevm_agglayer_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/agglayer",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
-        ),
-    )
-
-    # Start DAC
-    plan.add_service(
-        name="zkevm-dac" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_dac_image"],
-            ports={
-                "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-                # Does the DAC have prometheus?!
-                # "prometheus": PortSpec(
-                #     args["zkevm_prometheus_port"], application_protocol="http"
-                # ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/cdk-data-availability",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
-        ),
-    )
-
-    # Start the zkevm node components
-    service_map = start_node_components(
-        plan,
-        args,
-        genesis_artifact,
-        sequencer_keystore_artifact,
-        aggregator_keystore_artifact,
-    )
-
-    # Start bridge
-    zkevm_bridge_service = plan.add_service(
-        name="zkevm-bridge-service" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_bridge_service_image"],
-            ports={
-                "bridge-rpc": PortSpec(
-                    args["zkevm_bridge_rpc_port"], application_protocol="http"
-                ),
-                "bridge-grpc": PortSpec(
-                    args["zkevm_bridge_grpc_port"], application_protocol="grpc"
-                ),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/zkevm-bridge",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
-        ),
-    )
-
-    # Fetch addresses
-    zkevm_bridge_address = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonBridgeAddress",
-    )  # "L2PolygonBridgeAddresses"
-    rollup_manager_address = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonRollupManagerAddress",
-    )
-    polygon_zkevm_address = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonZkEVMAddress",
-    )
-    l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
-
-    # Fetch port
-    polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
-    bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
-
-    # Start bridge-ui
-    plan.add_service(
-        name="zkevm-bridge-ui" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_bridge_ui_image"],
-            ports={
-                "bridge-ui": PortSpec(
-                    args["zkevm_bridge_ui_port"], application_protocol="http"
-                ),
-            },
-            env_vars={
-                "ETHEREUM_RPC_URL": "http://{}:{}".format(
-                    l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
-                ),
-                "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
-                    service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number
-                ),
-                "BRIDGE_API_URL": "http://{}:{}".format(
-                    zkevm_bridge_service.ip_address, bridge_api_http_port.number
-                ),
-                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
-                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": zkevm_bridge_address,
-                "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
-                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": polygon_zkevm_address,
-                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": rollup_manager_address,
-                "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
-                "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
-                "POLYGON_ZK_EVM_NETWORK_ID": "1",
-                "ENABLE_FIAT_EXCHANGE_RATES": "false",
-                "ENABLE_OUTDATED_NETWORK_MODAL": "false",
-                "ENABLE_DEPOSIT_WARNING": "true",
-                "ENABLE_REPORT_FORM": "false",
-            },
-            cmd=["run"],
-        ),
-    )
-
-    # Start default permissionless node.
-    # Note that an additional suffix will be added to the services.
-    permissionless_args = args
-    permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
-    permissionless_args["genesis_artifact"] = genesis_artifact
-    zkevm_permissionless_node_package.run(plan, args)
+    ## STAGE 5: Deploy permissionless node
+    if DEPLOYMENT_STAGE.deploy_permissionless_node in args["stages"]:
+        # Note that an additional suffix will be added to the services.
+        permissionless_args = args
+        permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
+        permissionless_args["genesis_artifact"] = genesis_artifact
+        zkevm_permissionless_node_package.run(plan, args)
+    else:
+        plan.print(
+            "Skipping stage: " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
+        )
 
 
 def start_node_components(

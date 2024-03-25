@@ -5,6 +5,11 @@
 # Note: It should be a string.
 deployment_suffix: "-001"
 
+# The deployment process is divided into various stages.
+# The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
+# By default, it will execute all the stages.
+stages: [1, 2, 3, 4, 5]
+
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v5.0.7
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.2-cdk
