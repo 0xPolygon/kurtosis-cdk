@@ -35,11 +35,11 @@ IntervalToRefreshBlockedAddresses = "5m"
 IntervalToRefreshGasPrices = "5s"
 MaxTxBytesSize=100132
 MaxTxDataBytesSize=100000
-DefaultMinGasPriceAllowed = 1000000000
+DefaultMinGasPriceAllowed = 5000000000
 MinAllowedGasPriceInterval = "5m"
 PollMinAllowedGasPriceInterval = "15s"
-AccountQueue = 64
-GlobalQueue = 1024
+AccountQueue = 128
+GlobalQueue = 0
         [Pool.EffectiveGasPrice]
                 Enabled = false
                 L1GasPriceFactor = 0.25
@@ -104,7 +104,7 @@ L1SynchronizationMode = "sequential"
 DeletePoolTxsL1BlockConfirmations = 100
 DeletePoolTxsCheckInterval = "12h"
 TxLifetimeCheckInterval = "10m"
-TxLifetimeMax = "3h"
+TxLifetimeMax = "6h"
 LoadPoolTxsCheckInterval = "500ms"
 StateConsistencyCheckInterval = "5s"
         [Sequencer.Finalizer]
@@ -113,13 +113,13 @@ StateConsistencyCheckInterval = "5s"
                 ForcedBatchesL1BlockConfirmations = 0
                 ForcedBatchesCheckInterval = "10s"
                 L1InfoTreeL1BlockConfirmations = 0
-                L1InfoTreeCheckInterval = "10s"
-                BatchMaxDeltaTimestamp = "20s"
-                L2BlockMaxDeltaTimestamp = "4s"
+                L1InfoTreeCheckInterval = "120s"
+                BatchMaxDeltaTimestamp = "300s"
+                L2BlockMaxDeltaTimestamp = "5s"
                 ResourceExhaustedMarginPct = 10
                 HaltOnBatchNumber = 0
                 SequentialBatchSanityCheck = false
-                SequentialProcessL2Block = true
+                SequentialProcessL2Block = false
         [Sequencer.StreamServer]
                 Port = {{.zkevm_data_streamer_port}}
                 # FIXME: This might be a weird path, we should probably ensure we mount to a persistent volume
@@ -129,8 +129,9 @@ StateConsistencyCheckInterval = "5s"
                 Enabled = true
 
 [SequenceSender]
-WaitPeriodSendSequence = "15s"
-LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
+MaxBatchesForL1 = 20
+WaitPeriodSendSequence = "300s"
+LastBatchVirtualizationTimeMaxWaitPeriod = "600s"
 L1BlockTimestampMargin = "5s"
 MaxTxSizeForL1 = 131072
 L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
@@ -143,7 +144,7 @@ SenderAddress = "{{.zkevm_l2_sequencer_address}}"
 Host = "0.0.0.0"
 Port = {{.zkevm_aggregator_port}}
 RetryTime = "5s"
-VerifyProofInterval = "10s"
+VerifyProofInterval = "900s"
 TxProfitabilityCheckerType = "acceptall"
 TxProfitabilityMinReward = "1.1"
 ProofStatePollingInterval = "5s"
@@ -166,24 +167,25 @@ SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 
 [EthTxManager]
 ForcedGas = 0
+GasPriceMarginFactor = 2
 PrivateKeys = [
         {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
         {Path = "/etc/zkevm/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 ]
 
 [L2GasPriceSuggester]
-Type = "default"
+Type = "follower"
 UpdatePeriod = "10s"
-Factor = 0.5
-DefaultGasPriceWei = 1000000000
-MaxGasPriceWei = 0
+Factor = 0.01
+DefaultGasPriceWei = 100000000
+MaxGasPriceWei = 20000000000
 
 [MTClient]
 URI  = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
 
 [Executor]
 URI = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_executor_port}}"
-MaxGRPCMessageSize = 100000000
+MaxGRPCMessageSize = 1000000000
 
 [Metrics]
 Host = "0.0.0.0"

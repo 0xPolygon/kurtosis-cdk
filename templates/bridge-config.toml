@@ -10,15 +10,15 @@ Name = "{{.zkevm_db_bridge_name}}"
 Password = "{{.zkevm_db_bridge_password}}"
 Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_suffix}}"
 Port = "{{.zkevm_db_postgres_port}}"
-MaxConns = 20
+MaxConns = 500
 
 [Etherman]
 l1URL = "{{.l1_rpc_url}}"
 L2URLs = ["http://zkevm-node-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
 
 [Synchronizer]
-SyncInterval = "5s"
-SyncChunkSize = 100
+SyncInterval = "10s"
+SyncChunkSize = 10
 
 [BridgeController]
 Store = "postgres"
@@ -38,7 +38,7 @@ BridgeVersion = "v1"
     Password = "{{.zkevm_db_bridge_password}}"
     Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_suffix}}"
     Port = "{{.zkevm_db_postgres_port}}"
-    MaxConns = 20
+    MaxConns = 500
 
 [NetworkConfig]
 GenBlockNumber = "###zkevm_l1_deployment_block###"
@@ -49,7 +49,7 @@ PolygonZkEVMAddress = "###zkevm_l1_rollup_addr###"
 L2PolygonBridgeAddresses = ["###zkevm_l1_bridge_addr###"]
 
 [ClaimTxManager]
-FrequencyToMonitorTxs = "5s"
+FrequencyToMonitorTxs = "10s"
 PrivateKey = {Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 Enabled = true
 RetryInterval = "1s"

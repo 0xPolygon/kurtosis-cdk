@@ -77,7 +77,7 @@
     "dbMultiWrite": true,
     "dbFlushInParallel": false,
     "dbMTCacheSize": 1024,
-    "dbProgramCacheSize": 512,
+    "dbProgramCacheSize": 6144,
     "dbNumberOfPoolConnections": 30,
     "dbGetTree": true,
     "cleanerPollingPeriod": 600,
