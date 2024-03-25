@@ -141,6 +141,7 @@ def run(plan, args):
                 template=bridge_config_template,
                 data={
                     "deployment_suffix": args["deployment_suffix"],
+                    "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # bridge db
                     "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
