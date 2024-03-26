@@ -150,6 +150,13 @@ def run(plan, args):
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.configure_l1))
 
+    # Get the genesis file.
+    genesis_artifact = plan.store_service_files(
+        name="genesis",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/genesis.json",
+    )
+
     ## STAGE 3: Deploy trusted / central environment
     if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
         plan.print(
@@ -183,11 +190,6 @@ def run(plan, args):
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
         # Start the zkevm node components
-        genesis_artifact = plan.store_service_files(
-            name="genesis",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
-        )
         sequencer_keystore_artifact = plan.store_service_files(
             name="sequencer-keystore",
             service_name="contracts" + args["deployment_suffix"],
@@ -222,12 +224,6 @@ def run(plan, args):
     if DEPLOYMENT_STAGE.deploy_permissionless_node in args["stages"]:
         plan.print(
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
-        )
-
-        genesis_artifact = plan.store_service_files(
-            name="genesis",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
         )
 
         # FIXME: This will create an alias of args and not a deep copy!
