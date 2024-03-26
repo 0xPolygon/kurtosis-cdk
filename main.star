@@ -226,12 +226,11 @@ def run(plan, args):
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
         )
 
-        # FIXME: This will create an alias of args and not a deep copy!
-        permissionless_args = args
         # Note that an additional suffix will be added to the permissionless services.
+        permissionless_args = dict(args)  # Create a shallow copy of args.
         permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
         permissionless_args["genesis_artifact"] = genesis_artifact
-        zkevm_permissionless_node_package.run(plan, args)
+        zkevm_permissionless_node_package.run(plan, permissionless_args)
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node))
 
