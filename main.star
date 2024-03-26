@@ -15,6 +15,7 @@ DEPLOYMENT_STAGE = struct(
     deploy_central_environment=3,
     deploy_cdk_bridge_infra=4,
     deploy_permissionless_node=5,
+    deploy_observability=6,
 )
 
 
@@ -55,7 +56,7 @@ def run(plan, args):
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_l1))
 
     ## STAGE 2: Configure L1
-    # Ffund accounts, deploy cdk contracts and create config files.
+    # Fund accounts, deploy cdk contracts and create config files.
     if DEPLOYMENT_STAGE.configure_l1 in args["stages"]:
         plan.print("Executing stage " + str(DEPLOYMENT_STAGE.configure_l1))
 
@@ -114,7 +115,7 @@ def run(plan, args):
             ),
         )
 
-        # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
+        # TODO: Check if the contracts were already initialized. I'm leaving this here for now, but it's not useful!
         contract_init_stat = plan.exec(
             service_name="contracts" + args["deployment_suffix"],
             acceptable_codes=[0, 1],
@@ -158,6 +159,9 @@ def run(plan, args):
         src="/opt/zkevm/genesis.json",
     )
 
+    # A list of all the services to be observed by the observability package.
+    services = []
+
     ## STAGE 3: Deploy trusted / central environment
     if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
         plan.print(
@@ -178,18 +182,6 @@ def run(plan, args):
         )
         zkevm_databases_package.start_peripheral_databases(plan, args)
 
-    # Start AggLayer
-    zkevm_agglayer = plan.add_service(
-        name="zkevm-agglayer" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_agglayer_image"],
-            ports={
-                "agglayer": PortSpec(
-                    args["zkevm_agglayer_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
         # Start prover
         prover_config_template = read_file(
             src="./templates/trusted-node/prover-config.json"
@@ -202,24 +194,7 @@ def run(plan, args):
         )
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
-    # Start DAC
-    plan.add_service(
-        name="zkevm-dac" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_dac_image"],
-            ports={
-                "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-            },
-            files={
-                "/etc/": zkevm_configs,
-            },
-            entrypoint=[
-                "/app/cdk-data-availability",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
-        ),
-    )
-        # Start the zkevm node components
+        # Start the zkevm node components.
         sequencer_keystore_artifact = plan.store_service_files(
             name="sequencer-keystore",
             service_name="contracts" + args["deployment_suffix"],
@@ -230,13 +205,13 @@ def run(plan, args):
             service_name="contracts" + args["deployment_suffix"],
             src="/opt/zkevm/aggregator.keystore",
         )
-        start_node_components(
+        services += start_node_components(
             plan,
             args,
             genesis_artifact,
             sequencer_keystore_artifact,
             aggregator_keystore_artifact,
-        )
+        ).values()
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_central_environment))
 
@@ -245,7 +220,7 @@ def run(plan, args):
         plan.print("Executing stage " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
         zkevm_bridge_service = start_bridge_service(plan, args)
         start_bridge_ui(plan, args, zkevm_bridge_service)
-        start_agglayer(plan, args)
+        services.append(start_agglayer(plan, args))
         start_dac(plan, args)
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
@@ -256,113 +231,48 @@ def run(plan, args):
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
         )
 
-    # Fetch addresses
-    args["zkevm_bridge_address"] = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonBridgeAddress",  # or "L2PolygonBridgeAddresses"
-    )
-    args["rollup_manager_address"] = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonRollupManagerAddress",
-    )
-    args["polygon_zkevm_address"] = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonZkEVMAddress",
-    )
-    args["global_exit_root_address"] = extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/bridge-config.toml",
-        "PolygonZkEVMGlobalExitRootAddress",
-    )
-    args["global_exit_root_l2_address"] = extract_from_json_file(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/genesis.json",
-        '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address',
-    )
-    args["pol_token_address"] = extract_from_json_file(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        ".polTokenAddress",
-    )
-    l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
-
-    # Fetch port
-    polygon_zkevm_rpc_http_port = service_map["rpc"].ports["http-rpc"]
-    bridge_api_http_port = zkevm_bridge_service.ports["bridge-rpc"]
-
-    args["zkevm_rpc_url"] = "http://{}:{}".format(
-        service_map["rpc"].ip_address, polygon_zkevm_rpc_http_port.number
-    )
-
-    # Start bridge-ui
-    plan.add_service(
-        name="zkevm-bridge-ui" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_bridge_ui_image"],
-            ports={
-                "bridge-ui": PortSpec(
-                    args["zkevm_bridge_ui_port"], application_protocol="http"
-                ),
-            },
-            env_vars={
-                "ETHEREUM_RPC_URL": "http://{}:{}".format(
-                    l1_eth_service.ip_address, l1_eth_service.ports["rpc"].number
-                ),
-                "POLYGON_ZK_EVM_RPC_URL": args["zkevm_rpc_url"],
-                "BRIDGE_API_URL": "http://{}:{}".format(
-                    zkevm_bridge_service.ip_address, bridge_api_http_port.number
-                ),
-                "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": args["zkevm_bridge_address"],
-                "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": args["zkevm_bridge_address"],
-                "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
-                "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": args[
-                    "polygon_zkevm_address"
-                ],
-                "ETHEREUM_ROLLUP_MANAGER_ADDRESS": args["rollup_manager_address"],
-                "ETHEREUM_EXPLORER_URL": args["ethereum_explorer"],
-                "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
-                "POLYGON_ZK_EVM_NETWORK_ID": "1",
-                "ENABLE_FIAT_EXCHANGE_RATES": "false",
-                "ENABLE_OUTDATED_NETWORK_MODAL": "false",
-                "ENABLE_DEPOSIT_WARNING": "true",
-                "ENABLE_REPORT_FORM": "false",
-            },
-            cmd=["run"],
-        ),
-    )
-
-    # Start default permissionless node.
-    # Note that an additional suffix will be added to the services.
-    permissionless_args = dict(args)
-    permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
-    permissionless_args["genesis_artifact"] = genesis_artifact
-
-    zkevm_permissionless_services = zkevm_permissionless_node_package.run(
-        plan, permissionless_args, run_observability=False
-    )
-
-    # Start panoptichain, prometheus, and grafana.
-    observability_package.run(
-        plan,
-        args,
-        service_map.values() + [zkevm_agglayer] + zkevm_permissionless_services,
-    )
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_args = dict(args)  # Create a shallow copy of args.
         permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
         permissionless_args["genesis_artifact"] = genesis_artifact
-        zkevm_permissionless_node_package.run(plan, permissionless_args)
+        services += zkevm_permissionless_node_package.run(plan, permissionless_args)
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node))
+
+    ## STAGE 6: Deploy observability stack
+    if DEPLOYMENT_STAGE.deploy_observability in args["stages"]:
+        plan.print("Executing stage " + str(DEPLOYMENT_STAGE.deploy_observability))
+        start_observability(plan, args, services)
+    else:
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_observability))
+
+
+def start_observability(plan, args, services):
+    # Fetch args for panoptichain config.
+    args["zkevm_bridge_address"] = get_key_from_config(
+        plan, args, "polygonZkEVMBridgeAddress"
+    )
+    args["rollup_manager_address"] = get_key_from_config(
+        plan, args, "polygonRollupManagerAddress"
+    )
+    args["polygon_zkevm_address"] = get_key_from_config(plan, args, "rollupAddress")
+    args["global_exit_root_address"] = get_key_from_config(
+        plan, args, "polygonZkEVMGlobalExitRootAddress"
+    )
+    args["global_exit_root_l2_address"] = service_package.extract_json_key_from_service(
+        plan,
+        "contracts" + args["deployment_suffix"],
+        "/opt/zkevm/genesis.json",
+        'genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address',
+    )
+    args["pol_token_address"] = get_key_from_config(
+        plan,
+        args,
+        "polTokenAddress",
+    )
+
+    # Start panoptichain, prometheus, and grafana.
+    observability_package.run(plan, args, services)
 
 
 def start_node_components(
@@ -378,8 +288,6 @@ def start_node_components(
         config={"node-config.toml": struct(template=config_template, data=args)},
         name="trusted-node-config",
     )
-
-    service_map = {}
 
     # Deploy components.
     service_map = {}
@@ -403,6 +311,9 @@ def start_node_components(
     service_map["rpc"] = zkevm_node_package.start_rpc(
         plan, args, config_artifact, genesis_artifact
     )
+    args["zkevm_rpc_url"] = "http://{}:{}".format(
+        service_map["rpc"].ip_address, service_map["rpc"].ports["http-rpc"].number
+    )
 
     service_map["eth_tx_manager"] = zkevm_node_package.start_eth_tx_manager(
         plan,
@@ -416,40 +327,9 @@ def start_node_components(
     service_map["l2_gas_pricer"] = zkevm_node_package.start_l2_gas_pricer(
         plan, args, config_artifact, genesis_artifact
     )
-
     return service_map
 
 
-def extract_json_key_from_service(plan, service_name, filename, key):
-    plan.print("Extracting contract addresses and ports...")
-    exec_recipe = ExecRecipe(
-        command=[
-            "/bin/sh",
-            "-c",
-            "cat {} | grep -w '{}' | xargs -n1 | tail -1 | tr -d '\n'".format(
-                filename, key
-            ),
-        ]
-    )
-    result = plan.exec(service_name=service_name, recipe=exec_recipe)
-    return result["output"]
-
-
-def extract_from_json_file(plan, service_name, filename, query):
-    plan.print("Extracting JSON file...")
-    exec_recipe = ExecRecipe(
-        command=[
-            "/bin/sh",
-            "-c",
-            "cat {}".format(filename),
-        ],
-        extract={"query": "fromjson | {}".format(query)},
-    )
-    result = plan.exec(
-        service_name=service_name,
-        recipe=exec_recipe,
-    )
-    return result["extract.query"]
 def start_bridge_service(plan, args):
     # Create bridge config.
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
@@ -617,7 +497,7 @@ def start_agglayer(plan, args):
     )
 
     # Start agglayer service.
-    plan.add_service(
+    return plan.add_service(
         name="zkevm-agglayer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_agglayer_image"],
@@ -686,16 +566,12 @@ def start_dac(plan, args):
     )
 
     # Start DAC service.
-    plan.add_service(
+    return plan.add_service(
         name="zkevm-dac" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_dac_image"],
             ports={
                 "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-                # Does the DAC have prometheus?!
-                # "prometheus": PortSpec(
-                #     args["zkevm_prometheus_port"], application_protocol="http"
-                # ),
             },
             files={
                 "/etc/zkevm": Directory(

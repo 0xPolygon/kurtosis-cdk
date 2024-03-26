@@ -4,7 +4,7 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 observability_package = import_module("./lib/observability.star")
 
 
-def run(plan, args, run_observability=True):
+def run(plan, args):
     # Start node databases.
     event_db_init_script = plan.upload_files(
         src="./templates/databases/event-db-init.sql",
@@ -56,9 +56,4 @@ def run(plan, args, run_observability=True):
         plan, args, node_config_artifact, genesis_artifact
     )
 
-    services = [synchronizer, rpc]
-
-    if run_observability:
-        observability_package.run(plan, args, services, run_panoptichain=False)
-
-    return services
+    return [synchronizer, rpc]

@@ -5,7 +5,7 @@ def extract_json_key_from_service(plan, service_name, filename, key):
         command=[
             "/bin/sh",
             "-c",
-            "cat {}".format(filename, key),
+            "cat {}".format(filename),
         ],
         extract={"extracted_value": "fromjson | .{}".format(key)},
     )

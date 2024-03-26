@@ -8,7 +8,7 @@ deployment_suffix: "-001"
 # The deployment process is divided into various stages.
 # The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
 # By default, it will execute all the stages.
-stages: [1, 2, 3, 4, 5]
+stages: [1, 2, 3, 4, 5, 6]
 
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v5.0.7
