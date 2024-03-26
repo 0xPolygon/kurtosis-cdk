@@ -105,26 +105,6 @@ def run(plan, args):
 
     # Create helper service to deploy contracts
     zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
-    plan.add_service(
-        name="contracts" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image="node:20-bookworm",
-            files={
-                "/opt/zkevm": zkevm_etc_directory,
-                "/opt/contract-deploy/": Directory(
-                    artifact_names=[
-                        deploy_parameters_artifact,
-                        create_rollup_parameters_artifact,
-                        contract_deployment_script_artifact,
-                        prover_config_artifact,
-                        bridge_config_artifact,
-                        agglayer_config_artifact,
-                        dac_config_artifact,
-                    ]
-                ),
-            },
-        ),
-    )
 
     # Deploy contracts
     plan.exec(
