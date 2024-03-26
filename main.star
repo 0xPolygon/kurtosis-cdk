@@ -359,10 +359,7 @@ def run(plan, args):
 
     # Start default permissionless node.
     # Note that an additional suffix will be added to the services.
-    permissionless_args = {}
-    for k, v in args.items():
-        permissionless_args[k] = v
-
+    permissionless_args = dict(args)
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
 
