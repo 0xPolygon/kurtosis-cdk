@@ -31,6 +31,9 @@ def _start_node_component(
             },
             entrypoint=["/app/zkevm-node"],
             cmd=cmd,
+            env_vars = {
+                "HTTP_PROXY": "http://mitm-proxy-001:8080"
+            }
         ),
     )
 

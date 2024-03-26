@@ -50,6 +50,21 @@ def run(plan, args):
                 },
             },
         )
+        plan.add_service(
+            name="mitm-proxy" + args["deployment_suffix"],
+            config=ServiceConfig(
+                image="mitmproxy/mitmproxy:latest",
+                ports={
+                    "mitm": PortSpec(
+                        8080, application_protocol="http"
+                    ),
+                },
+                entrypoint=[
+                    "mitmdump",
+                ],
+
+            )
+        )
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_l1))
 
