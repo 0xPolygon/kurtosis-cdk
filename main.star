@@ -340,10 +340,10 @@ def run(plan, args):
 
     # Start default permissionless node.
     # Note that an additional suffix will be added to the services.
-    permissionless_args = args
+    permissionless_args = dict(args) # Create a shallow copy of args.
     permissionless_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
     permissionless_args["genesis_artifact"] = genesis_artifact
-    zkevm_permissionless_node_package.run(plan, args)
+    zkevm_permissionless_node_package.run(plan, permissionless_args)
 
 
 def start_node_components(
