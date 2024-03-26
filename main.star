@@ -126,13 +126,6 @@ def run(plan, args):
         ),
     )
 
-    # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
-    contract_init_stat = plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        acceptable_codes=[0, 1],
-        recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
-    )
-
     # Deploy contracts
     plan.exec(
         service_name="contracts" + args["deployment_suffix"],
