@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install yq
-        run: apt-get install --yes yq
+        run: sudo apt-get install --yes yq
 
       - name: Deploy L1
         run: |
