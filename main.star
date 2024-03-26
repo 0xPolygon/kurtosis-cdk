@@ -224,6 +224,12 @@ def run(plan, args):
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_permissionless_node)
         )
 
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+        )
+
         # FIXME: This will create an alias of args and not a deep copy!
         permissionless_args = args
         # Note that an additional suffix will be added to the permissionless services.
