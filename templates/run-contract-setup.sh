@@ -94,7 +94,6 @@ cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
-cp /opt/contract-deploy/*-config.* /opt/zkevm/
 popd
 
 pushd /opt/zkevm/ || exit 1
@@ -126,28 +125,6 @@ jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c
 jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
-
-# note this particular setting is different for the bridge service!!
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.NetworkConfig.GenBlockNumber = $c[0].deploymentRollupManagerBlockNumber' bridge-config.toml > b.json; mv b.json bridge-config.toml
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonBridgeAddress = $c[0].polygonZkEVMBridgeAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMGlobalExitRootAddress = $c[0].polygonZkEVMGlobalExitRootAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.NetworkConfig.PolygonZkEVMAddress = $c[0].rollupAddress' bridge-config.toml > b.json; mv b.json bridge-config.toml
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.NetworkConfig.L2PolygonBridgeAddresses = [$c[0].polygonZkEVMBridgeAddress]' bridge-config.toml > b.json; mv b.json bridge-config.toml
-
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.L1.RollupManagerContract = $c[0].polygonRollupManagerAddress' agglayer-config.toml > a.json; mv a.json agglayer-config.toml
-
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.L1.PolygonValidiumAddress = $c[0].rollupAddress' dac-config.toml > a.json; mv a.json dac-config.toml
-# shellcheck disable=SC2016
-tomlq --slurpfile c combined.json -t '.L1.DataCommitteeAddress = $c[0].polygonDataCommitteeAddress' dac-config.toml > a.json; mv a.json dac-config.toml
 
 # The sequencer needs to pay POL when it sequences batches. This gets
 # refunded when the batches are proved. In order for this to work the

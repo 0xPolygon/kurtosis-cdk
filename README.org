@@ -122,6 +122,47 @@ node to the ~cdk-v1~ enclave:
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
 
+** For Developers
+
+Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately. The `stages` parameter indicates the specific stages you wish the deployment to proceed through. By default, it will execute all the stages.
+
+Currently, the deployment process includes the following stages:
+
+  1. Deploy L1
+  2. Configure L1 (which involves funding accounts, deploying CDK contracts, and creating configuration files)
+  3. Deploy Trusted / Central Environment
+  4. Deploy Bridge, AggLayer, and DAC
+  5. Deploy Permissionless Node
+
+Here's an example of how you can specify the stages to run through.
+
+#+begin_src bash
+# Execute the first stage (deploy L1).
+yq e '.stages = [1]' --inplace params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+# Perform additional tasks...
+
+# Execute the second stage (configure L1).
+yq e '.stages = [2]' --inplace params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+# Perform additional tasks...
+
+# Execute the thirs stage (deploy trusted/central environment).
+yq e '.stages = [3]' --inplace params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+# Perform additional tasks...
+
+# Execute the fourth stage (deploy bridge/agglayer/dac).
+yq e '.stages = [4]' --inplace params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+# Perform additional tasks...
+
+# Execute the fifth stage (deploy permissionless node).
+yq e '.stages = [5]' --inplace params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+# Perform additional tasks...
+#+end_src
+
 ** License
 
 Copyright (c) 2024 PT Services DMCC
