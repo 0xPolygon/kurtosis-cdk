@@ -105,6 +105,33 @@ def run(plan, args):
 
     # Create helper service to deploy contracts
     zkevm_etc_directory = Directory(persistent_key="zkevm-artifacts")
+    plan.add_service(
+        name="contracts" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image="node:20-bookworm",
+            files={
+                "/opt/zkevm": zkevm_etc_directory,
+                "/opt/contract-deploy/": Directory(
+                    artifact_names=[
+                        deploy_parameters_artifact,
+                        create_rollup_parameters_artifact,
+                        contract_deployment_script_artifact,
+                        prover_config_artifact,
+                        bridge_config_artifact,
+                        agglayer_config_artifact,
+                        dac_config_artifact,
+                    ]
+                ),
+            },
+        ),
+    )
+
+    # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
+    contract_init_stat = plan.exec(
+        service_name="contracts" + args["deployment_suffix"],
+        acceptable_codes=[0, 1],
+        recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
+    )
 
     # Deploy contracts
     plan.exec(
