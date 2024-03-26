@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cdk:
+  monolith_cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,3 +21,36 @@ jobs:
         with:
           path: .
           args: params.yml
+
+  incremental_cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: apt-get install --yes yq
+
+      - name: Deploy L1
+        run: |
+          yq e '.stages = [1]' --inplace params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+
+      - name: Configure L1
+        run: |
+          yq e '.stages = [2]' --inplace params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+
+      - name: Deploy CDK Trusted Environment
+        run: |
+          yq e '.stages = [3]' --inplace params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+
+      - name: Deploy CDK Bridge
+        run: |
+          yq e '.stages = [4]' --inplace params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+
+      - name: Deploy Permissionless Node
+        run: |
+          yq e '.stages = [5]' --inplace params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
