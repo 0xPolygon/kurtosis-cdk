@@ -292,14 +292,17 @@ def start_bridge_service(plan, args):
     rollup_manager_block_number = get_key_from_config(
         plan, args, "deploymentRollupManagerBlockNumber"
     )
-    zkevm_bridge_address = get_key_from_config(
+    zkevm_global_exit_root_address = get_key_from_config(
         plan, args, "polygonZkEVMGlobalExitRootAddress"
     )
-    zkevm_global_exit_root_address = get_key_from_config(
-        plan, args, "polygonZkEVMBridgeAddress"
-    )
+    zkevm_bridge_address = get_key_from_config(plan, args, "polygonZkEVMBridgeAddress")
     zkevm_rollup_manager_address = get_key_from_config(
         plan, args, "polygonRollupManagerAddress"
+    )
+    claimtx_keystore_artifact = plan.store_service_files(
+        name="claimtxmanager-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/claimtxmanager.keystore",
     )
     zkevm_rollup_address = get_key_from_config(plan, args, "rollupAddress")
     bridge_config_artifact = plan.render_templates(
@@ -346,7 +349,9 @@ def start_bridge_service(plan, args):
                 ),
             },
             files={
-                "/etc/zkevm": Directory(artifact_names=[bridge_config_artifact]),
+                "/etc/zkevm": Directory(
+                    artifact_names=[bridge_config_artifact, claimtx_keystore_artifact]
+                ),
             },
             entrypoint=[
                 "/app/zkevm-bridge",
@@ -414,6 +419,11 @@ def start_agglayer(plan, args):
     rollup_manager_address = get_key_from_config(
         plan, args, "polygonRollupManagerAddress"
     )
+    agglayer_keystore_artifact = plan.store_service_files(
+        name="agglayer-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/agglayer.keystore",
+    )
     agglayer_config_artifact = plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -456,7 +466,12 @@ def start_agglayer(plan, args):
                 ),
             },
             files={
-                "/etc/zkevm": Directory(artifact_names=[agglayer_config_artifact]),
+                "/etc/zkevm": Directory(
+                    artifact_names=[
+                        agglayer_config_artifact,
+                        agglayer_keystore_artifact,
+                    ]
+                ),
             },
             entrypoint=[
                 "/app/agglayer",
@@ -470,9 +485,15 @@ def start_dac(plan, args):
     # Create DAC config.
     dac_config_template = read_file(src="./templates/dac-config.toml")
     rollup_address = get_key_from_config(plan, args, "rollupAddress")
-    data_committee_address = get_key_from_config(
+    polygon_data_committee_address = get_key_from_config(
         plan, args, "polygonDataCommitteeAddress"
     )
+    dac_keystore_artifact = plan.store_service_files(
+        name="dac-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/dac.keystore",
+    )
+
     dac_config_artifact = plan.render_templates(
         name="dac-config-artifact",
         config={
@@ -486,7 +507,7 @@ def start_dac(plan, args):
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # addresses
                     "rollup_address": rollup_address,
-                    "data_committee_address": data_committee_address,
+                    "polygon_data_committee_address": polygon_data_committee_address,
                     # dac db
                     "zkevm_db_dac_hostname": args["zkevm_db_dac_hostname"],
                     "zkevm_db_dac_name": args["zkevm_db_dac_name"],
@@ -513,7 +534,9 @@ def start_dac(plan, args):
                 # ),
             },
             files={
-                "/etc/zkevm": Directory(artifact_names=[dac_config_artifact]),
+                "/etc/zkevm": Directory(
+                    artifact_names=[dac_config_artifact, dac_keystore_artifact]
+                ),
             },
             entrypoint=[
                 "/app/cdk-data-availability",

@@ -5,8 +5,9 @@ def extract_json_key_from_service(plan, service_name, filename, key):
         command=[
             "/bin/sh",
             "-c",
-            "cat {} | grep -w '{}' | xargs -n1 | tail -1".format(filename, key),
-        ]
+            "cat {}".format(filename, key),
+        ],
+        extract={"extracted_value": "fromjson | .{}".format(key)},
     )
     result = plan.exec(service_name=service_name, recipe=exec_recipe)
-    return result["output"]
+    return result["extract.extracted_value"]
