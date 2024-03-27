@@ -65,7 +65,9 @@ def run(plan, args):
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_node_args = dict(args)  # Create a shallow copy of args.
-        permissionless_node_args["deployment_suffix"] = "-pless" + args["deployment_suffix"]
+        permissionless_node_args["deployment_suffix"] = (
+            "-pless" + args["deployment_suffix"]
+        )
         permissionless_node_args["genesis_artifact"] = genesis_artifact
         zkevm_permissionless_node_package.run(plan, permissionless_node_args)
     else:
