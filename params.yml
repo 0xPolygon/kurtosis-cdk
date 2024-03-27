@@ -7,6 +7,12 @@ deployment_suffix: "-001"
 
 # The deployment process is divided into various stages.
 # The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
+# Currently, the deployment process includes the following stages:
+# 1. Deploy L1
+# 2. Configure L1 (which involves funding accounts, deploying CDK contracts, and creating configuration files)
+# 3. Deploy Trusted / Central Environment
+# 4. Deploy Bridge, AggLayer, and DAC
+# 5. Deploy Permissionless Node
 # By default, it will execute all the stages.
 stages: [1, 2, 3, 4, 5]
 
