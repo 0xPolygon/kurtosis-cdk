@@ -170,48 +170,8 @@ from the l1 setup.
 kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json"
 #+end_src
 
-#+begin_src json
-{
-    "consensusContract": "PolygonValidiumStorageMigration",
-    "polygonRollupManagerAddress": "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
-    "polygonZkEVMBridgeAddress": "0xD71f8F956AD979Cc2988381B8A743a2fE280537D",
-    "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
-    "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
-    "verifierAddress": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
-    "description": "CDK Test Upgrade",
-    "forkID": 9,
-    "rollupCompatibilityID": 0,
-    "timelockDelay": 0,
-    "predecessor": "",
-    "gasTokenAddress": "",
-    "timelockSalt": "",
-    "deployerPvtKey": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
-    "maxFeePerGas": "",
-    "maxPriorityFeePerGas": "",
-    "multiplierGas": ""
-}
-#+end_src
+Let's try forge to create the contracts:
 
-I'm going to save the content of this json in ~tools/addRollupType/add_rollup_type.json~.
-
-Running this didn't work for me. I can see why it failed but not sure
-if this is the right procedure:
-
-#+begin_example
-Error: Consensus contract not supported, supported contracts are: PolygonZkEVMEtrog,PolygonValidiumEtrog
-    at main (/tmp/zkevm-contracts/tools/addRollupType/addRollupType.ts:59:15)
-    at Object.<anonymous> (/tmp/zkevm-contracts/tools/addRollupType/addRollupType.ts:182:1)
-    at Module._compile (node:internal/modules/cjs/loader:1256:14)
-    at Module.m._compile (/tmp/zkevm-contracts/node_modules/ts-node/src/index.ts:1618:23)
-    at Module._extensions..js (node:internal/modules/cjs/loader:1310:10)
-    at Object.require.extensions.<computed> [as .ts] (/tmp/zkevm-contracts/node_modules/ts-node/src/index.ts:1621:12)
-    at Module.load (node:internal/modules/cjs/loader:1119:32)
-    at Function.Module._load (node:internal/modules/cjs/loader:960:12)
-    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:81:12)
-    at node:internal/main/run_main_module:23:47
-#+end_example
-
-Let's try forge just to simplify things a bit
 #+begin_src bash
 ger="0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
 pol="0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
@@ -320,7 +280,7 @@ cast rpc zkevm_virtualBatchNumber
 cast rpc zkevm_verifiedBatchNumber
 #+end_src
 
-* Debugging
+* Random Notes
 
 After starting the nodes back up I'm seeing a decent amount of errors
 in the synchronizer like this, it doesn't seem like it actually causes
