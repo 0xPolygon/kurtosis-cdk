@@ -6,7 +6,7 @@ zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.s
 
 
 def run(plan, args):
-    plan.print("Deploying CDK environment for stages: " + str(args["stages"]))
+    plan.print("Deploying CDK environment...")
 
     # Determine system architecture
     cpu_arch_result = plan.run_sh(
@@ -37,7 +37,10 @@ def run(plan, args):
 
     # Get the genesis file.
     genesis_artifact = ""
-    if args["deploy_central_environment"] or args["deploy_zkevm_permissionless_node"]:
+    if (
+        args["deploy_cdk_central_environment"]
+        or args["deploy_zkevm_permissionless_node"]
+    ):
         genesis_artifact = plan.store_service_files(
             name="genesis",
             service_name="contracts" + args["deployment_suffix"],
@@ -49,7 +52,7 @@ def run(plan, args):
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
-        central_environment_args.run(plan, central_environment_args)
+        cdk_central_environment_package.run(plan, central_environment_args)
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 
