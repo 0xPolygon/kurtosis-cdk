@@ -35,7 +35,7 @@ PrivateKeys = [
 KMSKeyName = "" # Disable for local
 
 [L1]
-ChainID = {{.l1_network_id}}
+ChainID = {{.l1_chain_id}}
 NodeURL = "{{.l1_rpc_url}}"
 RollupManagerContract = "{{.rollup_manager_address}}"
 
