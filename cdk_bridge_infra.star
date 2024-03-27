@@ -85,9 +85,7 @@ def start_bridge_service(plan, args):
 def start_bridge_ui(plan, args, bridge_service):
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
     zkevm_node_rpc = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
-    zkevm_bridge_address = get_key_from_config(
-        plan, args, "polygonZkEVMGlobalExitRootAddress"
-    )
+    zkevm_bridge_address = get_key_from_config(plan, args, "polygonZkEVMBridgeAddress")
     zkevm_rollup_manager_address = get_key_from_config(
         plan, args, "polygonRollupManagerAddress"
     )
