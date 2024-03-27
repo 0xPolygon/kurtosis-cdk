@@ -6,15 +6,21 @@
 deployment_suffix: "-001"
 
 # The deployment process is divided into various stages.
-# The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
-# Currently, the deployment process includes the following stages:
-# 1. Deploy L1
-# 2. Configure L1 (which involves funding accounts, deploying CDK contracts, and creating configuration files)
-# 3. Deploy Trusted / Central Environment
-# 4. Deploy Bridge, AggLayer, and DAC
-# 5. Deploy Permissionless Node
-# By default, it will execute all the stages.
-stages: [1, 2, 3, 4, 5]
+
+# Deploy a local L1.
+deploy_l1: true
+
+# Deploy zkevm contracts on L1 (and also fund accounts).
+deploy_zkevm_contracts_on_l1: true
+
+# Deploy cdk central/trusted environment.
+deploy_cdk_central_environment: true
+
+# Deploy cdk/bridge infrastructure.
+deploy_cdk_bridge_infra: true
+
+# Deploy a permissionless node.
+deploy_zkevm_permissionless_node: true
 
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v5.0.7
