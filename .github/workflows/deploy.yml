@@ -11,7 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  monolith_cdk:
+  # Deploy the CDK environment in one step.
+  monolithic_cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +23,7 @@ jobs:
           path: .
           args: params.yml
 
+  # Deploy the CDK environment incrementally, stage by stage.
   incremental_cdk:
     runs-on: ubuntu-latest
     steps:
