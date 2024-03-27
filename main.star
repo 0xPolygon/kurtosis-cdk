@@ -53,7 +53,6 @@ def run(plan, args):
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
-
     # Get the genesis file.
     genesis_artifact = ""
     if (
