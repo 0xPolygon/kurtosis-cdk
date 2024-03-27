@@ -9,7 +9,7 @@ def run(plan, args):
         {
             "network_params": {
                 # The ethereum package requires the network id to be a string.
-                "network_id": str(args["l1_network_id"]),
+                "network_id": str(args["l1_chain_id"]),
                 "preregistered_validator_keys_mnemonic": args[
                     "l1_preallocated_mnemonic"
                 ],

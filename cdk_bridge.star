@@ -154,7 +154,7 @@ def start_agglayer(plan, args):
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "l1_network_id": args["l1_network_id"],
+                    "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # addresses

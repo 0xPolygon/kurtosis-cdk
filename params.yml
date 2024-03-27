@@ -117,7 +117,7 @@ zkevm_db_state_user: state_user
 zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
 
 # L1 configuration.
-l1_network_id: 271828
+l1_chain_id: 271828
 l1_preallocated_mnemonic: code code code code code code code code code code code quality
 l1_rpc_url: http://el-1-geth-lighthouse:8545
 l1_ws_url: ws://el-1-geth-lighthouse:8546
@@ -125,7 +125,7 @@ l1_ws_url: ws://el-1-geth-lighthouse:8546
 l1_funding_amount: 100ether
 ethereum_explorer: "https://sepolia.etherscan.io/"
 
-## L2 configuration.
+## zkevm rollup configuration.
 # The chain id of the new rollup.
 zkevm_rollup_chain_id: 10101
 
@@ -141,10 +141,10 @@ polygon_zkevm_explorer: "https://sepolia.etherscan.io/"
 # L1 to be used at the gasTokenAddress
 zkevm_use_gas_token_contract: false
 
-# Permissionless node configuration.
+## Permissionless node configuration.
 trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
 zkevm_aggregator_host: zkevm-node-aggregator-001
 genesis_file: templates/permissionless-node/genesis.json
 
-# Tools versions
+## Tools versions
 polycli_version: v0.1.42
