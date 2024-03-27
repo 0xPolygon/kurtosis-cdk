@@ -1,7 +1,7 @@
 {
     "adminZkEVM": "{{.zkevm_l2_admin_address}}",
     "chainID": {{.zkevm_rollup_chain_id}},
-    "consensusContract": "PolygonValidiumEtrog",
+    "consensusContract": "{{.zkevm_rollup_consensus}}",
     "dataAvailabilityProtocol": "PolygonDataCommittee",
     "deployerPvtKey": "{{.zkevm_l2_admin_private_key}}",
     "description": "kurtosis-devnet",

@@ -26,9 +26,9 @@ def run(plan, args):
     if not "cpu_arch" in args:
         args["cpu_arch"] = cpu_arch
 
-    args["is_cdk"] = False
+    args["is_cdk_validium"] = False
     if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
-        args["is_cdk"] = True
+        args["is_cdk_validium"] = True
 
     ## STAGE 1: Deploy L1
     # For now we'll stick with most of the defaults

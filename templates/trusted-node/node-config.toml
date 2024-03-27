@@ -151,7 +151,7 @@ CleanupLockedProofsInterval = "2m"
 GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
 BatchProofL1BlockConfirmations = 2
-{{if .is_cdk}}
+{{if .is_cdk_validium}}
 ## CDK Validium Specific Settings
 
 # We should double check if this is necessary. I don't remember why the aggregator needs this
