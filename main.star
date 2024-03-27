@@ -160,9 +160,7 @@ def run(plan, args):
 
     ## STAGE 2.5: Databases
     if DEPLOYMENT_STAGE.deploy_dbs in args["stages"]:
-        plan.print(
-            "Executing stage " + str(DEPLOYMENT_STAGE.deploy_dbs)
-        )
+        plan.print("Executing stage " + str(DEPLOYMENT_STAGE.deploy_dbs))
         plan.print(
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_central_environment)
         )
