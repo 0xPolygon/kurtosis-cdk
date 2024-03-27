@@ -28,12 +28,31 @@ def run(plan, args):
     else:
         plan.print("Skipping the deployment of a local L1")
 
-    # Deploy zkevm contracts on L1
+    # Deploy zkevm contracts on L1.
     if args["deploy_zkevm_contracts_on_l1"]:
         plan.print("Deploying zkevm contracts on L1")
         deploy_zkevm_contracts_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
+
+    # Deploy zkevm node and cdk peripheral databases.
+    if args["deploy_databases"]:
+        plan.print("Deploying zkevm node and cdk peripheral databases")
+        event_db_init_script = plan.upload_files(
+            src="./templates/databases/event-db-init.sql",
+            name="event-db-init.sql" + args["deployment_suffix"],
+        )
+        prover_db_init_script = plan.upload_files(
+            src="./templates/databases/prover-db-init.sql",
+            name="prover-db-init.sql" + args["deployment_suffix"],
+        )
+        zkevm_databases_package.start_node_databases(
+            plan, args, event_db_init_script, prover_db_init_script
+        )
+        zkevm_databases_package.start_peripheral_databases(plan, args)
+    else:
+        plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
+
 
     # Get the genesis file.
     genesis_artifact = ""
@@ -53,6 +72,7 @@ def run(plan, args):
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
         cdk_central_environment_package.run(plan, central_environment_args)
+        cdk_bridge_infra_package.start_dac(plan, args)
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 

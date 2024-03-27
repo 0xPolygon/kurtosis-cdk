@@ -111,8 +111,8 @@ to your ~permissionless_node~ kurtosis package.
 
 #+begin_src bash
 rm -r /tmp/zkevm
-kurtosis files download cdk-v1 zkevm /tmp
-cp /tmp/zkevm/genesis.json templates/permissionless-node/genesis.json
+kurtosis files download cdk-v1 genesis /tmp
+cp /tmp/genesis.json templates/permissionless-node/genesis.json
 #+end_src
 
 Now that we have the right genesis file, we can add a permissionless

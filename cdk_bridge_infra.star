@@ -5,7 +5,6 @@ def run(plan, args):
     zkevm_bridge_service = start_bridge_service(plan, args)
     start_bridge_ui(plan, args, zkevm_bridge_service)
     start_agglayer(plan, args)
-    start_dac(plan, args)
 
 
 def start_bridge_service(plan, args):
