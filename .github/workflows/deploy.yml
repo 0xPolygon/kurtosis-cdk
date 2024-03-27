@@ -28,7 +28,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install yq
-        run: sudo apt-get install --yes yq
+        run: |
+          sudo add-apt-repository ppa:rmescandon/yq
+          sudo apt update
+          sudo apt install --yes yq
 
       - name: Deploy L1
         run: |
