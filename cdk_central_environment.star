@@ -1,23 +1,8 @@
-zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 
 
 def run(plan, args):
-    # Start node and peripheral databases.
-    event_db_init_script = plan.upload_files(
-        name="event-db-init.sql" + args["deployment_suffix"],
-        src="./templates/databases/event-db-init.sql",
-    )
-    prover_db_init_script = plan.upload_files(
-        name="prover-db-init.sql" + args["deployment_suffix"],
-        src="./templates/databases/prover-db-init.sql",
-    )
-    zkevm_databases_package.start_node_databases(
-        plan, args, event_db_init_script, prover_db_init_script
-    )
-    zkevm_databases_package.start_peripheral_databases(plan, args)
-
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"

@@ -1,5 +1,6 @@
 deploy_l1_package = import_module("./deploy_l1.star")
 deploy_zkevm_contracts_package = import_module("./deploy_zkevm_contracts.star")
+cdk_databases_package = import_module("./cdk_databases.star")
 cdk_central_environment_package = import_module("./cdk_central_environment.star")
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
@@ -38,18 +39,7 @@ def run(plan, args):
     # Deploy zkevm node and cdk peripheral databases.
     if args["deploy_databases"]:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        event_db_init_script = plan.upload_files(
-            src="./templates/databases/event-db-init.sql",
-            name="event-db-init.sql" + args["deployment_suffix"],
-        )
-        prover_db_init_script = plan.upload_files(
-            src="./templates/databases/prover-db-init.sql",
-            name="prover-db-init.sql" + args["deployment_suffix"],
-        )
-        zkevm_databases_package.start_node_databases(
-            plan, args, event_db_init_script, prover_db_init_script
-        )
-        zkevm_databases_package.start_peripheral_databases(plan, args)
+        cdk_databases_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
