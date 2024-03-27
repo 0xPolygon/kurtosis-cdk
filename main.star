@@ -55,10 +55,12 @@ def run(plan, args):
 
     ## STAGE 3: Deploy trusted / central environment
     if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
+        cdk_central_environment_args = dict(args)
+        cdk_central_environment_args["genesis_artifact"] = genesis_artifact
         plan.print(
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_central_environment)
         )
-        cdk_central_environment_package.run(plan, args)
+        cdk_central_environment_package.run(plan, cdk_central_environment_args)
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_central_environment))
 
