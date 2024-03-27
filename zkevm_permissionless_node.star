@@ -29,15 +29,7 @@ def run(plan, args):
     )
     zkevm_prover_package.start_executor(plan, args, executor_config_artifact)
 
-    # Start synchronizer and rpc.
-    node_config_template = read_file(
-        src="./templates/permissionless-node/node-config.toml"
-    )
-    node_config_artifact = plan.render_templates(
-        name="permissionless-node-config",
-        config={"node-config.toml": struct(template=node_config_template, data=args)},
-    )
-
+    # Get the genesis file artifact.
     genesis_artifact = ""
     if "genesis_artifact" in args:
         genesis_artifact = args["genesis_artifact"]
@@ -48,6 +40,14 @@ def run(plan, args):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
+    # Start zkevm synchronizer and rpc.
+    node_config_template = read_file(
+        src="./templates/permissionless-node/node-config.toml"
+    )
+    node_config_artifact = plan.render_templates(
+        name="permissionless-node-config",
+        config={"node-config.toml": struct(template=node_config_template, data=args)},
+    )
     zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
