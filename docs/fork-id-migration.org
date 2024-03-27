@@ -34,7 +34,7 @@ index c2dd446..4caf2d0 100644
 +++ b/params.yml
 @@ -11,14 +11,14 @@ deployment_suffix: "-001"
  stages: [1, 2, 3, 4, 5]
- 
+
  # Docker images and repositories used to spin up services.
 -zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
 -zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk
@@ -157,9 +157,9 @@ verifier contract.
 
 #+begin_src bash
 forge create --json \
-      --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-      --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-      contracts/mocks/VerifierRollupHelperMock.sol:VerifierRollupHelperMock > verifier-out.json
+    --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    contracts/mocks/VerifierRollupHelperMock.sol:VerifierRollupHelperMock > verifier-out.json
 #+end_src
 
 Okay so we'll first try to create a new rollup type for our upgraded
@@ -178,19 +178,19 @@ pol="0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
 bridge="0xD71f8F956AD979Cc2988381B8A743a2fE280537D"
 mngr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 forge create --json \
-      --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-      --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-      contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
-      --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
+    --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
+    --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
 
 genesis="0xd619a27d32e3050f2265a3f58dd74c8998572812da4874aa052f0886d0dfaf47"
 cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-      --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-      $mngr \
-      'addNewRollupType(address,address,uint64,uint8,bytes32,string)' \
-       "$(jq -r '.deployedTo' new-consensus-out.json)" \
-       "$(jq -r '.deployedTo' verifier-out.json)" \
-       9 0 "$genesis" "test!!!" > add-rollup-type-out.json
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    $mngr \
+    'addNewRollupType(address,address,uint64,uint8,bytes32,string)' \
+    "$(jq -r '.deployedTo' new-consensus-out.json)" \
+    "$(jq -r '.deployedTo' verifier-out.json)" \
+    9 0 "$genesis" "test!!!" > add-rollup-type-out.json
 #+end_src
 
 
@@ -206,10 +206,10 @@ Taking that id, we should be able to update our rollup:
 #+begin_src bash
 rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
 cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-      --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-      $mngr \
-      'updateRollup(address,uint32,bytes)' \
-       "$rollup" 2 0x > update-rollup-type-out.json
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    $mngr \
+    'updateRollup(address,uint32,bytes)' \
+    "$rollup" 2 0x > update-rollup-type-out.json
 #+end_src
 
 Now we should also be able to verify that our rollupid has been
@@ -218,8 +218,8 @@ updated. Previously the 4th value was a ~7~ and now it should be a
 
 #+begin_src bash
 cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-  "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
-  "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
+    "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
+    "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
 #+end_src
 
 After updating the rollup it seems like the DA Protcol needs to be
@@ -254,7 +254,7 @@ index c2dd446..cdb8338 100644
  # By default, it will execute all the stages.
 -stages: [1, 2, 3, 4, 5]
 +stages: [3]
- 
+
  # Docker images and repositories used to spin up services.
  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
 #+end_src
@@ -306,4 +306,3 @@ cast sig-event 'SetDataAvailabilityProtocol(address)'
 It looks like the unregistered event is a call to
 ~SetDataAvailabilityProtocol(address)~, but unclear why that
 particular event is not recognized.
-
