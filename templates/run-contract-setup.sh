@@ -69,8 +69,10 @@ npx hardhat compile
 {{if .zkevm_use_gas_token_contract}}
 2>&1 echo "Deploying Gas Token"
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
-# FIXME: Hack to make it work with the zkevm-contracts develop branch.
+
+# FIXME: This contract requires the `0.5.12` solc version which is not available on linux/arm.
 rm contracts/mocks/DaiMock.sol
+
 forge build
 forge create --json \
       --rpc-url "{{.l1_rpc_url}}" \
