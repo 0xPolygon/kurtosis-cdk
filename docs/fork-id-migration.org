@@ -308,6 +308,10 @@ in the process
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 #+end_src
 
+At this point, the core services are running and if everything went
+well, we should be able to send a transaction and see that the batche
+numbers are moving through their normal progression.
+
 #+begin_src bash
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
 cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
@@ -319,7 +323,8 @@ cast rpc zkevm_verifiedBatchNumber
 * Debugging
 
 After starting the nodes back up I'm seeing a decent amount of errors
-in the synchronizer like this:
+in the synchronizer like this, it doesn't seem like it actually causes
+an issue, but it's a little odd.
 
 #+begin_example
 {"level":"warn","ts":1711502381.03938,"caller":"etherman/etherman.go:661","msg":"Event not registered: {Address:0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 Topics:[0xd331bd4c4cd1afecb94a225184bded161ff3213624ba4fb58c4f30c5a861144a] Data:[0 0 0 0 0 0 0 0 0 0 0 0 90 104 150 169 140 75 124 126 143 22 209 119 199 25 161 216 86 185 21 76] BlockNumber:108 TxHash:0x1bb5e714dd96434ded2d818458cc517cf7b30f5787dbb3aedb667e5e3e96808e TxIndex:0 BlockHash:0xdf5850cd5a8975859595649a05ce245f02953e84af627e9b22a1f8381077f057 Index:0 Removed:false}","pid":7,"version":"0.6.4+cdk"}
