@@ -124,7 +124,7 @@ kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissio
 
 ** For Developers
 
-Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately. The `stages` parameter indicates the specific stages you wish the deployment to proceed through. By default, it will execute all the stages.
+Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately. The /stages/ parameter indicates the specific stages you wish the deployment to proceed through. By default, it will execute all the stages.
 
 Currently, the deployment process includes the following stages:
 
