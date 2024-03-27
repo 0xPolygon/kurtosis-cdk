@@ -124,43 +124,64 @@ kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissio
 
 ** For Developers
 
-Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately. The /stages/ parameter indicates the specific stages you wish the deployment to proceed through. By default, it will execute all the stages.
+Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately.
+
+You can enable a stage by setting the boolean value to /true/ and disable it by setting it to /false/. By default, all stages will be executed.
 
 Currently, the deployment process includes the following stages:
 
-  1. Deploy L1
-  2. Configure L1 (which involves funding accounts, deploying CDK contracts, and creating configuration files)
-  3. Deploy Trusted / Central Environment
-  4. Deploy Bridge, AggLayer, and DAC
-  5. Deploy Permissionless Node
+  1. Deploy Local L1
+  2. Deploy ZkEVM Contracts on L1
+  3. Deploy ZkEVM Node and CDK Peripheral Databases
+  4. Deploy CDK Central/Trusted Environment
+  5. Deploy CDK/Bridge Infrastructure
+  6. Deploy Permissioless Node
 
 Here's an example of how you can specify the stages to run through.
 
 #+begin_src bash
-# Execute the first stage (deploy L1).
-yq e '.stages = [1]' --inplace params.yml
+# Disable all deployment steps.
+yq e 'deploy_l1 = false' --inplace params.yml
+yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml
+yq e '.deploy_databases = false' --inplace params.yml
+yq e '.deploy_cdk_central_environment = false' --inplace params.yml
+yq e '.deploy_cdk_bridge_infra = false' --inplace params.yml
+yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml
+
+# Deploy L1
+yq e '.deploy_l1 = true' --inplace params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq e '.deploy_l1 = false' --inplace params.yml # reset
 # Perform additional tasks...
 
-# Execute the second stage (configure L1).
-yq e '.stages = [2]' --inplace params.yml
+# Deploy ZkEVM Contracts on L1
+yq e '.deploy_zkevm_contracts_on_l1 = true' --inplace params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml # reset
 # Perform additional tasks...
 
-# Execute the thirs stage (deploy trusted/central environment).
-yq e '.stages = [3]' --inplace params.yml
+# Deploy ZkEVM Node and CDK Peripheral Databases
+yq e '.deploy_databases = true' --inplace params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq e '.deploy_databases = false' --inplace params.yml # reset
 # Perform additional tasks...
 
-# Execute the fourth stage (deploy bridge/agglayer/dac).
-yq e '.stages = [4]' --inplace params.yml
+# Deploy CDK Central Environment
+yq e '.deploy_cdk_central_environment = true' --inplace params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq e '.deploy_cdk_central_environment = false' --inplace params.yml # reset
 # Perform additional tasks...
 
-# Execute the fifth stage (deploy permissionless node).
-yq e '.stages = [5]' --inplace params.yml
+# Deploy CDK Bridge Infrastructure
+yq e '.deploy_cdk_bridge_infra = true' --inplace params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq e '.deploy_cdk_bridge_infra = false' --inplace params.yml # reset
 # Perform additional tasks...
+
+# Deploy ZkEVM Permissionless Node
+yq e '.deploy_zkevm_permissionless_node = true' --inplace params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml # reset
 #+end_src
 
 ** License

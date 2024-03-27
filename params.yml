@@ -7,7 +7,7 @@ deployment_suffix: "-001"
 
 # The deployment process is divided into various stages.
 
-# Deploy a local L1.
+# Deploy local L1.
 deploy_l1: true
 
 # Deploy zkevm contracts on L1 (and also fund accounts).
@@ -22,7 +22,7 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
-# Deploy a permissionless node.
+# Deploy permissionless node.
 deploy_zkevm_permissionless_node: true
 
 # Docker images and repositories used to spin up services.
@@ -32,7 +32,7 @@ zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk
 # zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
 # zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
-zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
+zkevm_contracts_branch: develop # v5.0.1-rc.2-fork.8
 # zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
 zkevm_fork_id: 9
 # zkevm_fork_id: 7
