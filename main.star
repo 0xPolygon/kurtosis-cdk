@@ -1,4 +1,4 @@
-deploy_l1_package = import_module("./deploy_l1.star")
+ethereum_package = import_module("./ethereum.star")
 deploy_zkevm_contracts_package = import_module("./deploy_zkevm_contracts.star")
 cdk_databases_package = import_module("./cdk_databases.star")
 cdk_central_environment_package = import_module("./cdk_central_environment.star")
@@ -25,7 +25,7 @@ def run(plan, args):
     # Deploy a local L1.
     if args["deploy_l1"]:
         plan.print("Deploying a local L1")
-        deploy_l1_package.run(plan, args)
+        ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 
