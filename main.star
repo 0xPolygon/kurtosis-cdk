@@ -11,6 +11,7 @@ zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.s
 DEPLOYMENT_STAGE = struct(
     deploy_l1=1,
     configure_l1=2,
+    deploy_dbs=2.5,
     deploy_central_environment=3,
     deploy_cdk_bridge_infra=4,
     deploy_permissionless_node=5,
@@ -157,8 +158,11 @@ def run(plan, args):
         src="/opt/zkevm/genesis.json",
     )
 
-    ## STAGE 3: Deploy trusted / central environment
-    if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
+    ## STAGE 2.5: Databases
+    if DEPLOYMENT_STAGE.deploy_dbs in args["stages"]:
+        plan.print(
+            "Executing stage " + str(DEPLOYMENT_STAGE.deploy_dbs)
+        )
         plan.print(
             "Executing stage " + str(DEPLOYMENT_STAGE.deploy_central_environment)
         )
@@ -176,7 +180,11 @@ def run(plan, args):
             plan, args, event_db_init_script, prover_db_init_script
         )
         zkevm_databases_package.start_peripheral_databases(plan, args)
+    else:
+        plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_dbs))
 
+    ## STAGE 3: Deploy trusted / central environment
+    if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
         # Start prover
         prover_config_template = read_file(
             src="./templates/trusted-node/prover-config.json"
@@ -188,6 +196,8 @@ def run(plan, args):
             name="prover-config-artifact",
         )
         zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
+
+        start_dac(plan, args)
 
         # Start the zkevm node components
         sequencer_keystore_artifact = plan.store_service_files(
@@ -216,7 +226,6 @@ def run(plan, args):
         zkevm_bridge_service = start_bridge_service(plan, args)
         start_bridge_ui(plan, args, zkevm_bridge_service)
         start_agglayer(plan, args)
-        start_dac(plan, args)
     else:
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.deploy_cdk_bridge_infra))
 

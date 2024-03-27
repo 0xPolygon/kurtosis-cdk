@@ -8,17 +8,23 @@ deployment_suffix: "-001"
 # The deployment process is divided into various stages.
 # The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
 # By default, it will execute all the stages.
-stages: [1, 2, 3, 4, 5]
+stages: [1, 2, 2.5, 3, 4, 5]
 
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+# zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk
+# zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
-zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
-# a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
+# zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
 zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
-zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
+# zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
 zkevm_fork_id: 9
+# zkevm_fork_id: 7
+zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
+
+
+zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
 zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
 zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest # TODO: better tags for the bridge ui
 
