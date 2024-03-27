@@ -44,27 +44,53 @@ jobs:
           sudo apt install --yes yq
 
       # Deploy components.
+      - name: Disable All Deployment Steps
+        run: |
+          yq e 'deploy_l1 = false' --inplace params.yml
+          yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml
+          yq e '.deploy_databases = false' --inplace params.yml
+          yq e '.deploy_cdk_central_environment = false' --inplace params.yml
+          yq e '.deploy_cdk_bridge_infra = false' --inplace params.yml
+          yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml
+
       - name: Deploy L1
         run: |
-          yq e '.stages = [1]' --inplace params.yml
+          yq e 'deploy_l1 = true' --inplace params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
+          # reset
+          yq e 'deploy_l1 = false' --inplace params.yml
 
-      - name: Configure L1
+      - name: Deploy ZkEVM Contracts on L1
         run: |
-          yq e '.stages = [2]' --inplace params.yml
+          yq e '.deploy_zkevm_contracts_on_l1 = true' --inplace params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
+          # reset
+          yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml
 
-      - name: Deploy CDK Trusted Environment
+      - name: Deploy ZkEVM Node and CDK Peripheral Databases
         run: |
-          yq e '.stages = [3]' --inplace params.yml
+          yq e '.deploy_databases = true' --inplace params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
+          # reset
+          yq e '.deploy_databases = false' --inplace params.yml
 
-      - name: Deploy CDK Bridge
+      - name: Deploy CDK Central Environment
         run: |
-          yq e '.stages = [4]' --inplace params.yml
+          yq e '.deploy_cdk_central_environment = true' --inplace params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
+          # reset
+          yq e '.deploy_cdk_central_environment = false' --inplace params.yml
 
-      - name: Deploy Permissionless Node
+      - name: Deploy CDK Bridge Infrastructure
         run: |
-          yq e '.stages = [5]' --inplace params.yml
+          yq e '.deploy_cdk_bridge_infra = true' --inplace params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
+          # reset
+          yq e '.deploy_cdk_bridge_infra = false' --inplace params.yml
+
+      - name: Deploy ZkEVM Permissionless Node
+        run: |
+          yq e '.deploy_zkevm_permissionless_node = true' --inplace params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          # reset
+          yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml
