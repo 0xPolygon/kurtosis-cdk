@@ -47,10 +47,11 @@ until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemo
 done
 
 # In the overall CDK setup, these 4 addresses need to be funded with ETH: sequencer, admin, agglayer, and potentially the aggregator
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_sequencer_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_aggregator_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_admin_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_agglayer_address}}"
+funding_amount="100ether"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_sequencer_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_aggregator_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_admin_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_agglayer_address}}"
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json

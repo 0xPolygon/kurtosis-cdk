@@ -116,13 +116,11 @@ zkevm_db_state_name: state_db
 zkevm_db_state_user: state_user
 zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
 
-# L1 configuration.
+## L1 configuration.
 l1_chain_id: 271828
 l1_preallocated_mnemonic: code code code code code code code code code code code quality
 l1_rpc_url: http://el-1-geth-lighthouse:8545
 l1_ws_url: ws://el-1-geth-lighthouse:8546
-# TODO: If we need to fund the aggregator, sequencer, and admin accounts for posting batches.. How much should we prefund??
-l1_funding_amount: 100ether
 ethereum_explorer: "https://sepolia.etherscan.io/"
 
 ## zkevm rollup configuration.
