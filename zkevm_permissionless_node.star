@@ -6,12 +6,12 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 def run(plan, args):
     # Start node databases.
     event_db_init_script = plan.upload_files(
-        src="./templates/databases/event-db-init.sql",
         name="event-db-init.sql" + args["deployment_suffix"],
+        src="./templates/databases/event-db-init.sql",
     )
     executor_db_init_script = plan.upload_files(
-        src="./templates/databases/prover-db-init.sql",
         name="executor-db-init.sql" + args["deployment_suffix"],
+        src="./templates/databases/prover-db-init.sql",
     )
     zkevm_databases_package.start_node_databases(
         plan, args, event_db_init_script, executor_db_init_script
@@ -30,13 +30,14 @@ def run(plan, args):
     zkevm_prover_package.start_executor(plan, args, executor_config_artifact)
 
     # Get the genesis file artifact.
+    # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.
     genesis_artifact = ""
     if "genesis_artifact" in args:
         genesis_artifact = args["genesis_artifact"]
     else:
         genesis_file = read_file(src=args["genesis_file"])
         genesis_artifact = plan.render_templates(
-            name="genesis",
+            name="genesis" + args["deployment_suffix"],
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
