@@ -47,11 +47,16 @@ def run(plan, args):
         plan.print("Skipping stage " + str(DEPLOYMENT_STAGE.configure_l1))
 
     # Get the genesis file.
-    genesis_artifact = plan.store_service_files(
-        name="genesis",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/genesis.json",
-    )
+    genesis_artifact = ""
+    if (
+        DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]
+        or DEPLOYMENT_STAGE.deploy_permissionless_node in args["stages"]
+    ):
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+        )
 
     ## STAGE 3: Deploy trusted / central environment
     if DEPLOYMENT_STAGE.deploy_central_environment in args["stages"]:
