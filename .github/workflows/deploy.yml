@@ -29,12 +29,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install tools.
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli
+          kurtosis analytics disable
+
       - name: Install yq
         run: |
           sudo add-apt-repository ppa:rmescandon/yq
           sudo apt update
           sudo apt install --yes yq
 
+      # Deploy components.
       - name: Deploy L1
         run: |
           yq e '.stages = [1]' --inplace params.yml
