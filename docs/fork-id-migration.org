@@ -1,0 +1,308 @@
+#+TITLE: Fork ID 7 to 9 Migration Process
+#+DATE:
+#+AUTHOR: John Hilliard
+#+EMAIL: jhilliard@polygon.technology
+#+CREATOR: John Hilliard
+#+DESCRIPTION:
+
+
+#+OPTIONS: toc:nil
+#+LATEX_HEADER: \usepackage{geometry}
+#+LATEX_HEADER: \usepackage{lmodern}
+#+LATEX_HEADER: \geometry{left=1in,right=1in,top=1in,bottom=1in}
+#+LaTeX_CLASS_OPTIONS: [letterpaper]
+
+Let's document the process of upgrading from fork 7 to fork 9 using
+our Kurtosis package. These steps would more or less be the same in
+production except we would be using a [[https://github.com/0xPolygonHermez/zkevm-contracts/blob/v5.0.1-rc.2-fork.8/contracts/PolygonZkEVMTimelock.sol][timelock]] contract to make the
+calls.
+
+Just to make sure I don't have any lingering state, I'm going to run a
+clean:
+
+#+begin_src bash
+kurtosis clean -a
+#+end_src
+
+Now, we need to downgrade all of the necessary params in order to
+switch back to fork 7:
+
+#+begin_src diff
+diff --git a/params.yml b/params.yml
+index c2dd446..4caf2d0 100644
+--- a/params.yml
++++ b/params.yml
+@@ -11,14 +11,14 @@ deployment_suffix: "-001"
+ stages: [1, 2, 3, 4, 5]
+
+ # Docker images and repositories used to spin up services.
+-zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+-zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk
+-zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
++zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
++zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
++zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
+ zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
+ # a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
+-zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
++zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
+ zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
+-zkevm_fork_id: 9
++zkevm_fork_id: 7
+ zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
+ zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest # TODO: better tags for the bridge ui
+#+end_src
+
+After making those changes we should be able to kick off a full redeployment:
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+#+end_src
+
+After running this command, let's confirm onchain that this is running
+fork 7.
+#+begin_src bash
+kurtosis files download cdk-v1 genesis /tmp/fork-7-test
+jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json
+cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+  "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
+  "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
+#+end_src
+
+In my case, this is showing a ~7~ as the 4th parameter so I think
+we're in good shape. We should also perform some test transactions and
+ensure batches are being verified as expected.
+
+#+begin_src bash
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
+cast rpc zkevm_batchNumber
+cast rpc zkevm_virtualBatchNumber
+cast rpc zkevm_verifiedBatchNumber
+#+end_src
+
+* Clean stop of the sequencer
+
+Before attempting the upgrade, we need to ensure there is a clean stop
+of the sequencer. In order to do this, we'll pick a halting batch
+number like this:
+
+#+begin_src diff
+diff --git a/templates/trusted-node/node-config.toml b/templates/trusted-node/node-config.toml
+index 6c9b9fa..372d904 100644
+--- a/templates/trusted-node/node-config.toml
++++ b/templates/trusted-node/node-config.toml
+@@ -117,7 +117,7 @@ StateConsistencyCheckInterval = "5s"
+                 BatchMaxDeltaTimestamp = "20s"
+                 L2BlockMaxDeltaTimestamp = "4s"
+                 ResourceExhaustedMarginPct = 10
+-                HaltOnBatchNumber = 0
++                HaltOnBatchNumber = 64
+                 SequentialBatchSanityCheck = false
+                 SequentialProcessL2Block = true
+         [Sequencer.StreamServer]
+#+end_src
+
+After making that change and re-running ~kurtosis run~, we'll need to
+wait for the sequencer to halt and for the verified batch to equal the
+latest batch. After making that change, there should be some error logs that look like this:
+
+#+begin_example
+{"level":"error","ts":1711481674.517157,"caller":"sequencer/finalizer.go:806","msg":"halting finalizer, error: finalizer reached stop sequencer on batch number: 64%!(EXTRA string=\n/home/runner/work/cdk-validium-node/cdk-validium-node/log/log.go:142 github.com/0xPolygonHermez/zkevm-node/log.appendStackTraceMaybeArgs()\n/home/runner/work/cdk-validium-node/cdk-validium-node/log/log.go:251 github.com/0xPolygonHermez/zkevm-node/log.Errorf()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:806 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:221 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:163 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:330 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:166 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start()\n)","pid":7,"version":"v0.1.0","stacktrace":"github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:806\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:221\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:163\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:330\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:166"}
+#+end_example
+
+Now we need to wait for the verified batch number to catch up to the
+trusted batch number:
+#+begin_src bash
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+cast rpc zkevm_batchNumber
+cast rpc zkevm_verifiedBatchNumber
+#+end_src
+
+Once those two numbers are the same, we should be in a good position
+to stop the services that are going to be upgraded
+
+#+begin_src bash
+kurtosis service stop cdk-v1 zkevm-executor-pless-001
+kurtosis service stop cdk-v1 zkevm-node-aggregator-001
+kurtosis service stop cdk-v1 zkevm-node-eth-tx-manager-001
+kurtosis service stop cdk-v1 zkevm-node-l2-gas-pricer-001
+kurtosis service stop cdk-v1 zkevm-node-rpc-001
+kurtosis service stop cdk-v1 zkevm-node-rpc-pless-001
+kurtosis service stop cdk-v1 zkevm-node-sequence-sender-001
+kurtosis service stop cdk-v1 zkevm-node-sequencer-001
+kurtosis service stop cdk-v1 zkevm-node-synchronizer-001
+kurtosis service stop cdk-v1 zkevm-node-synchronizer-pless-001
+kurtosis service stop cdk-v1 zkevm-prover-001
+#+end_src
+
+* Smart Contract Calls
+
+In order to upgrade, we're going to need to make a few smart contract
+calls.
+
+#+begin_src bash
+git clone git@github.com:0xPolygonHermez/zkevm-contracts.git
+pushd zkevm-contracts/
+git reset --hard a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
+npm i
+printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
+forge build
+#+end_src
+
+Okay so now we have the contracts from a (hopefully) working version
+of the repo. We can deploy a new verifier. This isn't strictly
+necessary but good to do because in some cases you would need a new
+verifier contract.
+
+#+begin_src bash
+forge create --json \
+    --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    contracts/mocks/VerifierRollupHelperMock.sol:VerifierRollupHelperMock > verifier-out.json
+#+end_src
+
+Okay so we'll first try to create a new rollup type for our upgraded
+network. In order to configure this file, we'll need a bunch of values
+from the l1 setup.
+
+#+begin_src bash
+kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json"
+#+end_src
+
+Let's try forge to create the contracts:
+
+#+begin_src bash
+ger="0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
+pol="0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
+bridge="0xD71f8F956AD979Cc2988381B8A743a2fE280537D"
+mngr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+forge create --json \
+    --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
+    --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
+
+genesis="0xd619a27d32e3050f2265a3f58dd74c8998572812da4874aa052f0886d0dfaf47"
+cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    $mngr \
+    'addNewRollupType(address,address,uint64,uint8,bytes32,string)' \
+    "$(jq -r '.deployedTo' new-consensus-out.json)" \
+    "$(jq -r '.deployedTo' verifier-out.json)" \
+    9 0 "$genesis" "test!!!" > add-rollup-type-out.json
+#+end_src
+
+
+Assuming that all worked somehow, you should be able to get your new
+rollup type id:
+
+#+begin_src bash
+cat add-rollup-type-out.json | jq -r '.logs[0].topics[1]'
+#+end_src
+
+Taking that id, we should be able to update our rollup:
+
+#+begin_src bash
+rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
+cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+    $mngr \
+    'updateRollup(address,uint32,bytes)' \
+    "$rollup" 2 0x > update-rollup-type-out.json
+#+end_src
+
+Now we should also be able to verify that our rollupid has been
+updated. Previously the 4th value was a ~7~ and now it should be a
+~9~.
+
+#+begin_src bash
+cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
+    "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
+#+end_src
+
+After updating the rollup it seems like the DA Protcol needs to be
+setup again:
+
+#+begin_src bash
+rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
+dac="0x5A6896A98c4B7C7E8f16d177C719a1d856b9154c"
+cast send -j \
+    --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
+    --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    "$rollup" 'setDataAvailabilityProtocol(address)' $dac > set-dac-out.json
+#+end_src
+
+
+* Node Upgrade
+
+In terms of the smart contracts, the upgrade should more or less be
+done, but we need to start the nodes back up. This procedure is very
+sensitive and we must ensure that the synchronizer starts first. The
+main thing we'll do is revert the parameters back to the versions of
+the node that worked with fork 9 specify that ONLY stage 3 should run.
+
+#+begin_src diff
+diff --git a/params.yml b/params.yml
+index c2dd446..cdb8338 100644
+--- a/params.yml
++++ b/params.yml
+@@ -8,7 +8,7 @@ deployment_suffix: "-001"
+ # The deployment process is divided into various stages.
+ # The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
+ # By default, it will execute all the stages.
+-stages: [1, 2, 3, 4, 5]
++stages: [3]
+
+ # Docker images and repositories used to spin up services.
+ zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+#+end_src
+
+At this point, we should be able to run Kurtosis and ideally bring
+back up the main node components. Before starting the node backup, be
+sure to remove the ~HaltOnBatchNumber~ setting that we added earlier
+in the process
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+#+end_src
+
+At this point, the core services are running and if everything went
+well, we should be able to send a transaction and see that the batche
+numbers are moving through their normal progression.
+
+#+begin_src bash
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
+cast rpc zkevm_batchNumber
+cast rpc zkevm_virtualBatchNumber
+cast rpc zkevm_verifiedBatchNumber
+#+end_src
+
+* Random Notes
+
+After starting the nodes back up I'm seeing a decent amount of errors
+in the synchronizer like this, it doesn't seem like it actually causes
+an issue, but it's a little odd.
+
+#+begin_example
+{"level":"warn","ts":1711502381.03938,"caller":"etherman/etherman.go:661","msg":"Event not registered: {Address:0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 Topics:[0xd331bd4c4cd1afecb94a225184bded161ff3213624ba4fb58c4f30c5a861144a] Data:[0 0 0 0 0 0 0 0 0 0 0 0 90 104 150 169 140 75 124 126 143 22 209 119 199 25 161 216 86 185 21 76] BlockNumber:108 TxHash:0x1bb5e714dd96434ded2d818458cc517cf7b30f5787dbb3aedb667e5e3e96808e TxIndex:0 BlockHash:0xdf5850cd5a8975859595649a05ce245f02953e84af627e9b22a1f8381077f057 Index:0 Removed:false}","pid":7,"version":"0.6.4+cdk"}
+#+end_example
+
+We can check this event directly from the rpc as well:
+
+#+begin_src bash
+cast logs --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 108 --to-block 108
+#+end_src
+
+We can reverse which event this is with the following script:
+
+#+begin_src bash
+cat compiled-contracts/*.json | jq '.abi[] | select(.type == "event") | .type = "function"' | jq -s | polycli abi decode | grep d33
+cast sig-event 'SetDataAvailabilityProtocol(address)'
+#+end_src
+
+It looks like the unregistered event is a call to
+~SetDataAvailabilityProtocol(address)~, but unclear why that
+particular event is not recognized.

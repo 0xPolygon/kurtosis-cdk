@@ -47,10 +47,11 @@ until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemo
 done
 
 # In the overall CDK setup, these 4 addresses need to be funded with ETH: sequencer, admin, agglayer, and potentially the aggregator
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_sequencer_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_aggregator_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_admin_address}}"
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "{{.l1_funding_amount}}" "{{.zkevm_l2_agglayer_address}}"
+funding_amount="100ether"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_sequencer_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_aggregator_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_admin_address}}"
+cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_agglayer_address}}"
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
@@ -68,6 +69,10 @@ npx hardhat compile
 {{if .zkevm_use_gas_token_contract}}
 2>&1 echo "Deploying Gas Token"
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
+
+# FIXME: This contract requires the `0.5.12` solc version which is not available on linux/arm.
+rm contracts/mocks/DaiMock.sol
+
 forge build
 forge create --json \
       --rpc-url "{{.l1_rpc_url}}" \
@@ -107,7 +112,7 @@ jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.j
 # older fork7 code to be compatible with some of the fork8
 # automations. This schema matching can be dropped once this is
 # versioned up to 8
-fork_id="{{.zkevm_fork_id}}"
+fork_id="{{.zkevm_rollup_fork_id}}"
 if [[ fork_id -lt 8 ]]; then
     jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
     jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
@@ -120,7 +125,7 @@ fi
 jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = $c[0].upgradeToULxLyBlockNumber' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.genesisBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.L1Config = {chainId:{{.l1_network_id}}}' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config = {chainId:{{.l1_chain_id}}}' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c[0].polygonZkEVMGlobalExitRootAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json

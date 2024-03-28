@@ -125,7 +125,7 @@ StateConsistencyCheckInterval = "5s"
                 # FIXME: This might be a weird path, we should probably ensure we mount to a persistent volume
                 Filename = "/tmp/datastream.bin"
                 Version = 1
-                ChainID = {{.l1_network_id}}
+                ChainID = {{.l1_chain_id}}
                 Enabled = true
 
 [SequenceSender]
@@ -151,7 +151,7 @@ CleanupLockedProofsInterval = "2m"
 GeneratingProofCleanupThreshold = "10m"
 UpgradeEtrogBatchNumber = 0
 BatchProofL1BlockConfirmations = 2
-{{if .is_cdk}}
+{{if .is_cdk_validium}}
 ## CDK Validium Specific Settings
 
 # We should double check if this is necessary. I don't remember why the aggregator needs this
