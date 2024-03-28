@@ -119,7 +119,7 @@ def start_bridge_ui(plan, args, bridge_service):
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
                 "ETHEREUM_PROOF_OF_EFFICIENCY_CONTRACT_ADDRESS": zkevm_rollup_address,
                 "ETHEREUM_ROLLUP_MANAGER_ADDRESS": zkevm_rollup_manager_address,
-                "ETHEREUM_EXPLORER_URL": "",
+                "ETHEREUM_EXPLORER_URL": args["l1_explorer_url"],
                 "POLYGON_ZK_EVM_EXPLORER_URL": args["polygon_zkevm_explorer"],
                 "POLYGON_ZK_EVM_NETWORK_ID": "1",
                 "ENABLE_FIAT_EXCHANGE_RATES": "false",

@@ -184,6 +184,25 @@ kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml # reset
 #+end_src
 
+** Troubleshooting: Mac users
+
+Make sure you can access containers using their private IPs. To check that, run the following commands:
+
+#+begin_src bash
+docker run --rm --name nginx -d nginx
+curl -m 1 -I $(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')
+#+end_src
+
+If the last command fails, then it means you need to set up [[https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation][docker-mac-net-connect]].
+
+#+begin_quote
+Unlike Docker on Linux, Docker-for-Mac does not expose container networks directly on the macOS host.
+Docker-for-Mac works by running a Linux VM under the hood (using hyperkit) and creates containers within that VM.
+Docker-for-Mac supports connecting to containers over Layer 4 (port binding), but not Layer 3 (by IP address).
+#+end_quote
+
+Once installed, you may need to [[https://docs.docker.com/desktop/uninstall/][uninstall]] and [[https://docs.docker.com/desktop/install/mac-install/][reinstall]] Docker Engine.
+
 ** License
 
 Copyright (c) 2024 PT Services DMCC
