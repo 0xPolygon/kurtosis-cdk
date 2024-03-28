@@ -144,7 +144,7 @@ cast send --legacy \
    --value 10ether \
    --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
    --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
-   0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+   "$(yq -r .zkevm_l2_claimtxmanager_address params.yml)"
 #+end_src
 
 [[file:gas-token-img/07_bridge.png]]
