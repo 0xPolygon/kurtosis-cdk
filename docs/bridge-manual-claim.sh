@@ -35,23 +35,23 @@ jq -c '.[]' claimable-txs.json | while IFS= read -r tx; do
 
   # Use the bridge service to get the merkle proof of our deposit
   echo "Getting the merkle proof of our deposit..."
-  curr_deposit_cnt="$(echo $tx | jq -r '.deposit_cnt')"
-  curr_network_id="$(echo $tx | jq -r '.network_id')"
+  curr_deposit_cnt="$(echo "$tx" | jq -r '.deposit_cnt')"
+  curr_network_id="$(echo "$tx" | jq -r '.network_id')"
   curl -s "$bridge_api_url/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq '.' > proof.json
   cat proof.json
 
   # Get our variables organized
   in_merkle_proof="$(jq -r -c '.proof.merkle_proof' proof.json | tr -d '"')"
   in_rollup_merkle_proof="$(jq -r -c '.proof.rollup_merkle_proof' proof.json | tr -d '"')"
-  in_global_index="$(echo $tx | jq -r '.global_index')"
+  in_global_index="$(echo "$tx" | jq -r '.global_index')"
   in_main_exit_root="$(jq -r '.proof.main_exit_root' proof.json)"
   in_rollup_exit_root="$(jq -r '.proof.rollup_exit_root' proof.json)"
-  in_orig_net="$(echo $tx | jq -r '.orig_net')"
-  in_orig_addr="$(echo $tx | jq -r '.orig_addr')"
-  in_dest_net="$(echo $tx | jq -r '.dest_net')"
-  in_dest_addr="$(echo $tx | jq -r '.dest_addr')"
-  in_amount="$(echo $tx | jq -r '.amount')"
-  in_metadata="$(echo $tx | jq -r '.metadata')"
+  in_orig_net="$(echo "$tx" | jq -r '.orig_net')"
+  in_orig_addr="$(echo "$tx" | jq -r '.orig_addr')"
+  in_dest_net="$(echo "$tx" | jq -r '.dest_net')"
+  in_dest_addr="$(echo "$tx" | jq -r '.dest_addr')"
+  in_amount="$(echo "$tx" | jq -r '.amount')"
+  in_metadata="$(echo "$tx" | jq -r '.metadata')"
 
   # Generate the call data, this is useful just to examine what the call will look loke
   echo "Generating the call data for the bridge claim tx..."
