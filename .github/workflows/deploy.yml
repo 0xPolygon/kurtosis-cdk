@@ -92,6 +92,6 @@ jobs:
 
       - name: Deploy Observability Stack
         run: |
-          yq e '.deploy_observability = true' --inplace params.yml # reset
+          yq e '.deploy_observability = true' --inplace params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_observability = false' --inplace params.yml
+          yq e '.deploy_observability = false' --inplace params.yml # reset
