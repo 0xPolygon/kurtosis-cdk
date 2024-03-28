@@ -30,23 +30,23 @@ cat claimable-tx.json
 
 # Use the bridge service to get the merkle proof of our deposit
 echo "Getting the merkle proof of our deposit..."
-curr_deposit_cnt=$(jq -r '.deposit_cnt' claimable-tx.json)
-curr_network_id=$(jq -r '.network_id' claimable-tx.json)
+curr_deposit_cnt="$(jq -r '.deposit_cnt' claimable-tx.json)"
+curr_network_id="$(jq -r '.network_id' claimable-tx.json)"
 curl -s "$bridge_api_url/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq '.' > proof.json
 cat proof.json
 
 # Get our variables organized
 in_merkle_proof="$(jq -r -c '.proof.merkle_proof' proof.json | tr -d '"')"
 in_rollup_merkle_proof="$(jq -r -c '.proof.rollup_merkle_proof' proof.json | tr -d '"')"
-in_global_index=$(jq -r '.global_index' claimable-tx.json)
-in_main_exit_root=$(jq -r '.proof.main_exit_root' proof.json)
-in_rollup_exit_root=$(jq -r '.proof.rollup_exit_root' proof.json)
-in_orig_net=$(jq -r '.orig_net' claimable-tx.json)
-in_orig_addr=$(jq -r '.orig_addr' claimable-tx.json)
-in_dest_net=$(jq -r '.dest_net' claimable-tx.json)
-in_dest_addr=$(jq -r '.dest_addr' claimable-tx.json)
-in_amount=$(jq -r '.amount' claimable-tx.json)
-in_metadata=$(jq -r '.metadata' claimable-tx.json)
+in_global_index="$(jq -r '.global_index' claimable-tx.json)"
+in_main_exit_root="$(jq -r '.proof.main_exit_root' proof.json)"
+in_rollup_exit_root="$(jq -r '.proof.rollup_exit_root' proof.json)"
+in_orig_net="$(jq -r '.orig_net' claimable-tx.json)"
+in_orig_addr="$(jq -r '.orig_addr' claimable-tx.json)"
+in_dest_net="$(jq -r '.dest_net' claimable-tx.json)"
+in_dest_addr="$(jq -r '.dest_addr' claimable-tx.json)"
+in_amount="$(jq -r '.amount' claimable-tx.json)"
+in_metadata="$(jq -r '.metadata' claimable-tx.json)"
 
 # Generate the call data, this is useful just to examine what the call will look loke
 echo "Generating the call data for the bridge claim tx..."
