@@ -27,6 +27,10 @@ cat bridge-deposits.json
 echo "Filtering the list of deposits..."
 jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$destination_net')] | .[0]' bridge-deposits.json > claimable-tx.json
 cat claimable-tx.json
+if [ "$(<claimable-tx.json)" = "null" ]; then
+  echo "No deposits found..."
+  exit 1
+fi
 
 # Use the bridge service to get the merkle proof of our deposit
 echo "Getting the merkle proof of our deposit..."
