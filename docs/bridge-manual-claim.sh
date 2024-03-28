@@ -54,7 +54,7 @@ cast calldata "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_glo
 
 # Perform an eth_call to make sure the tx will work
 echo "Performing an eth call to make sure the bridge claim tx will work..."
-cast call --rpc-url "$l1_rpc_url" "$bridge_addr" "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net $in_orig_addr" "$in_dest_net $in_dest_addr" "$in_amount" "$in_metadata"
+cast call --rpc-url "$l1_rpc_url" "$bridge_addr" "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
 
 # Publish the actual transaction!
 echo "Publishing the bridge claim tx..."
