@@ -11,9 +11,6 @@ destination_addr="$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/c
 # The bridge address
 bridge_addr="$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq -r .polygonZkEVMBridgeAddress)"
 
-# TODO: ??
-meta_bytes="0x"
-
 # Grab the endpoints for l1 and the bridge service
 l1_rpc_url=http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
 bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 bridge-rpc)"
