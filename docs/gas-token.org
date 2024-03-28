@@ -6,11 +6,9 @@ architecture in the [[https://github.com/0xPolygonHermez/zkevm-techdocs/blob/a6d
 the docs is a helpful explanation of the Gas Token:
 
 #+begin_quote
-If we use a token to pay the gas at a layer, we call this token, the
-gas token for the layer. If we are using a gas token at a layer, it is
-still possible to send L1 ETH to the layer. In this case, the ETH gets
-accounted in an ERC20 contract called W-ETH, which is just another
-ERC20 instance.
+When a token is utilized to cover gas expenses within a layer, we refer to it as the gas token for that specific layer.
+
+Even when employing a gas token within a layer, it remains feasible to transfer L1 ETH to that layer. In such instances, the ETH is recorded within an ERC20 contract known as W-ETH, functioning as another instance of an ERC20 token.
 #+end_quote
 
 #+CAPTION: Diagram illustrating the interchange of assets between layers, focusing on LY as a layer of interest. It depicts several scenarios, such as bridging a ERC20 token from mainnet to another ERC20 token in LY, bridging L1 ETH to the LY gas token or bridging a wrapped ERC20 token living on LX to LY ETH.
@@ -21,9 +19,9 @@ edit the [[../params.yml][params.yml]] file to set ~zkevm_use_gas_token_contract
 ~true~. When you make this change a few things will happen during
 setup:
 
-1. During contract deployment, an ERC20 token will be deployed on L1
+1. During contract deployment, an ERC20 token will be deployed on L1.
 2. The [[../templates/create_rollup_parameters.json][rollup creation parameters]] will be modified to set the
-   ~gasTokenAddress~ to the address of the L1 ERC20
+   ~gasTokenAddress~ to the address of the L1 ERC20.
 
 After setting the ~zkevm_use_gas_token_contract~, you should be all
 set to run Kurtosis.
@@ -38,44 +36,45 @@ set of services that were deployed.
 
 [[file:gas-token-img/services.png]]
 
-For the rest of this guide I'll probably only be interested in three
+For the rest of this guide you'll probably only be interested in three
 of these mapped services: the bridge UI, the L1 RPC, and the L2 RPC.
 
 To get started let's extract the generated files and take a look at
-the ~gasTokenAddress~ (note: you'll need to have [[https://jqlang.github.io/jq/][jq]] installed):
+the ~gasTokenAddress~:
 
 #+begin_src bash
-kurtosis files download cdk-v1 zkevm /tmp
-cat /tmp/zkevm/create_rollup_parameters.json | jq '.gasTokenAddress'
+kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/create_rollup_parameters.json"
 #+end_src
 
 Running this command will give us the address of our ERC20 token. In
-order to bridge, we should mint some of this token. IN order to run
-this command, you'll also need to have the [[https://book.getfoundry.sh/getting-started/installation][Foundry toolchain]]
-installed.
+order to bridge, we should mint some of this token. To run this command,
+you'll also need to have the [[https://book.getfoundry.sh/getting-started/installation][Foundry toolchain]]
+installed (note: you'll need to have [[https://jqlang.github.io/jq/][jq]] and [[https://github.com/mikefarah/yq/#install][yq]] installed):
 
 #+begin_src bash
+export gta=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/create_rollup_parameters.json" | tail -n +2 | jq -r .gasTokenAddress)
+export l1_rpc_url=http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
 cast send \
---mnemonic "code code code code code code code code code code code quality" \
---rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-"$(jq -r '.gasTokenAddress' /tmp/zkevm/create_rollup_parameters.json)" \
-'mint(address,uint256)' \
-0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6 1000000000000000000000000000
+   --mnemonic "code code code code code code code code code code code quality" \
+   --rpc-url "$l1_rpc_url" \
+   "$gta" \
+   "mint(address,uint256)" \
+   0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6 \
+   1000000000000000000000000000
 #+end_src
 
 Assuming that worked we can check our token balance as well:
 #+begin_src bash
-cast call \
---rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-"$(jq -r '.gasTokenAddress' /tmp/zkevm/create_rollup_parameters.json)" \
-'balanceOf(address)(uint256)' \
-0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6
+cast call --rpc-url "$l1_rpc_url" "$gta" "balanceOf(address)(uint256)" 0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6
 #+end_src
 
 Now that we have some L1 Gas Token, let's open up the bridge
 UI. You'll need to open your browser to the address of of the bridge
-ui service. Run this command to get the URL easily and then open the
-URL in your browser.
+UI service. Run this command to get the URL easily and then open the
+URL in your browser. Please be aware that running the CDK setup on a
+Mac might result in issues, such as encountering a blank bridge UI.
+To resolve this problem, refer to the troubleshooting section in the
+main README.
 
 #+begin_src bash
 kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
@@ -83,12 +82,18 @@ kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
 
 You'll need to need to add RPCs for L1 and L2 to your browser
 wallet. Because the URLs are using HTTP instead of HTTPS, you'll need
-to [[https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC][add the RPCs]] manually to Metamask. The URL for the L1 and L2 RPCs
-can be retrieved with these commands:
+to [[https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC][add the RPCs]] manually to Metamask.
+
+The config for the L1 RPC can be retrieved with this command:
 
 #+begin_src bash
-kurtosis port print cdk-v1 el-1-geth-lighthouse rpc
-kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc
+echo \{\"network_name\": \"kurtosis_cdk_l1\", \"new_rpc_url\": \"$l1_rpc_url\", \"chain_id\": $(yq .l1_chain_id params.yml), \"currency_symbol\": \"ETH\"\} | jq
+#+end_src
+
+Same thing for the L2 RPC config:
+
+#+begin_src bash
+echo \{\"network_name\": \"kurtosis_cdk_rollup\", \"new_rpc_url\": \"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)\", \"chain_id\": $(yq .zkevm_rollup_chain_id params.yml), \"currency_symbol\": \"CDK\"\} | jq
 #+end_src
 
 Additionally, if you used the mnemonic ~code...quality~, you'll also
@@ -104,9 +109,12 @@ menu:
 
 In the modal, you'll want to paste the ERC 20 Gas Token address that
 we found earlier with this command:
+
 #+begin_src bash
-cat /tmp/zkevm/create_rollup_parameters.json | jq '.gasTokenAddress'
+echo "$gta"
 #+end_src
+
+In my case, it's ~0xBDF337Ae0209B33285034c476f35733BFC890707~
 
 [[file:gas-token-img/02_bridge.png]]
 
@@ -133,10 +141,10 @@ command like this:
 
 #+begin_src bash
 cast send --legacy \
---value 10ether \
---private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
---rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
-0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+   --value 10ether \
+   --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+   --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
+   "$(yq -r .zkevm_l2_claimtxmanager_address params.yml)"
 #+end_src
 
 [[file:gas-token-img/07_bridge.png]]
@@ -146,3 +154,46 @@ see the bridge value as native value on L2.
 
 [[file:gas-token-img/08_bridge.png]]
 
+To complete the test here, lets transfer some of the value on L2 to
+another address. In my case, I'll send some value to this address
+~0x125fb391ba829e0865963d3b91711610049a9e78~:
+
+[[file:gas-token-img/09_bridge.png]]
+
+After importing the private key
+~0903a9a721167e2abaa0a33553cbeb209dc9300d28e4e4d6d2fac2452f93e357~ for
+this account, I can see the balance in metamask.
+
+[[file:gas-token-img/10_bridge.png]]
+
+Now let's try to withdraw it! After initiating the withdraw
+transaction, we'll have to wait for our tx's data to be proven on L1.
+
+[[file:gas-token-img/11_bridge.png]]
+
+As of 2024-03-27, there might be a small bug in the bridge UI which
+causes the transaction not to be claimable on L1 with the
+UI. Essentially the bridge UI is selecting the wrong destination
+network so the proof will not validate. That being said, it's possible
+to claim directly using the smart contracts.
+
+[[file:gas-token-img/12_bridge.png]]
+
+We'll put together a more comprehensive script later, but if you
+wanted to see how to use ~cast~ and the bridge service to do a bridge
+claim, it would look something like this. If you want to run this
+yourself, I'd recommend going line by line and tweaking as needed.
+
+#+begin_src bash
+./docs/bridge-manual-claim.sh
+#+end_src
+
+This worked!
+
+[[file:gas-token-img/14_bridge.png]]
+
+Now we can confirm the claim went through using Metamask and the
+bridge UI. Even though the bridge UI didn't allow me to claim, it does
+correctly show that a claim was executed!
+
+[[file:gas-token-img/15_bridge.png]]
