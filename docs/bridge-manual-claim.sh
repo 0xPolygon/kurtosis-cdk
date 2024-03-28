@@ -6,7 +6,7 @@ set -e
 private_key="0903a9a721167e2abaa0a33553cbeb209dc9300d28e4e4d6d2fac2452f93e357"
 # The destination network (zero corresponds to L1/Ethereum)
 destination_net="0"
-# The address of the recipient.
+# The address of the recipient
 destination_addr="0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6"
 # The bridge address
 bridge_addr="$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq -r .polygonZkEVMBridgeAddress)"
