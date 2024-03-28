@@ -50,7 +50,7 @@ in_metadata=$(jq -r '.metadata' claimable-tx.json)
 
 # Generate the call data, this is useful just to examine what the call will look loke
 echo "Generating the call data for the bridge claim tx..."
-cast calldata $claim_sig "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
+cast calldata "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
 
 # Perform an eth_call to make sure the tx will work
 echo "Performing an eth call to make sure the bridge claim tx will work..."
