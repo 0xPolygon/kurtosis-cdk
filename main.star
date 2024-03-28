@@ -77,7 +77,7 @@ def run(plan, args):
     if args["deploy_zkevm_permissionless_node"]:
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)  # Create a shallow copy of args.
+        permissionless_node_args = dict(args)
         permissionless_node_args["deployment_suffix"] = (
             "-pless" + args["deployment_suffix"]
         )
@@ -89,6 +89,7 @@ def run(plan, args):
     # Deploy observability stack
     if args["deploy_observability"]:
         plan.print("Deploying the observability stack")
-        observability_package.run(plan, args)
+        observability_args = dict(args)
+        observability_package.run(plan, observability_args)
     else:
         plan.print("Skipping the deployment of the observability stack")
