@@ -1,7 +1,6 @@
 zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-observability_package = import_module("./lib/observability.star")
 
 
 def run(plan, args):
@@ -50,11 +49,8 @@ def run(plan, args):
         name="permissionless-node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
+
     zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
-    rpc = zkevm_node_package.start_rpc(
-        plan, args, node_config_artifact, genesis_artifact
-    )
-
-    return [synchronizer, rpc]
+    zkevm_node_package.start_rpc(plan, args, node_config_artifact, genesis_artifact)

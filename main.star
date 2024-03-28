@@ -4,7 +4,7 @@ cdk_databases_package = import_module("./cdk_databases.star")
 cdk_central_environment_package = import_module("./cdk_central_environment.star")
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
-observability_package = import_module("./lib/observability.star")
+observability_package = import_module("./observability.star")
 
 
 def run(plan, args):
@@ -85,3 +85,10 @@ def run(plan, args):
         zkevm_permissionless_node_package.run(plan, permissionless_node_args)
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
+
+    # Deploy observability stack
+    if args["deploy_observability"]:
+        plan.print("Deploying the observability stack")
+        observability_package.run(plan, args)
+    else:
+        plan.print("Skipping the deployment of the observability stack")
