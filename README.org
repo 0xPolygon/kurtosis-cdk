@@ -135,13 +135,13 @@ Currently, the deployment process includes the following stages:
   3. Deploy ZkEVM Node and CDK Peripheral Databases
   4. Deploy CDK Central/Trusted Environment
   5. Deploy CDK/Bridge Infrastructure
-  6. Deploy Permissioless Node
+  6. Deploy Permissionless Node
 
 Here's an example of how you can specify the stages to run through.
 
 #+begin_src bash
 # Disable all deployment steps.
-yq e 'deploy_l1 = false' --inplace params.yml
+yq e '.deploy_l1 = false' --inplace params.yml
 yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml
 yq e '.deploy_databases = false' --inplace params.yml
 yq e '.deploy_cdk_central_environment = false' --inplace params.yml

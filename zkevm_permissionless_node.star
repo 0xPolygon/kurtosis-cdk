@@ -49,6 +49,7 @@ def run(plan, args):
         name="permissionless-node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
+
     zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
