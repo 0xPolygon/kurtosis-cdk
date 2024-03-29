@@ -109,7 +109,7 @@ cp genesis.json genesis.original.json
 jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
 
 # There are a bunch of fields that need to be renamed in order for the
-# older fork7 code to be compatibile with some of the fork8
+# older fork7 code to be compatible with some of the fork8
 # automations. This schema matching can be dropped once this is
 # versioned up to 8
 fork_id="{{.zkevm_rollup_fork_id}}"
