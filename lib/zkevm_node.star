@@ -107,6 +107,7 @@ def start_aggregator(
     genesis_artifact,
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
+    proofsigner_keystore_artifact,
 ):
     return _start_node_component(
         plan,
@@ -127,6 +128,7 @@ def start_aggregator(
                 genesis_artifact,
                 sequencer_keystore_artifact,
                 aggregator_keystore_artifact,
+                proofsigner_keystore_artifact,
             ]
         ),
         components=NODE_COMPONENT.aggregator,
