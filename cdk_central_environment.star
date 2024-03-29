@@ -61,6 +61,7 @@ def run(plan, args):
         config_artifact,
         genesis_artifact,
         aggregator_keystore_artifact,
+        sequencer_keystore_artifact,
         proofsigner_keystore_artifact,
     )
     zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
