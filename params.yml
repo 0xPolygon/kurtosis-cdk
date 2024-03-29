@@ -138,7 +138,7 @@ l1_chain_id: 271828
 l1_preallocated_mnemonic: code code code code code code code code code code code quality
 l1_rpc_url: http://el-1-geth-lighthouse:8545
 l1_ws_url: ws://el-1-geth-lighthouse:8546
-
+ethereum_explorer: "https://sepolia.etherscan.io/"
 ## Rollup configuration.
 
 # The chain id of the new rollup.
