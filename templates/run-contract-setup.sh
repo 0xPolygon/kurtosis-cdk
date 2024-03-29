@@ -178,5 +178,10 @@ mv tmp.keys/UTC* dac.keystore
 chmod a+r dac.keystore
 rm -rf tmp.keys
 
+polycli parseethwallet --hexkey "{{.zkevm_l2_proofsigner_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
+mv tmp.keys/UTC* proofsigner.keystore
+chmod a+r proofsigner.keystore
+rm -rf tmp.keys
+
 touch .init-complete.lock
 popd

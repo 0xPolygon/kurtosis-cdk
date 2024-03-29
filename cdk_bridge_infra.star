@@ -156,6 +156,7 @@ def start_agglayer(plan, args):
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # addresses
                     "rollup_manager_address": rollup_manager_address,
+                    "zkevm_l2_proofsigner_address": args["zkevm_l2_proofsigner_address"],
                     # agglayer db
                     "zkevm_db_agglayer_hostname": args["zkevm_db_agglayer_hostname"],
                     "zkevm_db_agglayer_name": args["zkevm_db_agglayer_name"],
