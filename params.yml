@@ -41,8 +41,7 @@ zkevm_fork_id: 9
 # zkevm_fork_id: 7
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
 
-# zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
-zkevm_agglayer_image: agglayer:local3
+zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0-alpha.1
 zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2-cdk.1
 zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:multi-network
 

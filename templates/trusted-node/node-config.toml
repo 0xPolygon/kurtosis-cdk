@@ -154,10 +154,8 @@ UpgradeEtrogBatchNumber = 0
 BatchProofL1BlockConfirmations = 2
 {{if .is_cdk_validium}}
 ## CDK Validium Specific Settings
-
-# We should double check if this is necessary. I don't remember why the aggregator needs this
-# SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-SequencerPrivateKey = {Path = "/etc/zkevm/proofsigner.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+# SequencerPrivateKey = {Path = "/etc/zkevm/proofsigner.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 SettlementBackend = "agglayer" # "l1"
 AggLayerTxTimeout = "600s"
 AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
