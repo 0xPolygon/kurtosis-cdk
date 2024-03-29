@@ -6,11 +6,9 @@ architecture in the [[https://github.com/0xPolygonHermez/zkevm-techdocs/blob/a6d
 the docs is a helpful explanation of the Gas Token:
 
 #+begin_quote
-If we use a token to pay the gas at a layer, we call this token, the
-gas token for the layer. If we are using a gas token at a layer, it is
-still possible to send L1 ETH to the layer. In this case, the ETH gets
-accounted in an ERC20 contract called W-ETH, which is just another
-ERC20 instance.
+When a token is utilized to cover gas expenses within a layer, we refer to it as the gas token for that specific layer.
+
+Even when employing a gas token within a layer, it remains feasible to transfer L1 ETH to that layer. In such instances, the ETH is recorded within an ERC20 contract known as W-ETH, functioning as another instance of an ERC20 token.
 #+end_quote
 
 #+CAPTION: Diagram illustrating the interchange of assets between layers, focusing on LY as a layer of interest. It depicts several scenarios, such as bridging a ERC20 token from mainnet to another ERC20 token in LY, bridging L1 ETH to the LY gas token or bridging a wrapped ERC20 token living on LX to LY ETH.
@@ -21,9 +19,9 @@ edit the [[../params.yml][params.yml]] file to set ~zkevm_use_gas_token_contract
 ~true~. When you make this change a few things will happen during
 setup:
 
-1. During contract deployment, an ERC20 token will be deployed on L1
+1. During contract deployment, an ERC20 token will be deployed on L1.
 2. The [[../templates/create_rollup_parameters.json][rollup creation parameters]] will be modified to set the
-   ~gasTokenAddress~ to the address of the L1 ERC20
+   ~gasTokenAddress~ to the address of the L1 ERC20.
 
 After setting the ~zkevm_use_gas_token_contract~, you should be all
 set to run Kurtosis.
@@ -38,7 +36,7 @@ set of services that were deployed.
 
 [[file:gas-token-img/services.png]]
 
-For the rest of this guide I'll probably only be interested in three
+For the rest of this guide you'll probably only be interested in three
 of these mapped services: the bridge UI, the L1 RPC, and the L2 RPC.
 
 To get started let's extract the generated files and take a look at
@@ -49,34 +47,34 @@ kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/create_rollup_paramet
 #+end_src
 
 Running this command will give us the address of our ERC20 token. In
-order to bridge, we should mint some of this token. IN order to run
-this command, you'll also need to have the [[https://book.getfoundry.sh/getting-started/installation][Foundry toolchain]]
-installed.
+order to bridge, we should mint some of this token. To run this command,
+you'll also need to have the [[https://book.getfoundry.sh/getting-started/installation][Foundry toolchain]]
+installed (note: you'll need to have [[https://jqlang.github.io/jq/][jq]] and [[https://github.com/mikefarah/yq/#install][yq]] installed):
 
 #+begin_src bash
-# this should be set to the gas token address that you saw in the previous command
-gta="0xBDF337Ae0209B33285034c476f35733BFC890707"
+export gta=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/create_rollup_parameters.json" | tail -n +2 | jq -r .gasTokenAddress)
+export l1_rpc_url=http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
 cast send \
---mnemonic "code code code code code code code code code code code quality" \
---rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-"$gta" \
-'mint(address,uint256)' \
-0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6 1000000000000000000000000000
+   --mnemonic "code code code code code code code code code code code quality" \
+   --rpc-url "$l1_rpc_url" \
+   "$gta" \
+   "mint(address,uint256)" \
+   0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6 \
+   1000000000000000000000000000
 #+end_src
 
 Assuming that worked we can check our token balance as well:
 #+begin_src bash
-cast call \
---rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
-"$gta" \
-'balanceOf(address)(uint256)' \
-0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6
+cast call --rpc-url "$l1_rpc_url" "$gta" "balanceOf(address)(uint256)" 0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6
 #+end_src
 
 Now that we have some L1 Gas Token, let's open up the bridge
 UI. You'll need to open your browser to the address of of the bridge
-ui service. Run this command to get the URL easily and then open the
-URL in your browser.
+UI service. Run this command to get the URL easily and then open the
+URL in your browser. Please be aware that running the CDK setup on a
+Mac might result in issues, such as encountering a blank bridge UI.
+To resolve this problem, refer to the troubleshooting section in the
+main README.
 
 #+begin_src bash
 kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
@@ -84,12 +82,18 @@ kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
 
 You'll need to need to add RPCs for L1 and L2 to your browser
 wallet. Because the URLs are using HTTP instead of HTTPS, you'll need
-to [[https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC][add the RPCs]] manually to Metamask. The URL for the L1 and L2 RPCs
-can be retrieved with these commands:
+to [[https://support.metamask.io/hc/en-us/articles/360043227612-How-to-add-a-custom-network-RPC][add the RPCs]] manually to Metamask.
+
+The config for the L1 RPC can be retrieved with this command:
 
 #+begin_src bash
-kurtosis port print cdk-v1 el-1-geth-lighthouse rpc
-kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc
+echo \{\"network_name\": \"kurtosis_cdk_l1\", \"new_rpc_url\": \"$l1_rpc_url\", \"chain_id\": $(yq .l1_chain_id params.yml), \"currency_symbol\": \"ETH\"\} | jq
+#+end_src
+
+Same thing for the L2 RPC config:
+
+#+begin_src bash
+echo \{\"network_name\": \"kurtosis_cdk_rollup\", \"new_rpc_url\": \"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)\", \"chain_id\": $(yq .zkevm_rollup_chain_id params.yml), \"currency_symbol\": \"CDK\"\} | jq
 #+end_src
 
 Additionally, if you used the mnemonic ~code...quality~, you'll also
@@ -107,7 +111,7 @@ In the modal, you'll want to paste the ERC 20 Gas Token address that
 we found earlier with this command:
 
 #+begin_src bash
-cat /tmp/zkevm/create_rollup_parameters.json | jq '.gasTokenAddress'
+echo "$gta"
 #+end_src
 
 In my case, it's ~0xBDF337Ae0209B33285034c476f35733BFC890707~
@@ -137,10 +141,10 @@ command like this:
 
 #+begin_src bash
 cast send --legacy \
---value 10ether \
---private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
---rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
-0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+   --value 10ether \
+   --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+   --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
+   "$(yq -r .zkevm_l2_claimtxmanager_address params.yml)"
 #+end_src
 
 [[file:gas-token-img/07_bridge.png]]
@@ -181,53 +185,7 @@ claim, it would look something like this. If you want to run this
 yourself, I'd recommend going line by line and tweaking as needed.
 
 #+begin_src bash
-# Setup some vars for use later on
-skey="0903a9a721167e2abaa0a33553cbeb209dc9300d28e4e4d6d2fac2452f93e357"
-destination_net="0"
-destination_addr="0x125FB391bA829e0865963D3B91711610049a9e78"
-bridge_addr="0xD71f8F956AD979Cc2988381B8A743a2fE280537D"
-meta_bytes="0x"
-
-# Grab the endpoints for l1 and the bridge service
-rpc_url="http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
-bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 bridge-rpc)"
-
-# the signature for claiming is long - just putting it into a var
-claim_sig="claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)"
-
-# Get the list of deposits for the destination address
-curl -s "$bridge_api_url/bridges/$destination_addr?limit=100&offset=0" | jq '.' > bridge-deposits.json
-
-# Filter the list of deposits down to the first claimable tx that hasn't already been claimed and is destined for L1
-jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$destination_net')] | .[0]' bridge-deposits.json > claimable-tx.json
-
-
-# use the bridge service to get the merkle proof of our deposit
-curr_deposit_cnt=$(jq -r '.deposit_cnt' claimable-tx.json)
-curr_network_id=$(jq -r '.network_id' claimable-tx.json)
-curl -s "$bridge_api_url/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq '.' > proof.json
-
-# get our variables organized
-in_merkle_proof="$(jq -r -c '.proof.merkle_proof' proof.json | tr -d '"')"
-in_rollup_merkle_proof="$(jq -r -c '.proof.rollup_merkle_proof' proof.json | tr -d '"')"
-in_global_index=$(jq -r '.global_index' claimable-tx.json)
-in_main_exit_root=$(jq -r '.proof.main_exit_root' proof.json)
-in_rollup_exit_root=$(jq -r '.proof.rollup_exit_root' proof.json)
-in_orig_net=$(jq -r '.orig_net' claimable-tx.json)
-in_orig_addr=$(jq -r '.orig_addr' claimable-tx.json)
-in_dest_net=$(jq -r '.dest_net' claimable-tx.json)
-in_dest_addr=$(jq -r '.dest_addr' claimable-tx.json)
-in_amount=$(jq -r '.amount' claimable-tx.json)
-in_metadata=$(jq -r '.metadata' claimable-tx.json)
-
-# Generate the call data, this is useful just to examine what the call will look loke
-cast calldata $claim_sig "$in_merkle_proof" "$in_rollup_merkle_proof" $in_global_index $in_main_exit_root $in_rollup_exit_root $in_orig_net $in_orig_addr $in_dest_net $in_dest_addr $in_amount $in_metadata
-
-# Perform an eth_call to make sure the tx will work
-cast call --rpc-url $rpc_url $bridge_addr $claim_sig "$in_merkle_proof" "$in_rollup_merkle_proof" $in_global_index $in_main_exit_root $in_rollup_exit_root $in_orig_net $in_orig_addr $in_dest_net $in_dest_addr $in_amount $in_metadata
-
-# Publish the actual transaction!
-cast send --rpc-url $rpc_url --private-key $skey $bridge_addr $claim_sig "$in_merkle_proof" "$in_rollup_merkle_proof" $in_global_index $in_main_exit_root $in_rollup_exit_root $in_orig_net $in_orig_addr $in_dest_net $in_dest_addr $in_amount $in_metadata
+./docs/bridge-manual-claim.sh
 #+end_src
 
 This worked!

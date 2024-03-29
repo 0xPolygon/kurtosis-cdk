@@ -25,6 +25,9 @@ deploy_cdk_bridge_infra: true
 # Deploy permissionless node.
 deploy_zkevm_permissionless_node: true
 
+# Deploy observability stack.
+deploy_observability: true
+
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
 # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
@@ -37,7 +40,6 @@ zkevm_contracts_branch: develop # v5.0.1-rc.2-fork.8
 zkevm_fork_id: 9
 # zkevm_fork_id: 7
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
-
 
 # zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
 zkevm_agglayer_image: agglayer:local3

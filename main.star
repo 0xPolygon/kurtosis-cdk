@@ -4,6 +4,7 @@ cdk_databases_package = import_module("./cdk_databases.star")
 cdk_central_environment_package = import_module("./cdk_central_environment.star")
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
+observability_package = import_module("./observability.star")
 
 
 def run(plan, args):
@@ -76,7 +77,7 @@ def run(plan, args):
     if args["deploy_zkevm_permissionless_node"]:
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)  # Create a shallow copy of args.
+        permissionless_node_args = dict(args)
         permissionless_node_args["deployment_suffix"] = (
             "-pless" + args["deployment_suffix"]
         )
@@ -84,3 +85,11 @@ def run(plan, args):
         zkevm_permissionless_node_package.run(plan, permissionless_node_args)
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
+
+    # Deploy observability stack
+    if args["deploy_observability"]:
+        plan.print("Deploying the observability stack")
+        observability_args = dict(args)
+        observability_package.run(plan, observability_args)
+    else:
+        plan.print("Skipping the deployment of the observability stack")

@@ -248,10 +248,6 @@ def start_dac(plan, args):
             image=args["zkevm_dac_image"],
             ports={
                 "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-                # Does the DAC have prometheus?!
-                # "prometheus": PortSpec(
-                #     args["zkevm_prometheus_port"], application_protocol="http"
-                # ),
             },
             files={
                 "/etc/zkevm": Directory(
