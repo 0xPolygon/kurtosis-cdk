@@ -196,7 +196,7 @@ def start_agglayer(plan, args):
                 ),
             },
             entrypoint=[
-                "/app/agglayer",
+                "/usr/local/bin/agglayer",
             ],
             cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
         ),
