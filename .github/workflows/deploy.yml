@@ -44,52 +44,52 @@ jobs:
       # Deploy components.
       - name: Disable All Deployment Steps
         run: |
-          yq e '.deploy_l1 = false' --inplace params.yml
-          yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml
-          yq e '.deploy_databases = false' --inplace params.yml
-          yq e '.deploy_cdk_central_environment = false' --inplace params.yml
-          yq e '.deploy_cdk_bridge_infra = false' --inplace params.yml
-          yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml
-          yq e '.deploy_observability = false' --inplace params.yml
+          yq -Y --in-place '.deploy_l1 = false' params.yml
+          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
+          yq -Y --in-place '.deploy_databases = false' params.yml
+          yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
+          yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
+          yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
+          yq -Y --in-place '.deploy_observability = false' params.yml
 
       - name: Deploy L1
         run: |
-          yq e '.deploy_l1 = true' --inplace params.yml
+          yq -Y --in-place '.deploy_l1 = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_l1 = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
       - name: Deploy ZkEVM Contracts on L1
         run: |
-          yq e '.deploy_zkevm_contracts_on_l1 = true' --inplace params.yml
+          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_zkevm_contracts_on_l1 = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
       - name: Deploy ZkEVM Node and CDK Peripheral Databases
         run: |
-          yq e '.deploy_databases = true' --inplace params.yml
+          yq -Y --in-place '.deploy_databases = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_databases = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_databases = false' params.yml # reset
 
       - name: Deploy CDK Central Environment
         run: |
-          yq e '.deploy_cdk_central_environment = true' --inplace params.yml
+          yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_cdk_central_environment = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
 
       - name: Deploy CDK Bridge Infrastructure
         run: |
-          yq e '.deploy_cdk_bridge_infra = true' --inplace params.yml
+          yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_cdk_bridge_infra = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
 
       - name: Deploy ZkEVM Permissionless Node
         run: |
-          yq e '.deploy_zkevm_permissionless_node = true' --inplace params.yml
+          yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_zkevm_permissionless_node = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
       - name: Deploy Observability Stack
         run: |
-          yq e '.deploy_observability = true' --inplace params.yml
+          yq -Y --in-place '.deploy_observability = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
-          yq e '.deploy_observability = false' --inplace params.yml # reset
+          yq -Y --in-place '.deploy_observability = false' params.yml # reset
