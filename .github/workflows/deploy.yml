@@ -39,9 +39,7 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo add-apt-repository ppa:rmescandon/yq
-          sudo apt update
-          sudo apt install --yes yq
+          pip3 install yq
 
       # Deploy components.
       - name: Disable All Deployment Steps
