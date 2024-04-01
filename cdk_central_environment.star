@@ -44,6 +44,11 @@ def run(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/aggregator.keystore",
     )
+    proofsigner_keystore_artifact = plan.store_service_files(
+        name="proofsigner-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/proofsigner.keystore",
+    )
 
     zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
     zkevm_node_package.start_sequencer(plan, args, config_artifact, genesis_artifact)
@@ -57,6 +62,7 @@ def run(plan, args):
         genesis_artifact,
         sequencer_keystore_artifact,
         aggregator_keystore_artifact,
+        proofsigner_keystore_artifact,
     )
     zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
     zkevm_node_package.start_eth_tx_manager(
