@@ -11,11 +11,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Deploy the CDK environment in one step.
+  # Deploy the CDK environment in one step, with the gas token feature enabled.
   monolithic_cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          pip3 install yq
+
+      - name: Enable gas token feature
+        run: yq -Y --in-place '.zkevm_use_gas_token_contract = true' params.yml
 
       - name: Deploy kurtosis package
         uses: kurtosis-tech/kurtosis-github-action@v1
