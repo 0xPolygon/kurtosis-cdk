@@ -100,11 +100,16 @@ def run(plan, args):
     ]
 
     # Start prometheus.
-    prometheus_url = prometheus_package.run(plan, metrics_jobs)
+    prometheus_url = prometheus_package.run(
+        plan,
+        metrics_jobs,
+        name="prometheus" + args["deployment_suffix"],
+    )
 
     # Start grafana.
     grafana_package.run(
         plan,
         prometheus_url,
         "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards",
+        name="grafana" + args["deployment_suffix"],
     )
