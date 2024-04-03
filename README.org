@@ -187,7 +187,9 @@ yq -Yi '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
 ** Troubleshooting: Mac users
 
-Make sure you can access containers using their private IPs. To check that, run the following commands:
+First, ensure that you have [[https://docs.docker.com/desktop/install/mac-install/][Docker Engine]] installed, with a version equal to or higher than 4.27. This is necessary for running the zk Prover on a Mac.
+
+Second, make sure you can access containers using their private IPs. To check that, run the following commands:
 
 #+begin_src bash
 docker run --rm --name nginx -d nginx
