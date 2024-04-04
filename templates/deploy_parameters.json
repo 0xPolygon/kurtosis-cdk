@@ -16,5 +16,5 @@
     "trustedAggregator":"{{.zkevm_l2_aggregator_address}}",
     "trustedAggregatorTimeout": 604799,
     "forkID": {{.zkevm_rollup_fork_id}},
-    "test": "true"
+    "test": true
 }

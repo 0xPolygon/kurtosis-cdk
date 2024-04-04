@@ -47,8 +47,8 @@ index c2dd446..4caf2d0 100644
 -zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
 +zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
  zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
--zkevm_fork_id: 9
-+zkevm_fork_id: 7
+-zkevm_rollup_fork_id: 9
++zkevm_rollup_fork_id: 7
  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
  zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest # TODO: better tags for the bridge ui
 #+end_src
