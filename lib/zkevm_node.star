@@ -199,9 +199,6 @@ def create_zkevm_node_components_config(
     genesis_artifact,
     keystore_artifacts,
 ):
-    synchronizer_config = create_synchronizer_service_config(
-        args, config_artifact, genesis_artifact
-    )
     sequencer_config = create_sequencer_service_config(
         args, config_artifact, genesis_artifact
     )
@@ -231,8 +228,7 @@ def create_zkevm_node_components_config(
         args, config_artifact, genesis_artifact
     )
     return (
-        synchronizer_config
-        | sequence_sender_config
+        sequence_sender_config
         | sequence_sender_config
         | aggregator_config
         | rpc_config

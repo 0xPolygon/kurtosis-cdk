@@ -53,13 +53,19 @@ def run(plan, args):
         name="permissionless-node-config",
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
+
     synchronizer_config = zkevm_node_package.create_synchronizer_service_config(
         args, node_config_artifact, genesis_artifact
     )
+    plan.add_service(
+        config=synchronizer_config,
+        description="Starting the zkevm node synchronizer",
+    )
+
     rpc_config = zkevm_node_package.create_rpc_service_config(
         args, node_config_artifact, genesis_artifact
     )
     plan.add_services(
-        configs=synchronizer_config | rpc_config,
-        description="Starting zkevm node synchronizer and rpc",
+        configs=rpc_config,
+        description="Starting zkevm node rpc",
     )
