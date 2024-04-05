@@ -17,18 +17,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install tools.
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli
+          kurtosis analytics disable
+
       - name: Install yq
         run: |
           pip3 install yq
 
+      # Deploy components
       - name: Enable gas token feature
         run: yq -Y --in-place '.zkevm_use_gas_token_contract = true' params.yml
 
-      - name: Deploy kurtosis package
-        uses: kurtosis-tech/kurtosis-github-action@v1
-        with:
-          path: .
-          args: params.yml
+      - name: Deploy components
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
   # Deploy the CDK environment incrementally, stage by stage.
   incremental_cdk:
@@ -68,7 +74,7 @@ jobs:
       - name: Deploy ZkEVM Contracts on L1
         run: |
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
-          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
       - name: Deploy ZkEVM Node and CDK Peripheral Databases

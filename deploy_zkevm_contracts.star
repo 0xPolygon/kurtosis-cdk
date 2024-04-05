@@ -37,10 +37,13 @@ def run(plan, args):
     )
 
     # Create helper service to deploy contracts
+    zkevm_contracts_image = "{}:fork{}".format(
+        args["zkevm_contracts_image"], args["zkevm_rollup_fork_id"]
+    )
     plan.add_service(
         name="contracts" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="node:20-bookworm",
+            image=zkevm_contracts_image,
             files={
                 "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
                 "/opt/contract-deploy/": Directory(
@@ -51,6 +54,7 @@ def run(plan, args):
                     ]
                 ),
             },
+            user=User(uid=0, gid=0),  # Run the container as root user.
         ),
     )
 
@@ -62,21 +66,6 @@ def run(plan, args):
     )
 
     # Deploy contracts
-    plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=[
-                "git",
-                "clone",
-                "--depth",
-                "1",
-                "-b",
-                args["zkevm_contracts_branch"],
-                args["zkevm_contracts_repo"],
-                "/opt/zkevm-contracts",
-            ]
-        ),
-    )
     plan.exec(
         service_name="contracts" + args["deployment_suffix"],
         recipe=ExecRecipe(
