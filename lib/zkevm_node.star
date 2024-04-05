@@ -32,7 +32,8 @@ def _create_node_component_service_config(
     )
 
 
-def create_synchronizer_service_config(args, config_artifact, genesis_artifact):
+# The synchronizer is required to run before any other zkevm node component.
+def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
     synchronizer_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
@@ -45,7 +46,7 @@ def create_synchronizer_service_config(args, config_artifact, genesis_artifact):
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.synchronizer,
     )
-    return {synchronizer_name: synchronizer_service_config}
+    plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
 
 
 def create_sequencer_service_config(args, config_artifact, genesis_artifact):

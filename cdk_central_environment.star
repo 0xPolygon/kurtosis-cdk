@@ -56,13 +56,7 @@ def run(plan, args):
     )
 
     # Start all the zkevm node components.
-    synchronizer_config = zkevm_node_package.create_synchronizer_service_config(
-        args, config_artifact, genesis_artifact
-    )
-    plan.add_service(
-        config=synchronizer_config,
-        description="Starting the zkevm node synchronizer",
-    )
+    zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
 
     zkevm_node_components_configs = (
         zkevm_node_package.create_zkevm_node_components_config(

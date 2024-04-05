@@ -54,13 +54,7 @@ def run(plan, args):
         config={"node-config.toml": struct(template=node_config_template, data=args)},
     )
 
-    synchronizer_config = zkevm_node_package.create_synchronizer_service_config(
-        args, node_config_artifact, genesis_artifact
-    )
-    plan.add_service(
-        config=synchronizer_config,
-        description="Starting the zkevm node synchronizer",
-    )
+    zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
 
     rpc_config = zkevm_node_package.create_rpc_service_config(
         args, node_config_artifact, genesis_artifact
