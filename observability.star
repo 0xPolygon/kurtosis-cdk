@@ -50,7 +50,7 @@ def start_panoptichain(plan, args):
     return plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="minhdvu/panoptichain",
+            image=args["panoptichain_image"],
             ports={
                 "prometheus": PortSpec(9090, application_protocol="http"),
             },

@@ -1,7 +1,7 @@
 def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifact):
     bridge_service_name = "zkevm-bridge-service" + args["deployment_suffix"]
     bridge_service_config = ServiceConfig(
-        image="hermeznetwork/zkevm-bridge-service:v0.4.2",
+        image=args["zkevm_bridge_service_image"],
         ports={
             "bridge-rpc": PortSpec(
                 args["zkevm_bridge_rpc_port"], application_protocol="http"
