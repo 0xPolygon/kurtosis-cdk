@@ -4,15 +4,15 @@ A [[https://github.com/kurtosis-tech/kurtosis][Kurtosis]] package that deploys a
 
 ** Table of Contents
 
-- [[#For Users]]
-  - [[#Deploy the CDK Stack]]
-  - [[#Set Up a Permissionless Node]]
-  - [[#Troubleshooting: Mac users]]
-- [[#For Developers]]
-  - [[#Break Down the Deployment Into Stages]]
-  - [[#ZkEVM Contracts Caching Solution]]
-- [[#License]]
-- [[#Contribution]]
+- [[#for-users][For Users]]
+  - [[#deploy-the-cdk-stack][Deploy the CDK Stack]]
+  - [[#set-up-a-permissionless-node][Set Up a Permissionless Node]]
+  - [[#troubleshooting-for-mac-users][Troubleshooting: Mac users]]
+- [[#for-developers][For Developers]]
+  - [[#break-down-the-deployment-into-stages][Break Down the Deployment Into Stages]]
+  - [[#zkevm-contracts-caching-solution][ZkEVM Contracts Caching Solution]]
+- [[#license][License]]
+- [[#contribution][Contribution]]
 
 ** For Users
 
@@ -175,7 +175,7 @@ synchronizing with ths command:
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
 
-*** Troubleshooting: Mac users
+*** Troubleshooting for Mac users
 
 First, ensure that you have [[https://docs.docker.com/desktop/install/mac-install/][Docker Engine]] installed, with a version equal to or higher than 4.27. This is necessary for running the zk Prover on a Mac.
 
