@@ -2,22 +2,33 @@ service_package = import_module("./lib/service.star")
 
 
 def run(plan, args):
-    zkevm_bridge_service = start_bridge_service(plan, args)
-    start_bridge_ui(plan, args, zkevm_bridge_service)
-    start_agglayer(plan, args)
+    # Start the bridge service and the agglayer.
+    bridge_config = create_bridge_service_config(plan, args)
+    agglayer_config = create_agglayer_service_config(plan, args)
+    bridge_infra_services = plan.add_services(
+        configs=bridge_config | agglayer_config,
+        description="Starting bridge infra",
+    )
+
+    # Start the bridge UI.
+    bridge_service_name = "zkevm-bridge-service" + args["deployment_suffix"]
+    bridge_service = bridge_infra_services[bridge_service_name]
+    start_bridge_ui(plan, args, bridge_service)
 
 
-def start_bridge_service(plan, args):
+def create_bridge_service_config(plan, args):
     # Create bridge config.
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
-    rollup_manager_block_number = get_key_from_config(
+    rollup_manager_block_number = service_package.get_key_from_config(
         plan, args, "deploymentRollupManagerBlockNumber"
     )
-    zkevm_global_exit_root_address = get_key_from_config(
+    zkevm_global_exit_root_address = service_package.get_key_from_config(
         plan, args, "polygonZkEVMGlobalExitRootAddress"
     )
-    zkevm_bridge_address = get_key_from_config(plan, args, "polygonZkEVMBridgeAddress")
-    zkevm_rollup_manager_address = get_key_from_config(
+    zkevm_bridge_address = service_package.get_key_from_config(
+        plan, args, "polygonZkEVMBridgeAddress"
+    )
+    zkevm_rollup_manager_address = service_package.get_key_from_config(
         plan, args, "polygonRollupManagerAddress"
     )
     claimtx_keystore_artifact = plan.store_service_files(
@@ -25,7 +36,9 @@ def start_bridge_service(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimtxmanager.keystore",
     )
-    zkevm_rollup_address = get_key_from_config(plan, args, "rollupAddress")
+    zkevm_rollup_address = service_package.get_key_from_config(
+        plan, args, "rollupAddress"
+    )
     bridge_config_artifact = plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -56,40 +69,44 @@ def start_bridge_service(plan, args):
         },
     )
 
-    # Start bridge service.
-    return plan.add_service(
-        name="zkevm-bridge-service" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image="hermeznetwork/zkevm-bridge-service:v0.4.2",
-            ports={
-                "bridge-rpc": PortSpec(
-                    args["zkevm_bridge_rpc_port"], application_protocol="http"
-                ),
-                "bridge-grpc": PortSpec(
-                    args["zkevm_bridge_grpc_port"], application_protocol="grpc"
-                ),
-            },
-            files={
-                "/etc/zkevm": Directory(
-                    artifact_names=[bridge_config_artifact, claimtx_keystore_artifact]
-                ),
-            },
-            entrypoint=[
-                "/app/zkevm-bridge",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
-        ),
+    # Create bridge service config.
+    bridge_service_name = "zkevm-bridge-service" + args["deployment_suffix"]
+    bridge_service_config = ServiceConfig(
+        image="hermeznetwork/zkevm-bridge-service:v0.4.2",
+        ports={
+            "bridge-rpc": PortSpec(
+                args["zkevm_bridge_rpc_port"], application_protocol="http"
+            ),
+            "bridge-grpc": PortSpec(
+                args["zkevm_bridge_grpc_port"], application_protocol="grpc"
+            ),
+        },
+        files={
+            "/etc/zkevm": Directory(
+                artifact_names=[bridge_config_artifact, claimtx_keystore_artifact]
+            ),
+        },
+        entrypoint=[
+            "/app/zkevm-bridge",
+        ],
+        cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
     )
+    return {bridge_service_name: bridge_service_config}
 
 
 def start_bridge_ui(plan, args, bridge_service):
+    # Get bridge UI config.
     l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
     zkevm_node_rpc = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
-    zkevm_bridge_address = get_key_from_config(plan, args, "polygonZkEVMBridgeAddress")
-    zkevm_rollup_manager_address = get_key_from_config(
+    zkevm_bridge_address = service_package.get_key_from_config(
+        plan, args, "polygonZkEVMBridgeAddress"
+    )
+    zkevm_rollup_manager_address = service_package.get_key_from_config(
         plan, args, "polygonRollupManagerAddress"
     )
-    zkevm_rollup_address = get_key_from_config(plan, args, "rollupAddress")
+    zkevm_rollup_address = service_package.get_key_from_config(
+        plan, args, "rollupAddress"
+    )
     polygon_zkevm_rpc_http_port = zkevm_node_rpc.ports["http-rpc"]
     bridge_api_http_port = bridge_service.ports["bridge-rpc"]
 
@@ -132,10 +149,10 @@ def start_bridge_ui(plan, args, bridge_service):
     )
 
 
-def start_agglayer(plan, args):
+def create_agglayer_service_config(plan, args):
     # Create agglayer config.
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
-    rollup_manager_address = get_key_from_config(
+    rollup_manager_address = service_package.get_key_from_config(
         plan, args, "polygonRollupManagerAddress"
     )
     agglayer_keystore_artifact = plan.store_service_files(
@@ -174,100 +191,29 @@ def start_agglayer(plan, args):
         },
     )
 
-    # Start agglayer service.
-    plan.add_service(
-        name="zkevm-agglayer" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_agglayer_image"],
-            ports={
-                "agglayer": PortSpec(
-                    args["zkevm_agglayer_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
-                ),
-            },
-            files={
-                "/etc/zkevm": Directory(
-                    artifact_names=[
-                        agglayer_config_artifact,
-                        agglayer_keystore_artifact,
-                    ]
-                ),
-            },
-            entrypoint=[
-                "/usr/local/bin/agglayer",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
-        ),
-    )
-
-
-def start_dac(plan, args):
-    # Create DAC config.
-    dac_config_template = read_file(src="./templates/dac-config.toml")
-    rollup_address = get_key_from_config(plan, args, "rollupAddress")
-    polygon_data_committee_address = get_key_from_config(
-        plan, args, "polygonDataCommitteeAddress"
-    )
-    dac_keystore_artifact = plan.store_service_files(
-        name="dac-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dac.keystore",
-    )
-
-    dac_config_artifact = plan.render_templates(
-        name="dac-config-artifact",
-        config={
-            "dac-config.toml": struct(
-                template=dac_config_template,
-                # TODO: Organize those args.
-                data={
-                    "deployment_suffix": args["deployment_suffix"],
-                    "l1_rpc_url": args["l1_rpc_url"],
-                    "l1_ws_url": args["l1_ws_url"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # addresses
-                    "rollup_address": rollup_address,
-                    "polygon_data_committee_address": polygon_data_committee_address,
-                    # dac db
-                    "zkevm_db_dac_hostname": args["zkevm_db_dac_hostname"],
-                    "zkevm_db_dac_name": args["zkevm_db_dac_name"],
-                    "zkevm_db_dac_user": args["zkevm_db_dac_user"],
-                    "zkevm_db_dac_password": args["zkevm_db_dac_password"],
-                    # ports
-                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
-                    "zkevm_dac_port": args["zkevm_dac_port"],
-                },
-            )
+    # Create agglayer service config.
+    agglayer_name = "zkevm-agglayer" + args["deployment_suffix"]
+    agglayer_service_config = ServiceConfig(
+        image=args["zkevm_agglayer_image"],
+        ports={
+            "agglayer": PortSpec(
+                args["zkevm_agglayer_port"], application_protocol="http"
+            ),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
         },
+        files={
+            "/etc/zkevm": Directory(
+                artifact_names=[
+                    agglayer_config_artifact,
+                    agglayer_keystore_artifact,
+                ]
+            ),
+        },
+        entrypoint=[
+            "/usr/local/bin/agglayer",
+        ],
+        cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
     )
-
-    # Start DAC service.
-    plan.add_service(
-        name="zkevm-dac" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["zkevm_dac_image"],
-            ports={
-                "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
-            },
-            files={
-                "/etc/zkevm": Directory(
-                    artifact_names=[dac_config_artifact, dac_keystore_artifact]
-                ),
-            },
-            entrypoint=[
-                "/app/cdk-data-availability",
-            ],
-            cmd=["run", "--cfg", "/etc/zkevm/dac-config.toml"],
-        ),
-    )
-
-
-def get_key_from_config(plan, args, key):
-    return service_package.extract_json_key_from_service(
-        plan,
-        "contracts" + args["deployment_suffix"],
-        "/opt/zkevm/combined.json",
-        key,
-    )
+    return {agglayer_name: agglayer_service_config}
