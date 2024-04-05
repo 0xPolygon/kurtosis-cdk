@@ -9,6 +9,24 @@ NODE_COMPONENT = struct(
 )
 
 
+# The synchronizer is required to run before any other zkevm node component.
+# This is why this component does not have a `create_service_config` method.
+def start_synchronizer(plan, args, config_artifact, genesis_artifact):
+    synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
+    synchronizer_service_config = _create_node_component_service_config(
+        image=args["zkevm_node_image"],
+        ports={
+            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+            "prometheus": PortSpec(
+                args["zkevm_prometheus_port"], application_protocol="http"
+            ),
+        },
+        config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
+        components=NODE_COMPONENT.synchronizer,
+    )
+    plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
+
+
 def _create_node_component_service_config(
     image, ports, config_files, components, http_api={}
 ):
@@ -30,23 +48,6 @@ def _create_node_component_service_config(
         entrypoint=["/app/zkevm-node"],
         cmd=cmd,
     )
-
-
-# The synchronizer is required to run before any other zkevm node component.
-def start_synchronizer(plan, args, config_artifact, genesis_artifact):
-    synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
-    synchronizer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
-        ports={
-            "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
-            "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
-            ),
-        },
-        config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
-        components=NODE_COMPONENT.synchronizer,
-    )
-    plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
 
 
 def create_sequencer_service_config(args, config_artifact, genesis_artifact):
