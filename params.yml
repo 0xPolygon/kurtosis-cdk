@@ -9,7 +9,7 @@ deployment_suffix: "-001"
 zkevm_prover_image: hermeznetwork/zkevm-prover:v5.0.7
 zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.2-cdk
 zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
-zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
+zkevm_agglayer_image: agglayer:local
 zkevm_contracts_branch: v5.0.1-rc.2-fork.8
 zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
 zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
