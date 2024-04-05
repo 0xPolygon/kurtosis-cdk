@@ -4,7 +4,7 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
 def run(plan, args):
-    # Start node datatabase.
+    # Start node databases.
     event_db_init_script = plan.upload_files(
         name="event-db-init.sql" + args["deployment_suffix"],
         src="./templates/databases/event-db-init.sql",
