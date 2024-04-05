@@ -27,7 +27,7 @@ def run(plan, args):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
-    # Start all the zkevm node components.
+    # Get the config and keystores.
     config_template = read_file(src="./templates/trusted-node/node-config.toml")
     config_artifact = plan.render_templates(
         config={"node-config.toml": struct(template=config_template, data=args)},
@@ -49,30 +49,19 @@ def run(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/proofsigner.keystore",
     )
+    keystore_artifacts = struct(
+        sequencer=sequencer_keystore_artifact,
+        aggregator=aggregator_keystore_artifact,
+        proofsigner=proofsigner_keystore_artifact,
+    )
 
-    zkevm_node_package.start_synchronizer(plan, args, config_artifact, genesis_artifact)
-    zkevm_node_package.start_sequencer(plan, args, config_artifact, genesis_artifact)
-    zkevm_node_package.start_sequence_sender(
-        plan, args, config_artifact, genesis_artifact, sequencer_keystore_artifact
+    # Start all the zkevm node components.
+    zkevm_node_components_configs = (
+        zkevm_node_package.create_zkevm_node_components_config(
+            args, config_artifact, genesis_artifact, keystore_artifacts
+        )
     )
-    zkevm_node_package.start_aggregator(
-        plan,
-        args,
-        config_artifact,
-        genesis_artifact,
-        sequencer_keystore_artifact,
-        aggregator_keystore_artifact,
-        proofsigner_keystore_artifact,
-    )
-    zkevm_node_package.start_rpc(plan, args, config_artifact, genesis_artifact)
-    zkevm_node_package.start_eth_tx_manager(
-        plan,
-        args,
-        config_artifact,
-        genesis_artifact,
-        sequencer_keystore_artifact,
-        aggregator_keystore_artifact,
-    )
-    zkevm_node_package.start_l2_gas_pricer(
-        plan, args, config_artifact, genesis_artifact
+    plan.add_services(
+        configs=zkevm_node_components_configs,
+        description="Starting zkevm node components",
     )
