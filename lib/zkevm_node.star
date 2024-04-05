@@ -230,7 +230,7 @@ def create_zkevm_node_components_config(
         args, config_artifact, genesis_artifact
     )
     return (
-        sequence_sender_config
+        sequencer_config
         | sequence_sender_config
         | aggregator_config
         | rpc_config
