@@ -14,8 +14,10 @@ def run(plan, args):
     node_db_configs = zkevm_databases_package.create_node_db_service_configs(
         args, event_db_init_script, prover_db_init_script
     )
-    peripheral_db_configs = zkevm_databases_package.create_node_db_service_configs(
-        args, event_db_init_script, prover_db_init_script
+    peripheral_db_configs = (
+        zkevm_databases_package.create_peripheral_databases_service_configs(
+            args, event_db_init_script, prover_db_init_script
+        )
     )
     plan.add_services(
         configs=node_db_configs | peripheral_db_configs,
