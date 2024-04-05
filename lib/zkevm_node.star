@@ -102,7 +102,7 @@ def create_aggregator_service_config(
     proofsigner_keystore_artifact,
 ):
     aggregator_name = "zkevm-node-aggregator" + args["deployment_suffix"]
-    aggregator_service_config = ServiceConfig(
+    aggregator_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "aggregator": PortSpec(
