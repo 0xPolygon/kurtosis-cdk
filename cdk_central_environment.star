@@ -51,7 +51,7 @@ def run(plan, args):
 
     dac_config_artifact = create_dac_config_artifact(plan, args)
     dac_config = zkevm_dac_package.create_dac_service_config(
-        args, dac_config_artifact, dac_keystore_artifact
+        args, dac_config_artifact, keystore_artifacts.dac
     )
 
     plan.add_services(

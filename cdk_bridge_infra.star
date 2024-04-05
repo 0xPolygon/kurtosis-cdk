@@ -1,5 +1,6 @@
 service_package = import_module("./lib/service.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
+zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 
 
 def run(plan, args):
@@ -11,7 +12,7 @@ def run(plan, args):
         src="/opt/zkevm/claimtxmanager.keystore",
     )
     bridge_config = zkevm_bridge_package.create_bridge_service_config(
-        plan, args, bridge_config, claimtx_keystore_artifact
+        args, bridge_config_artifact, claimtx_keystore_artifact
     )
 
     # Create the agglayer service config.

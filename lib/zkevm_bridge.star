@@ -12,7 +12,7 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
         },
         files={
             "/etc/zkevm": Directory(
-                artifact_names=[bridge_config_artifact, claimtx_keystore_artifact]
+                artifact_names=[config_artifact, claimtx_keystore_artifact]
             ),
         },
         entrypoint=[
