@@ -64,7 +64,7 @@ def create_node_db_service_configs(args, event_db_init_script, prover_db_init_sc
     }
 
 
-def create_peripheral_databases_service_configs(plan, args):
+def create_peripheral_databases_service_configs(args):
     bridge_db_name = args["zkevm_db_bridge_hostname"] + args["deployment_suffix"]
     bridge_db_service_config = _create_postgres_db_service_config(
         port=args["zkevm_db_postgres_port"],
