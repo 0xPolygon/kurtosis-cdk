@@ -1,6 +1,6 @@
 service_package = import_module("./lib/service.star")
-zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
+zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 
 def run(plan, args):
