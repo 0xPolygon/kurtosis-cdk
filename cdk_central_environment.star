@@ -29,16 +29,69 @@ def run(plan, args):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
-    # Create zkevm node config.
+    # Create the zkevm node config.
     node_config_template = read_file(src="./templates/trusted-node/node-config.toml")
     node_config_artifact = plan.render_templates(
         config={"node-config.toml": struct(template=node_config_template, data=args)},
         name="trusted-node-config",
     )
 
-    # Create dac config.
+    # Start the synchronizer.
+    zkevm_node_package.start_synchronizer(
+        plan, args, node_config_artifact, genesis_artifact
+    )
+
+    # Start the rest of the zkevm node components along with the dac.
+    keystore_artifacts = get_keystores_artifacts(plan, args)
+    zkevm_node_components_configs = (
+        zkevm_node_package.create_zkevm_node_components_config(
+            args, node_config_artifact, genesis_artifact, keystore_artifacts
+        )
+    )
+
+    dac_config_artifact = create_dac_config_artifact(plan, args)
+    dac_config = zkevm_dac_package.create_dac_service_config(
+        args, dac_config_artifact, dac_keystore_artifact
+    )
+
+    plan.add_services(
+        configs=zkevm_node_components_configs | dac_config,
+        description="Starting the rest of the zkevm node components",
+    )
+
+
+def get_keystores_artifacts(plan, args):
+    sequencer_keystore_artifact = plan.store_service_files(
+        name="sequencer-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/sequencer.keystore",
+    )
+    aggregator_keystore_artifact = plan.store_service_files(
+        name="aggregator-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/aggregator.keystore",
+    )
+    proofsigner_keystore_artifact = plan.store_service_files(
+        name="proofsigner-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/proofsigner.keystore",
+    )
+    dac_keystore_artifact = plan.store_service_files(
+        name="dac-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/dac.keystore",
+    )
+    return struct(
+        sequencer=sequencer_keystore_artifact,
+        aggregator=aggregator_keystore_artifact,
+        proofsigner=proofsigner_keystore_artifact,
+        dac=dac_keystore_artifact,
+    )
+
+
+def create_dac_config_artifact(plan, args):
     dac_config_template = read_file(src="./templates/dac-config.toml")
-    dac_config_artifact = plan.render_templates(
+    return plan.render_templates(
         name="dac-config-artifact",
         config={
             "dac-config.toml": struct(
@@ -66,50 +119,4 @@ def run(plan, args):
                 },
             )
         },
-    )
-
-    # Get all the keystores.
-    sequencer_keystore_artifact = plan.store_service_files(
-        name="sequencer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sequencer.keystore",
-    )
-    aggregator_keystore_artifact = plan.store_service_files(
-        name="aggregator-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggregator.keystore",
-    )
-    proofsigner_keystore_artifact = plan.store_service_files(
-        name="proofsigner-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/proofsigner.keystore",
-    )
-    dac_keystore_artifact = plan.store_service_files(
-        name="dac-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dac.keystore",
-    )
-    keystore_artifacts = struct(
-        sequencer=sequencer_keystore_artifact,
-        aggregator=aggregator_keystore_artifact,
-        proofsigner=proofsigner_keystore_artifact,
-        dac=dac_keystore_artifact,
-    )
-
-    # Start all the zkevm node components.
-    zkevm_node_package.start_synchronizer(
-        plan, args, node_config_artifact, genesis_artifact
-    )
-
-    zkevm_node_components_configs = (
-        zkevm_node_package.create_zkevm_node_components_config(
-            args, node_config_artifact, genesis_artifact, keystore_artifacts
-        )
-    )
-    dac_config = zkevm_dac_package.create_dac_service_config(
-        args, dac_config_artifact, dac_keystore_artifact
-    )
-    plan.add_services(
-        configs=zkevm_node_components_configs | dac_config,
-        description="Starting the rest of the zkevm node components",
     )
