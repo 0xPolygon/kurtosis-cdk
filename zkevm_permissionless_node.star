@@ -13,11 +13,11 @@ def run(plan, args):
         name="executor-db-init.sql" + args["deployment_suffix"],
         src="./templates/databases/prover-db-init.sql",
     )
-    node_db_service_configs = zkevm_databases_package.create_node_db_service_configs(
+    node_db_configs = zkevm_databases_package.create_node_db_service_configs(
         args, event_db_init_script, executor_db_init_script
     )
     plan.add_services(
-        configs=node_db_service_configs,
+        configs=node_db_configs,
         description="Starting node databases",
     )
 
