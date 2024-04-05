@@ -1,5 +1,23 @@
 * Polygon CDK Kurtosis Package
 
+A [[https://github.com/kurtosis-tech/kurtosis][Kurtosis]] package that deploys a private, portable, and modular Polygon CDK devnet.
+
+** Table of Contents
+
+- [[#For Users]]
+  - [[#Deploy the CDK Stack]]
+  - [[#Set Up a Permissionless Node]]
+  - [[#Troubleshooting: Mac users]]
+- [[#For Developers]]
+  - [[#Break Down the Deployment Into Stages]]
+  - [[#ZkEVM Contracts Caching Solution]]
+- [[#License]]
+- [[#Contribution]]
+
+** For Users
+
+*** Deploy the CDK stack
+
 [[file:docs/architecture.png]]
 
 To get started you'll want to get everything [[https://docs.kurtosis.com/install/][installed]]. Once that's
@@ -7,7 +25,7 @@ good and installed on your system, you can ~cd~ into this directory
 and run:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 #+end_src
 
 This command will take a few minutes but will basically run an entire
@@ -101,7 +119,7 @@ which stopps everything and deletes it.
 kurtosis clean -a
 #+end_src
 
-** Permissionless Node
+*** Set Up a Permissionless Node
 
 In addition to the core stack, you can also attach and synchronize a
 permissionless node. Of course, you'll need the CDK stack running from
@@ -122,7 +140,7 @@ node to the ~cdk-v1~ enclave:
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
 
-*** Remote Permissionless Testing
+**** Remote Permissionless Testing
 
 You can use the permissionless package to sync data from a production
 network as well. First you'll need to get the genesis file and it
@@ -157,8 +175,30 @@ synchronizing with ths command:
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
 
+*** Troubleshooting: Mac users
+
+First, ensure that you have [[https://docs.docker.com/desktop/install/mac-install/][Docker Engine]] installed, with a version equal to or higher than 4.27. This is necessary for running the zk Prover on a Mac.
+
+Second, make sure you can access containers using their private IPs. To check that, run the following commands:
+
+#+begin_src bash
+docker run --rm --name nginx -d nginx
+curl -m 1 -I $(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')
+#+end_src
+
+If the last command fails, then it means you need to set up [[https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation][docker-mac-net-connect]].
+
+#+begin_quote
+Unlike Docker on Linux, Docker-for-Mac does not expose container networks directly on the macOS host.
+Docker-for-Mac works by running a Linux VM under the hood (using hyperkit) and creates containers within that VM.
+Docker-for-Mac supports connecting to containers over Layer 4 (port binding), but not Layer 3 (by IP address).
+#+end_quote
+
+Once installed, you may need to [[https://docs.docker.com/desktop/uninstall/][uninstall]] and [[https://docs.docker.com/desktop/install/mac-install/][reinstall]] Docker Engine.
 
 ** For Developers
+
+*** Break Down the Deployment Into Stages
 
 Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately.
 
@@ -193,7 +233,7 @@ yq -Yi '.deploy_l1 = false' params.yml # reset
 
 # Deploy ZkEVM Contracts on L1
 yq -Yi '.deploy_zkevm_contracts_on_l1 = true' params.yml
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 yq -Yi '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 # Perform additional tasks...
 
@@ -221,26 +261,23 @@ kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_zkevm_permissionless_node = false' params.yml # reset
 #+end_src
 
-** Troubleshooting: Mac users
+*** ZkEVM Contracts Caching Solution
 
-First, ensure that you have [[https://docs.docker.com/desktop/install/mac-install/][Docker Engine]] installed, with a version equal to or higher than 4.27. This is necessary for running the zk Prover on a Mac.
+We manually build zkevm contracts images to make the deployment of the Kurtosis package as fast as possible.
 
-Second, make sure you can access containers using their private IPs. To check that, run the following commands:
+Indeed, most of the deployment time is spent downloading npm dependencies and compiling the zkevm contracts.
+
+We maintain a list of images at [[https://hub.docker.com/r/leovct/zkevm-contracts][leovct/zkevm-contracts]] for fork ids 6, 7, 8 and 9.
+
+If you wish to use a custom image, you can build your own using the /Dockerfile/. All you need to modify is the /zkevm_contracts_image/ field in /params.yml/.
+
+You can follow the steps and manually build and push the different zkevm contract images to your preferred registry, or you can simply trigger this [[https://github.com/leovct/zkevm-contracts/actions/workflows/build-zkevm-contracts-images.yml][workflow]].
 
 #+begin_src bash
-docker run --rm --name nginx -d nginx
-curl -m 1 -I $(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')
+docker login
+docker buildx create --name container --driver=docker-container
+./docs/zkevm-contracts-images-builder.sh $USER
 #+end_src
-
-If the last command fails, then it means you need to set up [[https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation][docker-mac-net-connect]].
-
-#+begin_quote
-Unlike Docker on Linux, Docker-for-Mac does not expose container networks directly on the macOS host.
-Docker-for-Mac works by running a Linux VM under the hood (using hyperkit) and creates containers within that VM.
-Docker-for-Mac supports connecting to containers over Layer 4 (port binding), but not Layer 3 (by IP address).
-#+end_quote
-
-Once installed, you may need to [[https://docs.docker.com/desktop/uninstall/][uninstall]] and [[https://docs.docker.com/desktop/install/mac-install/][reinstall]] Docker Engine.
 
 ** License
 
@@ -255,7 +292,7 @@ at your option.
 
 The SPDX license identifier for this project is ~MIT OR Apache-2.0~.
 
-*** Contribution
+** Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the

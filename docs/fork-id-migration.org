@@ -46,7 +46,6 @@ index c2dd446..4caf2d0 100644
  # a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
 -zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
 +zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
- zkevm_contracts_repo: https://github.com/0xPolygonHermez/zkevm-contracts.git
 -zkevm_rollup_fork_id: 9
 +zkevm_rollup_fork_id: 7
  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
@@ -56,7 +55,7 @@ index c2dd446..4caf2d0 100644
 After making those changes we should be able to kick off a full redeployment:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 #+end_src
 
 After running this command, let's confirm onchain that this is running
@@ -265,7 +264,7 @@ sure to remove the ~HaltOnBatchNumber~ setting that we added earlier
 in the process
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 #+end_src
 
 At this point, the core services are running and if everything went

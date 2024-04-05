@@ -27,7 +27,7 @@ After setting the ~zkevm_use_gas_token_contract~, you should be all
 set to run Kurtosis.
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 #+end_src
 
 This will take a few minutes as the full set of contracts will be

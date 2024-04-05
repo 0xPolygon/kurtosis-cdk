@@ -16,34 +16,19 @@ if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
     exit
 fi
 
-2>&1 echo "Installing dependencies"
-apt update
-apt-get -y install jq yq
-curl -s -L https://foundry.paradigm.xyz | bash
-# shellcheck disable=SC1091
-source /root/.bashrc
-foundryup &> /dev/null
-
-# Detect the CPU architecture and get the right version of polycli
-cpu_arch="{{.cpu_arch}}"
-if [[ "$cpu_arch" == "aarch64" ]]; then
-    cpu_arch="arm64"
-elif [[ "$cpu_arch" == "x86_64" ]]; then
-    cpu_arch="amd64"
-fi
-pushd /opt || exit 1
-wget "https://github.com/maticnetwork/polygon-cli/releases/download/{{.polycli_version}}/polycli_{{.polycli_version}}_linux_$cpu_arch.tar.gz"
-tar xzf "polycli_{{.polycli_version}}_linux_$cpu_arch.tar.gz"
-cp "polycli_{{.polycli_version}}_linux_$cpu_arch" /usr/local/bin/polycli
+# Check that tools are available
+jq --version
+yq --version
+cast --version
+forge --version
 polycli version
-popd
 
 2>&1 echo "Funding important accounts on l1"
 
 # FIXME this look might never finish.. Add a counter
 until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}"; do
-     2>&1 echo "l1 rpc might nto be ready"
-     sleep 5
+    2>&1 echo "L1 rpc might not be ready"
+    sleep 5
 done
 
 # In the overall CDK setup, these 4 addresses need to be funded with ETH: sequencer, admin, agglayer, and potentially the aggregator
@@ -57,13 +42,8 @@ cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 
 pushd /opt/zkevm-contracts || exit 1
-2>&1 echo "Compiling contracts"
-
 # We're going to replace the localhost RPC with the url of our L1
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
-
-npm i
-npx hardhat compile
 
 # shellcheck disable=SC1054,SC1083
 {{if .zkevm_use_gas_token_contract}}
