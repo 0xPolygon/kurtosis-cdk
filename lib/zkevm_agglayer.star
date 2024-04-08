@@ -19,7 +19,7 @@ def create_agglayer_service_config(args, config_artifact, agglayer_keystore_arti
             ),
         },
         entrypoint=[
-            "/usr/local/bin/agglayer",
+            "/app/agglayer",
         ],
         cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
     )
