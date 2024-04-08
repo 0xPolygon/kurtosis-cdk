@@ -91,6 +91,7 @@ def get_keystores_artifacts(plan, args):
 
 def create_dac_config_artifact(plan, args):
     dac_config_template = read_file(src="./templates/dac-config.toml")
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(
         name="dac-config-artifact",
         config={
@@ -101,13 +102,6 @@ def create_dac_config_artifact(plan, args):
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # addresses
-                    "rollup_address": service_package.get_key_from_config(
-                        plan, args, "rollupAddress"
-                    ),
-                    "polygon_data_committee_address": service_package.get_key_from_config(
-                        plan, args, "polygonDataCommitteeAddress"
-                    ),
                     # dac db
                     "zkevm_db_dac_hostname": args["zkevm_db_dac_hostname"],
                     "zkevm_db_dac_name": args["zkevm_db_dac_name"],
@@ -116,7 +110,8 @@ def create_dac_config_artifact(plan, args):
                     # ports
                     "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
                     "zkevm_dac_port": args["zkevm_dac_port"],
-                },
+                }
+                | contract_setup_addresses,
             )
         },
     )

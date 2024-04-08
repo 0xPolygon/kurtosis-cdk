@@ -10,6 +10,7 @@ bridge_package = import_module("./cdk_bridge_infra.star")
 def start_panoptichain(plan, args):
     # Create the panoptichain config.
     panoptichain_config_template = read_file(src="./templates/panoptichain-config.yml")
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     panoptichain_config_artifact = plan.render_templates(
         name="panoptichain-config",
         config={
@@ -20,28 +21,8 @@ def start_panoptichain(plan, args):
                     "zkevm_rpc_url": args["zkevm_rpc_url"],
                     "l1_chain_id": args["l1_chain_id"],
                     "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],
-                    "zkevm_bridge_address": service_package.get_key_from_config(
-                        plan, args, "polygonZkEVMBridgeAddress"
-                    ),
-                    "polygon_zkevm_address": service_package.get_key_from_config(
-                        plan, args, "rollupAddress"
-                    ),
-                    "rollup_manager_address": service_package.get_key_from_config(
-                        plan, args, "polygonRollupManagerAddress"
-                    ),
-                    "global_exit_root_address": service_package.get_key_from_config(
-                        plan, args, "polygonZkEVMGlobalExitRootAddress"
-                    ),
-                    "global_exit_root_l2_address": service_package.extract_json_key_from_service(
-                        plan,
-                        "contracts" + args["deployment_suffix"],
-                        "/opt/zkevm/genesis.json",
-                        'genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address',
-                    ),
-                    "pol_token_address": service_package.get_key_from_config(
-                        plan, args, "polTokenAddress"
-                    ),
-                },
+                }
+                | contract_setup_addresses,
             )
         },
     )
