@@ -4,7 +4,7 @@ set -e
 # Define minimum versions required to run the Kurtosis CDK packages.
 MINIMUM_KURTOSIS_VERSION_REQUIRED=0.88.9
 MINIMUM_DOCKER_VERSION_REQUIRED=24.7
-MINIMUM_YQ_MAJOR_VERSION_REQUIRED=4
+MINIMUM_YQ_MAJOR_VERSION_REQUIRED=3
 
 ensure_tool_installed() {
     tool="$1"
