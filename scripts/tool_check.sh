@@ -4,7 +4,7 @@ set -e
 # Define minimum versions required to run the Kurtosis CDK packages.
 MINIMUM_KURTOSIS_VERSION_REQUIRED=0.88.9
 MINIMUM_DOCKER_VERSION_REQUIRED=24.7
-MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED=3
+MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED=3.x
 
 ensure_tool_installed() {
     tool="$1"
@@ -71,9 +71,11 @@ check_jq_version() {
 check_yq_version() {
     ensure_tool_installed "yq" "https://pypi.org/project/yq/"
 
+    maximum_yq_major_version_supported="$(echo "$MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED" | cut -d '.' -f 1)"
+
     yq_version="$(yq --version | cut -d ' ' -f 2)"
     major_yq_version="$(echo "$yq_version" | cut -d '.' -f 1)"
-    if [ "$major_yq_version" -le "$MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED" ]; then
+    if [ "$major_yq_version" -le "$maximum_yq_major_version_supported" ]; then
         echo "✅ yq $yq_version is installed, meets the requirement (<=$MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED)"
     else
         echo "❌ yq $yq_version is installed, but version $MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED or higher is not supported"
