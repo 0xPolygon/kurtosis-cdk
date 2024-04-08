@@ -51,10 +51,10 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 forge build
 forge create --json \
-      --rpc-url "{{.l1_rpc_url}}" \
-      --mnemonic "{{.l1_preallocated_mnemonic}}" \
-      contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-      --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
+    --rpc-url "{{.l1_rpc_url}}" \
+    --mnemonic "{{.l1_preallocated_mnemonic}}" \
+    contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
+    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
 
 # In this case, we'll configure the create rollup parameters to have a gas token
 jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
@@ -83,6 +83,10 @@ pushd /opt/zkevm/ || exit 1
 cp genesis.json genesis.original.json
 
 jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
+
+# Add the L2 GER Proxy address in combined.json (for panoptichain).
+zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
+jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
 # There are a bunch of fields that need to be renamed in order for the
 # older fork7 code to be compatible with some of the fork8
@@ -117,8 +121,8 @@ cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url
 # configurable. If we add more nodes, we'll need to make sure the urls
 # and keys are sorted.
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
-        'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
-        1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+    'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
+    1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
 # The DAC needs to be enabled with a call to set the DA protocol
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"

@@ -4,8 +4,12 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 
 def run(plan, args):
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+
     # Create the bridge service config.
-    bridge_config_artifact = create_bridge_config_artifact(plan, args)
+    bridge_config_artifact = create_bridge_config_artifact(
+        plan, args, contract_setup_addresses
+    )
     claimtx_keystore_artifact = plan.store_service_files(
         name="claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -16,7 +20,9 @@ def run(plan, args):
     )
 
     # Create the agglayer service config.
-    agglayer_config_artifact = create_agglayer_config_artifact(plan, args)
+    agglayer_config_artifact = create_agglayer_config_artifact(
+        plan, args, contract_setup_addresses
+    )
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -43,38 +49,17 @@ def run(plan, args):
         zkevm_rpc_http_port=zkevm_node_rpc.ports["http-rpc"],
         bridge_service_ip_address=bridge_service.ip_address,
         bridge_api_http_port=bridge_service.ports["bridge-rpc"],
-        zkevm_bridge_address=service_package.get_key_from_config(
-            plan, args, "polygonZkEVMBridgeAddress"
-        ),
-        zkevm_rollup_address=service_package.get_key_from_config(
-            plan, args, "rollupAddress"
-        ),
-        zkevm_rollup_manager_address=service_package.get_key_from_config(
-            plan, args, "polygonRollupManagerAddress"
-        ),
+        zkevm_bridge_address=contract_setup_addresses["zkevm_bridge_address"],
+        zkevm_rollup_address=contract_setup_addresses["zkevm_rollup_address"],
+        zkevm_rollup_manager_address=contract_setup_addresses[
+            "zkevm_rollup_manager_address"
+        ],
     )
     zkevm_bridge_package.start_bridge_ui(plan, args, config)
 
 
-def create_bridge_config_artifact(plan, args):
+def create_bridge_config_artifact(plan, args, contract_setup_addresses):
     bridge_config_template = read_file(src="./templates/bridge-config.toml")
-
-    rollup_manager_block_number = service_package.get_key_from_config(
-        plan, args, "deploymentRollupManagerBlockNumber"
-    )
-    zkevm_global_exit_root_address = service_package.get_key_from_config(
-        plan, args, "polygonZkEVMGlobalExitRootAddress"
-    )
-    zkevm_bridge_address = service_package.get_key_from_config(
-        plan, args, "polygonZkEVMBridgeAddress"
-    )
-    zkevm_rollup_manager_address = service_package.get_key_from_config(
-        plan, args, "polygonRollupManagerAddress"
-    )
-    zkevm_rollup_address = service_package.get_key_from_config(
-        plan, args, "rollupAddress"
-    )
-
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -84,12 +69,6 @@ def create_bridge_config_artifact(plan, args):
                     "deployment_suffix": args["deployment_suffix"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # addresses
-                    "rollup_manager_block_number": rollup_manager_block_number,
-                    "zkevm_bridge_address": zkevm_bridge_address,
-                    "zkevm_global_exit_root_address": zkevm_global_exit_root_address,
-                    "zkevm_rollup_manager_address": zkevm_rollup_manager_address,
-                    "zkevm_rollup_address": zkevm_rollup_address,
                     # bridge db
                     "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
                     "zkevm_db_bridge_name": args["zkevm_db_bridge_name"],
@@ -100,17 +79,15 @@ def create_bridge_config_artifact(plan, args):
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
                     "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                },
+                }
+                | contract_setup_addresses,
             )
         },
     )
 
 
-def create_agglayer_config_artifact(plan, args):
+def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
     agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
-    rollup_manager_address = service_package.get_key_from_config(
-        plan, args, "polygonRollupManagerAddress"
-    )
     return plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -122,8 +99,6 @@ def create_agglayer_config_artifact(plan, args):
                     "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # addresses
-                    "rollup_manager_address": rollup_manager_address,
                     "zkevm_l2_proofsigner_address": args[
                         "zkevm_l2_proofsigner_address"
                     ],
@@ -137,7 +112,8 @@ def create_agglayer_config_artifact(plan, args):
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_agglayer_port": args["zkevm_agglayer_port"],
                     "zkevm_prometheus_port": args["zkevm_prometheus_port"],
-                },
+                }
+                | contract_setup_addresses,
             )
         },
     )

@@ -88,23 +88,23 @@ providers:
       url: "{{.l1_rpc_url}}"
       label: "L1"
       contracts:
-        rollup_manager_address: "{{.rollup_manager_address}}"
+        rollup_manager_address: "{{.zkevm_rollup_manager_address}}"
         pol_token_address: "{{.pol_token_address}}"
         global_exit_root:
           version: 2
-          address: "{{.global_exit_root_address}}"
+          address: "{{.zkevm_global_exit_root_address}}"
         zkevm_bridge:
           version: 2
           address: "{{.zkevm_bridge_address}}"
         zkevm_contract:
           version: 2
-          address: "{{.polygon_zkevm_address}}"
+          address: "{{.zkevm_rollup_address}}"
 
     - name: "L2"
       url: "{{.zkevm_rpc_url}}"
       label: "L2"
       contracts:
-        global_exit_root_l2_address: "{{.global_exit_root_l2_address}}"
+        global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
         zkevm_bridge:
           version: 2
           address: "{{.zkevm_bridge_address}}"
