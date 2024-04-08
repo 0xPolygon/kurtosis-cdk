@@ -2,8 +2,9 @@ prometheus_package = import_module(
     "github.com/kurtosis-tech/prometheus-package/main.star"
 )
 grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
-bridge_package = import_module("./cdk_bridge_infra.star")
+
 service_package = import_module("./lib/service.star")
+bridge_package = import_module("./cdk_bridge_infra.star")
 
 
 def start_panoptichain(plan, args):
@@ -19,16 +20,16 @@ def start_panoptichain(plan, args):
                     "zkevm_rpc_url": args["zkevm_rpc_url"],
                     "l1_chain_id": args["l1_chain_id"],
                     "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],
-                    "zkevm_bridge_address": bridge_package.get_key_from_config(
+                    "zkevm_bridge_address": service_package.get_key_from_config(
                         plan, args, "polygonZkEVMBridgeAddress"
                     ),
-                    "polygon_zkevm_address": bridge_package.get_key_from_config(
+                    "polygon_zkevm_address": service_package.get_key_from_config(
                         plan, args, "rollupAddress"
                     ),
-                    "rollup_manager_address": bridge_package.get_key_from_config(
+                    "rollup_manager_address": service_package.get_key_from_config(
                         plan, args, "polygonRollupManagerAddress"
                     ),
-                    "global_exit_root_address": bridge_package.get_key_from_config(
+                    "global_exit_root_address": service_package.get_key_from_config(
                         plan, args, "polygonZkEVMGlobalExitRootAddress"
                     ),
                     "global_exit_root_l2_address": service_package.extract_json_key_from_service(
@@ -37,7 +38,7 @@ def start_panoptichain(plan, args):
                         "/opt/zkevm/genesis.json",
                         'genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address',
                     ),
-                    "pol_token_address": bridge_package.get_key_from_config(
+                    "pol_token_address": service_package.get_key_from_config(
                         plan, args, "polTokenAddress"
                     ),
                 },
@@ -49,7 +50,7 @@ def start_panoptichain(plan, args):
     return plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="minhdvu/panoptichain",
+            image=args["panoptichain_image"],
             ports={
                 "prometheus": PortSpec(9090, application_protocol="http"),
             },

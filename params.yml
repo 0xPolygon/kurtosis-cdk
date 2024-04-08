@@ -41,8 +41,9 @@ zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
 zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
 zkevm_agglayer_image: 0xpolygon/agglayer:0.1.1
-zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2-cdk.1
+zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
 zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:multi-network
+panoptichain_image: minhdvu/panoptichain
 
 # Port configuration.
 zkevm_hash_db_port: 50061

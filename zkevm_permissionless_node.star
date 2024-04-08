@@ -13,8 +13,12 @@ def run(plan, args):
         name="executor-db-init.sql" + args["deployment_suffix"],
         src="./templates/databases/prover-db-init.sql",
     )
-    zkevm_databases_package.start_node_databases(
-        plan, args, event_db_init_script, executor_db_init_script
+    node_db_configs = zkevm_databases_package.create_node_db_service_configs(
+        args, event_db_init_script, executor_db_init_script
+    )
+    plan.add_services(
+        configs=node_db_configs,
+        description="Starting node databases",
     )
 
     # Start executor.
@@ -53,4 +57,11 @@ def run(plan, args):
     zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
-    zkevm_node_package.start_rpc(plan, args, node_config_artifact, genesis_artifact)
+
+    rpc_config = zkevm_node_package.create_rpc_service_config(
+        args, node_config_artifact, genesis_artifact
+    )
+    plan.add_services(
+        configs=rpc_config,
+        description="Starting zkevm node rpc",
+    )
