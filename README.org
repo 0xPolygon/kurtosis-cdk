@@ -25,7 +25,7 @@ To get started you'll need to install [[https://docs.kurtosis.com/install/][Kurt
 You will also need a few other tools. Run this script to check you have the required versions.
 
 #+begin_src bash
-./scripts/tool_check.sh
+curl -s https://raw.githubusercontent.com/0xPolygon/kurtosis-cdk/main/scripts/tool_check.sh | bash
 #+end_src
 
 Once that's good and installed on your system, you can ~cd~ into this directory and run:
