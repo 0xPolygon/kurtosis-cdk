@@ -7,7 +7,7 @@ A [[https://github.com/kurtosis-tech/kurtosis][Kurtosis]] package that deploys a
 - [[#for-users][For Users]]
   - [[#deploy-the-cdk-stack][Deploy the CDK Stack]]
   - [[#set-up-a-permissionless-node][Set Up a Permissionless Node]]
-  - [[#troubleshooting-for-mac-users][Troubleshooting: Mac users]]
+  - [[#troubleshooting-for-mac-users][Troubleshooting: Mac Users]]
 - [[#for-developers][For Developers]]
   - [[#break-down-the-deployment-into-stages][Break Down the Deployment Into Stages]]
   - [[#zkevm-contracts-caching-solution][ZkEVM Contracts Caching Solution]]
@@ -175,26 +175,67 @@ synchronizing with ths command:
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
 
-*** Troubleshooting for Mac users
+*** Troubleshooting for Mac Users
 
-First, ensure that you have [[https://docs.docker.com/desktop/install/mac-install/][Docker Engine]] installed, with a version equal to or higher than 4.27. This is necessary for running the zk Prover on a Mac.
+Are you looking to run our Kurtosis CDK package on macOS? You are in the right place!
 
-Second, make sure you can access containers using their private IPs. To check that, run the following commands:
+Running Docker on macOS differs slightly from Docker on Linux. One key distinction is that Docker on macOS doesn't directly expose container networks to the host system. Consequently, accessing containers via their private IPs isn't possible by default.
+
+This is a problem because our Kurtosis package requires this functionality to run smoothly... But don't worry! We have a solution that will transform your Mac so that it works like magic!
+
+*Step 1*: Set up [[https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation][docker-mac-net-connect]] to address this precise issue.
+
+To begin, install `docker-mac-net-connect`.
+
+#+begin_src bash
+brew install chipmk/tap/docker-mac-net-connect
+#+end_src
+
+Next, start the service and configure it to launch on boot.
+
+#+begin_src bash
+sudo brew services start chipmk/tap/docker-mac-net-connect
+#+end_src
+
+*Step 2*: [[https://docs.docker.com/desktop/uninstall/][Uninstall]] your current Docker Engine version.
+
+#+begin_src bash
+/Applications/Docker.app/Contents/MacOS/uninstall
+#+end_src
+
+*Step 3*: [[https://docs.docker.com/desktop/install/mac-install/][Install]] the latest Docker Engine version.
+
+Ensure to install version 4.27 or higher. This version is necessary for running the zkEVM Prover on macOS.
+
+*Step 4*: Check that you can access containers using their private IPs.
+
+Start a dummy `nginx` container.
 
 #+begin_src bash
 docker run --rm --name nginx -d nginx
+#+end_src
+
+Access the container using its private IP.
+
+#+begin_src bash
 curl -m 1 -I $(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')
 #+end_src
 
-If the last command fails, then it means you need to set up [[https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation][docker-mac-net-connect]].
+You should receive a response similar to the following.
 
-#+begin_quote
-Unlike Docker on Linux, Docker-for-Mac does not expose container networks directly on the macOS host.
-Docker-for-Mac works by running a Linux VM under the hood (using hyperkit) and creates containers within that VM.
-Docker-for-Mac supports connecting to containers over Layer 4 (port binding), but not Layer 3 (by IP address).
-#+end_quote
+#+begin_src bash
+HTTP/1.1 200 OK
+Server: nginx/1.25.4
+Date: Mon, 08 Apr 2024 08:11:30 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Wed, 14 Feb 2024 16:03:00 GMT
+Connection: keep-alive
+ETag: "65cce434-267"
+Accept-Ranges: bytes
+#+end_src
 
-Once installed, you may need to [[https://docs.docker.com/desktop/uninstall/][uninstall]] and [[https://docs.docker.com/desktop/install/mac-install/][reinstall]] Docker Engine.
+With these steps completed, your macOS environment is now ready to seamlessly run our Kurtosis CDK package. Happy coding!
 
 ** For Developers
 
