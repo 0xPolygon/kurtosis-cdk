@@ -62,7 +62,6 @@ def run(plan, args):
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
         cdk_central_environment_package.run(plan, central_environment_args)
-        cdk_bridge_infra_package.start_dac(plan, args)
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 

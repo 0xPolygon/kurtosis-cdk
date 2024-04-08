@@ -2,7 +2,7 @@ zkevm_databases_package = import_module("./lib/zkevm_databases.star")
 
 
 def run(plan, args):
-    # Start zkevm node databases.
+    # Start node and peripheral databases.
     event_db_init_script = plan.upload_files(
         name="event-db-init.sql" + args["deployment_suffix"],
         src="./templates/databases/event-db-init.sql",
@@ -11,9 +11,13 @@ def run(plan, args):
         name="prover-db-init.sql" + args["deployment_suffix"],
         src="./templates/databases/prover-db-init.sql",
     )
-    zkevm_databases_package.start_node_databases(
-        plan, args, event_db_init_script, prover_db_init_script
+    node_db_configs = zkevm_databases_package.create_node_db_service_configs(
+        args, event_db_init_script, prover_db_init_script
     )
-
-    # Start cdk peripheral databases.
-    zkevm_databases_package.start_peripheral_databases(plan, args)
+    peripheral_db_configs = (
+        zkevm_databases_package.create_peripheral_databases_service_configs(args)
+    )
+    plan.add_services(
+        configs=node_db_configs | peripheral_db_configs,
+        description="Starting node and peripheral databases",
+    )

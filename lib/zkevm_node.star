@@ -9,8 +9,8 @@ NODE_COMPONENT = struct(
 )
 
 
-def _start_node_component(
-    plan, name, image, ports, config_files, components, http_api={}
+def _create_node_component_service_config(
+    image, ports, config_files, components, http_api={}
 ):
     cmd = [
         "run",
@@ -21,24 +21,22 @@ def _start_node_component(
     ]
     if http_api:
         cmd.append("--http.api=" + http_api)
-    return plan.add_service(
-        name=name,
-        config=ServiceConfig(
-            image=image,
-            ports=ports,
-            files={
-                "/etc/zkevm": config_files,
-            },
-            entrypoint=["/app/zkevm-node"],
-            cmd=cmd,
-        ),
+    return ServiceConfig(
+        image=image,
+        ports=ports,
+        files={
+            "/etc/zkevm": config_files,
+        },
+        entrypoint=["/app/zkevm-node"],
+        cmd=cmd,
     )
 
 
+# The synchronizer is required to run before any other zkevm node component.
+# This is why this component does not have a `create_service_config` method.
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-synchronizer" + args["deployment_suffix"],
+    synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
+    synchronizer_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
@@ -49,12 +47,12 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.synchronizer,
     )
+    plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
 
 
-def start_sequencer(plan, args, config_artifact, genesis_artifact):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-sequencer" + args["deployment_suffix"],
+def create_sequencer_service_config(args, config_artifact, genesis_artifact):
+    sequencer_name = "zkevm-node-sequencer" + args["deployment_suffix"]
+    sequencer_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
@@ -70,18 +68,14 @@ def start_sequencer(plan, args, config_artifact, genesis_artifact):
         components=NODE_COMPONENT.sequencer + "," + NODE_COMPONENT.rpc,
         http_api="eth,net,debug,zkevm,txpool,web3",
     )
+    return {sequencer_name: sequencer_service_config}
 
 
-def start_sequence_sender(
-    plan,
-    args,
-    config_artifact,
-    genesis_artifact,
-    sequencer_keystore_artifact,
+def create_sequence_sender_service_config(
+    args, config_artifact, genesis_artifact, sequencer_keystore_artifact
 ):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-sequence-sender" + args["deployment_suffix"],
+    sequence_sender_name = "zkevm-node-sequence-sender" + args["deployment_suffix"]
+    sequence_sender_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
@@ -98,10 +92,10 @@ def start_sequence_sender(
         ),
         components=NODE_COMPONENT.sequence_sender,
     )
+    return {sequence_sender_name: sequence_sender_service_config}
 
 
-def start_aggregator(
-    plan,
+def create_aggregator_service_config(
     args,
     config_artifact,
     genesis_artifact,
@@ -109,9 +103,8 @@ def start_aggregator(
     aggregator_keystore_artifact,
     proofsigner_keystore_artifact,
 ):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-aggregator" + args["deployment_suffix"],
+    aggregator_name = "zkevm-node-aggregator" + args["deployment_suffix"]
+    aggregator_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "aggregator": PortSpec(
@@ -133,12 +126,12 @@ def start_aggregator(
         ),
         components=NODE_COMPONENT.aggregator,
     )
+    return {aggregator_name: aggregator_service_config}
 
 
-def start_rpc(plan, args, config_artifact, genesis_artifact):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-rpc" + args["deployment_suffix"],
+def create_rpc_service_config(args, config_artifact, genesis_artifact):
+    rpc_name = "zkevm-node-rpc" + args["deployment_suffix"]
+    rpc_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "http-rpc": PortSpec(
@@ -154,19 +147,18 @@ def start_rpc(plan, args, config_artifact, genesis_artifact):
         components=NODE_COMPONENT.rpc,
         http_api="eth,net,debug,zkevm,txpool,web3",
     )
+    return {rpc_name: rpc_service_config}
 
 
-def start_eth_tx_manager(
-    plan,
+def create_eth_tx_manager_service_config(
     args,
     config_artifact,
     genesis_artifact,
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
 ):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-eth-tx-manager" + args["deployment_suffix"],
+    eth_tx_manager_name = "zkevm-node-eth-tx-manager" + args["deployment_suffix"]
+    eth_tx_manager_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
@@ -184,12 +176,12 @@ def start_eth_tx_manager(
         ),
         components=NODE_COMPONENT.eth_tx_manager,
     )
+    return {eth_tx_manager_name: eth_tx_manager_service_config}
 
 
-def start_l2_gas_pricer(plan, args, config_artifact, genesis_artifact):
-    return _start_node_component(
-        plan,
-        name="zkevm-node-l2-gas-pricer" + args["deployment_suffix"],
+def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact):
+    l2_gas_pricer_name = "zkevm-node-l2-gas-pricer" + args["deployment_suffix"]
+    l2_gas_pricer_service_config = _create_node_component_service_config(
         image=args["zkevm_node_image"],
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
@@ -199,4 +191,49 @@ def start_l2_gas_pricer(plan, args, config_artifact, genesis_artifact):
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENT.l2_gas_pricer,
+    )
+    return {l2_gas_pricer_name: l2_gas_pricer_service_config}
+
+
+def create_zkevm_node_components_config(
+    args,
+    config_artifact,
+    genesis_artifact,
+    keystore_artifacts,
+):
+    sequencer_config = create_sequencer_service_config(
+        args, config_artifact, genesis_artifact
+    )
+    sequence_sender_config = create_sequence_sender_service_config(
+        args,
+        config_artifact,
+        genesis_artifact,
+        keystore_artifacts.sequencer,
+    )
+    aggregator_config = create_aggregator_service_config(
+        args,
+        config_artifact,
+        genesis_artifact,
+        keystore_artifacts.sequencer,
+        keystore_artifacts.aggregator,
+        keystore_artifacts.proofsigner,
+    )
+    rpc_config = create_rpc_service_config(args, config_artifact, genesis_artifact)
+    eth_tx_manager_config = create_eth_tx_manager_service_config(
+        args,
+        config_artifact,
+        genesis_artifact,
+        keystore_artifacts.sequencer,
+        keystore_artifacts.aggregator,
+    )
+    l2_gas_pricer_config = create_l2_gas_pricer_service_config(
+        args, config_artifact, genesis_artifact
+    )
+    return (
+        sequencer_config
+        | sequence_sender_config
+        | aggregator_config
+        | rpc_config
+        | eth_tx_manager_config
+        | l2_gas_pricer_config
     )
