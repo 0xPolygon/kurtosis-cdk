@@ -20,9 +20,15 @@ A [[https://github.com/kurtosis-tech/kurtosis][Kurtosis]] package that deploys a
 
 [[file:docs/architecture.png]]
 
-To get started you'll want to get everything [[https://docs.kurtosis.com/install/][installed]]. Once that's
-good and installed on your system, you can ~cd~ into this directory
-and run:
+To get started you'll need to install [[https://docs.kurtosis.com/install/][Kurtosis]].
+
+You will also need a few other tools. Run this script to check you have the required versions.
+
+#+begin_src bash
+curl -s https://raw.githubusercontent.com/0xPolygon/kurtosis-cdk/main/scripts/tool_check.sh | bash
+#+end_src
+
+Once that's good and installed on your system, you can ~cd~ into this directory and run:
 
 #+begin_src bash
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
