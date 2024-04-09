@@ -1,0 +1,18 @@
+diff --git a/ethereum.star b/ethereum.star
+index 1fe5f39..4f2e361 100644
+--- a/ethereum.star
++++ b/ethereum.star
+@@ -14,6 +14,13 @@ def run(plan, args):
+                     "l1_preallocated_mnemonic"
+                 ],
+             },
++            "participants": [
++                {
++                    "el_type": "geth",
++                    "cl_type": "lighthouse",
++                    "count": 3,
++                }
++            ],
+             "additional_services": [],
+         },
+     )
