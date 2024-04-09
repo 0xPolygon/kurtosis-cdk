@@ -35,7 +35,7 @@ zkevm_bridge_ui_image: zkevm-bridge-ui:local
 zkevm_contracts_image: leovct/zkevm-contracts # tag auto-replaced by */zkevm_rollup_fork_id/*
 zkevm_dac_image: cdk-data-availability:local
 zkevm_node_image: cdk-validium-node:local
-zkevm_prover_image: zkevm-prover:local
+zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
 panoptichain_image: minhdvu/panoptichain
 
 # Port configuration.
