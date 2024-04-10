@@ -13,8 +13,12 @@ def start_executor(plan, args, config_artifact):
 
 
 def _start_service(plan, type, args, config_artifact):
-    cpu_arch_result = plan.run_sh(run="uname -m | tr -d '\n'")
+    cpu_arch_result = plan.run_sh(
+        description="Determining CPU system architecture",
+        run="uname -m | tr -d '\n'",
+    )
     cpu_arch = cpu_arch_result.output
+    plan.print("Running on {} architecture".format(cpu_arch))
 
     return plan.add_service(
         name="zkevm-" + type + args["deployment_suffix"],
