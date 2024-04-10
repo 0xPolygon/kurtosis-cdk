@@ -132,7 +132,7 @@ main() {
 
         echo; echo "Running a dummy nginx container..."
         if docker ps -a --format '{{.Names}}' | grep -q '^nginx$'; then
-            docker rm -f nginx > /dev/null 2>&1
+            docker rm -f nginx > /dev/null
         fi
         docker run --rm --name nginx -d nginx
 
@@ -142,7 +142,7 @@ main() {
             exit 1
         else
             echo "✅ You can successfully access containers using their internal IPs."
-            docker rm -f nginx > /dev/null 2>&1
+            docker rm -f nginx > /dev/null
         fi
     fi
 
