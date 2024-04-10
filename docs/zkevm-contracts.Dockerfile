@@ -1,7 +1,7 @@
 FROM golang:1.21 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
-RUN git clone --branch $POLYCLI_VERSION https://github.com/maticnetwork/polygon-cli.git . \
+RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
   && CGO_ENABLED=0 go build -o polycli main.go
 
 
