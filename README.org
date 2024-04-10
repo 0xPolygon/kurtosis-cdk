@@ -7,7 +7,7 @@ A [[https://github.com/kurtosis-tech/kurtosis][Kurtosis]] package that deploys a
 - [[#for-users][For Users]]
   - [[#deploy-the-cdk-stack][Deploy the CDK Stack]]
   - [[#set-up-a-permissionless-node][Set Up a Permissionless Node]]
-  - [[#observability]][Observability]
+  - [[#observability][Observability]]
   - [[#troubleshooting-for-mac-users][Troubleshooting: Mac Users]]
 - [[#for-developers][For Developers]]
   - [[#break-down-the-deployment-into-stages][Break Down the Deployment Into Stages]]
