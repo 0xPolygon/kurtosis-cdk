@@ -1,18 +1,18 @@
 #!/bin/bash
 # This script creates keystores for all the different zkevm/cdk node components.
+set -e
 
 # Create a go-ethereum style encrypted keystore.
 create_geth_keystore() {
-    local hexkey="$1"
-    local password="$2"
-    local keystore_name="$3"
+    local keystore_name="$1"
+    local private_key="$2"
+    local password="$3"
 
-    tmp_dir=$(mktemp -d)
-    polycli parseethwallet --hexkey "$hexkey" --password "$password" --keystore "$tmp_dir"
-    utc_file=$(find "$tmp_dir" -name 'UTC*')
-    mv "$utc_file" "$keystore_name"
-    chmod a+r "$keystore_name"
-    rm -rf "$tmp_dir"
+    temp_dir="/tmp/$keystore_name"
+    polycli parseethwallet --hexkey "$private_key" --password "$password" --keystore "$temp_dir"
+    mv "$temp_dir/UTC*" "/opt/zkevm-contracts/$keystore_name"
+    chmod a+r "/opt/zkevm-contracts/$keystore_name"
+    rm -rf "$temp_dir"
 }
 
 create_geth_keystore "sequencer.keystore"       "{{.zkevm_l2_sequencer_private_key}}"       "{{.zkevm_l2_keystore_password}}"
