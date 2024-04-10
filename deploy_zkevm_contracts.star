@@ -80,7 +80,7 @@ def run(plan, args):
 
     # Deploy contracts.
     plan.exec(
-        descritpion="Deploying zkevm contracts on L1",
+        description="Deploying zkevm contracts on L1",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[
