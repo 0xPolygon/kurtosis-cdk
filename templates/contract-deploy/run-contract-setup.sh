@@ -82,7 +82,7 @@ echo_ts "Step 1: Preparing tesnet"
 npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost | tee 01_prepare_testnet.out
 
 echo_ts "Step 2: Creating genesis"
-npx ts-node deployment/v2/1_createGenesis.ts | tee 02_create_genesis.out
+MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts | tee 02_create_genesis.out
 
 echo_ts "Step 3: Deploying PolygonZKEVMDeployer"
 npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost | tee 03_zkevm_deployer.out
