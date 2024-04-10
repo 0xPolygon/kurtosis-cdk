@@ -9,6 +9,7 @@ create_geth_keystore() {
     local password="$3"
 
     temp_dir="/tmp/$keystore_name"
+    mkdir -p "$temp_dir"
     polycli parseethwallet --hexkey "$private_key" --password "$password" --keystore "$temp_dir"
     mv "$temp_dir/UTC*" "/opt/zkevm-contracts/$keystore_name"
     chmod a+r "/opt/zkevm-contracts/$keystore_name"
