@@ -26,7 +26,8 @@ ensure_optional_tool_is_installed() {
 
 ## Check tool versions.
 check_kurtosis_version() {
-    ensure_required_tool_is_installed "kurtosis" "https://docs.kurtosis.com/install/"
+    kurtosis_install_docs="https://docs.kurtosis.com/install/"
+    ensure_required_tool_is_installed "kurtosis" "$kurtosis_install_docs"
 
     minimum_major_kurtosis_version_required="$(echo "$MINIMUM_KURTOSIS_VERSION_REQUIRED" | cut -d '.' -f 1)"
     minimum_minor_kurtosis_version_required="$(echo "$MINIMUM_KURTOSIS_VERSION_REQUIRED" | cut -d '.' -f 2)"
@@ -43,15 +44,16 @@ check_kurtosis_version() {
     if [ "$major_kurtosis_version" -gt "$minimum_major_kurtosis_version_required" ] || \
         { [ "$major_kurtosis_version" -eq "$minimum_major_kurtosis_version_required" ] && [ "$minor_kurtosis_version" -ge "$minimum_minor_kurtosis_version_required" ]; } || \
         { [ "$major_kurtosis_version" -eq "$minimum_major_kurtosis_version_required" ] && [ "$minor_kurtosis_version" -eq "$minimum_minor_kurtosis_version_required" ] && [ "$bugfix_kurtosis_version" -ge "$minimum_bugfix_kurtosis_version_required" ]; }; then
-        echo "✅ kurtosis $kurtosis_version is installed, meets the requirement (>=$MINIMUM_KURTOSIS_VERSION_REQUIRED)"
+        echo "✅ kurtosis $kurtosis_version is installed, meets the requirement (>=$MINIMUM_KURTOSIS_VERSION_REQUIRED)."
     else
-        echo "❌ kurtosis $kurtosis_version is installed, but version $MINIMUM_KURTOSIS_VERSION_REQUIRED or higher is required"
+        echo "❌ kurtosis $kurtosis_version is installed, but version $MINIMUM_KURTOSIS_VERSION_REQUIRED or higher is required."
         exit 1
     fi
 }
 
 check_docker_version() {
-    ensure_required_tool_is_installed "docker" "https://docs.docker.com/engine/install/"
+    docker_install_docs="https://docs.docker.com/engine/install/"
+    ensure_required_tool_is_installed "docker" "$docker_install_docs"
 
     minimum_major_docker_version_required="$(echo "$MINIMUM_DOCKER_VERSION_REQUIRED" | cut -d '.' -f 1)"
     minimum_minor_docker_version_required="$(echo "$MINIMUM_DOCKER_VERSION_REQUIRED" | cut -d '.' -f 2)"
@@ -64,57 +66,58 @@ check_docker_version() {
     # However, if the major version is exactly the same as the minimum major version required, we need to additionally check the minor version.
     if [ "$major_docker_version" -gt "$minimum_major_docker_version_required" ] || \
         { [ "$major_docker_version" -eq "$minimum_major_docker_version_required" ] && [ "$minor_docker_version" -ge "$minimum_minor_docker_version_required" ]; }; then
-        echo "✅ docker $docker_version is installed, meets the requirement (>=$MINIMUM_DOCKER_VERSION_REQUIRED)"
+        echo "✅ docker $docker_version is installed, meets the requirement (>=$MINIMUM_DOCKER_VERSION_REQUIRED)."
     else
-        echo "❌ docker $docker_version is installed, but version $MINIMUM_DOCKER_VERSION_REQUIRED or higher is required"
+        echo "❌ docker $docker_version is installed, but version $MINIMUM_DOCKER_VERSION_REQUIRED or higher is required."
         exit 1
     fi
 }
 
 check_docker_mac_connect_version() {
-    ensure_required_tool_is_installed "docker-mac-net-connect" "https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation"
+    docker_mac_connect_install_docs="https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation"
+    ensure_required_tool_is_installed "docker-mac-net-connect" "$docker_mac_connect_install_docs"
 
     docker_mac_connect_version="$(docker-mac-net-connect --version | cut -d ' ' -f 3 | cut -d "'" -f 2 | cut -d "v" -f 2)"
-    echo "✅ docker-mac-connect $docker_mac_connect_version is installed"
+    echo "✅ docker-mac-connect $docker_mac_connect_version is installed."
 }
 
 check_jq_version() {
-    ensure_optional_tool_is_installed "jq" "https://jqlang.github.io/jq/download/"
-    if [ $? -eq 0 ]; then
+    jq_install_docs="https://jqlang.github.io/jq/download/"
+    if ensure_optional_tool_is_installed "jq" "$jq_install_docs"; then
         jq_version="$(jq --version | cut -d '-' -f 2)"
-        echo "✅ jq $jq_version is installed"
+        echo "✅ jq $jq_version is installed."
     fi
 }
 
 check_yq_version() {
-    ensure_optional_tool_is_installed "yq" "https://pypi.org/project/yq/"
-    if [ $? -eq 0 ]; then
+    yq_install_docs="https://pypi.org/project/yq/"
+    if ensure_optional_tool_is_installed "yq" "$yq_install_docs"; then
         maximum_yq_major_version_supported="$(echo "$MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED" | cut -d '.' -f 1)"
 
         yq_version="$(yq --version | cut -d ' ' -f 2)"
         major_yq_version="$(echo "$yq_version" | cut -d '.' -f 1)"
         if [ "$major_yq_version" -le "$maximum_yq_major_version_supported" ]; then
-            echo "✅ yq $yq_version is installed, meets the requirement (<=$MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED)"
+            echo "✅ yq $yq_version is installed, meets the requirement (<=$MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED)."
         else
-            echo "❌ yq $yq_version is installed, but version $MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED or higher is not supported"
+            echo "❌ yq $yq_version is installed, but version $MAXIMUM_YQ_MAJOR_VERSION_SUPPORTED or higher is not supported."
             exit 1
         fi
     fi
 }
 
 check_cast_version() {
-    ensure_optional_tool_is_installed "cast" "https://book.getfoundry.sh/getting-started/installation#using-foundryup"
-    if [ $? -eq 0 ]; then
+    cast_install_docs="https://book.getfoundry.sh/getting-started/installation#using-foundryup"
+    if ensure_optional_tool_is_installed "cast" "$cast_install_docs"; then
         cast_version="$(cast --version | cut -d ' ' -f 2)"
-        echo "✅ cast $cast_version is installed"
+        echo "✅ cast $cast_version is installed."
     fi
 }
 
 check_polycli_version() {
-    ensure_optional_tool_is_installed "polycli" "https://github.com/maticnetwork/polygon-cli/releases"
-    if [ $? -eq 0 ]; then
+    polycli_install_docs="https://github.com/maticnetwork/polygon-cli/releases"
+    if ensure_optional_tool_is_installed "polycli" "$polycli_install_docs"; then
         polycli_version="$(polycli version | cut -d ' ' -f 4)"
-        echo "✅ polycli $polycli_version is installed"
+        echo "✅ polycli $polycli_version is installed."
     fi
 }
 
@@ -129,17 +132,17 @@ main() {
 
         echo; echo "Running a dummy nginx container..."
         if docker ps -a --format '{{.Names}}' | grep -q '^nginx$'; then
-            docker rm -f nginx 2>&1 > /dev/null
+            docker rm -f nginx > /dev/null 2>&1
         fi
         docker run --rm --name nginx -d nginx
 
         echo; echo "Making an HTTP request directly to the internal IP of the nginx container..."
         if ! curl -m 1 -I "$(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')"; then
-            echo "❌ Curl request failed. Make sure docker-mac-connect is running and make sure you reinstalled Docker Engine for macOS!"
+            echo "❌ Curl request failed... Make sure docker-mac-connect is running and make sure you reinstalled Docker Engine for macOS."
             exit 1
         else
-            echo "✅ You can successfully access containers using their internal IPs!"
-            docker rm -f nginx 2>&1 > /dev/null
+            echo "✅ You can successfully access containers using their internal IPs."
+            docker rm -f nginx > /dev/null 2>&1
         fi
     fi
 
@@ -149,7 +152,7 @@ main() {
     check_cast_version
     check_polycli_version
 
-    echo; echo "✅ You are ready to go!"
+    echo; echo "🎉 You are ready to go!"
 }
 
 main
