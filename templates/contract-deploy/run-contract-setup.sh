@@ -9,20 +9,15 @@ echo_ts() {
 wait_for_rpc_to_be_available() {
     rpc_url="$1"
     counter=0
-    max_retries=10
-    until [ $counter -ge $max_retries ]; do
-        if cast send --rpc-url "$rpc_url" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 0x0000000000000000000000000000000000000000 2>&1 | grep -q "transaction indexing is in progress"; then
-            echo_ts "Transaction indexing is in progress. Retrying..."
-            ((counter++))
-            if [ $counter -eq $max_retries ]; then
-                echo_ts "Exceeded maximum retry attempts. Exiting."
-                exit 1
-            fi
-            sleep 2
-        else
-            echo_ts "L1 RPC is available"
-            return
+    max_retries=20
+    until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}"; do
+        ((counter++))
+        echo_ts "L1 RPC might not be ready... Retrying ($counter)..."
+        if [ $counter -ge $max_retries ]; then
+            echo_ts "Exceeded maximum retry attempts. Exiting."
+            exit 1
         fi
+        sleep 5
     done
 }
 
