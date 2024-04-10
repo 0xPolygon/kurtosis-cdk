@@ -1,6 +1,8 @@
 def run(plan, args):
     # Create deploy parameters
-    deploy_parameters_template = read_file(src="./templates/contract-deploy/deploy_parameters.json")
+    deploy_parameters_template = read_file(
+        src="./templates/contract-deploy/deploy_parameters.json"
+    )
     deploy_parameters_artifact = plan.render_templates(
         name="deploy-parameters-artifact",
         config={
@@ -37,7 +39,9 @@ def run(plan, args):
     )
 
     # Create keystores script
-    create_keystores_script_template = read_file(src="./templates/contract-deploy/create-keystores.sh")
+    create_keystores_script_template = read_file(
+        src="./templates/contract-deploy/create-keystores.sh"
+    )
     create_keystores_script_artifact = plan.render_templates(
         name="create-keystores-script-artifact",
         config={
