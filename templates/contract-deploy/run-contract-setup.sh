@@ -42,6 +42,7 @@ fi
 # Wait for the L1 RPC to be available.
 echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
+echo_ts "L1 RPC is now available"
 
 # Fund accounts on L1.
 echo_ts "Funding important accounts on l1"
@@ -78,19 +79,19 @@ jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/
 echo_ts "Deploying zkevm contracts to L1"
 
 echo_ts "Step 1: Preparing tesnet"
-npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost &> tee 01_prepare_testnet.out
+npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost | tee 01_prepare_testnet.out
 
 echo_ts "Step 2: Creating genesis"
-npx ts-node deployment/v2/1_createGenesis.ts &> tee 02_create_genesis.out
+npx ts-node deployment/v2/1_createGenesis.ts | tee 02_create_genesis.out
 
 echo_ts "Step 3: Deploying PolygonZKEVMDeployer"
-npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost &> tee 03_zkevm_deployer.out
+npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost | tee 03_zkevm_deployer.out
 
 echo_ts "Step 4: Deploying contracts"
-npx hardhat run deployment/v2/3_deployContracts.ts --network localhost &> tee 04_deploy_contracts.out
+npx hardhat run deployment/v2/3_deployContracts.ts --network localhost | tee 04_deploy_contracts.out
 
 echo_ts "Step 5: Creating rollup"
-npx hardhat run deployment/v2/4_createRollup.ts --network localhost &> tee 05_create_rollup.out
+npx hardhat run deployment/v2/4_createRollup.ts --network localhost | tee 05_create_rollup.out
 
 # Combine contract deploy files.
 # At this point, all of the contracts /should/ have been deployed.
