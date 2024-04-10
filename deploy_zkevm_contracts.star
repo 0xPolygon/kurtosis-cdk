@@ -48,11 +48,12 @@ def run(plan, args):
     )
 
     # Create helper service to deploy contracts
+    contracts_service_name = "contracts" + args["deployment_suffix"]
     zkevm_contracts_image = "{}:fork{}".format(
         args["zkevm_contracts_image"], args["zkevm_rollup_fork_id"]
     )
     plan.add_service(
-        name="contracts" + args["deployment_suffix"],
+        name=contracts_service_name,
         config=ServiceConfig(
             image=zkevm_contracts_image,
             files={
@@ -72,32 +73,37 @@ def run(plan, args):
 
     # TODO: Check if the contracts were already initialized.. I'm leaving this here for now, but it's not useful!!
     contract_init_stat = plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         acceptable_codes=[0, 1],
         recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
     )
 
     # Deploy contracts.
-    plan.print("Running zkEVM contract deployment. This might take some time...")
     plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        descritpion="Deploying zkevm contracts on L1",
+        service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[
-                "chmod +x {0} && sh {0}".format(
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
                     "/opt/contract-deploy/run-contract-setup.sh"
-                )
+                ),
             ]
         ),
     )
 
     # Create keystores.
     plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
+        description="Creating keystores for zkevm-node/cdk-validium components",
+        service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[
-                "chmod +x {0} && sh {0}".format(
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
                     "/opt/contract-deploy/create-keystores.sh"
-                )
+                ),
             ]
         ),
     )
