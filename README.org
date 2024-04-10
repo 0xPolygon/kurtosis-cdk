@@ -196,17 +196,21 @@ After deploying the CDK, you should see something like this:
 df5a52b990f2   prometheus-001                                   http: 9090/tcp -> http://127.0.0.1:49678                  RUNNING
 #+end_src
 
-To view the dashboards to to the Grafana endpoint and add ~/dashboards~. You can
-also click the hamburger menu in the top left, and go to *Dashboards*. There are
-two predefined dashboards here to help you understand the health of the CDK at a
-glance.
+To view the dashboards to to the Grafana endpoint with the ~/dashboards~ path.
+You can also click the hamburger menu in the top left, and go to *Dashboards*.
+There are two predefined dashboards here to help you understand the health of
+the CDK at a glance.
 
 1. The *Panoptichain* dashboard displays the metrics that are collected from the
-   panoptichain service. This dashboard focuses on on-chain metrics such as blocks,
+   Panoptichain service. This dashboard focuses on on-chain metrics such as blocks,
    transactions, and smart contract calls.
 
 2. The *Services* dashboard captures the metrics being emitted by the individual
    services in the CDK, and metrics pertaining to process health.
+
+To ensure that a service is properly emitting metrics, you can view all the 
+Prometheus targets and their state by navigating to the Prometheus endpoint with
+the ~/targets~ path.
 
 *** Troubleshooting for Mac Users
 
