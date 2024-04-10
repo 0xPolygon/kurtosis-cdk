@@ -1,7 +1,5 @@
 #!/bin/bash
 # This script is responsible for deploying the contracts for zkEVM/CDK.
-set -e
-
 export MNEMONIC="{{.l1_preallocated_mnemonic}}"
 
 echo_ts() {
@@ -20,7 +18,7 @@ wait_for_rpc_to_be_available() {
             echo_ts "Exceeded maximum retry attempts. Exiting."
             exit 1
         fi
-        sleep 5
+        sleep 8
     done
 }
 
@@ -43,6 +41,7 @@ if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
 fi
 
 # Wait for the L1 RPC to be available.
+echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 
 # Fund accounts on L1.
@@ -62,7 +61,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 # Deploy gas token.
 # shellcheck disable=SC1054,SC1083
 {{if .zkevm_use_gas_token_contract}}
-echo_ts "Deploying gas token"
+echo_ts "Deploying gas token to L1"
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 forge create \
     --json \
@@ -77,22 +76,22 @@ jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/
 {{end}}
 
 # Deploy contracts.
-echo_ts "Running full L1 contract deployment process"
+echo_ts "Deploying zkevm contracts to L1"
 
 echo_ts "Step 1: Preparing tesnet"
-npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost &> 01_prepare_testnet.out
+npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost &> tee 01_prepare_testnet.out
 
 echo_ts "Step 2: Creating genesis"
-npx ts-node deployment/v2/1_createGenesis.ts &> 02_create_genesis.out
+npx ts-node deployment/v2/1_createGenesis.ts &> tee 02_create_genesis.out
 
 echo_ts "Step 3: Deploying PolygonZKEVMDeployer"
-npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost &> 03_zkevm_deployer.out
+npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost &> tee 03_zkevm_deployer.out
 
 echo_ts "Step 4: Deploying contracts"
-npx hardhat run deployment/v2/3_deployContracts.ts --network localhost &> 04_deploy_contracts.out
+npx hardhat run deployment/v2/3_deployContracts.ts --network localhost &> tee 04_deploy_contracts.out
 
 echo_ts "Step 5: Creating rollup"
-npx hardhat run deployment/v2/4_createRollup.ts --network localhost &> 05_create_rollup.out
+npx hardhat run deployment/v2/4_createRollup.ts --network localhost &> tee 05_create_rollup.out
 
 # Combine contract deploy files.
 # At this point, all of the contracts /should/ have been deployed.
