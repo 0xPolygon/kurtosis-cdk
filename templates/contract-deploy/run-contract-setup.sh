@@ -10,7 +10,7 @@ echo_ts() {
 wait_for_rpc_to_be_available() {
     rpc_url="$1"
     counter=0
-    max_retries=10
+    max_retries=20
     until cast send --rpc-url "$rpc_url" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}"; do
         echo_ts "L1 RPC might not be ready"
         ((counter++))
@@ -18,7 +18,7 @@ wait_for_rpc_to_be_available() {
             echo_ts "Exceeded maximum retry attempts. Exiting."
             exit 1
         fi
-        sleep 8
+        sleep 2
     done
 }
 
