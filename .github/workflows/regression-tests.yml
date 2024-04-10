@@ -38,7 +38,7 @@ jobs:
           git checkout "${{ github.event.inputs.zkevm_agglayer_commit_id }}"
           docker compose -f docker/docker-compose.yaml build --no-cache agglayer
       - name: Clone and build zkevm-bridge-service
-        run: >
+        run: |
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
           cd zkevm-bridge-service
           git checkout "${{ github.event.inputs.zkevm_bridge_service_commit_id
@@ -70,7 +70,7 @@ jobs:
           cd kurtosis-cdk
           git checkout dan/jit_containers_superusers
       - name: Install kurtosis
-        run: >
+        run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo
           tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
@@ -84,7 +84,7 @@ jobs:
           kurtosis engine restart
           kurtosis run --enclave cdk-v1 --args-file params.yml .
       - name: Monitor and report any potential regressions to CI logs
-        run: >
+        run: |
           bake_time="${{ github.event.inputs.bake_time }}"
           end_minute=$(( $(date +'%M') + bake_time))
 
@@ -101,6 +101,8 @@ jobs:
               # Check if STATUS has incremented
               if [ "$STATUS" != "$INITIAL_STATUS" ]; then
                 incremented=true
+                echo "ZKEVM_VERIFIED_BATCH_NUMBER successfully incremented to $STATUS. Exiting..."
+                exit 0
               fi
             else
               echo "Failed to connect, waiting and retrying..."
