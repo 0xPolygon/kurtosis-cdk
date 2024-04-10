@@ -50,11 +50,12 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 2>&1 echo "Deploying Gas Token"
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 forge build
-forge create --json \
+forge create \
+    --json \
     --rpc-url "{{.l1_rpc_url}}" \
     --mnemonic "{{.l1_preallocated_mnemonic}}" \
-    contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
+    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+    contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock > gasToken-erc20.json
 
 # In this case, we'll configure the create rollup parameters to have a gas token
 jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
@@ -114,22 +115,41 @@ jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddr
 # The sequencer needs to pay POL when it sequences batches. This gets
 # refunded when the batches are proved. In order for this to work the
 # rollup address must be approved transfer the sequencers POL
-cast send --private-key "{{.zkevm_l2_sequencer_private_key}}" --legacy --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polTokenAddress' combined.json)" 'approve(address,uint256)(bool)' "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+cast send \
+    --private-key "{{.zkevm_l2_sequencer_private_key}}" \
+    --legacy \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polTokenAddress' combined.json)" \
+    'approve(address,uint256)(bool)' \
+    "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
 # The DAC needs to be configured with a required number of
 # signatures. Right now the number of DAC nodes is not
 # configurable. If we add more nodes, we'll need to make sure the urls
 # and keys are sorted.
-cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
     'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
     1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
 # The DAC needs to be enabled with a call to set the DA protocol
-cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.rollupAddress' combined.json)" 'setDataAvailabilityProtocol(address)' "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.rollupAddress' combined.json)" \
+    'setDataAvailabilityProtocol(address)' \
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 
 # Grant the aggregator role to the agglayer so that it can also verify batches
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
-cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" "$(jq -r '.polygonRollupManagerAddress' combined.json)" 'grantRole(bytes32,address)' "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
+    'grantRole(bytes32,address)' \
+    "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 
 # The parseethwallet command is creating a go-ethereum style encrypted
 # keystore to be used with the zkevm / cdk-validium node
