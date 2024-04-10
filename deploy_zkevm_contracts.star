@@ -36,6 +36,17 @@ def run(plan, args):
         },
     )
 
+    # Create keystores script
+    create_keystores_script_template = read_file(src="./templates/create-keystores.sh")
+    create_keystores_script_artifact = plan.render_templates(
+        name="create-keystores-script-artifact",
+        config={
+            "create-keystores.sh": struct(
+                template=create_keystores_script_artifact, data=args
+            )
+        },
+    )
+
     # Create helper service to deploy contracts
     zkevm_contracts_image = "{}:fork{}".format(
         args["zkevm_contracts_image"], args["zkevm_rollup_fork_id"]
@@ -51,6 +62,7 @@ def run(plan, args):
                         deploy_parameters_artifact,
                         create_rollup_parameters_artifact,
                         contract_deployment_script_artifact,
+                        create_keystores_script_artifact,
                     ]
                 ),
             },
@@ -65,15 +77,27 @@ def run(plan, args):
         recipe=ExecRecipe(command=["stat", "/opt/zkevm/.init-complete.lock"]),
     )
 
-    # Deploy contracts
-    plan.exec(
-        service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=["chmod", "a+x", "/opt/contract-deploy/run-contract-setup.sh"]
-        ),
-    )
+    # Deploy contracts.
     plan.print("Running zkEVM contract deployment. This might take some time...")
     plan.exec(
         service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(command=["/opt/contract-deploy/run-contract-setup.sh"]),
+        recipe=ExecRecipe(
+            command=[
+                "chmod +x {0} && sh {0}".format(
+                    "/opt/contract-deploy/run-contract-setup.sh"
+                )
+            ]
+        ),
+    )
+
+    # Create keystores.
+    plan.exec(
+        service_name="contracts" + args["deployment_suffix"],
+        recipe=ExecRecipe(
+            command=[
+                "chmod +x {0} && sh {0}".format(
+                    "/opt/contract-deploy/create-keystores.sh"
+                )
+            ]
+        ),
     )

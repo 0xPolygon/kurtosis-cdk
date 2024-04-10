@@ -16,13 +16,6 @@ if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
     exit
 fi
 
-# Check that tools are available
-jq --version
-yq --version
-cast --version
-forge --version
-polycli version
-
 2>&1 echo "Funding important accounts on l1"
 
 # FIXME this look might never finish.. Add a counter
@@ -151,38 +144,5 @@ cast send \
     "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
     'grantRole(bytes32,address)' \
     "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
-
-# The parseethwallet command is creating a go-ethereum style encrypted
-# keystore to be used with the zkevm / cdk-validium node
-polycli parseethwallet --hexkey "{{.zkevm_l2_sequencer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
-mv tmp.keys/UTC* sequencer.keystore
-chmod a+r sequencer.keystore
-rm -rf tmp.keys
-
-polycli parseethwallet --hexkey "{{.zkevm_l2_aggregator_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
-mv tmp.keys/UTC* aggregator.keystore
-chmod a+r aggregator.keystore
-rm -rf tmp.keys
-
-polycli parseethwallet --hexkey "{{.zkevm_l2_claimtxmanager_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
-mv tmp.keys/UTC* claimtxmanager.keystore
-chmod a+r claimtxmanager.keystore
-rm -rf tmp.keys
-
-polycli parseethwallet --hexkey "{{.zkevm_l2_agglayer_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
-mv tmp.keys/UTC* agglayer.keystore
-chmod a+r agglayer.keystore
-rm -rf tmp.keys
-
-polycli parseethwallet --hexkey "{{.zkevm_l2_dac_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
-mv tmp.keys/UTC* dac.keystore
-chmod a+r dac.keystore
-rm -rf tmp.keys
-
-polycli parseethwallet --hexkey "{{.zkevm_l2_proofsigner_private_key}}" --password "{{.zkevm_l2_keystore_password}}" --keystore tmp.keys
-mv tmp.keys/UTC* proofsigner.keystore
-chmod a+r proofsigner.keystore
-rm -rf tmp.keys
-
 touch .init-complete.lock
 popd
