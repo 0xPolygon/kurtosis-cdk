@@ -9,6 +9,32 @@ echo_ts() {
     echo "$timestamp $1"
 }
 
+wait_for_rpc_to_be_available() {
+    rpc_url="$1"
+    counter=0
+    max_retries=10
+    until cast send --rpc-url "$rpc_url" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}"; do
+        echo_ts "L1 RPC might not be ready"
+        ((counter++))
+        if [ $counter -ge $max_retries ]; then
+            echo_ts "Exceeded maximum retry attempts. Exiting."
+            exit 1
+        fi
+        sleep 5
+    done
+}
+
+fund_account_on_l1() {
+    name="$1"
+    address="$2"
+    echo_ts "Funding $name account"
+    cast send \
+        --rpc-url "{{.l1_rpc_url}}" \
+        --mnemonic "{{.l1_preallocated_mnemonic}}" \
+        --value "100ether" \
+        "$address"
+}
+
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
@@ -16,46 +42,24 @@ if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
     exit
 fi
 
+# Wait for the L1 RPC to be available.
+wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 
-## Fund accounts on L1.
+# Fund accounts on L1.
 echo_ts "Funding important accounts on l1"
-counter=0
-max_retries=10
-until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}"; do
-    echo_ts "L1 RPC might not be ready"
-    ((counter++))
-    if [ $counter -ge $max_retries ]; then
-        echo_ts "Exceeded maximum retry attempts. Exiting."
-        exit 1
-    fi
-    sleep 5
-done
+fund_account_on_l1 "admin"          "{{.zkevm_l2_admin_address}}"
+fund_account_on_l1 "sequencer"      "{{.zkevm_l2_sequencer_address}}"
+fund_account_on_l1 "aggregator"     "{{.zkevm_l2_aggregator_address}}"
+fund_account_on_l1 "agglayer"       "{{.zkevm_l2_agglayer_address}}"
+fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}"
 
-# In the overall CDK setup, these 4 addresses need to be funded with ETH.
-funding_amount="100ether"
-echo_ts "Funding admin account..."
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_admin_address}}"
-
-echo_ts "Funding sequencer account..."
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_sequencer_address}}"
-
-echo_ts "Funding aggregator account..."
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_aggregator_address}}"
-
-echo_ts "Funding agglayer account..."
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_agglayer_address}}"
-
-echo_ts "Funding claimtxmanager account..."
-cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "$funding_amount" "{{.zkevm_l2_claimtxmanager_address}}"
-
-
-## Deploy zkEVM contracts on L1.
+# Configure zkevm contract deploy parameters.
 pushd /opt/zkevm-contracts || exit 1
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
-### Deploy gas token.
+# Deploy gas token.
 # shellcheck disable=SC1054,SC1083
 {{if .zkevm_use_gas_token_contract}}
 echo_ts "Deploying gas token"
@@ -72,7 +76,7 @@ jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/
 # shellcheck disable=SC1056,SC1072,SC1073,SC1009
 {{end}}
 
-### Full deployment.
+# Deploy contracts.
 echo_ts "Running full L1 contract deployment process"
 
 echo_ts "Step 1: Preparing tesnet"
@@ -90,7 +94,7 @@ npx hardhat run deployment/v2/3_deployContracts.ts --network localhost &> 04_dep
 echo_ts "Step 5: Creating rollup"
 npx hardhat run deployment/v2/4_createRollup.ts --network localhost &> 05_create_rollup.out
 
-### Combine contract deploy files.
+# Combine contract deploy files.
 # At this point, all of the contracts /should/ have been deployed.
 # Now we can combine all of the files and put them into the general zkevm folder.
 echo_ts "Combining contract deploy files"
@@ -101,9 +105,9 @@ cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
 popd
 
-### Creating contract deploy custom outputs.
+# Combine contract deploy data.
 pushd /opt/zkevm/ || exit 1
-echo_ts "Creating contract deploy custom outputs"
+echo_ts "Creating combined.json"
 cp genesis.json genesis.original.json
 
 # Add the L2 GER Proxy address in combined.json (for panoptichain).
@@ -133,8 +137,7 @@ jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].po
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
-### Configuring contracts
-
+# Configure contracts
 
 # The sequencer needs to pay POL when it sequences batches.
 # This gets refunded when the batches are proved.
