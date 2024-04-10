@@ -202,11 +202,11 @@ two predefined dashboards here to help you understand the health of the CDK at a
 glance.
 
 1. The *Panoptichain* dashboard displays the metrics that are collected from the
-panoptichain service. This dashboard focuses on on-chain metrics such as blocks,
-transactions, and smart contract calls.
+   panoptichain service. This dashboard focuses on on-chain metrics such as blocks,
+   transactions, and smart contract calls.
 
 2. The *Services* dashboard captures the metrics being emitted by the individual
-services in the CDK, and metrics pertaining to process health.
+   services in the CDK, and metrics pertaining to process health.
 
 *** Troubleshooting for Mac Users
 
