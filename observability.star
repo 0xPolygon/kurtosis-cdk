@@ -9,7 +9,7 @@ bridge_package = import_module("./cdk_bridge_infra.star")
 
 def start_panoptichain(plan, args):
     # Create the panoptichain config.
-    panoptichain_config_template = read_file(src="./templates/panoptichain-config.yml")
+    panoptichain_config_template = read_file(src="./templates/observability/panoptichain-config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     panoptichain_config_artifact = plan.render_templates(
         name="panoptichain-config",

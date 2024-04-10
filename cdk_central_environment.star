@@ -90,7 +90,7 @@ def get_keystores_artifacts(plan, args):
 
 
 def create_dac_config_artifact(plan, args):
-    dac_config_template = read_file(src="./templates/dac-config.toml")
+    dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(
         name="dac-config-artifact",

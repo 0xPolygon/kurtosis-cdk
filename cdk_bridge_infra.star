@@ -59,7 +59,7 @@ def run(plan, args):
 
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses):
-    bridge_config_template = read_file(src="./templates/bridge-config.toml")
+    bridge_config_template = read_file(src="./templates/bridge-infra/bridge-config.toml")
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -87,7 +87,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses):
 
 
 def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
-    agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
+    agglayer_config_template = read_file(src="./templates/bridge-infra/agglayer-config.toml")
     return plan.render_templates(
         name="agglayer-config-artifact",
         config={

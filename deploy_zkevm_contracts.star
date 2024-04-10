@@ -1,6 +1,6 @@
 def run(plan, args):
     # Create deploy parameters
-    deploy_parameters_template = read_file(src="./templates/deploy_parameters.json")
+    deploy_parameters_template = read_file(src="./templates/contract-deploy/deploy_parameters.json")
     deploy_parameters_artifact = plan.render_templates(
         name="deploy-parameters-artifact",
         config={
@@ -12,7 +12,7 @@ def run(plan, args):
 
     # Create rollup paramaters
     create_rollup_parameters_template = read_file(
-        src="./templates/create_rollup_parameters.json"
+        src="./templates/contract-deploy/create_rollup_parameters.json"
     )
     create_rollup_parameters_artifact = plan.render_templates(
         name="create-rollup-parameters-artifact",
@@ -25,7 +25,7 @@ def run(plan, args):
 
     # Create contract deployment script
     contract_deployment_script_template = read_file(
-        src="./templates/run-contract-setup.sh"
+        src="./templates/contract-deploy/run-contract-setup.sh"
     )
     contract_deployment_script_artifact = plan.render_templates(
         name="contract-deployment-script-artifact",
@@ -37,7 +37,7 @@ def run(plan, args):
     )
 
     # Create keystores script
-    create_keystores_script_template = read_file(src="./templates/create-keystores.sh")
+    create_keystores_script_template = read_file(src="./templates/contract-deploy/create-keystores.sh")
     create_keystores_script_artifact = plan.render_templates(
         name="create-keystores-script-artifact",
         config={
