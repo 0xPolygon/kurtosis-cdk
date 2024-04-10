@@ -18,7 +18,6 @@ def _start_service(plan, type, args, config_artifact):
         run="uname -m | tr -d '\n'",
     )
     cpu_arch = cpu_arch_result.output
-    plan.print("Running on {} architecture".format(cpu_arch))
 
     return plan.add_service(
         name="zkevm-" + type + args["deployment_suffix"],
