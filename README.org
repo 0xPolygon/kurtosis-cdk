@@ -7,6 +7,7 @@ A [[https://github.com/kurtosis-tech/kurtosis][Kurtosis]] package that deploys a
 - [[#for-users][For Users]]
   - [[#deploy-the-cdk-stack][Deploy the CDK Stack]]
   - [[#set-up-a-permissionless-node][Set Up a Permissionless Node]]
+  - [[#observability]][Observability]
   - [[#troubleshooting-for-mac-users][Troubleshooting: Mac Users]]
 - [[#for-developers][For Developers]]
   - [[#break-down-the-deployment-into-stages][Break Down the Deployment Into Stages]]
@@ -180,6 +181,32 @@ synchronizing with ths command:
 #+begin_src bash
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
 #+end_src
+
+*** Observability
+
+~kurtosis-cdk~ deploys Prometheus, Grafana, and Panoptichain to help observe the
+network. This is enabled by default, but can be turned off by setting the
+~deploy_observability~ to ~false~ in the ~params.yml~.
+
+After deploying the CDK, you should see something like this:
+
+#+begin_src text
+66a0a1fbb82f   grafana-001                                      dashboards: 3000/tcp -> http://127.0.0.1:49701            RUNNING
+3048924295f9   panoptichain-001                                 prometheus: 9090/tcp -> http://127.0.0.1:49651            RUNNING
+df5a52b990f2   prometheus-001                                   http: 9090/tcp -> http://127.0.0.1:49678                  RUNNING
+#+end_src
+
+To view the dashboards to to the Grafana endpoint and add ~/dashboards~. You can
+also click the hamburger menu in the top left, and go to *Dashboards*. There are
+two predefined dashboards here to help you understand the health of the CDK at a
+glance.
+
+1. The *Panoptichain* dashboard displays the metrics that are collected from the
+panoptichain service. This dashboard focuses on on-chain metrics such as blocks,
+transactions, and smart contract calls.
+
+2. The *Services* dashboard captures the metrics being emitted by the individual
+services in the CDK, and metrics pertaining to process health.
 
 *** Troubleshooting for Mac Users
 
