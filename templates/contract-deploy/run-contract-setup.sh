@@ -43,13 +43,12 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 {{if .zkevm_use_gas_token_contract}}
 2>&1 echo "Deploying Gas Token"
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
-forge build
 forge create \
     --json \
     --rpc-url "{{.l1_rpc_url}}" \
     --mnemonic "{{.l1_preallocated_mnemonic}}" \
-    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
-    contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock > gasToken-erc20.json
+    contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
+    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
 
 # In this case, we'll configure the create rollup parameters to have a gas token
 jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
