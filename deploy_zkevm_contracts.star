@@ -42,7 +42,7 @@ def run(plan, args):
         name="create-keystores-script-artifact",
         config={
             "create-keystores.sh": struct(
-                template=create_keystores_script_artifact, data=args
+                template=create_keystores_script_template, data=args
             )
         },
     )
