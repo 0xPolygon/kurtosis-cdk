@@ -1,55 +1,62 @@
-*** Set Up a Permissionless Node
+In addition to the core stack, you can also attach and synchronize a permissionless node. 
 
-In addition to the core stack, you can also attach and synchronize a
-permissionless node. Of course, you'll need the CDK stack running from
-the previous commands. Assuming that has run and correctly created a
-network, you'll need to pull the genesis file artifact out and add it
-to your ~permissionless_node~ kurtosis package.
+## Prerequisites
 
-#+begin_src bash
+1. You have followed the [deployment guide](deploy-stack.md) and have a running CDK stack.
+
+2. Grab the genesis file artifact and add it to the `permissionless_node` kurtosis package.
+
+```sh
 rm -r /tmp/zkevm
 kurtosis files download cdk-v1 genesis /tmp
 cp /tmp/genesis.json templates/permissionless-node/genesis.json
-#+end_src
+```
 
-Now that we have the right genesis file, we can add a permissionless
-node to the ~cdk-v1~ enclave:
+## Add permissionless node to the enclave
 
-#+begin_src bash
+Run the following command:
+
+```sh
 kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
-#+end_src
+```
 
-**** Remote Permissionless Testing
+## Sync an external permissionless node
 
-You can use the permissionless package to sync data from a production
-network as well. First you'll need to get the genesis file and it
-should be populated already with the CDK fields like:
-- ~rollupCreationBlockNumber~
-- ~rollupManagerCreationBlockNumber~
-- ~L1Config.chainId~
-- ~L1Config.polygonZkEVMGlobalExitRootAddress~
-- ~L1Config.polygonRollupManagerAddress~
-- ~L1Config.polTokenAddress~
-- ~L1Config.polygonZkEVMAddress~
+You can also use the package you have just set up to sync data from a production network.
 
-If you're unsure how to populate these fields please check out how
-it's done within [[./templates/run-contract-setup.sh][run-constract-setup.sh]]. When you have the genesis
-file ready, drop it into [[./templates/permissionless-node/genesis.json]].
+1. Some of the parameters in the Kurtosis genesis file need to be replaced, or better still you could replace the whole genesis file with one representing the external network. 
 
-In addition to the genesis setup, we'll also need to tweak a parameter
-in [[./params.yml]]:
+    The parameters that need to change in the file are as follows:
 
-- ~l1_rpc_url~ will most likely need to be changed to be your actual
-  L1 network. Most likely Sepolia or mainnet
+    ```json
+      "rollupCreationBlockNumber": 22,
+      "rollupManagerCreationBlockNumber": 18,
+      "genesisBlockNumber": 22,
+      "L1Config": {
+        "chainId": 271828,
+        "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+        "polygonRollupManagerAddress": "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
+        "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+        "polygonZkEVMAddress": "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
+      }
+    ```
 
-There are other parameters that might seem like they should be
-changed, e.g. ~l1_chain_id~, but those aren't actually used for the
-permisionless setup. The most important thing is just to update the
-RPC URL.
+    !!! tip
+        The [run-contract-setup.sh](https://github.com/0xPolygon/kurtosis-cdk/blob/main/templates/run-contract-setup.sh) file may help you understand how these fields populate.
 
-Once you've done that, you should be good to go and you can start
-synchronizing with ths command:
+2. When you have the updated genesis file is ready, drop it into `./templates/permissionless-node/genesis.json`.
 
-#+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
-#+end_src
+3. In addition to the genesis setup, tweak the parameter `l1_rpc_url` in the [./params.yml](https://github.com/0xPolygon/kurtosis-cdk/blob/main/params.yml) file:
+
+    `l1_rpc_url: http://el-1-geth-lighthouse:8545` -> `l1_rpc_url: <MY_L1_URL>`
+
+    !!! tip
+        - There are other parameters that seem like they should be changed, e.g. `l1_chain_id`, but they aren't used for the permissionless setup.
+
+4. Now you can start synchronizing with the following command:
+
+    ```sh
+    kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
+    ```
+
+<br/>

@@ -1,12 +1,19 @@
+## Hardware requirements
+
+- A Linux-based OS (e.g., Ubuntu Server 22.04 LTS).
+- At least 8GB RAM with a 2-core CPU.
+- An AMD64 architecture system. 
+
+!!! tip
+    Please follow the [MacOS troubleshooting instructions](mac-troubles.md) to avoid issues that may occur when running the stack on MacOS.
+
 ## Prerequisites
 
 1. Install [Kurtosis](https://docs.kurtosis.com/install/).
 
 2. Install the [Foundry toolchain](https://book.getfoundry.sh/getting-started/installation).
 
-3. Install the [polygon-cli](https://github.com/maticnetwork/polygon-cli.git).
-
-4. Run the following script to check you have the remaining required tools and install where missing.
+3. Run the following script to check you have the remaining required tools and install where missing.
 
     ```sh
     curl -s https://raw.githubusercontent.com/0xPolygon/kurtosis-cdk/main/scripts/tool_check.sh | bash
@@ -14,8 +21,9 @@
 
 ## MacOS issues
 
-!!! tip "Resolving MacOS issues"
-    If you are running MacOS, please follow the [MacOS troubleshooting steps](mac-troubles.md) to help fix issues with the installations, and prior to trying out the RPC calls. 
+!!! warning "Resolving MacOS issues"
+    - MacOS set up is a bit flakey.
+    - If you are running MacOS, please follow the [MacOS troubleshooting steps](mac-troubles.md) to help fix issues with the installations, and prior to trying out the RPC calls. 
 
 ## Set up 
 
@@ -26,7 +34,9 @@
     cd kurtosis-cdk
     ```
 
-2. Run the Kurtosis enclave.
+2. Make sure Docker is running.
+
+3. Run the Kurtosis enclave.
 
     ```
     kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
@@ -34,7 +44,7 @@
 
     This command takes a few minutes to complete and steps up and runs an entire local CDK deployment. 
     
-Once set up, we can play around with the test CDK. 
+When everything is set up and running, we can play around with the test CDK. 
 
 ## Simple RPC calls
 
@@ -66,7 +76,7 @@ To see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` ser
 kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc
 ```
 
-You should see output that looks like this:
+You should see output that looks something like this (but won't necessarily be the same):
 
 ```sh
 http://127.0.0.1:65240
@@ -116,7 +126,27 @@ You should see something like this:
 cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
 ```
 
-### Send transactions with `polygon-cli`
+You should see something like this as output:
+
+```sh
+blockHash               0xc467523f297a9c0b859bedc8feaf44c3e7462de56f7d7899b2039d9a3cfc421d
+blockNumber             70
+contractAddress         
+cumulativeGasUsed       21000
+effectiveGasPrice       1000000000
+from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+gasUsed                 21000
+logs                    []
+logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                    
+status                  1
+transactionHash         0xa58b3383c1b1f53369723fdc537c88daa03585cb6a89aa49ebd493953d519fdf
+transactionIndex        0
+type                    0
+to                      0x0000000000000000000000000000000000000000
+```
+
+### Send transactions with `polygon-cli` -> ISSUE HERE
 
 ```sh
 polycli loadtest --requests 500 --legacy --rpc-url $ETH_RPC_URL --verbosity 700 --rate-limit 5 --mode t --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625
@@ -132,16 +162,13 @@ cast nonce 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 kurtosis service logs cdk-v1 zkevm-agglayer-001
 ```
 
-In other cases, if we see an error we might want to get a shell in the
-container to be able to poke around.
+You can open a shell on any service.
 
 ```sh
 kurtosis service shell cdk-v1 zkevm-node-sequencer-001
 ```
 
-One of the most common ways to check the status of the system is to
-make sure that batches are going through the normal progression of
-trusted, virtual, and verified:
+Another common way to check the status of the system is to make sure that batches go through the normal progression of `trusted`, `virtual`, and `verified`. To check this run:
 
 ```sh
 cast rpc zkevm_batchNumber

@@ -24,9 +24,10 @@ theme:
 
 nav:
   - Overview: overview.md
-  - For users:
+  - For technical users:
     - Deploy the CDK stack: quickstart/deploy-stack.md
     - Set up a permissionless node: quickstart/set-up-node.md
+    - Observability: quickstart/observability.md
     - Troubleshooting:
       - Mac users: quickstart/mac-troubles.md
   - For developers:

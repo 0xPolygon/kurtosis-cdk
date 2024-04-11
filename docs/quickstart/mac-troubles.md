@@ -1,8 +1,18 @@
 Running Docker on MacOS differs slightly from Docker on Linux and you may encounter some issues. 
 
+Follow the steps below to avoid any issues using MacOS.
+
+## zkEVM docker image issue
+
+If you get issues installing the zkEVM docker image after running the Kurtosis enclave, try running the following, then run it again:
+
+```sh
+docker pull --platform linux/amd64 hermeznetwork/zkevm-prover:v6.0.0
+```
+
 ## Private IP issues
 
-A key distinction is that Docker on MacOS doesn't directly expose container networks to the host system. Consequently, accessing containers via their private IPs is not possible.
+One key distinction between MacOC and Linux is that Docker on MacOS doesn't directly expose container networks to the host system. Consequently, accessing containers via their private IPs is not possible.
 
 The CDK Kurtosis package requires this functionality to run smoothly. 
 
@@ -67,13 +77,5 @@ Download the software on the [Docker installation page](https://docs.docker.com/
     ```
 
 Now you can return to the [deploy the CDK instructions](deploy-stack.md#set-up) set up and continue.
-
-## zkEVM docker image issue
-
-If you get issues installing the zkEVM docker image after running the Kurtosis enclave, try running the following, then run it again:
-
-```sh
-docker pull --platform linux/amd64 hermeznetwork/zkevm-prover:v6.0.0
-```
 
 </br>
