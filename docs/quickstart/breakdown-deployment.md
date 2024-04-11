@@ -1,25 +1,31 @@
-** For Developers
-
-*** Break Down the Deployment Into Stages
-
 Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately.
 
-You can enable a stage by setting the boolean value to /true/ and disable it by setting it to /false/. By default, all stages will be executed.
+### Enable or disable stage
+
+You can enable a stage by setting the boolean value to `true` and disable it by setting it to `false`, in the [`params.yml`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/params.yml) file.
+
+!!! important
+    - By default, all stages are executed.
+
+## Deployment stages
 
 Currently, the deployment process includes the following stages:
 
-  1. Deploy Local L1
-  2. Deploy ZkEVM Contracts on L1
-  3. Deploy ZkEVM Node and CDK Peripheral Databases
-  4. Deploy CDK Central/Trusted Environment
-  5. Deploy CDK/Bridge Infrastructure
-  6. Deploy Permissionless Node
+  1. Deploy Local L1.
+  2. Deploy zkEVM contracts on L1.
+  3. Deploy zkEVM node and CDK peripheral databases.
+  4. Deploy CDK central/trusted environment.
+  5. Deploy CDK/bridge infrastructure.
+  6. Deploy permissionless node.
 
-Here's an example of how you can specify the stages to run through. In
-order to run this you'll need [[https://pypi.org/project/yq/][yq]] installed.
+## Specifying stage example
 
-#+begin_src bash
+This example script show you how to specify the stages. 
 
+!!! tip
+    To run the script, you need to have [yq](https://pypi.org/project/yq/) installed.
+
+```sh
 # Disable all deployment steps.
 yq -Yi '.deploy_l1 = false' params.yml
 yq -Yi '.deploy_zkevm_contracts_on_l1 = false' params.yml
@@ -62,5 +68,5 @@ yq -Yi '.deploy_cdk_bridge_infra = false' params.yml # reset
 yq -Yi '.deploy_zkevm_permissionless_node = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_zkevm_permissionless_node = false' params.yml # reset
-#+end_src
+```
 
