@@ -10,6 +10,9 @@ concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS: "300" # 5 minutes
+
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
   monolithic_cdk:
@@ -26,15 +29,43 @@ jobs:
           kurtosis analytics disable
 
       - name: Install yq
-        run: |
-          pip3 install yq
+        run: pip3 install yq
 
-      # Deploy components
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Deploy components.
       - name: Enable gas token feature
         run: yq -Y --in-place '.zkevm_use_gas_token_contract = true' params.yml
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      # Check that batches are being verified.
+      - name: Check that batches are being verified
+        run: |
+          timeout_seconds="${CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS:-300}"
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_seconds))
+
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while true; do
+              current_time=$(date +%s)
+              if (( current_time > end_time )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+                  exit 1
+              fi
+
+              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+
+              if (( verified_batches > 0 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least one batch was verified."
+                  exit 0
+              fi
+
+              sleep 10
+          done
 
   # Deploy the CDK environment incrementally, stage by stage.
   incremental_cdk:
@@ -51,8 +82,10 @@ jobs:
           kurtosis analytics disable
 
       - name: Install yq
-        run: |
-          pip3 install yq
+        run: pip3 install yq
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       # Deploy components.
       - name: Disable All Deployment Steps
@@ -106,3 +139,29 @@ jobs:
           yq -Y --in-place '.deploy_observability = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
+
+      # Check that batches are being verified.
+      - name: Check that batches are being verified
+        run: |
+          timeout_seconds="${CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS:-300}"
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_seconds))
+
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while true; do
+              current_time=$(date +%s)
+              if (( current_time > end_time )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+                  exit 1
+              fi
+
+              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+
+              if (( verified_batches > 0 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least one batch was verified."
+                  exit 0
+              fi
+
+              sleep 10
+          done
