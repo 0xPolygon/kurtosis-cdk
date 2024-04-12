@@ -58,4 +58,3 @@ def start_bridge_ui(plan, args, config):
             cmd=["run"],
         ),
     )
-
