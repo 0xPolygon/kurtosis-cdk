@@ -21,17 +21,6 @@ wait_for_rpc_to_be_available() {
     done
 }
 
-fund_account_on_l1() {
-    name="$1"
-    address="$2"
-    echo_ts "Funding $name account"
-    cast send \
-        --rpc-url "{{.l1_rpc_url}}" \
-        --mnemonic "{{.l1_preallocated_mnemonic}}" \
-        --value "100ether" \
-        "$address"
-}
-
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
@@ -45,12 +34,11 @@ wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
 # Fund accounts on L1.
-echo_ts "Funding important accounts on l1"
-fund_account_on_l1 "admin"          "{{.zkevm_l2_admin_address}}"
-fund_account_on_l1 "sequencer"      "{{.zkevm_l2_sequencer_address}}"
-fund_account_on_l1 "aggregator"     "{{.zkevm_l2_aggregator_address}}"
-fund_account_on_l1 "agglayer"       "{{.zkevm_l2_agglayer_address}}"
-fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}"
+echo_ts "Funding accounts on L1"
+polycli fund \
+    --rpc-url {{.l1_rpc_url}} \
+    --addresses={{.zkevm_l2_admin_address}},{{.zkevm_l2_sequencer_address}},{{.zkevm_l2_aggregator_address}},{{.zkevm_l2_agglayer_address}},{{.zkevm_l2_claimtxmanager_address}} \
+    --eth-amount 100
 
 # Configure zkevm contract deploy parameters.
 pushd /opt/zkevm-contracts || exit 1
