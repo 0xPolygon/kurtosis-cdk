@@ -34,10 +34,7 @@ def start_bridge_ui(plan, args, config):
                 ),
             },
             env_vars={
-                "ETHEREUM_RPC_URL": "http://{}:{}".format(
-                    config.l1_eth_service.ip_address,
-                    config.l1_eth_service.ports["rpc"].number,
-                ),
+                "ETHEREUM_RPC_URL": args["l1_rpc_url"],
                 "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
                     config.zkevm_rpc_ip_address,
                     config.zkevm_rpc_http_port,
@@ -61,3 +58,4 @@ def start_bridge_ui(plan, args, config):
             cmd=["run"],
         ),
     )
+

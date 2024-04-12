@@ -39,12 +39,10 @@ def run(plan, args):
     )
 
     # Start the bridge UI.
-    l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
     zkevm_node_rpc = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
     bridge_service_name = "zkevm-bridge-service" + args["deployment_suffix"]
     bridge_service = bridge_infra_services[bridge_service_name]
     config = struct(
-        l1_eth_service=l1_eth_service,
         zkevm_rpc_ip_address=zkevm_node_rpc.ip_address,
         zkevm_rpc_http_port=zkevm_node_rpc.ports["http-rpc"],
         bridge_service_ip_address=bridge_service.ip_address,
