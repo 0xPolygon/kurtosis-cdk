@@ -158,7 +158,7 @@ cast send \
     --rpc-url "{{.l1_rpc_url}}" \
     "$(jq -r '.rollupAddress' combined.json)" \
     'setDataAvailabilityProtocol(address)' \
-    "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" &
 
 # Grant the aggregator role to the agglayer so that it can also verify batches.
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
