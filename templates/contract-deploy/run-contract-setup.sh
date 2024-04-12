@@ -35,9 +35,10 @@ echo_ts "L1 RPC is now available"
 
 # Fund accounts on L1.
 echo_ts "Funding accounts on L1"
+# shellcheck disable=SC1083
 polycli fund \
     --rpc-url "{{.l1_rpc_url}}" \
-    --addresses="{{.zkevm_l2_admin_address}}","{{.zkevm_l2_sequencer_address}}","{{.zkevm_l2_aggregator_address}}","{{.zkevm_l2_agglayer_address}}","{{.zkevm_l2_claimtxmanager_address}}" \
+    --addresses={{.zkevm_l2_admin_address}},{{.zkevm_l2_sequencer_address}},{{.zkevm_l2_aggregator_address}},{{.zkevm_l2_agglayer_address}},{{.zkevm_l2_claimtxmanager_address}} \
     --eth-amount 100
 
 # Configure zkevm contract deploy parameters.
