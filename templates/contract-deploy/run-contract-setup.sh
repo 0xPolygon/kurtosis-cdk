@@ -46,13 +46,13 @@ echo_ts "L1 RPC is now available"
 
 # Fund accounts on L1.
 echo_ts "Funding important accounts on l1"
-fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}" &
-fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}" &
-fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}" &
-fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}" &
-fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}" &
-
-# Wait for all background processes to finish.
+(
+    fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
+    fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
+    fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
+    fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
+    fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}"
+) &
 wait
 if [ $? -ne 0 ]; then
     echo "Error: One or more funding operation failed"
@@ -146,51 +146,50 @@ jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].po
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
-# Configure contracts
+# Configure contracts.
+(
+    # The sequencer needs to pay POL when it sequences batches.
+    # This gets refunded when the batches are proved.
+    # In order for this to work t,he rollup address must be approved to transfer the sequencers' POL tokens.
+    echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
+    cast send \
+        --private-key "{{.zkevm_l2_sequencer_private_key}}" \
+        --legacy \
+        --rpc-url "{{.l1_rpc_url}}" \
+        "$(jq -r '.polTokenAddress' combined.json)" \
+        'approve(address,uint256)(bool)' \
+        "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
-# The sequencer needs to pay POL when it sequences batches.
-# This gets refunded when the batches are proved.
-# In order for this to work t,he rollup address must be approved to transfer the sequencers' POL tokens.
-echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
-cast send \
-    --private-key "{{.zkevm_l2_sequencer_private_key}}" \
-    --legacy \
-    --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.polTokenAddress' combined.json)" \
-    'approve(address,uint256)(bool)' \
-    "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000 &
+    # The DAC needs to be configured with a required number of signatures.
+    # Right now the number of DAC nodes is not configurable.
+    # If we add more nodes, we'll need to make sure the urls and keys are sorted.
+    echo_ts "Setting the data availability committee"
+    cast send \
+        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --rpc-url "{{.l1_rpc_url}}" \
+        "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
+        'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
+        1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
 
-# The DAC needs to be configured with a required number of signatures.
-# Right now the number of DAC nodes is not configurable.
-# If we add more nodes, we'll need to make sure the urls and keys are sorted.
-echo_ts "Setting the data availability committee"
-cast send \
-    --private-key "{{.zkevm_l2_admin_private_key}}" \
-    --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
-    'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
-    1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}" &
+    # The DAC needs to be enabled with a call to set the DA protocol.
+    echo_ts "Setting the data availability protocol"
+    cast send \
+        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --rpc-url "{{.l1_rpc_url}}" \
+        "$(jq -r '.rollupAddress' combined.json)" \
+        'setDataAvailabilityProtocol(address)' \
+        "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 
-# The DAC needs to be enabled with a call to set the DA protocol.
-echo_ts "Setting the data availability protocol"
-cast send \
-    --private-key "{{.zkevm_l2_admin_private_key}}" \
-    --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.rollupAddress' combined.json)" \
-    'setDataAvailabilityProtocol(address)' \
-    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" &
-
-# Grant the aggregator role to the agglayer so that it can also verify batches.
-# cast keccak "TRUSTED_AGGREGATOR_ROLE"
-echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
-cast send \
-    --private-key "{{.zkevm_l2_admin_private_key}}" \
-    --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
-    'grantRole(bytes32,address)' \
-    "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}" &
-
-# Wait for all background processes to finish.
+    # Grant the aggregator role to the agglayer so that it can also verify batches.
+    # cast keccak "TRUSTED_AGGREGATOR_ROLE"
+    echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
+    cast send \
+        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --rpc-url "{{.l1_rpc_url}}" \
+        "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
+        'grantRole(bytes32,address)' \
+        "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+) &
 wait
 if [ $? -ne 0 ]; then
     echo "Error: One or more cast command failed"
