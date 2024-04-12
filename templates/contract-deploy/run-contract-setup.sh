@@ -36,8 +36,8 @@ echo_ts "L1 RPC is now available"
 # Fund accounts on L1.
 echo_ts "Funding accounts on L1"
 polycli fund \
-    --rpc-url {{.l1_rpc_url}} \
-    --addresses={{.zkevm_l2_admin_address}},{{.zkevm_l2_sequencer_address}},{{.zkevm_l2_aggregator_address}},{{.zkevm_l2_agglayer_address}},{{.zkevm_l2_claimtxmanager_address}} \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --addresses="{{.zkevm_l2_admin_address}}","{{.zkevm_l2_sequencer_address}}","{{.zkevm_l2_aggregator_address}}","{{.zkevm_l2_agglayer_address}}","{{.zkevm_l2_claimtxmanager_address}}" \
     --eth-amount 100
 
 # Configure zkevm contract deploy parameters.
@@ -137,7 +137,7 @@ cast send \
     --rpc-url "{{.l1_rpc_url}}" \
     "$(jq -r '.polTokenAddress' combined.json)" \
     'approve(address,uint256)(bool)' \
-    "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+    "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000 &
 
 # The DAC needs to be configured with a required number of signatures.
 # Right now the number of DAC nodes is not configurable.
@@ -148,7 +148,7 @@ cast send \
     --rpc-url "{{.l1_rpc_url}}" \
     "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
     'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
-    1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+    1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}" &
 
 # The DAC needs to be enabled with a call to set the DA protocol.
 echo_ts "Setting the data availability protocol"
@@ -167,7 +167,15 @@ cast send \
     --rpc-url "{{.l1_rpc_url}}" \
     "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
     'grantRole(bytes32,address)' \
-    "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+    "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}" &
+
+# Wait for all background processes to finish.
+wait
+if [ $? -ne 0 ]; then
+    echo "Error: One or more cast command failed"
+    exit 1
+fi
+echo_ts "All cast commands executed successfully"
 
 # The contract setup is done!
 touch .init-complete.lock
