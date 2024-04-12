@@ -25,11 +25,7 @@ fund_account_on_l1() {
     name="$1"
     address="$2"
     echo_ts "Funding $name account"
-    cast send \
-        --rpc-url "{{.l1_rpc_url}}" \
-        --mnemonic "{{.l1_preallocated_mnemonic}}" \
-        --value "100ether" \
-        "$address"
+    return $(cast send --async --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value "100ether" "$address")
 }
 
 # We want to avoid running this script twice.
@@ -46,18 +42,16 @@ echo_ts "L1 RPC is now available"
 
 # Fund accounts on L1.
 echo_ts "Funding important accounts on l1"
-(
-    fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
-    fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
-    fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
-    fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
-    fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}"
-) &
-wait
-if [ $? -ne 0 ]; then
-    echo "Error: One or more funding operation failed"
-    exit 1
-fi
+tx_hashes=(
+    $(fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}")
+    $(fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}")
+    $(fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}")
+    $(fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}")
+    $(fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}")
+)
+for tx_hash in "${tx_hashes[@]}"; do
+    cast receipt "$tx_hash"
+done
 echo_ts "All fuding operations executed successfully"
 
 
