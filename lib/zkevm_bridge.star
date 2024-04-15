@@ -24,6 +24,7 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
 
 
 def start_bridge_ui(plan, args, config):
+    # Start the bridge ui.
     plan.add_service(
         name="zkevm-bridge-ui" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -51,5 +52,35 @@ def start_bridge_ui(plan, args, config):
                 "ENABLE_REPORT_FORM": "false",
             },
             cmd=["run"],
+        ),
+    )
+
+    # Start the bridge ui gateway.
+    nginx_config_template = read_file(src="../templates/bridge-infra/default.conf")
+    zkevm_bridge_ui_url = "http://{}:{}".format(
+        zkevm_bridge_ui_service.hostname,
+        zkevm_bridge_ui_service.ports["bridge-ui"].number,
+    )
+    nginx_config_artifact = plan.render_templates(
+        name="nginx-config-artifact",
+        config={
+            "nginx.conf": struct(
+                template=nginx_config_template,
+                data={
+                    "zkevm_bridge_ui_url": zkevm_bridge_ui_url,
+                },
+            )
+        },
+    )
+    plan.add_service(
+        name="zkevm-bridge-ui-gateway" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image="nginx:latest",
+            ports={
+                "http": PortSpec(number=80),
+            },
+            files={
+                "/etc/nginx/conf.d": nginx_config_artifact,
+            },
         ),
     )
