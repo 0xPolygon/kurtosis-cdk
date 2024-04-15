@@ -25,7 +25,8 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
 
 def start_bridge_ui(plan, args, config):
     # Start the bridge ui.
-    zkevm_bridge_ui_service = plan.add_service(
+    bridge_ui_gateway_url = "http://zkevm-bridge-ui-gateway-001:80" # harcoded value
+    bridge_ui_service = plan.add_service(
         name="zkevm-bridge-ui" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_bridge_ui_image"],
@@ -35,9 +36,9 @@ def start_bridge_ui(plan, args, config):
                 ),
             },
             env_vars={
-                "ETHEREUM_RPC_URL": config.l1_rpc_url,
-                "POLYGON_ZK_EVM_RPC_URL": config.zkevm_rpc_url,
-                "BRIDGE_API_URL": config.bridge_api_url,
+                "ETHEREUM_RPC_URL": bridge_ui_gateway_url + "/l1rpc",
+                "POLYGON_ZK_EVM_RPC_URL": bridge_ui_gateway_url + "/zkevmrpc",
+                "BRIDGE_API_URL": bridge_ui_gateway_url + "/bridgeapi",
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
@@ -54,25 +55,27 @@ def start_bridge_ui(plan, args, config):
             cmd=["run"],
         ),
     )
+    bridge_ui_url = "http://{}:{}".format(
+        bridge_ui_service.ip_address, bridge_ui_service.ports["bridge-ui"].number
+    )
 
     # Start the bridge ui gateway.
     nginx_config_template = read_file(src="../templates/bridge-infra/default.conf")
-    zkevm_bridge_ui_url = "http://{}:{}".format(
-        zkevm_bridge_ui_service.hostname,
-        zkevm_bridge_ui_service.ports["bridge-ui"].number,
-    )
     nginx_config_artifact = plan.render_templates(
         name="nginx-config-artifact",
         config={
             "nginx.conf": struct(
                 template=nginx_config_template,
                 data={
-                    "zkevm_bridge_ui_url": zkevm_bridge_ui_url,
+                    "l1_rpc_url": config.l1_rpc_url,
+                    "zkevm_rpc_url": config.zkevm_rpc_url,
+                    "zkevm_bridge_api_url": config.bridge_api_url,
+                    "zkevm_bridge_ui_url": bridge_ui_url,
                 },
             )
         },
     )
-    plan.add_service(
+    gateway_service = plan.add_service(
         name="zkevm-bridge-ui-gateway" + args["deployment_suffix"],
         config=ServiceConfig(
             image="nginx:latest",
@@ -84,3 +87,7 @@ def start_bridge_ui(plan, args, config):
             },
         ),
     )
+    gateway_url = "http://{}:{}".format(
+        gateway_service.ip_address, gateway_service.ports["http"].number
+    )
+    plan.print("Access the zkevm-bridge-ui at {}".format(gateway_url))
