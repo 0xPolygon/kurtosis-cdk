@@ -1,7 +1,7 @@
 prometheus_package = import_module(
-    "github.com/kurtosis-tech/prometheus-package/main.star"
+    "github.com/kurtosis-tech/prometheus-package/main.star@main"
 )
-grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
+grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star@main")
 
 service_package = import_module("./lib/service.star")
 bridge_package = import_module("./cdk_bridge_infra.star")
