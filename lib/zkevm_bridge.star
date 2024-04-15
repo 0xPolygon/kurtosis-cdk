@@ -25,7 +25,7 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
 
 def start_bridge_ui(plan, args, config):
     # Start the bridge ui.
-    plan.add_service(
+    zkevm_bridge_ui_service = plan.add_service(
         name="zkevm-bridge-ui" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["zkevm_bridge_ui_image"],
