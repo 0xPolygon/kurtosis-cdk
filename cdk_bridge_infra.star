@@ -39,6 +39,12 @@ def run(plan, args):
     )
 
     # Start the bridge UI.
+    l1_el_1_service = plan.get_service("el-1-geth-lighthouse")
+    # Note: We do not rely on args["l1_rpc_url"] because macOS browser can not resolve hostnames.
+    l1_rpc_url = "http://{}:{}".format(
+        l1_el_1_service.ip_address, l1_el_1_service.ports["rpc"].number
+    )
+
     zkevm_node_rpc_service = plan.get_service(
         name="zkevm-node-rpc" + args["deployment_suffix"]
     )
@@ -57,6 +63,7 @@ def run(plan, args):
     )
 
     config = struct(
+        l1_rpc_url=l1_rpc_url,
         zkevm_rpc_url=zkevm_rpc_url,
         bridge_api_url=bridge_api_url,
         zkevm_bridge_address=contract_setup_addresses["zkevm_bridge_address"],
