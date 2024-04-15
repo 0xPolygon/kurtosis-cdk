@@ -35,13 +35,8 @@ def start_bridge_ui(plan, args, config):
             },
             env_vars={
                 "ETHEREUM_RPC_URL": args["l1_rpc_url"],
-                "POLYGON_ZK_EVM_RPC_URL": "http://{}:{}".format(
-                    config.zkevm_rpc_ip_address,
-                    config.zkevm_rpc_http_port,
-                ),
-                "BRIDGE_API_URL": "http://{}:{}".format(
-                    config.bridge_service_ip_address, config.bridge_api_http_port
-                ),
+                "POLYGON_ZK_EVM_RPC_URL": config.zkevm_rpc_url,
+                "BRIDGE_API_URL": config.bridge_api_url,
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
