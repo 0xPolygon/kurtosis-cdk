@@ -44,7 +44,8 @@ def run(plan, args):
     )
     # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
     zkevm_rpc_url = "http://{}:{}".format(
-        zkevm_node_rpc_service.ip_address, zkevm_node_rpc_service.ports["http-rpc"].number
+        zkevm_node_rpc_service.ip_address,
+        zkevm_node_rpc_service.ports["http-rpc"].number,
     )
 
     bridge_service = bridge_infra_services[
