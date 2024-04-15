@@ -42,15 +42,17 @@ def run(plan, args):
     zkevm_node_rpc_service = plan.get_service(
         name="zkevm-node-rpc" + args["deployment_suffix"]
     )
+    # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
     zkevm_rpc_url = "http://{}:{}".format(
-        zkevm_node_rpc_service.hostname, zkevm_node_rpc_service.ports["http-rpc"].number
+        zkevm_node_rpc_service.ip_address, zkevm_node_rpc_service.ports["http-rpc"].number
     )
 
     bridge_service = bridge_infra_services[
         "zkevm-bridge-service" + args["deployment_suffix"]
     ]
+    # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
     bridge_api_url = "http://{}:{}".format(
-        bridge_service.hostname, bridge_service.ports["bridge-rpc"].number
+        bridge_service.ip_address, bridge_service.ports["bridge-rpc"].number
     )
 
     config = struct(
