@@ -2,7 +2,7 @@ Running Docker on MacOS differs slightly from Docker on Linux and you may encoun
 
 Follow the steps below to avoid any issues using MacOS.
 
-## zkEVM docker image issue
+## zkEVM prover docker image issue
 
 If you get issues downloading the zkEVM prover docker image when deploying the Kurtosis package, try downloading the image by specifying the architecture first before deploying the package:
 
