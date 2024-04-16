@@ -74,6 +74,9 @@ def run(plan, args):
     )
     zkevm_bridge_package.start_bridge_ui(plan, args, config)
 
+    proxy_config_artifact = create_proxy_config_artifact(plan, args)
+    zkevm_bridge_package.add_reverse_proxy(plan, args, proxy_config_artifact)
+
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses):
     bridge_config_template = read_file(
@@ -135,6 +138,40 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
                     "zkevm_prometheus_port": args["zkevm_prometheus_port"],
                 }
                 | contract_setup_addresses,
+            )
+        },
+    )
+
+
+def create_proxy_config_artifact(plan, args):
+    bridge_ui_proxy_config_template = read_file(
+        src="./templates/bridge-infra/haproxy.cfg"
+    )
+    l1rpc_service = plan.get_service("el-1-geth-lighthouse")
+
+    l2rpc_service = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
+    bridge_service = plan.get_service(
+        name="zkevm-bridge-service" + args["deployment_suffix"]
+    )
+    bridgeui_service = plan.get_service(
+        name="zkevm-bridge-ui" + args["deployment_suffix"]
+    )
+
+    return plan.render_templates(
+        name="bridge-ui-proxy",
+        config={
+            "haproxy.cfg": struct(
+                template=bridge_ui_proxy_config_template,
+                data={
+                    "l1rpc_ip": l1rpc_service.ip_address,
+                    "l1rpc_port": l1rpc_service.ports["rpc"].number,
+                    "l2rpc_ip": l2rpc_service.ip_address,
+                    "l2rpc_port": l2rpc_service.ports["http-rpc"].number,
+                    "bridgeservice_ip": bridge_service.ip_address,
+                    "bridgeservice_port": bridge_service.ports["bridge-rpc"].number,
+                    "bridgeui_ip": bridgeui_service.ip_address,
+                    "bridgeui_port": bridgeui_service.ports["bridge-ui"].number,
+                },
             )
         },
     )

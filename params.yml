@@ -8,31 +8,31 @@ deployment_suffix: "-001"
 # The deployment process is divided into various stages.
 
 # Deploy local L1.
-deploy_l1: true
+deploy_l1: false
 
 # Deploy zkevm contracts on L1 (and also fund accounts).
-deploy_zkevm_contracts_on_l1: true
+deploy_zkevm_contracts_on_l1: false
 
 # Deploy zkevm node and cdk peripheral databases.
-deploy_databases: true
+deploy_databases: false
 
 # Deploy cdk central/trusted environment.
-deploy_cdk_central_environment: true
+deploy_cdk_central_environment: false
 
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
 # Deploy permissionless node.
-deploy_zkevm_permissionless_node: true
+deploy_zkevm_permissionless_node: false
 
 # Deploy observability stack.
-deploy_observability: true
+deploy_observability: false
 
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
 # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
-zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.2
+zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.6
 # zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
 zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
@@ -40,10 +40,14 @@ zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
 
 zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
-zkevm_agglayer_image: 0xpolygon/agglayer:0.1.1
+zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
 zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:multi-network
 panoptichain_image: minhdvu/panoptichain
+
+# temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
+zkevm_bridge_ui_image: nulyjkdhthz/zkevm-bridge-ui:kurtosis
+zkevm_bridge_proxy_image: haproxy:2.9.7
+
 
 # Port configuration.
 zkevm_hash_db_port: 50061
