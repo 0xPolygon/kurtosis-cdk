@@ -161,7 +161,7 @@ should be populated already with the CDK fields like:
 - ~L1Config.polygonZkEVMAddress~
 
 If you're unsure how to populate these fields please check out how
-it's done within [[./templates/run-contract-setup.sh][run-constract-setup.sh]]. When you have the genesis
+it's done within [[./templates/contract-deploy/run-contract-setup.sh][run-constract-setup.sh]]. When you have the genesis
 file ready, drop it into [[./templates/permissionless-node/genesis.json]].
 
 In addition to the genesis setup, we'll also need to tweak a parameter

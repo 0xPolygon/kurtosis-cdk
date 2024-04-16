@@ -10,19 +10,6 @@ observability_package = import_module("./observability.star")
 def run(plan, args):
     plan.print("Deploying CDK environment...")
 
-    # Determine system architecture
-    cpu_arch_result = plan.run_sh(
-        run="uname -m | tr -d '\n'", description="Determining CPU system architecture"
-    )
-    cpu_arch = cpu_arch_result.output
-    plan.print("Running on {} architecture".format(cpu_arch))
-    if not "cpu_arch" in args:
-        args["cpu_arch"] = cpu_arch
-
-    args["is_cdk_validium"] = False
-    if args["zkevm_rollup_consensus"] == "PolygonValidiumEtrog":
-        args["is_cdk_validium"] = True
-
     # Deploy a local L1.
     if args["deploy_l1"]:
         plan.print("Deploying a local L1")

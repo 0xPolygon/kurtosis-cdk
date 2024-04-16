@@ -20,7 +20,7 @@ edit the [[../params.yml][params.yml]] file to set ~zkevm_use_gas_token_contract
 setup:
 
 1. During contract deployment, an ERC20 token will be deployed on L1.
-2. The [[../templates/create_rollup_parameters.json][rollup creation parameters]] will be modified to set the
+2. The [[../templates/contract-deploy/create_rollup_parameters.json][rollup creation parameters]] will be modified to set the
    ~gasTokenAddress~ to the address of the L1 ERC20.
 
 After setting the ~zkevm_use_gas_token_contract~, you should be all

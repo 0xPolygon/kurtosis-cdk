@@ -32,7 +32,16 @@ def run(plan, args):
     # Create the zkevm node config.
     node_config_template = read_file(src="./templates/trusted-node/node-config.toml")
     node_config_artifact = plan.render_templates(
-        config={"node-config.toml": struct(template=node_config_template, data=args)},
+        config={
+            "node-config.toml": struct(
+                template=node_config_template,
+                data=args
+                | {
+                    "is_cdk_validium": args["zkevm_rollup_consensus"]
+                    == "PolygonValidiumEtrog",
+                },
+            )
+        },
         name="trusted-node-config",
     )
 
@@ -90,7 +99,7 @@ def get_keystores_artifacts(plan, args):
 
 
 def create_dac_config_artifact(plan, args):
-    dac_config_template = read_file(src="./templates/dac-config.toml")
+    dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(
         name="dac-config-artifact",
