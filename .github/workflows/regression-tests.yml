@@ -27,8 +27,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          ref: '${{ github.event.before }}'
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
       - name: Clone and build agglayer
@@ -41,8 +39,7 @@ jobs:
         run: |
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
           cd zkevm-bridge-service
-          git checkout "${{ github.event.inputs.zkevm_bridge_service_commit_id
-          }}"
+          git checkout "${{ github.event.inputs.zkevm_bridge_service_commit_id }}"
           docker build -t zkevm-bridge-service:local -f ./Dockerfile .
       - name: Clone and build zkevm-bridge-ui
         run: |
@@ -74,13 +71,10 @@ jobs:
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
           sudo apt install kurtosis-cli
-      - name: Run kurtosis agent in background
-        run: |
-          kurtosis gateway &  # Run cmd in background
+          kurtosis analytics disable
       - name: Deploy CDK devnet on local github runner
         run: |
           cd kurtosis-cdk
-          kurtosis engine restart
           kurtosis run --enclave cdk-v1 --args-file params.yml .
       - name: Monitor and report any potential regressions to CI logs
         run: |
@@ -114,7 +108,3 @@ jobs:
             echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
             exit 1
           fi
-      - name: 'Finally, remove all devnet resources locally'
-        run: |
-          cd kurtosis-cdk
-          kurtosis clean -a
