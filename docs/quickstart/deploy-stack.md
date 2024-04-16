@@ -27,7 +27,7 @@
 
 ## Set up 
 
-1. Clone the repo and cd into it.
+1. Clone the repo and `cd` into it.
 
     ```sh
     git clone https://github.com/kmurphypolygon/kurtosis-cdk.git
