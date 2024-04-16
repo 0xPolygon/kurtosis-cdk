@@ -30,7 +30,7 @@
 1. Clone the repo and `cd` into it.
 
     ```sh
-    git clone https://github.com/kmurphypolygon/kurtosis-cdk.git
+    git clone https://github.com/0xPolygon/kurtosis-cdk.git
     cd kurtosis-cdk
     ```
 
