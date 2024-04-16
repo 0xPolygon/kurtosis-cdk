@@ -5,7 +5,7 @@
 - An AMD64 architecture system. 
 
 !!! tip
-    Please follow the [MacOS troubleshooting instructions](mac-troubles.md) to avoid issues that may occur when running the stack on MacOS.
+    - Please follow the [MacOS troubleshooting instructions](mac-troubles.md) to avoid issues that may occur when running the stack on MacOS.
 
 ## Prerequisites
 
@@ -17,13 +17,7 @@
 
     ```sh
     curl -s https://raw.githubusercontent.com/0xPolygon/kurtosis-cdk/main/scripts/tool_check.sh | bash
-    ```
-
-## MacOS issues
-
-!!! warning "Resolving MacOS issues"
-    - MacOS set up is a bit flakey.
-    - If you are running MacOS, please follow the [MacOS troubleshooting steps](mac-troubles.md) to help fix issues with the installations, and prior to trying out the RPC calls. 
+    ``` 
 
 ## Set up 
 
@@ -146,7 +140,7 @@ type                    0
 to                      0x0000000000000000000000000000000000000000
 ```
 
-### Send transactions with `polygon-cli` -> ISSUE HERE
+### Send transactions with `polygon-cli`
 
 ```sh
 polycli loadtest --requests 500 --legacy --rpc-url $ETH_RPC_URL --verbosity 700 --rate-limit 5 --mode t --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625

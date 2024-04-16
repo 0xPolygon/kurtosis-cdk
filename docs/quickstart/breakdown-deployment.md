@@ -18,55 +18,75 @@ Currently, the deployment process includes the following stages:
   5. Deploy CDK/bridge infrastructure.
   6. Deploy permissionless node.
 
-## Specifying stage example
+## Specifying stages
 
-This example script show you how to specify the stages. 
+The example scripts below show you how to deploy the stack to enable various stage permutations. 
 
 !!! tip
-    To run the script, you need to have [yq](https://pypi.org/project/yq/) installed.
+    To run the scripts, you need to have [yq](https://pypi.org/project/yq/) installed.
+
+### Disable all deployment steps
 
 ```sh
-# Disable all deployment steps.
 yq -Yi '.deploy_l1 = false' params.yml
 yq -Yi '.deploy_zkevm_contracts_on_l1 = false' params.yml
 yq -Yi '.deploy_databases = false' params.yml
 yq -Yi '.deploy_cdk_central_environment = false' params.yml
 yq -Yi '.deploy_cdk_bridge_infra = false' params.yml
 yq -Yi '.deploy_zkevm_permissionless_node = false' params.yml
+```
 
-# Deploy L1
+### Deploy L1
+
+```sh
 yq -Yi '.deploy_l1 = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_l1 = false' params.yml # reset
 # Perform additional tasks...
+```
 
-# Deploy ZkEVM Contracts on L1
+### Deploy zkEVM contracts on L1
+
+```sh
 yq -Yi '.deploy_zkevm_contracts_on_l1 = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 yq -Yi '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 # Perform additional tasks...
+```
 
-# Deploy ZkEVM Node and CDK Peripheral Databases
+### Deploy zkEVM node and CDK peripheral databases
+
+```sh
 yq -Yi '.deploy_databases = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_databases = false' params.yml # reset
 # Perform additional tasks...
+```
 
-# Deploy CDK Central Environment
+### Deploy CDK central environment
+
+```sh
 yq -Yi '.deploy_cdk_central_environment = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_cdk_central_environment = false' params.yml # reset
 # Perform additional tasks...
+```
 
-# Deploy CDK Bridge Infrastructure
+### Deploy CDK bridge infrastructure
+
+```sh
 yq -Yi '.deploy_cdk_bridge_infra = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_cdk_bridge_infra = false' params.yml # reset
 # Perform additional tasks...
+```
 
-# Deploy ZkEVM Permissionless Node
+### Deploy zkEVM permissionless node
+
+```sh
 yq -Yi '.deploy_zkevm_permissionless_node = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Yi '.deploy_zkevm_permissionless_node = false' params.yml # reset
 ```
 
+<br/>
