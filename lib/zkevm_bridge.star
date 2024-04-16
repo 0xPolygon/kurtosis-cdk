@@ -74,7 +74,7 @@ def start_bridge_ui(plan, args, config):
             )
         },
     )
-    gateway_service = plan.add_service(
+    plan.add_service(
         name="zkevm-bridge-ui-gateway" + args["deployment_suffix"],
         config=ServiceConfig(
             image="nginx:latest",
@@ -86,7 +86,3 @@ def start_bridge_ui(plan, args, config):
             },
         ),
     )
-    gateway_url = "http://{}:{}".format(
-        gateway_service.ip_address, gateway_service.ports["http"].number
-    )
-    plan.print("Access the zkevm-bridge-ui at {}".format(gateway_url))

@@ -42,7 +42,8 @@ zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replace
 
 zkevm_agglayer_image: 0xpolygon/agglayer:0.1.1
 zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:multi-network
+#zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:multi-network
+zkevm_bridge_ui_image: zkevm-bridge-ui:local
 panoptichain_image: minhdvu/panoptichain
 
 # Port configuration.
