@@ -155,8 +155,8 @@ zkevm_rollup_fork_id: 9
 # The consensus contract name of the new rollup.
 zkevm_rollup_consensus: PolygonValidiumEtrog
 
-polygon_zkevm_explorer: "https://explorer.private/"
-l1_explorer_url: "https://sepolia.etherscan.io/"
+polygon_zkevm_explorer: https://explorer.private/
+l1_explorer_url: https://sepolia.etherscan.io/
 
 # If this is true, we will automatically deploy an ERC20 contract on
 # L1 to be used at the gasTokenAddress

@@ -39,16 +39,33 @@ def run(plan, args):
     )
 
     # Start the bridge UI.
-    l1_eth_service = plan.get_service(name="el-1-geth-lighthouse")
-    zkevm_node_rpc = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
-    bridge_service_name = "zkevm-bridge-service" + args["deployment_suffix"]
-    bridge_service = bridge_infra_services[bridge_service_name]
+    l1_el_1_service = plan.get_service("el-1-geth-lighthouse")
+    # Note: We do not rely on args["l1_rpc_url"] because macOS browser can not resolve hostnames.
+    l1_rpc_url = "http://{}:{}".format(
+        l1_el_1_service.ip_address, l1_el_1_service.ports["rpc"].number
+    )
+
+    zkevm_node_rpc_service = plan.get_service(
+        name="zkevm-node-rpc" + args["deployment_suffix"]
+    )
+    # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
+    zkevm_rpc_url = "http://{}:{}".format(
+        zkevm_node_rpc_service.ip_address,
+        zkevm_node_rpc_service.ports["http-rpc"].number,
+    )
+
+    bridge_service = bridge_infra_services[
+        "zkevm-bridge-service" + args["deployment_suffix"]
+    ]
+    # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
+    bridge_api_url = "http://{}:{}".format(
+        bridge_service.ip_address, bridge_service.ports["bridge-rpc"].number
+    )
+
     config = struct(
-        l1_eth_service=l1_eth_service,
-        zkevm_rpc_ip_address=zkevm_node_rpc.ip_address,
-        zkevm_rpc_http_port=zkevm_node_rpc.ports["http-rpc"],
-        bridge_service_ip_address=bridge_service.ip_address,
-        bridge_api_http_port=bridge_service.ports["bridge-rpc"],
+        l1_rpc_url=l1_rpc_url,
+        zkevm_rpc_url=zkevm_rpc_url,
+        bridge_api_url=bridge_api_url,
         zkevm_bridge_address=contract_setup_addresses["zkevm_bridge_address"],
         zkevm_rollup_address=contract_setup_addresses["zkevm_rollup_address"],
         zkevm_rollup_manager_address=contract_setup_addresses[
@@ -59,7 +76,9 @@ def run(plan, args):
 
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses):
-    bridge_config_template = read_file(src="./templates/bridge-config.toml")
+    bridge_config_template = read_file(
+        src="./templates/bridge-infra/bridge-config.toml"
+    )
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -87,7 +106,9 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses):
 
 
 def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
-    agglayer_config_template = read_file(src="./templates/agglayer-config.toml")
+    agglayer_config_template = read_file(
+        src="./templates/bridge-infra/agglayer-config.toml"
+    )
     return plan.render_templates(
         name="agglayer-config-artifact",
         config={

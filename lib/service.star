@@ -13,7 +13,9 @@ def get_contract_setup_addresses(plan, args):
         },
     )
     result = plan.exec(
-        service_name="contracts" + args["deployment_suffix"], recipe=exec_recipe
+        description="Getting contract setup addresses",
+        service_name="contracts" + args["deployment_suffix"],
+        recipe=exec_recipe,
     )
     return get_exec_recipe_result(result)
 
@@ -27,18 +29,3 @@ def get_exec_recipe_result(result):
             new_key = key[len(key_prefix) :]
             result_dict[new_key] = value
     return result_dict
-
-
-# Run jq command on a file in a service.
-def _run_jq_on_service(plan, service_name, filename, jq_command):
-    plan.print("Extracting contract addresses and ports...")
-    exec_recipe = ExecRecipe(
-        command=[
-            "/bin/sh",
-            "-c",
-            "cat {}".format(filename),
-        ],
-        extract={"extracted_value": "fromjson | {}".format(jq_command)},
-    )
-    result = plan.exec(service_name=service_name, recipe=exec_recipe)
-    return result["extract.extracted_value"]
