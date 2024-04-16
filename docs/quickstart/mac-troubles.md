@@ -4,7 +4,7 @@ Follow the steps below to avoid any issues using MacOS.
 
 ## zkEVM docker image issue
 
-If you get issues installing the zkEVM docker image after running the Kurtosis enclave, try running the following, then run it again:
+If you get issues downloading the zkEVM prover docker image when deploying the Kurtosis package, try downloading the image by specifying the architecture first before deploying the package:
 
 ```sh
 docker pull --platform linux/amd64 hermeznetwork/zkevm-prover:v6.0.0
