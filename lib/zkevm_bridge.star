@@ -25,7 +25,6 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
 
 def start_bridge_ui(plan, args, config):
     # Start the bridge ui.
-    bridge_ui_gateway_url = "http://zkevm-bridge-ui-gateway-001:80" # harcoded value
     bridge_ui_service = plan.add_service(
         name="zkevm-bridge-ui" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -36,9 +35,9 @@ def start_bridge_ui(plan, args, config):
                 ),
             },
             env_vars={
-                "ETHEREUM_RPC_URL": bridge_ui_gateway_url + "/l1rpc",
-                "POLYGON_ZK_EVM_RPC_URL": bridge_ui_gateway_url + "/zkevmrpc",
-                "BRIDGE_API_URL": bridge_ui_gateway_url + "/bridgeapi",
+                "ETHEREUM_RPC_URL": "/l1rpc",
+                "POLYGON_ZK_EVM_RPC_URL": "/zkevmrpc",
+                "BRIDGE_API_URL": "/bridgeapi",
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
