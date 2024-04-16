@@ -13,13 +13,13 @@ Welcome to the Kurtosis docs.
 
 1. Clone the repository.
 2. `cd` to the root.
-3. Run the `run.sh` script. You may need to make the script executable: `chmod +x run.sh`
+3. Run the `scripts/serve_docs.sh` script. You may need to make the script executable: `chmod +x scripts/serve_docs.sh`
 
 ```sh
-./run.sh
+sh scripts/serve_docs.sh
 ```
 
-The site comes up at http://127.0.0.1:8000/ 
+The site comes up at http://127.0.0.1:8000/
 
 ## Style guide
 

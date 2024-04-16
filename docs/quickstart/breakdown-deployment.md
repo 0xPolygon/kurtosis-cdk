@@ -1,6 +1,6 @@
 Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately.
 
-### Enable or disable stage
+### Enable or disable stages
 
 You can enable a stage by setting the boolean value to `true` and disable it by setting it to `false`, in the [`params.yml`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/params.yml) file.
 
