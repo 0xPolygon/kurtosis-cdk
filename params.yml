@@ -8,25 +8,25 @@ deployment_suffix: "-001"
 # The deployment process is divided into various stages.
 
 # Deploy local L1.
-deploy_l1: false
+deploy_l1: true
 
 # Deploy zkevm contracts on L1 (and also fund accounts).
-deploy_zkevm_contracts_on_l1: false
+deploy_zkevm_contracts_on_l1: true
 
 # Deploy zkevm node and cdk peripheral databases.
-deploy_databases: false
+deploy_databases: true
 
 # Deploy cdk central/trusted environment.
-deploy_cdk_central_environment: false
+deploy_cdk_central_environment: true
 
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
 # Deploy permissionless node.
-deploy_zkevm_permissionless_node: false
+deploy_zkevm_permissionless_node: true
 
 # Deploy observability stack.
-deploy_observability: false
+deploy_observability: true
 
 # Docker images and repositories used to spin up services.
 zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
