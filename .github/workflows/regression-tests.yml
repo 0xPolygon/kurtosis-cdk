@@ -100,7 +100,7 @@ jobs:
           yq -Y --in-place '.cdk_validium_node_image = "cdk-validium-node:local"' params.yml
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml .
 
       - name: Monitor and report any potential regressions to CI logs
         run: |
