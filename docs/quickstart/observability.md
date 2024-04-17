@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 The `kurtosis-cdk` stack deploys Prometheus, Grafana, and Panoptichain to help observe the network. These are enabled by default, but can be turned off by setting the `deploy_observability` to false in the `params.yml`.
 
 Find the dashboard details by running: `kurtosis enclave inspect cdk-v1`

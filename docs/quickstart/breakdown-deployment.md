@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 Rather than executing the deployment process as a monolithic operation, you can break it down into stages and run each stage separately.
 
 ### Enable or disable stages
