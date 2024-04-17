@@ -34,37 +34,47 @@ jobs:
       - name: Build zkevm-agglayer
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
-          cd agglayer
+          pushd agglayer || exit
           git checkout "${{ github.event.inputs.zkevm_agglayer_commit_id }}"
           docker build -t zkevm-agglayer:local -f ./docker/Dockerfile .
+          popd || exit
+          rm -rf agglayer
 
       - name: Build zkevm-bridge-service
         run: |
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
-          cd zkevm-bridge-service
+          pushd zkevm-bridge-service || exit
           git checkout "${{ github.event.inputs.zkevm_bridge_service_commit_id }}"
           docker build -t zkevm-bridge-service:local -f ./Dockerfile .
+          popd || exit
+          rm -rf zkevm-bridge-service
 
       - name: Build zkevm-bridge-ui
         run: |
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-ui.git
-          cd zkevm-bridge-ui
+          pushd zkevm-bridge-ui || exit
           git checkout "${{ github.event.inputs.zkevm_bridge_ui_commit_id }}"
           docker build -t zkevm-bridge-ui:local -f ./Dockerfile .
+          popd || exit
+          rm -rf zkevm-bridge-ui
 
       - name: Build cdk-data-availability
         run: |
           git clone https://github.com/0xPolygon/cdk-data-availability.git
-          cd cdk-data-availability
+          pushd cdk-data-availability || exit
           git checkout "${{ github.event.inputs.zkevm_dac_commit_id }}"
           docker build -t cdk-data-availability:local -f ./Dockerfile .
+          popd || exit
+          rm -rf cdk-data-availability
 
       - name: Build cdk-validium-node
         run: |
           git clone https://github.com/0xPolygon/cdk-validium-node.git
-          cd cdk-validium-node
+          pushd cdk-validium-node || exit
           git checkout "${{ github.event.inputs.zkevm_node_commit_id }}"
           docker build -t cdk-validium-node:local -f ./Dockerfile .
+          popd || exit
+          rm -rf cdk-validium-node
 
       # Install tools.
       - name: Install kurtosis
