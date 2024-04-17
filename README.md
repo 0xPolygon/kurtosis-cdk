@@ -93,7 +93,7 @@ When everything is done, you might want to clean up with this command which stop
 kurtosis clean --all
 ```
 
-For more information about the CDK stack and setting up Kurtosis, visit our [documentation](https://docs.polygon.technology/cdk/get-started/kurtosis-experimental/overview/) on the Polygon Knowledge Layer.
+For more information about the CDK stack and setting up Kurtosis, visit our [documentation](https://docs.polygon.technology/cdk/) on the Polygon Knowledge Layer.
 
 ## Contact
 
