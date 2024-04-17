@@ -2,11 +2,13 @@
 
 ## Documentation
 
-The Kurtosis docs are live on the Polygon Knowledge Layer here: https://docs.polygon.technology/cdk/get-started/kurtosis-experimental/overview/
+The Kurtosis docs are live on the Polygon Knowledge Layer here: https://docs.polygon.technology/cdk/get-started/kurtosis-experimental/overview/.
+
+The docs are running on the [mkdocs-material platform](https://squidfunk.github.io/mkdocs-material/) and are imported into the main site.
 
 Follow the steps below to run the Kurtosis docs locally.
 
-### Run docs locally
+### Run docs site locally
 
 #### Prerequisites
 
@@ -32,7 +34,8 @@ We are using the [Microsoft Style Guide](https://learn.microsoft.com/en-us/style
 ### Contributing
 
 1. Add your doc to the `docs` folder and add a menu item in the `config.yml` file.
-2. Raise a ticket on the docs team [slack channel](https://slack.com/shortcuts/Ft0613JADARL/ea28ee64d7fcc12fd40b0eb310b583d3), or [JIRA board](https://polygon.atlassian.net/jira/software/projects/DOCS/boards/79) to let us know, and we'll review it and approve.
+2. Make sure the site builds correctly.
+3. Raise a ticket on the docs team [slack channel](https://slack.com/shortcuts/Ft0613JADARL/ea28ee64d7fcc12fd40b0eb310b583d3), or [JIRA board](https://polygon.atlassian.net/jira/software/projects/DOCS/boards/79) to let us know, and we'll review it and approve.
 
 ### Contact
 
