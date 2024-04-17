@@ -2,10 +2,10 @@
 
 - A Linux-based OS (e.g., Ubuntu Server 22.04 LTS).
 - At least 8GB RAM with a 2-core CPU.
-- An AMD64 architecture system. 
+- An AMD64 architecture system.
 
 !!! tip
-    - Please follow the [MacOS troubleshooting instructions](mac-troubles.md) to avoid issues that may occur when running the stack on MacOS.
+    Ensure to install [Docker Engine](https://docs.docker.com/engine/) version 4.27 or higher to be able to run the zkEVM Prover on macOS.
 
 ## Prerequisites
 
@@ -17,9 +17,9 @@
 
     ```sh
     curl -s https://raw.githubusercontent.com/0xPolygon/kurtosis-cdk/main/scripts/tool_check.sh | bash
-    ``` 
+    ```
 
-## Set up 
+## Set up
 
 1. Clone the repo and `cd` into it.
 
@@ -36,9 +36,9 @@
     kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
-    This command takes a few minutes to complete and steps up and runs an entire local CDK deployment. 
-    
-When everything is set up and running, we can play around with the test CDK. 
+    This command takes a few minutes to complete and steps up and runs an entire local CDK deployment.
+
+When everything is set up and running, we can play around with the test CDK.
 
 ## Simple RPC calls
 
@@ -55,7 +55,7 @@ Name:            cdk-v1
 UUID:            47d8679066a6
 Status:          RUNNING
 Creation Time:   Wed, 10 Apr 2024 13:58:13 CEST
-Flags:           
+Flags:
 
 ========================================= Files Artifacts =========================================
 UUID   Name
@@ -102,7 +102,7 @@ You should see something like this:
 
 By default, the CDK is configured in test mode, and this means there is some pre-funded ETH in the admin account that has address: `0xE34aaF64b29273B7D567FCFc40544c014EEe9970`.
 
-Check the balance with the following: 
+Check the balance with the following:
 
 ```sh
 cast balance --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
@@ -125,14 +125,14 @@ You should see something like this as output:
 ```sh
 blockHash               0xc467523f297a9c0b859bedc8feaf44c3e7462de56f7d7899b2039d9a3cfc421d
 blockNumber             70
-contractAddress         
+contractAddress
 cumulativeGasUsed       21000
 effectiveGasPrice       1000000000
 from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 gasUsed                 21000
 logs                    []
 logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
+root
 status                  1
 transactionHash         0xa58b3383c1b1f53369723fdc537c88daa03585cb6a89aa49ebd493953d519fdf
 transactionIndex        0
