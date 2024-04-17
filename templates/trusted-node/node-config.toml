@@ -1,37 +1,39 @@
 # https://github.com/0xPolygonHermez/zkevm-node/blob/v0.5.13/test/config/test.node.config.toml
 IsTrustedSequencer = true
+ForkUpgradeBatchNumber = 0
+ForkUpgradeNewForkId = 0
 
 [Log]
 Environment = "production" # "production" or "development"
 Level = "debug"
 Outputs = ["stderr"]
 
-[State]
-        [State.DB]
-        User = "{{.zkevm_db_state_user}}"
-        Password = "{{.zkevm_db_state_password}}"
-        Name = "{{.zkevm_db_state_name}}"
-        Host = "{{.zkevm_db_state_hostname}}{{.deployment_suffix}}"
-        Port = "{{.zkevm_db_postgres_port}}"
-        EnableLog = false
-        MaxConns = 200
-        [State.Batch]
-                [State.Batch.Constraints]
-                MaxTxsPerBatch = 300
-                MaxBatchBytesSize = 120000
-                # TODO Why did this change
-                MaxCumulativeGasUsed = 1125899906842624
-                MaxKeccakHashes = 2145
-                MaxPoseidonHashes = 252357
-                MaxPoseidonPaddings = 135191
-                MaxMemAligns = 236585
-                MaxArithmetics = 236585
-                MaxBinaries = 473170
-                MaxSteps = 7570538
-                MaxSHA256Hashes = 1596
+[Etherman]
+URL = "{{.l1_rpc_url}}"
+ForkIDChunkSize = 20000
+MultiGasProvider = false
+
+[Etherman.Etherscan]
+ApiKey = ""
+Url = ""
+
+[EthTxManager]
+FrequencyToMonitorTxs = "1s"
+WaitTxToBeMined = "2m0s"
+ForcedGas = 0
+GasPriceMarginFactor = 1
+MaxGasPriceLimit = 0
+
+[[EthTxManager.PrivateKeys]]
+Path = "/etc/zkevm/sequencer.keystore"
+Password = "{{.zkevm_l2_keystore_password}}"
+
+[[EthTxManager.PrivateKeys]]
+Path = "/etc/zkevm/aggregator.keystore"
+Password = "{{.zkevm_l2_keystore_password}}"
+
 
 [Pool]
-FreeClaimGasLimit = 1500000
 IntervalToRefreshBlockedAddresses = "5m"
 IntervalToRefreshGasPrices = "5s"
 MaxTxBytesSize=100132
@@ -41,149 +43,196 @@ MinAllowedGasPriceInterval = "5m"
 PollMinAllowedGasPriceInterval = "15s"
 AccountQueue = 64
 GlobalQueue = 1024
-        [Pool.EffectiveGasPrice]
-                Enabled = false
-                L1GasPriceFactor = 0.25
-                ByteGasCost = 16
-                ZeroByteGasCost = 4
-                NetProfit = 1
-            BreakEvenFactor = 1.1
-                FinalDeviationPct = 10
-                EthTransferGasPrice = 0
-                EthTransferL1GasPriceFactor = 0
-                L2GasPriceSuggesterFactor = 0.5
-        [Pool.DB]
-        User = "{{.zkevm_db_pool_user}}"
-        Password = "{{.zkevm_db_pool_password}}"
-        Name = "{{.zkevm_db_pool_name}}"
-        Host = "{{.zkevm_db_pool_hostname}}{{.deployment_suffix}}"
-        Port = "{{.zkevm_db_postgres_port}}"
-        EnableLog = false
-        MaxConns = 200
+ForkID = 0
 
-[Etherman]
-URL = "{{.l1_rpc_url}}"
-ForkIDChunkSize = 20000
-MultiGasProvider = false
-        [Etherscan]
-                ApiKey = ""
+[Pool.DB]
+User = "{{.zkevm_db_pool_user}}"
+Password = "{{.zkevm_db_pool_password}}"
+Name = "{{.zkevm_db_pool_name}}"
+Host = "{{.zkevm_db_pool_hostname}}{{.deployment_suffix}}"
+Port = "{{.zkevm_db_postgres_port}}"
+EnableLog = false
+MaxConns = 200
+
+[Pool.EffectiveGasPrice]
+Enabled = false
+L1GasPriceFactor = 0.25
+ByteGasCost = 16
+ZeroByteGasCost = 4
+NetProfit = 1
+BreakEvenFactor = 1.1
+FinalDeviationPct = 10
+EthTransferGasPrice = 0
+EthTransferL1GasPriceFactor = 0
+L2GasPriceSuggesterFactor = 0.5
 
 [RPC]
 Host = "0.0.0.0"
 Port = {{.zkevm_rpc_http_port}}
-ReadTimeout = "60s"
-WriteTimeout = "60s"
-BatchRequestsEnabled = true
-BatchRequestsLimit = 500
-MaxRequestsPerIPAndSecond = 5000
+ReadTimeout = "1m0s"
+WriteTimeout = "1m0s"
+MaxRequestsPerIPAndSecond = 500
 SequencerNodeURI = ""
+MaxCumulativeGasUsed = 0
 EnableL2SuggestedGasPricePolling = true
-        [RPC.WebSockets]
-                Enabled = true
-                Port = {{.zkevm_rpc_ws_port}}
+BatchRequestsEnabled = false
+BatchRequestsLimit = 20
+L2Coinbase = "0x0000000000000000000000000000000000000000"
+MaxLogsCount = 10000
+MaxLogsBlockRange = 10000
+MaxNativeBlockHashBlockRange = 60000
+EnableHttpLog = true
+
+[RPC.WebSockets]
+Enabled = true
+Host = "0.0.0.0"
+Port = {{.zkevm_rpc_ws_port}}
+ReadLimit = 104857600
+
+[RPC.ZKCountersLimits]
+MaxKeccakHashes = 0
+MaxPoseidonHashes = 0
+MaxPoseidonPaddings = 0
+MaxMemAligns = 0
+MaxArithmetics = 0
+MaxBinaries = 0
+MaxSteps = 0
+MaxSHA256Hashes = 0
 
 [Synchronizer]
 SyncInterval = "1s"
 SyncChunkSize = 100
-TrustedSequencerURL = "" # If it is empty or not specified, then the value is read from the smc.
+TrustedSequencerURL = ""
+SyncBlockProtection = "safe"
+L1SyncCheckL2BlockHash = true
+L1SyncCheckL2BlockNumberhModulus = 30
 L1SynchronizationMode = "sequential"
-        [Synchronizer.L1ParallelSynchronization]
-                MaxClients = 10
-                MaxPendingNoProcessedBlocks = 25
-                RequestLastBlockPeriod = "5s"
-                RequestLastBlockTimeout = "5s"
-                RequestLastBlockMaxRetries = 3
-                StatisticsPeriod = "5m"
-                TimeoutMainLoop = "5m"
-                RollupInfoRetriesSpacing= "5s"
-                FallbackToSequentialModeOnSynchronized = false
-                [Synchronizer.L1ParallelSynchronization.PerformanceWarning]
-                        AceptableInacctivityTime = "5s"
-                        ApplyAfterNumRollupReceived = 10
+
+[Synchronizer.L1ParallelSynchronization]
+MaxClients = 10
+MaxPendingNoProcessedBlocks = 25
+RequestLastBlockPeriod = "5s"
+RequestLastBlockTimeout = "5s"
+RequestLastBlockMaxRetries = 3
+StatisticsPeriod = "5m0s"
+TimeOutMainLoop = "5m0s"
+RollupInfoRetriesSpacing = "5s"
+FallbackToSequentialModeOnSynchronized = false
+
+[Synchronizer.L1ParallelSynchronization.PerformanceWarning]
+AceptableInacctivityTime = "5s"
+ApplyAfterNumRollupReceived = 10
+
+[Synchronizer.L2Synchronization]
+AcceptEmptyClosedBatches = false
+ReprocessFullBatchOnClose = false
+CheckLastL2BlockHashOnCloseBatch = true
 
 [Sequencer]
 DeletePoolTxsL1BlockConfirmations = 100
-DeletePoolTxsCheckInterval = "12h"
-TxLifetimeCheckInterval = "10m"
-TxLifetimeMax = "3h"
+DeletePoolTxsCheckInterval = "12h0m0s"
+TxLifetimeCheckInterval = "10m0s"
+TxLifetimeMax = "3h0m0s"
 LoadPoolTxsCheckInterval = "500ms"
 StateConsistencyCheckInterval = "5s"
-        [Sequencer.Finalizer]
-                NewTxsWaitInterval = "100ms"
-                ForcedBatchesTimeout = "5s"
-                ForcedBatchesL1BlockConfirmations = 0
-                ForcedBatchesCheckInterval = "10s"
-                L1InfoTreeL1BlockConfirmations = 0
-                L1InfoTreeCheckInterval = "10s"
-                BatchMaxDeltaTimestamp = "20s"
-                L2BlockMaxDeltaTimestamp = "4s"
-                ResourceExhaustedMarginPct = 10
-                HaltOnBatchNumber = 0
-                SequentialBatchSanityCheck = false
-                SequentialProcessL2Block = true
-        [Sequencer.StreamServer]
-                Port = {{.zkevm_data_streamer_port}}
-                # FIXME: This might be a weird path, we should probably ensure we mount to a persistent volume
-                Filename = "/tmp/datastream.bin"
-                Version = 1
-                ChainID = {{.l1_chain_id}}
-                Enabled = true
+
+[Sequencer.Finalizer]
+ForcedBatchesTimeout = "1m0s"
+NewTxsWaitInterval = "100ms"
+ResourceExhaustedMarginPct = 10
+ForcedBatchesL1BlockConfirmations = 64
+L1InfoTreeL1BlockConfirmations = 64
+ForcedBatchesCheckInterval = "10s"
+L1InfoTreeCheckInterval = "10s"
+BatchMaxDeltaTimestamp = "5s"
+L2BlockMaxDeltaTimestamp = "3s"
+HaltOnBatchNumber = 0
+SequentialBatchSanityCheck = false
+SequentialProcessL2Block = true
+
+[Sequencer.Finalizer.Metrics]
+Interval = "1h0m0s"
+EnableLog = true
+
+[Sequencer.StreamServer]
+Port = {{.zkevm_data_streamer_port}}
+# FIXME: This might be a weird path, we should probably ensure we mount to a persistent volume
+Filename = "/tmp/datastream.bin"
+Version = 0
+ChainID = {{.l1_chain_id}}
+Enabled = true
+UpgradeEtrogBatchNumber = 0
+
+[Sequencer.StreamServer.Log]
+Environment = "production"
+Level = "debug"
+
 
 [SequenceSender]
-WaitPeriodSendSequence = "15s"
-LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
-L1BlockTimestampMargin = "5s"
+WaitPeriodSendSequence = "5s"
+LastBatchVirtualizationTimeMaxWaitPeriod = "5s"
+L1BlockTimestampMargin = "30s"
 MaxTxSizeForL1 = 131072
+ForkUpgradeBatchNumber = 0
+GasOffset = 80000
+MaxBatchesForL1 = 300
 L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
-PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 SenderAddress = "{{.zkevm_l2_sequencer_address}}"
-        [SequenceSender.StreamClient]
-                Server = "zkevm-node-sequencer{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+
+[SequenceSender.PrivateKey]
+Path = "/etc/zkevm/sequencer.keystore"
+Password = "{{.zkevm_l2_keystore_password}}"
 
 [Aggregator]
 Host = "0.0.0.0"
 Port = {{.zkevm_aggregator_port}}
 RetryTime = "5s"
-VerifyProofInterval = "10s"
-TxProfitabilityCheckerType = "acceptall"
-TxProfitabilityMinReward = "1.1"
+VerifyProofInterval = "5m0s"
 ProofStatePollingInterval = "5s"
-CleanupLockedProofsInterval = "2m"
+TxProfitabilityCheckerType = "acceptall"
+TxProfitabilityMinReward = "1100000000000000000"
+IntervalAfterWhichBatchConsolidateAnyway = "0s"
+ChainID = 0
+ForkId = 0
+CleanupLockedProofsInterval = "2m0s"
 GeneratingProofCleanupThreshold = "10m"
+GasOffset = 0
 UpgradeEtrogBatchNumber = 0
-BatchProofL1BlockConfirmations = 2
 {{if .is_cdk_validium}}
 ## CDK Validium Specific Settings
-SequencerPrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-# SequencerPrivateKey = {Path = "/etc/zkevm/proofsigner.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-SettlementBackend = "agglayer" # "l1"
+SenderAddress = "{{.zkevm_l2_agglayer_address}}"
+SettlementBackend = "agglayer"
 AggLayerTxTimeout = "600s"
 AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
-SenderAddress = "{{.zkevm_l2_agglayer_address}}"
 {{else}}
 SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 {{end}}
 
-[EthTxManager]
-ForcedGas = 0
-PrivateKeys = [
-        {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
-        {Path = "/etc/zkevm/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-]
+[Aggregator.SequencerPrivateKey]
+Path = "/etc/zkevm/sequencer.keystore"
+Password = "{{.zkevm_l2_keystore_password}}"
+# Path = "/etc/zkevm/proofsigner.keystore"
+# Password = "{{.zkevm_l2_keystore_password}}"
 
 [L2GasPriceSuggester]
-Type = "default"
-UpdatePeriod = "10s"
-Factor = 0.5
-DefaultGasPriceWei = 1000000000
+Type = "follower"
+DefaultGasPriceWei = 2000000000
 MaxGasPriceWei = 0
-
-[MTClient]
-URI  = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
+CheckBlocks = 0
+Percentile = 0
+UpdatePeriod = "10s"
+CleanHistoryPeriod = "1h0m0s"
+CleanHistoryTimeRetention = "5m0s"
+Factor = 0.15
 
 [Executor]
 URI = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_executor_port}}"
+MaxResourceExhaustedAttempts = 3
+WaitOnResourceExhaustion = "1s"
 MaxGRPCMessageSize = 100000000
+
+[MTClient]
+URI  = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
 
 [Metrics]
 Host = "0.0.0.0"
@@ -193,15 +242,14 @@ ProfilingHost = "0.0.0.0"
 ProfilingPort = {{.zkevm_pprof_port}}
 ProfilingEnabled = true
 
-[EventLog]
-        [EventLog.DB]
-        User = "{{.zkevm_db_event_user}}"
-        Password = "{{.zkevm_db_event_password}}"
-        Name = "{{.zkevm_db_event_name}}"
-        Host = "{{.zkevm_db_event_hostname}}{{.deployment_suffix}}"
-        Port = "{{.zkevm_db_postgres_port}}"
-        EnableLog = true
-        MaxConns = 200
+[EventLog.DB]
+User = "{{.zkevm_db_event_user}}"
+Password = "{{.zkevm_db_event_password}}"
+Name = "{{.zkevm_db_event_name}}"
+Host = "{{.zkevm_db_event_hostname}}{{.deployment_suffix}}"
+Port = "{{.zkevm_db_postgres_port}}"
+EnableLog = true
+MaxConns = 200
 
 [HashDB]
 User = "{{.zkevm_db_prover_user}}"
@@ -211,3 +259,39 @@ Host = "{{.zkevm_db_prover_hostname}}{{.deployment_suffix}}"
 Port = "{{.zkevm_db_postgres_port}}"
 EnableLog = false
 MaxConns = 200
+
+[State]
+MaxCumulativeGasUsed = 0
+ChainID = 0
+MaxResourceExhaustedAttempts = 0
+WaitOnResourceExhaustion = "0s"
+ForkUpgradeBatchNumber = 0
+ForkUpgradeNewForkId = 0
+MaxLogsCount = 0
+MaxLogsBlockRange = 0
+MaxNativeBlockHashBlockRange = 0
+AvoidForkIDInMemory = false
+
+[State.DB]
+User = "{{.zkevm_db_state_user}}"
+Password = "{{.zkevm_db_state_password}}"
+Name = "{{.zkevm_db_state_name}}"
+Host = "{{.zkevm_db_state_hostname}}{{.deployment_suffix}}"
+Port = "{{.zkevm_db_postgres_port}}"
+EnableLog = false
+MaxConns = 200
+
+[State.Batch.Constraints]
+MaxTxsPerBatch = 300
+MaxBatchBytesSize = 120000
+MaxCumulativeGasUsed = 1125899906842624
+MaxKeccakHashes = 2145
+MaxPoseidonHashes = 252357
+MaxPoseidonPaddings = 135191
+MaxMemAligns = 236585
+MaxArithmetics = 236585
+MaxBinaries = 473170
+MaxSteps = 7570538
+MaxSHA256Hashes = 1596
+
+
