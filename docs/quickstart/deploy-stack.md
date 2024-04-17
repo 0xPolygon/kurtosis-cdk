@@ -5,7 +5,7 @@
 - An AMD64 architecture system.
 
 !!! tip
-    Ensure to install [Docker Engine](https://docs.docker.com/engine/) version 4.27 or higher to be able to run the zkEVM Prover on macOS.
+    Make sure you install [Docker Engine](https://docs.docker.com/engine/) version 4.27 or higher to run the zkEVM prover on MacOS.
 
 ## Prerequisites
 
@@ -32,11 +32,11 @@
 
 3. Run the Kurtosis enclave.
 
-    ```
+    ```sh
     kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
-    This command takes a few minutes to complete and steps up and runs an entire local CDK deployment.
+    This command takes a few minutes to complete and sets up and runs an entire local CDK deployment.
 
 When everything is set up and running, we can play around with the test CDK.
 

@@ -23,7 +23,7 @@ theme:
     - content.action.edit
 
 nav:
-  - Overview: overview.md
+  - Overview: index.md
   - For technical users:
     - Deploy the CDK stack: quickstart/deploy-stack.md
     - Set up a permissionless node: quickstart/set-up-node.md
