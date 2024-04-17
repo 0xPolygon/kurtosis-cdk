@@ -63,7 +63,6 @@ polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosi
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 3  --mode uniswapv3
-cast nonce 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 ```
 
 Pretty often, you will want to check the output from the service. Here is how you can grab some logs:
@@ -91,7 +90,7 @@ If the number of verified batches is increasing, then it means the system works 
 When everything is done, you might want to clean up with this command which stops everything and deletes it.
 
 ```bash
-kurtosis clean -a
+kurtosis clean --all
 ```
 
 For more information about the CDK stack and setting up Kurtosis, visit our [documentation](https://docs.polygon.technology/cdk/get-started/kurtosis-experimental/overview/) on the Polygon Knowledge Layer.
