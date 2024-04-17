@@ -6,7 +6,7 @@ hide:
 
 # Overview
 
-Kurtosis is a developer platform that allows you to package and launch a backend stack with becoming overburdened with configuration details.
+Kurtosis is a developer platform that allows you to package and launch a backend stack without becoming overburdened with configuration details.
 
 The Polygon developer team have implemented a Kurtosis build for the CDK stack which includes all zkEVM node components, all services, and a validium option also.
 s
