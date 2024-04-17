@@ -83,11 +83,11 @@ jobs:
       # Deploy components.
       - name: Update params.yml to use local docker images
         run: |
-          yq -Y --in-place '.zkevm_agglayer_image = zkevm-agglayer:local' params.yml
-          yq -Y --in-place '.zkevm_bridge_service_image = zkevm-bridge-service:local' params.yml
-          yq -Y --in-place '.zkevm_bridge_ui_image = zkevm-bridge-ui:local' params.yml
-          yq -Y --in-place '.cdk_da_image = cdk-data-availability:local' params.yml
-          yq -Y --in-place '.cdk_validium_node_image = cdk-validium-node:local' params.yml
+          yq -Y --in-place '.zkevm_agglayer_image = "zkevm-agglayer:local"' params.yml
+          yq -Y --in-place '.zkevm_bridge_service_image = "zkevm-bridge-service:local"' params.yml
+          yq -Y --in-place '.zkevm_bridge_ui_image = "zkevm-bridge-ui:local"' params.yml
+          yq -Y --in-place '.cdk_da_image = "cdk-data-availability:local"' params.yml
+          yq -Y --in-place '.cdk_validium_node_image = "cdk-validium-node:local"' params.yml
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
