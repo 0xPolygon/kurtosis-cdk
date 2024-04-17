@@ -107,7 +107,7 @@ Copyright (c) 2024 PT Services DMCC
 
 Licensed under either:
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](./LICENSE_APACHE) or http://www.apache.org/licenses/LICENSE-2.0), or
+- Apache License, Version 2.0, ([LICENSE-APACHE](./LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0), or
 - MIT license ([LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 as your option.
