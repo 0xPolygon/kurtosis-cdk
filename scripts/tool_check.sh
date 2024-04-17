@@ -73,14 +73,6 @@ check_docker_version() {
     fi
 }
 
-check_docker_mac_connect_version() {
-    docker_mac_connect_install_docs="https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation"
-    ensure_required_tool_is_installed "docker-mac-net-connect" "$docker_mac_connect_install_docs"
-
-    docker_mac_connect_version="$(docker-mac-net-connect --version | cut -d ' ' -f 3 | cut -d "'" -f 2 | cut -d "v" -f 2)"
-    echo "✅ docker-mac-connect $docker_mac_connect_version is installed."
-}
-
 check_jq_version() {
     jq_install_docs="https://jqlang.github.io/jq/download/"
     if ensure_optional_tool_is_installed "jq" "$jq_install_docs"; then
@@ -126,25 +118,6 @@ main() {
     echo "Checking that you have the necessary tools to deploy the Kurtosis CDK package..."
     check_kurtosis_version
     check_docker_version
-    if [[ "$(uname)" == "Darwin" ]]; then
-        echo; echo "Checking macOS specific tools..."
-        check_docker_mac_connect_version
-
-        echo; echo "Running a dummy nginx container..."
-        if docker ps -a --format '{{.Names}}' | grep -q '^nginx$'; then
-            docker rm -f nginx > /dev/null
-        fi
-        docker run --rm --name nginx -d nginx
-
-        echo; echo "Making an HTTP request directly to the internal IP of the nginx container..."
-        if ! curl -m 1 -I "$(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')"; then
-            echo "❌ Curl request failed... Make sure docker-mac-connect is running and make sure you reinstalled Docker Engine for macOS."
-            exit 1
-        else
-            echo "✅ You can successfully access containers using their internal IPs."
-            docker rm -f nginx > /dev/null
-        fi
-    fi
 
     echo; echo "You might as well need the following tools to interact with the environment..."
     check_jq_version
