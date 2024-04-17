@@ -1,5 +1,6 @@
-name: Regression Tests
-'on':
+name: regression-tests
+
+on:
   workflow_dispatch:
     inputs:
       zkevm_agglayer_commit_id:
@@ -21,61 +22,76 @@ name: Regression Tests
         description: bake time (minutes)
         required: false
         default: 30
+
 jobs:
-  deploy_devnet:
+  regression-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v1
-      - name: Clone and build agglayer
+      - uses: actions/checkout@v2
+      - uses: docker/setup-buildx-action@v1
+
+      # Build docker images.
+      - name: Build zkevm-agglayer
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
           git checkout "${{ github.event.inputs.zkevm_agglayer_commit_id }}"
-          docker compose -f docker/docker-compose.yaml build --no-cache agglayer
-      - name: Clone and build zkevm-bridge-service
+          docker compose -f docker/docker-compose.yaml build --no-cache zkevm-agglayer
+
+      - name: Build zkevm-bridge-service
         run: |
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
           cd zkevm-bridge-service
           git checkout "${{ github.event.inputs.zkevm_bridge_service_commit_id }}"
           docker build -t zkevm-bridge-service:local -f ./Dockerfile .
-      - name: Clone and build zkevm-bridge-ui
+
+      - name: Build zkevm-bridge-ui
         run: |
           git clone https://github.com/0xPolygonHermez/zkevm-bridge-ui.git
           cd zkevm-bridge-ui
           git checkout "${{ github.event.inputs.zkevm_bridge_ui_commit_id }}"
           docker build -t zkevm-bridge-ui:local -f ./Dockerfile .
-      - name: Clone and build cdk-data-availability
+
+      - name: Build cdk-data-availability
         run: |
           git clone https://github.com/0xPolygon/cdk-data-availability.git
           cd cdk-data-availability
           git checkout "${{ github.event.inputs.zkevm_dac_commit_id }}"
-          docker build -t cdk-data-availability:local -f ./Dockerfile .    
-      - name: Clone and build cdk-validium-node
+          docker build -t cdk-data-availability:local -f ./Dockerfile .
+
+      - name: Build cdk-validium-node
         run: |
           git clone https://github.com/0xPolygon/cdk-validium-node.git
           cd cdk-validium-node
           git checkout "${{ github.event.inputs.zkevm_node_commit_id }}"
           docker build -t cdk-validium-node:local -f ./Dockerfile .
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-      - name: Clone internal kurtosis-cdk repo
-        run: |
-          git clone https://github.com/0xPolygon/kurtosis-cdk.git
-          cd kurtosis-cdk
-          git checkout dan/jit_containers_superusers
+
+      # Install tools.
       - name: Install kurtosis
         run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
           sudo apt install kurtosis-cli
           kurtosis analytics disable
-      - name: Deploy CDK devnet on local github runner
+
+      - name: Install yq
+        run: pip3 install yq
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Deploy components.
+      - name: Update params.yml to use local docker images
         run: |
-          cd kurtosis-cdk
-          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.zkevm_agglayer_image = zkevm-agglayer:local' params.yml
+          yq -Y --in-place '.zkevm_bridge_service_image = zkevm-bridge-service:local' params.yml
+          yq -Y --in-place '.zkevm_bridge_ui_image = zkevm-bridge-ui:local' params.yml
+          yq -Y --in-place '.cdk_da_image = cdk-data-availability:local' params.yml
+          yq -Y --in-place '.cdk_validium_node_image = cdk-validium-node:local' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
       - name: Monitor and report any potential regressions to CI logs
         run: |
           bake_time="${{ github.event.inputs.bake_time }}"
@@ -89,7 +105,7 @@ jobs:
             # Attempt to connect to the service
             if STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
               echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
-              
+
               # Check if STATUS has incremented
               if [ "$STATUS" != "$INITIAL_STATUS" ]; then
                 incremented=true
