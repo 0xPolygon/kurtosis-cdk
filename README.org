@@ -209,71 +209,13 @@ the CDK at a glance.
 2. The *Services* dashboard captures the metrics being emitted by the individual
    services in the CDK, and metrics pertaining to process health.
 
-To ensure that a service is properly emitting metrics, you can view all the 
+To ensure that a service is properly emitting metrics, you can view all the
 Prometheus targets and their state by navigating to the Prometheus endpoint with
 the ~/targets~ path.
 
 *** Troubleshooting for Mac Users
 
-Are you looking to run our Kurtosis CDK package on macOS? You are in the right place!
-
-Running Docker on macOS differs slightly from Docker on Linux. One key distinction is that Docker on macOS doesn't directly expose container networks to the host system. Consequently, accessing containers via their private IPs isn't possible by default.
-
-This is a problem because our Kurtosis package requires this functionality to run smoothly... But don't worry! We have a solution that will transform your Mac so that it works like magic!
-
-*Step 1*: Set up [[https://github.com/chipmk/docker-mac-net-connect?tab=readme-ov-file#installation][docker-mac-net-connect]] to address this precise issue.
-
-To begin, install `docker-mac-net-connect`.
-
-#+begin_src bash
-brew install chipmk/tap/docker-mac-net-connect
-#+end_src
-
-Next, start the service and configure it to launch on boot.
-
-#+begin_src bash
-sudo brew services start chipmk/tap/docker-mac-net-connect
-#+end_src
-
-*Step 2*: [[https://docs.docker.com/desktop/uninstall/][Uninstall]] your current Docker Engine version.
-
-#+begin_src bash
-/Applications/Docker.app/Contents/MacOS/uninstall
-#+end_src
-
-*Step 3*: [[https://docs.docker.com/desktop/install/mac-install/][Install]] the latest Docker Engine version.
-
-Ensure to install version 4.27 or higher. This version is necessary for running the zkEVM Prover on macOS.
-
-*Step 4*: Check that you can access containers using their private IPs.
-
-Start a dummy `nginx` container.
-
-#+begin_src bash
-docker run --rm --name nginx -d nginx
-#+end_src
-
-Access the container using its private IP.
-
-#+begin_src bash
-curl -m 1 -I $(docker inspect nginx --format '{{.NetworkSettings.IPAddress}}')
-#+end_src
-
-You should receive a response similar to the following.
-
-#+begin_src bash
-HTTP/1.1 200 OK
-Server: nginx/1.25.4
-Date: Mon, 08 Apr 2024 08:11:30 GMT
-Content-Type: text/html
-Content-Length: 615
-Last-Modified: Wed, 14 Feb 2024 16:03:00 GMT
-Connection: keep-alive
-ETag: "65cce434-267"
-Accept-Ranges: bytes
-#+end_src
-
-With these steps completed, your macOS environment is now ready to seamlessly run our Kurtosis CDK package. Happy coding!
+Ensure to install [[https://docs.docker.com/engine/][Docker Engine] version 4.27 or higher. It is necessary for running the zkEVM Prover on macOS.
 
 ** For Developers
 
