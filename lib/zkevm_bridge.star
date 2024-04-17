@@ -34,9 +34,9 @@ def start_bridge_ui(plan, args, config):
                 ),
             },
             env_vars={
-                "ETHEREUM_RPC_URL": config.l1_rpc_url,
-                "POLYGON_ZK_EVM_RPC_URL": config.zkevm_rpc_url,
-                "BRIDGE_API_URL": config.bridge_api_url,
+                "ETHEREUM_RPC_URL": "/l1rpc",
+                "POLYGON_ZK_EVM_RPC_URL": "/l2rpc",
+                "BRIDGE_API_URL": "/bridgeservice",
                 "ETHEREUM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "POLYGON_ZK_EVM_BRIDGE_CONTRACT_ADDRESS": config.zkevm_bridge_address,
                 "ETHEREUM_FORCE_UPDATE_GLOBAL_EXIT_ROOT": "true",
@@ -51,5 +51,23 @@ def start_bridge_ui(plan, args, config):
                 "ENABLE_REPORT_FORM": "false",
             },
             cmd=["run"],
+        ),
+    )
+
+
+def add_reverse_proxy(plan, args, config_artifact):
+    plan.add_service(
+        name="zkevm-bridge-proxy" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image=args["zkevm_bridge_proxy_image"],
+            ports={
+                "bridge-interface": PortSpec(
+                    number=80,
+                    application_protocol="http",
+                ),
+            },
+            files={
+                "/usr/local/etc/haproxy/": Directory(artifact_names=[config_artifact]),
+            },
         ),
     )

@@ -42,8 +42,12 @@ zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replace
 
 zkevm_agglayer_image: 0xpolygon/agglayer:0.1.1
 zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:multi-network
 panoptichain_image: minhdvu/panoptichain
+
+# temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
+zkevm_bridge_ui_image: nulyjkdhthz/zkevm-bridge-ui:kurtosis
+zkevm_bridge_proxy_image: haproxy:2.9.7
+
 
 # Port configuration.
 zkevm_hash_db_port: 50061
