@@ -36,7 +36,7 @@ jobs:
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
           git checkout "${{ github.event.inputs.zkevm_agglayer_commit_id }}"
-          docker compose -f docker/docker-compose.yaml build --no-cache zkevm-agglayer
+          docker build -t zkevm-agglayer:local -f ./docker/Dockerfile .
 
       - name: Build zkevm-bridge-service
         run: |
