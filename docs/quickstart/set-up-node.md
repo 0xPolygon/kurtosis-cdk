@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 In addition to the core stack, you can also attach and synchronize a permissionless node. 
 
 ## Prerequisites

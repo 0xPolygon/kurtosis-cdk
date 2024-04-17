@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 We manually build zkEVM contracts images to make the deployment of the Kurtosis package as fast as possible.
 
 Indeed, most of the deployment time is spent downloading npm dependencies and compiling the zkEVM contracts.
