@@ -1,0 +1,40 @@
+name: Feature Request
+description: Suggest a new feature, improvement, or change
+labels: ["feature request"]
+body:
+  - type: textarea
+    id: background-and-motivation
+    attributes:
+      label: Background & motivation
+      placeholder: |
+        What problem are you trying to solve? What are you looking to accomplish?
+
+        e.g. I'm trying to X, but Y...
+
+        Code examples and screenshots help us a lot.
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-behavior
+    attributes:
+      label: Desired behaviour
+      placeholder: |
+        What would you like to happen?
+
+        e.g. The X should Y...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How important is this to you?
+      multiple: false
+      # Update .github/issue-labeler.yml when updating the list of options
+      options:
+      - Critical; Kurtosis CDK is unusable for me without it.
+      - Painful; The lack of this feature makes using Kurtosis CDK frictionful.
+      - Nice to have; This feature would make using Kurtosis CDK more enjoyable.
+    validations:
+      required: true

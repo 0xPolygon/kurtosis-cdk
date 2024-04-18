@@ -1,0 +1,67 @@
+name: Bug Report
+description: Report broken functionality
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to make Kurtosis CDK better.
+
+  - type: input
+    id: system
+    attributes:
+      label: System information
+      description: |
+        Specify the OS version and the CPU model and architecture.
+      placeholder: Ubuntu 22.04 - amd64
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Commit id
+      placeholder: e.g. ded02d9
+      description: |
+        Retrieve the commit id using `git rev-parse --short HEAD`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description & steps to reproduce
+      description: |
+        We can support you better if you provide logs, screenshots, reproduction steps, [`kurtosis enclave dump`](https://docs.kurtosis.com/enclave-dump) output, [`kurtosis dump`](https://docs.kurtosis.com/dump) output, etc.
+      placeholder: |
+        When I do X, Y happens...
+
+        Attached is the `kurtosis dump` output...
+
+        To reproduce,
+        1. Run command '...'
+        2. Then do...
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-behavior
+    attributes:
+      label: Desired behavior
+      placeholder: |
+        What should happen?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: What is the severity of this bug?
+      multiple: false
+      # Update .github/issue-labeler.yml when updating the list of options
+      options:
+      - Critical; I am blocked and Kurtosis CDK is unusable for me because of this bug.
+      - Painful; This is causing significant friction in my workflow.
+      - Papercut; This bug is frustrating, but I have a workaround.
+    validations:
+      required: true
