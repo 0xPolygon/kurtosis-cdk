@@ -156,7 +156,10 @@ MaxGasPriceLimit = 0
 ################################################################################
 # PrivateKeys is an array of keystores and passwords that are used for
 # signing transactions. The keystores are standard go-ethereum style
-# keystores that are encrypted with the provided password
+# keystores that are encrypted with the provided password. Depending
+# on your deployment setup, you'll need to configure the sequencer
+# and/org aggregator key so that the tx manager for the given
+# component can sign and send transactions.
 #
 ################################################################################
 [[EthTxManager.PrivateKeys]]
@@ -171,263 +174,319 @@ Password = "{{.zkevm_l2_keystore_password}}"
 [Pool]
 
 ################################################################################
-# IntervalToRefreshBlockedAddresses
-#
+# IntervalToRefreshBlockedAddresses determines how often we'll query
+# the database in order to update the list of blocked addresses. If
+# you're frequently blocking and unblocking addresses, it might make
+# sense to increase the frequency.
 ################################################################################
 IntervalToRefreshBlockedAddresses = "5m"
 
 ################################################################################
-# IntervalToRefreshGasPrices
-#
+# IntervalToRefreshGasPrices determines how often we'll query the
+# database for updated L1 and L2 gas prices. This number should
+# probably be in line with the configured frequency for the
+# L2GaspriceSuggester's update period
 ################################################################################
-IntervalToRefreshGasPrices = "5s"
+IntervalToRefreshGasPrices = "10s"
 
 ################################################################################
-# MaxTxBytesSiz
-#
+# MaxTxBytesSize configures the RPC limit for the max size of a
+# transaction. In addition to the data, there are other fields like
+# access lists that have potential to take up a lot of space.
 ################################################################################
-MaxTxBytesSize=100132
+MaxTxBytesSize = 100132
 
 ################################################################################
-# MaxTxDataBytesSiz
-#
+# MaxTxDataBytesSize configured how big a transaction's input / data
+# field can be. This will have implications for contract deployments
+# and calls.
 ################################################################################
-MaxTxDataBytesSize=100000
+MaxTxDataBytesSize = 100000
 
 ################################################################################
-# DefaultMinGasPriceAllowed
-#
+# DefaultMinGasPriceAllowed is used to configure a minimum allowable
+# gas price in L2. When initially bootstrapping a network and
+# performing the initial bridge, you'll often need to set these to be
+# 0 in order to do some initial zero priced transactions.
 ################################################################################
 DefaultMinGasPriceAllowed = 1000000000
 
 ################################################################################
-# MinAllowedGasPriceInterval
-#
+# MinAllowedGasPriceInterval determines how far we'll look back when
+# determining the gas price. We track gas prices over time. If the L1
+# gas prices are climbing rapidly, we'll be less profitable if this
+# interval is very long. If we want to be more reactive to the L1 gas
+# price, this can be configured for a shorter duration.
 ################################################################################
 MinAllowedGasPriceInterval = "5m"
 
 ################################################################################
-# PollMinAllowedGasPriceInterval
-#
+# PollMinAllowedGasPriceInterval works in tandem with
+# MinAllowedGasPriceInterval. Every period of
+# PollMinAllowedGasPriceInterval we'll query our database looking back
+# for a period of MinAllowedGasPriceInterval to find the min gas
+# price. We'll then update the current suggested gas price in our pool
+# with that value.
 ################################################################################
 PollMinAllowedGasPriceInterval = "15s"
 
 ################################################################################
-# AccountQueue
-#
+# AccountQueue determines how many non-executable transactions can be
+# in the pool from a single address. If this value is configured to be
+# too high relative to the size of the GlobalQueue, it becomes
+# possible that a few users can fill up the entire pool. It's
+# advisable to keep this particular number lower in order to avoid a
+# single account filling up the entire pool and creating a DoS
 ################################################################################
 AccountQueue = 64
 
 ################################################################################
-# GlobalQueue
-#
+# GlobalQueue determines how many total non-executable transactions
+# can be in the pool across all account. Depending on overall
+# resources and throughput requirement this number may need to be
+# adjusted. It can be configured to be 0 in order to make the pool
+# unlimited.
 ################################################################################
 GlobalQueue = 1024
 
 ################################################################################
-# ForkID
+# ForkID is the current fork ID of the chain.
 #
+# Deprecated: In most cases the fork id is read from the chain and
+# does not need to be configured like this.
 ################################################################################
 ForkID = 0
 
 [Pool.DB]
-# User
-#
-
 ################################################################################
-################################################################################
-# User
-#
+# User specifies the username for database connection authentication.
 ################################################################################
 User = "{{.zkevm_db_pool_user}}"
 
 ################################################################################
-# Password
-#
+# Password is the authentication credential for the database connection.
 ################################################################################
 Password = "{{.zkevm_db_pool_password}}"
 
 ################################################################################
-# Name
-#
+# Name is the identifier of the target database to connect to.
 ################################################################################
 Name = "{{.zkevm_db_pool_name}}"
 
 ################################################################################
-# Host
-#
+# Host is the network address (hostname or IP) used to establish a database
+# connection. Append deployment-specific suffixes as needed.
 ################################################################################
 Host = "{{.zkevm_db_pool_hostname}}{{.deployment_suffix}}"
 
 ################################################################################
-# Port
-#
+# Port defines the network port used for the database connection.
 ################################################################################
 Port = "{{.zkevm_db_postgres_port}}"
 
 ################################################################################
-# EnableLog
-#
+# EnableLog toggles the logging of all executed queries. Enabling this
+# feature will significantly increase log volume and may affect performance.
 ################################################################################
 EnableLog = false
 
 ################################################################################
-# MaxConns
-#
+# MaxConns sets the maximum number of concurrent connections in the pool.
+# Adjust this value based on the database's configuration limits and expected
+# client load to optimize performance and resource utilization.
 ################################################################################
-MaxConns = 200
+MaxConns = 20
 
 [Pool.EffectiveGasPrice]
 
 ################################################################################
-# Enabled
+# Enabled will determine if we use the effective gas price logic. The
+# details of this feature are a bit complicated but at a high level it
+# allows for additional gas savings to be passed on the user.
 #
+# https://github.com/0xPolygonHermez/zkevm-rom/issues/316
+# https://polygon.technology/blog/polygon-zkevm-effective-gas-price-live-on-mainnet-beta
 ################################################################################
 Enabled = false
 
 ################################################################################
-# L1GasPriceFactor
-#
+# L1GasPriceFactor is used to determine the ratio of L1 to L2 gas
+# prices.
 ################################################################################
 L1GasPriceFactor = 0.25
 
 ################################################################################
-# ByteGasCost
-#
+# ByteGasCost is used in the effective gas price calculations and
+# determines how much we should charge per non-zero byte of data
+# availability
 ################################################################################
 ByteGasCost = 16
 
 ################################################################################
-# ZeroByteGasCost
-#
+# ZeroByteGasCost is used in the effective gas price calculations to
+# determine how much we should charge per zero byte of data
+# availability
 ################################################################################
 ZeroByteGasCost = 4
 
 ################################################################################
-# NetProfit
-#
+# NetProfit is used in the calculation of the break even gas
+# price. This factor determines how we determine our break even point.
 ################################################################################
 NetProfit = 1
 
 ################################################################################
-# BreakEvenFactor
-#
+# BreakEvenFactor is used after the break even gas price has been
+# determined. It is used to in the comparison of the signed gas price
+# to determine if we should use the signed gas price or the effective
+# gas price.
 ################################################################################
 BreakEvenFactor = 1.1
 
 ################################################################################
-# FinalDeviationPct
-#
+# FinalDeviationPct is the maxed allowed difference between the break
+# even gas price upon successive re-calculations
 ################################################################################
 FinalDeviationPct = 10
 
 ################################################################################
-# EthTransferGasPrice
-#
+# EthTransferGasPrice is the fixed gas price returned as effective gas
+# price for txs tha are ETH transfers (0 means disabled) Only one of
+# EthTransferGasPrice or EthTransferL1GasPriceFactor params can be
+# different than 0. If both params are set to 0, the sequencer will
+# halt and log an error
 ################################################################################
 EthTransferGasPrice = 0
 
 ################################################################################
-# EthTransferL1GasPriceFactor
-#
+# EthTransferL1GasPriceFactor is the percentage of L1 gas price
+# returned as effective gas price for txs tha are ETH transfers (0
+# means disabled) Only one of EthTransferGasPrice or
+# EthTransferL1GasPriceFactor params can be different than 0. If both
+# params are set to 0, the sequencer will halt and log an error
 ################################################################################
 EthTransferL1GasPriceFactor = 0
 
 ################################################################################
-# L2GasPriceSuggesterFactor
-#
+# L2GasPriceSuggesterFactor is used if the the EffectiveGasPrice
+# component is not enabled but is still somehow being called to
+# provide a gas price. This is likely only used in testing or
+# debugging purposes.
 ################################################################################
-L2GasPriceSuggesterFactor = 0.5
+L2GasPriceSuggesterFactor = 1
 
 [RPC]
 
 ################################################################################
-# Host
-#
+# Host is the IP address that the RPC's http server will bind to.
 ################################################################################
 Host = "0.0.0.0"
 
 ################################################################################
-# Port
-#
+# Port is used to configure which port our RPC http server will listen on
 ################################################################################
 Port = {{.zkevm_rpc_http_port}}
 
 ################################################################################
-# ReadTimeout
-#
+# ReadTimeout determines the maximal amount of time that a client can
+# spend sending us their request. After the configured amount of time
+# the RPC will drop the connection.
 ################################################################################
 ReadTimeout = "1m0s"
 
 ################################################################################
-# WriteTimeout
-#
+# WriteTimeout determines how long our server is willing to spend
+# writing data to the response connection. If the client is very slow,
+# we can time out here and reset the connection.
 ################################################################################
 WriteTimeout = "1m0s"
 
 ################################################################################
-# MaxRequestsPerIPAndSecond
-#
+# MaxRequestsPerIPAndSecond is used to configure how many requests a
+# single IP address can make within a single second.  These values are
+# tracked on each individual server (not centrally). So if you have a
+# load balance and several RPCs, it's possible that a user might be
+# rate limited on just one of them
 ################################################################################
-MaxRequestsPerIPAndSecond = 500
+MaxRequestsPerIPAndSecond = 50
 
 ################################################################################
-# SequencerNodeURI
+# SequencerNodeURI if configured will cause the RPC to relay certain
+# requests to a different RPC. The relayed methods are:
+# - eth_gasPriace
+# - eth_coinbase
+# - eth_syncing
+# - eth_getTransactionByHash if we can't find it locally
+# - eth_getTransactionCount
+# - getting the pending tx count
+# - sending a transaction
 #
+# By default the application will detect the trusted sequencer URL on
+# it's own based on what ever is configured in the smart contract, but
+# it's worth noting that there are some functions that read the
+# configured value separately from the detected value.
 ################################################################################
 SequencerNodeURI = ""
 
 ################################################################################
-# MaxCumulativeGasUsed
+# MaxCumulativeGasUsed is used in the estimation of gas and counters
 #
+# Deprecated: This setting might not be needed given that we set it in
+# the state.batch.constraints
 ################################################################################
 MaxCumulativeGasUsed = 0
 
 ################################################################################
-# EnableL2SuggestedGasPricePolling
-#
+# EnableL2SuggestedGasPricePolling will enable the checking of min gas
+# price. This must be enabled on order to support blocking
+# transactions that have a gas price that's too low.
 ################################################################################
 EnableL2SuggestedGasPricePolling = true
 
 ################################################################################
-# BatchRequestsEnabled
-#
+# BatchRequestsEnabled determines if the RPC should support an array
+# of JSON RPC requests to be executed in a single batch request.
 ################################################################################
-BatchRequestsEnabled = false
+BatchRequestsEnabled = true
 
 ################################################################################
-# BatchRequestsLimit
-#
+# BatchRequestsLimit will determine the max number of requests to be
+# supported in a single batch request
 ################################################################################
-BatchRequestsLimit = 20
+BatchRequestsLimit = 50
 
 ################################################################################
-# L2Coinbase
-#
+# L2Coinbase is used to configure the response from the RPC for an
+# eth_coinbase request. This will be used if the SequencerNodeURI is
+# not configured. The L2Coinbase defined here is not important to the
+# protocol
 ################################################################################
 L2Coinbase = "0x0000000000000000000000000000000000000000"
 
 ################################################################################
-# MaxLogsCount
-#
+# MaxLogsCount is a configuration to set the max number of logs that
+# can be returned in a single call to the state, if zero it means no
+# limit
 ################################################################################
-MaxLogsCount = 10000
+MaxLogsCount = 1000
 
 ################################################################################
-# MaxLogsBlockRange
-#
+# MaxLogsBlockRange MaxLogsBlockRange is a configuration to set the
+# max range for block number when querying TXslogs in a single call to
+# the state, if zero it means no limit
 ################################################################################
-MaxLogsBlockRange = 10000
+MaxLogsBlockRange = 1000
 
 ################################################################################
-# MaxNativeBlockHashBlockRange
-#
+# MaxNativeBlockHashBlockRange is a configuration to set the max range
+# for block number when querying native block hashes in a single call
+# to the state, if zero it means no limit
 ################################################################################
 MaxNativeBlockHashBlockRange = 60000
 
 ################################################################################
-# EnableHttpLog
-#
+# EnableHttpLog allows the user to enable or disable the logs related
+# to the HTTP requests to be captured by the server.
 ################################################################################
 EnableHttpLog = true
 
@@ -1166,92 +1225,84 @@ ProfilingPort = {{.zkevm_pprof_port}}
 ProfilingEnabled = true
 
 [EventLog.DB]
-
 ################################################################################
-# User
-#
+# User specifies the username for database connection authentication.
 ################################################################################
 User = "{{.zkevm_db_event_user}}"
 
 ################################################################################
-# Password
-#
+# Password is the authentication credential for the database connection.
 ################################################################################
 Password = "{{.zkevm_db_event_password}}"
 
 ################################################################################
-# Name
-#
+# Name is the identifier of the target database to connect to.
 ################################################################################
 Name = "{{.zkevm_db_event_name}}"
 
 ################################################################################
-# Host
-#
+# Host is the network address (hostname or IP) used to establish a database
+# connection. Append deployment-specific suffixes as needed.
 ################################################################################
 Host = "{{.zkevm_db_event_hostname}}{{.deployment_suffix}}"
 
 ################################################################################
-# Port
-#
+# Port defines the network port used for the database connection.
 ################################################################################
 Port = "{{.zkevm_db_postgres_port}}"
 
 ################################################################################
-# EnableLog
-#
+# EnableLog toggles the logging of all executed queries. Enabling this
+# feature will significantly increase log volume and may affect performance.
 ################################################################################
 EnableLog = true
 
 ################################################################################
-# MaxConns
-#
+# MaxConns sets the maximum number of concurrent connections in the pool.
+# Adjust this value based on the database's configuration limits and expected
+# client load to optimize performance and resource utilization.
 ################################################################################
-MaxConns = 200
+MaxConns = 20
 
 [HashDB]
-
 ################################################################################
-# User
-#
+# User specifies the username for database connection authentication.
 ################################################################################
 User = "{{.zkevm_db_prover_user}}"
 
 ################################################################################
-# Password
-#
+# Password is the authentication credential for the database connection.
 ################################################################################
 Password = "{{.zkevm_db_prover_password}}"
 
 ################################################################################
-# Name
-#
+# Name is the identifier of the target database to connect to.
 ################################################################################
 Name = "{{.zkevm_db_prover_name}}"
 
 ################################################################################
-# Host
-#
+# Host is the network address (hostname or IP) used to establish a database
+# connection. Append deployment-specific suffixes as needed.
 ################################################################################
 Host = "{{.zkevm_db_prover_hostname}}{{.deployment_suffix}}"
 
 ################################################################################
-# Port
-#
+# Port defines the network port used for the database connection.
 ################################################################################
 Port = "{{.zkevm_db_postgres_port}}"
 
 ################################################################################
-# EnableLog
-#
+# EnableLog toggles the logging of all executed queries. Enabling this
+# feature will significantly increase log volume and may affect performance.
 ################################################################################
 EnableLog = false
 
 ################################################################################
-# MaxConns
-#
+# MaxConns sets the maximum number of concurrent connections in the pool.
+# Adjust this value based on the database's configuration limits and expected
+# client load to optimize performance and resource utilization.
 ################################################################################
-MaxConns = 200
+MaxConns = 20
 
 [State]
 
@@ -1318,46 +1369,43 @@ AvoidForkIDInMemory = false
 [State.DB]
 
 ################################################################################
-# User
-#
+# User specifies the username for database connection authentication.
 ################################################################################
 User = "{{.zkevm_db_state_user}}"
 
 ################################################################################
-# Password
-#
+# Password is the authentication credential for the database connection.
 ################################################################################
 Password = "{{.zkevm_db_state_password}}"
 
 ################################################################################
-# Name
-#
+# Name is the identifier of the target database to connect to.
 ################################################################################
 Name = "{{.zkevm_db_state_name}}"
 
 ################################################################################
-# Host
-#
+# Host is the network address (hostname or IP) used to establish a database
+# connection. Append deployment-specific suffixes as needed.
 ################################################################################
 Host = "{{.zkevm_db_state_hostname}}{{.deployment_suffix}}"
 
 ################################################################################
-# Port
-#
+# Port defines the network port used for the database connection.
 ################################################################################
 Port = "{{.zkevm_db_postgres_port}}"
 
 ################################################################################
-# EnableLog
-#
+# EnableLog toggles the logging of all executed queries. Enabling this
+# feature will significantly increase log volume and may affect performance.
 ################################################################################
 EnableLog = false
 
 ################################################################################
-# MaxConns
-#
+# MaxConns sets the maximum number of concurrent connections in the pool.
+# Adjust this value based on the database's configuration limits and expected
+# client load to optimize performance and resource utilization.
 ################################################################################
-MaxConns = 200
+MaxConns = 20
 
 [State.Batch.Constraints]
 
