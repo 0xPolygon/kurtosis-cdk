@@ -7,7 +7,8 @@ def run(plan, args):
         name="deploy-parameters-artifact",
         config={
             "deploy_parameters.json": struct(
-                template=deploy_parameters_template, data=args,
+                template=deploy_parameters_template,
+                data=args,
             )
         },
     )
@@ -20,7 +21,8 @@ def run(plan, args):
         name="create-rollup-parameters-artifact",
         config={
             "create_rollup_parameters.json": struct(
-                template=create_rollup_parameters_template, data=args,
+                template=create_rollup_parameters_template,
+                data=args,
             )
         },
     )
@@ -33,7 +35,8 @@ def run(plan, args):
         name="contract-deployment-script-artifact",
         config={
             "run-contract-setup.sh": struct(
-                template=contract_deployment_script_template, data=args,
+                template=contract_deployment_script_template,
+                data=args,
             ),
         },
     )
@@ -46,7 +49,8 @@ def run(plan, args):
         name="create-keystores-script-artifact",
         config={
             "create-keystores.sh": struct(
-                template=create_keystores_script_template, data=args,
+                template=create_keystores_script_template,
+                data=args,
             ),
         },
     )

@@ -6,6 +6,7 @@ cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 observability_package = import_module("./observability.star")
 
+
 def run(
     plan,
     deploy_l1=True,
@@ -15,12 +16,12 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
-    args={}):
+    args={},
+):
     """Runs a Polygon CDK Roll Up with various configurable options.
 
     Args:
-        deployment_suffix (string): Suffix appended to service names 
-        deploy_l1 (bool): Deploy local l1. 
+        deploy_l1 (bool): Deploy local l1.
         deploy_zkevm_contracts_on_l1(bool): Deploy zkevm contracts on L1 (and also fund accounts).
         deploy_databases(bool): Deploy zkevm node and cdk peripheral databases.
         deploy_cdk_central_environment(bool): Deploy cdk central/trusted environment.
@@ -56,7 +57,7 @@ def run(
 
     # Get the genesis file.
     genesis_artifact = ""
-    if (deploy_cdk_central_environment or deploy_zkevm_permissionless_node):
+    if deploy_cdk_central_environment or deploy_zkevm_permissionless_node:
         plan.print("Getting genesis file...")
         genesis_artifact = plan.store_service_files(
             name="genesis",
