@@ -116,35 +116,27 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml .
 
-      - name: Monitor and report any potential regressions to CI logs
+      - name: Check that batches are being verified
         run: |
-          bake_time="${{ github.event.inputs.bake_time }}"
-          end_minute=$(( $(date +'%M') + bake_time))
+          timeout_seconds="${{ github.event.inputs.bake_time }}"
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_seconds*60))
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          INITIAL_STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
-          incremented=false
-
-          while [ $(date +'%M') -lt $end_minute ]; do
-            # Attempt to connect to the service
-            if STATUS=$(cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
-              echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
-
-              # Check if STATUS has incremented
-              if [ "$STATUS" != "$INITIAL_STATUS" ]; then
-                incremented=true
-                echo "ZKEVM_VERIFIED_BATCH_NUMBER successfully incremented to $STATUS. Exiting..."
-                exit 0
+          while true; do
+              current_time=$(date +%s)
+              if (( current_time > end_time )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+                  exit 1
               fi
-            else
-              echo "Failed to connect, waiting and retrying..."
-              sleep 60
-              continue
-            fi
-            sleep 60
-          done
 
-          if ! $incremented; then
-            echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
-            exit 1
-          fi
+              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+
+              if (( verified_batches > 5 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
+                  exit 0
+              fi
+
+              sleep 10
+          done
