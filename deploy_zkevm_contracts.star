@@ -1,26 +1,4 @@
-def run(
-    plan, 
-    l1_rpc_url,
-    l1_preallocated_mnemonic,
-    zkevm_rollup_fork_id,
-    zkevm_rollup_chain_id,
-    zkevm_rollup_consensus,
-    zkevm_l2_admin_address,
-    zkevm_l2_admin_private_key,
-    zkevm_l2_sequencer_address,
-    zkevm_l2_sequencer_private_key,
-    zkevm_l2_aggregator_address,
-    zkevm_l2_aggregator_private_key,
-    zkevm_l2_agglayer_address,
-    zkevm_l2_agglayer_private_key,
-    zkevm_l2_claimtxmanager_address,
-    zkevm_l2_claimtxmanager_private_key,
-    zkevm_l2_dac_address,
-    zkevm_l2_dac_private_key,
-    zkevm_dac_port,
-    zkevm_rpc_http_port,
-    deployment_suffix,
-    ):
+def run(plan, args):
     # Create deploy parameters
     deploy_parameters_template = read_file(
         src="./templates/contract-deploy/deploy_parameters.json"
@@ -29,15 +7,7 @@ def run(
         name="deploy-parameters-artifact",
         config={
             "deploy_parameters.json": struct(
-                template=deploy_parameters_template, data= {
-                    "zkevm_l2_admin_address": zkevm_l2_admin_address,
-                    "zkevm_l2_admin_private_key": zkevm_l2_admin_private_key,
-                    "zkevm_l2_sequencer_address": zkevm_l2_sequencer_address,
-                    "zkevm_l2_aggregator_address": zkevm_l2_aggregator_address,
-                    "zkevm_rollup_fork_id": zkevm_rollup_fork_id,
-                    "zkevm_rpc_http_port": zkevm_rpc_http_port,
-                    "deployment_suffix": deployment_suffix,
-                }
+                template=deploy_parameters_template, data=args,
             )
         },
     )
@@ -50,17 +20,7 @@ def run(
         name="create-rollup-parameters-artifact",
         config={
             "create_rollup_parameters.json": struct(
-                template=create_rollup_parameters_template, data={
-                    "zkevm_rollup_chain_id": zkevm_rollup_chain_id,
-                    "zkevm_rollup_fork_id": zkevm_rollup_fork_id,
-                    "zkevm_rollup_consensus": zkevm_rollup_consensus,
-                    "zkevm_l2_admin_address": zkevm_l2_admin_address,
-                    "zkevm_l2_admin_private_key": zkevm_l2_admin_private_key,
-                    "zkevm_l2_sequencer_address": zkevm_l2_sequencer_address,
-                    "zkevm_l2_aggregator_address": zkevm_l2_aggregator_address,
-                    "zkevm_rpc_http_port": zkevm_rpc_http_port,
-                    "deployment_suffix": deployment_suffix,
-                }
+                template=create_rollup_parameters_template, data=args,
             )
         },
     )
@@ -73,22 +33,8 @@ def run(
         name="contract-deployment-script-artifact",
         config={
             "run-contract-setup.sh": struct(
-                template=contract_deployment_script_template, data={
-                    "l1_rpc_url": l1_rpc_url,
-                    "l1_preallocated_mnemonic": l1_preallocated_mnemonic,
-                    "zkevm_rollup_fork_id": zkevm_rollup_fork_id,
-                    "zkevm_l2_admin_address": zkevm_l2_admin_address,
-                    "zkevm_l2_admin_private_key": zkevm_l2_admin_private_key,
-                    "zkevm_l2_sequencer_address": zkevm_l2_sequencer_address,
-                    "zkevm_l2_sequencer_private_key": zkevm_l2_sequencer_private_key,
-                    "zkevm_l2_aggregator_address": zkevm_l2_aggregator_address,
-                    "zkevm_l2_claimtxmanager_address": zkevm_l2_claimtxmanager_address,
-                    "zkevm_l2_agglayer_address": zkevm_l2_agglayer_address,
-                    "zkevm_l2_dac_address": zkevm_l2_dac_address,
-                    "zkevm_dac_port": zkevm_dac_port,
-                    "deployment_suffix": deployment_suffix,
-                }
-            )
+                template=contract_deployment_script_template, data=args,
+            ),
         },
     )
 
@@ -100,23 +46,15 @@ def run(
         name="create-keystores-script-artifact",
         config={
             "create-keystores.sh": struct(
-                template=create_keystores_script_template, data={
-                    "zkevm_l2_sequencer_private_key": zkevm_l2_sequencer_private_key,
-                    "zkevm_l2_aggregator_private_key": zkevm_l2_aggregator_private_key,
-                    "zkevm_l2_agglayer_private_key": zkevm_l2_agglayer_private_key,
-                    "zkevm_l2_dac_private_key": zkevm_l2_dac_private_key,
-                    "zkevm_l2_claimtxmanager_private_key": zkevm_l2_claimtxmanager_private_key,
-                    "zkevm_l2_proofsigner_private_key": zkevm_l2_proofsigner_private_key,
-                    "zkevm_l2_keystore_password": zkevm_l2_keystore_password,
-                }
-            )
+                template=create_keystores_script_template, data=args,
+            ),
         },
     )
 
     # Create helper service to deploy contracts
-    contracts_service_name = "contracts" + deployment_suffix
+    contracts_service_name = "contracts" + args["deployment_suffix"]
     zkevm_contracts_image = "{}:fork{}".format(
-        zkevm_contracts_image, zkevm_rollup_fork_id
+        args["zkevm_contracts_image"], args["zkevm_rollup_fork_id"]
     )
     plan.add_service(
         name=contracts_service_name,
