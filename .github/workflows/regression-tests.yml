@@ -36,8 +36,8 @@ jobs:
           echo "zkevm_node_commit_id: ${{ github.event.inputs.zkevm_node_commit_id }}"
           echo "bake_time: ${{ github.event.inputs.bake_time }}"
 
-      - uses: actions/checkout@v2
-      - uses: docker/setup-buildx-action@v1
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
 
       # Build docker images.
       - uses: actions/setup-go@v5
