@@ -17,7 +17,7 @@ def run(
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
     ## L1 configuration.
-    l1_chain_id=271828
+    l1_chain_id=271828,
     l1_preallocated_mnemonic="code code code code code code code code code code code quality",
     l1_rpc_url= "http://el-1-geth-lighthouse:8545",
     l1_ws_url= "ws://el-1-geth-lighthouse:8546",
@@ -34,7 +34,7 @@ def run(
     # L1 to be used at the gasTokenAddress
     zkevm_use_gas_token_contract=False,
     ## Permissionless node configuration.
-    trusted_sequencer_node_uri= "zkevm-node-sequencer-001:6900",
+    trusted_sequencer_node_uri="zkevm-node-sequencer-001:6900",
     zkevm_aggregator_host= "zkevm-node-aggregator-001",
     genesis_file= "templates/permissionless-node/genesis.json",
     ## Tools versions
