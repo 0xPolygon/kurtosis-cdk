@@ -1,42 +1,37 @@
 #!/bin/bash
 # This script will dump default and current configurations used in the CDK stack.
 
-normalize_toml_file() {
-  file="$1"
-  tomlq --toml-output --sort-keys 'walk(if type=="object" then with_entries(.key|=ascii_downcase) else . end)' "$file" > "$file.tmp"
-  mv "$file.tmp" "$file"
-}
+dump_default_zkevm_configs() {
+  directory="${1%/}"
+  echo "Dumping default zkevm configurations in $directory/..."
 
-dump_default_configs() {
+  # Dump default configs of zkevm components written in go.
+  go run dump_zkevm_default_config.go "$directory"
+
+  # Dump default configs of the rest of the zkevm components, not written in go.
   ZKEVM_NODE_INIT_EVENT_DB_DEFAULT_SCRIPT="https://raw.githubusercontent.com/0xPolygonHermez/zkevm-node/develop/db/scripts/init_event_db.sql"
   ZKEVM_NODE_INIT_PROVER_DB_DEFAULT_SCRIPT="https://raw.githubusercontent.com/0xPolygonHermez/zkevm-node/develop/db/scripts/init_prover_db.sql"
   ZKEVM_PROVER_DEFAULT_CONFIG="https://raw.githubusercontent.com/0xPolygonHermez/zkevm-prover/main/config/config_prover.json"
   ZKEVM_EXECUTOR_DEFAULT_CONFIG="https://raw.githubusercontent.com/0xPolygonHermez/zkevm-prover/main/config/config_executor.json"
   ZKEVM_BRIDGE_UI_DEFAULT_CONFIG="https://raw.githubusercontent.com/0xPolygonHermez/zkevm-bridge-ui/develop/.env.example"
 
-  echo "Dumping default zkevm configurations..."
-
-  # Dump zkevm components default configs (written in go).
-  go run dump_zkevm_default_config.go
-
-  # Dump the other configs.
   echo "Dumping default event db init script"
-  curl --output default/event-db-init.sql "$ZKEVM_NODE_INIT_EVENT_DB_DEFAULT_SCRIPT"
+  curl --output "$directory/event-db-init.sql" "$ZKEVM_NODE_INIT_EVENT_DB_DEFAULT_SCRIPT"
 
   echo "Dumping default prover db init script"
-  curl --output default/prover-db-init.sql "$ZKEVM_NODE_INIT_PROVER_DB_DEFAULT_SCRIPT"
+  curl --output "$directory/prover-db-init.sql" "$ZKEVM_NODE_INIT_PROVER_DB_DEFAULT_SCRIPT"
 
   echo "Dumping default zkevm-prover config"
-  curl --output default/zkevm-prover-config.json "$ZKEVM_PROVER_DEFAULT_CONFIG"
+  curl --output "$directory/zkevm-prover-config.json" "$ZKEVM_PROVER_DEFAULT_CONFIG"
 
   echo "Dumping default zkevm-executor config"
-  curl --output default/zkevm-executor-config.json "$ZKEVM_EXECUTOR_DEFAULT_CONFIG"
+  curl --output "$directory/zkevm-executor-config.json" "$ZKEVM_EXECUTOR_DEFAULT_CONFIG"
 
   echo "Dumping default zkevm-bridge-ui config"
-  curl --output default/zkevm-bridge-ui.env "$ZKEVM_BRIDGE_UI_DEFAULT_CONFIG"
+  curl --output "$directory/zkevm-bridge-ui.env" "$ZKEVM_BRIDGE_UI_DEFAULT_CONFIG"
 
-  # Normalize toml files.
-  for file in ./default/*.toml; do
+  # Normalize TOML files.
+  for file in "$directory"/*.toml; do
     echo "Normalizing $file"
     normalize_toml_file "$file"
   done
@@ -132,6 +127,12 @@ compare_configs() {
   done
 }
 
+normalize_toml_file() {
+  file="$1"
+  tomlq --toml-output --sort-keys 'walk(if type=="object" then with_entries(.key|=ascii_downcase) else . end)' "$file" > "$file.tmp"
+  mv "$file.tmp" "$file"
+}
+
 # Check the number of arguments
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <action> <target>"
@@ -149,7 +150,8 @@ case $1 in
         dump_current_configs
         ;;
       default)
-        dump_default_configs
+        directory="$3"
+        dump_default_zkevm_configs "$directory"
         ;;
       *)
         echo "Invalid target. Please choose 'current' or 'default'."

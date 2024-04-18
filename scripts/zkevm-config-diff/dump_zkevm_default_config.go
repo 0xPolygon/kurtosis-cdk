@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	agglayerconfig "github.com/0xPolygon/agglayer/config"
 	cdkdaconfig "github.com/0xPolygon/cdk-data-availability/config"
@@ -17,43 +18,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	configFolder = "default/"
-
-	zkevmNodeDefaultConfigFile           = "zkevm-node-config.toml"
-	agglayerDefaultConfigFile            = "zkevm-agglayer-config.toml"
-	cdkDataAvailabilityDefaultConfigFile = "cdk-data-availability-config.toml"
-	zkevmBridgeServiceDefaultConfigFile  = "zkevm-bridge-service.toml"
-)
-
-func main() {
-	// Create configuration folder.
-	if _, err := os.Stat(configFolder); os.IsNotExist(err) {
-		err := os.Mkdir(configFolder, 0755)
-		if err != nil {
-			slog.Error("Unable to create config directory", "err", err)
-		}
-		slog.Info("Config directory created", "name", configFolder)
-	}
-
-	// Dump default configs.
-	if err := dumpDefaultConfig(ZkevmNode, zkevmNodeDefaultConfigFile); err != nil {
-		slog.Error("Unable to dump zkevm-node default config", "err", err)
-	}
-
-	if err := dumpDefaultConfig(ZkevmAggLayer, agglayerDefaultConfigFile); err != nil {
-		slog.Error("Unable to dump zkevm-agglayer default config", "err", err)
-	}
-
-	if err := dumpDefaultConfig(CdkDataAvailability, cdkDataAvailabilityDefaultConfigFile); err != nil {
-		slog.Error("Unable to dump cdk-data-availability default config", "err", err)
-	}
-
-	if err := dumpDefaultConfig(ZkevmBridgeService, zkevmBridgeServiceDefaultConfigFile); err != nil {
-		slog.Error("Unable to dump zkevm-bridge-service default config", "err", err)
-	}
-}
-
 type Module string
 
 const (
@@ -63,8 +27,36 @@ const (
 	ZkevmBridgeService  Module = "zkevm-bridge-service"
 )
 
+func main() {
+	// Check if the expected number of command-line arguments is provided.
+	if len(os.Args) != 2 {
+		fmt.Println("Usage: dump_zkevm_default_config <directory>")
+		os.Exit(1)
+	}
+	directory := os.Args[1]
+
+	// Dump zkevm components default configurations.
+	slog.Info(fmt.Sprintf("Dumping current zkevm configurations in %s...", directory))
+
+	if err := dumpDefaultConfig(ZkevmNode, directory); err != nil {
+		slog.Error("Unable to dump zkevm-node default config", "err", err)
+	}
+
+	if err := dumpDefaultConfig(ZkevmAggLayer, directory); err != nil {
+		slog.Error("Unable to dump zkevm-agglayer default config", "err", err)
+	}
+
+	if err := dumpDefaultConfig(CdkDataAvailability, directory); err != nil {
+		slog.Error("Unable to dump cdk-data-availability default config", "err", err)
+	}
+
+	if err := dumpDefaultConfig(ZkevmBridgeService, directory); err != nil {
+		slog.Error("Unable to dump zkevm-bridge-service default config", "err", err)
+	}
+}
+
 // Generic method to dump default configuration file of a zkevm-node/cdk-validium components.
-func dumpDefaultConfig(module Module, configFile string) error {
+func dumpDefaultConfig(module Module, directory string) error {
 	slog.Info("Dumping default config", "module", module)
 
 	var defaultConfigFunc func() error
@@ -97,8 +89,8 @@ func dumpDefaultConfig(module Module, configFile string) error {
 	if err := defaultConfigFunc(); err != nil {
 		return fmt.Errorf("unable to create default config: %v", err)
 	}
-
-	if err := viper.WriteConfigAs(configFolder + configFile); err != nil {
+	filePath := filepath.Join(directory, fmt.Sprintf("%s-config.toml", module))
+	if err := viper.WriteConfigAs(filePath); err != nil {
 		return fmt.Errorf("unable to write default config file: %v", err)
 	}
 	return nil
