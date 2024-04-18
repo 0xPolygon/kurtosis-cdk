@@ -97,7 +97,7 @@ def run(
         "zkevm_rollup_consensus": "PolygonValidiumEtrog",
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
-        "zkevm_use_gas_token_contract": false,
+        "zkevm_use_gas_token_contract": False,
         "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
