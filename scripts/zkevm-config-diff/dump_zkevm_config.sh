@@ -80,8 +80,9 @@ dump_current_zkevm_configs() {
 compare_files_keys() {
   file1="$1"
   file2="$2"
+  echo "Comparing files keys: $file1 <> $file2"
 
-  extension="$(echo "$file1" | awk -F . '{print $NF}')"
+  extension="${file1##*.}"
   case "$extension" in
     toml)
       keys1="$(tomlq -r '[paths | join(".")]' "$file1")"
@@ -93,29 +94,37 @@ compare_files_keys() {
       ;;
     *)
       echo "Unsupported file format: ${file1##*.}"
-      return 1
+      exit 1
       ;;
   esac
 
-  diff=$(jq -n --argjson k1 "$keys1" --argjson k2 "$keys2" '$k1 - $k2')
-  if [ "$(echo "$diff" | jq length)" -gt 0 ]; then
-    if [ "$CI" = "true" ]; then
-      echo "::warning file={$file}::The configuration file lacks some properties present in the default file"
-    fi
-    echo "The config file $file lacks some properties present in the default file:"
-    echo "$diff"
-  fi
+  keys_exclusive_to_file1=$(jq -n --argjson k1 "$keys1" --argjson k2 "$keys2" '$k1 - $k2')
+  echo; echo "Keys exclusive to $file1:"
+  echo "$keys_exclusive_to_file1"
 
+  keys_exclusive_to_file2=$(jq -n --argjson k1 "$keys1" --argjson k2 "$keys2" '$k2 - $k1')
+  echo; echo "Keys exclusive to $file2:"
+  echo "$keys_exclusive_to_file2"
 
+  # if [ "$(echo "$diff" | jq length)" -gt 0 ]; then
+  #   if [ "$CI" = "true" ]; then
+  #     echo "::warning file={$file}::The configuration file lacks some properties present in the default file"
+  #   fi
+  #   echo "The config file $file lacks some properties present in the default file:"
+  #   echo "$diff"
+  # fi
 }
 
 compare_configs() {
-  echo "Comparing default and current configs..."
-  find ./current -type f \( -name "*.toml" -o -name "*.json" \) | while read -r f; do
+  default_directory="${1%/}"
+  current_directory="${2%/}"
+
+  echo "Comparing configs in $default_directory/ and $current_directory/..."
+  find "$default_directory" -type f \( -name "*.toml" -o -name "*.json" \) | while read -r f; do
     file="$(basename "$f")"
     echo
-    if [ -f "default/$file" ]; then
-      compare_files_keys "default/$file" "current/$file"
+    if [ -f "$default_directory/$file" ]; then
+      compare_files_keys "$default_directory/$file" "$current_directory/$file"
     else
       if [ "$CI" = "true" ]; then
         echo "::warning file={$file}::Missing default file"
@@ -159,7 +168,18 @@ case $1 in
     esac
     ;;
   compare)
-    compare_configs
+    case $2 in
+      files)
+        file1="$3"
+        file2="$4"
+        compare_files_keys "$file1" "$file2"
+        ;;
+      configs)
+        directory1="$3"
+        directory2="$4"
+        compare_configs "$directory1" "$directory2"
+        ;;
+    esac
     ;;
   *)
     echo "Invalid action. Please choose 'dump' or 'compare'."
