@@ -61,7 +61,7 @@ def run(
         plan.print("Getting genesis file...")
         genesis_artifact = plan.store_service_files(
             name="genesis",
-            service_name="contracts" + deployment_suffix,
+            service_name="contracts" + args["deployment_suffix"],
             src="/opt/zkevm/genesis.json",
         )
 
