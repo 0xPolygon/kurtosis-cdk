@@ -56,7 +56,7 @@ jobs:
                   exit 1
               fi
 
-              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
               if (( verified_batches > 5 )); then
@@ -155,7 +155,7 @@ jobs:
                   exit 1
               fi
 
-              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
               if (( verified_batches > 5 )); then
