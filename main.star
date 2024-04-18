@@ -30,7 +30,7 @@ def run(
         deploy_cdk_bridge_infra(bool): Deploy cdk/bridge infrastructure.
         deploy_zkevm_permissionless_node(bool): Deploy permissionless node.
         deploy_observability(bool): Deploys observability stack.
-        args(): Configures other aspects of the environment.
+        args(dict[string, string]): Configures other aspects of the environment.
     Returns:
         A full deployment of Polygon CDK.
     """

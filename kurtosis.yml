@@ -15,4 +15,4 @@ description: |-
   Deploy CDK/bridge infrastructure.
   Deploy permissionless node.
 
-  These are configurable as in the form fill.
+  These are configurable via the form inputs.

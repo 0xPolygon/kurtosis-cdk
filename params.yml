@@ -24,7 +24,6 @@ deploy_zkevm_permissionless_node: true
 deploy_observability: true
 
 args:
-
   # Suffix appended to service names.
   # Note: It should be a string.
   deployment_suffix: "-001"
