@@ -43,6 +43,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: 1.21.x
+          cache: false
       - name: Build zkevm-agglayer
         run: |
           git clone https://github.com/0xPolygon/agglayer.git
