@@ -1,4 +1,18 @@
 name: github.com/tedim52/kurtosis-cdk
 description: |-
-  This package allows you to provision a full CDK environment within Kurtosis
-replace: {}
+  Polygon CDK
+  ========
+  This package allows you to provision a full CDK environment within Kurtosis 
+  
+  Configuration
+  -------------
+  Currently, the deployment process includes the following stages:
+
+  Deploy Local L1.
+  Deploy zkEVM contracts on L1.
+  Deploy zkEVM node and CDK peripheral databases.
+  Deploy CDK central/trusted environment.
+  Deploy CDK/bridge infrastructure.
+  Deploy permissionless node.
+
+  These are configurable as in the form fill.
