@@ -27,6 +27,15 @@ jobs:
   regression-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Log inputs
+        run: |
+          echo "zkevm_agglayer_commit_id: ${{ github.event.inputs.zkevm_agglayer_commit_id }}"
+          echo "zkevm_bridge_service_commit_id: ${{ github.event.inputs.zkevm_bridge_service_commit_id }}"
+          echo "zkevm_bridge_ui_commit_id: ${{ github.event.inputs.zkevm_bridge_ui_commit_id }}"
+          echo "zkevm_dac_commit_id: ${{ github.event.inputs.zkevm_dac_commit_id }}"
+          echo "zkevm_node_commit_id: ${{ github.event.inputs.zkevm_node_commit_id }}"
+          echo "bake_time: ${{ github.event.inputs.bake_time }}"
+
       - uses: actions/checkout@v2
       - uses: docker/setup-buildx-action@v1
 
