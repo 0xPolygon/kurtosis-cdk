@@ -16,7 +16,9 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
-    args={},
+    args={
+        "deployment_suffix": "-001"
+    },
 ):
     """Runs a Polygon CDK Roll Up with various configurable options.
 
@@ -28,7 +30,7 @@ def run(
         deploy_cdk_bridge_infra(bool): Deploy cdk/bridge infrastructure.
         deploy_zkevm_permissionless_node(bool): Deploy permissionless node.
         deploy_observability(bool): Deploys observability stack.
-        args(dict[string, string]): Configures other aspects of the environment.
+        args(): Configures other aspects of the environment.
     Returns:
         A full deployment of Polygon CDK.
     """
