@@ -49,6 +49,7 @@ jobs:
           pushd agglayer || exit
           git checkout "${{ github.event.inputs.zkevm_agglayer_commit_id }}"
           make build
+          mv ./dist/agglayer .
           docker build -t zkevm-agglayer:local -f ./Dockerfile.release .
           popd || exit
           rm -rf agglayer
