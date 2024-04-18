@@ -108,9 +108,8 @@ compare_files_keys() {
   if [ "$(echo "$diff" | jq length)" -gt 0 ]; then
     if [ "$CI" = "true" ]; then
       echo "::warning file={$file}::The configuration file lacks some properties present in the default file"
-    else
-      echo "The config file $file lacks some properties present in the default file:"
     fi
+    echo "The config file $file lacks some properties present in the default file:"
     echo "$diff"
   fi
 
@@ -127,9 +126,8 @@ compare_configs() {
     else
       if [ "$CI" = "true" ]; then
         echo "::warning file={$file}::Missing default file"
-      else
-        echo "Missing default file $file"
       fi
+      echo "Missing default file $file"
     fi
   done
 }
