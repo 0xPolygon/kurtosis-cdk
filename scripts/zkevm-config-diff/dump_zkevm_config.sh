@@ -37,43 +37,41 @@ dump_default_zkevm_configs() {
   done
 }
 
-dump_current_configs() {
-  CURRENT_CONFIG_FOLDER="current/"
+dump_current_zkevm_configs() {
+  directory="${1%/}"
   ENCLAVE="cdk-v1"
+  echo "Dumping current zkevm configurations from kurtosis $ENCLAVE enclave in $directory..."
 
-  echo "Dumping current zkevm configurations..."
-  mkdir -p "$CURRENT_CONFIG_FOLDER"
-
-  # Dump all the current configs from the kurtosis enclave.
+  # Dump current configs from the Kurtosis enclave.
   echo "Dumping current zkevm-node config"
-  kurtosis service exec "$ENCLAVE" zkevm-node-rpc-001 "cat /etc/zkevm/node-config.toml" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/zkevm-node-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-node-rpc-001 "cat /etc/zkevm/node-config.toml" | tail -n +2 > "$directory/zkevm-node-config.toml"
 
   echo "Dumping current zkevm-agglayer config"
-  kurtosis service exec "$ENCLAVE" zkevm-agglayer-001 "cat /etc/zkevm/agglayer-config.toml" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/zkevm-agglayer-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-agglayer-001 "cat /etc/zkevm/agglayer-config.toml" | tail -n +2 > "$directory/zkevm-agglayer-config.toml"
 
   echo "Dumping current cdk-data-availability config"
-  kurtosis service exec "$ENCLAVE" zkevm-dac-001 "cat /etc/zkevm/dac-config.toml" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/cdk-data-availability-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-dac-001 "cat /etc/zkevm/dac-config.toml" | tail -n +2 > "$directory/cdk-data-availability-config.toml"
 
   echo "Dumping current zkevm-bridge-service config"
-  kurtosis service exec "$ENCLAVE" zkevm-bridge-service-001 "cat /etc/zkevm/bridge-config.toml" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/zkevm-bridge-service-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-bridge-service-001 "cat /etc/zkevm/bridge-config.toml" | tail -n +2 > "$directory/zkevm-bridge-service-config.toml"
 
   echo "Dumping current event db init script"
-  kurtosis service exec "$ENCLAVE" event-db-001 "cat /docker-entrypoint-initdb.d/event-db-init.sql" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/event-db-init.sql"
+  kurtosis service exec "$ENCLAVE" event-db-001 "cat /docker-entrypoint-initdb.d/event-db-init.sql" | tail -n +2 > "$directory/event-db-init.sql"
 
   echo "Dumping current prover db init script"
-  kurtosis service exec "$ENCLAVE" prover-db-001 "cat /docker-entrypoint-initdb.d/prover-db-init.sql" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/prover-db-init.sql"
+  kurtosis service exec "$ENCLAVE" prover-db-001 "cat /docker-entrypoint-initdb.d/prover-db-init.sql" | tail -n +2 > "$directory/prover-db-init.sql"
 
   echo "Dumping current zkevm-prover config"
-  kurtosis service exec "$ENCLAVE" zkevm-prover-001 "cat /etc/zkevm/prover-config.json" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/zkevm-prover-config.json"
+  kurtosis service exec "$ENCLAVE" zkevm-prover-001 "cat /etc/zkevm/prover-config.json" | tail -n +2 > "$directory/zkevm-prover-config.json"
 
   echo "Dumping current zkevm-executor config"
-  kurtosis service exec "$ENCLAVE" zkevm-executor-pless-001 "cat /etc/zkevm/executor-config.json" | tail -n +2 > "$CURRENT_CONFIG_FOLDER/zkevm-executor-config.json"
+  kurtosis service exec "$ENCLAVE" zkevm-executor-pless-001 "cat /etc/zkevm/executor-config.json" | tail -n +2 > "$directory/zkevm-executor-config.json"
 
   echo "Dumping current zkevm-bridge-ui config"
-  kurtosis service exec "$ENCLAVE" zkevm-bridge-ui-001 "cat /etc/zkevm/.env" | tail -n +2 | sort > "$CURRENT_CONFIG_FOLDER/zkevm-bridge-ui.env"
+  kurtosis service exec "$ENCLAVE" zkevm-bridge-ui-001 "cat /etc/zkevm/.env" | tail -n +2 | sort > "$directory/zkevm-bridge-ui.env"
 
-  # Normalize toml files.
-  for file in ./current/*.toml; do
+  # Normalize TOML files.
+  for file in "$directory"/*.toml; do
     echo "Normalizing $file"
     normalize_toml_file "$file"
   done
@@ -146,12 +144,13 @@ fi
 case $1 in
   dump)
     case $2 in
-      current)
-        dump_current_configs
-        ;;
       default)
         directory="$3"
         dump_default_zkevm_configs "$directory"
+        ;;
+      current)
+        directory="$3"
+        dump_current_zkevm_configs "$directory"
         ;;
       *)
         echo "Invalid target. Please choose 'current' or 'default'."
