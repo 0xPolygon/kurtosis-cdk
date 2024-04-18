@@ -6,7 +6,6 @@ cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 observability_package = import_module("./observability.star")
 
-
 def run(
     plan,
     deploy_l1=True,
@@ -16,6 +15,7 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
+    args)
     ## L1 configuration.
     l1_chain_id=271828,
     l1_preallocated_mnemonic="code code code code code code code code code code code quality",
@@ -42,11 +42,13 @@ def run(
     deployment_suffix="-001",
     zkevm_prover_image="hermeznetwork/zkevm-prover:v6.0.0",
     zkevm_node_image="0xpolygon/cdk-validium-node:0.6.4-cdk.2",
+    zkevm_dac_image="0xpolygon/cdk-data-availability:0.0.7",
     zkevm_contracts_image="leovct/zkevm-contracts",
-    zskevm_agglayer_image="0xpolygon/agglayer:0.1.1",
+    zkevm_agglayer_image="0xpolygon/agglayer:0.1.1",
     zkevm_bridge_service_image="hermeznetwork/zkevm-bridge-service:v0.4.2",
     panoptichain_image="minhdvu/panoptichain",
     zkevm_bridge_ui_image="nulyjkdhthz/zkevm-bridge-ui:kurtosis",
+    zkevm_bridge_proxy_image="haproxy:2.9.7",
     zkevm_hash_db_port=50061,
     zkevm_executor_port=50071,
     zkevm_aggregator_port=50081,
@@ -224,21 +226,44 @@ def run(
     # Deploy a local L1.
     if deploy_l1:
         plan.print("Deploying a local L1")
-        # ethereum_package.run(plan, args)
+        ethereum_package.run(
+            plan, 
+            l1_chain_id, 
+            l1_preallocated_mnemonic)
     else:
         plan.print("Skipping the deployment of a local L1")
 
     # Deploy zkevm contracts on L1.
     if deploy_zkevm_contracts_on_l1:
         plan.print("Deploying zkevm contracts on L1")
-        # deploy_zkevm_contracts_package.run(plan, args)
+        deploy_zkevm_contracts_package.run(
+            plan,
+            l1_rpc_url,
+            l1_preallocated_mnemonic,
+            zkevm_rollup_fork_id,
+            zkevm_rollup_chain_id,
+            zkevm_rollup_consensus,
+            zkevm_l2_admin_address,
+            zkevm_l2_private_key,
+            zkevm_l2_sequencer_address,
+            zkevm_l2_sequencer_private_key,
+            zkevm_l2_aggregator_address,
+            zkevm_l2_aggregator_private_key,
+            zkevm_l2_agglayer_address,
+            zkevm_l2_claimtxmanager_address,
+            zkevm_l2_claimtxmanager_private_key,
+            zkevm_l2_dac_address,
+            zkevm_l2_dac_private_key,
+            zkevm_dac_port,
+            zkevm_rpc_http_port,
+            deployment_suffix)
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        # cdk_databases_package.run(plan, args)
+        cdk_databases_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
