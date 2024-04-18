@@ -118,9 +118,9 @@ jobs:
 
       - name: Check that batches are being verified
         run: |
-          timeout_seconds="${{ github.event.inputs.bake_time }}"
+          timeout_minutes="${{ github.event.inputs.bake_time }}"
           start_time=$(date +%s)
-          end_time=$((start_time + timeout_seconds*60))
+          end_time=$((start_time + timeout_minutes*60))
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
           while true; do
