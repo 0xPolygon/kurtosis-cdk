@@ -77,42 +77,73 @@ dump_current_zkevm_configs() {
   done
 }
 
-compare_files_keys() {
-  file1="$1"
-  file2="$2"
-  echo "Comparing files keys: $file1 <> $file2"
+find_missing_keys_in_current_config_file() {
+  default_config_file="$1"
+  current_config_file="$2"
 
-  extension="${file1##*.}"
+  extension="${default_config_file##*.}"
   case "$extension" in
     toml)
-      keys1="$(tomlq -r '[paths | join(".")]' "$file1")"
-      keys2="$(tomlq -r '[paths | join(".")]' "$file2")"
+      default_config_keys="$(tomlq -r '[paths | join(".")]' "$default_config_file")"
+      current_config_keys="$(tomlq -r '[paths | join(".")]' "$current_config_file")"
       ;;
     json)
-      keys1="$(jq -r '[paths | join(".")]' "$file1")"
-      keys2="$(jq -r '[paths | join(".")]' "$file2")"
+      default_config_keys="$(jq -r '[paths | join(".")]' "$default_config_file")"
+      current_config_keys="$(jq -r '[paths | join(".")]' "$current_config_file")"
       ;;
     *)
-      echo "Unsupported file format: ${file1##*.}"
+      echo "Unsupported file format: ${default_config_file##*.}"
       exit 1
       ;;
   esac
 
-  keys_exclusive_to_file1=$(jq -n --argjson k1 "$keys1" --argjson k2 "$keys2" '$k1 - $k2')
-  echo; echo "Keys exclusive to $file1:"
-  echo "$keys_exclusive_to_file1"
+  missing_keys=$(jq -n --argjson d "$default_config_keys" --argjson c "$current_config_keys" '$d - $c')
+  if [ "$(echo "$missing_keys" | jq length)" -gt 0 ]; then
+    if [ "$CI" = "true" ]; then
+      echo "::warning::The current configuration file $current_config_file lacks some properties present in the default file $default_config_file"
+    fi
+    echo "The current configuration file $current_config_file lacks some properties present in the default file $default_config_file:"
+    echo "$missing_keys"
+  fi
+}
 
-  keys_exclusive_to_file2=$(jq -n --argjson k1 "$keys1" --argjson k2 "$keys2" '$k2 - $k1')
-  echo; echo "Keys exclusive to $file2:"
-  echo "$keys_exclusive_to_file2"
+find_unnecessary_keys_in_current_config_file() {
+  default_config_file="$1"
+  current_config_file="$2"
 
-  # if [ "$(echo "$diff" | jq length)" -gt 0 ]; then
-  #   if [ "$CI" = "true" ]; then
-  #     echo "::warning file={$file}::The configuration file lacks some properties present in the default file"
-  #   fi
-  #   echo "The config file $file lacks some properties present in the default file:"
-  #   echo "$diff"
-  # fi
+  extension="${default_config_file##*.}"
+  case "$extension" in
+    toml)
+      default_config_keys="$(tomlq -r '[paths | join(".")]' "$default_config_file")"
+      current_config_keys="$(tomlq -r '[paths | join(".")]' "$current_config_file")"
+      ;;
+    json)
+      default_config_keys="$(jq -r '[paths | join(".")]' "$default_config_file")"
+      current_config_keys="$(jq -r '[paths | join(".")]' "$current_config_file")"
+      ;;
+    *)
+      echo "Unsupported file format: ${default_config_file##*.}"
+      exit 1
+      ;;
+  esac
+
+  unnecessary_keys=$(jq -n --argjson d "$default_config_keys" --argjson c "$current_config_keys" '$c - $d')
+  if [ "$(echo "$unnecessary_keys" | jq length)" -gt 0 ]; then
+    if [ "$CI" = "true" ]; then
+      echo "::error::The current configuration file $current_config_file defines unnecessary properties"
+    fi
+    echo "The current configuration file $current_config_file defines unnecessary properties:"
+    echo "$unnecessary_keys"
+  fi
+}
+
+compare_files_keys() {
+  default_file="$1"
+  current_file="$2"
+  echo "Comparing default and current files keys: $default_file <> $current_file"
+
+  echo; find_missing_keys_in_current_config_file "$default_file" "$current_file"
+  echo; find_unnecessary_keys_in_current_config_file "$default_file" "$current_file"
 }
 
 compare_configs_keys() {
