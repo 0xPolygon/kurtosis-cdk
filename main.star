@@ -9,7 +9,6 @@ observability_package = import_module("./observability.star")
 
 def run(
     plan,
-    deployment_suffix="-001",
     deploy_l1=True,
     deploy_zkevm_contracts_on_l1=True,
     deploy_databases=True,
@@ -40,6 +39,7 @@ def run(
     genesis_file= "templates/permissionless-node/genesis.json",
     ## Tools versions
     polycli_version= "v0.1.42",
+    deployment_suffix="-001",
     zkevm_prover_image="hermeznetwork/zkevm-prover:v6.0.0",
     zkevm_node_image="0xpolygon/cdk-validium-node:0.6.4-cdk.2",
     zkevm_contracts_image="leovct/zkevm-contracts",
@@ -124,8 +124,8 @@ def run(
     """Runs a Polygon CDK Roll Up with various configurable options.
 
     Args:
-        deployment_suffix(string): "-001"
-        deploy_l1(bool): true
+        deployment_suffix (string): "-001"
+        deploy_l1 (bool): true
         deploy_zkevm_contracts_on_l1(bool): true
         deploy_databases(bool): true
         deploy_cdk_central_environment(bool): true
@@ -216,6 +216,8 @@ def run(
         zkevm_aggregator_host(string): zkevm-node-aggregator-001
         genesis_file(string): templates/permissionless-node/genesis.json
         polycli_version(string): v0.1.42
+    Returns:
+        A full deployment of Polygon CDK.
     """
     plan.print("Deploying CDK environment...")
 
