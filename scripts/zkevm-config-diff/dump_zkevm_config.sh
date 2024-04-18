@@ -115,7 +115,7 @@ compare_files_keys() {
   # fi
 }
 
-compare_configs() {
+compare_configs_keys() {
   default_directory="${1%/}"
   current_directory="${2%/}"
 
@@ -177,7 +177,7 @@ case $1 in
       configs)
         directory1="$3"
         directory2="$4"
-        compare_configs "$directory1" "$directory2"
+        compare_configs_keys "$directory1" "$directory2"
         ;;
     esac
     ;;
