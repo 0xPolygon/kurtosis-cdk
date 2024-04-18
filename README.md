@@ -87,6 +87,12 @@ cast rpc zkevm_verifiedBatchNumber
 
 If the number of verified batches is increasing, then it means the system works properly.
 
+To access the `zkevm-bridge` user interface, open this URL in your web browser.
+
+```bash
+open $(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 bridge-interface)
+```
+
 When everything is done, you might want to clean up with this command which stops everything and deletes it.
 
 ```bash

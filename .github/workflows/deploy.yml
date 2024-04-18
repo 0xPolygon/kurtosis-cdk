@@ -12,6 +12,7 @@ concurrency:
 
 env:
   CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS: "300" # 5 minutes
+  GO_VERSION: "1.21"
 
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
@@ -19,6 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       # Install tools.
       - name: Install kurtosis
@@ -41,7 +45,6 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      # Check that batches are being verified.
       - name: Check that batches are being verified
         run: |
           timeout_seconds="${CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS:-300}"
@@ -67,11 +70,31 @@ jobs:
               sleep 10
           done
 
+      # Compare configs.
+      - name: Dump zkevm default and current configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: |
+          sh dump_zkevm_config.sh dump default
+          echo
+          sh dump_zkevm_config.sh dump current
+
+      - name: List missing keys in current configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: sh dump_zkevm_config.sh compare
+
+      - name: Compare default and current configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: diff -r default current || true
+
+
   # Deploy the CDK environment incrementally, stage by stage.
   incremental_cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       # Install tools.
       - name: Install kurtosis
@@ -140,7 +163,6 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
-      # Check that batches are being verified.
       - name: Check that batches are being verified
         run: |
           timeout_seconds="${CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS:-300}"
@@ -165,3 +187,19 @@ jobs:
 
               sleep 10
           done
+
+      # Compare configs.
+      - name: Dump zkevm default and current configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: |
+          sh dump_zkevm_config.sh dump default
+          echo
+          sh dump_zkevm_config.sh dump current
+
+      - name: List missing keys in current configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: sh dump_zkevm_config.sh compare
+
+      - name: Compare default and current configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: diff -r default current || true
