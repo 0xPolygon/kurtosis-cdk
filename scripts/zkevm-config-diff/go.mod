@@ -3,12 +3,12 @@ module zkevm-node-dump-default-config
 go 1.21.8
 
 // To replace the zkevm-node dependency by cdk-validium-node, follow these steps:
-// replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node <version>
+// replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.4+cdk.2
 // Run go mod tidy.
-replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.5-0.20240410190057-9aa12d6044d0
+replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.5-0.20240401131830-60a3e2e517c0
 
 require (
-	github.com/0xPolygon/agglayer v0.1.4
+	github.com/0xPolygon/agglayer v0.1.1
 	github.com/0xPolygon/cdk-data-availability v0.0.7
 	github.com/0xPolygonHermez/zkevm-node v0.6.5
 	github.com/spf13/viper v1.18.2
