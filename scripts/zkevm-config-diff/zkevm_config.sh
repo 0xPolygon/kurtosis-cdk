@@ -170,12 +170,12 @@ find_missing_keys_in_kurtosis_cdk_config_file() {
 
   filename="$(basename "$kurtosis_cdk_config_file" | cut -d'.' -f 1)"
   missing_keys=$(jq -n --argjson d "$default_config_keys" --argjson c "$kurtosis_cdk_config_keys" '$d - $c')
+  echo "$missing_keys" > "diff/$filename-missing-keys.json"
   if [ "$(echo "$missing_keys" | jq length)" -gt 0 ]; then
     if [ "$CI" = "true" ]; then
       echo "::warning::$kurtosis_cdk_config_file lacks some properties present in $default_config_file."
       echo "$missing_keys"
     else
-      echo "$missing_keys" > "diff/$filename-missing-keys.json"
       echo "diff/$filename-missing-keys.json"
     fi
   else
@@ -192,12 +192,12 @@ find_unnecessary_keys_in_kurtosis_cdk_config_file() {
 
   filename="$(basename "$kurtosis_cdk_config_file" | cut -d'.' -f 1)"
   unnecessary_keys=$(jq -n --argjson d "$default_config_keys" --argjson c "$kurtosis_cdk_config_keys" '$c - $d')
+  echo "$unnecessary_keys" > "diff/$filename-unnecessary-keys.json"
   if [ "$(echo "$unnecessary_keys" | jq length)" -gt 0 ]; then
     if [ "$CI" = "true" ]; then
       echo "::error::$kurtosis_cdk_config_file defines unnecessary properties that are not in $default_config_file."
       echo "$unnecessary_keys"
     else
-      echo "$unnecessary_keys" > "diff/$filename-unnecessary-keys.json"
       echo "diff/$filename-unnecessary-keys.json"
     fi
   else
@@ -215,6 +215,16 @@ compare_files_keys() {
   find_unnecessary_keys_in_kurtosis_cdk_config_file "$default_file" "$kurtosis_cdk_file"
 }
 
+diff_files() {
+  file1="$1"
+  file2="$2"
+  filename="$(basename "$file2" | cut -d'.' -f 1)"
+  diff "$file1" "$file2" > "diff/$filename.diff"
+  if [ "$CI" != "true" ]; then
+    echo "diff/$filename.diff"
+  fi
+}
+
 compare_configs_keys() {
   default_directory="${1%/}"
   kurtosis_cdk_directory="${2%/}"
@@ -226,6 +236,7 @@ compare_configs_keys() {
     echo
     if [ -f "$default_directory/$file" ]; then
       compare_files_keys "$default_directory/$file" "$kurtosis_cdk_directory/$file"
+      diff_files "$default_directory/$file" "$kurtosis_cdk_directory/$file"
     else
       if [ "$CI" = "true" ]; then
         echo "::warning file={$file}::Missing default file"
@@ -233,6 +244,17 @@ compare_configs_keys() {
       echo "Missing default file $file"
     fi
   done
+
+  if [ "$CI" != "true" ]; then
+    echo; echo "Comparing $default_directory/event-db-init.sql and $kurtosis_cdk_directory/event-db-init.sql"
+    diff_files "$default_directory/event-db-init.sql" "$kurtosis_cdk_directory/event-db-init.sql"
+
+    echo; echo "Comparing $default_directory/prover-db-init.sql and $kurtosis_cdk_directory/prover-db-init.sql"
+    diff_files "$default_directory/prover-db-init.sql" "$kurtosis_cdk_directory/prover-db-init.sql"
+
+    echo; echo "Comparing $default_directory/zkevm-bridge-ui.env and $kurtosis_cdk_directory/zkevm-bridge-ui.env"
+    diff_files "$default_directory/zkevm-bridge-ui.env" "$kurtosis_cdk_directory/zkevm-bridge-ui.env"
+  fi
 }
 
 # Check the number of arguments
