@@ -14,6 +14,10 @@ def run(plan, args):
                     "l1_preallocated_mnemonic"
                 ],
             },
-            "additional_services": [],
+            "additional_services": [
+                "blockscout",  # block explorer
+                "dora",  # beaconchain explorer
+                "el_forkmon",  # fork monitor tool
+            ],
         },
     )
