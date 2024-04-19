@@ -2,7 +2,7 @@ name: github.com/0xPolygon/kurtosis-cdk
 description: |-
   Polygon CDK
   ========
-  This package allows you to provision a full CDK environment within Kurtosis 
+  This package allows you to provision a Polygon CDK Devnet within Kurtosis 
   
   Configuration
   -------------
