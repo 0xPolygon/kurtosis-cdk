@@ -164,7 +164,7 @@ ForcedGas = 0
 # Generally, we would not recommend setting this below 1. If you're
 # looking to save on gas costs, there are better ways.
 ################################################################################
-GasPriceMarginFactor = 1
+GasPriceMarginFactor = 1.25
 
 ################################################################################
 # MaxGasPriceLimit is used to specify in wei the upper limit price
@@ -653,9 +653,15 @@ TrustedSequencerURL = ""
 # data from L1. Latest would read blocks of the tip of the chain which
 # have a higher risk of being reorged. Safe and final are much less
 # likely to be reorged:
+#
 # https://www.alchemy.com/overviews/ethereum-commitment-levels
+#
+# This value is configured for latest to speed up testing in the local
+# environment but this is not recommened for production environments
 ################################################################################
-SyncBlockProtection = "safe"
+# SyncBlockProtection = "safe"
+# SyncBlockProtection = "finalized"
+SyncBlockProtection = "latest"
 
 ################################################################################
 # L1SyncCheckL2BlockHash will perform additional hash checks between a
@@ -1072,7 +1078,7 @@ GasOffset = 150000
 # verified faster, decreasing this number will help ensure that you're
 # sequencing more often.
 ################################################################################
-MaxBatchesForL1 = 50
+MaxBatchesForL1 = 10
 
 ################################################################################
 # L2Coinbase should generally be the address of the trusted
@@ -1438,7 +1444,7 @@ ProfilingEnabled = true
 # | |___  \ V / | |___| |\  | | | | |__| |_| | |_| |
 # |_____|  \_/  |_____|_| \_| |_| |_____\___/ \____|
 ################################################################################
-[Event Log.DB]
+[EventLog.DB]
 ################################################################################
 # User specifies the username for database connection authentication.
 ################################################################################
