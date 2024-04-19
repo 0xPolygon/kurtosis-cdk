@@ -1,0 +1,25 @@
+name: Docs Issue
+description: Report an issue in our documentation
+labels: ["docs"]
+assignees: []
+body:
+  - type: input
+    id: url-link
+    attributes:
+      label: Where did you see the issue in our documentation?
+      placeholder: e.g. https://docs.polygon.technology/cdk/
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue description
+      placeholder: |
+        e.g. There is a typo in the sentence 'Deploy the Kurtosis CDK stack with...' because...
+
+        This is a screenshot...
+      description: |
+        Screenshots or copy-pasting the problematic text is very helpful.
+    validations:
+      required: true
