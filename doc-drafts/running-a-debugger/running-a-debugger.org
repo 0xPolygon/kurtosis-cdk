@@ -2,7 +2,7 @@ In certain circumstances, it can be very convenient to run a debugger
 while working with the Kurtosis CDK setup. First, ensure your full
 environment is running.
 
-[[/home/john/code/kurtosis-cdk/doc-drafts/running-a-debugger/running-a-debugger.org_20240419_181913_JPVUts.png]]
+[[./running-a-debugger.org_20240419_181913_JPVUts.png]]
 
 In my case, I would like to run the synchronizer directly. Before
 doing anything, I need to grab the config file:
@@ -40,7 +40,7 @@ Each IDE / Debugger is going to be a little different here, but in my
 case, I'm just setting the program arguments to be the same arguments
 from our container
 
-[[/home/john/code/kurtosis-cdk/doc-drafts/running-a-debugger/running-a-debugger.org_20240419_183823_FnKc97.png]]
+[[./running-a-debugger.org_20240419_183823_FnKc97.png]]
 
 By default our config file will use local DNS which will not resolve
 properly. I'm going to hack those values out of my config file and
@@ -92,4 +92,4 @@ kurtosis service stop cdk-v1 zkevm-node-synchronizer-001
 
 Now we should be able to run our debugger synchronizer!
 
-[[/home/john/code/kurtosis-cdk/doc-drafts/running-a-debugger/running-a-debugger.org_20240419_183737_WaiABg.png]]
+[[./running-a-debugger.org_20240419_183737_WaiABg.png]]
