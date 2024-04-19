@@ -1,7 +1,7 @@
 def create_dac_service_config(args, config_artifact, dac_keystore_artifact):
     dac_name = "zkevm-dac" + args["deployment_suffix"]
     dac_service_config = ServiceConfig(
-        image=args["zkevm_dac_image"],
+        image=args["cdk_da_image"],
         ports={
             "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
         },
