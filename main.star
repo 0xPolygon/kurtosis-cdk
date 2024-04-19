@@ -104,7 +104,7 @@ def run(
         "polycli_version": "v0.1.42",
     },
 ):
-    """Runs a Polygon CDK Roll Up with various configurable options.
+    """Deploy a Polygon CDK Devnet with various configurable options.
 
     Args:
         deploy_l1 (bool): Deploy local l1.
