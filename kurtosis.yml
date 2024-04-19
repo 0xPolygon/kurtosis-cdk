@@ -2,8 +2,8 @@ name: github.com/0xPolygon/kurtosis-cdk
 description: |-
   Polygon CDK
   ========
-  This package allows you to provision a Polygon CDK Devnet within Kurtosis 
-  
+  This package allows you to provision a Polygon CDK Devnet within Kurtosis
+
   Configuration
   -------------
   Currently, the deployment process includes the following stages:
@@ -25,11 +25,11 @@ description: |-
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
-  zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.2
-  # zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
+  cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.2
+  # cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
-  zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.7
-  # zkevm_dac_image: 0xpolygon/cdk-data-availability:0.0.6
+  cdk_da_image: 0xpolygon/cdk-data-availability:0.0.7
+  # cdk_da_image: 0xpolygon/cdk-data-availability:0.0.6
 
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 

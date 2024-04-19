@@ -19,8 +19,8 @@ def run(
     args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
-        "zkevm_node_image": "0xpolygon/cdk-validium-node:0.6.4-cdk.2",
-        "zkevm_dac_image": "0xpolygon/cdk-data-availability:0.0.7",
+        "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.6.4-cdk.2",
+        "cdk_da_image": "0xpolygon/cdk-data-availability:0.0.7",
         "zkevm_contracts_image": "leovct/zkevm-contracts",
         "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.1",
         "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",

@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS: "300" # 5 minutes
+  CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES: 10
 
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
@@ -44,9 +44,9 @@ jobs:
       # Check that batches are being verified.
       - name: Check that batches are being verified
         run: |
-          timeout_seconds="${CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS:-300}"
+          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
           start_time=$(date +%s)
-          end_time=$((start_time + timeout_seconds))
+          end_time=$((start_time + timeout_minutes*60))
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
           while true; do
@@ -56,11 +56,11 @@ jobs:
                   exit 1
               fi
 
-              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
-              if (( verified_batches > 0 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least one batch was verified."
+              if (( verified_batches > 5 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
                   exit 0
               fi
 
@@ -143,9 +143,9 @@ jobs:
       # Check that batches are being verified.
       - name: Check that batches are being verified
         run: |
-          timeout_seconds="${CHECK_VERIFIED_BATCHES_TIMEOUT_SECONDS:-300}"
+          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
           start_time=$(date +%s)
-          end_time=$((start_time + timeout_seconds))
+          end_time=$((start_time + timeout_minutes*60))
 
           export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
           while true; do
@@ -155,11 +155,11 @@ jobs:
                   exit 1
               fi
 
-              verified_batches=$(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g')
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
-              if (( verified_batches > 0 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least one batch was verified."
+              if (( verified_batches > 5 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
                   exit 0
               fi
 
