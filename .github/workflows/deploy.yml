@@ -41,7 +41,7 @@ jobs:
 
       # Deploy components.
       - name: Enable gas token feature
-        run: yq -Y --in-place '.zkevm_use_gas_token_contract = true' params.yml
+        run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
