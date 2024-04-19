@@ -8,8 +8,8 @@ hide:
 
 Kurtosis is a developer platform that allows you to package and launch a backend stack without becoming overburdened with configuration details.
 
-The Polygon developer team have implemented a Kurtosis build for the CDK stack which includes all zkEVM node components, all services, and a validium option also.
-s
+The Polygon team has implemented a Kurtosis build for the CDK stack which includes all zkEVM node components, services, and a validium option.
+
 ## CDK architecture
 
 The diagram below shows how CDK stack components may interact with each other and with a layer 1 blockchain.
