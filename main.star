@@ -16,7 +16,7 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
-    args = {
+    args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
         "zkevm_node_image": "0xpolygon/cdk-validium-node:0.6.4-cdk.2",
@@ -101,8 +101,8 @@ def run(
         "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
-        "polycli_version": "v0.1.42"
-    }
+        "polycli_version": "v0.1.42",
+    },
 ):
     """Runs a Polygon CDK Roll Up with various configurable options.
 
