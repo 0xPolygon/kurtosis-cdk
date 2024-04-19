@@ -512,231 +512,267 @@ Port = {{.zkevm_rpc_ws_port}}
 ################################################################################
 ReadLimit = 104857600
 
+
+
+################################################################################
+# This section only applies to Estimation
+################################################################################
 [RPC.ZKCountersLimits]
 
 ################################################################################
-# MaxKeccakHashes
-#
+# MaxKeccakHashes represents the maximum number of Keccak hash
+# operations allowed across the Keccak state machines (Padding-KK,
+# Padding-KK-Bit, Bits2Field, Keccak-F) before triggering an Out Of
+# Counters (OOC) error
 ################################################################################
 MaxKeccakHashes = 0
 
 ################################################################################
-# MaxPoseidonHashes
-#
+# MaxPoseidonHashes limits the total number of Poseidon hash
+# computations that can be performed by the Poseidon SM during the
+# processing of a batch, ensuring resource constraints are respected.
 ################################################################################
 MaxPoseidonHashes = 0
 
 ################################################################################
-# MaxPoseidonPaddings
-#
+# MaxPoseidonPaddings specifies the maximum number of padding
+# operations the Poseidon SM can handle, typically used to align input
+# sizes for hash computations.
 ################################################################################
 MaxPoseidonPaddings = 0
 
 ################################################################################
-# MaxMemAligns
-#
+# MaxMemAligns defines the upper limit of memory alignment operations
+# that can be conducted by the Memory Align State Machine, critical
+# for maintaining correct data structuring across state machines.
 ################################################################################
 MaxMemAligns = 0
 
 ################################################################################
-# MaxArithmetics
-#
+# MaxArithmetics sets the ceiling on the number of arithmetic
+# operations (e.g., addition, multiplication, division) that the
+# Arithmetic State Machine can execute, ensuring computational limits
+# are adhered to.
 ################################################################################
 MaxArithmetics = 0
 
 ################################################################################
-# MaxBinaries
-#
+# MaxBinaries saps the number of binary operations (like AND, OR, XOR)
+# the Binary State Machine can perform, crucial for managing the
+# execution resources within the zkProver framework.
 ################################################################################
 MaxBinaries = 0
 
 ################################################################################
-# MaxSteps
-#
+# MaxSteps total count of computational steps or operations the entire
+# zkProver system can execute across all state machines for a single
+# batch, integral to monitoring overall system load and preventing
+# overuse.
 ################################################################################
 MaxSteps = 0
 
 ################################################################################
-# MaxSHA256Hashes
-#
+# MaxSHA256Hashes establishes the limit on SHA256 hash operations
+# performed within the system, ensuring compatibility with operations
+# that might interact with external systems or need SHA256
+# specifically for interoperability.
 ################################################################################
 MaxSHA256Hashes = 0
 
 [Synchronizer]
 
 ################################################################################
-# SyncInterval
-#
+# SyncInterval defines the wait duration between reading new
+# information from the trusted sequencer, DAC, L1. Specifically, this
+# controls how long we wait between running sync operations and not
+# the frequence of syncs.
 ################################################################################
 SyncInterval = "1s"
 
 ################################################################################
-# SyncChunkSize
-#
+# SyncChunkSize determines how large of a range of blocks we'll
+# attempt to pull while getting the rollup information.
 ################################################################################
 SyncChunkSize = 100
 
 ################################################################################
-# TrustedSequencerURL
-#
+# TrustedSequencerURL is the RPC url to connect to in order to sync
+# the trusted state. If this value is unset, we will read the trusted
+# sequencer URL from the rollup smart contract.
 ################################################################################
 TrustedSequencerURL = ""
 
 ################################################################################
-# SyncBlockProtection
-#
+# SyncBlockProtection determines which block tag is used for reading
+# data from L1. Latest would read blocks of the tip of the chain which
+# have a higher risk of being reorged. Safe and final are much less
+# likely to be reorged:
+# https://www.alchemy.com/overviews/ethereum-commitment-levels
 ################################################################################
 SyncBlockProtection = "safe"
 
 ################################################################################
-# L1SyncCheckL2BlockHash
-#
+# L1SyncCheckL2BlockHash will perform additional hash checks between a
+# permissionless node and the trusted sequencer. This setting would
+# add some additional querying and checking, but would help make it
+# clear if for any reason the node drifts from the trusted state.
 ################################################################################
 L1SyncCheckL2BlockHash = true
 
 ################################################################################
-# L1SyncCheckL2BlockNumberhModulus
-#
+# L1SyncCheckL2BlockNumberhModulus sets a modulus in order to
+# determine the frequency of blocks that should be checked assuming
+# L1SyncCheckL2BlockHash is also enabled. E.g. if this value is set to
+# 30, we'll trigger the checks every 30th L2 block.
 ################################################################################
 L1SyncCheckL2BlockNumberhModulus = 30
 
 ################################################################################
-# L1SynchronizationMode
-#
+# L1SynchronizationMode determines which mode of synchronization we
+# should use. By default we use "sequential" synchronization in
+# production environments. Parallel should be faster because it makes
+# better utilization of the executor, but has been tested less.
 ################################################################################
 L1SynchronizationMode = "sequential"
 
 [Synchronizer.L1ParallelSynchronization]
 
 ################################################################################
-# MaxClients
-#
+# MaxClients determines how many workers we'll spawn in order to read
+# L1 data and synchronize.
 ################################################################################
 MaxClients = 10
 
 ################################################################################
-# MaxPendingNoProcessedBlocks
-#
+# MaxPendingNoProcessedBlocks determines the size of the buffer used
+# to store rollup information from L1. It must be greater than or
+# equal to the MaxClients number. The suggested configuration is at 2x
+# the number of MaxClients.
 ################################################################################
 MaxPendingNoProcessedBlocks = 25
 
 ################################################################################
-# RequestLastBlockPeriod
-#
+# RequestLastBlockPeriod determines how long we'll wait to request a
+# new block from L1 assuming that we're already in sync.
 ################################################################################
 RequestLastBlockPeriod = "5s"
-# RequestLastBlockTimeout
-#
 
 ################################################################################
-################################################################################
-# RequestLastBlockTimeout
-#
+# RequestLastBlockTimeout determines a maximum duration that we'll
+# wait for a response when requesting a new block.
 ################################################################################
 RequestLastBlockTimeout = "5s"
 
 ################################################################################
-# RequestLastBlockMaxRetries
-#
+# RequestLastBlockMaxRetries can be used to define the max number of
+# retries to request the L1 block
 ################################################################################
 RequestLastBlockMaxRetries = 3
 
 ################################################################################
-# StatisticsPeriod
-#
+# StatisticsPeriod defines how often we should show a log with
+# stats. Set this to 0 in order to disable all together.
 ################################################################################
 StatisticsPeriod = "5m0s"
 
 ################################################################################
-# TimeOutMainLoop
-#
+# TimeOutMainLoop determines how long we'll wait for the main
+# synchronizer loop to complete
 ################################################################################
 TimeOutMainLoop = "5m0s"
 
 ################################################################################
-# RollupInfoRetriesSpacing
-#
+# RollupInfoRetriesSpacing determines the duration that we'll wait
+# between successive retries to fetch L1 data.
 ################################################################################
 RollupInfoRetriesSpacing = "5s"
 
 ################################################################################
-# FallbackToSequentialModeOnSynchronized
-#
+# FallbackToSequentialModeOnSynchronized if true the synchronizer will
+# use sequential mode once it is in sync.
 ################################################################################
 FallbackToSequentialModeOnSynchronized = false
 
 [Synchronizer.L1ParallelSynchronization.PerformanceWarning]
 
 ################################################################################
-# AceptableInacctivityTime
-#
+# AceptableInacctivityTime is the expected maximum time that the
+# consumer could wait until new data is produced. If the time is
+# greater it logs warning. The idea is to keep working the consumer as
+# much as possible, so if the producer is not fast enough then you
+# could increase the number of parallel clients to sync with L1
 ################################################################################
 AceptableInacctivityTime = "5s"
 
 ################################################################################
-# ApplyAfterNumRollupReceived
-#
+# ApplyAfterNumRollupReceived configures a minimum number of processed
+# events to see before processing further
 ################################################################################
 ApplyAfterNumRollupReceived = 10
 
 [Synchronizer.L2Synchronization]
 
 ################################################################################
-# AcceptEmptyClosedBatches
-#
+# AcceptEmptyClosedBatches will enable or disable the acceptance of
+# empty batches. If true, the synchronizer will accept empty batches
+# and process them.
 ################################################################################
 AcceptEmptyClosedBatches = false
 
 ################################################################################
-# ReprocessFullBatchOnClose
-#
+# ReprocessFullBatchOnClose when a batch is closed, this setting will
+# determine if we reprocess it or keep the trusted data.
 ################################################################################
 ReprocessFullBatchOnClose = false
-# CheckLastL2BlockHashOnCloseBatch
-#
 
 ################################################################################
-################################################################################
-# CheckLastL2BlockHashOnCloseBatch
-#
+# CheckLastL2BlockHashOnCloseBatch if this is set to true, we'll check
+# the last L2 block hash upon a batch being closed.
 ################################################################################
 CheckLastL2BlockHashOnCloseBatch = true
 
 [Sequencer]
 
 ################################################################################
-# DeletePoolTxsL1BlockConfirmations
-#
+# DeletePoolTxsL1BlockConfirmations is used to clear old and failed
+# transactions based it has been since it's failed
+# (14*DeletePoolTxsL1BlockConfirmations) or how many blocks have been
+# mined since the batch was virtualized
 ################################################################################
 DeletePoolTxsL1BlockConfirmations = 100
 
 ################################################################################
-# DeletePoolTxsCheckInterval
-#
+# DeletePoolTxsCheckInterval determines how often we'll attempt to
+# clean up the pool. In a high throughput scenario, it might be worth
+# while to lower this duration to avoid doing large deletes.
 ################################################################################
 DeletePoolTxsCheckInterval = "12h0m0s"
 
 ################################################################################
-# TxLifetimeCheckInterval
-#
+# TxLifetimeCheckInterval determines how often we'll check the current
+# txs in the pool to see if they have exceeded their lifetime
 ################################################################################
 TxLifetimeCheckInterval = "10m0s"
 
 ################################################################################
-# TxLifetimeMax
-#
+# TxLifetimeMax determines how long a non-executable transaction can
+# stay in the pool before being dropped.
 ################################################################################
 TxLifetimeMax = "3h0m0s"
 
 ################################################################################
-# LoadPoolTxsCheckInterval
-#
+# LoadPoolTxsCheckInterval determines how frequently the sequencer
+# will check to see if there are new transactions in the pool
 ################################################################################
 LoadPoolTxsCheckInterval = "500ms"
 
 ################################################################################
-# StateConsistencyCheckInterval
-#
+# StateConsistencyCheckInterval determines how long the sequencer will
+# wait to check if a state inconsistency has developed. This is
+# essentially looking for trusted_reorgs of some kind that have
+# occurred while the application has been running. If such an
+# inconsistency develops, the finalizer will halt requiring a cleanup
+# / restart.
 ################################################################################
 StateConsistencyCheckInterval = "5s"
 
@@ -1403,6 +1439,11 @@ EnableLog = false
 ################################################################################
 MaxConns = 20
 
+
+# https://github.com/0xPolygonHermez/zkevm-rom/blob/main/docs/opcode-cost-zk-counters.md
+# https://github.com/0xPolygonHermez/zkevm-techdocs/blob/main/knowledge-layer/architecture/PDFs/aggregator.pdf
+# https://github.com/0xPolygonHermez/zkevm-proverjs/tree/main/src/sm
+# https://docs.polygon.technology/zkEVM/architecture/zkprover/
 [State.Batch.Constraints]
 
 ################################################################################
@@ -1418,8 +1459,8 @@ MaxTxsPerBatch = 300
 MaxBatchBytesSize = 120000
 # MaxCumulativeGasUsed
 #
-
 ################################################################################
+
 ################################################################################
 # MaxCumulativeGasUsed
 #
@@ -1427,50 +1468,62 @@ MaxBatchBytesSize = 120000
 MaxCumulativeGasUsed = 1125899906842624
 
 ################################################################################
-# MaxKeccakHashes
-#
+# MaxKeccakHashes represents the maximum number of Keccak hash
+# operations allowed across the Keccak state machines (Padding-KK,
+# Padding-KK-Bit, Bits2Field, Keccak-F) before triggering an Out Of
+# Counters (OOC) error
 ################################################################################
 MaxKeccakHashes = 2145
 
 ################################################################################
-# MaxPoseidonHashes
-#
+# MaxPoseidonHashes limits the total number of Poseidon hash
+# computations that can be performed by the Poseidon SM during the
+# processing of a batch, ensuring resource constraints are respected.
 ################################################################################
 MaxPoseidonHashes = 252357
 
 ################################################################################
-# MaxPoseidonPaddings
-#
+# MaxPoseidonPaddings specifies the maximum number of padding
+# operations the Poseidon SM can handle, typically used to align input
+# sizes for hash computations.
 ################################################################################
 MaxPoseidonPaddings = 135191
 
 ################################################################################
-# MaxMemAligns
-#
+# MaxMemAligns defines the upper limit of memory alignment operations
+# that can be conducted by the Memory Align State Machine, critical
+# for maintaining correct data structuring across state machines.
 ################################################################################
 MaxMemAligns = 236585
 
 ################################################################################
-# MaxArithmetics
-#
+# MaxArithmetics sets the ceiling on the number of arithmetic
+# operations (e.g., addition, multiplication, division) that the
+# Arithmetic State Machine can execute, ensuring computational limits
+# are adhered to.
 ################################################################################
 MaxArithmetics = 236585
 
 ################################################################################
-# MaxBinaries
-#
+# MaxBinaries saps the number of binary operations (like AND, OR, XOR)
+# the Binary State Machine can perform, crucial for managing the
+# execution resources within the zkProver framework.
 ################################################################################
 MaxBinaries = 473170
 
 ################################################################################
-# MaxSteps
-#
+# MaxSteps total count of computational steps or operations the entire
+# zkProver system can execute across all state machines for a single
+# batch, integral to monitoring overall system load and preventing
+# overuse.
 ################################################################################
 MaxSteps = 7570538
 
 ################################################################################
-# MaxSHA256Hashes
-#
+# MaxSHA256Hashes establishes the limit on SHA256 hash operations
+# performed within the system, ensuring compatibility with operations
+# that might interact with external systems or need SHA256
+# specifically for interoperability.
 ################################################################################
 MaxSHA256Hashes = 1596
 
