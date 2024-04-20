@@ -350,27 +350,27 @@ MaxConns = 20
 # https://github.com/0xPolygonHermez/zkevm-rom/issues/316
 # https://polygon.technology/blog/polygon-zkevm-effective-gas-price-live-on-mainnet-beta
 # ------------------------------------------------------------------------------
-Enabled = false
+Enabled = true
 
 # ------------------------------------------------------------------------------
 # L1GasPriceFactor is used to determine the ratio of L1 to L2 gas
 # prices.
 # ------------------------------------------------------------------------------
-L1GasPriceFactor = 0.25
+L1GasPriceFactor = 0.008
 
 # ------------------------------------------------------------------------------
 # ByteGasCost is used in the effective gas price calculations and
 # determines how much we should charge per non-zero byte of data
 # availability
 # ------------------------------------------------------------------------------
-ByteGasCost = 16
+ByteGasCost = 20
 
 # ------------------------------------------------------------------------------
 # ZeroByteGasCost is used in the effective gas price calculations to
 # determine how much we should charge per zero byte of data
 # availability
 # ------------------------------------------------------------------------------
-ZeroByteGasCost = 4
+ZeroByteGasCost = 5
 
 # ------------------------------------------------------------------------------
 # NetProfit is used in the calculation of the break even gas
@@ -384,7 +384,7 @@ NetProfit = 1
 # to determine if we should use the signed gas price or the effective
 # gas price.
 # ------------------------------------------------------------------------------
-BreakEvenFactor = 1.1
+BreakEvenFactor = 1.3
 
 # ------------------------------------------------------------------------------
 # FinalDeviationPct is the maxed allowed difference between the break
@@ -1172,7 +1172,7 @@ TxProfitabilityCheckerType = "acceptall"
 # TxProfitabilityMinReward is used to configure the minimum reward
 # if we're using the base model for tx profitability
 # ------------------------------------------------------------------------------
-TxProfitabilityMinReward = "1100000000000000000"
+TxProfitabilityMinReward = "1.1"
 
 # ------------------------------------------------------------------------------
 # IntervalAfterWhichBatchConsolidateAnyway is interval for the main
@@ -1224,7 +1224,7 @@ GeneratingProofCleanupThreshold = "10m"
 # matter if we are settling directly with L1 rather than using the
 # AggLayer
 # ------------------------------------------------------------------------------
-GasOffset = 0
+GasOffset = 150000
 
 # ------------------------------------------------------------------------------
 # UpgradeEtrogBatchNumber is the batch number that we'll use to
