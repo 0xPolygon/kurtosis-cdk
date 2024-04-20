@@ -1,5 +1,5 @@
 ethereum_package = import_module(
-    "github.com/kurtosis-tech/ethereum-package/main.star@2.1.0"
+    "github.com/kurtosis-tech/ethereum-package/main.star@2.2.0"
 )
 
 
@@ -14,6 +14,6 @@ def run(plan, args):
                     "l1_preallocated_mnemonic"
                 ],
             },
-            "additional_services": [],
+            "additional_services": args["l1_additional_services"],
         },
     )
