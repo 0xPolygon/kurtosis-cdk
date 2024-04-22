@@ -246,16 +246,14 @@ compare_configs_keys() {
     fi
   done
 
-  if [ "$CI" != "true" ]; then
-    echo; echo "Comparing $default_directory/event-db-init.sql and $kurtosis_cdk_directory/event-db-init.sql"
-    diff_files "$default_directory/event-db-init.sql" "$kurtosis_cdk_directory/event-db-init.sql"
+  echo; echo "Comparing $default_directory/event-db-init.sql and $kurtosis_cdk_directory/event-db-init.sql"
+  diff_files "$default_directory/event-db-init.sql" "$kurtosis_cdk_directory/event-db-init.sql"
 
-    echo; echo "Comparing $default_directory/prover-db-init.sql and $kurtosis_cdk_directory/prover-db-init.sql"
-    diff_files "$default_directory/prover-db-init.sql" "$kurtosis_cdk_directory/prover-db-init.sql"
+  echo; echo "Comparing $default_directory/prover-db-init.sql and $kurtosis_cdk_directory/prover-db-init.sql"
+  diff_files "$default_directory/prover-db-init.sql" "$kurtosis_cdk_directory/prover-db-init.sql"
 
-    echo; echo "Comparing $default_directory/zkevm-bridge-ui.env and $kurtosis_cdk_directory/zkevm-bridge-ui.env"
-    diff_files "$default_directory/zkevm-bridge-ui.env" "$kurtosis_cdk_directory/zkevm-bridge-ui.env"
-  fi
+  echo; echo "Comparing $default_directory/zkevm-bridge-ui.env and $kurtosis_cdk_directory/zkevm-bridge-ui.env"
+  diff_files "$default_directory/zkevm-bridge-ui.env" "$kurtosis_cdk_directory/zkevm-bridge-ui.env"
 }
 
 # Check the number of arguments
