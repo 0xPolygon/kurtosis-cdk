@@ -1,5 +1,3 @@
-<img style="float: left;">
-
 # Policies in CDK
 * Allowlists
 * Denylists
@@ -54,7 +52,8 @@ PGPASSWORD=<zkevm_db_pool_password> psql -h localhost -d pool_db -U pool_user -p
 PGPASSWORD=<zkevm_db_pool_password> psql -h localhost -d pool_db -U pool_user -p <pool_db_postgre_port> -c "DELETE FROM pool.acl WHERE address = '<address_to_acl>' AND policy = '<policy>') ON CONFLICT DO NOTHING"
 ```
 
-## Whitelisting Addresses
+## Allowlisting Addresses
 According to the docs - *"Allowlisting: The process of explicitly allowing addresses to perform certain actions."*
+The terms allowlists and whitelists are used interchangeably in this context - with the documentation referring them as "allowlists", and the DB referring them as "whitelisted"
 
 However, as of the latest tagged [release](https://github.com/0xPolygon/cdk-validium-node/releases/tag/v0.6.4%2Bcdk.2), there seems to be no references to `pool.whitelisted` being used in the code. This seems to align with the tests where adding/removing addresses to `pool.whitelisted` did not seem to have any changes in the behaviour.
