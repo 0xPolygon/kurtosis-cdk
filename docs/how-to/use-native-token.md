@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 This document show you how you to set up and test a native token in a CDK stack. 
 
 ## Summary
