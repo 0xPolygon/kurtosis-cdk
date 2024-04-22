@@ -39,8 +39,6 @@ cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/0xPolygon/agglayer v0.1.1 h1:Hyjlf0RhrCLoTn+D5+FHPxApZxr1W0ueqCUzhq72J00=
 github.com/0xPolygon/agglayer v0.1.1/go.mod h1:IHnajBmmyIyMbcZBXQ7rk2xSjJiSLfljx5ZqXR5MxqY=
-github.com/0xPolygon/agglayer v0.1.4 h1:qUGST1dSRfMr8dKPDLgXv2ilRhgGp72ogKoc2eDxcE0=
-github.com/0xPolygon/agglayer v0.1.4/go.mod h1:p6sazQ6LLP1PtZLlw6moDRW+4CRLQmb+QtGoZaQJcic=
 github.com/0xPolygon/cdk-data-availability v0.0.7 h1:i5v2I8uEgHSZ5BjnJs3Dsy1XpKdSvfZbON9D16gSCUg=
 github.com/0xPolygon/cdk-data-availability v0.0.7/go.mod h1:qF+xt2gYwBab8XPh3fr6pnNUMEJq/32rmJN0D630hmY=
 github.com/0xPolygon/cdk-rpc v0.0.0-20240412164206-b23522339906 h1:Y0VWnpzb8XqsTOYfCUR7l6UsUrbHs4Jg9i2c7oE7WrA=
