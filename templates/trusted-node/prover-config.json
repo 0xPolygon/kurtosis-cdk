@@ -1,6 +1,4 @@
 {
-    "_source": "https://github.com/0xPolygonHermez/zkevm-node/blob/v0.5.13/test/config/test.prover.config.json",
-
     "runExecutorServer": true,
     "runExecutorClient": false,
     "runExecutorClientMultithread": false,
