@@ -193,17 +193,17 @@ jobs:
 
       # Compare configs.
       - name: Dump configs
-        working-directory: ./scripts/zkevm-config-diff
+        working-directory: scripts/zkevm-config-diff
         run: |
-          mkdir -p default-configs kurtosis-cdk-configs
+          mkdir default-configs kurtosis-cdk-configs
           sh zkevm_config.sh dump default ./default-configs
           echo
           sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
 
       - name: Compare configs
-        working-directory: ./scripts/zkevm-config-diff
+        working-directory: scripts/zkevm-config-diff
         run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
 
       - name: Diff configs
-        working-directory: ./scripts/zkevm-config-diff
+        working-directory: scripts/zkevm-config-diff
         run: diff -r ./default-configs ./kurtosis-cdk-configs || true
