@@ -248,12 +248,15 @@ compare_configs_keys() {
 
   echo; echo "Comparing $default_directory/event-db-init.sql and $kurtosis_cdk_directory/event-db-init.sql"
   diff_files "$default_directory/event-db-init.sql" "$kurtosis_cdk_directory/event-db-init.sql"
+  cat "diff/event-db-init.diff"
 
   echo; echo "Comparing $default_directory/prover-db-init.sql and $kurtosis_cdk_directory/prover-db-init.sql"
   diff_files "$default_directory/prover-db-init.sql" "$kurtosis_cdk_directory/prover-db-init.sql"
+  cat "diff/prover-db-init.diff"
 
   echo; echo "Comparing $default_directory/zkevm-bridge-ui.env and $kurtosis_cdk_directory/zkevm-bridge-ui.env"
   diff_files "$default_directory/zkevm-bridge-ui.env" "$kurtosis_cdk_directory/zkevm-bridge-ui.env"
+  cat "diff/zkevm-bridge-ui.diff"
 }
 
 # Check the number of arguments
