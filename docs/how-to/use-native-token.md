@@ -75,7 +75,7 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 Run the following command to get the bridge UI URL and then open the URL in your browser. 
 
 ```sh
-kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
+kurtosis port print cdk-v1 zkevm-bridge-proxy-001 bridge-interface
 ```
 
 ### Add L1 and L2 RPCs to your wallet
