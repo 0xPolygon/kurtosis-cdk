@@ -300,8 +300,8 @@
     "runHashDBTest": false,
 
 {{- /*
-     * runAggregatorServer will run a HashDB test to validate the
-     * HashDB service. This is only needed for testing purposes.
+     * runAggregatorServer will run an Aggregator GRPC service to test
+     * the Aggregator GRPC client
      */ -}}
     "runAggregatorServer": false,
 
