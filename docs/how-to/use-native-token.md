@@ -54,7 +54,7 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 
     ```sh
     export gta=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/create_rollup_parameters.json" | tail -n +2 | jq -r .gasTokenAddress)
-    export l1_rpc_url=http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
+    export l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
     cast send \
     --mnemonic "code code code code code code code code code code code quality" \
     --rpc-url "$l1_rpc_url" \
