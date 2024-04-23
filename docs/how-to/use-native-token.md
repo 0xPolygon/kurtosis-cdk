@@ -85,7 +85,7 @@ As the URLs use HTTP, instead of HTTPS, you need to [manually add them to MetaMa
 1. Retrieve the L1 RPC config by running the following command:
 
     ```sh
-    echo \{\"network_name\": \"kurtosis_cdk_l1\", \"new_rpc_url\": \"$l1_rpc_url\", \"chain_id\": $(yq .l1_chain_id params.yml), \"currency_symbol\": \"ETH\"\} | jq
+    echo \{\"network_name\": \"kurtosis_cdk_l1\", \"new_rpc_url\": \"$l1_rpc_url\", \"chain_id\": $(yq .args.l1_chain_id params.yml), \"currency_symbol\": \"ETH\"\} | jq
     ```
 
 2. Do the same for L2:
