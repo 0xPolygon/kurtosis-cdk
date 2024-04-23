@@ -54,7 +54,7 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 
     ```sh
     export gta=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/create_rollup_parameters.json" | tail -n +2 | jq -r .gasTokenAddress)
-    export l1_rpc_url=http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
+    export l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
     cast send \
     --mnemonic "code code code code code code code code code code code quality" \
     --rpc-url "$l1_rpc_url" \
@@ -75,7 +75,7 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 Run the following command to get the bridge UI URL and then open the URL in your browser. 
 
 ```sh
-kurtosis port print cdk-v1 zkevm-bridge-ui-001 bridge-ui
+kurtosis port print cdk-v1 zkevm-bridge-proxy-001 bridge-interface
 ```
 
 ### Add L1 and L2 RPCs to your wallet
@@ -85,13 +85,13 @@ As the URLs use HTTP, instead of HTTPS, you need to [manually add them to MetaMa
 1. Retrieve the L1 RPC config by running the following command:
 
     ```sh
-    echo \{\"network_name\": \"kurtosis_cdk_l1\", \"new_rpc_url\": \"$l1_rpc_url\", \"chain_id\": $(yq .l1_chain_id params.yml), \"currency_symbol\": \"ETH\"\} | jq
+    echo \{\"network_name\": \"kurtosis_cdk_l1\", \"new_rpc_url\": \"$l1_rpc_url\", \"chain_id\": $(yq .args.l1_chain_id params.yml), \"currency_symbol\": \"ETH\"\} | jq
     ```
 
 2. Do the same for L2:
 
     ```sh
-    echo \{\"network_name\": \"kurtosis_cdk_rollup\", \"new_rpc_url\": \"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)\", \"chain_id\": $(yq .zkevm_rollup_chain_id params.yml), \"currency_symbol\": \"CDK\"\} | jq
+    echo \{\"network_name\": \"kurtosis_cdk_rollup\", \"new_rpc_url\": \"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)\", \"chain_id\": $(yq .args.zkevm_rollup_chain_id params.yml), \"currency_symbol\": \"CDK\"\} | jq
     ```
 
 ### Import an account
@@ -149,7 +149,7 @@ The first derived private key from the `code...quality` mnemonic is
             --value 10ether \
             --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
             --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
-            "$(yq -r .zkevm_l2_claimtxmanager_address params.yml)"
+            "$(yq -r .args.zkevm_l2_claimtxmanager_address params.yml)"
             ```
 
 5. Switch to your L2 network on Metamask to see the bridged value on L2.
@@ -258,7 +258,7 @@ done
 Run the script with:
 
 ```sh
-./bridge-manual-claim.sh
+sh scripts/bridge-manual-claim.sh
 ```
 
 You should see something like this:
