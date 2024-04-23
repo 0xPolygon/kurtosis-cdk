@@ -20,7 +20,7 @@ To view the dashboards, go to the Grafana endpoint with the `/dashboards` path.
 
 Click the hamburger menu in the top left to go to **Dashboards**. 
 
-![Monitoring dashboards](../img/monitoring.png)
+![Monitoring dashboards](../img/quickstart/monitoring.png)
 
 There are two predefined dashboards here to help you understand the health of the CDK at a glance.
 
@@ -28,18 +28,18 @@ There are two predefined dashboards here to help you understand the health of th
 
 The Panoptichain dashboard displays the metrics that are collected from the Panoptichain service. This dashboard focuses on on-chain metrics such as blocks, transactions, and smart contract calls.
 
-![Panoptichain dashboard](../img/panoptician.png)
+![Panoptichain dashboard](../img/quickstart/panoptician.png)
 
 ## Services
 
 The services dashboard captures the metrics being emitted by the individual services in the CDK, and metrics pertaining to process health.
 
-![Services dashboard](../img/services.png)
+![Services dashboard](../img/quickstart/services.png)
 
 ## Prometheus targets
 
 To ensure that a service is properly emitting metrics, you can view all the Prometheus targets and their state by navigating to the Prometheus endpoint with the `/targets` path.
 
-![Prometheus targets dashboard](../img/services.png)
+![Prometheus targets dashboard](../img/quickstart/services.png)
 
 </br>
