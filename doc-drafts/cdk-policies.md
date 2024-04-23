@@ -6,8 +6,7 @@
 [Policies](https://docs.polygon.technology/cdk/how-to/manage-policies/#get-information-about-a-policy) in CDK is used for network level access control, and can block specific addresses from entering the pool completely. The use case in Kurtosis may require direct writes to the DB as documented in this guide.
 
 ## Note
-* Policies will only "work" when `send_tx` and `deploy` policies are only set to `false`. Setting these policies to `true` will not allow **any** addresses to send transactions at all. 
-* Sometimes it takes longer (> 30 seconds) for the policies to apply, but it seems like there are times where it seems like it never actually gets applied (> 5 minutes), even though the changes to the policies have been made according to the pool_db.
+* Policies have been tested only in cases when `send_tx` and `deploy` policies are only set to `false`. 
 
 ## Blocking addresses
 By default, the two available policies:
