@@ -206,7 +206,7 @@
     "dbNumberOfPoolConnections": 30,
 
 {{- /*
-     * dbGetTree will create an use a UDF within sql for getting the
+     * dbGetTree will create and use a UDF within sql for getting the
      * tree
      */ -}}
     "dbGetTree": true,

@@ -16,7 +16,7 @@ It might also be good to get the exact command that's being used to
 start the synchronizer.
 
 #+begin_src bash :exports both verbatim :results output code
-kurtosis service exec cdk-v1 zkevm-node-synchronizer-001 'ps'
+kurtosis service exec cdk-v1 zkevm-node-synchronizer-001 ps
 #+end_src
 
 #+RESULTS:

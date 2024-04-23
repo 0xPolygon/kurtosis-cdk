@@ -398,7 +398,7 @@ FinalDeviationPct = 10
 
 # ------------------------------------------------------------------------------
 # EthTransferGasPrice is the fixed gas price returned as effective gas
-# price for txs tha are ETH transfers (0 means disabled) Only one of
+# price for txs that are ETH transfers (0 means disabled) Only one of
 # EthTransferGasPrice or EthTransferL1GasPriceFactor params can be
 # different than 0. If both params are set to 0, the sequencer will
 # halt and log an error
@@ -407,7 +407,7 @@ EthTransferGasPrice = 0
 
 # ------------------------------------------------------------------------------
 # EthTransferL1GasPriceFactor is the percentage of L1 gas price
-# returned as effective gas price for txs tha are ETH transfers (0
+# returned as effective gas price for txs that are ETH transfers (0
 # means disabled) Only one of EthTransferGasPrice or
 # EthTransferL1GasPriceFactor params can be different than 0. If both
 # params are set to 0, the sequencer will halt and log an error
@@ -460,7 +460,7 @@ WriteTimeout = "1m0s"
 # MaxRequestsPerIPAndSecond is used to configure how many requests a
 # single IP address can make within a single second.  These values are
 # tracked on each individual server (not centrally). So if you have a
-# load balance and several RPCs, it's possible that a user might be
+# load balancer and several RPCs, it's possible that a user might be
 # rate limited on just one of them
 # ------------------------------------------------------------------------------
 MaxRequestsPerIPAndSecond = 50
@@ -553,7 +553,7 @@ EnableHttpLog = true
 Enabled = true
 
 # ------------------------------------------------------------------------------
-# Host will determine which interface the web sock it bound to
+# Host will determine which interface the web sock is bound to
 # ------------------------------------------------------------------------------
 Host = "0.0.0.0"
 
