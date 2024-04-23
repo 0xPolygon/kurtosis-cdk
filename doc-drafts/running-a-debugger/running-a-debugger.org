@@ -1,0 +1,95 @@
+In certain circumstances, it can be very convenient to run a debugger
+while working with the Kurtosis CDK setup. First, ensure your full
+environment is running.
+
+[[./running-a-debugger.org_20240419_181913_JPVUts.png]]
+
+In my case, I would like to run the synchronizer directly. Before
+doing anything, I need to grab the config file:
+
+#+begin_src bash
+kurtosis files download cdk-v1 trusted-node-config /tmp
+kurtosis files download cdk-v1 genesis /tmp
+#+end_src
+
+It might also be good to get the exact command that's being used to
+start the synchronizer.
+
+#+begin_src bash :exports both verbatim :results output code
+kurtosis service exec cdk-v1 zkevm-node-synchronizer-001 ps
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+The command was successfully executed and returned '0'. Output was:
+PID   USER     TIME  COMMAND
+    1 zkevm-us  0:00 /sbin/docker-init -- /app/zkevm-node run --cfg=/etc/zkevm/node-config.toml --network=custom --custom-network-file=/etc/zkevm/genesis.json --components=synchronizer
+    7 zkevm-us  0:00 /app/zkevm-node run --cfg=/etc/zkevm/node-config.toml --network=custom --custom-network-file=/etc/zkevm/genesis.json --components=synchronizer
+   57 zkevm-us  0:00 ps
+#+end_src
+
+I'll need to adjust the command slightly to run in my environment. In
+particular, the paths to these files are now in my ~tmp~ directory:
+
+#+begin_src bash
+zkevm-node run --cfg=/tmp/node-config.toml --network=custom --custom-network-file=/tmp/genesis.json --components=synchronizer
+#+end_src
+
+
+Each IDE / Debugger is going to be a little different here, but in my
+case, I'm just setting the program arguments to be the same arguments
+from our container
+
+[[./running-a-debugger.org_20240419_183823_FnKc97.png]]
+
+By default our config file will use local DNS which will not resolve
+properly. I'm going to hack those values out of my config file and
+replace them with the enclave IPs.
+
+#+begin_src bash :exports both verbatim :results output code
+docker network inspect 5ae92678a3de | jq -r '.[].Containers | to_entries[].value | [.Name,.IPv4Address] | @tsv' | sed 's/--[^\t]*//' | sed 's:/22::' | awk '{print "sed -i '"'"'s/" $1 "/" $2 "/gi'"'"' /tmp/node-config.toml"}'
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+sed -i 's/zkevm-node-sequencer-001/172.16.0.26/gi' /tmp/node-config.toml
+sed -i 's/zkevm-node-sequence-sender-001/172.16.0.27/gi' /tmp/node-config.toml
+sed -i 's/kurtosis-api/172.16.0.3/gi' /tmp/node-config.toml
+sed -i 's/pool-db-001/172.16.0.21/gi' /tmp/node-config.toml
+sed -i 's/bridge-db-001/172.16.0.18/gi' /tmp/node-config.toml
+sed -i 's/zkevm-node-rpc-001/172.16.0.29/gi' /tmp/node-config.toml
+sed -i 's/zkevm-prover-001/172.16.0.23/gi' /tmp/node-config.toml
+sed -i 's/validator-key-generation-cl-validator-keystore/172.16.0.4/gi' /tmp/node-config.toml
+sed -i 's/kurtosis-reverse-proxy/172.16.0.1/gi' /tmp/node-config.toml
+sed -i 's/contracts-001/172.16.0.14/gi' /tmp/node-config.toml
+sed -i 's/state-db-001/172.16.0.15/gi' /tmp/node-config.toml
+sed -i 's/zkevm-node-synchronizer-001/172.16.0.24/gi' /tmp/node-config.toml
+sed -i 's/cl-1-lighthouse-geth/172.16.0.12/gi' /tmp/node-config.toml
+sed -i 's/zkevm-node-aggregator-001/172.16.0.28/gi' /tmp/node-config.toml
+sed -i 's/dac-db-001/172.16.0.20/gi' /tmp/node-config.toml
+sed -i 's/el-1-geth-lighthouse/172.16.0.10/gi' /tmp/node-config.toml
+sed -i 's/agglayer-db-001/172.16.0.19/gi' /tmp/node-config.toml
+sed -i 's/zkevm-node-eth-tx-manager-001/172.16.0.30/gi' /tmp/node-config.toml
+sed -i 's/zkevm-node-l2-gas-pricer-001/172.16.0.31/gi' /tmp/node-config.toml
+sed -i 's/event-db-001/172.16.0.16/gi' /tmp/node-config.toml
+sed -i 's/zkevm-dac-001/172.16.0.25/gi' /tmp/node-config.toml
+sed -i 's/kurtosis-logs-collector/172.16.0.2/gi' /tmp/node-config.toml
+sed -i 's/prover-db-001/172.16.0.17/gi' /tmp/node-config.toml
+sed -i 's/vc-1-lighthouse-geth/172.16.0.13/gi' /tmp/node-config.toml
+#+end_src
+
+*Note* this approach would only work if you have access to the enclave
+IPs. This is going to depend a lot on your network
+environment. Alternatively, you can replace all of these values with
+localhost and switch to the emphemeral ports.
+
+
+With all that setup, we should stop the actual synchronizer:
+
+#+begin_src bash
+kurtosis service stop cdk-v1 zkevm-node-synchronizer-001
+#+end_src
+
+Now we should be able to run our debugger synchronizer!
+
+[[./running-a-debugger.org_20240419_183737_WaiABg.png]]
