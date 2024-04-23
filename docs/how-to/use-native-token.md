@@ -149,7 +149,7 @@ The first derived private key from the `code...quality` mnemonic is
             --value 10ether \
             --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
             --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)" \
-            "$(yq -r .zkevm_l2_claimtxmanager_address params.yml)"
+            "$(yq -r .args.zkevm_l2_claimtxmanager_address params.yml)"
             ```
 
 5. Switch to your L2 network on Metamask to see the bridged value on L2.
