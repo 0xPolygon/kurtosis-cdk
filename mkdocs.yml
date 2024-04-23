@@ -24,13 +24,17 @@ theme:
 
 nav:
   - Overview: index.md
-  - For technical users:
-    - Deploy the CDK stack: quickstart/deploy-stack.md
-    - Set up a permissionless node: quickstart/set-up-node.md
-    - Observability: quickstart/observability.md
-  - For developers:
-    - Breakdown the deployment: quickstart/breakdown-deployment.md
-    - zkEVM contracts caching: quickstart/zkevm-cache-contracts.md
+  - Getting started:
+    - For technical users:
+      - Deploy the CDK stack: quickstart/deploy-stack.md
+      - Set up a permissionless node: quickstart/set-up-node.md
+      - Observability: quickstart/observability.md
+    - For developers:
+      - Breakdown the deployment: quickstart/breakdown-deployment.md
+      - zkEVM contracts caching: quickstart/zkevm-cache-contracts.md
+  - How to:
+    - Use a native token: how-to/use-native-token.md
+  
 
 
 markdown_extensions:
