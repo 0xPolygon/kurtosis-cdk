@@ -9,6 +9,10 @@
 # | |   | | | | ' /
 # | |___| |_| | . \
 #  \____|____/|_|\_\
+#
+# This is a reference config file used by the Kurtosis CDK Testing
+# setup. The values here should work, but are necessarily meant for
+# production environments. DYOR
 # ------------------------------------------------------------------------------
 
 
