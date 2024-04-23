@@ -91,7 +91,7 @@ As the URLs use HTTP, instead of HTTPS, you need to [manually add them to MetaMa
 2. Do the same for L2:
 
     ```sh
-    echo \{\"network_name\": \"kurtosis_cdk_rollup\", \"new_rpc_url\": \"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)\", \"chain_id\": $(yq .zkevm_rollup_chain_id params.yml), \"currency_symbol\": \"CDK\"\} | jq
+    echo \{\"network_name\": \"kurtosis_cdk_rollup\", \"new_rpc_url\": \"$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)\", \"chain_id\": $(yq .args.zkevm_rollup_chain_id params.yml), \"currency_symbol\": \"CDK\"\} | jq
     ```
 
 ### Import an account
