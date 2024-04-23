@@ -8,11 +8,9 @@ import (
 	agglayerconfig "github.com/0xPolygon/agglayer/config"
 	cdkdaconfig "github.com/0xPolygon/cdk-data-availability/config"
 
-	// TODO: Uncomment the following line once https://github.com/0xPolygonHermez/zkevm-bridge-service/pull/609 gets merged.
-	//zkevmbridgeservice "github.com/0xPolygonHermez/zkevm-bridge-service"
+	zkevmbridgeserviceconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config"
 	zkevmnodeconfig "github.com/0xPolygonHermez/zkevm-node/config"
 
-	// "github.com/0xPolygon/cdk-validium-node/config"
 	"log/slog"
 
 	"github.com/spf13/viper"
@@ -78,10 +76,8 @@ func dumpDefaultConfig(module Module, directory string) error {
 		}
 	case ZkevmBridgeService:
 		defaultConfigFunc = func() error {
-			// TODO: Uncomment the following lines once https://github.com/0xPolygonHermez/zkevm-bridge-service/pull/609 gets merged.
-			//_, err := zkevmbridgeservice.Default()
-			//return err
-			return fmt.Errorf("not implemented yet")
+			_, err := zkevmbridgeserviceconfig.Default()
+			return err
 		}
 	default:
 		return fmt.Errorf("unsupported module: %s", module)
