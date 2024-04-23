@@ -39,73 +39,14 @@ def run(plan, args):
     )
 
     # Start the bridge UI.
-    l1_el_1_service = plan.get_service("el-1-geth-lighthouse")
-    # Note: We do not rely on args["l1_rpc_url"] because macOS browser can not resolve hostnames.
-    l1_rpc_url = "http://{}:{}".format(
-        l1_el_1_service.ip_address, l1_el_1_service.ports["rpc"].number
+    bridge_ui_config_artifact = create_bridge_ui_config_artifact(
+        plan, args, contract_setup_addresses
     )
+    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
-    zkevm_node_rpc_service = plan.get_service(
-        name="zkevm-node-rpc" + args["deployment_suffix"]
-    )
-    # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
-    zkevm_rpc_url = "http://{}:{}".format(
-        zkevm_node_rpc_service.ip_address,
-        zkevm_node_rpc_service.ports["http-rpc"].number,
-    )
-
-    bridge_service = bridge_infra_services[
-        "zkevm-bridge-service" + args["deployment_suffix"]
-    ]
-    # Note: Use `.ip_address` instead of `.hostname` to make it work on macOS.
-    bridge_api_url = "http://{}:{}".format(
-        bridge_service.ip_address, bridge_service.ports["bridge-rpc"].number
-    )
-
-    config = struct(
-        l1_rpc_url=l1_rpc_url,
-        zkevm_rpc_url=zkevm_rpc_url,
-        bridge_api_url=bridge_api_url,
-        zkevm_bridge_address=contract_setup_addresses["zkevm_bridge_address"],
-        zkevm_rollup_address=contract_setup_addresses["zkevm_rollup_address"],
-        zkevm_rollup_manager_address=contract_setup_addresses[
-            "zkevm_rollup_manager_address"
-        ],
-    )
-    zkevm_bridge_package.start_bridge_ui(plan, args, config)
-
-    proxy_config_artifact = create_proxy_config_artifact(plan, args)
-    zkevm_bridge_package.add_reverse_proxy(plan, args, proxy_config_artifact)
-
-
-def create_bridge_config_artifact(plan, args, contract_setup_addresses):
-    bridge_config_template = read_file(
-        src="./templates/bridge-infra/bridge-config.toml"
-    )
-    return plan.render_templates(
-        name="bridge-config-artifact",
-        config={
-            "bridge-config.toml": struct(
-                template=bridge_config_template,
-                data={
-                    "deployment_suffix": args["deployment_suffix"],
-                    "l1_rpc_url": args["l1_rpc_url"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # bridge db
-                    "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
-                    "zkevm_db_bridge_name": args["zkevm_db_bridge_name"],
-                    "zkevm_db_bridge_user": args["zkevm_db_bridge_user"],
-                    "zkevm_db_bridge_password": args["zkevm_db_bridge_password"],
-                    # ports
-                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
-                    "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
-                    "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                }
-                | contract_setup_addresses,
-            )
-        },
-    )
+    # Start the bridge UI reverse proxy.
+    proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
+    zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
 def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
@@ -143,12 +84,59 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
     )
 
 
-def create_proxy_config_artifact(plan, args):
+def create_bridge_config_artifact(plan, args, contract_setup_addresses):
+    bridge_config_template = read_file(
+        src="./templates/bridge-infra/bridge-config.toml"
+    )
+    return plan.render_templates(
+        name="bridge-config-artifact",
+        config={
+            "bridge-config.toml": struct(
+                template=bridge_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # bridge db
+                    "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
+                    "zkevm_db_bridge_name": args["zkevm_db_bridge_name"],
+                    "zkevm_db_bridge_user": args["zkevm_db_bridge_user"],
+                    "zkevm_db_bridge_password": args["zkevm_db_bridge_password"],
+                    # ports
+                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
+                    "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
+                    "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                }
+                | contract_setup_addresses,
+            )
+        },
+    )
+
+
+def create_bridge_ui_config_artifact(plan, args, contract_setup_addresses):
+    bridge_ui_config_template = read_file("./templates/bridge-infra/.env")
+    return plan.render_templates(
+        name="bridge-ui-config-artifact",
+        config={
+            ".env": struct(
+                template=bridge_ui_config_template,
+                data={
+                    "l1_explorer_url": args["l1_explorer_url"],
+                    "zkevm_explorer_url": args["polygon_zkevm_explorer"],
+                }
+                | contract_setup_addresses,
+            )
+        },
+    )
+
+
+def create_reverse_proxy_config_artifact(plan, args):
     bridge_ui_proxy_config_template = read_file(
         src="./templates/bridge-infra/haproxy.cfg"
     )
-    l1rpc_service = plan.get_service("el-1-geth-lighthouse")
 
+    l1rpc_service = plan.get_service("el-1-geth-lighthouse")
     l2rpc_service = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
     bridge_service = plan.get_service(
         name="zkevm-bridge-service" + args["deployment_suffix"]

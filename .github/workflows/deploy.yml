@@ -12,6 +12,7 @@ concurrency:
 
 env:
   CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES: 10
+  GO_VERSION: "1.21"
 
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
@@ -19,6 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
       # Install tools.
       - name: Install kurtosis
@@ -41,7 +46,6 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      # Check that batches are being verified.
       - name: Check that batches are being verified
         run: |
           timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
@@ -67,11 +71,33 @@ jobs:
               sleep 10
           done
 
+      # Compare configs.
+      - name: Dump configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: |
+          mkdir -p default-configs kurtosis-cdk-configs
+          sh zkevm_config.sh dump default ./default-configs
+          echo
+          sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
+
+      - name: Compare configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
+
+      - name: Diff configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
+
+
   # Deploy the CDK environment incrementally, stage by stage.
   incremental_cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
       # Install tools.
       - name: Install kurtosis
@@ -140,7 +166,6 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
-      # Check that batches are being verified.
       - name: Check that batches are being verified
         run: |
           timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
@@ -165,3 +190,20 @@ jobs:
 
               sleep 10
           done
+
+      # Compare configs.
+      - name: Dump configs
+        working-directory: scripts/zkevm-config-diff
+        run: |
+          mkdir default-configs kurtosis-cdk-configs
+          sh zkevm_config.sh dump default ./default-configs
+          echo
+          sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
+
+      - name: Compare configs
+        working-directory: scripts/zkevm-config-diff
+        run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
+
+      - name: Diff configs
+        working-directory: scripts/zkevm-config-diff
+        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
