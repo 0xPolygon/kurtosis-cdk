@@ -39,7 +39,7 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 
     ![Deployed services](../img/how-to/gas-token-img/services.png)
 
-### Mint L1 token
+### Mint gas token on L1
 
 !!! tip
     For this section you will need to have [Foundry](https://book.getfoundry.sh/getting-started/installation), [jq](https://jqlang.github.io/jq/), and [yq](https://github.com/mikefarah/yq/#install) installed.
@@ -200,7 +200,7 @@ destination_addr="0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6"
 bridge_addr="$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq -r .polygonZkEVMBridgeAddress)"
 
 # Grab the endpoints for l1 and the bridge service
-l1_rpc_url=http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
+l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
 bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 bridge-rpc)"
 
 # The signature for claiming is long - just putting it into a var
