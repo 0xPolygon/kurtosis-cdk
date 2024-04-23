@@ -24,7 +24,7 @@ set_zkevm_components_versions() {
 
   cdk_validium_node_version="v$(yq -r .args.zkevm_node_image "$params_path" | cut -d':' -f 2 | sed 's/-/+/g')"
   echo "Using cdk validium node version: $cdk_validium_node_version"
-  sed -E "s|github.com/0xPolygon/cdk-validium-node .*|github.com/0xPolygon/cdk-validium-node $cdk_validium_node_version|g" go.mod > go.mod.new
+  sed "s|github.com/0xPolygon/cdk-validium-node .*|github.com/0xPolygon/cdk-validium-node $cdk_validium_node_version|g" go.mod > go.mod.new
   mv go.mod.new go.mod
   go mod tidy
 
