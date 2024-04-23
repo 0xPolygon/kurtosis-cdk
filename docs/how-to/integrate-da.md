@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 This document shows you how to integrate a third-party data availability (DAC) solution into your CDK stack.
 
 ## Prerequisites
