@@ -43,45 +43,27 @@ def start_panoptichain(plan, args):
 
 
 def run(plan, args):
-    services = []
-    service_names = [
-        "zkevm-agglayer",
-        "zkevm-node-aggregator",
-        "zkevm-node-eth-tx-manager",
-        "zkevm-node-l2-gas-pricer",
-        "zkevm-node-rpc",
-        "zkevm-node-rpc-pless",
-        "zkevm-node-sequence-sender",
-        "zkevm-node-sequencer",
-        "zkevm-node-synchronizer",
-        "zkevm-node-synchronizer-pless",
-    ]
-
-    for name in service_names:
-        service = plan.get_service(name=name + args["deployment_suffix"])
-
-        if not service:
-            continue
-
-        services.append(service)
-        if name == "zkevm-node-rpc":
+    for service in plan.get_services():
+        if service.name == "zkevm-node-rpc" + args["deployment_suffix"]:
             args["zkevm_rpc_url"] = "http://{}:{}".format(
                 service.ip_address, service.ports["http-rpc"].number
             )
 
     # Start panoptichain.
-    services.append(start_panoptichain(plan, args))
+    start_panoptichain(plan, args)
 
-    metrics_jobs = [
-        {
-            "Name": service.name,
-            "Endpoint": "{0}:{1}".format(
-                service.ip_address,
-                service.ports["prometheus"].number,
-            ),
-        }
-        for service in services
-    ]
+    metrics_jobs = []
+    for service in plan.get_services():
+        if "prometheus" in service.ports:
+            metrics_jobs.append(
+                {
+                    "Name": service.name,
+                    "Endpoint": "{0}:{1}".format(
+                        service.ip_address,
+                        service.ports["prometheus"].number,
+                    ),
+                }
+            )
 
     # Start prometheus.
     prometheus_url = prometheus_package.run(
