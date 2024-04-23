@@ -258,7 +258,7 @@ done
 Run the script with:
 
 ```sh
-./bridge-manual-claim.sh
+sh scripts/bridge-manual-claim.sh
 ```
 
 You should see something like this:
