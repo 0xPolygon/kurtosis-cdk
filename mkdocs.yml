@@ -32,8 +32,12 @@ nav:
     - For developers:
       - Breakdown the deployment: quickstart/breakdown-deployment.md
       - zkEVM contracts caching: quickstart/zkevm-cache-contracts.md
+    - Connect to CDK testnets: quickstart/connect-testnet.md
   - How to:
+    #- Migrate:
+     # - Fork id 7 to 9: how-to/migrate/forkid-7-to-9.md
     - Use a native token: how-to/use-native-token.md
+
   
 
 
