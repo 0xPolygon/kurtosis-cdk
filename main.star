@@ -102,6 +102,7 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
+        "l1_additional_services": [],
     },
 ):
     """Deploy a Polygon CDK Devnet with various configurable options.
