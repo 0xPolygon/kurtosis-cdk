@@ -18,28 +18,33 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 2. Downgrade all the necessary parameters to switch back to fork 7. Open the `params.yml` file and make the following changes:
 
     ```txt
-    diff --git a/params.yml b/params.yml
-    index c2dd446..4caf2d0 100644
-    --- a/params.yml
-    +++ b/params.yml
-    @@ -11,14 +11,14 @@ deployment_suffix: "-001"
-    stages: [1, 2, 3, 4, 5]
-
-    # Docker images and repositories used to spin up services.
-    -zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
-    -zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk
-    -zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
-    +zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
-    +zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
-    +zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
-    zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
-     # a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
-    -zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
-    +zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
-    -zkevm_rollup_fork_id: 9
-    +zkevm_rollup_fork_id: 7
-    zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-    zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest 
+diff --git a/params.yml b/params.yml
+index 175619f..a72d452 100644
+--- a/params.yml
++++ b/params.yml
+@@ -29,13 +29,13 @@ args:
+   deployment_suffix: "-001"
+ 
+   # Docker images and repositories used to spin up services.
+-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
++  zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
+ 
+-  zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.2
++  zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
+ 
+-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
++  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
+ 
+   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
+@@ -160,7 +160,7 @@ args:
+   zkevm_rollup_chain_id: 10101
+ 
+   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
+-  zkevm_rollup_fork_id: 9
++  zkevm_rollup_fork_id: 7
+ 
+   # The consensus contract name of the new rollup.
+   zkevm_rollup_consensus: PolygonValidiumEtrog
     ```
 
 3. Now kick-off a full redeploy:
