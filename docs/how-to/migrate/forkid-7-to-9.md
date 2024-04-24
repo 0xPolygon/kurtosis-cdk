@@ -57,7 +57,6 @@ index 175619f..a72d452 100644
 
     ```sh
     kurtosis files download cdk-v1 genesis /tmp/fork-7-test
-    jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json
     cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
     "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
     "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
