@@ -163,13 +163,7 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
         contracts/mocks/VerifierRollupHelperMock.sol:VerifierRollupHelperMock > verifier-out.json
     ```
 
-3. Create a new rollup type for the upgraded network. In order to configure the file, we need a bunch of values from the l1 setup.
-
-    ```sh
-    kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json"
-    ```
-
-4. Create the contracts with forge:
+3. Create the `PolygonValidiumStorageMigration` contract:
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
@@ -182,7 +176,11 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
         --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
+    ```
 
+4. Add a new rollup type to the rollup manager:
+
+    ```sh
     genesis="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .genesis /opt/zkevm/combined.json" | tail -n +2)"
     cast send \
         --json \
