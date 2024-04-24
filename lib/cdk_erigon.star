@@ -9,11 +9,10 @@ def start_node(
     plan.add_service(
         name="cdk-erigon-node" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="cdk-erigon:local"
-            #image=args["cdk_erigon_node_image"],
-            # ports={
-            #    "rpc": PortSpec(8545, application_protocol="http"),
-            # },
+            image=args["cdk_erigon_node_image"],
+            ports={
+               "rpc": PortSpec(8545, application_protocol="http"),
+            },
             files={
                 "/etc/cdk-erigon": Directory(
                     artifact_names=[
@@ -28,8 +27,6 @@ def start_node(
                     ]
                 ),
             },
-            # cmd=["--config=/etc/cdk-erigon/config.yaml"],
-            entrypoint=["/bin/bash", "-c"],
-            cmd=["sleep infinity"],
+            cmd=["--config=/etc/cdk-erigon/config.yaml"],
         ),
     )
