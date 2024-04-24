@@ -12,34 +12,39 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 1. Run a clean command to remove any lingering state:
 
     ```sh
-    kurtosis clean -a
+    kurtosis clean --all
     ```
 
 2. Downgrade all the necessary parameters to switch back to fork 7. Open the `params.yml` file and make the following changes:
 
     ```txt
-    diff --git a/params.yml b/params.yml
-    index c2dd446..4caf2d0 100644
-    --- a/params.yml
-    +++ b/params.yml
-    @@ -11,14 +11,14 @@ deployment_suffix: "-001"
-    stages: [1, 2, 3, 4, 5]
-
-    # Docker images and repositories used to spin up services.
-    -zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
-    -zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk
-    -zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
-    +zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
-    +zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
-    +zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
-    zkevm_agglayer_image: nulyjkdhthz/agglayer:v0.1.0
-     # a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
-    -zkevm_contracts_branch: develop  # v5.0.1-rc.2-fork.8
-    +zkevm_contracts_branch: v4.0.0-fork.7  # v5.0.1-rc.2-fork.8
-    -zkevm_rollup_fork_id: 9
-    +zkevm_rollup_fork_id: 7
-    zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-    zkevm_bridge_ui_image: hermeznetwork/zkevm-bridge-ui:latest 
+diff --git a/params.yml b/params.yml
+index 175619f..a72d452 100644
+--- a/params.yml
++++ b/params.yml
+@@ -29,13 +29,13 @@ args:
+   deployment_suffix: "-001"
+ 
+   # Docker images and repositories used to spin up services.
+-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
++  zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
+ 
+-  zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.2
++  zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
+ 
+-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
++  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
+ 
+   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
+@@ -160,7 +160,7 @@ args:
+   zkevm_rollup_chain_id: 10101
+ 
+   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
+-  zkevm_rollup_fork_id: 9
++  zkevm_rollup_fork_id: 7
+ 
+   # The consensus contract name of the new rollup.
+   zkevm_rollup_consensus: PolygonValidiumEtrog
     ```
 
 3. Now kick-off a full redeploy:
@@ -52,7 +57,6 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 
     ```sh
     kurtosis files download cdk-v1 genesis /tmp/fork-7-test
-    jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json
     cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
     "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
     "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
@@ -64,15 +68,17 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-    cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
+    cast send --legacy --private-key "$(yq -r .args.zkevm_l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
     cast rpc zkevm_batchNumber
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber
     ```
-
+After a few minutes, the number of verified batches should increase (the first batch checked does not count).
 ## Make a clean stop of the sequencer
 
-1. Before attempting the upgrade, we need to make a clean stop of the sequencer. To do this, pick a halting batch number by updating the `node-config.toml` file like this:
+1. Before attempting the upgrade, we need to make a clean stop of the sequencer. To do this, pick a halting batch number by updating the `node-config.toml` file like this. Make sure to pick a batch number higher than the current batch number!
+
+cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 
     ```sh
     diff --git a/templates/trusted-node/node-config.toml b/templates/trusted-node/node-config.toml
@@ -93,7 +99,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 2. Re-run Kurtosis:
 
     ```sh
-    kurtosis run
+    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
 3. Wait for the sequencer to halt and the verified batch to equal the latest batch and check the logs. 
@@ -140,7 +146,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
     git clone git@github.com:0xPolygonHermez/zkevm-contracts.git
     pushd zkevm-contracts/
     git reset --hard a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
-    npm i
+    npm install
     printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
     forge build
     ```
@@ -152,7 +158,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 
     ```sh
     forge create --json \
-        --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+        --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         contracts/mocks/VerifierRollupHelperMock.sol:VerifierRollupHelperMock > verifier-out.json
     ```
@@ -166,37 +172,40 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 4. Create the contracts with forge:
 
     ```sh
-    ger="0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
-    pol="0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
-    bridge="0xD71f8F956AD979Cc2988381B8A743a2fE280537D"
-    mngr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-    forge create --json \
-        --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
+    ger="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMGlobalExitRootAddress /opt/zkevm/combined.json" | tail -n +2)"
+    pol="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polTokenAddress /opt/zkevm/combined.json" | tail -n +2)"
+    bridge="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json" | tail -n +2)"
+    mngr="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonRollupManager /opt/zkevm/combined.json" | tail -n +2)"
+    forge create \
+        --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
         --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
 
-    genesis="0xd619a27d32e3050f2265a3f58dd74c8998572812da4874aa052f0886d0dfaf47"
-    cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    genesis="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .genesis /opt/zkevm/combined.json" | tail -n +2)"
+    cast send \
+        --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         $mngr \
         'addNewRollupType(address,address,uint64,uint8,bytes32,string)' \
         "$(jq -r '.deployedTo' new-consensus-out.json)" \
         "$(jq -r '.deployedTo' verifier-out.json)" \
-        9 0 "$genesis" "test!!!" > add-rollup-type-out.json
+        9 0 "$genesis" 'test!!!' > add-rollup-type-out.json
     ```
 
 5. Get your new rollup type id:
 
     ```sh
-    cat add-rollup-type-out.json | jq -r '.logs[0].topics[1]'
+    jq -r '.logs[0].topics[1]' add-rollup-type-out.json
     ```
 
 6. Update the rollup with the id:
 
     ```sh
-    rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
-    cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    rollup="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .rollupAddress /opt/zkevm/combined.json" | tail -n +2)"
+    cast send \
+        --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         $mngr \
         'updateRollup(address,uint32,bytes)' \
@@ -206,7 +215,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 7. Verify the updated rollupid. Previously the 4th value was a `7` and now it should be a `9`.
 
     ```sh
-    cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    cast call \
         "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
         "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
     ```
@@ -214,11 +223,10 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 8. Set up the data availability protcol again:
 
     ```sh
-    rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
-    dac="0x5A6896A98c4B7C7E8f16d177C719a1d856b9154c"
-    cast send -j \
+    dac="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonDataCommittee /opt/zkevm/combined.json" | tail -n +2)"
+    cast send \
+        --json \
         --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-        --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
         "$rollup" 'setDataAvailabilityProtocol(address)' $dac > set-dac-out.json
     ```
 
@@ -235,19 +243,12 @@ We're going to revert the parameters back to the versions of the node that worke
 1. Update the `params.yml` file as follows:
 
     ```sh
-    diff --git a/params.yml b/params.yml
-    index c2dd446..cdb8338 100644
-    --- a/params.yml
-    +++ b/params.yml
-    @@ -8,7 +8,7 @@ deployment_suffix: "-001"
-    # The deployment process is divided into various stages.
-    # The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
-    # By default, it will execute all the stages.
-    -stages: [1, 2, 3, 4, 5]
-    +stages: [3]
-
-    # Docker images and repositories used to spin up services.
-    zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+    yq -Y --in-place '.deploy_l1 = false' params.yml
+    yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
+    yq -Y --in-place '.deploy_databases = false' params.yml
+    yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
+    yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
+    yq -Y --in-place '.deploy_observability = false' params.yml
     ```
 
 2. Remove the `HaltOnBatchNumber` setting that we added earlier.
@@ -262,7 +263,7 @@ We're going to revert the parameters back to the versions of the node that worke
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-    cast send --legacy --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 --value 0.01ether 0x0000000000000000000000000000000000000000
+    cast send --legacy --private-key "$(yq -r .args.zkevm_l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
     cast rpc zkevm_batchNumber
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber
@@ -291,7 +292,7 @@ We're going to revert the parameters back to the versions of the node that worke
     You can check them directly from the rpc:
 
     ```sh
-    cast logs --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 108 --to-block 108
+    cast logs --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 108 --to-block 108
     ```
 
      You can reverse an event with the following script:
@@ -301,4 +302,4 @@ We're going to revert the parameters back to the versions of the node that worke
     cast sig-event 'SetDataAvailabilityProtocol(address)'
     ```
 
-    In this example, tt looks like the unregistered event is a call to `SetDataAvailabilityProtocol(address)`.
+4. In the above example, it looks like the unregistered event is a call to `SetDataAvailabilityProtocol(address)`.

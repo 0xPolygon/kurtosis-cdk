@@ -17,7 +17,7 @@ This section shows you how to create a custom CDK validium DAC contract.
 
 2. `cd` into `zkevm-contracts` and checkout tag `v6.0.0-rc.1-fork.9`.
 
-3. Run `npm i` from the root.
+3. Run `npm install` from the root.
 
 4. `cd` to the `contracts/v2/consensus/validium` directory. 
 
