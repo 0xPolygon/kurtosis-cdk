@@ -73,7 +73,7 @@ index 175619f..a72d452 100644
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber
     ```
-
+After a few minutes, the number of verified batches should increase (the first batch checked does not count).
 ## Make a clean stop of the sequencer
 
 1. Before attempting the upgrade, we need to make a clean stop of the sequencer. To do this, pick a halting batch number by updating the `node-config.toml` file like this. Make sure to pick a batch number higher than the current batch number!
