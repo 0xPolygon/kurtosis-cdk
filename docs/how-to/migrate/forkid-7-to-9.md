@@ -237,19 +237,12 @@ We're going to revert the parameters back to the versions of the node that worke
 1. Update the `params.yml` file as follows:
 
     ```sh
-    diff --git a/params.yml b/params.yml
-    index c2dd446..cdb8338 100644
-    --- a/params.yml
-    +++ b/params.yml
-    @@ -8,7 +8,7 @@ deployment_suffix: "-001"
-    # The deployment process is divided into various stages.
-    # The `stages` parameter indicates the specific stages you wish the deployment to proceed through.
-    # By default, it will execute all the stages.
-    -stages: [1, 2, 3, 4, 5]
-    +stages: [3]
-
-    # Docker images and repositories used to spin up services.
-    zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+    yq -Y --in-place '.deploy_l1 = false' params.yml
+    yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
+    yq -Y --in-place '.deploy_databases = false' params.yml
+    yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
+    yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
+    yq -Y --in-place '.deploy_observability = false' params.yml
     ```
 
 2. Remove the `HaltOnBatchNumber` setting that we added earlier.
