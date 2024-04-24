@@ -49,7 +49,6 @@ args:
   zkevm_bridge_proxy_image: haproxy:2.9.7
 
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.6
-  #cdk_erigon_node_image: cdk-erigon:local
 
   panoptichain_image: minhdvu/panoptichain
 
