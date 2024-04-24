@@ -284,4 +284,4 @@ We're going to revert the parameters back to the versions of the node that worke
     cast sig-event 'SetDataAvailabilityProtocol(address)'
     ```
 
-4. In the above example, tt looks like the unregistered event is a call to `SetDataAvailabilityProtocol(address)`.
+4. In the above example, it looks like the unregistered event is a call to `SetDataAvailabilityProtocol(address)`.
