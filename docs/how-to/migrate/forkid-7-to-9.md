@@ -166,12 +166,13 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 4. Create the contracts with forge:
 
     ```sh
-    ger="0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
-    pol="0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
-    bridge="0xD71f8F956AD979Cc2988381B8A743a2fE280537D"
-    mngr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-    forge create --json \
-        --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
+    ger="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMGlobalExitRootAddress /opt/zkevm/combined.json" | tail -n +2)"
+    pol="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polTokenAddress /opt/zkevm/combined.json" | tail -n +2)"
+    bridge="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json" | tail -n +2)"
+    mngr="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonRollupManager /opt/zkevm/combined.json" | tail -n +2)"
+    forge create \
+        --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
         --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
