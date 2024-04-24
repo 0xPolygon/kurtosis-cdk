@@ -96,7 +96,13 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
     kurtosis run
     ```
 
-3. Wait for the sequencer to halt and the verified batch to equal the latest batch. You should see error logs that look like this:
+3. Wait for the sequencer to halt and the verified batch to equal the latest batch and check the logs. 
+
+    ```sh
+    kurtosis service logs cdk-v1 zkevm-node-sequencer-001 --follow
+    ```
+
+    You should see error logs that look like this:
 
     ```sh
     {"level":"error","ts":1711481674.517157,"caller":"sequencer/finalizer.go:806","msg":"halting finalizer, error: finalizer reached stop sequencer on batch number: 64%!(EXTRA string=\n/home/runner/work/cdk-validium-node/cdk-validium-node/log/log.go:142 github.com/0xPolygonHermez/zkevm-node/log.appendStackTraceMaybeArgs()\n/home/runner/work/cdk-validium-node/cdk-validium-node/log/log.go:251 github.com/0xPolygonHermez/zkevm-node/log.Errorf()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:806 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:221 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:163 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:330 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:166 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start()\n)","pid":7,"version":"v0.1.0","stacktrace":"github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:806\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:221\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/batch.go:163\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:330\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencer/finalizer.go:166"}
@@ -128,7 +134,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 
 ## Smart contract calls
 
-1. Make the required smart contract calls:
+1. From another directory, make the required smart contract calls (this should not be done from the `kurtosis-cdk` directory):
 
     ```sh
     git clone git@github.com:0xPolygonHermez/zkevm-contracts.git
@@ -264,23 +270,35 @@ We're going to revert the parameters back to the versions of the node that worke
 
 ## Troubleshooting
 
-1. You may see errors like these:
+1. If you clone the `zkevm-contracts` repo in the same folder as `kurtosis-cdk`, you may see this error when you try to deploy the stack:
+
+    ```sh
+    Error:  An error occurred running command 'run'
+    Caused by: An error occurred calling the run function for command 'run'
+    Caused by: An error starting the Kurtosis code execution '.'
+    Caused by: Error uploading package '.' prior to executing it
+    Caused by: There was an error compressing module '.' before upload
+    Caused by: An error occurred creating the archive from the files at '.'
+    Caused by: The files you are trying to upload, which are now compressed, exceed or reach 100mb. Manipulation (i.e. uploads or downloads) of files larger than 100mb is currently disallowed in Kurtosis.
+    ```
+
+2. You may also see errors like these:
 
     ```sh
     {"level":"warn","ts":1711502381.03938,"caller":"etherman/etherman.go:661","msg":"Event not registered: {Address:0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 Topics:[0xd331bd4c4cd1afecb94a225184bded161ff3213624ba4fb58c4f30c5a861144a] Data:[0 0 0 0 0 0 0 0 0 0 0 0 90 104 150 169 140 75 124 126 143 22 209 119 199 25 161 216 86 185 21 76] BlockNumber:108 TxHash:0x1bb5e714dd96434ded2d818458cc517cf7b30f5787dbb3aedb667e5e3e96808e TxIndex:0 BlockHash:0xdf5850cd5a8975859595649a05ce245f02953e84af627e9b22a1f8381077f057 Index:0 Removed:false}","pid":7,"version":"0.6.4+cdk"}
     ```
 
-2. You can check them directly from the rpc:
+    You can check them directly from the rpc:
 
     ```sh
     cast logs --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 108 --to-block 108
     ```
 
-3. You can reverse an event with the following script:
+     You can reverse an event with the following script:
 
     ```sh
     cat compiled-contracts/*.json | jq '.abi[] | select(.type == "event") | .type = "function"' | jq -s | polycli abi decode | grep d33
     cast sig-event 'SetDataAvailabilityProtocol(address)'
     ```
 
-4. In the above example, tt looks like the unregistered event is a call to `SetDataAvailabilityProtocol(address)`.
+    In this example, tt looks like the unregistered event is a call to `SetDataAvailabilityProtocol(address)`.
