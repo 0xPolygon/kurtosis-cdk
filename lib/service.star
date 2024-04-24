@@ -7,6 +7,7 @@ def get_contract_setup_addresses(plan, args):
             "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
             "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
             "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+            "zkevm_admin_address": "fromjson | .admin",
             "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
             "pol_token_address": "fromjson | .polTokenAddress",
             "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",

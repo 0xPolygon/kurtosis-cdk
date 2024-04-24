@@ -137,6 +137,10 @@ jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].po
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
+# Create cdk-erigon node configs
+jq '.genesis | INDEX(.address)' /opt/zkevm/genesis.json > dynamic-kurtosis-allocs.json
+jq '{"root": .root, "timestamp": 123545, "gasLimit": 12345, "difficulty": 12345}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
+
 # Configure contracts.
 
 # The sequencer needs to pay POL when it sequences batches.

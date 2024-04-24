@@ -4,6 +4,7 @@ cdk_databases_package = import_module("./cdk_databases.star")
 cdk_central_environment_package = import_module("./cdk_central_environment.star")
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
+cdk_erigon_package = import_module("./cdk_erigon.star")
 observability_package = import_module("./observability.star")
 
 
@@ -15,6 +16,7 @@ def run(
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
+    deploy_cdk_erigon_node=True,
     deploy_observability=True,
     args={
         "deployment_suffix": "-001",
@@ -24,6 +26,7 @@ def run(
         "zkevm_contracts_image": "leovct/zkevm-contracts",
         "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.1",
         "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
+        "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.0.6",
         "panoptichain_image": "minhdvu/panoptichain",
         "zkevm_bridge_ui_image": "nulyjkdhthz/zkevm-bridge-ui:kurtosis",
         "zkevm_bridge_proxy_image": "haproxy:2.9.7",
@@ -180,7 +183,14 @@ def run(
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
 
-    # Deploy observability stack
+    # Deploy cdk-erigon node.
+    if deploy_cdk_erigon_node:
+        plan.print("Deploying cdk-erigon node")
+        cdk_erigon_package.run(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon node")
+
+    # Deploy observability stack.
     if deploy_observability:
         plan.print("Deploying the observability stack")
         observability_args = dict(args)
