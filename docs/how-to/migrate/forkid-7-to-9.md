@@ -197,8 +197,9 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 6. Update the rollup with the id:
 
     ```sh
-    rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
-    cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    rollup="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .rollupAddress /opt/zkevm/combined.json" | tail -n +2)"
+    cast send \
+        --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         $mngr \
         'updateRollup(address,uint32,bytes)' \
