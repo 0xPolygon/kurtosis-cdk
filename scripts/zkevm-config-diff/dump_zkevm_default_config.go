@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	agglayerconfig "github.com/0xPolygon/agglayer/config"
@@ -12,8 +14,6 @@ import (
 	zkevmnodeconfig "github.com/0xPolygonHermez/zkevm-node/config"
 
 	"log/slog"
-
-	"github.com/spf13/viper"
 )
 
 type Module string
@@ -57,37 +57,42 @@ func main() {
 func dumpDefaultConfig(module Module, directory string) error {
 	slog.Info("Dumping default config", "module", module)
 
-	var defaultConfigFunc func() error
+	// Create default config.
+	var cfg interface{}
+	var err error
 	switch module {
 	case ZkevmNode:
-		defaultConfigFunc = func() error {
-			_, err := zkevmnodeconfig.Default()
-			return err
-		}
+		cfg, err = zkevmnodeconfig.Default()
 	case ZkevmAggLayer:
-		defaultConfigFunc = func() error {
-			_, err := agglayerconfig.Default()
-			return err
-		}
+		cfg, err = agglayerconfig.Default()
 	case CdkDataAvailability:
-		defaultConfigFunc = func() error {
-			_, err := cdkdaconfig.Default()
-			return err
-		}
+		cfg, err = cdkdaconfig.Default()
 	case ZkevmBridgeService:
-		defaultConfigFunc = func() error {
-			_, err := zkevmbridgeserviceconfig.Default()
-			return err
-		}
+		cfg, err = zkevmbridgeserviceconfig.Default()
 	default:
 		return fmt.Errorf("unsupported module: %s", module)
 	}
-	if err := defaultConfigFunc(); err != nil {
+	if err != nil {
 		return fmt.Errorf("unable to create default config: %v", err)
 	}
+
+	// Marshal config to JSON.
+	cfgJson, err := json.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("unable to marshal config to json: %v", err)
+	}
+
+	// Transform the JSON config with jq and format it in TOML with yq.
+	cmd := fmt.Sprintf("echo '%s' | jq 'walk(if type == \"object\" and keys_unsorted == [\"Duration\"] then ((.Duration / 1e9 | tostring) + \"s\") else . end) | del(..|nulls)' | yq -t", cfgJson)
+	cfgToml, err := exec.Command("bash", "-c", cmd).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("unable to execute jq command: %v", err)
+	}
+
+	// Save the config in TOML.
 	filePath := filepath.Join(directory, fmt.Sprintf("%s-config.toml", module))
-	if err := viper.WriteConfigAs(filePath); err != nil {
-		return fmt.Errorf("unable to write default config file: %v", err)
+	if err := os.WriteFile(filePath, cfgToml, 0644); err != nil {
+		return fmt.Errorf("unable to write config to file: %v", err)
 	}
 	return nil
 }

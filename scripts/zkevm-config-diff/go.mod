@@ -3,16 +3,15 @@ module zkevm-node-dump-default-config
 go 1.21.8
 
 // To replace the zkevm-node dependency by cdk-validium-node, follow these steps:
-// replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.4+cdk.2
+// replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.5+cdk
 // Run go mod tidy.
-replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.5-0.20240401131830-60a3e2e517c0
+replace github.com/0xPolygonHermez/zkevm-node => github.com/0xPolygon/cdk-validium-node v0.6.6-0.20240411144334-bd59114567b8
 
 require (
-	github.com/0xPolygon/agglayer v0.1.1
+	github.com/0xPolygon/agglayer v0.1.3
 	github.com/0xPolygon/cdk-data-availability v0.0.7
 	github.com/0xPolygonHermez/zkevm-bridge-service v0.4.3-0.20240422135055-48f8b52b09ae
 	github.com/0xPolygonHermez/zkevm-node v0.6.5
-	github.com/spf13/viper v1.18.2
 )
 
 require (
@@ -128,6 +127,7 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/viper v1.18.2 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
@@ -155,8 +155,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.15.0 // indirect
-	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240304161311-37d4d3c04a78 // indirect
 	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
