@@ -177,14 +177,15 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
         contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
         --constructor-args $ger $pol $bridge $mngr > new-consensus-out.json
 
-    genesis="0xd619a27d32e3050f2265a3f58dd74c8998572812da4874aa052f0886d0dfaf47"
-    cast send -j --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    genesis="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .genesis /opt/zkevm/combined.json" | tail -n +2)"
+    cast send \
+        --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         $mngr \
         'addNewRollupType(address,address,uint64,uint8,bytes32,string)' \
         "$(jq -r '.deployedTo' new-consensus-out.json)" \
         "$(jq -r '.deployedTo' verifier-out.json)" \
-        9 0 "$genesis" "test!!!" > add-rollup-type-out.json
+        9 0 "$genesis" 'test!!!' > add-rollup-type-out.json
     ```
 
 5. Get your new rollup type id:
