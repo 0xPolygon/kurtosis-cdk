@@ -122,6 +122,7 @@ jobs:
           yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
           yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
+          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
           yq -Y --in-place '.deploy_observability = false' params.yml
 
       - name: Deploy L1
@@ -159,6 +160,12 @@ jobs:
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
+
+      - name: Deploy CDK Erigon Node
+        run: |
+          yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
 
       - name: Deploy Observability Stack
         run: |
