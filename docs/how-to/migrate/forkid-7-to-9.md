@@ -12,7 +12,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 1. Run a clean command to remove any lingering state:
 
     ```sh
-    kurtosis clean -a
+    kurtosis clean --all
     ```
 
 2. Downgrade all the necessary parameters to switch back to fork 7. Open the `params.yml` file and make the following changes:
