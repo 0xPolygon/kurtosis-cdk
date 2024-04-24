@@ -209,7 +209,7 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 7. Verify the updated rollupid. Previously the 4th value was a `7` and now it should be a `9`.
 
     ```sh
-    cast call --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
+    cast call \
         "$(jq -r '.L1Config.polygonRollupManagerAddress' /tmp/fork-7-test/genesis.json)" \
         "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
     ```
