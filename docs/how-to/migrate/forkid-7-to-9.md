@@ -99,7 +99,7 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 2. Re-run Kurtosis:
 
     ```sh
-    kurtosis run
+    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
 3. Wait for the sequencer to halt and the verified batch to equal the latest batch. You should see error logs that look like this:
