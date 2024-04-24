@@ -274,7 +274,7 @@ We're going to revert the parameters back to the versions of the node that worke
 2. You can check them directly from the rpc:
 
     ```sh
-    cast logs --rpc-url "http://$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 108 --to-block 108
+    cast logs --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 108 --to-block 108
     ```
 
 3. You can reverse an event with the following script:
