@@ -217,11 +217,10 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 8. Set up the data availability protcol again:
 
     ```sh
-    rollup="0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
-    dac="0x5A6896A98c4B7C7E8f16d177C719a1d856b9154c"
-    cast send -j \
+    dac="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonDataCommittee /opt/zkevm/combined.json" | tail -n +2)"
+    cast send \
+        --json \
         --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-        --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
         "$rollup" 'setDataAvailabilityProtocol(address)' $dac > set-dac-out.json
     ```
 
