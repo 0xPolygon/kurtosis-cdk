@@ -76,7 +76,8 @@ true
 #+end_src
 
 
-Let's also confirm that the time lock is not the default admin
+Let's also confirm that the time lock does not have the default admin
+role:
 
 #+begin_src bash :exports both verbatim :results output code
 cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'hasRole(bytes32,address)(bool)' 0x0000000000000000000000000000000000000000000000000000000000000000 0x07783C37CAAFe0f05C4105250C032062A83F7AC2
@@ -118,9 +119,8 @@ to                      0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2
 #+end_src
 
 
-
 Okay, it looks like that transaction worked, let's confirm that the
-time lock address is actually an admin now. This call previously
+timelock address is actually an admin now. This call previously
 returned ~false~. Hopefully it returns ~true~ now.
 
 #+begin_src bash :exports both verbatim :results output code
@@ -148,6 +148,7 @@ cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) 0x077
 0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63
 #+end_src
 
+Now that we have the roles, let's check if the admin account has them:
 
 #+begin_src bash :exports both verbatim :results output code
 cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) 0x07783C37CAAFe0f05C4105250C032062A83F7AC2 'hasRole(bytes32,address)(bool)' 0x0000000000000000000000000000000000000000000000000000000000000000 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
@@ -164,12 +165,11 @@ It looks like our typical admin account is configured as an executor
 for the timelock, but not actually the admin. This means we should be
 able to execute transactions, but it doesn't look like we would be
 able to change the delay. From the [[https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4032b42694ff6599b17ffde65b2b64d7fc8a38f8/contracts/governance/TimelockController.sol#L439-L456][code]] it looks like the timelock is
-the only thing that can update it's delay.
-
+the only thing that can update its delay.
 
 At this point, the question is can we use the timelock to make an
-admin call. Ideally we would revoke the admin role the rollup
-manager. Let's see if it would even work.
+admin call. Ideally we would revoke the admin's account as the default
+admin role in the rollup manager. Let's see if it would even work.
 
 #+begin_src bash :exports both verbatim :results output code
 cast call --from 0x07783C37CAAFe0f05C4105250C032062A83F7AC2 --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'revokeRole(bytes32,address)' 0x0000000000000000000000000000000000000000000000000000000000000000 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
@@ -229,9 +229,8 @@ type                    2
 to                      0x07783C37CAAFe0f05C4105250C032062A83F7AC2
 #+end_src
 
-Okay this looks success, that should mean our call is scheduled. Let's take a look at the logs:
-
-
+Okay this looks successful, that should mean our call is
+scheduled. Let's take a look at the logs:
 
 | Event    | CallScheduled(bytes32,uint256,address,uint256,bytes,bytes32,uint256) | 0x4cf4410cc57040e44862ef0f45f3dd5a5e02db8eb8add648d4b0e236f1d07dca |
 
@@ -279,7 +278,7 @@ printf "%d\n" $(cast block -j --rpc-url $(kurtosis port print cdk-v1 el-1-geth-l
 It looks like we still have to wait 37 minutes.
 
 Once the time is elapsed, I should be able to repeat the same exact
-call from ~execute~ and use ~execute~ instead. First let's make sure
+call from ~schedule~ and use ~execute~ instead. First let's make sure
 that it reports that it's ready.
 
 #+begin_src bash :exports both verbatim :results output code
@@ -293,8 +292,7 @@ cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) 0x077
 true
 #+end_src
 
-Nice, that looks good. Let's execute it.
-
+Nice, that looks good. Let's execute it:
 
 #+begin_src bash :exports both verbatim :results output code
 target="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
@@ -314,14 +312,14 @@ cast send \
 
 blockHash               0x32fe6a5224885c605eeca7052cb89925f018965d4ac176b1e99ceff3ad4e9b1c
 blockNumber             14076
-contractAddress         
+contractAddress
 cumulativeGasUsed       55161
 effectiveGasPrice       3000000007
 from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 gasUsed                 55161
 logs                    [{"address":"0x2f50ef6b8e8ee4e579b17619a92de3e2ffbd8ad2","topics":["0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b","0x0000000000000000000000000000000000000000000000000000000000000000","0x000000000000000000000000e34aaf64b29273b7d567fcfc40544c014eee9970","0x00000000000000000000000007783c37caafe0f05c4105250c032062a83f7ac2"],"data":"0x","blockHash":"0x32fe6a5224885c605eeca7052cb89925f018965d4ac176b1e99ceff3ad4e9b1c","blockNumber":"0x36fc","transactionHash":"0x7f0de30fe4db193ed75aba6f2c3862da8a1f8cef63e4408b8bbd802cc892559e","transactionIndex":"0x0","logIndex":"0x0","removed":false},{"address":"0x07783c37caafe0f05c4105250c032062a83f7ac2","topics":["0xc2617efa69bab66782fa219543714338489c4e9e178271560a91b82c3f612b58","0x2834e50d0fbd2359263689c685f4afd0311de4b150625c349a40a7b2b7e7f34e","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000002f50ef6b8e8ee4e579b17619a92de3e2ffbd8ad2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000044d547741f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e34aaf64b29273b7d567fcfc40544c014eee997000000000000000000000000000000000000000000000000000000000","blockHash":"0x32fe6a5224885c605eeca7052cb89925f018965d4ac176b1e99ceff3ad4e9b1c","blockNumber":"0x36fc","transactionHash":"0x7f0de30fe4db193ed75aba6f2c3862da8a1f8cef63e4408b8bbd802cc892559e","transactionIndex":"0x0","logIndex":"0x1","removed":false}]
 logsBloom               0x00000000000000000000000000000000000000400000000000008000000000000000000000000000000008000000000000200000000800000000000000000000000000000000000000000000000004000200000002000000000000000000002040000000020000000000000000000800000000000000000000000000400000000000000040000000000000000000000000000040000000000000010000000000000000090000000000000000000000000000000000000004000000000000000000000000000000080000000000000000000000000000000000000000000020000000400000000000000000000000000000000000000000001000000200000000
-root                    
+root
 status                  1
 transactionHash         0x7f0de30fe4db193ed75aba6f2c3862da8a1f8cef63e4408b8bbd802cc892559e
 transactionIndex        0
@@ -330,7 +328,8 @@ to                      0x07783C37CAAFe0f05C4105250C032062A83F7AC2
 #+end_src
 
 Okay, I think that looks good. Let's make sure that the role has
-actually be revoked.
+actually been revoked. This previously returned ~true~ and we hope
+that it's ~false~ now:
 
 
 #+begin_src bash :exports both verbatim :results output code
@@ -342,9 +341,14 @@ cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) 0x2F5
 false
 #+end_src
 
-Nice! It looks like the admin account no longer has the default admin
-role.
+Okay this looks good. Just to recap that has happened:
 
+- We deployed the rollup manager using ~test~ mode which assigns the
+  admin as the admin account rather than the timelock
+- We granted the ~DEFAULT_ADMIN_ROLE~ to the timelock addres
+- We scheduled a time locked transaction to revoke the admin account's
+  ~DEFAULT_ADMIN_ROLE~
+- We executed the transaction after the elapsed amount of time.
 
 * Ref
 
