@@ -11,7 +11,7 @@ def start_node(
         config=ServiceConfig(
             image=args["cdk_erigon_node_image"],
             ports={
-               "rpc": PortSpec(8545, application_protocol="http"),
+                "rpc": PortSpec(8545, application_protocol="http"),
             },
             files={
                 "/etc/cdk-erigon": Directory(
