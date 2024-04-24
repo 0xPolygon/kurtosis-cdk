@@ -76,7 +76,9 @@ index 175619f..a72d452 100644
 
 ## Make a clean stop of the sequencer
 
-1. Before attempting the upgrade, we need to make a clean stop of the sequencer. To do this, pick a halting batch number by updating the `node-config.toml` file like this:
+1. Before attempting the upgrade, we need to make a clean stop of the sequencer. To do this, pick a halting batch number by updating the `node-config.toml` file like this. Make sure to pick a batch number higher than the current batch number!
+
+cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 
     ```sh
     diff --git a/templates/trusted-node/node-config.toml b/templates/trusted-node/node-config.toml
