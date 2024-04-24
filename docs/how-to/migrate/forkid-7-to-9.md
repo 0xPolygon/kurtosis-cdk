@@ -191,7 +191,7 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
 5. Get your new rollup type id:
 
     ```sh
-    cat add-rollup-type-out.json | jq -r '.logs[0].topics[1]'
+    jq -r '.logs[0].topics[1]' add-rollup-type-out.json
     ```
 
 6. Update the rollup with the id:
