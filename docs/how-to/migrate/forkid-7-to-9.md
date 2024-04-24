@@ -140,7 +140,7 @@ cast to-dec $(cast rpc zkevm_batchNumber | sed 's/"//g')
     git clone git@github.com:0xPolygonHermez/zkevm-contracts.git
     pushd zkevm-contracts/
     git reset --hard a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
-    npm i
+    npm install
     printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
     forge build
     ```
