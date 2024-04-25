@@ -5,6 +5,7 @@ cdk_central_environment_package = import_module("./cdk_central_environment.star"
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 observability_package = import_module("./observability.star")
+workload_package = import_module("./workload.star")
 
 
 def run(
@@ -16,6 +17,7 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
+    apply_workload=True,
     args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
@@ -102,6 +104,12 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
+        "workload_scripts": [
+            "polycli_loadtest_on_l1 t 100 10",  # eth tranfers
+            "polycli_rpcfuzz_on_l1",  # rpc calls
+            "polycli_loadtest_on_l2 t 100 10",
+            "polycli_rpcfuzz_on_l2",
+        ],
     },
 ):
     """Deploy a Polygon CDK Devnet with various configurable options.
@@ -187,3 +195,10 @@ def run(
         observability_package.run(plan, observability_args)
     else:
         plan.print("Skipping the deployment of the observability stack")
+
+    # Apply workload
+    if apply_workload:
+        plan.print("Apply workload")
+        workload_package.run(plan, args)
+    else:
+        plan.print("Skipping workload application")

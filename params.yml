@@ -23,6 +23,9 @@ deploy_zkevm_permissionless_node: true
 # Deploy observability stack.
 deploy_observability: true
 
+# Apply workload to the different components of the CDK stack.
+apply_workload: true
+
 args:
   # Suffix appended to service names.
   # Note: It should be a string.
@@ -48,6 +51,7 @@ args:
   zkevm_bridge_ui_image: nulyjkdhthz/zkevm-bridge-ui:kurtosis
   zkevm_bridge_proxy_image: haproxy:2.9.7
 
+  workload_image: leovct/workload:0.0.1
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -179,3 +183,19 @@ args:
 
   ## Tools versions
   polycli_version: v0.1.42
+
+  ## Workload configuration.
+  workload_commands: [
+    # Generate load on L1.
+    "polycli_loadtest_on_l1.sh t 100 10",  # eth transfers
+    "polycli_loadtest_on_l1.sh 2 100 10",  # erc20 transfers
+    "polycli_loadtest_on_l1.sh 7 100 10",  # erc721 mints
+    "polycli_loadtest_on_l1.sh v3 50 5",   # uniswapv3 swaps
+    "polycli_rpcfuzz_on_l1.sh",            # rpc calls
+    # Generate load on L2.
+    "polycli_loadtest_on_l2.sh t 100 10",  # eth transfers
+    "polycli_loadtest_on_l2.sh 2 100 10",  # erc20 transfers
+    "polycli_loadtest_on_l2.sh 7 100 10",  # erc721 mints
+    "polycli_loadtest_on_l2.sh v3 50 5",   # uniswapv3 swaps
+    "polycli_rpcfuzz_on_l2.sh",            # rpc calls
+  ]
