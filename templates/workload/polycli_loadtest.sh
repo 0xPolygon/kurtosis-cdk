@@ -13,6 +13,7 @@ concurrency="$3"
 rpc_url="{{.rpc_url}}"
 
 echo "Running polycli loadtest (rpc_url=$rpc_url mode=$mode requests=$requests concurrency=$concurrency)..."
+# shellcheck disable=SC1083,SC2086
 polycli loadtest \
   --rpc-url "$rpc_url" \
   --chain-id {{.chain_id}} \
