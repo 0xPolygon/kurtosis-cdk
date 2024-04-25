@@ -24,17 +24,16 @@ theme:
 
 nav:
   - Overview: index.md
-  - For technical users:
+  - Deploy and manage a CDK stack:
     - Deploy the CDK stack: quickstart/deploy-stack.md
     - Set up a permissionless node: quickstart/set-up-node.md
     - Observability: quickstart/observability.md
-  - For developers:
     - Breakdown the deployment: quickstart/breakdown-deployment.md
     - zkEVM contracts caching: quickstart/zkevm-cache-contracts.md
   - How to:
     - Migrate:
       - Fork id 7 to 9: how-to/migrate/forkid-7-to-9.md
-    - Use a native token: how-to/use-native-token.md
+    - Mint, bridge, and use tokens: how-to/use-native-token.md
     - Integrate a DAC: how-to/integrate-da.md
     - Manage allowlists with policies: how-to/manage-policies.md
     - Quickly test a running stack: how-to/quick-test-stack.md
