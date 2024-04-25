@@ -23,7 +23,7 @@ deploy_zkevm_permissionless_node: true
 # Deploy observability stack.
 deploy_observability: true
 
-# Deploy blutgang.
+# Deploy eth loadbalancer (blutgang).
 deploy_blutgang: true
 
 args:
