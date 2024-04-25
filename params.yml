@@ -23,6 +23,9 @@ deploy_zkevm_permissionless_node: true
 # Deploy observability stack.
 deploy_observability: true
 
+# Deploy blutgang.
+deploy_blutgang: true
+
 args:
   # Suffix appended to service names.
   # Note: It should be a string.
@@ -179,3 +182,20 @@ args:
 
   ## Tools versions
   polycli_version: v0.1.42
+
+  ## blutgang configuration.
+  blutgang_image: makemake1337/blutgang:latest
+
+  blutgang_http_address: 0.0.0.0:55555
+  blutgang_admin_address: 0.0.0.0:55556
+  blutgang_rpc_port: 55555
+  blutgang_admin_port: 55556
+
+  l2_sequencer_url: http://zkevm-node-sequencer-001:8123
+  l2_sequencer_ws_url: ws://zkevm-node-sequencer-001:8133
+
+  l2_rpc_url: http://zkevm-node-rpc-001:8123
+  l2_ws_url: ws://zkevm-node-rpc-001:8133
+
+  l2_rpc_pless_url: http://zkevm-node-rpc-pless-001:8123
+  l2_ws_pless_url: ws://zkevm-node-rpc-pless-001:8133
