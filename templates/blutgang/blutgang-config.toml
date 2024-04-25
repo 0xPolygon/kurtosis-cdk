@@ -3,7 +3,7 @@
 # Clear the cache DB on startup
 do_clear = true
 # Where to bind blutgang to
-address = "{{.blutgang_http_address}}"
+address = "0.0.0.0:{{.blutgang_rpc_port}}"
 # Moving average length for the latency
 ma_length = 100
 # Sort RPCs by latency on startup. Recommended to leave on.
@@ -30,7 +30,7 @@ supress_rpc_check = false
 # Enable the admin namespace
 enabled = true
 # Address for the admin RPC
-address = "{{.blutgang_admin_address}}"
+address = "0.0.0.0:{{.blutgang_admin_port}}"
 # Only allow read-only methods
 # Recommended `true` unless you 100% need write methods
 readonly = true
@@ -63,7 +63,7 @@ flush_every_ms = 240
 
 [sequencer]
 url = "{{.l2_sequencer_url}}"
-ws_url = "{{.l2_sequencer_ws_url}}"
+# ws_url = "{{.l2_sequencer_ws_url}}"
 # The maximum amount of time we can use this rpc in a row.
 max_consecutive = 150
 # Max amount of queries per second.
