@@ -4,11 +4,13 @@ comments: true
 
 A quick and easy method for testing a running CDK stack, whether in validium or rollup mode, is by sending a zero-value transaction and examining the result.
 
+## Get the URL
+
 First inspect the logs to find the `zkevm-node-rpc` details. For example, in the Kurtosis stack you should see something like:
 
-    ```sh
-    zkevm-node-rpc-001    http-rpc: 8123/tcp -> http://127.0.0.1:32803
-    ```
+```sh
+zkevm-node-rpc-001    http-rpc: 8123/tcp -> http://127.0.0.1:32803
+```
 
 ## Send transaction with cast
 

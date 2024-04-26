@@ -28,7 +28,7 @@ fund_account_on_l1() {
     cast send \
         --rpc-url "{{.l1_rpc_url}}" \
         --mnemonic "{{.l1_preallocated_mnemonic}}" \
-        --value "100ether" \
+        --value "{{.l1_funding_amount}}" \
         "$address"
 }
 
