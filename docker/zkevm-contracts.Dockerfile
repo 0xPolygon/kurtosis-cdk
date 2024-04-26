@@ -19,6 +19,8 @@ RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/0xPolygonHer
 # STEP 2: Install tools.
 COPY --from=polycli-builder /opt/polygon-cli/polycli /usr/bin/polycli
 WORKDIR /opt
+# Note: We download a specific version of foundry because we had issues with the recent releases.
+# https://github.com/0xPolygon/kurtosis-cdk/pull/76#issuecomment-2070645918
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
 # WARNING (SC1091): (Sourced) file not included in mock.
@@ -29,7 +31,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --break-system-packages yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup \
+  && /root/.foundry/bin/foundryup --version nightly-f625d0fa7c51e65b4bf1e8f7931cd1c6e2e285e9 \
   && cp /root/.foundry/bin/* /usr/local/bin
 
 USER node
