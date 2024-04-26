@@ -61,8 +61,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Clone zkevm-bridge-ui repository
-        working-directory: /opt/zkevm-bridge-ui
-        run: git clone --branch ${{ env.ZKEVM_BRIDGE_UI_BRANCH }} https://github.com/0xPolygonHermez/zkevm-bridge-ui .
+        run: |
+          mkdir /opt/zkevm-bridge-ui
+          git clone --branch ${{ env.ZKEVM_BRIDGE_UI_BRANCH }} https://github.com/0xPolygonHermez/zkevm-bridge-ui /opt/zkevm-bridge-ui
 
       - name: Apply patches
         working-directory: /opt/zkevm-bridge-ui
