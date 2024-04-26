@@ -4,14 +4,14 @@ def run(plan, args):
         src="./templates/blutgang/blutgang-config.toml"
     )
 
-    zkevm_sequencer_service = plan.get_service("zkevm-node-sequencer" + args["deployment_suffix"])
+    zkevm_sequencer_service = plan.get_service(name="zkevm-node-sequencer" + args["deployment_suffix"])
     zkevm_sequencer_http_url = "http://{}:{}".format(zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number)
 
-    zkevm_rpc_service = plan.get_service("zkevm-node-rpc" + args["deployment_suffix"])
+    zkevm_rpc_service = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
     zkevm_rpc_http_url = "http://{}:{}".format(zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["http-rpc"].number)
     zkevm_rpc_ws_url = "ws://{}:{}".format(zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["ws-rpc"].number)
 
-    zkevm_rpc_pless_service = plan.get_service("zkevm-node-rpc-pless" + args["deployment_suffix"])
+    zkevm_rpc_pless_service = plan.get_service(name="zkevm-node-rpc-pless" + args["deployment_suffix"])
     zkevm_rpc_pless_http_url = "http://{}:{}".format(zkevm_rpc_pless_service.ip_address, zkevm_rpc_pless_service.ports["http-rpc"].number)
     zkevm_rpc_pless_ws_url = "ws://{}:{}".format(zkevm_rpc_pless_service.ip_address, zkevm_rpc_pless_service.ports["ws-rpc"].number)
 
