@@ -8,6 +8,7 @@ observability_package = import_module("./observability.star")
 workload_package = import_module("./workload.star")
 blutgang_package = import_module("./cdk_blutgang.star")
 
+
 def run(
     plan,
     deploy_l1=True,
@@ -95,6 +96,7 @@ def run(
         "l1_preallocated_mnemonic": "code code code code code code code code code code code quality",
         "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
         "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
+        "l1_additional_services": [],
         "zkevm_rollup_chain_id": 10101,
         "zkevm_rollup_fork_id": 9,
         "zkevm_rollup_consensus": "PolygonValidiumEtrog",
