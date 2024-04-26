@@ -29,7 +29,6 @@ nav:
     - Set up a permissionless node: quickstart/set-up-node.md
     - Observability: quickstart/observability.md
     - Breakdown the deployment: quickstart/breakdown-deployment.md
-    - zkEVM contracts caching: quickstart/zkevm-cache-contracts.md
   - How to:
     - Migrate:
       - Fork id 7 to 9: how-to/migrate/forkid-7-to-9.md
@@ -39,7 +38,7 @@ nav:
     - Quickly test a running stack: how-to/quick-test-stack.md
     - Connect to CDK testnets: quickstart/connect-testnet.md
 
-  
+
 
 
 markdown_extensions:
