@@ -23,6 +23,9 @@ deploy_zkevm_permissionless_node: true
 # Deploy observability stack.
 deploy_observability: true
 
+# Deploy eth loadbalancer (blutgang).
+deploy_blutgang: true
+
 args:
   # Suffix appended to service names.
   # Note: It should be a string.
@@ -180,3 +183,9 @@ args:
 
   ## Tools versions
   polycli_version: v0.1.42
+
+  ## blutgang configuration.
+  blutgang_image: makemake1337/blutgang:0.3.5
+
+  blutgang_rpc_port: 55555
+  blutgang_admin_port: 55556

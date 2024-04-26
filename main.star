@@ -5,7 +5,7 @@ cdk_central_environment_package = import_module("./cdk_central_environment.star"
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 observability_package = import_module("./observability.star")
-
+blutgang_package = import_module("./cdk_blutgang.star")
 
 def run(
     plan,
@@ -16,6 +16,7 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
+    deploy_blutgang=True,
     args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
@@ -102,6 +103,9 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
+        "blutgang_image": "makemake1337/blutgang:latest",
+        "blutgang_rpc_port": "55555",
+        "blutgang_admin_port": "55556",
     },
 ):
     """Deploy a Polygon CDK Devnet with various configurable options.
@@ -187,3 +191,11 @@ def run(
         observability_package.run(plan, observability_args)
     else:
         plan.print("Skipping the deployment of the observability stack")
+
+    # Deploy blutgang for caching
+    if deploy_blutgang:
+        plan.print("Deploying blutgang")
+        blutgang_args = dict(args)
+        blutgang_package.run(plan, blutgang_args)
+    else:
+        plan.print("Skipping the deployment of blutgang")
