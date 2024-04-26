@@ -87,6 +87,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          context: /opt/zkevm-bridge-ui
           file: /opt/zkevm-bridge-ui/Dockerfile
           tags: polygondevtools/zkevm-bridge-ui:0.0.1
           platforms: linux/amd64,linux/arm64
