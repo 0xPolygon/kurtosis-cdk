@@ -23,7 +23,7 @@ deploy_zkevm_permissionless_node: true
 # Deploy observability stack.
 deploy_observability: true
 
-# Deploy eth loadbalancer.
+# Deploy eth load balancer.
 deploy_blutgang: true
 
 # Apply workload to the different components of the CDK stack.
