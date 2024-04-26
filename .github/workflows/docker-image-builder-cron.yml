@@ -6,10 +6,13 @@ on:
   workflow_dispatch:
   pull_request: # TODO: Remove this. This is just for testing purposes.
 
+concurrency:
+  group: docker-image-builder-cron-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   ZKEVM_BRIDGE_UI_BRANCH: develop
   POLYCLI_VERSION: main
-
 
 jobs:
   zkevm-contracts:
