@@ -104,16 +104,8 @@ def run(
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
         "blutgang_image": "makemake1337/blutgang:latest",
-        "blutgang_http_address": "0.0.0.0:55555",
-        "blutgang_admin_address": "0.0.0.0:55556",
         "blutgang_rpc_port": "55555",
         "blutgang_admin_port": "55556",
-        "l2_sequencer_url": "http://zkevm-node-sequencer-001:8123",
-        "l2_sequencer_ws_url": "ws://zkevm-node-sequencer-001:8133",
-        "l2_rpc_url": "http://zkevm-node-rpc-001:8123",
-        "l2_ws_url": "ws://zkevm-node-rpc-001:8133",
-        "l2_rpc_pless_url": "http://zkevm-node-rpc-pless-001:8123",
-        "l2_ws_pless_url": "ws://zkevm-node-rpc-pless-001:8133",
     },
 ):
     """Deploy a Polygon CDK Devnet with various configurable options.
