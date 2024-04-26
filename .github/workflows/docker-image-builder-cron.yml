@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: '0 6 * * *'  # Every day at 6 am Paris time (UTC+2).
   workflow_dispatch:
+  pull_request: # TODO: Remove this. This is just for testing purposes.
 
 env:
   ZKEVM_BRIDGE_UI_BRANCH: develop
