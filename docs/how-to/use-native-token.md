@@ -181,9 +181,11 @@ The first derived private key from the `code...quality` mnemonic is
 
     ![Balance of receiving account](../img/how-to/gas-token-img/12_bridge.png)
 
-## Using cast to do a bridge claim
+## Using cast to withdraw assets from the bridge
 
-The following work-in-progress cast script processes a bridge claim. Feel free to go through line-by-line and tweak where necessary.
+The following work-in-progress cast script processes a bridge claim. 
+
+Feel free to go through line-by-line and tweak where necessary.
 
 ```sh
 #!/bin/bash

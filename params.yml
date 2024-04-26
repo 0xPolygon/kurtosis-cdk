@@ -23,6 +23,9 @@ deploy_zkevm_permissionless_node: true
 # Deploy observability stack.
 deploy_observability: true
 
+# Deploy eth loadbalancer.
+deploy_blutgang: true
+
 # Apply workload to the different components of the CDK stack.
 apply_workload: true
 
@@ -149,6 +152,7 @@ args:
   ## L1 configuration.
   l1_chain_id: 271828
   l1_preallocated_mnemonic: code code code code code code code code code code code quality
+  l1_funding_amount: 100ether
   l1_rpc_url: http://el-1-geth-lighthouse:8545
   l1_ws_url: ws://el-1-geth-lighthouse:8546
   # https://github.com/kurtosis-tech/ethereum-package/tree/main?tab=readme-ov-file#configuration
@@ -199,3 +203,8 @@ args:
     "polycli_loadtest_on_l2.sh v3 50 5",   # uniswapv3 swaps
     "polycli_rpcfuzz_on_l2.sh",            # rpc calls
   ]
+
+  ## ETH Load balancer configuration.
+  blutgang_image: makemake1337/blutgang:0.3.5
+  blutgang_rpc_port: 55555
+  blutgang_admin_port: 55556
