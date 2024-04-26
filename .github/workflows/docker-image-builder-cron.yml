@@ -71,8 +71,8 @@ jobs:
       - name: Apply patches
         working-directory: /opt/zkevm-bridge-ui
         run: |
-          patch -p1 -i ${{ github.workspace }}/deploy.sh.diff
-          patch -p1 -i ${{ github.workspace }}/env.ts.diff
+          patch -p1 -i ${{ github.workspace }}/docker/zkevm-bridge-ui/deploy.sh.diff
+          patch -p1 -i ${{ github.workspace }}/docker/zkevm-bridge-ui/env.ts.diff
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
