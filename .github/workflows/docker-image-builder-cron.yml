@@ -86,8 +86,8 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v5
-        working-directory: /opt/zkevm-bridge-ui
         with:
+          file: /opt/zkevm-bridge-ui/Dockerfile
           tags: polygondevtools/zkevm-bridge-ui:0.0.1
           platforms: linux/amd64,linux/arm64
           push: false # TODO: Set this value to true once credentials are set.
