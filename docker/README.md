@@ -2,7 +2,7 @@
 
 We maintain a suite of custom Docker images tailored specifically for deploying the CDK stack. These images serve various purposes, including hosting distinct zkEVM contracts (each fork tagged separately), adapting the bridge UI to support relative URLs, and applying specific workloads.
 
-We ensure the continuous availability of our custom Docker images through an automated build process. A [cron](../.github/workflows/docker-image-builder-cron.yml) job is configured to run daily, automatically triggering the build and push of these images. This ensures that the images are regularly updated with the latest changes and dependencies. Moreover, should immediate updates or manual initiation of the image building process be required, users can access the GitHub UI for manual triggering. Alternatively, the images can be built locally by following the provided guide.
+We ensure the continuous availability of our custom Docker images through an automated build process. A [cron](../.github/workflows/docker-image-builder-cron.yml) job is configured to run weekly, automatically triggering the build and push of these images. This ensures that the images are regularly updated with the latest changes and dependencies. Moreover, should immediate updates or manual initiation of the image building process be required, users can access the GitHub UI for manual triggering. Alternatively, the images can be built locally by following the provided guide.
 
 ## Local Image Building
 

@@ -3,7 +3,7 @@ name: Docker Image Builder Cron
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Every day at 6 am Paris time (UTC+2).
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM Paris time (UTC+2).
   workflow_dispatch:
   pull_request: # TODO: Remove this. This is just for testing purposes.
 
