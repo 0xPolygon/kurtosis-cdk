@@ -7,9 +7,57 @@ on:
 
 env:
   ZKEVM_BRIDGE_UI_BRANCH: develop
+  POLYCLI_VERSION: main
 
 
 jobs:
+  zkevm-contracts:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        fork:
+          - id: 4
+            branch: v1.1.0-fork.4
+          - id: 5
+            branch: v2.0.0-fork.5
+          - id: 6
+            branch: v3.0.0-fork.6
+          - id: 7
+            branch: v4.0.0-fork.7
+          - id: 8
+            branch: v5.0.1-rc.2-fork.8
+          - id: 9
+            branch: develop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone zkevm-contracts repository
+        working-directory: /opt/zkevm-contracts
+        run: git clone --branch ${{ matrix.fork.branch }} https://github.com/0xPolygonHermez/zkevm-contracts .
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      # TODO: Use credentials to push to Polygon Devtools' GCR.
+      # - name: Login to GCR
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.GCR_DEVTOOLS_USERNAME }}
+      #     password: ${{ secrets.GCR_DEVTOOLS_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          tags: polygondevtools/zkevm-contracts:fork${{ matrix.fork.id }}
+          build-args: |
+            ZKEVM_CONTRACTS_BRANCH=${{ matrix.fork.branch }}
+            POLYCLI_VERSION=${{ env.POLYCLI_VERSION }}
+          platforms: linux/amd64,linux/arm64
+          push: false # TODO: Set this value to true once credentials are set.
+
   zkevm-bridge-ui:
     runs-on: ubuntu-latest
     steps:
