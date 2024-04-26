@@ -1,4 +1,5 @@
-name: docker-image-builder-cron
+---
+name: Docker Image Builder Cron
 
 on:
   schedule:

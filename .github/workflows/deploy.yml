@@ -1,5 +1,5 @@
 ---
-name: deploy
+name: Deploy
 
 on:
   pull_request:
