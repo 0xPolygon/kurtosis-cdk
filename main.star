@@ -103,6 +103,7 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
+        "l1_additional_services": [],
         "blutgang_image": "makemake1337/blutgang:latest",
         "blutgang_rpc_port": "55555",
         "blutgang_admin_port": "55556",
