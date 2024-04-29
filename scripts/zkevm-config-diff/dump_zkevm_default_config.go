@@ -28,13 +28,13 @@ const (
 func main() {
 	// Check if the expected number of command-line arguments is provided.
 	if len(os.Args) != 2 {
-		fmt.Println("Usage: dump_zkevm_default_config <directory>")
+		slog.Info("Usage: dump_zkevm_default_config <directory>")
 		os.Exit(1)
 	}
 	directory := os.Args[1]
 
 	// Dump zkevm components default configurations.
-	slog.Info(fmt.Sprintf("Dumping current zkevm configurations in %s...", directory))
+	slog.Info("Dumping current zkevm configurations", "directory", directory)
 
 	if err := dumpDefaultConfig(ZkevmNode, directory); err != nil {
 		slog.Error("Unable to dump zkevm-node default config", "err", err)
@@ -90,7 +90,8 @@ func dumpDefaultConfig(module Module, directory string) error {
 	}
 
 	// Save the config in TOML.
-	filePath := filepath.Join(directory, fmt.Sprintf("%s-config.toml", module))
+	fileName := fmt.Sprintf("%s-config.toml", module)
+	filePath := filepath.Join(directory, fileName)
 	if err := os.WriteFile(filePath, cfgToml, 0644); err != nil {
 		return fmt.Errorf("unable to write config to file: %v", err)
 	}
