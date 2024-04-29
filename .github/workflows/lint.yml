@@ -43,7 +43,7 @@ jobs:
         run: yamllint --config-file ${{ github.workspace }}/.yamllint.yml .
 
       - name: Run hadolint
-        run: find . -type f -name 'Dockerfile*' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
+        run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
 
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
