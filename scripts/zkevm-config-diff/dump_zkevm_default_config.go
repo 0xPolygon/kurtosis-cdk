@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	agglayerconfig "github.com/0xPolygon/agglayer/config"
@@ -12,8 +14,6 @@ import (
 	zkevmnodeconfig "github.com/0xPolygonHermez/zkevm-node/config"
 
 	"log/slog"
-
-	"github.com/spf13/viper"
 )
 
 type Module string
@@ -28,13 +28,13 @@ const (
 func main() {
 	// Check if the expected number of command-line arguments is provided.
 	if len(os.Args) != 2 {
-		fmt.Println("Usage: dump_zkevm_default_config <directory>")
+		slog.Info("Usage: dump_zkevm_default_config <directory>")
 		os.Exit(1)
 	}
 	directory := os.Args[1]
 
 	// Dump zkevm components default configurations.
-	slog.Info(fmt.Sprintf("Dumping current zkevm configurations in %s...", directory))
+	slog.Info("Dumping current zkevm configurations", "directory", directory)
 
 	if err := dumpDefaultConfig(ZkevmNode, directory); err != nil {
 		slog.Error("Unable to dump zkevm-node default config", "err", err)
@@ -57,37 +57,43 @@ func main() {
 func dumpDefaultConfig(module Module, directory string) error {
 	slog.Info("Dumping default config", "module", module)
 
-	var defaultConfigFunc func() error
+	// Create default config.
+	var cfg interface{}
+	var err error
 	switch module {
 	case ZkevmNode:
-		defaultConfigFunc = func() error {
-			_, err := zkevmnodeconfig.Default()
-			return err
-		}
+		cfg, err = zkevmnodeconfig.Default()
 	case ZkevmAggLayer:
-		defaultConfigFunc = func() error {
-			_, err := agglayerconfig.Default()
-			return err
-		}
+		cfg, err = agglayerconfig.Default()
 	case CdkDataAvailability:
-		defaultConfigFunc = func() error {
-			_, err := cdkdaconfig.Default()
-			return err
-		}
+		cfg, err = cdkdaconfig.Default()
 	case ZkevmBridgeService:
-		defaultConfigFunc = func() error {
-			_, err := zkevmbridgeserviceconfig.Default()
-			return err
-		}
+		cfg, err = zkevmbridgeserviceconfig.Default()
 	default:
 		return fmt.Errorf("unsupported module: %s", module)
 	}
-	if err := defaultConfigFunc(); err != nil {
+	if err != nil {
 		return fmt.Errorf("unable to create default config: %v", err)
 	}
-	filePath := filepath.Join(directory, fmt.Sprintf("%s-config.toml", module))
-	if err := viper.WriteConfigAs(filePath); err != nil {
-		return fmt.Errorf("unable to write default config file: %v", err)
+
+	// Marshal config to JSON.
+	cfgJson, err := json.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("unable to marshal config to json: %v", err)
+	}
+
+	// Transform the JSON config with jq and format it in TOML with yq.
+	cmd := fmt.Sprintf("echo '%s' | jq 'walk(if type == \"object\" and keys_unsorted == [\"Duration\"] then ((.Duration / 1e9 | tostring) + \"s\") else . end) | del(..|nulls)' | yq -t", cfgJson)
+	cfgToml, err := exec.Command("bash", "-c", cmd).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("unable to execute jq command: %v", err)
+	}
+
+	// Save the config in TOML.
+	fileName := fmt.Sprintf("%s-config.toml", module)
+	filePath := filepath.Join(directory, fileName)
+	if err := os.WriteFile(filePath, cfgToml, 0644); err != nil {
+		return fmt.Errorf("unable to write config to file: %v", err)
 	}
 	return nil
 }
