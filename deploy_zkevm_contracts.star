@@ -75,6 +75,9 @@ def run(plan, args):
                     ]
                 ),
             },
+            # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
+            entrypoint=["bash", "-c"],
+            cmd=["sleep infinity"],
             user=User(uid=0, gid=0),  # Run the container as root user.
         ),
     )
