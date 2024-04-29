@@ -44,13 +44,30 @@ To build the zkEVM Bridge UI image locally, use the following command:
 
 ```bash
 docker build zkevm-bridge-ui \
-  --tag local/zkevm-bridge-ui:0.0.1 \
+  --tag local/zkevm-bridge-ui:multi-network \
   --build-arg ZKEVM_BRIDGE_UI_TAG=develop \
   --file zkevm-bridge-ui/zkevm-bridge-ui.Dockerfile
 ```
 
 ```bash
 $ docker images --filter "reference=local/zkevm-bridge-ui"
-REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-bridge-ui   0.0.1     447325d3b871   5 minutes ago   379MB
+REPOSITORY              TAG             IMAGE ID       CREATED          SIZE
+local/zkevm-bridge-ui   multi-network   040905e1cabe   28 seconds ago   377MB
+```
+
+## Workload
+
+To build the workload image locally, use the following command:
+
+```bash
+docker build . \
+  --tag local/workload:0.0.1 \
+  --build-arg POLYCLI_VERSION=main \
+  --file workload.Dockerfile
+```
+
+```bash
+$ docker images --filter "reference=local/workload"
+REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
+local/workload   0.0.1     3f85f026aaf9   2 seconds ago   490MB
 ```
