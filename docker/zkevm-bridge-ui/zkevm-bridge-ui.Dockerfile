@@ -1,9 +1,12 @@
-FROM alpine:latest AS builder
+FROM alpine:3.19 AS builder
 
 # STEP 1: Clone zkevm-bridge-ui repository.
 ARG ZKEVM_BRIDGE_UI_TAG
 WORKDIR /opt/zkevm-bridge-ui
-RUN apk add --update git patch \
+# WARNING (DL3018): Pin versions in apk add.
+# hadolint ignore=DL3018
+RUN apk add --no-cache git patch \
+  && rm -rf /var/cache/apk/* \
   && git clone --branch ${ZKEVM_BRIDGE_UI_TAG} https://github.com/0xPolygonHermez/zkevm-bridge-ui .
 
 # STEP 2: Apply patches.
@@ -14,7 +17,13 @@ RUN patch -p1 -i deploy.sh.diff \
 
 # STEP 3: Build zkevm-bridge-ui image using the official Dockerfile.
 FROM nginx:alpine
-RUN apk add --update nodejs npm
+LABEL author="devtools@polygon.technology"
+LABEL description="Enhanced zkevm-bridge-ui image with relative URLs support enabled"
+
+# WARNING (DL3018): Pin versions in apk add.
+# hadolint ignore=DL3018
+RUN apk add --no-cache nodejs npm \
+  && rm -rf /var/cache/apk/*
 
 WORKDIR /app
 COPY --from=builder /opt/zkevm-bridge-ui/package.json /opt/zkevm-bridge-ui/package-lock.json ./
