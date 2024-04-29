@@ -2,14 +2,14 @@
 set -e
 
 # Check if the required arguments are provided
-if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <mode> <requests> <concurrency>"
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 <mode>"
   exit 1
 fi
 
 mode="$1"
-requests="$2"
-concurrency="$3"
+requests=100
+concurrency=1
 rpc_url="{{.rpc_url}}"
 
 echo "Running polycli loadtest (rpc_url=$rpc_url mode=$mode requests=$requests concurrency=$concurrency)..."
