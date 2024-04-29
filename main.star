@@ -107,12 +107,7 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
-        "workload_scripts": [
-            "polycli_loadtest_on_l1 t 100 10",  # eth tranfers
-            "polycli_rpcfuzz_on_l1",  # rpc calls
-            "polycli_loadtest_on_l2 t 100 10",
-            "polycli_rpcfuzz_on_l2",
-        ],
+        "workload_scripts": [],
         "blutgang_image": "makemake1337/blutgang:latest",
         "blutgang_rpc_port": "55555",
         "blutgang_admin_port": "55556",
