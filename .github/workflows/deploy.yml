@@ -125,6 +125,7 @@ jobs:
           yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
           yq -Y --in-place '.deploy_observability = false' params.yml
           yq -Y --in-place '.deploy_blutgang = false' params.yml
+          yq -Y --in-place '.apply_workload = false' params.yml
 
       - name: Deploy L1
         run: |
@@ -179,6 +180,12 @@ jobs:
           yq -Y --in-place '.deploy_blutgang = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
+
+      - name: Apply workload
+        run: |
+          yq -Y --in-place '.apply_workload = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.apply_workload = false' params.yml # reset
 
       - name: Check that batches are being verified
         run: |
