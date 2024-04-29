@@ -27,7 +27,7 @@ deploy_observability: true
 deploy_blutgang: true
 
 # Apply workload to the different components of the CDK stack.
-apply_workload: true
+apply_workload: false
 
 args:
   # Suffix appended to service names.
@@ -190,11 +190,11 @@ args:
 
   ## Workload configuration.
   workload_commands: [
-    # "polycli_loadtest_on_l2.sh t",  # eth transfers
-    # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-    # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-    # "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
-    # "polycli_rpcfuzz_on_l2.sh",     # rpc calls
+    "polycli_loadtest_on_l2.sh t",  # eth transfers
+    "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
+    "polycli_loadtest_on_l2.sh 7",  # erc721 mints
+    "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
+    "polycli_rpcfuzz_on_l2.sh",     # rpc calls
   ]
 
   ## ETH Load balancer configuration.

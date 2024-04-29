@@ -19,7 +19,7 @@ def run(
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
     deploy_blutgang=True,
-    apply_workload=True,
+    apply_workload=False,
     args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
@@ -107,7 +107,13 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
-        "workload_scripts": [],
+        "workload_scripts": [
+            "polycli_loadtest_on_l2.sh t",  # eth transfers
+            "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
+            "polycli_loadtest_on_l2.sh 7",  # erc721 mints
+            "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
+            "polycli_rpcfuzz_on_l2.sh",     # rpc calls
+        ],
         "blutgang_image": "makemake1337/blutgang:latest",
         "blutgang_rpc_port": "55555",
         "blutgang_admin_port": "55556",
