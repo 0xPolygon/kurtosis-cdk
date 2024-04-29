@@ -5,6 +5,7 @@ cdk_central_environment_package = import_module("./cdk_central_environment.star"
 cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
 zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
 observability_package = import_module("./observability.star")
+workload_package = import_module("./workload.star")
 blutgang_package = import_module("./cdk_blutgang.star")
 
 
@@ -18,6 +19,7 @@ def run(
     deploy_zkevm_permissionless_node=True,
     deploy_observability=True,
     deploy_blutgang=True,
+    apply_workload=False,
     args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
@@ -94,6 +96,7 @@ def run(
         "l1_preallocated_mnemonic": "code code code code code code code code code code code quality",
         "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
         "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
+        "l1_additional_services": [],
         "zkevm_rollup_chain_id": 10101,
         "zkevm_rollup_fork_id": 9,
         "zkevm_rollup_consensus": "PolygonValidiumEtrog",
@@ -104,7 +107,13 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
-        "l1_additional_services": [],
+        "workload_scripts": [
+            "polycli_loadtest_on_l2.sh t",  # eth transfers
+            "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
+            "polycli_loadtest_on_l2.sh 7",  # erc721 mints
+            "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
+            "polycli_rpcfuzz_on_l2.sh",  # rpc calls
+        ],
         "blutgang_image": "makemake1337/blutgang:latest",
         "blutgang_rpc_port": "55555",
         "blutgang_admin_port": "55556",
@@ -193,6 +202,13 @@ def run(
         observability_package.run(plan, observability_args)
     else:
         plan.print("Skipping the deployment of the observability stack")
+
+    # Apply workload
+    if apply_workload:
+        plan.print("Apply workload")
+        workload_package.run(plan, args)
+    else:
+        plan.print("Skipping workload application")
 
     # Deploy blutgang for caching
     if deploy_blutgang:
