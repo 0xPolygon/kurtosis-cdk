@@ -12,10 +12,11 @@ LABEL description="Helper image to build zkevm contracts"
 # STEP 1: Download zkevm contracts dependencies and compile contracts.
 ARG ZKEVM_CONTRACTS_BRANCH
 WORKDIR /opt/zkevm-contracts
-# FIX: `npm install` randomly fails with ECONNRESET and ETIMEDOUT errors.
+# FIX: `npm install` randomly fails with ECONNRESET and ETIMEDOUT errors by installing npm>=10.5.1.
 # https://github.com/npm/cli/releases/tag/v10.5.1
 RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/0xPolygonHermez/zkevm-contracts . \
-  && npm install --global npm@10.5.1 \
+  && npm install --global npm@10.6.0 \
+  && npm install \
   && npx hardhat compile
 
 # STEP 2: Install tools.
