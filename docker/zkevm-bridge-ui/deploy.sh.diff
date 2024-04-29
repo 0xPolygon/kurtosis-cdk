@@ -1,0 +1,13 @@
+diff --git a/scripts/deploy.sh b/scripts/deploy.sh
+index 22e5b09..00da634 100644
+--- a/scripts/deploy.sh
++++ b/scripts/deploy.sh
+@@ -21,6 +21,9 @@ echo "VITE_POLYGON_ZK_EVM_NETWORK_ID=$POLYGON_ZK_EVM_NETWORK_ID" >> $ENV_FILENAM
+ # BRIDGE API env vars
+ echo "VITE_BRIDGE_API_URL=$BRIDGE_API_URL" >> $ENV_FILENAME
+
++# Support for relative URLS
++echo "VITE_RESOLVE_RELATIVE_URLS=$RESOLVE_RELATIVE_URLS" >> $ENV_FILENAME
++
+ # FIAT EXCHANGE RATES API env vars
+ echo "VITE_ENABLE_FIAT_EXCHANGE_RATES=$ENABLE_FIAT_EXCHANGE_RATES" >> $ENV_FILENAME
