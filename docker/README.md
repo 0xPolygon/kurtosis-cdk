@@ -15,7 +15,7 @@ To build a local image containing all npm dependencies and zkEVM contracts compi
 ```bash
 docker build . \
   --tag local/zkevm-contracts:fork9 \
-  --build-arg ZKEVM_CONTRACTS_BRANCH=develop \
+  --build-arg ZKEVM_CONTRACTS_BRANCH=v6.0.0-rc.1-fork.9 \
   --build-arg POLYCLI_VERSION=main \
   --file zkevm-contracts.Dockerfile
 ```
@@ -23,7 +23,6 @@ docker build . \
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
 REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   fork8     4bd7c527e919   4 minutes ago    2.32GB
 local/zkevm-contracts   fork9     54d894c6a5bd   10 minutes ago   2.3GB
 ```
 
