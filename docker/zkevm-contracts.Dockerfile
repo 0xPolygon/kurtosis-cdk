@@ -13,7 +13,7 @@ LABEL description="Helper image to build zkevm contracts"
 ARG ZKEVM_CONTRACTS_BRANCH
 WORKDIR /opt/zkevm-contracts
 RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/0xPolygonHermez/zkevm-contracts . \
-  && npm ci --maxsockets 1 \
+  && npm install \
   && npx hardhat compile
 
 # STEP 2: Install tools.
