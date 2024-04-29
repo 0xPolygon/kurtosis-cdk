@@ -18,14 +18,6 @@ def run(plan, args):
                     "commands": args["workload_commands"],
                 },
             ),
-            "polycli_loadtest_on_l1.sh": struct(
-                template=polycli_loadtest_template,
-                data={
-                    "rpc_url": args["l1_rpc_url"],
-                    "chain_id": args["l1_chain_id"],
-                    "private_key": args["zkevm_l2_admin_private_key"],
-                },
-            ),
             "polycli_loadtest_on_l2.sh": struct(
                 template=polycli_loadtest_template,
                 data={
@@ -33,13 +25,6 @@ def run(plan, args):
                     "chain_id": args["zkevm_rollup_chain_id"],
                     "private_key": args["zkevm_l2_admin_private_key"],
                     "send_legacy_tx": True,
-                },
-            ),
-            "polycli_rpcfuzz_on_l1.sh": struct(
-                template=polycli_rpcfuzz_template,
-                data={
-                    "rpc_url": args["l1_rpc_url"],
-                    "private_key": args["zkevm_l2_admin_private_key"],
                 },
             ),
             "polycli_rpcfuzz_on_l2.sh": struct(

@@ -190,13 +190,6 @@ args:
 
   ## Workload configuration.
   workload_commands: [
-    # Generate load on L1.
-    "polycli_loadtest_on_l1.sh t 100 10",  # eth transfers
-    "polycli_loadtest_on_l1.sh 2 100 10",  # erc20 transfers
-    "polycli_loadtest_on_l1.sh 7 100 10",  # erc721 mints
-    "polycli_loadtest_on_l1.sh v3 50 5",   # uniswapv3 swaps
-    "polycli_rpcfuzz_on_l1.sh",            # rpc calls
-    # Generate load on L2.
     "polycli_loadtest_on_l2.sh t 100 10",  # eth transfers
     "polycli_loadtest_on_l2.sh 2 100 10",  # erc20 transfers
     "polycli_loadtest_on_l2.sh 7 100 10",  # erc721 mints
