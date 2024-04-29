@@ -2,6 +2,9 @@
 name: Docker Image Builder Cron
 
 on:
+  push:
+    paths:
+      - 'docker/**'  # Trigger only when changes are made in the docker folder
   schedule:
     - cron: '0 6 * * 1'  # Every Monday at 6 AM Paris time (UTC+2).
   workflow_dispatch:
