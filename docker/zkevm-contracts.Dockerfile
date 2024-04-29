@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygo
 
 FROM node:20-bookworm
 LABEL author="devtools@polygon.technology"
-LABEL description="Helper image to build zkevm contracts"
+LABEL description="Helper image to deploy zkevm contracts"
 
 # STEP 1: Download zkevm contracts dependencies and compile contracts.
 ARG ZKEVM_CONTRACTS_BRANCH
