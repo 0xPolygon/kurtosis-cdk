@@ -111,8 +111,8 @@ def run(
             "polycli_loadtest_on_l2.sh t",  # eth transfers
             "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
             "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-            "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
-            "polycli_rpcfuzz_on_l2.sh",     # rpc calls
+            "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
+            "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         ],
         "blutgang_image": "makemake1337/blutgang:latest",
         "blutgang_rpc_port": "55555",
