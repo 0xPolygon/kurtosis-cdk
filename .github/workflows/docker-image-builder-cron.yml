@@ -23,17 +23,19 @@ jobs:
       fail-fast: false
       matrix:
         fork:
-          - id: 4
+          - id: fork4
             branch: v1.1.0-fork.4
-          - id: 5
+          - id: fork5
             branch: v2.0.0-fork.5
-          - id: 6
+          - id: fork6
             branch: v3.0.0-fork.6
-          - id: 7
+          - id: fork7
             branch: v4.0.0-fork.7
-          - id: 8
+          - id: fork8
             branch: v5.0.1-rc.2-fork.8
-          - id: 9
+          - id: fork9
+            branch: v6.0.0-rc.1-fork.9
+          - id: develop
             branch: develop
 
     steps:
@@ -54,7 +56,7 @@ jobs:
           build-args: |
             ZKEVM_CONTRACTS_BRANCH=${{ matrix.fork.branch }}
             POLYCLI_VERSION=${{ env.POLYCLI_VERSION }}
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/zkevm-contracts:fork${{ matrix.fork.id }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/zkevm-contracts:${{ matrix.fork.id }}
           platforms: linux/amd64,linux/arm64
           push: true
 
