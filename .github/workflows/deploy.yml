@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  KURTOSIS_VERSION: v0.88.19
+  KURTOSIS_VERSION: 0.88.19
   CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES: 10
   GO_VERSION: 1.21
 
