@@ -1,3 +1,6 @@
+service_package = import_module("./lib/service.star")
+
+
 def run(plan, args):
     # Create scripts artifacts.
     apply_workload_template = read_file(src="./templates/workload/apply_workload.sh")
@@ -5,10 +8,20 @@ def run(plan, args):
         src="./templates/workload/polycli_loadtest.sh"
     )
     polycli_rpcfuzz_template = read_file(src="./templates/workload/polycli_rpcfuzz.sh")
+    bridge_template = read_file(src="./templates/workload/bridge.sh")
+
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     zkevm_rpc_service = plan.get_service("zkevm-node-rpc" + args["deployment_suffix"])
     zkevm_rpc_url = "http://{}:{}".format(
         zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["http-rpc"].number
     )
+    zkevm_bridge_service = plan.get_service(
+        "zkevm-bridge-service" + args["deployment_suffix"]
+    )
+    zkevm_bridge_api_url = "http://{}:{}".format(
+        zkevm_bridge_service.ip_address, zkevm_bridge_service.ports["bridge-rpc"].number
+    )
+
     workload_script_artifact = plan.render_templates(
         name="workload-script-artifact",
         config={
@@ -33,6 +46,17 @@ def run(plan, args):
                     "rpc_url": zkevm_rpc_url,
                     "private_key": args["zkevm_l2_admin_private_key"],
                 },
+            ),
+            "bridge.sh": struct(
+                template=bridge_template,
+                data={
+                    "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
+                    "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
+                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l2_rpc_url": zkevm_rpc_url,
+                    "zkevm_bridge_api_url": zkevm_bridge_api_url,
+                }
+                | contract_setup_addresses,
             ),
         },
     )
