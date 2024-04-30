@@ -50,8 +50,7 @@ args:
   zkevm_agglayer_image: 0xpolygon/agglayer:0.1.1
 
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-  # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
-  zkevm_bridge_ui_image: nulyjkdhthz/zkevm-bridge-ui:kurtosis
+  zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
 
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.6
