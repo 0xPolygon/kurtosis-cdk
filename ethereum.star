@@ -3,7 +3,7 @@ ethereum_package = import_module(
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.0"
-LIGHTHOUSE_IMAGE = "v5.1.3"
+LIGHTHOUSE_IMAGE = "sigp/lighthouse:v5.1.3"
 
 def run(plan, args):
     ethereum_package.run(
