@@ -17,8 +17,9 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=False,
-    deploy_cdk_erigon_node=False,
+    deploy_zkevm_permissionless_node=True,
+    deploy_cdk_erigon_sequencer=True,
+    deploy_cdk_erigon_node=True,
     deploy_observability=True,
     deploy_blutgang=False,
     apply_workload=False,
@@ -171,6 +172,21 @@ def run(
             src="/opt/zkevm/genesis.json",
         )
 
+    
+    # Deploy cdk-erigon sequencer node.
+    if deploy_cdk_erigon_sequencer:
+        plan.print("Deploying cdk-erigon sequencer")
+        cdk_erigon_package.run_sequencer(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon sequencer")
+
+    # Deploy cdk-erigon node.
+    if deploy_cdk_erigon_node:
+        plan.print("Deploying cdk-erigon node")
+        cdk_erigon_package.run_rpc(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon node")
+
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
         plan.print("Deploying cdk central/trusted environment")
@@ -199,13 +215,6 @@ def run(
         zkevm_permissionless_node_package.run(plan, permissionless_node_args)
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
-
-    # Deploy cdk-erigon node.
-    if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        cdk_erigon_package.run(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy observability stack.
     if deploy_observability:
