@@ -2,6 +2,7 @@ service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 
 
 def run(plan, args):
@@ -58,13 +59,15 @@ def run(plan, args):
         )
     )
 
+    sequence_sender_config = zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(plan, args, genesis_artifact, keystore_artifacts.sequencer)
+
     dac_config_artifact = create_dac_config_artifact(plan, args)
     dac_config = zkevm_dac_package.create_dac_service_config(
         args, dac_config_artifact, keystore_artifacts.dac
     )
 
     plan.add_services(
-        configs=zkevm_node_components_configs | dac_config,
+        configs=zkevm_node_components_configs | sequence_sender_config | dac_config,
         description="Starting the rest of the zkevm node components",
     )
 

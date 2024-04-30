@@ -20,8 +20,11 @@ deploy_cdk_bridge_infra: true
 # Deploy permissionless node.
 deploy_zkevm_permissionless_node: false
 
+# Deploy cdk-erigon sequencer.
+deploy_cdk_erigon_sequencer: true
+
 # Deploy cdk-erigon node.
-deploy_cdk_erigon_node: false
+deploy_cdk_erigon_node: true
 
 # Deploy observability stack.
 deploy_observability: true
@@ -38,9 +41,9 @@ args:
   deployment_suffix: "-001"
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.2-RC6
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
-  zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.5-cdk
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.6.6-RC1
   # zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
@@ -52,6 +55,7 @@ args:
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
   workload_image: leovct/workload:0.0.1
+  zkevm_sequence_sender_image: hermeznetwork/zkevm-seqsender:v0.1.1-RC1
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -178,7 +182,7 @@ args:
   zkevm_use_gas_token_contract: false
 
   ## Permissionless node configuration.
-  trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
+  trusted_sequencer_node_uri: cdk-erigon-sequencer-001:6900
   zkevm_aggregator_host: zkevm-node-aggregator-001
   genesis_file: templates/permissionless-node/genesis.json
 
