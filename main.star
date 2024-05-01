@@ -1,4 +1,3 @@
-
 ethereum_package = import_module("./ethereum.star")
 deploy_zkevm_contracts_package = import_module("./deploy_zkevm_contracts.star")
 cdk_databases_package = import_module("./cdk_databases.star")
@@ -145,6 +144,9 @@ def run(
 
     # Deploy zkevm contracts on L1.
     if deploy_zkevm_contracts_on_l1:
+        if not args.get('l1_funding_amount'):
+            # If not set or 0, genesis will be wrong and syncrhonizer crashes
+            fail("l1_funding_amount is required to deploy zkevm contracts")
         plan.print("Deploying zkevm contracts on L1")
         deploy_zkevm_contracts_package.run(plan, args)
     else:
