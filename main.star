@@ -1,3 +1,4 @@
+
 ethereum_package = import_module("./ethereum.star")
 deploy_zkevm_contracts_package = import_module("./deploy_zkevm_contracts.star")
 cdk_databases_package = import_module("./cdk_databases.star")
@@ -115,8 +116,8 @@ def run(
             "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         ],
         "blutgang_image": "makemake1337/blutgang:latest",
-        "blutgang_rpc_port": "55555",
-        "blutgang_admin_port": "55556",
+        "blutgang_rpc_port": 55555,
+        "blutgang_admin_port": 55556,
     },
 ):
     """Deploy a Polygon CDK Devnet with various configurable options.
