@@ -48,6 +48,10 @@ def run(plan, args):
             args["zkevm_rpc_url"] = "http://{}:{}".format(
                 service.ip_address, service.ports["http-rpc"].number
             )
+            break
+
+    if not args["zkevm_rpc_url"]:
+        fail("Couldn't find the ZKEVM RPC service")
 
     # Start panoptichain.
     start_panoptichain(plan, args)
