@@ -1,12 +1,12 @@
-ethereum_package = import_module("./ethereum.star")
-deploy_zkevm_contracts_package = import_module("./deploy_zkevm_contracts.star")
-cdk_databases_package = import_module("./cdk_databases.star")
-cdk_central_environment_package = import_module("./cdk_central_environment.star")
-cdk_bridge_infra_package = import_module("./cdk_bridge_infra.star")
-zkevm_permissionless_node_package = import_module("./zkevm_permissionless_node.star")
-observability_package = import_module("./observability.star")
-workload_package = import_module("./workload.star")
-blutgang_package = import_module("./cdk_blutgang.star")
+ethereum_package = "./ethereum.star"
+deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
+cdk_databases_package = "./cdk_databases.star"
+cdk_central_environment_package = "./cdk_central_environment.star"
+cdk_bridge_infra_package = "./cdk_bridge_infra.star"
+zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
+observability_package = "./observability.star"
+workload_package = "./workload.star"
+blutgang_package = "./cdk_blutgang.star"
 
 
 def run(
@@ -137,22 +137,23 @@ def run(
 
     # Deploy a local L1.
     if deploy_l1:
+        
         plan.print("Deploying a local L1")
-        ethereum_package.run(plan, args)
+        import_module(ethereum_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 
     # Deploy zkevm contracts on L1.
     if deploy_zkevm_contracts_on_l1:
         plan.print("Deploying zkevm contracts on L1")
-        deploy_zkevm_contracts_package.run(plan, args)
+        import_module(deploy_zkevm_contracts_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        cdk_databases_package.run(plan, args)
+        import_module(cdk_databases_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
@@ -171,14 +172,15 @@ def run(
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
-        cdk_central_environment_package.run(plan, central_environment_args)
+        import_module(cdk_central_environment_package) \
+            .run(plan, central_environment_args)
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
         plan.print("Deploying cdk/bridge infrastructure")
-        cdk_bridge_infra_package.run(plan, args)
+        import_module(cdk_bridge_infra_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
@@ -191,7 +193,8 @@ def run(
             "-pless" + args["deployment_suffix"]
         )
         permissionless_node_args["genesis_artifact"] = genesis_artifact
-        zkevm_permissionless_node_package.run(plan, permissionless_node_args)
+        import_module(zkevm_permissionless_node_package) \
+            .run(plan, permissionless_node_args)
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
 
@@ -199,14 +202,14 @@ def run(
     if deploy_observability:
         plan.print("Deploying the observability stack")
         observability_args = dict(args)
-        observability_package.run(plan, observability_args)
+        import_module(observability_package).run(plan, observability_args)
     else:
         plan.print("Skipping the deployment of the observability stack")
 
     # Apply workload
     if apply_workload:
         plan.print("Apply workload")
-        workload_package.run(plan, args)
+        import_module(workload_package).run(plan, args)
     else:
         plan.print("Skipping workload application")
 
@@ -214,6 +217,6 @@ def run(
     if deploy_blutgang:
         plan.print("Deploying blutgang")
         blutgang_args = dict(args)
-        blutgang_package.run(plan, blutgang_args)
+        import_module(blutgang_package).run(plan, blutgang_args)
     else:
         plan.print("Skipping the deployment of blutgang")
