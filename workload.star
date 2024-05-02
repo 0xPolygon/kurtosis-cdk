@@ -35,9 +35,7 @@ def run(plan, args):
                 template=polycli_loadtest_template,
                 data={
                     "rpc_url": zkevm_rpc_url,
-                    "chain_id": args["zkevm_rollup_chain_id"],
                     "private_key": args["zkevm_l2_admin_private_key"],
-                    "send_legacy_tx": True,
                 },
             ),
             "polycli_rpcfuzz_on_l2.sh": struct(
