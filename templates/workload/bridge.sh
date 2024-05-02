@@ -166,9 +166,17 @@ claim_assets() {
 }
 
 # Check if a function name is provided as an argument.
+# If not, run a few bridge operations.
 if [ -z "$1" ]; then
-  echo "Usage: $0 <function_name>"
-  exit 1
+  deploy_erc20_contract_on_l1
+  for ((i=0; i<=10; i++)); do
+    bridge_assets_from_l1_to_l2
+  done
+
+  deploy_erc20_contract_on_l2
+  for ((i=0; i<=10; i++)); do
+    bridge_assets_from_l2_to_l1
+  done
 fi
 
 # Define the function to execute the specified function.
@@ -177,5 +185,5 @@ function execute_function() {
   "$function_name"
 }
 
-# Call the function with the function name provided as the script's argument.
+# Else, call the function with the function name provided as the script's argument.
 execute_function "$1"
