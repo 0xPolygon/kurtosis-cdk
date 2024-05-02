@@ -31,7 +31,7 @@ deploy_erc20_contract() {
     --rpc-url "$rpc_url" \
     --legacy \
     --json \
-    --create "$(cat /opt/bindings/tokens/ERC20.bin)" > "/opt/erc20-network-$network-deployment-receipt.json"
+    --create "$(cat /opt/bindings/tokens/ERC20.bin)" | jq > "/opt/erc20-network-$network-deployment-receipt.json"
   erc20_address="$(jq -r '.contractAddress' "/opt/erc20-network-$network-deployment-receipt.json")"
   echo "ERC20 contract deployed at $erc20_address"
 
@@ -124,7 +124,7 @@ claim_assets() {
 
   echo; echo "Filtering the list of deposits..."
   # shellcheck disable=SC2086
-  jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$network')]' /opt/bridge-deposits.json > /opt/claimable-txs.json
+  jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$network')]' /opt/bridge-deposits.json | jq > /opt/claimable-txs.json
   cat /opt/claimable-txs.json
 
   jq -c '.[]' /opt/claimable-txs.json | while IFS= read -r tx; do
@@ -134,7 +134,7 @@ claim_assets() {
     echo; echo "Getting the merkle proof of our deposit..."
     curr_deposit_cnt="$(echo "$tx" | jq -r '.deposit_cnt')"
     curr_network_id="$(echo "$tx" | jq -r '.network_id')"
-    curl -s "{{.zkevm_bridge_api_url}}/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq '.' > /opt/proof.json
+    curl -s "{{.zkevm_bridge_api_url}}/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq > /opt/proof.json
     cat /opt/proof.json
 
     in_merkle_proof="$(jq -r -c '.proof.merkle_proof' /opt/proof.json | tr -d '"')"
