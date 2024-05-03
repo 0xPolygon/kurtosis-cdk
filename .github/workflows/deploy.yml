@@ -12,8 +12,9 @@ concurrency:
 
 env:
   KURTOSIS_VERSION: 0.88.19
-  CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES: 10
   GO_VERSION: 1.21
+  BATCH_VERIFICATION_MONITOR_TARGET: 30
+  BATCH_VERIFICATION_MONITOR_TIMEOUT: 600 # 10 minutes
 
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
@@ -48,29 +49,8 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Check that batches are being verified
-        run: |
-          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
-          start_time=$(date +%s)
-          end_time=$((start_time + timeout_minutes*60))
-
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          while true; do
-              current_time=$(date +%s)
-              if (( current_time > end_time )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
-                  exit 1
-              fi
-
-              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
-
-              if (( verified_batches > 5 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
-                  exit 0
-              fi
-
-              sleep 10
-          done
+        working-directory: ./scripts
+        run: ./batch_verification_monitor ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
 
       # Compare configs.
       - name: Dump configs
@@ -178,29 +158,8 @@ jobs:
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
       - name: Check that batches are being verified
-        run: |
-          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
-          start_time=$(date +%s)
-          end_time=$((start_time + timeout_minutes*60))
-
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          while true; do
-              current_time=$(date +%s)
-              if (( current_time > end_time )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
-                  exit 1
-              fi
-
-              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
-
-              if (( verified_batches > 5 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
-                  exit 0
-              fi
-
-              sleep 10
-          done
+        working-directory: ./scripts
+        run: ./batch_verification_monitor ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -225,26 +184,5 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Check that batches are being verified
-        run: |
-          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
-          start_time=$(date +%s)
-          end_time=$((start_time + timeout_minutes*60))
-
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          while true; do
-              current_time=$(date +%s)
-              if (( current_time > end_time )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
-                  exit 1
-              fi
-
-              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
-
-              if (( verified_batches > 5 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
-                  exit 0
-              fi
-
-              sleep 10
-          done
+        working-directory: ./scripts
+        run: ./batch_verification_monitor ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
