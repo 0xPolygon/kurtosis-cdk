@@ -12,9 +12,9 @@ timeout="$2"
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
 
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+rpc_url="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
 while true; do
-  verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+  verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
   current_time=$(date +%s)
