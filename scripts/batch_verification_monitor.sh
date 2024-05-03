@@ -24,7 +24,7 @@ while true; do
   fi
 
   if (( verified_batches > verified_batches_target )); then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batches_target batches were verified!"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batches batches were verified!"
     exit 0
   fi
 
