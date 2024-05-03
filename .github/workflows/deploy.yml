@@ -50,7 +50,7 @@ jobs:
 
       - name: Check that batches are being verified
         working-directory: ./scripts
-        run: ./batch_verification_monitor ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
 
       # Compare configs.
       - name: Dump configs
@@ -159,7 +159,7 @@ jobs:
 
       - name: Check that batches are being verified
         working-directory: ./scripts
-        run: ./batch_verification_monitor ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -185,4 +185,4 @@ jobs:
 
       - name: Check that batches are being verified
         working-directory: ./scripts
-        run: ./batch_verification_monitor ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
