@@ -95,10 +95,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
       # Install tools.
       - name: Install kurtosis
@@ -206,19 +202,49 @@ jobs:
               sleep 10
           done
 
-      # Compare configs.
-      - name: Dump configs
-        working-directory: scripts/zkevm-config-diff
+
+  # Deploy the CDK environment without specifying any parameter file.
+  configless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install tools.
+      - name: Install kurtosis
         run: |
-          mkdir default-configs kurtosis-cdk-configs
-          sh zkevm_config.sh dump default ./default-configs
-          echo
-          sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          kurtosis analytics disable
 
-      - name: Compare configs
-        working-directory: scripts/zkevm-config-diff
-        run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Diff configs
-        working-directory: scripts/zkevm-config-diff
-        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
+      # Deploy components.
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Check that batches are being verified
+        run: |
+          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while true; do
+              current_time=$(date +%s)
+              if (( current_time > end_time )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+                  exit 1
+              fi
+
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+
+              if (( verified_batches > 5 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
+                  exit 0
+              fi
+
+              sleep 10
+          done
