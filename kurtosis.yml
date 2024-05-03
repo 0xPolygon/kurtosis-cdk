@@ -14,9 +14,15 @@ description: |-
   Deploy CDK central/trusted environment.
   Deploy CDK/bridge infrastructure.
   Deploy permissionless node.
+  Deploy observability stack.
+  Deploy eth load balancer.
+  Apply workload to the different components of the CDK stack.
 
-  These are configurable via the form inputs. The following other args optionally configurable via args object. Here are the default values:
-  ```
+  These are configurable via the form inputs.
+
+  The following other args optionally configurable via args object. Here are the default values:
+
+  ```yml
   # Suffix appended to service names.
   # Note: It should be a string.
   deployment_suffix: "-001"
