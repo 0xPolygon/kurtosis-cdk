@@ -60,13 +60,5 @@ jobs:
         run: pip3 install yq
 
       - name: Compare default parameters
-        run: |
-          sed -n '/args={/,/},/p' main.star | sed 's/args=//' | sed 's/},/}/' | yq --yaml-output > defaults-args.yaml
-          sed -n '/```/,/```/p' kurtosis.yml | sed 's/```//' | yq --yaml-output > kurtosis-args.yaml
-          yq --yaml-output .args params.yml > params-args.yaml
-
-          echo "Diff defaults-args.yaml <> params-args.yaml"
-          diff defaults-args.yaml params-args.yaml
-
-          echo; echo "Diff kurtosis-args.yaml <> params-args.yaml"
-          diff kurtosis-args.yaml params-args.yaml
+        working-directory: ./scripts
+        run: ./compare_default_params.sh
