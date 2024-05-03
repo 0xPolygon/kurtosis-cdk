@@ -50,3 +50,14 @@ jobs:
 
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
+
+  compare-default-parameters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare main.star and params.yml args
+        run: |
+          sed -n '/args={/,/},/p' main.star | sed 's/args=//' | sed 's/},/}/' | yq --yaml-output > defaults-args.yaml
+          yq --yaml-output .args params.yml > params-args.yaml
+          diff defaults-args.yaml params-args.yaml
