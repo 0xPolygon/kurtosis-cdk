@@ -14,7 +14,7 @@ env:
   KURTOSIS_VERSION: 0.88.19
 
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

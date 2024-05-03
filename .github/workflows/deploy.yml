@@ -1,5 +1,5 @@
 ---
-name: Deploy
+name: Deploy Kurtosis CDK
 
 on:
   pull_request:
@@ -18,7 +18,7 @@ env:
 
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
-  monolithic_cdk:
+  monolithic:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
 
 
   # Deploy the CDK environment incrementally, stage by stage.
-  incremental_cdk:
+  incremental:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
