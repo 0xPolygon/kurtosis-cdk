@@ -49,7 +49,7 @@ args:
   zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   panoptichain_image: minhdvu/panoptichain
-  blockscout_image: hermeznetwork/zkevm-explorer
+  blockscout_image: blockscout/blockscout-zkevm:6.5.0
 
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7

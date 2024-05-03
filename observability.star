@@ -48,18 +48,26 @@ def start_blockscout(plan, args):
     db_host = args["zkevm_db_blockscout_hostname"] + args["deployment_suffix"]
     db_port = args["zkevm_db_postgres_port"]
     db_name = args["zkevm_db_blockscout_name"]
-    connection_string = \
-        "postgresql://"+db_user+":"+db_password+"@"+db_host+":"+str(db_port)+"/"+db_name
+    connection_string = (
+        "postgresql://"
+        + db_user
+        + ":"
+        + db_password
+        + "@"
+        + db_host
+        + ":"
+        + str(db_port)
+        + "/"
+        + db_name
+    )
     return plan.add_service(
         name="blockscout" + args["deployment_suffix"],
-        config = ServiceConfig(
-            image = args["blockscout_image"],
-            ports = {
-                "blockscout": PortSpec(
-                    4004, application_protocol="http", wait="5m"
-                ),
+        config=ServiceConfig(
+            image=args["blockscout_image"],
+            ports={
+                "blockscout": PortSpec(4004, application_protocol="http", wait="1m"),
             },
-            env_vars = {
+            env_vars={
                 "PORT": "4004",
                 "NETWORK": "POE",
                 "SUBNETWORK": "Polygon CDK",
@@ -75,12 +83,12 @@ def start_blockscout(plan, args):
                 "SUPPORTED_CHAINS": "[]",
                 "SHOW_OUTDATED_NETWORK_MODAL": "false",
                 "DISABLE_INDEXER": "false",
-                "INDEXER_ZKEVM_BATCHES_ENABLED": "true"
+                "INDEXER_ZKEVM_BATCHES_ENABLED": "true",
             },
             cmd=[
                 "/bin/sh",
                 "-c",
-                "mix do ecto.create, ecto.migrate; mix phx.server"
+                'bin/blockscout eval "Elixir.Explorer.ReleaseTasks.create_and_migrate()" && bin/blockscout start',
             ],
         ),
     )

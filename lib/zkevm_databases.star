@@ -2,11 +2,12 @@ POSTGRES_IMAGE = "postgres:16.2"
 
 
 def _create_postgres_db_service_config(
-    port, db, user, password, init_script_artifact_name=""
+    port, db, user, password, init_script_artifact_name="", cmd_args=[]
 ):
     files = {}
     if init_script_artifact_name != "":
         files["/docker-entrypoint-initdb.d/"] = init_script_artifact_name
+
     return ServiceConfig(
         image=POSTGRES_IMAGE,
         ports={
@@ -18,7 +19,7 @@ def _create_postgres_db_service_config(
             "POSTGRES_PASSWORD": password,
         },
         files=files,
-        cmd=["-p {}".format(port)],
+        cmd=["-p {}".format(port)] + cmd_args,
     )
 
 
@@ -90,12 +91,15 @@ def create_peripheral_databases_service_configs(args):
         password=args["zkevm_db_dac_password"],
     )
 
-    blockscout_db_name = args["zkevm_db_blockscout_hostname"] + args["deployment_suffix"]
+    blockscout_db_name = (
+        args["zkevm_db_blockscout_hostname"] + args["deployment_suffix"]
+    )
     blockscout_db_service_config = _create_postgres_db_service_config(
         port=args["zkevm_db_postgres_port"],
         db=args["zkevm_db_blockscout_name"],
         user=args["zkevm_db_blockscout_user"],
         password=args["zkevm_db_blockscout_password"],
+        cmd_args=["-N 500"],
     )
 
     return {
