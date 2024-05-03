@@ -23,14 +23,15 @@ def run(
     args={
         "deployment_suffix": "-001",
         "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
-        "zkevm_node_image": "0xpolygon/cdk-validium-node:0.6.4-cdk.2",
+        "zkevm_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
         "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
         "zkevm_contracts_image": "leovct/zkevm-contracts",
-        "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.1",
+        "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.3",
         "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
         "panoptichain_image": "minhdvu/panoptichain",
-        "zkevm_bridge_ui_image": "nulyjkdhthz/zkevm-bridge-ui:kurtosis",
+        "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
         "zkevm_bridge_proxy_image": "haproxy:2.9.7",
+        "workload_image": "leovct/workload:0.0.1",
         "zkevm_hash_db_port": 50061,
         "zkevm_executor_port": 50071,
         "zkevm_aggregator_port": 50081,
@@ -94,6 +95,7 @@ def run(
         "zkevm_db_state_password": "rHTX7EpajF8zYDPatN32rH3B2pn89dmq",
         "l1_chain_id": 271828,
         "l1_preallocated_mnemonic": "code code code code code code code code code code code quality",
+        "l1_funding_amount": "100ether",
         "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
         "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
         "l1_additional_services": [],
@@ -107,16 +109,16 @@ def run(
         "zkevm_aggregator_host": "zkevm-node-aggregator-001",
         "genesis_file": "templates/permissionless-node/genesis.json",
         "polycli_version": "v0.1.42",
-        "workload_scripts": [
+        "workload_commands": [
             "polycli_loadtest_on_l2.sh t",  # eth transfers
             "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
             "polycli_loadtest_on_l2.sh 7",  # erc721 mints
             "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
             "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         ],
-        "blutgang_image": "makemake1337/blutgang:latest",
-        "blutgang_rpc_port": "55555",
-        "blutgang_admin_port": "55556",
+        "blutgang_image": "makemake1337/blutgang:0.3.5",
+        "blutgang_rpc_port": 55555,
+        "blutgang_admin_port": 55556,
     },
 ):
     """Deploy a Polygon CDK Devnet with various configurable options.
