@@ -3,6 +3,11 @@ bridge-deposits.json
 claimable-txs.json
 proof.json
 
+# default parameters
+default-args.yml
+kurtosis-args.yml
+params-args.yml
+
 # docs
 .vscode
 .code
