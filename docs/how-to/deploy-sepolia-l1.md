@@ -1,6 +1,6 @@
 # Deploy Kurtosis CDK with Sepolia as L1
 
-Deploying to Sepolia will require the L1 related parameters to be changed.
+Deploying to Sepolia requires changing the L1-related parameters.
 
 ## params.yml
 Change `deploy_l1` to `false`.
