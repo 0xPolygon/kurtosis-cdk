@@ -56,6 +56,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install yq
+        run: pip3 install yq
+
       - name: Compare main.star and params.yml args
         run: |
           sed -n '/args={/,/},/p' main.star | sed 's/args=//' | sed 's/},/}/' | yq --yaml-output > defaults-args.yaml
