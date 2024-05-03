@@ -18,6 +18,7 @@ def _create_postgres_db_service_config(
             "POSTGRES_PASSWORD": password,
         },
         files=files,
+        cmd=["-p {}".format(port)],
     )
 
 
@@ -89,8 +90,17 @@ def create_peripheral_databases_service_configs(args):
         password=args["zkevm_db_dac_password"],
     )
 
+    blockscout_db_name = args["zkevm_db_blockscout_hostname"] + args["deployment_suffix"]
+    blockscout_db_service_config = _create_postgres_db_service_config(
+        port=args["zkevm_db_postgres_port"],
+        db=args["zkevm_db_blockscout_name"],
+        user=args["zkevm_db_blockscout_user"],
+        password=args["zkevm_db_blockscout_password"],
+    )
+
     return {
         bridge_db_name: bridge_db_service_config,
         agglayer_db_name: agglayer_db_service_config,
         dac_db_name: dac_db_service_config,
+        blockscout_db_name: blockscout_db_service_config,
     }

@@ -42,6 +42,50 @@ def start_panoptichain(plan, args):
     )
 
 
+def start_blockscout(plan, args):
+    db_user = args["zkevm_db_blockscout_user"]
+    db_password = args["zkevm_db_blockscout_password"]
+    db_host = args["zkevm_db_blockscout_hostname"] + args["deployment_suffix"]
+    db_port = args["zkevm_db_postgres_port"]
+    db_name = args["zkevm_db_blockscout_name"]
+    connection_string = \
+        "postgresql://"+db_user+":"+db_password+"@"+db_host+":"+str(db_port)+"/"+db_name
+    return plan.add_service(
+        name="blockscout" + args["deployment_suffix"],
+        config = ServiceConfig(
+            image = args["blockscout_image"],
+            ports = {
+                "blockscout": PortSpec(
+                    4004, application_protocol="http", wait="5m"
+                ),
+            },
+            env_vars = {
+                "PORT": "4004",
+                "NETWORK": "POE",
+                "SUBNETWORK": "Polygon CDK",
+                "CHAIN_ID": str(args["zkevm_rollup_chain_id"]),
+                "COIN": "ETH",
+                "ETHEREUM_JSONRPC_VARIANT": "geth",
+                "ETHEREUM_JSONRPC_HTTP_URL": args["zkevm_rpc_url"],
+                "DATABASE_URL": connection_string,
+                "ECTO_USE_SSL": "false",
+                "MIX_ENV": "prod",
+                "LOGO": "/images/blockscout_logo.svg",
+                "LOGO_FOOTER": "/images/blockscout_logo.svg",
+                "SUPPORTED_CHAINS": "[]",
+                "SHOW_OUTDATED_NETWORK_MODAL": "false",
+                "DISABLE_INDEXER": "false",
+                "INDEXER_ZKEVM_BATCHES_ENABLED": "true"
+            },
+            cmd=[
+                "/bin/sh",
+                "-c",
+                "mix do ecto.create, ecto.migrate; mix phx.server"
+            ],
+        ),
+    )
+
+
 def run(plan, args):
     for service in plan.get_services():
         if service.name == "zkevm-node-rpc" + args["deployment_suffix"]:
@@ -51,6 +95,9 @@ def run(plan, args):
 
     # Start panoptichain.
     start_panoptichain(plan, args)
+
+    # Start blockscout.
+    start_blockscout(plan, args)
 
     metrics_jobs = []
     for service in plan.get_services():
