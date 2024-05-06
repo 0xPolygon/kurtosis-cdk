@@ -242,7 +242,7 @@ At this stage, the smart contracts are upgraded. However, we still need to start
     - This procedure is very sensitive.
     - Ensure the synchronizer starts first.
 
-We're going to revert the parameters back to the versions of the node that worked with fork 9, and only redeploy the cdk central/trusted environment.
+We're going to revert the parameters back to the versions of the node that worked with fork 9, and only redeploy the CDK central/trusted environment.
 
 1. Update the `params.yml` file as follows:
 
