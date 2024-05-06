@@ -242,17 +242,12 @@ At this stage, the smart contracts are upgraded. However, we still need to start
     - This procedure is very sensitive.
     - Ensure the synchronizer starts first.
 
-We're going to revert the parameters back to the versions of the node that worked with fork 9, and specify that _ONLY_ stage 3 should run.
+We're going to revert the parameters back to the versions of the node that worked with fork 9, and only redeploy the cdk central/trusted environment.
 
 1. Update the `params.yml` file as follows:
 
-    ```sh
-    yq -Y --in-place '.deploy_l1 = false' params.yml
-    yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
-    yq -Y --in-place '.deploy_databases = false' params.yml
-    yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
-    yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
-    yq -Y --in-place '.deploy_observability = false' params.yml
+    ```bash
+    yq -Y --in-place 'with_entries(if .key == "deploy_cdk_central_environment" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
     ```
 
 2. Remove the `HaltOnBatchNumber` setting that we added earlier.
