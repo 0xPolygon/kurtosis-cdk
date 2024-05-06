@@ -91,17 +91,8 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
 
       # Deploy components.
-      - name: Disable All Deployment Steps
-        run: |
-          yq -Y --in-place '.deploy_l1 = false' params.yml
-          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
-          yq -Y --in-place '.deploy_databases = false' params.yml
-          yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
-          yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
-          yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
-          yq -Y --in-place '.deploy_observability = false' params.yml
-          yq -Y --in-place '.deploy_blutgang = false' params.yml
-          yq -Y --in-place '.apply_workload = false' params.yml
+      - name: Disable all deployment steps
+        run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
 
       - name: Deploy L1
         run: |
@@ -109,43 +100,43 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
-      - name: Deploy ZkEVM Contracts on L1
+      - name: Deploy zkEVM contracts on L1
         run: |
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
-      - name: Deploy ZkEVM Node and CDK Peripheral Databases
+      - name: Deploy zkEVM node and cdk peripheral databases
         run: |
           yq -Y --in-place '.deploy_databases = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_databases = false' params.yml # reset
 
-      - name: Deploy CDK Central Environment
+      - name: Deploy CDK central environment
         run: |
           yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
 
-      - name: Deploy CDK Bridge Infrastructure
+      - name: Deploy CDK bridge infrastructure
         run: |
           yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
 
-      - name: Deploy ZkEVM Permissionless Node
+      - name: Deploy zkEVM permissionless node
         run: |
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
-      - name: Deploy Observability Stack
+      - name: Deploy observability stack
         run: |
           yq -Y --in-place '.deploy_observability = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
-      - name: Deploy Loadbalancer (blutgang)
+      - name: Deploy ETH load balancer
         run: |
           yq -Y --in-place '.deploy_blutgang = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
