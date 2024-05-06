@@ -25,7 +25,7 @@ on:
         default: 30
 
 env:
-  KURTOSIS_VERSION: 0.88.19
+  KURTOSIS_VERSION: 0.89.3
 
 jobs:
   regression-tests:
