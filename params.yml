@@ -18,16 +18,16 @@ deploy_cdk_central_environment: true
 deploy_cdk_bridge_infra: true
 
 # Deploy permissionless node.
-deploy_zkevm_permissionless_node: true
+deploy_zkevm_permissionless_node: false
 
 # Deploy cdk-erigon node.
-deploy_cdk_erigon_node: true
+deploy_cdk_erigon_node: false
 
 # Deploy observability stack.
 deploy_observability: true
 
 # Deploy eth load balancer.
-deploy_blutgang: true
+deploy_blutgang: false
 
 # Apply workload to the different components of the CDK stack.
 apply_workload: false
