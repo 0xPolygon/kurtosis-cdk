@@ -14,7 +14,7 @@ env:
   KURTOSIS_VERSION: 0.88.19
 
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,3 +50,14 @@ jobs:
 
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
+
+  compare-default-parameters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: pip3 install yq
+
+      - name: Compare default parameters
+        run: ./scripts/compare_default_params.sh

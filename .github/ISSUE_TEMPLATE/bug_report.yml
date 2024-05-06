@@ -18,12 +18,32 @@ body:
       required: true
 
   - type: input
-    id: version
+    id: commit_id
     attributes:
       label: Commit id
       placeholder: e.g. ded02d9
       description: |
         Retrieve the commit id using `git rev-parse --short HEAD`.
+    validations:
+      required: true
+
+  - type: input
+    id: kurtosis_cli_version
+    attributes:
+      label: Kurtosis CLI version
+      placeholder: e.g. 0.88.19
+      description: |
+        Retrieve the kurtosis CLI version using `kurtosis version`.
+    validations:
+      required: true
+
+  - type: input
+    id: kurtosis_engine_version
+    attributes:
+      label: Kurtosis engine version
+      placeholder: e.g. 0.88.19
+      description: |
+        Retrieve the kurtosis engine version using `kurtosis engine status`.
     validations:
       required: true
 

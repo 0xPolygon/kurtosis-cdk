@@ -1,5 +1,5 @@
 ---
-name: Deploy
+name: Deploy Kurtosis CDK
 
 on:
   pull_request:
@@ -12,12 +12,13 @@ concurrency:
 
 env:
   KURTOSIS_VERSION: 0.88.19
-  CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES: 10
   GO_VERSION: 1.21
+  BATCH_VERIFICATION_MONITOR_TARGET: 30
+  BATCH_VERIFICATION_MONITOR_TIMEOUT: 600 # 10 minutes
 
 jobs:
   # Deploy the CDK environment in one step, with the gas token feature enabled.
-  monolithic_cdk:
+  monolithic:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,29 +49,8 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Check that batches are being verified
-        run: |
-          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
-          start_time=$(date +%s)
-          end_time=$((start_time + timeout_minutes*60))
-
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          while true; do
-              current_time=$(date +%s)
-              if (( current_time > end_time )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
-                  exit 1
-              fi
-
-              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
-
-              if (( verified_batches > 5 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
-                  exit 0
-              fi
-
-              sleep 10
-          done
+        working-directory: ./scripts
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
 
       # Compare configs.
       - name: Dump configs
@@ -91,14 +71,10 @@ jobs:
 
 
   # Deploy the CDK environment incrementally, stage by stage.
-  incremental_cdk:
+  incremental:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
       # Install tools.
       - name: Install kurtosis
@@ -115,17 +91,8 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
 
       # Deploy components.
-      - name: Disable All Deployment Steps
-        run: |
-          yq -Y --in-place '.deploy_l1 = false' params.yml
-          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
-          yq -Y --in-place '.deploy_databases = false' params.yml
-          yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
-          yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
-          yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml
-          yq -Y --in-place '.deploy_observability = false' params.yml
-          yq -Y --in-place '.deploy_blutgang = false' params.yml
-          yq -Y --in-place '.apply_workload = false' params.yml
+      - name: Disable all deployment steps
+        run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
 
       - name: Deploy L1
         run: |
@@ -133,43 +100,43 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
-      - name: Deploy ZkEVM Contracts on L1
+      - name: Deploy zkEVM contracts on L1
         run: |
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
-      - name: Deploy ZkEVM Node and CDK Peripheral Databases
+      - name: Deploy zkEVM node and cdk peripheral databases
         run: |
           yq -Y --in-place '.deploy_databases = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_databases = false' params.yml # reset
 
-      - name: Deploy CDK Central Environment
+      - name: Deploy CDK central environment
         run: |
           yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
 
-      - name: Deploy CDK Bridge Infrastructure
+      - name: Deploy CDK bridge infrastructure
         run: |
           yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
 
-      - name: Deploy ZkEVM Permissionless Node
+      - name: Deploy zkEVM permissionless node
         run: |
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
-      - name: Deploy Observability Stack
+      - name: Deploy observability stack
         run: |
           yq -Y --in-place '.deploy_observability = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
-      - name: Deploy Loadbalancer (blutgang)
+      - name: Deploy ETH load balancer
         run: |
           yq -Y --in-place '.deploy_blutgang = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
@@ -182,43 +149,31 @@ jobs:
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
       - name: Check that batches are being verified
+        working-directory: ./scripts
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+
+
+  # Deploy the CDK environment without specifying any parameter file.
+  configless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install tools.
+      - name: Install kurtosis
         run: |
-          timeout_minutes="${CHECK_VERIFIED_BATCHES_TIMEOUT_MINUTES}"
-          start_time=$(date +%s)
-          end_time=$((start_time + timeout_minutes*60))
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          kurtosis analytics disable
 
-          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-          while true; do
-              current_time=$(date +%s)
-              if (( current_time > end_time )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
-                  exit 1
-              fi
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
-              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+      # Deploy components.
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
 
-              if (( verified_batches > 5 )); then
-                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... At least five batches were verified."
-                  exit 0
-              fi
-
-              sleep 10
-          done
-
-      # Compare configs.
-      - name: Dump configs
-        working-directory: scripts/zkevm-config-diff
-        run: |
-          mkdir default-configs kurtosis-cdk-configs
-          sh zkevm_config.sh dump default ./default-configs
-          echo
-          sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
-
-      - name: Compare configs
-        working-directory: scripts/zkevm-config-diff
-        run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
-
-      - name: Diff configs
-        working-directory: scripts/zkevm-config-diff
-        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
+      - name: Check that batches are being verified
+        working-directory: ./scripts
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
