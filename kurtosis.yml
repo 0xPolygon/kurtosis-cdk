@@ -42,6 +42,7 @@ description: |-
   zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   panoptichain_image: minhdvu/panoptichain
+  blockscout_image: blockscout/blockscout-zkevm:6.5.0
 
   # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
@@ -142,6 +143,12 @@ description: |-
   zkevm_db_state_name: state_db
   zkevm_db_state_user: state_user
   zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
+
+  # Blockscout db
+  zkevm_db_blockscout_hostname: blockscout-db
+  zkevm_db_blockscout_name: blockscout_db
+  zkevm_db_blockscout_user: blockscout_user
+  zkevm_db_blockscout_password: KZuUZS9kspk5NO6Zm9FMArPulNuq88A9
 
   ## L1 configuration.
   l1_chain_id: 271828
