@@ -16,9 +16,9 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=True,
+    deploy_zkevm_permissionless_node=False,
     deploy_observability=True,
-    deploy_blutgang=True,
+    deploy_blutgang=False,
     apply_workload=False,
     args={
         "deployment_suffix": "-001",
