@@ -96,7 +96,7 @@ kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_observability = false' params.yml # reset
 ```
 
-### Deploy eth load balancer
+### Deploy ETH load balancer
 
 ```sh
 yq -Y --in-place '.deploy_blutgang = true' params.yml
