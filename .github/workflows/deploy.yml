@@ -136,7 +136,7 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
-      - name: Deploy eth load balancer
+      - name: Deploy ETH load balancer
         run: |
           yq -Y --in-place '.deploy_blutgang = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
