@@ -124,7 +124,6 @@ def create_bridge_ui_config_artifact(plan, args, contract_setup_addresses):
                 data={
                     "l1_explorer_url": args["l1_explorer_url"],
                     "zkevm_explorer_url": args["polygon_zkevm_explorer"],
-                    "VITE_RESOLVE_RELATIVE_URLS": "true",
                 }
                 | contract_setup_addresses,
             )
