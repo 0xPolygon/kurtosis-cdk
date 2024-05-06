@@ -2,7 +2,7 @@
 comments: true
 ---
 
-In addition to the core stack, you can also attach and synchronize a permissionless node. 
+In addition to the core stack, you can also attach and synchronize a permissionless node.
 
 ## Prerequisites
 
@@ -20,15 +20,25 @@ cp /tmp/genesis.json templates/permissionless-node/genesis.json
 
 Run the following command:
 
-```sh
-kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
+```bash
+yq -Y --in-place '.deploy_l1 = false' params.yml
+yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
+yq -Y --in-place '.deploy_databases = false' params.yml
+yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
+yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
+yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
+yq -Y --in-place '.deploy_observability = false' params.yml
+yq -Y --in-place '.deploy_blutgang = false' params.yml
+yq -Y --in-place '.apply_workload = false' params.yml
+
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ```
 
 ## Sync an external permissionless node
 
 You can also use the package you have just set up to sync data from a production network.
 
-1. Some of the parameters in the Kurtosis genesis file need to be replaced, or better still you could replace the whole genesis file with one representing the external network. 
+1. Some of the parameters in the Kurtosis genesis file need to be replaced, or better still you could replace the whole genesis file with one representing the external network.
 
     The parameters that need to change in the file are as follows:
 
@@ -59,8 +69,18 @@ You can also use the package you have just set up to sync data from a production
 
 4. Now you can start synchronizing with the following command:
 
-    ```sh
-    kurtosis run --enclave cdk-v1 --args-file params.yml --main-file zkevm_permissionless_node.star .
+    ```bash
+    yq -Y --in-place '.deploy_l1 = false' params.yml
+    yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
+    yq -Y --in-place '.deploy_databases = false' params.yml
+    yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
+    yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
+    yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
+    yq -Y --in-place '.deploy_observability = false' params.yml
+    yq -Y --in-place '.deploy_blutgang = false' params.yml
+    yq -Y --in-place '.apply_workload = false' params.yml
+
+    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
 <br/>
