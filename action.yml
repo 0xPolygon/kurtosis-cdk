@@ -22,6 +22,14 @@ inputs:
     description: 0xPolygon/cdk-validium-node (short commit hash or release tag)
     required: false
     default: 0.6.5-cdk
+  kurtosis_cli:
+    description: kurtosis-tech/kurtosis (release tag)
+    required: false
+    default: 0.88.19
+  kurtosis_cdk:
+    description: 0xPolygon/kurtosis-cdk (release tag)
+    required: false
+    default: v0.1.0
   bake_time:
     description: bake time (minutes)
     required: false
@@ -94,13 +102,13 @@ runs:
       run: |
         git clone https://github.com/0xPolygon/kurtosis-cdk.git
         cd kurtosis-cdk 
-        git checkout v0.1.0
+        git checkout ${{ inputs.kurtosis_cdk }}
     - name: Install kurtosis
       shell: bash
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install kurtosis-cli=0.88.19
+        sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
         kurtosis analytics disable
     - name: Install yq
       shell: bash
