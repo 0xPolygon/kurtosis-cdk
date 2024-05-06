@@ -246,7 +246,7 @@ We're going to revert the parameters back to the versions of the node that worke
 
 1. Update the `params.yml` file as follows:
 
-    ```bash
+    ```sh
     yq -Y --in-place 'with_entries(if .key == "deploy_cdk_central_environment" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
     ```
 

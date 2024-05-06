@@ -31,13 +31,13 @@ The example scripts below show you how to deploy the stack to enable various sta
 
 ### Disable all deployment steps
 
-```bash
+```sh
 yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
 ```
 
 ### Deploy L1
 
-```bash
+```sh
 yq -Y --in-place '.deploy_l1 = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_l1 = false' params.yml # reset
@@ -46,7 +46,7 @@ yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
 ### Deploy zkEVM contracts on L1
 
-```bash
+```sh
 yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
@@ -55,7 +55,7 @@ yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
 ### Deploy zkEVM node and CDK peripheral databases
 
-```bash
+```sh
 yq -Y --in-place '.deploy_databases = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_databases = false' params.yml # reset
@@ -64,7 +64,7 @@ yq -Y --in-place '.deploy_databases = false' params.yml # reset
 
 ### Deploy CDK central environment
 
-```bash
+```sh
 yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
@@ -73,7 +73,7 @@ yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
 
 ### Deploy CDK bridge infrastructure
 
-```bash
+```sh
 yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
@@ -82,7 +82,7 @@ yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
 ### Deploy zkEVM permissionless node
 
-```bash
+```sh
 yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
@@ -90,7 +90,7 @@ yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
 ### Deploy observability stack
 
-```bash
+```sh
 yq -Y --in-place '.deploy_observability = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_observability = false' params.yml # reset
@@ -98,7 +98,7 @@ yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
 ### Deploy eth load balancer
 
-```bash
+```sh
 yq -Y --in-place '.deploy_blutgang = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
@@ -106,7 +106,7 @@ yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
 
 ### Apply workload
 
-```bash
+```sh
 yq -Y --in-place '.apply_workload = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.apply_workload = false' params.yml # reset
