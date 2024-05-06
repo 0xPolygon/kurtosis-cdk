@@ -1,0 +1,207 @@
+name: 'Regression Tests - Polygon CDK'
+description: 'Deploys local kurtosis CDK devnet and performs series of regression tests.'
+author: 'Dan Moore'
+inputs:
+  zkevm_agglayer:
+    description: 0xPolygon/agglayer (short commit hash or release tag)
+    required: false
+    default: 0.1.4
+  zkevm_bridge_service:
+    description: 0xPolygonHermez/zkevm-bridge-service (short commit hash or release tag)
+    required: false
+    default: v0.4.2
+  zkevm_bridge_ui:
+    description: 0xPolygonHermez/zkevm-bridge-ui (short commit hash or release tag)
+    required: false
+    default: '0006445'
+  zkevm_dac:
+    description: 0xPolygon/cdk-data-availability (short commit hash or release tag)
+    required: false
+    default: 0.0.7
+  zkevm_node:
+    description: 0xPolygon/cdk-validium-node (short commit hash or release tag)
+    required: false
+    default: 0.6.5-cdk
+  bake_time:
+    description: bake time (minutes)
+    required: false
+    default: 30
+runs:
+  using: "composite"
+  steps:
+    - name: Clone and build agglayer, if no release tag given
+      shell: bash
+      run: |
+        if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          git clone https://github.com/0xPolygon/agglayer.git
+          cd agglayer
+          git checkout "${{ inputs.zkevm_agglayer }}"
+          docker compose -f docker/docker-compose.yaml build --no-cache agglayer
+        else
+          echo "Skipping building agglayer as release tag provided: ${{ inputs.zkevm_agglayer }}"
+        fi
+    - name: Clone and build zkevm-bridge-service, if no release tag given
+      shell: bash
+      run: |
+        if [[ ${{ inputs.zkevm_bridge_service }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          git clone https://github.com/0xPolygonHermez/zkevm-bridge-service.git
+          cd zkevm-bridge-service
+          git checkout "${{ inputs.zkevm_bridge_service }}"
+          docker build -t zkevm-bridge-service:local -f ./Dockerfile .
+        else
+          echo "Skipping building zkevm-bridge-service as release tag provided: ${{ inputs.zkevm_bridge_service }}"
+        fi
+    - name: Clone and build zkevm-bridge-ui, if no release tag given
+      shell: bash
+      run: |
+        if [[ ${{ inputs.zkevm_bridge_ui }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          git clone https://github.com/0xPolygonHermez/zkevm-bridge-ui.git
+          cd zkevm-bridge-ui
+          git checkout "${{ inputs.zkevm_bridge_ui }}"
+          docker build -t zkevm-bridge-ui:local -f ./Dockerfile .
+        else
+          echo "Skipping building zkevm-bridge-ui as release tag provided: ${{ inputs.zkevm_bridge_ui }}"
+        fi
+    - name: Clone and build cdk-data-availability, if no release tag given
+      shell: bash
+      run: |
+        if [[ ${{ inputs.zkevm_dac }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          git clone https://github.com/0xPolygon/cdk-data-availability.git
+          cd cdk-data-availability
+          git checkout "${{ inputs.zkevm_dac }}"
+          docker build -t cdk-data-availability:local -f ./Dockerfile .    
+        else
+          echo "Skipping building cdk-data-availability as release tag provided: ${{ inputs.zkevm_dac }}"
+        fi
+    - name: Clone and build cdk-validium-node, if no release tag given
+      shell: bash
+      run: |
+        if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          git clone https://github.com/0xPolygon/cdk-validium-node.git
+          cd cdk-validium-node
+          git checkout "${{ inputs.zkevm_node }}"
+          docker build -t cdk-validium-node:local -f ./Dockerfile .
+        else
+          echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
+        fi
+    - name: Install Foundry
+      shell: bash
+      run: |
+        curl -LO https://github.com/foundry-rs/foundry/releases/download/nightly-de33b6af53005037b463318d2628b5cfcaf39916/foundry_nightly_linux_amd64.tar.gz
+        tar -xzvf foundry_nightly_linux_amd64.tar.gz
+    - name: Clone internal kurtosis-cdk repo
+      shell: bash
+      run: |
+        git clone https://github.com/0xPolygon/kurtosis-cdk.git
+    - name: Install kurtosis
+      shell: bash
+      run: |
+        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+        sudo apt update
+        sudo apt install kurtosis-cli=0.88.19
+        kurtosis analytics disable
+    - name: Install yq
+      shell: bash
+      run: pip3 install yq
+    - name: Update kurtosis params.yml with custom devnet containers
+      shell: bash
+      run: |
+        cd kurtosis-cdk
+        # when short commit hash given, reference custom image built earlier tagged 'local'
+        if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          agglayer_tag="local"
+          agglayer_docker_hub="agglayer"
+        else
+          agglayer_tag="${{ inputs.zkevm_agglayer }}"
+          agglayer_docker_hub="0xpolygon/agglayer"
+        fi
+
+        if [[ ${{ inputs.zkevm_bridge_service }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          bridge_service_tag="local"
+          bridge_service_docker_hub="zkevm-bridge-service"
+        else
+          bridge_service_tag="${{ inputs.zkevm_bridge_service }}"
+          bridge_service_docker_hub="hermeznetwork/zkevm-bridge-service"
+        fi
+
+        if [[ ${{ inputs.zkevm_bridge_ui }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          bridge_ui_tag="local"
+          bridge_ui_docker_hub="zkevm-bridge-ui"
+        else
+          bridge_ui_tag="${{ inputs.zkevm_bridge_ui }}"
+          bridge_ui_docker_hub="hermeznetwork/zkevm-bridge-ui"
+        fi
+
+        if [[ ${{ inputs.zkevm_dac }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          dac_tag="local"
+          dac_docker_hub="cdk-data-availability"
+        else
+          dac_tag="${{ inputs.zkevm_dac }}"
+          dac_docker_hub="0xpolygon/cdk-data-availability"
+        fi
+
+        if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          node_tag="local"
+          node_docker_hub="cdk-validium-node"
+        else
+          node_tag="${{ inputs.zkevm_node }}"
+          node_docker_hub="0xpolygon/cdk-validium-node"
+        fi
+        
+        cat params.yml
+
+        yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
+        yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
+        yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
+        yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
+        yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
+        
+        cat params.yml
+    - name: Deploy CDK devnet on local github runner
+      shell: bash
+      run: |
+        cd kurtosis-cdk
+        kurtosis clean --all
+        kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    - name: Monitor and report any potential regressions to CI logs
+      shell: bash
+      run: |
+        bake_time=30
+        end_minute=$(( $(date +'%M') + bake_time))
+        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        INITIAL_STATUS=$($GITHUB_WORKSPACE/cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
+        incremented=false
+        while [ $(date +'%M') -lt $end_minute ]; do
+          # Attempt to connect to the service
+          if STATUS=$($GITHUB_WORKSPACE/cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
+            echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
+            
+            # Check if STATUS has incremented
+            if [ "$STATUS" != "$INITIAL_STATUS" ]; then
+              incremented=true
+              echo "ZKEVM_VERIFIED_BATCH_NUMBER successfully incremented to $STATUS. Exiting..."
+              exit 0
+            fi
+          else
+            echo "Failed to connect, waiting and retrying..."
+            sleep 60
+            continue
+          fi
+          sleep 60
+        done
+        if ! $incremented; then
+          echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
+          exit 1
+        fi
+    - name: Install polycli and send transaction load for further integration tests
+      shell: bash
+      run: |
+        git clone https://github.com/maticnetwork/polygon-cli.git
+        cd polygon-cli
+        make install
+        export PATH="$HOME/go/bin:$PATH"
+        export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
+        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
+        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
+        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
