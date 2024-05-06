@@ -21,16 +21,7 @@ cp /tmp/genesis.json templates/permissionless-node/genesis.json
 Run the following command:
 
 ```bash
-yq -Y --in-place '.deploy_l1 = false' params.yml
-yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
-yq -Y --in-place '.deploy_databases = false' params.yml
-yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
-yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
-yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
-yq -Y --in-place '.deploy_observability = false' params.yml
-yq -Y --in-place '.deploy_blutgang = false' params.yml
-yq -Y --in-place '.apply_workload = false' params.yml
-
+yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ```
 
@@ -70,16 +61,7 @@ You can also use the package you have just set up to sync data from a production
 4. Now you can start synchronizing with the following command:
 
     ```bash
-    yq -Y --in-place '.deploy_l1 = false' params.yml
-    yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml
-    yq -Y --in-place '.deploy_databases = false' params.yml
-    yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml
-    yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml
-    yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
-    yq -Y --in-place '.deploy_observability = false' params.yml
-    yq -Y --in-place '.deploy_blutgang = false' params.yml
-    yq -Y --in-place '.apply_workload = false' params.yml
-
+    yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
     kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
