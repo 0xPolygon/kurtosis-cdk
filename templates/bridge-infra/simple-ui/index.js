@@ -180,7 +180,12 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         df.appendChild(txtDiv);
 
         let h2 = document.createElement("h2");
-        h2.innerText = "Deposit: " + dep.deposit_cnt;
+        let url = `${defaultBridgeService}/bridge?deposit_cnt=${dep.deposit_cnt}&net_id=${dep.network_id}`;
+        let a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.innerText = "Deposit: " + dep.deposit_cnt;
+        h2.appendChild(a);
         df.appendChild(h2);
 
         let dl = document.createElement("dl");
