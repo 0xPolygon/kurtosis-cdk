@@ -3,13 +3,13 @@
 # The deployment process is divided into various stages.
 
 # Deploy local L1.
-deploy_l1: true
+deploy_l1: false
 
 # Deploy zkevm contracts on L1 (and also fund accounts).
-deploy_zkevm_contracts_on_l1: true
+deploy_zkevm_contracts_on_l1: false
 
 # Deploy zkevm node and cdk peripheral databases.
-deploy_databases: true
+deploy_databases: false
 
 # Deploy cdk central/trusted environment.
 deploy_cdk_central_environment: true
@@ -21,7 +21,7 @@ deploy_cdk_bridge_infra: true
 deploy_zkevm_permissionless_node: false
 
 # Deploy observability stack.
-deploy_observability: true
+deploy_observability: false
 
 # Deploy Blockscout stack.
 deploy_l2_blockscout: false
@@ -58,7 +58,7 @@ args:
   blockscout_visualizer_image: ghcr.io/blockscout/visualizer:main
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
-  workload_image: leovct/workload:0.0.1
+  toolbox_image: leovct/toolbox:0.0.1
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -186,6 +186,16 @@ args:
 
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
+
+  # The address of the rollup manager contract on L1.
+  # If specified, the setup process will not deploy new contracts.
+  # zkevm_rollup_manager_address: "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+  # # The block number at which the rollup manager contract was deployed.
+  # zkevm_rollup_manager_block_number: 19
+  # # The address of the global exit root contract on L2.
+  # zkevm_global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+  # # The address of the Polygon data committee contract on L1.
+  # polygon_data_committee_address: "0x5A6896A98c4B7C7E8f16d177C719a1d856b9154c"
 
   # The consensus contract name of the new rollup.
   zkevm_rollup_consensus: PolygonValidiumEtrog

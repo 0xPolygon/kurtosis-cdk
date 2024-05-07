@@ -51,7 +51,7 @@ description: |-
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
 
-  workload_image: leovct/workload:0.0.1
+  toolbox_image: leovct/toolbox:0.0.1
 
 
   # Port configuration.

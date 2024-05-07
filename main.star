@@ -45,6 +45,18 @@ def run(
 
     plan.print("Deploying CDK environment...")
 
+    # Test
+    get_rollup_info_template = read_file(src="./templates/get-rollup-info.sh")
+    get_rollup_info_artifact = plan.render_templates(
+        name="get-rollup-info-artifact",
+        config={
+            "get-rollup-info.sh": struct(
+                template=get_rollup_info_template,
+                data={},
+            )
+        },
+    )
+
     # Deploy a local L1.
     if deploy_l1:
         plan.print("Deploying a local L1")
@@ -126,7 +138,7 @@ def run(
 
     # Apply workload
     if apply_workload:
-        plan.print("Apply workload")
+        plan.print("Applying workload")
         import_module(workload_package).run(plan, args)
     else:
         plan.print("Skipping workload application")
