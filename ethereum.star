@@ -23,7 +23,7 @@ def run(plan, args):
                     "vc_type": "lighthouse",
                     "vc_image": LIGHTHOUSE_IMAGE,
                     # Participant parameters
-                    "count": 2,
+                    "count": 1,
                 }
             ],
             "network_params": {
