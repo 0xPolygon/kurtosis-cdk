@@ -171,7 +171,6 @@ runs:
       shell: bash
       run: |
         cd kurtosis-cdk
-        kurtosis clean --all
         kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     - name: Monitor and report any potential regressions to CI logs
       shell: bash
