@@ -1,5 +1,5 @@
 def get_contract_setup_addresses(plan, args):
-    if args["zkevm_rollup_manager_address"]:
+    if "zkevm_rollup_manager_address" in args:
         get_rollup_info_artifact = plan.get_files_artifact(
             name="get-rollup-info-artifact",
         )
@@ -22,9 +22,9 @@ def get_contract_setup_addresses(plan, args):
                 '{"zkevm_bridge_address": "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"}'
             )
         )
-        contract_addresses = json.decode("\"" + result.output + "\"")
+        contract_addresses = json.decode(result.output)
         plan.print(contract_addresses)
-        return {"test": "hey"}
+        return contract_addresses
 
     exec_recipe = ExecRecipe(
         command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],

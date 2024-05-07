@@ -3,13 +3,13 @@
 # The deployment process is divided into various stages.
 
 # Deploy local L1.
-deploy_l1: false
+deploy_l1: true
 
 # Deploy zkevm contracts on L1 (and also fund accounts).
-deploy_zkevm_contracts_on_l1: false
+deploy_zkevm_contracts_on_l1: true
 
 # Deploy zkevm node and cdk peripheral databases.
-deploy_databases: false
+deploy_databases: true
 
 # Deploy cdk central/trusted environment.
 deploy_cdk_central_environment: true
@@ -21,7 +21,7 @@ deploy_cdk_bridge_infra: true
 deploy_zkevm_permissionless_node: false
 
 # Deploy observability stack.
-deploy_observability: false
+deploy_observability: true
 
 # Deploy Blockscout stack.
 deploy_l2_blockscout: false
