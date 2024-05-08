@@ -24,7 +24,7 @@ deploy_zkevm_permissionless_node: false
 deploy_observability: true
 
 # Deploy Blockscout stack.
-deploy_blockscout: false
+deploy_l2_blockscout: false
 
 # Deploy eth load balancer.
 deploy_blutgang: false

@@ -99,9 +99,9 @@ yq -Y --in-place '.deploy_observability = false' params.yml # reset
 ### Deploy Blockscout stack
 
 ```sh
-yq -Y --in-place '.deploy_blockscout = true' params.yml
+yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
-yq -Y --in-place '.deploy_blockscout = false' params.yml # reset
+yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
 ```
 
 ### Deploy ETH load balancer

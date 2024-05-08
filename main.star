@@ -20,7 +20,7 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=False,
     deploy_observability=True,
-    deploy_blockscout=False,
+    deploy_l2_blockscout=False,
     deploy_blutgang=False,
     apply_workload=False,
     args={},
@@ -35,7 +35,7 @@ def run(
         deploy_cdk_bridge_infra(bool): Deploy cdk/bridge infrastructure.
         deploy_zkevm_permissionless_node(bool): Deploy permissionless node.
         deploy_observability(bool): Deploys observability stack.
-        deploy_blockscout(bool): Deploys Blockscout stack.
+        deploy_l2_blockscout(bool): Deploys Blockscout stack.
         args(json): Configures other aspects of the environment.
     Returns:
         A full deployment of Polygon CDK.
@@ -118,7 +118,7 @@ def run(
         plan.print("Skipping the deployment of the observability stack")
 
     # Deploy observability stack
-    if deploy_blockscout:
+    if deploy_l2_blockscout:
         plan.print("Deploying Blockscout stack")
         import_module(blockscout_package).run(plan, args)
     else:
