@@ -138,7 +138,37 @@ jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddres
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
 # Create cdk-erigon node configs
-jq '.genesis | INDEX(.address)' /opt/zkevm/genesis.json > dynamic-kurtosis-allocs.json
+jq_script='
+.genesis | map({
+  (.address): {
+    contractName: (if .contractName == "" then null else .contractName end),
+    balance: (if .balance == "" then null else .balance end),
+    nonce: (if .nonce == "" then null else .nonce end),
+    code: (if .bytecode == "" then null else .bytecode end),
+    storage: (if .storage == null or .storage == {} then null else (.storage | to_entries | sort_by(.key) | from_entries) end)
+  }
+}) | add'
+
+# Use jq to transform the input JSON into the desired format
+output_json=$(jq "$jq_script" /opt/zkevm/genesis.json)
+
+# Handle jq errors
+if [ $? -ne 0 ]; then
+    echo "Error processing JSON with jq"
+    exit 1
+fi
+
+# Write the output JSON to a file
+echo "$output_json" | jq . > dynamic-kurtosis-allocs.json
+if [ $? -ne 0 ]; then
+    echo "Error writing to file dynamic-kurtosis-allocs.json"
+    exit 1
+fi
+
+cat dynamic-kurtosis-allocs.json
+
+echo "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
+
 jq '{"root": .root, "timestamp": 123545, "gasLimit": 12345, "difficulty": 12345}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
 
 # Configure contracts.
