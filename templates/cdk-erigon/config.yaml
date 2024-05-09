@@ -26,6 +26,6 @@ externalcl: true
 http.port: {{.zkevm_rpc_http_port}}
 http.api: [eth, debug, net, trace, web3, erigon, zkevm]
 http.addr: 0.0.0.0
-http.vhosts: any
-http.corsdomain: any
+http.vhosts: "*"
+http.corsdomain: "*"
 ws: true

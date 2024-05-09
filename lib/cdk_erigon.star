@@ -38,6 +38,8 @@ def start_node(
                     ]
                 ),
             },
+            # entrypoint=["sh", "-c"],
+            # cmd=["while true; do cdk-erigon --config /etc/cdk-erigon/config.yaml; done"],
             cmd=["--config=/etc/cdk-erigon/config.yaml"],
             env_vars=envs,
         ),
