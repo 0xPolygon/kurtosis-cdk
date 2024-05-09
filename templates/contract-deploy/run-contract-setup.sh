@@ -165,11 +165,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-cat dynamic-kurtosis-allocs.json
-
 echo "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
 
-jq '{"root": .root, "timestamp": 123545, "gasLimit": 12345, "difficulty": 12345}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
+jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
+
+batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
+
+jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
+
+mv tmp_output.json dynamic-kurtosis-conf.json
+
+cat dynamic-kurtosis-conf.json
 
 # Configure contracts.
 
