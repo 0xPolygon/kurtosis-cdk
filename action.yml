@@ -44,7 +44,10 @@ runs:
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
           git checkout "${{ inputs.zkevm_agglayer }}"
-          docker compose -f docker/docker-compose.yaml build --no-cache agglayer
+          echo "Containerizing commit id: ${{ inputs.zkevm_agglayer }}"
+          make build
+          mv ./dist/agglayer .
+          docker build -t agglayer:local -f ./Dockerfile.release .  
         else
           echo "Skipping building agglayer as release tag provided: ${{ inputs.zkevm_agglayer }}"
         fi
@@ -120,7 +123,7 @@ runs:
         # when short commit hash given, reference custom image built earlier tagged 'local'
         if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           agglayer_tag="local"
-          agglayer_docker_hub="docker.io/library/agglayer"
+          agglayer_docker_hub="agglayer"
         else
           agglayer_tag="${{ inputs.zkevm_agglayer }}"
           agglayer_docker_hub="0xpolygon/agglayer"
