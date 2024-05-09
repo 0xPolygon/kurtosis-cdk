@@ -120,7 +120,7 @@ runs:
         # when short commit hash given, reference custom image built earlier tagged 'local'
         if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           agglayer_tag="local"
-          agglayer_docker_hub="agglayer"
+          agglayer_docker_hub="docker.io/library/agglayer"
         else
           agglayer_tag="${{ inputs.zkevm_agglayer }}"
           agglayer_docker_hub="0xpolygon/agglayer"
