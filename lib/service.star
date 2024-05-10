@@ -12,11 +12,14 @@ def get_contract_setup_addresses(plan, args):
             "pol_token_address": "fromjson | .polTokenAddress",
         },
     )
-    service_name = "contracts" + args["deployment_suffix"]
+    service_name = "contracts"
     if "zkevm_rollup_manager_address" in args:
-        service_name = "helper" + args["deployment_suffix"]
+        service_name = "helper"
+    service_name += args["deployment_suffix"]
     result = plan.exec(
-        description="Getting contract setup addresses",
+        description="Getting contract setup addresses from {} service".format(
+            service_name
+        ),
         service_name=service_name,
         recipe=exec_recipe,
     )
