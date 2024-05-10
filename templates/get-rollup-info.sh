@@ -17,6 +17,6 @@ echo '{' \
   \"deploymentRollupManagerBlockNumber\":\"{{.zkevm_rollup_manager_block_number}}\", \
   \"polygonZkEVMGlobalExitRootAddress\":\"$zkevm_global_exit_root_address\", \
   \"polygonZkEVMGlobalExitRootL2Address\":\"{{.zkevm_global_exit_root_l2_address}}\", \
-  \"polygonDataCommitteeAddress\":\"{.polygon_data_committee_address}}\", \
+  \"polygonDataCommitteeAddress\":\"{{.polygon_data_committee_address}}\", \
   \"polTokenAddress\":\"$pol_token_address\" \
 '}' | jq > /opt/zkevm/combined.json
