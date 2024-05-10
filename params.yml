@@ -188,7 +188,7 @@ args:
   zkevm_rollup_fork_id: 9
 
   # The address of the rollup manager contract on L1.
-  # If specified, the setup process will not deploy new contracts.
+  # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.
   # zkevm_rollup_manager_address: "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
   # # The block number at which the rollup manager contract was deployed.
   # zkevm_rollup_manager_block_number: 19
