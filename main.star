@@ -58,7 +58,9 @@ def run(
         import_module(deploy_zkevm_contracts_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
-        deploy_helper_service(plan, args)
+
+    # Deploy helper service to retrieve rollup data from rollup manager contract.
+    deploy_helper_service(plan, args)
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
