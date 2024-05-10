@@ -9,7 +9,7 @@ def create_zkevm_sequence_sender_config(
     sequence_sender_config_artifact = plan.render_templates(
         name="zkevm-sequence-sender-config-artifact",
         config={
-            "config.yaml": struct(
+            "config.toml": struct(
                 data=args,
                 template=sequence_sender_config_template,
             ),
