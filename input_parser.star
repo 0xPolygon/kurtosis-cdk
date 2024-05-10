@@ -13,7 +13,7 @@ DEFAULT_ARGS = {
     "blockscout_visualizer_image": "ghcr.io/blockscout/visualizer:main",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.7",
-    "workload_image": "leovct/workload:0.0.1",
+    "toolbox_image": "leovct/toolbox:0.0.1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
