@@ -11,12 +11,12 @@ zkevm_bridge_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_ad
 zkevm_global_exit_root_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "globalExitRootManager()(address)")"
 pol_token_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "pol()(address)")"
 echo '{' \
-  \"polygonZkEVMBridgeAddress\":\"$zkevm_bridge_address\", \
-  \"rollupAddress\":\"$zkevm_rollup_address\", \
-  \"polygonRollupManagerAddress\":\"$zkevm_rollup_manager_address\", \
-  \"deploymentRollupManagerBlockNumber\":\"{{.zkevm_rollup_manager_block_number}}\", \
-  \"polygonZkEVMGlobalExitRootAddress\":\"$zkevm_global_exit_root_address\", \
-  \"polygonZkEVMGlobalExitRootL2Address\":\"{{.zkevm_global_exit_root_l2_address}}\", \
-  \"polygonDataCommitteeAddress\":\"{{.polygon_data_committee_address}}\", \
-  \"polTokenAddress\":\"$pol_token_address\" \
+  \"polygonZkEVMBridgeAddress\":\""$zkevm_bridge_address"\", \
+  \"rollupAddress\":\""$zkevm_rollup_address"\", \
+  \"polygonRollupManagerAddress\":\""$zkevm_rollup_manager_address"\", \
+  \"deploymentRollupManagerBlockNumber\":\""{{.zkevm_rollup_manager_block_number}}"\", \
+  \"polygonZkEVMGlobalExitRootAddress\":\""$zkevm_global_exit_root_address"\", \
+  \"polygonZkEVMGlobalExitRootL2Address\":\""{{.zkevm_global_exit_root_l2_address}}"\", \
+  \"polygonDataCommitteeAddress\":\""{{.polygon_data_committee_address}}"\", \
+  \"polTokenAddress\":\""$pol_token_address"\" \
 '}' | jq > /opt/zkevm/combined.json
