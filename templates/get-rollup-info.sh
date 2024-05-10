@@ -16,4 +16,4 @@ zkevm_rollup_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_ad
 zkevm_bridge_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "bridgeAddress()(address)")"
 zkevm_global_exit_root_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "globalExitRootManager()(address)")"
 pol_token_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "pol()(address)")"
-echo \{\"zkevm_bridge_address\":\"$zkevm_bridge_address\", \"zkevm_rollup_address\":\"$zkevm_rollup_address\", \"zkevm_rollup_manager_address\":\"$zkevm_rollup_manager_address\", \"zkevm_global_exit_root_address\":\"$zkevm_global_exit_root_address\", \"pol_token_address\":\"$pol_token_address\"\}
+echo \{\"zkevm_bridge_address\":\"$zkevm_bridge_address\", \"zkevm_rollup_address\":\"$zkevm_rollup_address\", \"zkevm_rollup_manager_address\":\"$zkevm_rollup_manager_address\", \"zkevm_global_exit_root_address\":\"$zkevm_global_exit_root_address\", \"pol_token_address\":\"$pol_token_address\"\} | jq > /opt/zkevm/combined.json

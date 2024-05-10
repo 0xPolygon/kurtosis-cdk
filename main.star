@@ -45,18 +45,6 @@ def run(
 
     plan.print("Deploying CDK environment...")
 
-    # Test
-    get_rollup_info_template = read_file(src="./templates/get-rollup-info.sh")
-    get_rollup_info_artifact = plan.render_templates(
-        name="get-rollup-info-artifact",
-        config={
-            "get-rollup-info.sh": struct(
-                template=get_rollup_info_template,
-                data={},
-            )
-        },
-    )
-
     # Deploy a local L1.
     if deploy_l1:
         plan.print("Deploying a local L1")
@@ -70,6 +58,7 @@ def run(
         import_module(deploy_zkevm_contracts_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
+        deploy_helper_service(plan, args)
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
@@ -150,3 +139,48 @@ def run(
         import_module(blutgang_package).run(plan, blutgang_args)
     else:
         plan.print("Skipping the deployment of blutgang")
+
+
+def deploy_helper_service(plan, args):
+    # Create script artifact.
+    get_rollup_info_template = read_file(src="./templates/get-rollup-info.sh")
+    get_rollup_info_artifact = plan.render_templates(
+        name="get-rollup-info-artifact",
+        config={
+            "get-rollup-info.sh": struct(
+                template=get_rollup_info_template,
+                data={},
+            )
+        },
+    )
+
+    # Deploy helper service.
+    helper_service_name = "helper" + args["deployment_suffix"]
+    plan.add_service(
+        name=helper_service_name,
+        config=ServiceConfig(
+            image=args["toolbox_image"],
+            files={"/opt/zkevm": get_rollup_info_artifact},
+            # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
+            entrypoint=["bash", "-c"],
+            cmd=["sleep infinity"],
+        ),
+    )
+
+    # Retrieve rollup data.
+    plan.exec(
+        description="Retrieving rollup data from the rollup manager contract",
+        service_name=helper_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0} {1} {2} {3}".format(
+                    "/opt/zkevm/get-rollup-info.sh",
+                    args["l1_rpc_url"],
+                    args["zkevm_rollup_manager_address"],
+                    args["zkevm_rollup_chain_id"],
+                ),
+            ]
+        ),
+    )
