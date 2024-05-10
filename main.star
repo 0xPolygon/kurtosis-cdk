@@ -66,7 +66,10 @@ def run(
         and "zkevm_global_exit_root_l2_address" in args
         and "polygon_data_committee_address" in args
     ):
+        plan.print("Deploying helper service to retrieve rollup data")
         deploy_helper_service(plan, args)
+    else:
+        plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
