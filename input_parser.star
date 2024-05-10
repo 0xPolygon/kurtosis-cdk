@@ -114,22 +114,4 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
-    full_args = fill_dict(args, DEFAULT_ARGS)
-    # Check whatever on args here.
-    return full_args
-
-
-def fill_dict(my_dict, def_values):
-    # By passing params to main run, args got frozen, so we need to copy
-    new_dict = {}
-    for k, v in def_values.items():
-        if k not in my_dict:
-            new_dict[k] = v
-        else:
-            new_dict[k] = my_dict[k]
-            if type(v) == "dict":
-                # No recursion on Star, so only 1 nested level allowed
-                for _k, _v in v.items():
-                    if _k not in new_dict[k]:
-                        new_dict[k][_k] = _v
-    return new_dict
+    return def_values | my_dict
