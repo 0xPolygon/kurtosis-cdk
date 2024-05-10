@@ -189,13 +189,13 @@ args:
 
   # The address of the rollup manager contract on L1.
   # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.
-  # zkevm_rollup_manager_address: "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+  # zkevm_rollup_manager_address: ""
   # # The block number at which the rollup manager contract was deployed.
-  # zkevm_rollup_manager_block_number: 19
+  # zkevm_rollup_manager_block_number: 0
   # # The address of the global exit root contract on L2.
-  # zkevm_global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+  # zkevm_global_exit_root_l2_address: ""
   # # The address of the Polygon data committee contract on L1.
-  # polygon_data_committee_address: "0x5A6896A98c4B7C7E8f16d177C719a1d856b9154c"
+  # polygon_data_committee_address: ""
 
   # The consensus contract name of the new rollup.
   zkevm_rollup_consensus: PolygonValidiumEtrog

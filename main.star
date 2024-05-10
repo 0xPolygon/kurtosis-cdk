@@ -60,7 +60,13 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    deploy_helper_service(plan, args)
+    if (
+        "zkevm_rollup_manager_address" in args
+        and "zkevm_rollup_manager_block_number" in args
+        and "zkevm_global_exit_root_l2_address" in args
+        and "polygon_data_committee_address" in args
+    ):
+        deploy_helper_service(plan, args)
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
@@ -151,7 +157,10 @@ def deploy_helper_service(plan, args):
         config={
             "get-rollup-info.sh": struct(
                 template=get_rollup_info_template,
-                data={},
+                data=args
+                | {
+                    "rpc_url": args["l1_rpc_url"],
+                },
             )
         },
     )
@@ -170,20 +179,16 @@ def deploy_helper_service(plan, args):
     )
 
     # Retrieve rollup data.
-    if "zkevm_rollup_manager_address" in args:
-        plan.exec(
-            description="Retrieving rollup data from the rollup manager contract",
-            service_name=helper_service_name,
-            recipe=ExecRecipe(
-                command=[
-                    "/bin/sh",
-                    "-c",
-                    "chmod +x {0} && {0} {1} {2} {3}".format(
-                        "/opt/zkevm/get-rollup-info.sh",
-                        args["l1_rpc_url"],
-                        args["zkevm_rollup_manager_address"],
-                        args["zkevm_rollup_chain_id"],
-                    ),
-                ]
-            ),
-        )
+    plan.exec(
+        description="Retrieving rollup data from the rollup manager contract",
+        service_name=helper_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
+                    "/opt/zkevm/get-rollup-info.sh",
+                ),
+            ]
+        ),
+    )
