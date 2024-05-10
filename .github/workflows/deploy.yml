@@ -210,7 +210,7 @@ jobs:
           # Disable all deployment steps.
           yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
           # Only deploy l1 and zkevm contracts.
-          yq -Y --in-place '.deploy_l1 = true, .deploy_zkevm_contracts_on_l1 = true' params.yml
+          yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml .
 
@@ -224,6 +224,6 @@ jobs:
           # Enable all deployment steps.
           yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = true else . end)' params.yml
           # Do not deploy l1 and zkevm contracts.
-          yq -Y --in-place '.deploy_l1 = false, .deploy_zkevm_contracts_on_l1 = false' params.yml
+          yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml .
