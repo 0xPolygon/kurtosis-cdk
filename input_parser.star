@@ -114,4 +114,4 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
-    return def_values | my_dict
+    return DEFAULT_ARGS | args
