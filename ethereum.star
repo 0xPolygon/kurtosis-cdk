@@ -1,9 +1,9 @@
 ethereum_package = import_module(
-    "github.com/kurtosis-tech/ethereum-package/main.star@2.2.0"
+    "github.com/kurtosis-tech/ethereum-package/main.star@3.0.0"
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.0"
-LIGHTHOUSE_IMAGE = "sigp/lighthouse:v5.1.3"
+LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:unstable-minimal"
 
 
 def run(plan, args):
@@ -32,6 +32,8 @@ def run(plan, args):
                 "preregistered_validator_keys_mnemonic": args[
                     "l1_preallocated_mnemonic"
                 ],
+                "preset": "minimal",
+                "seconds_per_slot": 1
             },
             "additional_services": args["l1_additional_services"],
         },

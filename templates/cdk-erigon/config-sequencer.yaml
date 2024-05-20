@@ -24,8 +24,9 @@ txpool.disable: false
 torrent.port: 42070
 zkevm.datastream-version: 2
 zkevm.sequencer-initial-fork-id: 9
+# zkevm.executor-urls: "zkevm-prover{{.deployment_suffix}}:{{.zkevm_executor_port}}"
 
-externalcl: true
+# externalcl: true
 http.port: {{.zkevm_rpc_http_port}}
 http.api: [eth, debug, net, trace, web3, erigon, zkevm]
 http.addr: 0.0.0.0
