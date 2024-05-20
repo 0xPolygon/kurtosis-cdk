@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygo
 
 FROM ubuntu:22.04
 LABEL author="devtools@polygon.technology"
-LABEL description="Helper image capable of executing diverse workloads"
+LABEL description="Blockchain toolbox"
 
 COPY --from=polycli-builder /opt/polygon-cli/polycli /usr/bin/polycli
 # WARNING (DL3008): Pin versions in apt get install.

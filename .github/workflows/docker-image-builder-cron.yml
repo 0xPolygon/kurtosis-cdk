@@ -93,7 +93,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
 
-  workload:
+  toolbox:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -109,9 +109,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          file: docker/workload.Dockerfile
+          file: docker/toolbox.Dockerfile
           build-args: |
             POLYCLI_VERSION=${{ env.POLYCLI_VERSION }}
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/workload:0.0.1
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/toolbox:0.0.1
           platforms: linux/amd64,linux/arm64
           push: true
