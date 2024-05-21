@@ -232,7 +232,7 @@ def create_zkevm_node_components_config(
     return (
         sequence_sender_config
         | aggregator_config
-        | rpc_config
+        # | rpc_config
         | eth_tx_manager_config
         | l2_gas_pricer_config
     )

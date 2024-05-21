@@ -137,7 +137,7 @@ def create_reverse_proxy_config_artifact(plan, args):
     )
 
     l1rpc_service = plan.get_service("el-1-geth-lighthouse")
-    l2rpc_service = plan.get_service(name="zkevm-node-rpc" + args["deployment_suffix"])
+    l2rpc_service = plan.get_service(name="cdk-erigon-node" + args["deployment_suffix"])
     bridge_service = plan.get_service(
         name="zkevm-bridge-service" + args["deployment_suffix"]
     )
