@@ -43,7 +43,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Run Regression Tests
-        uses: 0xPolygon/kurtosis-cdk@v0.1.7
+        uses: 0xPolygon/kurtosis-cdk@v0.1.9
         with:
           zkevm_agglayer: ${{ github.event.inputs.zkevm_agglayer }}
           zkevm_bridge_service: ${{ github.event.inputs.zkevm_bridge_service }}
