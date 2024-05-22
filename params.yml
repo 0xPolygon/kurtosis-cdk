@@ -52,10 +52,6 @@ args:
   zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   panoptichain_image: minhdvu/panoptichain
-  blockscout_be_image: blockscout/blockscout-zkevm:6.5.0
-  blockscout_fe_image: ghcr.io/blockscout/frontend:v1.29.2
-  blockscout_stats_image: ghcr.io/blockscout/stats:main
-  blockscout_visualizer_image: ghcr.io/blockscout/visualizer:main
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
   toolbox_image: leovct/toolbox:0.0.1
@@ -153,18 +149,6 @@ args:
   zkevm_db_state_name: state_db
   zkevm_db_state_user: state_user
   zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
-
-  # Blockscout db
-  zkevm_db_blockscout_hostname: blockscout-db
-  zkevm_db_blockscout_name: blockscout_db
-  zkevm_db_blockscout_user: blockscout_user
-  zkevm_db_blockscout_password: KZuUZS9kspk5NO6Zm9FMArPulNuq88A9
-
-  # Blockscout Stats db
-  zkevm_db_blockscout_stats_hostname: blockscout-st-db
-  zkevm_db_blockscout_stats_name: blockscout-st_db
-  zkevm_db_blockscout_stats_user: blockscout-st_user
-  zkevm_db_blockscout_stats_password: M07Q9hBoD5vN40LHIIplBtDpi5DGuMEd
 
   ## L1 configuration.
   l1_chain_id: 271828
