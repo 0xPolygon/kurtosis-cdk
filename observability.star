@@ -1,8 +1,7 @@
 prometheus_package = import_module(
     "github.com/kurtosis-tech/prometheus-package/main.star"
 )
-grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
-
+grafana_package = import_module("github.com/minhd-vu/grafana-package/main.star@alerts")
 service_package = import_module("./lib/service.star")
 
 
@@ -77,4 +76,5 @@ def run(plan, args):
         prometheus_url,
         "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards",
         name="grafana" + args["deployment_suffix"],
+        grafana_alerts_file=read_file(src="./static-files/alerts.yaml"),
     )
