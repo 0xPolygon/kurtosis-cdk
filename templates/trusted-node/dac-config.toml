@@ -17,11 +17,11 @@ Level = "info"
 Outputs = ["stderr"]
 
 [DB]
-User = "{{.zkevm_db_dac_user}}"
-Password = "{{.zkevm_db_dac_password}}"
-Name = "{{.zkevm_db_dac_name}}"
-Host = "{{.zkevm_db_dac_hostname}}{{.deployment_suffix}}"
-Port = "{{.zkevm_db_postgres_port}}"
+User = "{{.dac_db.user}}"
+Password = "{{.dac_db.password}}"
+Name = "{{.dac_db.name}}"
+Host = "{{.dac_db.hostname}}"
+Port = "{{.dac_db.port}}"
 EnableLog = false
 MaxConns = 200
 
