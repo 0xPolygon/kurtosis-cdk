@@ -38,9 +38,11 @@ def start_node(
                     ]
                 ),
             },
-            # entrypoint=["sh", "-c"],
-            # cmd=["while true; do cdk-erigon --config /etc/cdk-erigon/config.yaml; done"],
-            cmd=["--config=/etc/cdk-erigon/config.yaml"],
+            entrypoint=["sh", "-c"],
+            # Sleep for 10 seconds in order to wait for datastream server getting ready
+            # TODO: find a better way instead of waiting
+            cmd=["sleep 10 && cdk-erigon --config /etc/cdk-erigon/config.yaml"],
+            # cmd=["--config=/etc/cdk-erigon/config.yaml"],
             env_vars=envs,
         ),
     )
