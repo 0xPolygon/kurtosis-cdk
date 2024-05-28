@@ -29,6 +29,9 @@ deploy_cdk_erigon_node: true
 # Deploy observability stack.
 deploy_observability: true
 
+# Deploy Blockscout stack.
+deploy_l2_blockscout: false
+
 # Deploy eth load balancer.
 deploy_blutgang: false
 
@@ -56,6 +59,7 @@ args:
   zkevm_bridge_proxy_image: haproxy:2.9.7
   workload_image: leovct/workload:0.0.1
   zkevm_sequence_sender_image: cdk-sequence-sender:local
+  toolbox_image: leovct/toolbox:0.0.1
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -71,6 +75,7 @@ args:
   zkevm_bridge_ui_port: 80
   zkevm_agglayer_port: 4444
   zkevm_dac_port: 8484
+  blockscout_public_port: 50101
 
   # Addresses and private keys of the different components.
   # They have been generated using the following command:
@@ -170,6 +175,16 @@ args:
 
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
+
+  # The address of the rollup manager contract on L1.
+  # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.
+  # zkevm_rollup_manager_address: ""
+  # # The block number at which the rollup manager contract was deployed.
+  # zkevm_rollup_manager_block_number: 0
+  # # The address of the global exit root contract on L2.
+  # zkevm_global_exit_root_l2_address: ""
+  # # The address of the Polygon data committee contract on L1.
+  # polygon_data_committee_address: ""
 
   # The consensus contract name of the new rollup.
   zkevm_rollup_consensus: PolygonValidiumEtrog

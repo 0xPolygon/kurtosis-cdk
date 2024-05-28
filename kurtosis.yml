@@ -40,8 +40,12 @@ description: |-
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.6
   panoptichain_image: minhdvu/panoptichain
+  
+  # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
+
+  toolbox_image: leovct/toolbox:0.0.1
   workload_image: leovct/workload:0.0.1
 
   # Port configuration.
@@ -58,6 +62,7 @@ description: |-
   zkevm_bridge_ui_port: 80
   zkevm_agglayer_port: 4444
   zkevm_dac_port: 8484
+  blockscout_public_port: 50101
 
   # Addresses and private keys of the different components.
   # They have been generated using the following command:

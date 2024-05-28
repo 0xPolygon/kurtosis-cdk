@@ -41,7 +41,7 @@ BridgeVersion = "v1"
     MaxConns = 20
 
 [NetworkConfig]
-GenBlockNumber = "{{.rollup_manager_block_number}}"
+GenBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"

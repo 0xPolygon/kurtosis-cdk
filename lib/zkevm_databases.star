@@ -2,11 +2,12 @@ POSTGRES_IMAGE = "postgres:16.2"
 
 
 def _create_postgres_db_service_config(
-    port, db, user, password, init_script_artifact_name=""
+    port, db, user, password, init_script_artifact_name="", cmd_args=[]
 ):
     files = {}
     if init_script_artifact_name != "":
         files["/docker-entrypoint-initdb.d/"] = init_script_artifact_name
+
     return ServiceConfig(
         image=POSTGRES_IMAGE,
         ports={
@@ -18,6 +19,7 @@ def _create_postgres_db_service_config(
             "POSTGRES_PASSWORD": password,
         },
         files=files,
+        cmd=["-p {}".format(port)] + cmd_args,
     )
 
 
