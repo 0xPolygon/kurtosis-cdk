@@ -5,7 +5,7 @@ POSTGRES_MASTER_DB = "master"
 POSTGRES_MASTER_USER = "master_user"
 POSTGRES_MASTER_PASSWORD = "master_password"
 
-NODE_DATABASES = {
+CDK_DATABASES = {
     "event_db": {
         "name": "event_db",
         "user": "event_user",
@@ -30,7 +30,7 @@ NODE_DATABASES = {
     },
 }
 
-DATABASES = NODE_DATABASES | {
+DATABASES = CDK_DATABASES | {
     "agglayer_db": {
         "name": "agglayer_db",
         "user": "agglayer_user",
@@ -67,7 +67,7 @@ def get_db_configs(suffix):
 def get_pless_db_configs(suffix):
     return {
         k: v | {"hostname": _service_name(_pless_suffix(suffix)), "port": POSTGRES_PORT}
-        for k, v in NODE_DATABASES.items()
+        for k, v in CDK_DATABASES.items()
     }
 
 
@@ -114,5 +114,5 @@ def run(plan, suffix):
 
 
 def run_pless(plan, suffix):
-    db_configs = NODE_DATABASES.values()
+    db_configs = CDK_DATABASES.values()
     create_postgres_service(plan, db_configs, _pless_suffix(suffix))
