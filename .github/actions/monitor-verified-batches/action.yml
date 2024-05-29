@@ -16,6 +16,6 @@ runs:
   using: "composite"
   steps:
     - name: Check that batches are being verified
-      working-directory: scripts
+      working-directory: .github/actions/monitor-verified-batches
       shell: bash
       run: ./batch_verification_monitor.sh ${{ inputs.verified_batches_target }} ${{ inputs.timeout }}
