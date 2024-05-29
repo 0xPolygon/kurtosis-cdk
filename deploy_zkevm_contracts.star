@@ -28,7 +28,10 @@ def run(plan, args):
                 artifact_cfg["name"]: struct(
                     template=template,
                     data=args
-                    | {"zkevm_rollup_consensus": get_consensus_contract(args)},
+                    | {
+                        "is_cdk_validium": args["data_availability_mode"] == "validium",
+                        "zkevm_rollup_consensus": get_consensus_contract(args),
+                    },
                 )
             },
         )
