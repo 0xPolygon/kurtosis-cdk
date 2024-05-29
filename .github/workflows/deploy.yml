@@ -236,3 +236,32 @@ jobs:
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+  # Deploy the CDK environment in rollup mode (data availability).
+  # By default the da mode is set to validium.
+  rollup-data-availability-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install tools.
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          kurtosis analytics disable
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Deploy components.
+      - name: Set rollup data availability mode
+        run: yq -Y --in-place '.args.data_availability_mode = rollup' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Check that batches are being verified
+        working-directory: ./scripts
+        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
