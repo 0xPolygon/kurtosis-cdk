@@ -2,9 +2,11 @@ service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+databases = import_module("./databases.star")
 
 
 def run(plan, args):
+    db_configs = databases.get_db_configs(args["deployment_suffix"])
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"
@@ -12,7 +14,10 @@ def run(plan, args):
     prover_config_artifact = plan.render_templates(
         name="prover-config-artifact",
         config={
-            "prover-config.json": struct(template=prover_config_template, data=args)
+            "prover-config.json": struct(
+                template=prover_config_template,
+                data=args | db_configs,
+            )
         },
     )
     zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
@@ -39,7 +44,8 @@ def run(plan, args):
                 | {
                     "is_cdk_validium": args["zkevm_rollup_consensus"]
                     == "PolygonValidiumEtrog",
-                },
+                }
+                | db_configs,
             )
         },
         name="trusted-node-config",
@@ -58,7 +64,7 @@ def run(plan, args):
         )
     )
 
-    dac_config_artifact = create_dac_config_artifact(plan, args)
+    dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
     dac_config = zkevm_dac_package.create_dac_service_config(
         args, dac_config_artifact, keystore_artifacts.dac
     )
@@ -98,7 +104,7 @@ def get_keystores_artifacts(plan, args):
     )
 
 
-def create_dac_config_artifact(plan, args):
+def create_dac_config_artifact(plan, args, db_configs):
     dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(
@@ -111,16 +117,11 @@ def create_dac_config_artifact(plan, args):
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # dac db
-                    "zkevm_db_dac_hostname": args["zkevm_db_dac_hostname"],
-                    "zkevm_db_dac_name": args["zkevm_db_dac_name"],
-                    "zkevm_db_dac_user": args["zkevm_db_dac_user"],
-                    "zkevm_db_dac_password": args["zkevm_db_dac_password"],
                     # ports
-                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
                     "zkevm_dac_port": args["zkevm_dac_port"],
                 }
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | db_configs,
             )
         },
     )
