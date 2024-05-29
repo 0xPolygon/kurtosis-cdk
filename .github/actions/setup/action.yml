@@ -6,7 +6,7 @@ inputs:
   kurtosis_version:
     description: The version of kurtosis
     required: false
-    default: '0.89'
+    default: '0.89.3'
 
 runs:
   using: "composite"
@@ -15,8 +15,6 @@ runs:
     - name: Install kurtosis
       shell: bash
       run: |
-        apt update
-        apt install sudo
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
         sudo apt install kurtosis-cli=${{ inputs.kurtosis_version }}
