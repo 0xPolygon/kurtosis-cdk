@@ -6,7 +6,7 @@ inputs:
   kurtosis_version:
     description: The version of kurtosis
     required: false
-    default: '0.89.3'
+    default: '0.89'
 
 runs:
   using: "composite"
