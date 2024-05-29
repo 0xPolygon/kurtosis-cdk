@@ -27,19 +27,8 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
-
-      - name: Install yq
-        run: pip3 install yq
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      - name: Install tools
+        uses: ./.github/actions/setup
 
       # Deploy components.
       - name: Enable gas token feature
@@ -76,19 +65,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
-
-      - name: Install yq
-        run: pip3 install yq
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      - name: Install tools
+        uses: ./.github/actions/setup
 
       # Deploy components.
       - name: Disable all deployment steps
@@ -165,16 +143,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      - name: Install tools
+        uses: ./.github/actions/setup
 
       # Deploy components.
       - name: Deploy Kurtosis CDK package
@@ -190,19 +160,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
-
-      - name: Install yq
-        run: pip3 install yq
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      - name: Install tools
+        uses: ./.github/actions/setup
 
       # Deploy components.
       - name: Deploy L1 and zkEVM contracts
