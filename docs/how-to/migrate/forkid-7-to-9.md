@@ -42,9 +42,6 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
     # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
     -  zkevm_rollup_fork_id: 9
     +  zkevm_rollup_fork_id: 7
-
-    # The consensus contract name of the new rollup.
-    zkevm_rollup_consensus: PolygonValidiumEtrog
     ```
 
 3. Now kick-off a full redeploy:

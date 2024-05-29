@@ -42,8 +42,7 @@ def run(plan, args):
                 template=node_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": args["zkevm_rollup_consensus"]
-                    == "PolygonValidiumEtrog",
+                    "is_cdk_validium": args["data_availability_mode"] == "validium",
                 }
                 | db_configs,
             )

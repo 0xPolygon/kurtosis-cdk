@@ -37,7 +37,7 @@ def _create_node_component_service_config(
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
     synchronizer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -53,7 +53,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
 def create_sequencer_service_config(args, config_artifact, genesis_artifact):
     sequencer_name = "zkevm-node-sequencer" + args["deployment_suffix"]
     sequencer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
             "data-streamer": PortSpec(
@@ -76,7 +76,7 @@ def create_sequence_sender_service_config(
 ):
     sequence_sender_name = "zkevm-node-sequence-sender" + args["deployment_suffix"]
     sequence_sender_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -105,7 +105,7 @@ def create_aggregator_service_config(
 ):
     aggregator_name = "zkevm-node-aggregator" + args["deployment_suffix"]
     aggregator_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "aggregator": PortSpec(
                 args["zkevm_aggregator_port"], application_protocol="grpc"
@@ -132,7 +132,7 @@ def create_aggregator_service_config(
 def create_rpc_service_config(args, config_artifact, genesis_artifact):
     rpc_name = "zkevm-node-rpc" + args["deployment_suffix"]
     rpc_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "http-rpc": PortSpec(
                 args["zkevm_rpc_http_port"], application_protocol="http"
@@ -159,7 +159,7 @@ def create_eth_tx_manager_service_config(
 ):
     eth_tx_manager_name = "zkevm-node-eth-tx-manager" + args["deployment_suffix"]
     eth_tx_manager_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -182,7 +182,7 @@ def create_eth_tx_manager_service_config(
 def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact):
     l2_gas_pricer_name = "zkevm-node-l2-gas-pricer" + args["deployment_suffix"]
     l2_gas_pricer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -237,3 +237,12 @@ def create_zkevm_node_components_config(
         | eth_tx_manager_config
         | l2_gas_pricer_config
     )
+
+
+def get_node_image(args):
+    # Map data availability modes to node images.
+    node_images = {
+        "rollup": args["zkevm_node_image"],
+        "validium": args["cdk_node_image"],
+    }
+    return node_images.get(args["data_availability_mode"])

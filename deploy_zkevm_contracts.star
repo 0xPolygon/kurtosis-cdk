@@ -24,7 +24,13 @@ def run(plan, args):
         template = read_file(src=artifact_cfg["file"])
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
-            config={artifact_cfg["name"]: struct(template=template, data=args)},
+            config={
+                artifact_cfg["name"]: struct(
+                    template=template,
+                    data=args
+                    | {"zkevm_rollup_consensus": get_consensus_contract(args)},
+                )
+            },
         )
         artifacts.append(artifact)
 
@@ -85,3 +91,12 @@ def run(plan, args):
             ]
         ),
     )
+
+
+def get_consensus_contract(args):
+    # Map data availability modes to consensus contracts.
+    consensus_contracts = {
+        "rollup": "PolygonZkEVMEtrog",
+        "validium": "PolygonValidiumEtrog",
+    }
+    return consensus_contracts.get(args["data_availability_mode"])
