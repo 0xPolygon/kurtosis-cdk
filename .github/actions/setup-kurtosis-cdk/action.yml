@@ -11,7 +11,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # Install kurtosis
     - name: Install kurtosis
       shell: bash
       run: |
@@ -24,13 +23,11 @@ runs:
       shell: bash
       run: kurtosis analytics disable
 
-    # Install yq
     - name: Install yq
       shell: bash
       run: |
         pip3 install yq
         yq --version
 
-    # Install foundry
     - name: Install foundry
       uses: foundry-rs/foundry-toolchain@v1
