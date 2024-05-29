@@ -105,51 +105,6 @@ args:
   # Keystore password.
   zkevm_l2_keystore_password: pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m
 
-  # Database configuration.
-  zkevm_db_postgres_port: 5432
-
-  # AggLayer db
-  zkevm_db_agglayer_hostname: agglayer-db
-  zkevm_db_agglayer_name: agglayer_db
-  zkevm_db_agglayer_user: agglayer_user
-  zkevm_db_agglayer_password: PzycR2uB6PQv8ahj465ExvdyRLkknRNW
-
-  # Bridge db
-  zkevm_db_bridge_hostname: bridge-db
-  zkevm_db_bridge_name: bridge_db
-  zkevm_db_bridge_user: bridge_user
-  zkevm_db_bridge_password: aXPqaRvgo5DfnTbHtpYS9rMhVpjvb6tY
-
-  # DAC db
-  zkevm_db_dac_hostname: dac-db
-  zkevm_db_dac_name: dac_db
-  zkevm_db_dac_user: dac_user
-  zkevm_db_dac_password: PzycR2uB6PQv8ahj465ExvdyRLkknRNW
-
-  # Event db
-  zkevm_db_event_hostname: event-db
-  zkevm_db_event_name: event_db
-  zkevm_db_event_user: event_user
-  zkevm_db_event_password: rJXJN6iUAczh4oz8HRKYbVM8yC7tPeZm
-
-  # Pool db
-  zkevm_db_pool_hostname: pool-db
-  zkevm_db_pool_name: pool_db
-  zkevm_db_pool_user: pool_user
-  zkevm_db_pool_password: Qso5wMcLAN3oF7EfaawzgWKUUKWM3Vov
-
-  # Prover/Executor db
-  zkevm_db_prover_hostname: prover-db
-  zkevm_db_prover_name: prover_db
-  zkevm_db_prover_user: prover_user
-  zkevm_db_prover_password: SR5xq2KZPgvQkPDranCRhvkv6pnqfo77
-
-  # State db
-  zkevm_db_state_hostname: state-db
-  zkevm_db_state_name: state_db
-  zkevm_db_state_user: state_user
-  zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
-
   ## L1 configuration.
   l1_chain_id: 271828
   l1_preallocated_mnemonic: code code code code code code code code code code code quality
