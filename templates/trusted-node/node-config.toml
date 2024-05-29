@@ -308,28 +308,28 @@ ForkID = 0
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.zkevm_db_pool_user}}"
+User = "{{.pool_db.user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.zkevm_db_pool_password}}"
+Password = "{{.pool_db.password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.zkevm_db_pool_name}}"
+Name = "{{.pool_db.name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.zkevm_db_pool_hostname}}{{.deployment_suffix}}"
+Host = "{{.pool_db.hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.zkevm_db_postgres_port}}"
+Port = "{{.pool_db.port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
@@ -1463,28 +1463,28 @@ ProfilingEnabled = true
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.zkevm_db_event_user}}"
+User = "{{.event_db.user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.zkevm_db_event_password}}"
+Password = "{{.event_db.password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.zkevm_db_event_name}}"
+Name = "{{.event_db.name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.zkevm_db_event_hostname}}{{.deployment_suffix}}"
+Host = "{{.event_db.hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.zkevm_db_postgres_port}}"
+Port = "{{.event_db.port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
@@ -1511,28 +1511,28 @@ MaxConns = 20
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.zkevm_db_prover_user}}"
+User = "{{.prover_db.user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.zkevm_db_prover_password}}"
+Password = "{{.prover_db.password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.zkevm_db_prover_name}}"
+Name = "{{.prover_db.name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.zkevm_db_prover_hostname}}{{.deployment_suffix}}"
+Host = "{{.prover_db.hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.zkevm_db_postgres_port}}"
+Port = "{{.prover_db.port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
@@ -1578,28 +1578,28 @@ AvoidForkIDInMemory = false
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.zkevm_db_state_user}}"
+User = "{{.state_db.user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.zkevm_db_state_password}}"
+Password = "{{.state_db.password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.zkevm_db_state_name}}"
+Name = "{{.state_db.name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.zkevm_db_state_hostname}}{{.deployment_suffix}}"
+Host = "{{.state_db.hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.zkevm_db_postgres_port}}"
+Port = "{{.state_db.port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this

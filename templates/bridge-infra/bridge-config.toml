@@ -5,11 +5,11 @@ Outputs = ["stderr"]
 
 [SyncDB]
 Database = "postgres"
-User = "{{.zkevm_db_bridge_user}}"
-Name = "{{.zkevm_db_bridge_name}}"
-Password = "{{.zkevm_db_bridge_password}}"
-Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_suffix}}"
-Port = "{{.zkevm_db_postgres_port}}"
+User = "{{.bridge_db.user}}"
+Name = "{{.bridge_db.name}}"
+Password = "{{.bridge_db.password}}"
+Host = "{{.bridge_db.hostname}}"
+Port = "{{.bridge_db.port}}"
 MaxConns = 20
 
 [Etherman]
@@ -33,11 +33,11 @@ BridgeVersion = "v1"
     # Read only
     [BridgeServer.DB]
     Database = "postgres"
-    User = "{{.zkevm_db_bridge_user}}"
-    Name = "{{.zkevm_db_bridge_name}}"
-    Password = "{{.zkevm_db_bridge_password}}"
-    Host = "{{.zkevm_db_bridge_hostname}}{{.deployment_suffix}}"
-    Port = "{{.zkevm_db_postgres_port}}"
+    User = "{{.bridge_db.user}}"
+    Name = "{{.bridge_db.name}}"
+    Password = "{{.bridge_db.password}}"
+    Host = "{{.bridge_db.hostname}}"
+    Port = "{{.bridge_db.port}}"
     MaxConns = 20
 
 [NetworkConfig]
