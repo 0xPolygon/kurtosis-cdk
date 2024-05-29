@@ -3,7 +3,7 @@ name: kurtosis-cdk-setup
 description: Install tools to deploy the CDK stack with Kurtosis
 
 inputs:
-  kurtosis_version:
+  kurtosis-version:
     description: The version of kurtosis
     required: false
     default: '0.89.12' # https://github.com/kurtosis-tech/kurtosis/releases
@@ -16,7 +16,7 @@ runs:
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install kurtosis-cli=${{ inputs.kurtosis_version }}
+        sudo apt install kurtosis-cli=${{ inputs.kurtosis-version }}
         kurtosis version
 
     - name: Disable kurtosis analytics
