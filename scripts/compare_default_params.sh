@@ -4,7 +4,7 @@
 # The true reference for default parameters is params.yml.
 
 echo "Dumping default parameters..."
-sed -n '/args={/,/},/ { s/args=//; s/},/}/; p; }' main.star | yq --yaml-output > default-args.yml
+sed -n '/DEFAULT_ARGS = {/,/}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' input_parser.star | yq --yaml-output > default-args.yml
 # shellcheck disable=SC2016
 sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' kurtosis.yml | yq --yaml-output > kurtosis-args.yml
 yq --yaml-output .args params.yml > params-args.yml

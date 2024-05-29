@@ -5,16 +5,22 @@ def get_contract_setup_addresses(plan, args):
             "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
             "zkevm_rollup_address": "fromjson | .rollupAddress",
             "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+            "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
             "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
             "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
             "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
             "pol_token_address": "fromjson | .polTokenAddress",
-            "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         },
     )
+    service_name = "contracts"
+    if "zkevm_rollup_manager_address" in args:
+        service_name = "helper"
+    service_name += args["deployment_suffix"]
     result = plan.exec(
-        description="Getting contract setup addresses",
-        service_name="contracts" + args["deployment_suffix"],
+        description="Getting contract setup addresses from {} service".format(
+            service_name
+        ),
+        service_name=service_name,
         recipe=exec_recipe,
     )
     return get_exec_recipe_result(result)

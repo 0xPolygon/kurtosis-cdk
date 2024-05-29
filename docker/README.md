@@ -54,19 +54,19 @@ REPOSITORY              TAG             IMAGE ID       CREATED          SIZE
 local/zkevm-bridge-ui   multi-network   040905e1cabe   28 seconds ago   377MB
 ```
 
-## Workload
+## Toolbox
 
-To build the workload image locally, use the following command:
+To build the toolbox image locally, use the following command:
 
 ```bash
 docker build . \
-  --tag local/workload:0.0.1 \
+  --tag local/toolbox:0.0.1 \
   --build-arg POLYCLI_VERSION=main \
-  --file workload.Dockerfile
+  --file toolbox.Dockerfile
 ```
 
 ```bash
-$ docker images --filter "reference=local/workload"
+$ docker images --filter "reference=local/toolbox"
 REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
-local/workload   0.0.1     3f85f026aaf9   2 seconds ago   490MB
+local/toolbox   0.0.1     3f85f026aaf9   2 seconds ago   490MB
 ```

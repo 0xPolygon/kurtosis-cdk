@@ -136,6 +136,12 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
+      - name: Deploy Blockscout stack
+        run: |
+          yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
+
       - name: Deploy ETH load balancer
         run: |
           yq -Y --in-place '.deploy_blutgang = true' params.yml
@@ -177,3 +183,56 @@ jobs:
       - name: Check that batches are being verified
         working-directory: ./scripts
         run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+
+  # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
+  pre-deployed-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install tools.
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          kurtosis analytics disable
+
+      - name: Install yq
+        run: pip3 install yq
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Deploy components.
+      - name: Deploy L1 and zkEVM contracts
+        run: |
+          # Disable all deployment steps.
+          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
+          # Only deploy l1 and zkevm contracts.
+          yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Specify the rollup manager contract address and a few other parameters
+        run: |
+          zkevm_rollup_manager_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
+          yq -Y --in-place ".args.zkevm_rollup_manager_address = $zkevm_rollup_manager_address" params.yml
+
+          zkevm_rollup_manager_block_number=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .deploymentRollupManagerBlockNumber)
+          yq -Y --in-place ".args.zkevm_rollup_manager_block_number = $zkevm_rollup_manager_block_number" params.yml
+
+          zkevm_global_exit_root_l2_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonZkEVMGlobalExitRootL2Address)
+          yq -Y --in-place ".args.zkevm_global_exit_root_l2_address = $zkevm_global_exit_root_l2_address" params.yml
+
+          polygon_data_committee_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
+          yq -Y --in-place ".args.polygon_data_committee_address = $polygon_data_committee_address" params.yml
+
+      - name: Deploy the rest of the components
+        run: |
+          # Enable all deployment steps.
+          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = true else . end)' params.yml
+          # Do not deploy l1 and zkevm contracts.
+          yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .

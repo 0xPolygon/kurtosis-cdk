@@ -74,9 +74,9 @@ yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
 ### Deploy CDK bridge infrastructure
 
 ```sh
-yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
+yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
-yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
+yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
 # Perform additional tasks...
 ```
 
@@ -94,6 +94,14 @@ yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 yq -Y --in-place '.deploy_observability = true' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_observability = false' params.yml # reset
+```
+
+### Deploy Blockscout stack
+
+```sh
+yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
+yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
 ```
 
 ### Deploy ETH load balancer

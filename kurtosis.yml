@@ -42,16 +42,12 @@ description: |-
   zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   panoptichain_image: minhdvu/panoptichain
-  blockscout_be_image: blockscout/blockscout-zkevm:6.5.0
-  blockscout_fe_image: ghcr.io/blockscout/frontend:v1.29.2
-  blockscout_stats_image: ghcr.io/blockscout/stats:main
-  blockscout_visualizer_image: ghcr.io/blockscout/visualizer:main
-
+  
   # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
 
-  workload_image: leovct/workload:0.0.1
+  toolbox_image: leovct/toolbox:0.0.1
 
 
   # Port configuration.
@@ -68,6 +64,7 @@ description: |-
   zkevm_bridge_ui_port: 80
   zkevm_agglayer_port: 4444
   zkevm_dac_port: 8484
+  blockscout_public_port: 50101
 
   # Addresses and private keys of the different components.
   # They have been generated using the following command:
@@ -102,64 +99,7 @@ description: |-
   # Keystore password.
   zkevm_l2_keystore_password: pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m
 
-  # Database configuration.
-  zkevm_db_postgres_port: 5432
-
-  # AggLayer db
-  zkevm_db_agglayer_hostname: agglayer-db
-  zkevm_db_agglayer_name: agglayer_db
-  zkevm_db_agglayer_user: agglayer_user
-  zkevm_db_agglayer_password: PzycR2uB6PQv8ahj465ExvdyRLkknRNW
-
-  # Bridge db
-  zkevm_db_bridge_hostname: bridge-db
-  zkevm_db_bridge_name: bridge_db
-  zkevm_db_bridge_user: bridge_user
-  zkevm_db_bridge_password: aXPqaRvgo5DfnTbHtpYS9rMhVpjvb6tY
-
-  # DAC db
-  zkevm_db_dac_hostname: dac-db
-  zkevm_db_dac_name: dac_db
-  zkevm_db_dac_user: dac_user
-  zkevm_db_dac_password: PzycR2uB6PQv8ahj465ExvdyRLkknRNW
-
-  # Event db
-  zkevm_db_event_hostname: event-db
-  zkevm_db_event_name: event_db
-  zkevm_db_event_user: event_user
-  zkevm_db_event_password: rJXJN6iUAczh4oz8HRKYbVM8yC7tPeZm
-
-  # Pool db
-  zkevm_db_pool_hostname: pool-db
-  zkevm_db_pool_name: pool_db
-  zkevm_db_pool_user: pool_user
-  zkevm_db_pool_password: Qso5wMcLAN3oF7EfaawzgWKUUKWM3Vov
-
-  # Prover/Executor db
-  zkevm_db_prover_hostname: prover-db
-  zkevm_db_prover_name: prover_db
-  zkevm_db_prover_user: prover_user
-  zkevm_db_prover_password: SR5xq2KZPgvQkPDranCRhvkv6pnqfo77
-
-  # State db
-  zkevm_db_state_hostname: state-db
-  zkevm_db_state_name: state_db
-  zkevm_db_state_user: state_user
-  zkevm_db_state_password: rHTX7EpajF8zYDPatN32rH3B2pn89dmq
-
-  # Blockscout db
-  zkevm_db_blockscout_hostname: blockscout-db
-  zkevm_db_blockscout_name: blockscout_db
-  zkevm_db_blockscout_user: blockscout_user
-  zkevm_db_blockscout_password: KZuUZS9kspk5NO6Zm9FMArPulNuq88A9
-
-  # Blockscout Stats db
-  zkevm_db_blockscout_stats_hostname: blockscout-st-db
-  zkevm_db_blockscout_stats_name: blockscout-st_db
-  zkevm_db_blockscout_stats_user: blockscout-st_user
-  zkevm_db_blockscout_stats_password: M07Q9hBoD5vN40LHIIplBtDpi5DGuMEd
-
-  ## L1 configuration.
+    ## L1 configuration.
   l1_chain_id: 271828
   l1_preallocated_mnemonic: code code code code code code code code code code code quality
   l1_funding_amount: 100ether
