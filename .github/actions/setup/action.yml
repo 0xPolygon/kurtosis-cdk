@@ -1,6 +1,6 @@
 ---
-name: Set up Kurtosis CDK environment
-description: Install kurtosis, yq and foundry
+name: kurtosis-cdk-setup
+description: Install tools to deploy the CDK stack with Kurtosis
 
 inputs:
   kurtosis_version:
