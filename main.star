@@ -80,7 +80,7 @@ def run(
 
     # Get the genesis file.
     genesis_artifact = ""
-    if deploy_cdk_central_environment or deploy_zkevm_permissionless_node:
+    if deploy_cdk_central_environment:
         plan.print("Getting genesis file...")
         genesis_artifact = plan.store_service_files(
             name="genesis",
@@ -120,7 +120,7 @@ def run(
             plan, suffix=permissionless_node_args["original_suffix"]
         )
         import_module(zkevm_permissionless_node_package).run(
-            plan, permissionless_node_args
+            plan, permissionless_node_args, genesis_artifact
         )
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
