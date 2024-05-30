@@ -32,7 +32,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-verified-batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
       # Compare configs.
       - name: Dump configs
@@ -131,7 +131,7 @@ jobs:
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-verified-batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -148,7 +148,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-verified-batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
@@ -193,7 +193,7 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-verified-batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
   # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
@@ -233,7 +233,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-verified-batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
@@ -252,4 +252,4 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-verified-batches
+        uses: ./.github/actions/monitor-cdk-verified-batches

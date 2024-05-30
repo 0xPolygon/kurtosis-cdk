@@ -16,6 +16,6 @@ runs:
   using: "composite"
   steps:
     - name: Check that batches are being verified
-      working-directory: .github/actions/monitor-verified-batches
+      working-directory: .github/actions/monitor-cdk-verified-batches
       shell: bash
       run: ./batch_verification_monitor.sh ${{ inputs.verified_batches_target }} ${{ inputs.timeout }}
