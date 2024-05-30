@@ -268,8 +268,8 @@ jobs:
         working-directory: ./scripts
         run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
 
-  # Deploy the CDK environment in validium mode (data availability).
-  validium-da-mode:
+  # Deploy the CDK environment in cdk-validium mode (data availability).
+  cdk-validium-da-mode:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -289,7 +289,7 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
 
       # Deploy components.
-      - name: Set validium data availability mode
+      - name: Set cdk-validium data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
 
       - name: Deploy Kurtosis CDK package
