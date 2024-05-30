@@ -126,6 +126,11 @@ jobs:
 
       - name: Deploy zkEVM permissionless node
         run: |
+          # Retrieve genesis file.
+          kurtosis files download cdk-v1 genesis /tmp
+          cp /tmp/genesis.json templates/permissionless-node/genesis.json
+
+          # Deploy permisionless node.
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
@@ -236,6 +241,38 @@ jobs:
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+  # Deploy a standalone permisionless node against Sepolia.
+  permisionless-node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install tools.
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          kurtosis analytics disable
+
+      - name: Install yq
+        run: pip3 install yq
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Deploy components.
+      - name: Only deploy the permisionless node
+        run: yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+
+      - name: Configure permisionless node parameters
+        run: |
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
+          yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
+
+      - name: Deploy the permisionless node
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:

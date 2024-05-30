@@ -3,7 +3,7 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 databases = import_module("./databases.star")
 
 
-def run(plan, args):
+def run(plan, args, genesis_artifact):
     db_config = databases.get_pless_db_configs(args["original_suffix"])
 
     # Start executor.
@@ -22,10 +22,7 @@ def run(plan, args):
 
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.
-    genesis_artifact = ""
-    if "genesis_artifact" in args:
-        genesis_artifact = args["genesis_artifact"]
-    else:
+    if genesis_artifact == "":
         genesis_file = read_file(src=args["genesis_file"])
         genesis_artifact = plan.render_templates(
             name="genesis" + args["deployment_suffix"],
