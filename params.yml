@@ -41,7 +41,7 @@ args:
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
   # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
-  # In the future, we would like to support external DA protocols such as avail, celestia and near.
+  # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
   data_availability_mode: cdk-validium
 
   # Docker images and repositories used to spin up services.
