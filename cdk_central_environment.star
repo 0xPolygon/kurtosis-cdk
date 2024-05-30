@@ -1,3 +1,4 @@
+data_availability_package = import_module("./lib/data_availability.star")
 service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
@@ -42,8 +43,7 @@ def run(plan, args):
                 template=node_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": args["zkevm_rollup_consensus"]
-                    == "PolygonValidiumEtrog",
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                 }
                 | db_configs,
             )
@@ -56,23 +56,28 @@ def run(plan, args):
         plan, args, node_config_artifact, genesis_artifact
     )
 
-    # Start the rest of the zkevm node components along with the dac.
+    # Start the rest of the zkevm node components.
     keystore_artifacts = get_keystores_artifacts(plan, args)
     zkevm_node_components_configs = (
         zkevm_node_package.create_zkevm_node_components_config(
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
     )
-
-    dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
-    dac_config = zkevm_dac_package.create_dac_service_config(
-        args, dac_config_artifact, keystore_artifacts.dac
-    )
-
     plan.add_services(
-        configs=zkevm_node_components_configs | dac_config,
+        configs=zkevm_node_components_configs,
         description="Starting the rest of the zkevm node components",
     )
+
+    # Start the DAC if in validium mode.
+    if data_availability_package.is_cdk_validium(args):
+        dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
+        dac_config = zkevm_dac_package.create_dac_service_config(
+            args, dac_config_artifact, keystore_artifacts.dac
+        )
+        plan.add_services(
+            configs=dac_config,
+            description="Starting the DAC",
+        )
 
 
 def get_keystores_artifacts(plan, args):
