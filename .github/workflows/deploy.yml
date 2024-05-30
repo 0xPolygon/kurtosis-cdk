@@ -1,5 +1,5 @@
 ---
-name: Deploy Kurtosis CDK
+name: Deploy
 
 on:
   pull_request:
