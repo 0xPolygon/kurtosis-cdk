@@ -267,4 +267,4 @@ jobs:
           yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/cardona-genesis.json"' params.yml
 
       - name: Deploy the permisionless node
-        run: kurtosis run --enclave cdk-v1 --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
