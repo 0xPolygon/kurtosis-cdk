@@ -1,3 +1,5 @@
+data_availability_package = import_module("./lib/data_availability.star")
+
 ARTIFACTS = [
     {
         "name": "deploy_parameters.json",
@@ -29,8 +31,12 @@ def run(plan, args):
                     template=template,
                     data=args
                     | {
-                        "is_cdk_validium": args["data_availability_mode"] == "validium",
-                        "zkevm_rollup_consensus": get_consensus_contract(args),
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
+                            args
+                        ),
                     },
                 )
             },
@@ -94,12 +100,3 @@ def run(plan, args):
             ]
         ),
     )
-
-
-def get_consensus_contract(args):
-    # Map data availability modes to consensus contracts.
-    consensus_contracts = {
-        "rollup": "PolygonZkEVMEtrog",
-        "validium": "PolygonValidiumEtrog",
-    }
-    return consensus_contracts.get(args["data_availability_mode"])

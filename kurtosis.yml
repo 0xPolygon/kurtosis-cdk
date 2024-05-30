@@ -30,8 +30,8 @@ description: |-
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
-  # - 'validium': Transaction data is stored off-chain using a DA layer and a DAC.
-  data_availability_mode: validium
+  # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
+  data_availability_mode: cdk-validium
 
   # Docker images and repositories used to spin up services.
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0

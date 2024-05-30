@@ -1,3 +1,6 @@
+data_availability_package = import_module("./lib/data_availability.star")
+
+
 def get_contract_setup_addresses(plan, args):
     extract = {
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
@@ -8,7 +11,7 @@ def get_contract_setup_addresses(plan, args):
         "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
         "pol_token_address": "fromjson | .polTokenAddress",
     }
-    if args["data_availability_mode"] == "validium":
+    if data_availability_package.is_cdk_validium(args):
         extract[
             "polygon_data_committee_address"
         ] = "fromjson | .polygonDataCommitteeAddress"

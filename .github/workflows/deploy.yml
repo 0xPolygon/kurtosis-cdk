@@ -290,7 +290,7 @@ jobs:
 
       # Deploy components.
       - name: Set validium data availability mode
-        run: yq -Y --in-place '.args.data_availability_mode = "validium"' params.yml
+        run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .

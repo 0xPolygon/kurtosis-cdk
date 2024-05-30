@@ -1,3 +1,4 @@
+data_availability_package = import_module("./lib/data_availability.star")
 service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
@@ -42,7 +43,7 @@ def run(plan, args):
                 template=node_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": args["data_availability_mode"] == "validium",
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                 }
                 | db_configs,
             )
@@ -68,7 +69,7 @@ def run(plan, args):
     )
 
     # Start the DAC if in validium mode.
-    if args["data_availability_mode"] == "validium":
+    if data_availability_package.is_cdk_validium(args):
         dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
         dac_config = zkevm_dac_package.create_dac_service_config(
             args, dac_config_artifact, keystore_artifacts.dac
