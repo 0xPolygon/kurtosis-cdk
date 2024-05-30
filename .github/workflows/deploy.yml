@@ -263,8 +263,8 @@ jobs:
 
       - name: Configure permisionless node parameters
         run: |
-          yq -Y --in-place '.args.l1_rpc_url = "https://sepolia.gateway.tenderly.co"' params.yml
-          yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/cardona-genesis.json"' params.yml
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
+          yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
 
       - name: Deploy the permisionless node
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
