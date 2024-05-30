@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: 1.21
@@ -23,10 +24,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-
-      # Deploy components.
-      - name: Enable gas token feature
-        run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
@@ -61,7 +58,6 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy components.
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
 
@@ -150,6 +146,24 @@ jobs:
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
 
+  # Deploy the CDK environment with the gas token feature enabled.
+  gas_token:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Enable gas token feature
+        run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
     runs-on: ubuntu-latest
@@ -159,7 +173,6 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy components.
       - name: Deploy L1 and zkEVM contracts
         run: |
           # Disable all deployment steps.
@@ -204,17 +217,17 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy components.
-      - name: Only deploy the permisionless node
-        run: yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-
       - name: Configure permisionless node parameters
         run: |
           yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
           yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
 
       - name: Deploy the permisionless node
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: |
+          # Disable all steps except permisionless node.
+          yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
@@ -225,7 +238,6 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy components.
       - name: Set rollup data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
 
@@ -244,7 +256,6 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy components.
       - name: Set cdk-validium data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
 
