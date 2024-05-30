@@ -32,6 +32,7 @@ def run(plan, args):
                 "preregistered_validator_keys_mnemonic": args[
                     "l1_preallocated_mnemonic"
                 ],
+                "seconds_per_slot": 2, # 2 seconds block time instead of 12 by default.
             },
             "additional_services": args["l1_additional_services"],
         },
