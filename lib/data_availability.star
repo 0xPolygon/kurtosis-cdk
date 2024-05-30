@@ -7,12 +7,6 @@ DATA_AVAILABILITY_MODES = struct(
     cdk_validium="cdk-validium",
 )
 
-# Map data availability modes to node images.
-NODE_IMAGES = {
-    DATA_AVAILABILITY_MODES.rollup: "zkevm_node_image",
-    DATA_AVAILABILITY_MODES.cdk_validium: "cdk_node_image",
-}
-
 # Map data availability modes to consensus contracts.
 CONSENSUS_CONTRACTS = {
     DATA_AVAILABILITY_MODES.rollup: "PolygonZkEVMEtrog",
@@ -21,7 +15,12 @@ CONSENSUS_CONTRACTS = {
 
 
 def get_node_image(args):
-    return NODE_IMAGES.get(args["data_availability_mode"])
+    # Map data availability modes to node images.
+    node_images = {
+        DATA_AVAILABILITY_MODES.rollup: args["zkevm_node_image"],
+        DATA_AVAILABILITY_MODES.cdk_validium: args["cdk_node_image"],
+    }
+    return node_images.get(args["data_availability_mode"])
 
 
 def get_consensus_contract(args):
