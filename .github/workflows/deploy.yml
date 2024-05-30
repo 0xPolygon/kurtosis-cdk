@@ -264,8 +264,6 @@ jobs:
       - name: Configure permisionless node parameters
         run: |
           yq -Y --in-place '.args.l1_rpc_url = "https://sepolia.gateway.tenderly.co"' params.yml
-          yq -Y --in-place '.args.trusted_sequencer_node_uri = "TODO"' params.yml
-          yq -Y --in-place '.args.zkevm_aggregator_host = "TODO"' params.yml
           yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/cardona-genesis.json"' params.yml
 
       - name: Deploy the permisionless node
