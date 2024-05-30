@@ -242,7 +242,7 @@ jobs:
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-  # Deploy a standalone permisionless node against Cardona (zkEVM Testnet).
+  # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
     runs-on: ubuntu-latest
     steps:
