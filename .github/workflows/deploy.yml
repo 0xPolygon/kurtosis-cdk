@@ -147,7 +147,7 @@ jobs:
         uses: ./.github/actions/monitor-cdk-verified-batches
 
   # Deploy the CDK environment with the gas token feature enabled.
-  gas_token:
+  gas-token:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
