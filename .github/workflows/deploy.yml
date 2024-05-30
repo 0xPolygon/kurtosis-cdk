@@ -251,6 +251,9 @@ jobs:
           sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
           kurtosis analytics disable
 
+      - name: Install yq
+        run: pip3 install yq
+
       - name: Install foundry
         uses: foundry-rs/foundry-toolchain@v1
 
