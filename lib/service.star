@@ -1,4 +1,4 @@
-data_availability_package = import_module("./lib/data_availability.star")
+data_availability_package = import_module("./data_availability.star")
 
 
 def get_contract_setup_addresses(plan, args):

@@ -1,4 +1,4 @@
-data_availability_package = import_module("./lib/data_availability.star")
+data_availability_package = import_module("./data_availability.star")
 
 NODE_COMPONENTS = struct(
     synchronizer="synchronizer",

@@ -29,7 +29,4 @@ def get_consensus_contract(args):
 
 
 def is_cdk_validium(args):
-    return (
-        args["data_availability_mode"]
-        == data_availability_package.DATA_AVAILABILITY_MODES.cdk_validium
-    )
+    return args["data_availability_mode"] == DATA_AVAILABILITY_MODES.cdk_validium
