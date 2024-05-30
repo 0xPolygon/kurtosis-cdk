@@ -236,3 +236,34 @@ jobs:
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+  # Deploy a standalone permisionless node against Cardona (zkEVM Testnet).
+  permisionless-node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install tools.
+      - name: Install kurtosis
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          kurtosis analytics disable
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Deploy components.
+      - name: Only deploy the permisionless node
+        run: yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+
+      - name: Configure permisionless node parameters
+        run: |
+          yq -Y --in-place '.args.l1_rpc_url = https://sepolia.gateway.tenderly.co' params.yml
+          yq -Y --in-place '.args.trusted_sequencer_node_uri = TODO' params.yml
+          yq -Y --in-place '.args.zkevm_aggregator_host = TODO' params.yml
+          yq -Y --in-place '.args.genesis_file = templates/permissionless-node/cardona-genesis.json' params.yml
+
+      - name: Deploy the permisionless node
+        run: kurtosis run --enclave cdk-v1 --image-download always .
