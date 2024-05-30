@@ -1,5 +1,5 @@
 ---
-name: monitor-verified-batches
+name: monitor-cdk-verified-batches
 description: Check that batches are being verified in a CDK environment
 
 inputs:
