@@ -25,6 +25,9 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
+      - name: Enable workload
+        run: yq -Y --in-place '.apply_workload = true' params.yml
+
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 

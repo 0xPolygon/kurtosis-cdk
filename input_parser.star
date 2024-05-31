@@ -66,6 +66,7 @@ DEFAULT_ARGS = {
         "polycli_loadtest_on_l2.sh 7",  # erc721 mints
         "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
         "polycli_rpcfuzz_on_l2.sh",  # rpc calls
+        "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
     ],
     "blutgang_image": "makemake1337/blutgang:0.3.5",
     "blutgang_rpc_port": 55555,
