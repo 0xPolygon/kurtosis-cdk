@@ -24,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           # Disabling shallow clone is recommended for improving relevancy of reporting.
           fetch-depth: 0
 
