@@ -4,7 +4,6 @@ prometheus_package = import_module(
 grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
 
 service_package = import_module("./lib/service.star")
-bridge_package = import_module("./cdk_bridge_infra.star")
 
 
 def start_panoptichain(plan, args):

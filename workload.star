@@ -62,7 +62,7 @@ def run(plan, args):
     plan.add_service(
         name="workload" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=args["workload_image"],
+            image=args["toolbox_image"],
             files={
                 "/usr/local/bin": Directory(artifact_names=[workload_script_artifact]),
             },
