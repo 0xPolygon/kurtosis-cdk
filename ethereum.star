@@ -18,11 +18,6 @@ def run(plan, args):
                     # Consensus layer (CL)
                     "cl_type": "lighthouse",
                     "cl_image": LIGHTHOUSE_IMAGE,
-                    "use_separate_vc": True,
-                    # Validator parameters
-                    "vc_type": "lighthouse",
-                    "vc_image": LIGHTHOUSE_IMAGE,
-                    # Participant parameters
                     "count": 1,
                 }
             ],
@@ -33,7 +28,10 @@ def run(plan, args):
                     "l1_preallocated_mnemonic"
                 ],
                 "preset": "minimal",
-                "seconds_per_slot": 1
+                "seconds_per_slot": 1,
+                "dencun_fork_epoch": 0,
+                "electra_fork_epoch": 100000000,
+                "prague_fork_epoch": 100000000
             },
             "additional_services": args["l1_additional_services"],
         },
