@@ -10,6 +10,7 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.7",
     "toolbox_image": "leovct/toolbox:0.0.1",
+    "sequencer_type": "zkevm-node",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,

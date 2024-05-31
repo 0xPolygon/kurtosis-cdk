@@ -20,7 +20,6 @@ def run(
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=True,
-    deploy_cdk_erigon_sequencer=True,
     deploy_cdk_erigon_node=True,
     deploy_observability=True,
     deploy_l2_blockscout=False,
@@ -93,7 +92,7 @@ def run(
 
     
     # Deploy cdk-erigon sequencer node.
-    if deploy_cdk_erigon_sequencer:
+    if args["sequencer_type"] == "erigon":
         plan.print("Deploying cdk-erigon sequencer")
         cdk_erigon_package.run_sequencer(plan, args)
     else:
