@@ -10,6 +10,8 @@ Begin by specifying a set of parameters related to L1, L2, and CDK-Erigon config
 ./set-cardona-config.sh
 ```
 
+Also make sure to modify the value of the RPC URL `l1_rpc_url` in `params.yml`.
+
 ## 2. Deployment
 
 Now, you're all set to deploy your CDK-Erigon RPC node.
