@@ -1,7 +1,7 @@
 input_parser = "./input_parser.star"
 ethereum_package = "./ethereum.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
-cdk_databases_package = "./cdk_databases.star"
+databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
@@ -76,13 +76,13 @@ def run(
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        import_module(cdk_databases_package).run(plan, args)
+        import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
     # Get the genesis file.
     genesis_artifact = ""
-    if deploy_cdk_central_environment or deploy_zkevm_permissionless_node:
+    if deploy_cdk_central_environment:
         plan.print("Getting genesis file...")
         genesis_artifact = plan.store_service_files(
             name="genesis",
@@ -128,12 +128,16 @@ def run(
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_node_args = dict(args)
+        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
         permissionless_node_args["deployment_suffix"] = (
             "-pless" + args["deployment_suffix"]
         )
         permissionless_node_args["genesis_artifact"] = genesis_artifact
+        import_module(databases_package).run_pless(
+            plan, suffix=permissionless_node_args["original_suffix"]
+        )
         import_module(zkevm_permissionless_node_package).run(
-            plan, permissionless_node_args
+            plan, permissionless_node_args, genesis_artifact
         )
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")

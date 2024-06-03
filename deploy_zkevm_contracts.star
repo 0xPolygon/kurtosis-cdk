@@ -1,3 +1,5 @@
+data_availability_package = import_module("./lib/data_availability.star")
+
 ARTIFACTS = [
     {
         "name": "deploy_parameters.json",
@@ -24,7 +26,20 @@ def run(plan, args):
         template = read_file(src=artifact_cfg["file"])
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
-            config={artifact_cfg["name"]: struct(template=template, data=args)},
+            config={
+                artifact_cfg["name"]: struct(
+                    template=template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
+                            args
+                        ),
+                    },
+                )
+            },
         )
         artifacts.append(artifact)
 

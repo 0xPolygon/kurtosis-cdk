@@ -1,4 +1,6 @@
-NODE_COMPONENT = struct(
+data_availability_package = import_module("./data_availability.star")
+
+NODE_COMPONENTS = struct(
     synchronizer="synchronizer",
     sequencer="sequencer",
     sequence_sender="sequence-sender",
@@ -37,7 +39,7 @@ def _create_node_component_service_config(
 def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
     synchronizer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -45,7 +47,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
-        components=NODE_COMPONENT.synchronizer,
+        components=NODE_COMPONENTS.synchronizer,
     )
     plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
 
@@ -53,7 +55,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
 def create_sequencer_service_config(args, config_artifact, genesis_artifact):
     sequencer_name = "zkevm-node-sequencer" + args["deployment_suffix"]
     sequencer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
             "data-streamer": PortSpec(
@@ -65,7 +67,7 @@ def create_sequencer_service_config(args, config_artifact, genesis_artifact):
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
-        components=NODE_COMPONENT.sequencer + "," + NODE_COMPONENT.rpc,
+        components=NODE_COMPONENTS.sequencer + "," + NODE_COMPONENTS.rpc,
         http_api="eth,net,debug,zkevm,txpool,web3",
     )
     return {sequencer_name: sequencer_service_config}
@@ -76,7 +78,7 @@ def create_sequence_sender_service_config(
 ):
     sequence_sender_name = "zkevm-node-sequence-sender" + args["deployment_suffix"]
     sequence_sender_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -90,7 +92,7 @@ def create_sequence_sender_service_config(
                 sequencer_keystore_artifact,
             ]
         ),
-        components=NODE_COMPONENT.sequence_sender,
+        components=NODE_COMPONENTS.sequence_sender,
     )
     return {sequence_sender_name: sequence_sender_service_config}
 
@@ -105,7 +107,7 @@ def create_aggregator_service_config(
 ):
     aggregator_name = "zkevm-node-aggregator" + args["deployment_suffix"]
     aggregator_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "aggregator": PortSpec(
                 args["zkevm_aggregator_port"], application_protocol="grpc"
@@ -124,7 +126,7 @@ def create_aggregator_service_config(
                 proofsigner_keystore_artifact,
             ]
         ),
-        components=NODE_COMPONENT.aggregator,
+        components=NODE_COMPONENTS.aggregator,
     )
     return {aggregator_name: aggregator_service_config}
 
@@ -132,7 +134,7 @@ def create_aggregator_service_config(
 def create_rpc_service_config(args, config_artifact, genesis_artifact):
     rpc_name = "zkevm-node-rpc" + args["deployment_suffix"]
     rpc_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "http-rpc": PortSpec(
                 args["zkevm_rpc_http_port"], application_protocol="http"
@@ -144,7 +146,7 @@ def create_rpc_service_config(args, config_artifact, genesis_artifact):
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
-        components=NODE_COMPONENT.rpc,
+        components=NODE_COMPONENTS.rpc,
         http_api="eth,net,debug,zkevm,txpool,web3",
     )
     return {rpc_name: rpc_service_config}
@@ -159,7 +161,7 @@ def create_eth_tx_manager_service_config(
 ):
     eth_tx_manager_name = "zkevm-node-eth-tx-manager" + args["deployment_suffix"]
     eth_tx_manager_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -174,7 +176,7 @@ def create_eth_tx_manager_service_config(
                 aggregator_keystore_artifact,
             ]
         ),
-        components=NODE_COMPONENT.eth_tx_manager,
+        components=NODE_COMPONENTS.eth_tx_manager,
     )
     return {eth_tx_manager_name: eth_tx_manager_service_config}
 
@@ -182,7 +184,7 @@ def create_eth_tx_manager_service_config(
 def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact):
     l2_gas_pricer_name = "zkevm-node-l2-gas-pricer" + args["deployment_suffix"]
     l2_gas_pricer_service_config = _create_node_component_service_config(
-        image=args["zkevm_node_image"],
+        image=data_availability_package.get_node_image(args),
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
@@ -190,7 +192,7 @@ def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact)
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
-        components=NODE_COMPONENT.l2_gas_pricer,
+        components=NODE_COMPONENTS.l2_gas_pricer,
     )
     return {l2_gas_pricer_name: l2_gas_pricer_service_config}
 

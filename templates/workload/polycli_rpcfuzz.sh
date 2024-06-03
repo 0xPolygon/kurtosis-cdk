@@ -1,8 +1,13 @@
 #!/bin/bash
-set -e
+set -e -x
 
-echo "Running polycli rpcfuzz (rpc_url={{.rpc_url}})..."
-polycli rpcfuzz \
+cast send \
   --rpc-url "{{.rpc_url}}" \
   --private-key "{{.private_key}}" \
-  2>&1 | awk '{print "[rpcfuzz] " $0}'
+  --legacy \
+  --json \
+  --create "$(cat /opt/bindings/tokens/ERC20.bin)" > /opt/contract-deployment-receipt.json
+
+polycli rpcfuzz \
+  --rpc-url "{{.rpc_url}}" \
+  --private-key "{{.private_key}}"

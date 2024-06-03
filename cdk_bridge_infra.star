@@ -1,14 +1,16 @@
 service_package = import_module("./lib/service.star")
 zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
+databases = import_module("./databases.star")
 
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+    db_configs = databases.get_db_configs(args["deployment_suffix"])
 
     # Create the bridge service config.
     bridge_config_artifact = create_bridge_config_artifact(
-        plan, args, contract_setup_addresses
+        plan, args, contract_setup_addresses, db_configs
     )
     claimtx_keystore_artifact = plan.store_service_files(
         name="claimtxmanager-keystore",
@@ -21,7 +23,7 @@ def run(plan, args):
 
     # Create the agglayer service config.
     agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, contract_setup_addresses
+        plan, args, contract_setup_addresses, db_configs
     )
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
@@ -49,7 +51,7 @@ def run(plan, args):
     zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
-def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
+def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_configs):
     agglayer_config_template = read_file(
         src="./templates/bridge-infra/agglayer-config.toml"
     )
@@ -67,24 +69,19 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses):
                     "zkevm_l2_proofsigner_address": args[
                         "zkevm_l2_proofsigner_address"
                     ],
-                    # agglayer db
-                    "zkevm_db_agglayer_hostname": args["zkevm_db_agglayer_hostname"],
-                    "zkevm_db_agglayer_name": args["zkevm_db_agglayer_name"],
-                    "zkevm_db_agglayer_user": args["zkevm_db_agglayer_user"],
-                    "zkevm_db_agglayer_password": args["zkevm_db_agglayer_password"],
                     # ports
-                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_agglayer_port": args["zkevm_agglayer_port"],
                     "zkevm_prometheus_port": args["zkevm_prometheus_port"],
                 }
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | db_configs,
             )
         },
     )
 
 
-def create_bridge_config_artifact(plan, args, contract_setup_addresses):
+def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"
     )
@@ -97,18 +94,13 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses):
                     "deployment_suffix": args["deployment_suffix"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    # bridge db
-                    "zkevm_db_bridge_hostname": args["zkevm_db_bridge_hostname"],
-                    "zkevm_db_bridge_name": args["zkevm_db_bridge_name"],
-                    "zkevm_db_bridge_user": args["zkevm_db_bridge_user"],
-                    "zkevm_db_bridge_password": args["zkevm_db_bridge_password"],
                     # ports
-                    "zkevm_db_postgres_port": args["zkevm_db_postgres_port"],
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
                     "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                 }
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | db_configs,
             )
         },
     )

@@ -10,6 +10,7 @@ LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 
 COPY --from=polycli-builder /opt/polygon-cli/polycli /usr/bin/polycli
+COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL3013): Pin versions in pip.
 # WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
@@ -21,5 +22,5 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --no-cache-dir yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup \
+  && /root/.foundry/bin/foundryup --version nightly-f625d0fa7c51e65b4bf1e8f7931cd1c6e2e285e9 \
   && cp /root/.foundry/bin/* /usr/local/bin
