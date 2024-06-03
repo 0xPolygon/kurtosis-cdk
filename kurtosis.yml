@@ -159,7 +159,7 @@ description: |-
   zkevm_rollup_fork_id: 9
 
   # The consensus contract name of the new rollup.
-  zkevm_rollup_consensus: PolygonZkEVMEtrog
+  zkevm_rollup_consensus: PolygonValidiumEtrog
 
   polygon_zkevm_explorer: https://explorer.private/
   l1_explorer_url: https://sepolia.etherscan.io/
