@@ -49,7 +49,7 @@ You can also use the package you have just set up to sync data from a production
     !!! tip
         The [run-contract-setup.sh](https://github.com/0xPolygon/kurtosis-cdk/blob/main/templates/run-contract-setup.sh) file may help you understand how these fields populate.
 
-2. When you have the updated genesis file is ready, drop it into `./templates/permissionless-node/genesis.json`.
+2. When you have the updated genesis file ready, drop it into `./templates/permissionless-node/genesis.json`.
 
 3. In addition to the genesis setup, tweak the parameter `l1_rpc_url` in the [params.yml](https://github.com/0xPolygon/kurtosis-cdk/blob/main/params.yml) file:
 
