@@ -4,7 +4,7 @@ DEFAULT_ARGS = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.6.5",
     "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.1.0",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.0.10",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.3",
