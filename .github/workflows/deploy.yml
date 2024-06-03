@@ -21,6 +21,7 @@ jobs:
 
   # Deploy the CDK environment in one step, with the gas token feature enabled.
   monolithic:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +63,7 @@ jobs:
 
   # Deploy the CDK environment incrementally, stage by stage.
   incremental:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -143,6 +145,7 @@ jobs:
 
   # Deploy the CDK environment without specifying any parameter file.
   configless:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -159,6 +162,7 @@ jobs:
 
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -177,6 +181,7 @@ jobs:
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -245,6 +250,7 @@ jobs:
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -263,6 +269,7 @@ jobs:
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
