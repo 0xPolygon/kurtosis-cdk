@@ -105,6 +105,12 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
+      - name: Deploy CDK erigon RPC
+        run: |
+          yq -Y --in-place '.deploy_cdk_erigon_rpc = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_erigon_rpc = false' params.yml # reset
+
       - name: Deploy observability stack
         run: |
           yq -Y --in-place '.deploy_observability = true' params.yml

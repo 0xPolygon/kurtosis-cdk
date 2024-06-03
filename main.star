@@ -19,6 +19,7 @@ def run(
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=False,
+    deploy_cdk_erigon_rpc=False,
     deploy_observability=True,
     deploy_l2_blockscout=False,
     deploy_blutgang=False,
@@ -124,6 +125,13 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
+
+    # Deploy cdk-erigon rpc.
+    if deploy_cdk_erigon_rpc:
+        plan.print("Deploying cdk-erigon rpc")
+        cdk_erigon_package.run(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon rpc")
 
     # Deploy observability stack
     if deploy_observability:
