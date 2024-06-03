@@ -1,30 +1,67 @@
-datadir: ./data/dynamic-kurtosis
-chain: dynamic-kurtosis
-http: true
-private.api.addr: localhost:9092
-zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
-zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
-zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+# CDK-Erion Configuration File
+
+## [L1 Configuration - Custom Chain]
+# The L1 chain id.
 zkevm.l1-chain-id: {{.l1_chain_id}}
+# The L1 RPC endpoint
 zkevm.l1-rpc-url: {{.l1_rpc_url}}
-
-zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
-zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
-zkevm.address-admin: "{{.zkevm_admin_address}}"
-zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
-zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
-
-zkevm.l1-rollup-id: 1
-zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
+# The first block to start syncing from on the L1
 zkevm.l1-first-block: 1
-zkevm.rpc-ratelimit: 250
-txpool.disable: true
-torrent.port: 42070
-zkevm.datastream-version: 2
+# The Ethereum L1 rollup id.
+zkevm.l1-rollup-id: 1
 
+## [L1 Contracts]
+# The address of the Sequencer EOA.
+zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
+# The address of the Rollup contract.
+zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
+# The address of the Admin EOA (contract deployer).
+zkevm.address-admin: "{{.zkevm_admin_address}}"
+# The address of the Polygon Rollup Manager contract
+zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+# The address of the Global Exit Root Manager contract.
+zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
+# The address of the Matic contract.
+zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
+
+## [L2 Configuration - Cardona]
+# The L2 chain id.
+zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
+# The RPC endpoint of the sequencer on L2.
+zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
+# The URL endpoint of the datastreamer on L2.
+zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+
+## [Dynamic Chain Configuration]
+# The data directory for the databases.
+datadir: ./data/dynamic-kurtosis
+# The name of the testnet to join
+chain: dynamic-kurtosis
+
+## [Node Configuration]
+# The RPC rate limit in requests per second.
+zkevm.rpc-ratelimit: 250
+# The datastream version indicator.
+# - 1: PreBigEndian
+# - 2: BigEndian
+zkevm.datastream-version: 2
+# Disable internal txpool and block producer (experimental).
+txpool.disable: true
+# Enable external consensus.
 externalcl: true
-http.api: [eth, debug, net, trace, web3, erigon, zkevm]
+# The address to listen to when launchig listener for remote database access.
+private.api.addr: localhost:9092
+# The port to listen and serve BitTorrent protocol.
+torrent.port: 42070
+# Enable the HTTP-RPC server.
+http: true
+# The host interface on which to start the HTTP RPC server.
 http.addr: 0.0.0.0
+# The APIs offered over the HTTP-RPC interface.
+http.api: [eth, debug, net, trace, web3, erigon, zkevm]
+# The list of virtual hostnames which are allowed on incoming requests.
 http.vhosts: any
+# The CORS header to send to requesting clients.
 http.corsdomain: any
+# Enable the WebSocket server.
 ws: true
