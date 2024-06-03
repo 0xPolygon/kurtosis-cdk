@@ -1,4 +1,4 @@
-def start_node(
+def start_rpc(
     plan,
     args,
     cdk_erigon_node_config_artifact,
@@ -7,7 +7,7 @@ def start_node(
     cdk_erigon_node_chain_allocs_artifact,
 ):
     plan.add_service(
-        name="cdk-erigon-node" + args["deployment_suffix"],
+        name="cdk-erigon-rpc" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["cdk_erigon_node_image"],
             ports={
