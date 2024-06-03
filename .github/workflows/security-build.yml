@@ -20,7 +20,7 @@ jobs:
         if: ${{ env.sonar_token == '' }}
         run: |
           echo "The SonarCloud token is not available..."
-          exit
+          exit 1
 
       - uses: actions/checkout@v3
         with:

@@ -227,7 +227,7 @@ jobs:
         if: ${{ env.rpc_url == '' }}
         run: |
           echo "The RPC URL is not available..."
-          exit
+          exit 1
 
       - uses: actions/checkout@v4
 
@@ -261,7 +261,7 @@ jobs:
         if: ${{ env.rpc_url == '' }}
         run: |
           echo "The RPC URL is not available..."
-          exit
+          exit 1
 
       - uses: actions/checkout@v4
 
