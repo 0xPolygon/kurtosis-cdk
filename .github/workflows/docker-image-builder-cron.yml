@@ -16,6 +16,7 @@ env:
 
 jobs:
   zkevm-contracts:
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
 
     strategy:
@@ -60,6 +61,7 @@ jobs:
           push: true
 
   zkevm-bridge-ui:
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -94,6 +96,7 @@ jobs:
           push: true
 
   toolbox:
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
