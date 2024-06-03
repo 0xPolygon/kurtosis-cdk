@@ -221,6 +221,14 @@ jobs:
   permisionless-node:
     runs-on: ubuntu-latest
     steps:
+      - name: Check if RPC URL secret is available
+        env:
+          rpc_url: ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}
+        if: ${{ env.rpc_url == '' }}
+        run: |
+          echo "The secret ALCHEMY_SEPOLIA_RPC_URL is not available..."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
@@ -247,6 +255,14 @@ jobs:
   cdk-erigon-rpc:
     runs-on: ubuntu-latest
     steps:
+      - name: Check if RPC URL secret is available
+        env:
+          rpc_url: ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}
+        if: ${{ env.rpc_url == '' }}
+        run: |
+          echo "The secret ALCHEMY_SEPOLIA_RPC_URL is not available..."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
