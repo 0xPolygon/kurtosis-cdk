@@ -17,7 +17,7 @@ zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
 # The address of the Admin EOA (contract deployer).
 zkevm.address-admin: "{{.zkevm_admin_address}}"
-# The address of the Polygon Rollup Manager contract
+# The address of the Polygon Rollup Manager contract.
 zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 # The address of the Global Exit Root Manager contract.
 zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
@@ -29,7 +29,7 @@ zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
 zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 # The RPC endpoint of the sequencer on L2.
 zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
-# The URL endpoint of the datastreamer on L2.
+# The endpoint of the datastreamer on L2.
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 
 ## [Dynamic Chain Configuration]
