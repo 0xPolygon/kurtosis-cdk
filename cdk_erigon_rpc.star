@@ -7,7 +7,7 @@ def run(plan, args):
     zkevm_sequencer_service = plan.get_service(
         name="zkevm-node-sequencer" + args["deployment_suffix"]
     )
-    zkevm_sequence_url = "http://{}:{}".format(
+    zkevm_sequencer_url = "http://{}:{}".format(
         zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
     )
     zkevm_datastreamer_url = "{}:{}".format(
@@ -26,7 +26,7 @@ def run(plan, args):
             "config.yaml": struct(
                 template=cdk_erigon_rpc_config_template,
                 data={
-                    "zkevm_sequencer_url": zkevm_sequence_url,
+                    "zkevm_sequencer_url": zkevm_sequencer_url,
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
                 }
                 | args
