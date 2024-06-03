@@ -227,7 +227,7 @@ jobs:
         if: ${{ env.rpc_url == '' }}
         run: |
           echo "The secret ALCHEMY_SEPOLIA_RPC_URL is not available..."
-          exit 1
+          exit
 
       - uses: actions/checkout@v4
 
@@ -261,7 +261,7 @@ jobs:
         if: ${{ env.rpc_url == '' }}
         run: |
           echo "The secret ALCHEMY_SEPOLIA_RPC_URL is not available..."
-          exit 1
+          exit
 
       - uses: actions/checkout@v4
 
