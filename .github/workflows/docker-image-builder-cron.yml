@@ -16,6 +16,7 @@ env:
 
 jobs:
   zkevm-contracts:
+    # Prevent this job to run on forks.
     if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
 
@@ -61,6 +62,7 @@ jobs:
           push: true
 
   zkevm-bridge-ui:
+    # Prevent this job to run on forks.
     if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
@@ -96,6 +98,7 @@ jobs:
           push: true
 
   toolbox:
+    # Prevent this job to run on forks.
     if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
