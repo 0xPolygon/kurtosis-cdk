@@ -207,7 +207,8 @@ jobs:
 
       - name: Deploy the rest of the components
         run: |
-          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true)' params.yml
+          # Only deploy databases, cdk central environment and the bridge infra.
+          yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false) | (.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true)' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
@@ -267,7 +268,9 @@ jobs:
       - name: Configure cdk-ergion rpc node parameters
         run: |
           ## L1 Configuration (Sepolia)
+          # The L1 chain id.
           yq -Y --in-place '.args.l1_chain_id = "2442"' params.yml
+          # The L1 RPC endpoint.
           yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
 
           ## L1 Contracts
@@ -301,7 +304,6 @@ jobs:
         run: |
           # Disable all steps except cdk-erigon rpc node.
           yq -Y --in-place 'with_entries(if .key == "deploy_cdk_erigon_rpc" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor the state of the RPC
