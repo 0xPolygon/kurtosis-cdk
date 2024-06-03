@@ -6,7 +6,7 @@ zkevm.l1-chain-id: {{.l1_chain_id}}
 # The L1 RPC endpoint
 zkevm.l1-rpc-url: {{.l1_rpc_url}}
 # The first block to start syncing from on the L1
-zkevm.l1-first-block: 1
+zkevm.l1-first-block: {{.genesis_block_number}}
 # The Ethereum L1 rollup id.
 zkevm.l1-rollup-id: 1
 
