@@ -5,6 +5,7 @@ databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
+cdk_erigon_rpc_package = "./cdk_erigon_rpc.star"
 observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
@@ -129,7 +130,7 @@ def run(
     # Deploy cdk-erigon rpc.
     if deploy_cdk_erigon_rpc:
         plan.print("Deploying cdk-erigon rpc")
-        cdk_erigon_package.run(plan, args)
+        import_module(cdk_erigon_rpc_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk-erigon rpc")
 
