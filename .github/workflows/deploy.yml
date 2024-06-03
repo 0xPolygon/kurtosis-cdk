@@ -238,6 +238,11 @@ jobs:
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
+      - name: Monitor the state of the RPC
+        run: |
+          cast rpc eth_syncing --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)
+          cast block-number --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)
+
   # Deploy a standalone cdk-erigon rpc node against Sepolia.
   cdk-erigon-rpc:
     runs-on: ubuntu-latest
@@ -280,13 +285,17 @@ jobs:
           yq -Y --in-place '.args.cdk_erigon_rpc_chain_config_file = "data/cdk-erigon-rpc-cardona/dynamic-cardona-conf.json"' params.yml
           yq -Y --in-place '.args.cdk_erigon_rpc_chain_allocs_file = "data/cdk-erigon-rpc-cardona/dynamic-cardona-allocs.json"' params.yml
 
-
       - name: Deploy the cdk-erigon rpc node
         run: |
           # Disable all steps except cdk-erigon rpc node.
           yq -Y --in-place 'with_entries(if .key == "deploy_cdk_erigon_rpc" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Monitor the state of the RPC
+        run: |
+          cast rpc eth_syncing --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc) | jq
+          cast block-number --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc)
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
