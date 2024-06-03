@@ -238,6 +238,56 @@ jobs:
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
+  # Deploy a standalone cdk-erigon rpc node against Sepolia.
+  cdk-erigon-rpc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Configure permisionless node parameters
+        run: |
+          ## L1 Configuration (Sepolia)
+          yq -Y --in-place '.args.l1_chain_id = "2442"' params.yml
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
+
+          ## L1 Contracts
+          # The address of the Sequencer EOA.
+          yq -Y --in-place '.args.zkevm_l2_sequencer_address = "0x761d53b47334bEe6612c0Bd1467FB881435375B2"' params.yml
+          # The address of the Admin EOA (contract deployer).
+          yq -Y --in-place '.args.zkevm_l2_admin_address = "0xff6250d0E86A2465B0C1bF8e36409503d6a26963"' params.yml
+
+          # The address of the Rollup contract.
+          yq -Y --in-place '.args.zkevm_rollup_address = "0xA13Ddb14437A8F34897131367ad3ca78416d6bCa"' params.yml
+          # The address of the Polygon Rollup Manager contract.
+          yq -Y --in-place '.args.zkevm_rollup_manager_address = "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"' params.yml
+          # The address of the Global Exit Root Manager contract.
+          yq -Y --in-place '.args.zkevm_global_exit_root_address = "0xAd1490c248c5d3CbAE399Fd529b79B42984277DF"' params.yml
+          # The address of the Matic contract.
+          yq -Y --in-place '.args.pol_token_address = "0x1850Dd35dE878238fb1dBa7aF7f929303AB6e8E4"' params.yml
+          # The first block to start syncing from on the L1
+          yq -Y --in-place '.args.genesis_block_number = "4789190"' params.yml
+
+          ## L2 Configuration (Cardona)
+          # The RPC endpoint of the sequencer on L2.
+          yq -Y --in-place '.args.zkevm_rpc_url = "https://rpc.cardona.zkevm-rpc.com"' params.yml
+          # The endpoint of the datastreamer on L2.
+          yq -Y --in-place '.args.datastreamer_rpc_uri = "datastream.cardona.zkevm-rpc.com:6900"' params.yml
+
+          # The configuration files to run cdk-erigon as an RPC.
+          yq -Y --in-place '.args.cdk_erigon_rpc_chain_config_file = "data/cdk-erigon-rpc-cardona/dynamic-cardona-conf.json"' params.yml
+          yq -Y --in-place '.args.cdk_erigon_rpc_chain_allocs_file = "data/cdk-erigon-rpc-cardona/dynamic-cardona-allocs.json"' params.yml
+
+
+      - name: Deploy the cdk-erigon rpc node
+        run: |
+          # Disable all steps except cdk-erigon rpc node.
+          yq -Y --in-place 'with_entries(if .key == "deploy_cdk_erigon_rpc" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
     runs-on: ubuntu-latest
