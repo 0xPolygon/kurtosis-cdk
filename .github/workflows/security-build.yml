@@ -14,9 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == '0xPolygon/kurtosis-cdk'
     steps:
+      - name: Check if SonarCloud token is available
+        env:
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+        if: ${{ env.sonar_token == '' }}
+        run: |
+          echo "The SonarCloud token is not available..."
+          exit
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:

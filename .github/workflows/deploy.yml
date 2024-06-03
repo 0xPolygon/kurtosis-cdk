@@ -221,12 +221,12 @@ jobs:
   permisionless-node:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if RPC URL secret is available
+      - name: Check if the RPC URL is available
         env:
           rpc_url: ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}
         if: ${{ env.rpc_url == '' }}
         run: |
-          echo "The secret ALCHEMY_SEPOLIA_RPC_URL is not available..."
+          echo "The RPC URL is not available..."
           exit
 
       - uses: actions/checkout@v4
@@ -255,12 +255,12 @@ jobs:
   cdk-erigon-rpc:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if RPC URL secret is available
+      - name: Check if the RPC URL is available
         env:
           rpc_url: ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}
         if: ${{ env.rpc_url == '' }}
         run: |
-          echo "The secret ALCHEMY_SEPOLIA_RPC_URL is not available..."
+          echo "The RPC URL is not available..."
           exit
 
       - uses: actions/checkout@v4
