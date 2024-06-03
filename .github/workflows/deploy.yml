@@ -207,11 +207,7 @@ jobs:
 
       - name: Deploy the rest of the components
         run: |
-          # Enable all deployment steps.
-          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = true else . end)' params.yml
-          # Do not deploy l1 and zkevm contracts.
-          yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
-
+          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true)' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
@@ -268,7 +264,7 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      - name: Configure permisionless node parameters
+      - name: Configure cdk-ergion rpc node parameters
         run: |
           ## L1 Configuration (Sepolia)
           yq -Y --in-place '.args.l1_chain_id = "2442"' params.yml
