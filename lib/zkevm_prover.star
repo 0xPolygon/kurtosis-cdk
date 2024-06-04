@@ -24,10 +24,10 @@ def _start_service(plan, type, args, config_artifact):
         config=ServiceConfig(
             image=args["zkevm_prover_image"],
             ports={
-                "hash-db-server": PortSpec(
+                "hash-db": PortSpec(
                     args["zkevm_hash_db_port"], application_protocol="grpc"
                 ),
-                "executor-server": PortSpec(
+                "executor": PortSpec(
                     args["zkevm_executor_port"], application_protocol="grpc"
                 ),
             },

@@ -2,7 +2,7 @@
 comments: true
 ---
 
-This document show you how you to set up and test a native token in a CDK stack. 
+This document show you how you to set up and test a native token in a CDK stack.
 
 ## Summary
 
@@ -11,7 +11,7 @@ This document show you how you to set up and test a native token in a CDK stack.
 
     Even when employing a gas token within a layer, it remains feasible to transfer L1 ETH to that layer. In such instances, the ETH is recorded within an ERC20 contract known as W-ETH, functioning as another instance of an ERC20 token.
 
-The diagram below illustrates the interchange of assets between layers, focusing on LY as a layer of interest. 
+The diagram below illustrates the interchange of assets between layers, focusing on LY as a layer of interest.
 
 It depicts several scenarios, such as bridging an ERC20 token from mainnet to another ERC20 token in LY, bridging L1 ETH to the LY gas token, or bridging a wrapped ERC20 token living on LX to LY ETH.
 
@@ -33,8 +33,8 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
     !!! tip
         For full set up and deploy instructions, check out the [quickstart](../quickstart/deploy-stack.md) documentation.
 
-    It takes a few minutes to compile and deploy the full set of contracts. 
-    
+    It takes a few minutes to compile and deploy the full set of contracts.
+
     The screenshot below shows the full set of deployed services and highlights the bridge UI, L1 RPC, and L2 RPC services which we will focus on throughout this document.
 
     ![Deployed services](../img/how-to/gas-token-img/services.png)
@@ -72,10 +72,10 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 
 ### Open the bridge UI
 
-Run the following command to get the bridge UI URL and then open the URL in your browser. 
+Run the following command to get the bridge UI URL and then open the URL in your browser.
 
 ```sh
-kurtosis port print cdk-v1 zkevm-bridge-proxy-001 bridge-interface
+kurtosis port print cdk-v1 zkevm-bridge-proxy-001 web-ui
 ```
 
 ### Add L1 and L2 RPCs to your wallet
@@ -96,7 +96,7 @@ As the URLs use HTTP, instead of HTTPS, you need to [manually add them to MetaMa
 
 ### Import an account
 
-If you used the [pre-allocated mnemonic](https://github.com/0xPolygon/kurtosis-cdk/blob/be17ee3ec3b67d086a0155f3deab5ad009034c8b/params.yml#L147), you need to [import an account](https://support.metamask.io/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4) using a private key. 
+If you used the [pre-allocated mnemonic](https://github.com/0xPolygon/kurtosis-cdk/blob/be17ee3ec3b67d086a0155f3deab5ad009034c8b/params.yml#L147), you need to [import an account](https://support.metamask.io/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4) using a private key.
 
 The first derived private key from the `code...quality` mnemonic is
 `42b6e34dc21598a807dc19d7784c71b2a7a01f6480dc6f58258f78e539f1a1fa`.
@@ -137,7 +137,7 @@ The first derived private key from the `code...quality` mnemonic is
 
     ![Token bridging processing](../img/how-to/gas-token-img/06_bridge.png)
 
-4. After some time, the transaction should complete. 
+4. After some time, the transaction should complete.
 
     ![Bridging complete](../img/how-to/gas-token-img/07_bridge.png)
 
@@ -173,8 +173,8 @@ The first derived private key from the `code...quality` mnemonic is
     ![Balance of receiving account](../img/how-to/gas-token-img/11_bridge.png)
 
     !!! warning
-        - As of 2024-03-27, there might be a small bug in the bridge UI which causes the transaction not to be claimable on L1 with the UI. 
-        - Essentially the bridge UI is selecting the wrong destination network so the proof will not validate. 
+        - As of 2024-03-27, there might be a small bug in the bridge UI which causes the transaction not to be claimable on L1 with the UI.
+        - Essentially the bridge UI is selecting the wrong destination network so the proof will not validate.
         - That being said, it's possible to claim directly using the smart contracts.
 
 2. Click **Finalize**.
@@ -183,7 +183,7 @@ The first derived private key from the `code...quality` mnemonic is
 
 ## Using cast to withdraw assets from the bridge
 
-The following work-in-progress cast script processes a bridge claim. 
+The following work-in-progress cast script processes a bridge claim.
 
 Feel free to go through line-by-line and tweak where necessary.
 
@@ -203,7 +203,7 @@ bridge_addr="$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combin
 
 # Grab the endpoints for l1 and the bridge service
 l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
-bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 bridge-rpc)"
+bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 rpc)"
 
 # The signature for claiming is long - just putting it into a var
 claim_sig="claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)"
@@ -267,7 +267,7 @@ You should see something like this:
 
 ![Output from cast bridging script](../img/how-to/gas-token-img/14_bridge.png)
 
-Confirm the claim went through using MetaMask and the bridge UI. 
+Confirm the claim went through using MetaMask and the bridge UI.
 
 ![MetaMask confirmation](../img/how-to/gas-token-img/15_bridge.png)
 
