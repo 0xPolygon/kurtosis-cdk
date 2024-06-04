@@ -2,7 +2,7 @@
 name: Deploy
 
 on:
-  pull_request:
+  pull_request_target:
   push:
     branches: [main]
 
@@ -11,8 +11,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Job that requires project maintainers to approve PR to access Github Action secrets.
+  # https://dvc.ai/blog/testing-external-contributions-using-github-actions-secrets
+  authorize:
+    environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository && 'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+
   # Deploy the CDK environment in one step, with the gas token feature enabled.
   monolithic:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +63,7 @@ jobs:
 
   # Deploy the CDK environment incrementally, stage by stage.
   incremental:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -135,6 +145,7 @@ jobs:
 
   # Deploy the CDK environment without specifying any parameter file.
   configless:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -151,6 +162,7 @@ jobs:
 
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,6 +181,7 @@ jobs:
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -213,6 +226,9 @@ jobs:
 
   # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
+    needs: authorize
+    # Prevent this job to run on forks.
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -234,6 +250,7 @@ jobs:
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -252,6 +269,7 @@ jobs:
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
