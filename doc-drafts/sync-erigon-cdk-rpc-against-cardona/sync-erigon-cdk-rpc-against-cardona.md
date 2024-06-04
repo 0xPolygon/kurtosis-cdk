@@ -16,11 +16,15 @@ Also make sure to modify the value of the RPC URL `l1_rpc_url` in `params.yml`.
 
 Now, you're all set to deploy your CDK-Erigon RPC node.
 
-```bash
-# Enable only the deployment of CDK-Erigon RPC node.
-yq -Y --in-place 'with_entries(if .key == "deploy_cdk_erigon_rpc" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+First, only enable the deployment of the cdk-erigon rpc node.
 
-# Deploy the components.
+```bash
+yq -Y --in-place 'with_entries(if .key == "deploy_cdk_erigon_rpc" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+```
+
+Then deploy the components.
+
+```bash
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ```
 
