@@ -1,8 +1,10 @@
-# Sync Erigon-CDK RPC against Cardona
+# Erigon-CDK RPC
+
+## Sync against Cardona
 
 Here's a straightforward guide to setting up a standalone CDK-Erigon RPC node against Cardona.
 
-## 1. Configuration
+### 1. Configuration
 
 Begin by specifying a set of parameters related to L1, L2, and CDK-Erigon configuration. Utilize the provided script for convenience.
 
@@ -12,7 +14,7 @@ Begin by specifying a set of parameters related to L1, L2, and CDK-Erigon config
 
 Also make sure to modify the value of the RPC URL `l1_rpc_url` in `params.yml`.
 
-## 2. Deployment
+### 2. Deployment
 
 Now, you're all set to deploy your CDK-Erigon RPC node.
 
@@ -32,7 +34,7 @@ The RPC should start syncing.
 
 ![cdk-erigon-rpc-syncing](./cdk-erigon-rpc-syncing.png)
 
-## 3. Monitor
+### 3. Monitor
 
 Monitor the state of your node using the following commands.
 
@@ -118,3 +120,7 @@ Before full synchronization, querying the block number will return 0.
 ```bash
 cast block-number --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc)
 ```
+
+### Sync against a local L1
+
+TODO
