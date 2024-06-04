@@ -19,7 +19,7 @@ def run(plan, args):
         "zkevm-bridge-service" + args["deployment_suffix"]
     )
     zkevm_bridge_api_url = "http://{}:{}".format(
-        zkevm_bridge_service.ip_address, zkevm_bridge_service.ports["bridge-rpc"].number
+        zkevm_bridge_service.ip_address, zkevm_bridge_service.ports["rpc"].number
     )
 
     workload_script_artifact = plan.render_templates(
