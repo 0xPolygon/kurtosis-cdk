@@ -12,7 +12,7 @@ def run(plan, args):
                 template=cdk_erigon_rpc_config_template,
                 data={
                     "zkevm_sequencer_url": args["zkevm_rpc_url"],
-                    "zkevm_datastreamer_url": args["datastreamer_rpc_uri"],
+                    "zkevm_datastreamer_url": args["datastreamer_rpc_url"],
                 }
                 | args,
             ),
