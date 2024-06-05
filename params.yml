@@ -55,8 +55,7 @@ args:
   cdk_node_image: 0xpolygon/cdk-validium-node:0.6.5-cdk
   # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.1.2
-  #cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.10
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.10
 
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
