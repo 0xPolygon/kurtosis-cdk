@@ -164,7 +164,7 @@ args:
 
   ## CDK-Erigon RPC node configuration.
   zkevm_rpc_url: http://zkevm-node-rpc-001:8123
-  datastreamer_rpc_uri: zkevm-node-sequencer-001:6900
+  datastreamer_rpc_url: zkevm-node-sequencer-001:6900
   cdk_erigon_rpc_chain_config_file: data/cdk-erigon-rpc-local-l1/dynamic-kurtosis-conf.json
   cdk_erigon_rpc_chain_allocs_file: data/cdk-erigon-rpc-local-l1/dynamic-kurtosis-allocs.json
 

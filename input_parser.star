@@ -1,10 +1,20 @@
 DEFAULT_ARGS = {
+    # Suffix appended to service names
+    # Note: It should be a string
     "deployment_suffix": "-001",
+
+    # The type of data availability to use.
+    # Options:
+    # - 'rollup': Transaction data is stored on-chain on L1.
+    # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
+    # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
     "data_availability_mode": "cdk-validium",
+
+    # Docker images and repositories used to spin up service
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.6.5",
     "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.0.10",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.1.2",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.3",
@@ -13,6 +23,8 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.7",
     "toolbox_image": "leovct/toolbox:0.0.1",
+
+    # Port configuration
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
@@ -27,6 +39,10 @@ DEFAULT_ARGS = {
     "zkevm_agglayer_port": 4444,
     "zkevm_dac_port": 8484,
     "blockscout_public_port": 50101,  # IANA registered ports up to 49151
+
+    # Addresses and private keys of the different components.
+    # They have been generated using the following command:
+    # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
     "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
     "zkevm_l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
@@ -45,22 +61,40 @@ DEFAULT_ARGS = {
     "zkevm_l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b",
     "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
     "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
+
+    # Keystore password
     "zkevm_l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
+
+    # L1 configuration
     "l1_chain_id": 271828,
     "l1_preallocated_mnemonic": "code code code code code code code code code code code quality",
     "l1_funding_amount": "100ether",
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
     "l1_additional_services": [],
+
+    # Rollup configuration
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_fork_id": 9,
     "polygon_zkevm_explorer": "https://explorer.private/",
     "l1_explorer_url": "https://sepolia.etherscan.io/",
     "zkevm_use_gas_token_contract": False,
+
+    # Permissionless node configuration
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
     "genesis_file": "templates/permissionless-node/genesis.json",
+
+    # CDK-Erigon RPC node configuration
+    "zkevm_rpc_url": "http://zkevm-node-rpc-001:8123",
+    "datastreamer_rpc_url": "zkevm-node-sequencer-001:6900",
+    "cdk_erigon_rpc_chain_config_file": "data/cdk-erigon-rpc-local-l1/dynamic-kurtosis-conf.json",
+    "cdk_erigon_rpc_chain_allocs_file": "data/cdk-erigon-rpc-local-l1/dynamic-kurtosis-allocs.json",
+
+    # Tools versions
     "polycli_version": "v0.1.42",
+
+    # Workload configuration
     "workload_commands": [
         "polycli_loadtest_on_l2.sh t",  # eth transfers
         "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
@@ -69,6 +103,8 @@ DEFAULT_ARGS = {
         "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
     ],
+
+    # ETH Load balancer configuration
     "blutgang_image": "makemake1337/blutgang:0.3.5",
     "blutgang_rpc_port": 55555,
     "blutgang_admin_port": 55556,
