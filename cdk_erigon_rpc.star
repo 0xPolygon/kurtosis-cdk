@@ -6,7 +6,7 @@ def run(plan, args):
     # Create cdk-erigon rpc config.
     cdk_erigon_rpc_config_template = read_file(src="./templates/cdk-erigon/config.yaml")
     cdk_erigon_rpc_config_artifact = plan.render_templates(
-        name="cdk-erigon-node-config-artifact",
+        name="cdk-erigon-node-config-artifact" + args["deployment_suffix"],
         config={
             "config.yaml": struct(
                 template=cdk_erigon_rpc_config_template,
@@ -23,7 +23,7 @@ def run(plan, args):
         src="./templates/cdk-erigon/chainspec.json"
     )
     cdk_erigon_rpc_chain_spec_artifact = plan.render_templates(
-        name="cdk-erigon-node-chain-spec-artifact",
+        name="cdk-erigon-node-chain-spec-artifact" + args["deployment_suffix"],
         config={
             "dynamic-kurtosis-chainspec.json": struct(
                 template=cdk_erigon_rpc_chain_spec_template,
