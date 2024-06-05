@@ -62,16 +62,8 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    if (
-        "zkevm_rollup_manager_address" in args
-        and "zkevm_rollup_manager_block_number" in args
-        and "zkevm_global_exit_root_l2_address" in args
-        and "polygon_data_committee_address" in args
-    ):
-        plan.print("Deploying helper service to retrieve rollup data")
-        deploy_helper_service(plan, args)
-    else:
-        plan.print("Skipping the deployment of helper service to retrieve rollup data")
+    plan.print("Deploying helper service to retrieve rollup data")
+    deploy_helper_service(plan, args)
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
