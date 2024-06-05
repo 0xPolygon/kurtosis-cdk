@@ -11,7 +11,9 @@ yq -Y --in-place '.args.l1_rpc_url = "<l1-rpc-url>"' params.yml
 # The RPC endpoint of the sequencer on L2.
 yq -Y --in-place '.args.zkevm_rpc_url = "https://rpc.cardona.zkevm-rpc.com"' params.yml
 # The endpoint of the datastreamer on L2.
-yq -Y --in-place '.args.datastreamer_rpc_uri = "datastream.cardona.zkevm-rpc.com:6900"' params.yml
+yq -Y --in-place '.args.zkevm_datastreamer_url = "datastream.cardona.zkevm-rpc.com:6900"' params.yml
+# The L2 chain id.
+yq -Y --in-place '.args.zkevm_rollup_chain_id = "10101"' params.yml
 
 ## Contracts
 # The address of the Sequencer EOA.
