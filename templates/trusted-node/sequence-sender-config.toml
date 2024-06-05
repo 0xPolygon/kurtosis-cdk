@@ -4,6 +4,7 @@ Level = "debug"
 Outputs = ["stdout"]
 
 [SequenceSender]
+Mode="{{.sequence_sender_mode}}"
 WaitPeriodSendSequence = "15s"
 LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
 MaxTxSizeForL1 = 131072
