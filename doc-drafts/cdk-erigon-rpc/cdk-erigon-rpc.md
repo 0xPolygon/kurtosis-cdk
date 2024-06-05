@@ -1,5 +1,15 @@
 # Erigon-CDK RPC
 
+### Sync against a local L1
+
+TODO
+
+Extract the different configuration files and contract addreses using this handy script:
+
+```bash
+./scripts/cdk-erigon/set-local-config.sh
+```
+
 ## Sync against Cardona
 
 Here's a straightforward guide to setting up a standalone CDK-Erigon RPC node against Cardona.
@@ -9,7 +19,7 @@ Here's a straightforward guide to setting up a standalone CDK-Erigon RPC node ag
 Begin by specifying a set of parameters related to L1, L2, and CDK-Erigon configuration. Utilize the provided script for convenience.
 
 ```bash
-./set-cardona-config.sh
+./scripts/cdk-erigon/set-cardona-config.sh
 ```
 
 Also make sure to modify the value of the RPC URL `l1_rpc_url` in `params.yml`.
@@ -120,7 +130,3 @@ Before full synchronization, querying the block number will return 0.
 ```bash
 cast block-number --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc)
 ```
-
-### Sync against a local L1
-
-TODO

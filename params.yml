@@ -54,7 +54,9 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.6.5
   cdk_node_image: 0xpolygon/cdk-validium-node:0.6.5-cdk
   # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.10
+
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.1.2
+  #cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.10
 
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
@@ -159,6 +161,12 @@ args:
   trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
   zkevm_aggregator_host: zkevm-node-aggregator-001
   genesis_file: templates/permissionless-node/genesis.json
+
+  ## CDK-Erigon RPC node configuration.
+  zkevm_rpc_url: http://zkevm-node-rpc-001:8123
+  datastreamer_rpc_uri: zkevm-node-sequencer-001:6900
+  cdk_erigon_rpc_chain_config_file: data/cdk-erigon-rpc-local-l1/dynamic-kurtosis-conf.json
+  cdk_erigon_rpc_chain_allocs_file: data/cdk-erigon-rpc-local-l1/dynamic-kurtosis-allocs.json
 
   ## Tools versions
   polycli_version: v0.1.42

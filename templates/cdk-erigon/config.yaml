@@ -6,7 +6,7 @@ zkevm.l1-chain-id: {{.l1_chain_id}}
 # The L1 RPC endpoint
 zkevm.l1-rpc-url: {{.l1_rpc_url}}
 # The first block to start syncing from on the L1
-zkevm.l1-first-block: {{.genesis_block_number}}
+zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
 # The Ethereum L1 rollup id.
 zkevm.l1-rollup-id: 1
 
@@ -16,7 +16,7 @@ zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 # The address of the Rollup contract.
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
 # The address of the Admin EOA (contract deployer).
-zkevm.address-admin: "{{.zkevm_admin_address}}"
+zkevm.address-admin: "{{.zkevm_l2_admin_address}}"
 # The address of the Polygon Rollup Manager contract.
 zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 # The address of the Global Exit Root Manager contract.
@@ -28,7 +28,7 @@ zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
 # The L2 chain id.
 zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 # The RPC endpoint of the sequencer on L2.
-zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
+zkevm.l2-sequencer-rpc-url: {{.zkevm_rpc_url}}
 # The endpoint of the datastreamer on L2.
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 
