@@ -40,8 +40,14 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
       # Compare configs.
       - name: Dump configs
@@ -146,8 +152,14 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -160,12 +172,17 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy components.
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
@@ -183,8 +200,14 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
@@ -225,8 +248,14 @@ jobs:
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false) | (.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true)' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
   # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
@@ -260,10 +289,14 @@ jobs:
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      - name: Monitor the state of the RPC
-        run: |
-          cast rpc eth_syncing --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)
-          cast block-number --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)
+      - name: Get zkevm permissionless node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-pless-rpc-001 rpc)"
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
   # Deploy a standalone cdk-erigon rpc node against Sepolia.
   cdk-erigon-rpc:
@@ -301,6 +334,15 @@ jobs:
           cast rpc eth_syncing --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc) | jq
           cast block-number --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc)
 
+      - name: Get cdk-erigon rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 cdk-erigon-rpc-001 rpc)"
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
+
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
     needs: authorize
@@ -317,8 +359,14 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
@@ -336,5 +384,11 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
+      - name: Get zkevm node rpc url
+        id: rpc-url
+        run: echo "::set-output name=url::$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc-url: ${{ steps.rpc-url.outputs.url }}

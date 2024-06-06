@@ -3,7 +3,10 @@ name: monitor-cdk-verified-batches
 description: Check that batches are being verified in a CDK environment
 
 inputs:
-  verified_batches_target:
+  rpc-url:
+    description: The RPC URL
+    required: true
+  verified-batches-target:
     description: The minimum number of batches to be verified
     required: false
     default: '30'
@@ -18,4 +21,4 @@ runs:
     - name: Check that batches are being verified
       working-directory: .github/actions/monitor-cdk-verified-batches
       shell: bash
-      run: ./batch_verification_monitor.sh ${{ inputs.verified_batches_target }} ${{ inputs.timeout }}
+      run: ./batch_verification_monitor.sh ${{ inputs.rpc-url }} ${{ inputs.verified-batches-target }} ${{ inputs.timeout }}
