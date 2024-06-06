@@ -7,12 +7,12 @@ DEFAULT_ARGS = {
     # - 'rollup': Transaction data is stored on-chain on L1.
     # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
     # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
-    "data_availability_mode": "cdk-validium",
+    "data_availability_mode": "rollup",
     # Docker images and repositories used to spin up service
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
-    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.6.5",
-    "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.0.10",
+    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.2",
+    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0-RC4",
+    "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.7-cdk",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.1.2",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.3",
@@ -37,8 +37,6 @@ DEFAULT_ARGS = {
     "zkevm_dac_port": 8484,
     "blockscout_public_port": 50101,  # IANA registered ports up to 49151
     # Addresses and private keys of the different components.
-    # They have been generated using the following command:
-    # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
     "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
     "zkevm_l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
