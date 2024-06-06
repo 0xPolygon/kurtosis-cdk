@@ -38,8 +38,8 @@ datadir: ./data/dynamic-kurtosis
 # The name of the testnet to join
 chain: dynamic-kurtosis
 
-## [Sequencer Configuration]
 {{if .is_sequencer}}
+## [Sequencer Configuration]
 # Bypass the restriction that ensures that executor URLs are set.
 zkevm.executor-strict: false
 # When retrieving data from L1, the sequencer must be configured to know how to request the highest block.
