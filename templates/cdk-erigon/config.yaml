@@ -44,7 +44,7 @@ chain: dynamic-kurtosis
 zkevm.executor-strict: false
 {{end}}
 
-## [Node Configuration]
+## [RPC Configuration]
 # The RPC rate limit in requests per second.
 zkevm.rpc-ratelimit: 250
 # The datastream version indicator.
