@@ -186,17 +186,18 @@ def deploy_helper_service(plan, args):
         ),
     )
 
-    # Retrieve rollup data.
-    plan.exec(
-        description="Retrieving rollup data from the rollup manager contract",
-        service_name=helper_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/zkevm/get-rollup-info.sh",
-                ),
-            ]
-        ),
-    )
+    if "zkevm_rollup_manager_address" in args:
+        # Retrieve rollup data.
+        plan.exec(
+            description="Retrieving rollup data from the rollup manager contract",
+            service_name=helper_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/zkevm/get-rollup-info.sh",
+                    ),
+                ]
+            ),
+        )
