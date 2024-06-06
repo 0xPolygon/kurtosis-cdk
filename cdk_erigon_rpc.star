@@ -18,6 +18,7 @@ def run(plan, args):
             "config.yaml": struct(
                 template=cdk_erigon_config_template,
                 data={
+                    "is_sequencer": True,
                     "zkevm_sequencer_url": args["zkevm_rpc_url"],
                     "zkevm_datastreamer_url": args["datastreamer_rpc_url"],
                 }

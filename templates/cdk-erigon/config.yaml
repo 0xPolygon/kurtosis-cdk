@@ -38,6 +38,12 @@ datadir: ./data/dynamic-kurtosis
 # The name of the testnet to join
 chain: dynamic-kurtosis
 
+## [Sequencer Configuration]
+{{if .is_sequencer}}
+# Bypass the restriction that ensures that executor URLs are set.
+zkevm.executor-strict: false
+{{end}}
+
 ## [Node Configuration]
 # The RPC rate limit in requests per second.
 zkevm.rpc-ratelimit: 250
