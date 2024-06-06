@@ -42,7 +42,7 @@ def start_sequencer(
                 #     ]
                 # ),
             },
-            entrypoint=["/bin/bash", "-c"],  # TODO: Remove once arm64 img is available.
+            entrypoint=["/bin/sh", "-c"],  # TODO: Remove once arm64 img is available.
             # cmd=["--config=/etc/cdk-erigon/config.yaml"],
             cmd=[
                 '[[ "{0}" == "aarch64" || "{0}" == "arm64" ]] && export EXPERIMENTAL_DOCKER_DESKTOP_FORCE_QEMU=1; \
