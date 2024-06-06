@@ -17,15 +17,19 @@ def start_rpc(
                 "/etc/cdk-erigon": Directory(
                     artifact_names=[
                         cdk_erigon_node_config_artifact,
-                    ],
-                ),
-                "/home/erigon/dynamic-configs/": Directory(
-                    artifact_names=[
                         cdk_erigon_node_chain_spec_artifact,
                         cdk_erigon_node_chain_config_artifact,
                         cdk_erigon_node_chain_allocs_artifact,
-                    ]
+                    ],
                 ),
+                # TODO: Once the bug is fixed in cdk-erigon, datadir will be used to load dynamic configuration files.
+                # "/home/erigon/dynamic-configs/": Directory(
+                #     artifact_names=[
+                #         cdk_erigon_node_chain_spec_artifact,
+                #         cdk_erigon_node_chain_config_artifact,
+                #         cdk_erigon_node_chain_allocs_artifact,
+                #     ]
+                # ),
             },
             cmd=["--config=/etc/cdk-erigon/config.yaml"],
         ),
