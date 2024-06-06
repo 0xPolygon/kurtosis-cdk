@@ -10,31 +10,6 @@ def run(plan, args):
         cdk_erigon_chain_allocs_artifact,
     ] = _generate_dynamic_config(plan, args)
 
-    # Start cdk-erigon sequencer.
-    cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yaml")
-    cdk_erigon_sequencer_config_artifact = plan.render_templates(
-        name="cdk-erigon-sequencer-config-artifact" + args["deployment_suffix"],
-        config={
-            "config.yaml": struct(
-                template=cdk_erigon_config_template,
-                data={
-                    "is_sequencer": True,
-                    "zkevm_sequencer_url": args["zkevm_rpc_url"],
-                    "zkevm_datastreamer_url": args["datastreamer_rpc_url"],
-                }
-                | args,
-            ),
-        },
-    )
-    cdk_erigon_sequencer_service = cdk_erigon_package.start_sequencer(
-        plan,
-        args,
-        cdk_erigon_sequencer_config_artifact,
-        cdk_erigon_chain_spec_artifact,
-        cdk_erigon_chain_config_artifact,
-        cdk_erigon_chain_allocs_artifact,
-    )
-
     # Start cdk-erigon rpc.
     cdk_erigon_sequencer_rpc_url = "http://{}:{}".format(
         cdk_erigon_sequencer_service.ip_address,
@@ -50,8 +25,8 @@ def run(plan, args):
             "config.yaml": struct(
                 template=cdk_erigon_config_template,
                 data={
-                    "zkevm_sequencer_url": cdk_erigon_sequencer_rpc_url,
-                    "zkevm_datastreamer_url": cdk_erigon_sequencer_datastreamer_url,
+                    "zkevm_sequencer_url": args["zkevm_rpc_url"],
+                    "zkevm_datastreamer_url": args["datastreamer_rpc_url"],
                 }
                 | args,
             ),
