@@ -11,14 +11,7 @@ def run(plan, args):
     ] = _generate_dynamic_config(plan, args)
 
     # Start cdk-erigon rpc.
-    cdk_erigon_sequencer_rpc_url = "http://{}:{}".format(
-        cdk_erigon_sequencer_service.ip_address,
-        cdk_erigon_sequencer_service.ports["rpc"].number,
-    )
-    cdk_erigon_sequencer_datastreamer_url = "{}:{}".format(
-        cdk_erigon_sequencer_service.ip_address,
-        cdk_erigon_sequencer_service.ports["data-streamer"].number,
-    )
+    cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yaml")
     cdk_erigon_rpc_config_artifact = plan.render_templates(
         name="cdk-erigon-rpc-config-artifact" + args["deployment_suffix"],
         config={
