@@ -1,3 +1,5 @@
+data_availability = import_module("./lib/data_availability.star")
+
 input_parser = "./input_parser.star"
 ethereum_package = "./ethereum.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
@@ -121,8 +123,11 @@ def run(
 
     # Deploy cdk-erigon rpc.
     if deploy_cdk_erigon_rpc:
-        plan.print("Deploying cdk-erigon rpc")
-        import_module(cdk_erigon_rpc_package).run(plan, args)
+        if data_availability.is_rollup(args):
+            plan.print("Deploying cdk-erigon rpc")
+            import_module(cdk_erigon_rpc_package).run(plan, args)
+        else:
+            fail("CDK-Erigon RPC can only be deployed in rollup mode")
     else:
         plan.print("Skipping the deployment of cdk-erigon rpc")
 
@@ -134,7 +139,7 @@ def run(
     else:
         plan.print("Skipping the deployment of the observability stack")
 
-    # Deploy observability stack
+    # Deploy blockscout on L2
     if deploy_l2_blockscout:
         plan.print("Deploying Blockscout stack")
         import_module(blockscout_package).run(plan, args)

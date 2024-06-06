@@ -27,5 +27,9 @@ def get_consensus_contract(args):
     return CONSENSUS_CONTRACTS.get(args["data_availability_mode"])
 
 
+def is_rollup(args):
+    return args["data_availability_mode"] == DATA_AVAILABILITY_MODES.rollup
+
+
 def is_cdk_validium(args):
     return args["data_availability_mode"] == DATA_AVAILABILITY_MODES.cdk_validium
