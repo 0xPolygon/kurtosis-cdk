@@ -45,17 +45,17 @@ args:
   # - 'rollup': Transaction data is stored on-chain on L1.
   # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
   # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
-  data_availability_mode: cdk-validium
+  data_availability_mode: rollup
 
   # Docker images and repositories used to spin up services.
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.2
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
-  zkevm_node_image: hermeznetwork/zkevm-node:v0.6.8
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0-RC4
   cdk_node_image: 0xpolygon/cdk-validium-node:0.6.7-cdk
   # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.10
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.1.2
 
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
