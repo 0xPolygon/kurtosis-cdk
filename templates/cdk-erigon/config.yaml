@@ -42,6 +42,10 @@ chain: dynamic-kurtosis
 {{if .is_sequencer}}
 # Bypass the restriction that ensures that executor URLs are set.
 zkevm.executor-strict: false
+# When retrieving data from L1, the sequencer must be configured to know how to request the highest block.
+# By default, it will retrieve the `finalized` block but in kurtosis, it can take a while to have
+# finalized block, especially when starting the L1 network. That is why we use latest here.
+zkevm.l1-highest-block-type: latest
 {{end}}
 
 ## [RPC Configuration]
