@@ -22,7 +22,7 @@ def start_node(
     plan.add_service(
         name=name,
         config=ServiceConfig(
-            image="cdk-erigon:local",
+            image=args["cdk_erigon_node_image"],
             ports=ports,
             files={
                 "/etc/cdk-erigon": Directory(
