@@ -13,7 +13,7 @@ bridge_addr="$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combin
 
 # Grab the endpoints for l1 and the bridge service
 l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
-bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 bridge-rpc)"
+bridge_api_url="$(kurtosis port print cdk-v1 zkevm-bridge-service-001 rpc)"
 
 # The signature for claiming is long - just putting it into a var
 claim_sig="claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)"

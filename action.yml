@@ -1,15 +1,16 @@
-name: 'Regression Tests - Polygon CDK'
-description: 'Deploys local kurtosis CDK devnet and performs series of regression tests.'
-author: 'Dan Moore'
+name: Regression Tests - Polygon CDK
+description: Deploy a local Polygon CDK devnet using Kurtosis and perform series of regression tests
+author: devtools@polygon.technology
+
 inputs:
   zkevm_agglayer:
     description: 0xPolygon/agglayer (short commit hash or release tag)
     required: false
-    default: 0.1.4
+    default: '0.1.4'
   zkevm_bridge_service:
     description: 0xPolygonHermez/zkevm-bridge-service (short commit hash or release tag)
     required: false
-    default: v0.4.2
+    default: 'v0.4.2'
   zkevm_bridge_ui:
     description: 0xPolygonHermez/zkevm-bridge-ui (short commit hash or release tag)
     required: false
@@ -17,26 +18,24 @@ inputs:
   zkevm_dac:
     description: 0xPolygon/cdk-data-availability (short commit hash or release tag)
     required: false
-    default: 0.0.7
+    default: '0.0.7'
   zkevm_node:
     description: 0xPolygon/cdk-validium-node (short commit hash or release tag)
     required: false
-    default: 0.6.5-cdk
+    default: '0.6.5-cdk'
   kurtosis_cli:
     description: kurtosis-tech/kurtosis (release tag)
     required: false
-    default: 0.89.3
+    default: '0.89.3'
   kurtosis_cdk:
     description: 0xPolygon/kurtosis-cdk (release tag)
     required: false
-    default: v0.2.0
-  bake_time:
-    description: bake time (minutes)
-    required: false
-    default: 30
+    default: 'v0.2.0'
+
 runs:
   using: "composite"
   steps:
+    # Build docker images.
     - name: Clone and build agglayer, if no release tag given
       shell: bash
       run: |
@@ -44,10 +43,14 @@ runs:
           git clone https://github.com/0xPolygon/agglayer.git
           cd agglayer
           git checkout "${{ inputs.zkevm_agglayer }}"
-          docker compose -f docker/docker-compose.yaml build --no-cache agglayer
+          echo "Containerizing commit id: ${{ inputs.zkevm_agglayer }}"
+          make build
+          mv ./dist/agglayer .
+          docker build -t agglayer:local -f ./Dockerfile.release .
         else
           echo "Skipping building agglayer as release tag provided: ${{ inputs.zkevm_agglayer }}"
         fi
+
     - name: Clone and build zkevm-bridge-service, if no release tag given
       shell: bash
       run: |
@@ -59,6 +62,7 @@ runs:
         else
           echo "Skipping building zkevm-bridge-service as release tag provided: ${{ inputs.zkevm_bridge_service }}"
         fi
+
     - name: Clone and build zkevm-bridge-ui, if no release tag given
       shell: bash
       run: |
@@ -70,6 +74,7 @@ runs:
         else
           echo "Skipping building zkevm-bridge-ui as release tag provided: ${{ inputs.zkevm_bridge_ui }}"
         fi
+
     - name: Clone and build cdk-data-availability, if no release tag given
       shell: bash
       run: |
@@ -77,10 +82,11 @@ runs:
           git clone https://github.com/0xPolygon/cdk-data-availability.git
           cd cdk-data-availability
           git checkout "${{ inputs.zkevm_dac }}"
-          docker build -t cdk-data-availability:local -f ./Dockerfile .    
+          docker build -t cdk-data-availability:local -f ./Dockerfile .
         else
           echo "Skipping building cdk-data-availability as release tag provided: ${{ inputs.zkevm_dac }}"
         fi
+
     - name: Clone and build cdk-validium-node, if no release tag given
       shell: bash
       run: |
@@ -92,32 +98,30 @@ runs:
         else
           echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
         fi
-    - name: Install Foundry
+
+    # Install tools
+    - name: Install Kurtosis CDK tools
+      uses: ./.github/actions/setup-kurtosis-cdk
+      with:
+        kurtosis-version: ${{ inputs.kurtosis_cli }}
+
+    - name: Install polycli
       shell: bash
       run: |
-        curl -LO https://github.com/foundry-rs/foundry/releases/download/nightly-de33b6af53005037b463318d2628b5cfcaf39916/foundry_nightly_linux_amd64.tar.gz
-        tar -xzvf foundry_nightly_linux_amd64.tar.gz
-    - name: Clone internal kurtosis-cdk repo
+        git clone https://github.com/maticnetwork/polygon-cli.git
+        cd polygon-cli
+        make install
+        export PATH="$HOME/go/bin:$PATH"
+
+    # Deploy components.
+    - name: Use specific version of kurtosis-cdk
+      shell: bash
+      run: git checkout "${{ inputs.kurtosis_cdk }}"
+
+    - name: Use local docker containers
       shell: bash
       run: |
-        git clone https://github.com/0xPolygon/kurtosis-cdk.git
-        cd kurtosis-cdk 
-        git checkout "${{ inputs.kurtosis_cdk }}"
-    - name: Install kurtosis
-      shell: bash
-      run: |
-        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-        sudo apt update
-        sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
-        kurtosis analytics disable
-    - name: Install yq
-      shell: bash
-      run: pip3 install yq
-    - name: Update kurtosis params.yml with custom devnet containers
-      shell: bash
-      run: |
-        cd kurtosis-cdk
-        # when short commit hash given, reference custom image built earlier tagged 'local'
+        # When short commit hash given, reference custom image built earlier tagged 'local'.
         if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           agglayer_tag="local"
           agglayer_docker_hub="agglayer"
@@ -157,7 +161,7 @@ runs:
           node_tag="${{ inputs.zkevm_node }}"
           node_docker_hub="0xpolygon/cdk-validium-node"
         fi
-        
+
         cat params.yml
 
         yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
@@ -165,52 +169,22 @@ runs:
         yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
-        
+
         cat params.yml
-    - name: Deploy CDK devnet on local github runner
+
+    - name: Deploy Kurtosis CDK package
+      shell: bash
+      run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+    - name: Monitor verified batches
+      uses: ./.github/actions/monitor-verified-batches
+
+    # Perform loadtest.
+    - name: Perform load test
       shell: bash
       run: |
-        cd kurtosis-cdk
-        kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
-    - name: Monitor and report any potential regressions to CI logs
-      shell: bash
-      run: |
-        bake_time=30
-        end_minute=$(( $(date +'%M') + bake_time))
         export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-        INITIAL_STATUS=$($GITHUB_WORKSPACE/cast rpc zkevm_verifiedBatchNumber 2>/dev/null)
-        incremented=false
-        while [ $(date +'%M') -lt $end_minute ]; do
-          # Attempt to connect to the service
-          if STATUS=$($GITHUB_WORKSPACE/cast rpc zkevm_verifiedBatchNumber 2>/dev/null); then
-            echo "ZKEVM_VERIFIED_BATCH_NUMBER: $STATUS"
-            
-            # Check if STATUS has incremented
-            if [ "$STATUS" != "$INITIAL_STATUS" ]; then
-              incremented=true
-              echo "ZKEVM_VERIFIED_BATCH_NUMBER successfully incremented to $STATUS. Exiting..."
-              exit 0
-            fi
-          else
-            echo "Failed to connect, waiting and retrying..."
-            sleep 60
-            continue
-          fi
-          sleep 60
-        done
-        if ! $incremented; then
-          echo "ZKEVM_VERIFIED_BATCH_NUMBER did not increment. This may indicate chain experienced a regression. Please investigate."
-          exit 1
-        fi
-    - name: Install polycli and send transaction load for further integration tests
-      shell: bash
-      run: |
-        git clone https://github.com/maticnetwork/polygon-cli.git
-        cd polygon-cli
-        make install
-        export PATH="$HOME/go/bin:$PATH"
-        export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
-        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        export PK="$(yq .args.zkevm_l2_admin_private_key params.yml)"
         polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
         polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
         polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2

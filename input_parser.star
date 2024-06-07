@@ -1,7 +1,9 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "data_availability_mode": "cdk-validium",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
-    "zkevm_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
+    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.6.5",
+    "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "nulyjkdhthz/agglayer-rs:latest",
@@ -51,7 +53,6 @@ DEFAULT_ARGS = {
     "l1_additional_services": [],
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_fork_id": 9,
-    "zkevm_rollup_consensus": "PolygonValidiumEtrog",
     "polygon_zkevm_explorer": "https://explorer.private/",
     "l1_explorer_url": "https://sepolia.etherscan.io/",
     "zkevm_use_gas_token_contract": False,
@@ -65,6 +66,7 @@ DEFAULT_ARGS = {
         "polycli_loadtest_on_l2.sh 7",  # erc721 mints
         "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
         "polycli_rpcfuzz_on_l2.sh",  # rpc calls
+        "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
     ],
     "blutgang_image": "makemake1337/blutgang:0.3.5",
     "blutgang_rpc_port": 55555,
