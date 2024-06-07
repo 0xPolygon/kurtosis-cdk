@@ -9,10 +9,17 @@ verified_batches_target="$1"
 # The script timeout (in seconds).
 timeout="$2"
 
+# Name of RPC service to query
+rpc_service="$3"
+
+if [ -z "$rpc_service" ]; then
+  rpc_service="zkevm-node-rpc-001"
+fi
+
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
 
-rpc_url="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+rpc_url="$(kurtosis port print cdk-v1 $rpc_service http-rpc)"
 while true; do
   verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
