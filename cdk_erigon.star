@@ -66,7 +66,6 @@ def run_rpc(plan, args):
     )
 
 
-
 def run_sequencer(plan, args):
     cdk_erigon_node_config_template = read_file(
         src="./templates/cdk-erigon/config-sequencer.yaml"

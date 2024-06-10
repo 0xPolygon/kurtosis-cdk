@@ -31,7 +31,7 @@ def run(plan, args):
                 "seconds_per_slot": 1,
                 "dencun_fork_epoch": 0,
                 "electra_fork_epoch": 100000000,
-                "prague_fork_epoch": 100000000
+                "prague_fork_epoch": 100000000,
             },
             "additional_services": args["l1_additional_services"],
         },

@@ -241,6 +241,6 @@ def create_zkevm_node_components_config(
             args, config_artifact, genesis_artifact
         )
 
-        return (configs | sequencer_config)
+        return configs | sequencer_config
     else:
         return configs

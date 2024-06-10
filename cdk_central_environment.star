@@ -65,7 +65,11 @@ def run(plan, args):
         )
     )
 
-    sequence_sender_config = zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(plan, args, genesis_artifact, keystore_artifacts.sequencer)
+    sequence_sender_config = (
+        zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
+            plan, args, genesis_artifact, keystore_artifacts.sequencer
+        )
+    )
 
     plan.add_services(
         configs=zkevm_node_components_configs | sequence_sender_config,

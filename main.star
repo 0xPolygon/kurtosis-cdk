@@ -90,7 +90,6 @@ def run(
             src="/opt/zkevm/genesis.json",
         )
 
-    
     # Deploy cdk-erigon sequencer node.
     if args["sequencer_type"] == "erigon":
         plan.print("Deploying cdk-erigon sequencer")

@@ -1,5 +1,6 @@
 data_availability_package = import_module("./data_availability.star")
 
+
 def create_zkevm_sequence_sender_config(
     plan, args, genesis_artifact, sequencer_keystore_artifact
 ):
@@ -12,7 +13,9 @@ def create_zkevm_sequence_sender_config(
         config={
             "config.toml": struct(
                 data=args
-                | {"zkevm_is_validium": data_availability_package.is_cdk_validium(args)},
+                | {
+                    "zkevm_is_validium": data_availability_package.is_cdk_validium(args)
+                },
                 template=sequence_sender_config_template,
             ),
         },
@@ -21,11 +24,18 @@ def create_zkevm_sequence_sender_config(
         image=args["zkevm_sequence_sender_image"],
         files={
             "/etc/zkevm": Directory(
-                    artifact_names=[genesis_artifact, sequencer_keystore_artifact, sequence_sender_config_artifact]
+                artifact_names=[
+                    genesis_artifact,
+                    sequencer_keystore_artifact,
+                    sequence_sender_config_artifact,
+                ]
             )
         },
-        cmd=["/bin/sh", "-c",
-            "/app/zkevm-seqsender run --network custom --custom-network-file /etc/zkevm/genesis.json --cfg /etc/zkevm/config.toml"],
+        cmd=[
+            "/bin/sh",
+            "-c",
+            "/app/zkevm-seqsender run --network custom --custom-network-file /etc/zkevm/genesis.json --cfg /etc/zkevm/config.toml",
+        ],
         # entrypoint=["sh", "-c"],
         # cmd=["sleep infinity"]
     )
