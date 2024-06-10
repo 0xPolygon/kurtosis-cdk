@@ -15,7 +15,7 @@ DEFAULT_ARGS = {
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.1.2",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
-    "zkevm_agglayer_image": "0xpolygon/agglayer:0.1.3",
+    "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:0.1.0",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
     "panoptichain_image": "minhdvu/panoptichain",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",

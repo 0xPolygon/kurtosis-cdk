@@ -1,0 +1,1 @@
+docker run -d -v $PWD:/var/www/html:ro -p 8082:80 php:8.2-apache
