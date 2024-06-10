@@ -5,12 +5,15 @@
 
 # The RPC URL
 rpc_url="$1"
+echo "RPC URL: $rpc_url"
 
 # The number of batches to be verified.
 verified_batches_target="$2"
+echo "Verified batches target: $verified_batches_target"
 
 # The script timeout (in seconds).
 timeout="$3"
+echo "Script timeout: $timeout"
 
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
