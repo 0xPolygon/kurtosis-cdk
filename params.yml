@@ -58,7 +58,9 @@ args:
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
-  zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
+
+  # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
+  zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:0.1.0
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:latest
   panoptichain_image: minhdvu/panoptichain

@@ -1,0 +1,45 @@
+html {
+    background-color: black;
+    color: white;
+    font-family: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro", "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
+}
+
+dt {
+    margin-top: 1em;
+    font-weight: bold;
+}
+dd {
+    overflow-wrap: break-word;
+}
+
+body {
+    width: 700px;
+    margin: 2em auto;
+}
+
+label {
+    margin-top: 1em;
+    display: block;
+}
+
+input[type=text] {
+    width: 100%;
+}
+
+#deposit-form {
+    margin: 2em 0;
+    padding-bottom: 2em;
+    border-bottom: 1px solid #444;
+}
+
+#deposits {
+    margin-top: 2em;
+}
+
+div.divider {
+    padding: 2em 0;
+}
+
+em {
+    color: red;
+}
