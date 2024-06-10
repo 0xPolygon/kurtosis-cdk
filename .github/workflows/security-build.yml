@@ -22,6 +22,14 @@ jobs:
     # Prevent this job to run on forks.
     if: github.repository == '0xPolygon/kurtosis-cdk'
     steps:
+      - name: Check if SonarCloud token is available
+        env:
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+        if: ${{ env.sonar_token == '' }}
+        run: |
+          echo "The SonarCloud token is not available..."
+          exit 1
+
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}

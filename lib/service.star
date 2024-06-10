@@ -9,6 +9,7 @@ def get_contract_setup_addresses(plan, args):
         "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
         "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+        "zkevm_admin_address": "fromjson | .admin",
         "pol_token_address": "fromjson | .polTokenAddress",
     }
     if data_availability_package.is_cdk_validium(args):

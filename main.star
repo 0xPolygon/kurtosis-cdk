@@ -1,3 +1,5 @@
+data_availability = import_module("./lib/data_availability.star")
+
 input_parser = "./input_parser.star"
 ethereum_package = "./ethereum.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
@@ -5,6 +7,7 @@ databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
+cdk_erigon_rpc_package = "./cdk_erigon_rpc.star"
 observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
@@ -19,6 +22,7 @@ def run(
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
     deploy_zkevm_permissionless_node=False,
+    deploy_cdk_erigon_rpc=False,
     deploy_observability=True,
     deploy_l2_blockscout=False,
     deploy_blutgang=False,
@@ -60,16 +64,8 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    if (
-        "zkevm_rollup_manager_address" in args
-        and "zkevm_rollup_manager_block_number" in args
-        and "zkevm_global_exit_root_l2_address" in args
-        and "polygon_data_committee_address" in args
-    ):
-        plan.print("Deploying helper service to retrieve rollup data")
-        deploy_helper_service(plan, args)
-    else:
-        plan.print("Skipping the deployment of helper service to retrieve rollup data")
+    plan.print("Deploying helper service to retrieve rollup data")
+    deploy_helper_service(plan, args)
 
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
@@ -125,6 +121,16 @@ def run(
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
 
+    # Deploy cdk-erigon rpc.
+    if deploy_cdk_erigon_rpc:
+        if data_availability.is_rollup(args):
+            plan.print("Deploying cdk-erigon rpc")
+            import_module(cdk_erigon_rpc_package).run(plan, args)
+        else:
+            fail("CDK-Erigon RPC can only be deployed in rollup mode")
+    else:
+        plan.print("Skipping the deployment of cdk-erigon rpc")
+
     # Deploy observability stack
     if deploy_observability:
         plan.print("Deploying the observability stack")
@@ -133,7 +139,7 @@ def run(
     else:
         plan.print("Skipping the deployment of the observability stack")
 
-    # Deploy observability stack
+    # Deploy blockscout on L2
     if deploy_l2_blockscout:
         plan.print("Deploying Blockscout stack")
         import_module(blockscout_package).run(plan, args)
@@ -185,17 +191,18 @@ def deploy_helper_service(plan, args):
         ),
     )
 
-    # Retrieve rollup data.
-    plan.exec(
-        description="Retrieving rollup data from the rollup manager contract",
-        service_name=helper_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/zkevm/get-rollup-info.sh",
-                ),
-            ]
-        ),
-    )
+    if "zkevm_rollup_manager_address" in args:
+        # Retrieve rollup data.
+        plan.exec(
+            description="Retrieving rollup data from the rollup manager contract",
+            service_name=helper_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/zkevm/get-rollup-info.sh",
+                    ),
+                ]
+            ),
+        )
