@@ -3,8 +3,12 @@ cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 
 
 def run_rpc(plan, args):
+    if args["sequencer_type"] == "erigon":
+        sequencer_name = "cdk-erigon-sequencer"
+    else:
+        sequencer_name = "zkevm-node-sequencer"
     zkevm_sequencer_service = plan.get_service(
-        name="cdk-erigon-sequencer" + args["deployment_suffix"]
+        name=sequencer_name + args["deployment_suffix"]
     )
     zkevm_sequence_url = "http://{}:{}".format(
         zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
