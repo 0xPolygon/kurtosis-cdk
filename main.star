@@ -102,6 +102,7 @@ def run(
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
         plan.print("Deploying cdk/bridge infrastructure")
+        args["deploy_l1"] = deploy_l1
         import_module(cdk_bridge_infra_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
