@@ -1,385 +1,321 @@
-# Deploy Kurtosis CDK with Sepolia as L1
+* Deploy to Sepolia
 
-Deploying to Sepolia requires changing the L1-related parameters.
+In some scenarios, it's desirable to run the Kurtosis CDK package with
+a real testnet rather than using a local chain. This document will
+show how to modify the configuration of the Kurtosis CDK package in
+order to deploy to [[https://sepolia.etherscan.io/][Sepolia]].
 
-## params.yml
-Change `deploy_l1` to `false`.
-```
-# Deploy local L1.
-deploy_l1: false
-```
+** Disable Local L1
 
-Change the `l1_chain_id`, `l1_preallocated_mnemonic`, `l1_rpc_url`, `l1_ws_url`, and `l1_funding_amount` as needed.
-```
-l1_chain_id: 11155111
-# The first account for the mnemonic should have enough funds to cover the deployment costs and the l1_funding_amount transfers to L1 addresses.
-l1_preallocated_mnemonic: <mnemonic_for_a_funded_L1_account>
-# The amount of initial funding to L1 addresses performing services like the Sequencer, Aggregator, Admin, Agglayer, Claimtxmanager. 
-l1_funding_amount: 1ether
-l1_rpc_url: <Sepolia_RPC_URL>
-l1_ws_url: <Sepolia_WS_URL>
-```
+The first thing we should do is make sure that Kurtosis doesn't bother
+doing the L1 deployment. We're going to use [[https://github.com/kislyuk/yq][yq]] to do carry this out.
 
-## cdk_bridge_infra.star
+#+begin_src bash
+yq -Y --in-place '.deploy_l1 = false' params.yml
+#+end_src
 
-Comment out the below:
-```
-...
-# l1rpc_service = plan.get_service("el-1-geth-lighthouse")
-...
-# "l1rpc_ip": l1rpc_service.ip_address,
-# "l1rpc_port": l1rpc_service.ports["rpc"].number,
-```
+This will stop Kurtosis from using spinning up the L1 [[https://github.com/kurtosis-tech/ethereum-package][Ethereum package]]. Since we're using Sepolia, there will be no need.
 
-## templates/bridge-infra/haproxy.cfg
 
-Comment out the below:
-```
-...
-    # acl url_l1rpc path_beg /l1rpc
-...
-    # use_backend backend_l1rpc if url_l1rpc
-...   
-# backend backend_l1rpc
-#     http-request set-path /
-#     server server1 {{.l1rpc_ip}}:{{.l1rpc_port}}
-```
+** Application Key Rotation
 
-## Debugging
+By default, the CDK package has some hard coded keys. This is fine for
+local testing, but if you run on sepolia, you're likely to get your
+funds stolen even if it's inadvertent. First, let's create a new
+mnemonic seed phrase to derive our application keys.
 
-If there are issues during the contract deployment stage such as:
+#+begin_src bash :exports both verbatim :results output example
+cast wallet new-mnemonic
+#+end_src
 
-```!
-polygonZkEVMDeployer already deployed on:  0xe5CF69183CFCF0571E733D59a1a53d4E6ceD6E85
-[2024-05-09 14:21:26] Step 4: Deploying contracts
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> hardhat run deployment/v2/3_deployContracts.ts --network localhost
-#######################
-Proxy admin was already deployed to: 0xD2e85a0f5884b63F4Ed1C127f7ED818373b496b5
-Error: Proxy admin was deployed, but the owner is not the deployer, deployer address: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970, proxyAdmin: 0xaB02c39dd8755c9c5cFcde15996E504Fb0B1F295
+#+RESULTS:
+#+begin_example
+Successfully generated a new mnemonic.
+Phrase:
+author obvious basket copy mention frequent duck add surprise camp month cycle
+
+Accounts:
+- Account 0:
+Address:     0xb60D3C495c9b90524e4b511bC54f374aB4ad216A
+Private key: 0x1a540ca8d6504bf2df8aa75bebaba1466fa47e383fe7cae8f03d6bfac885c4c4
+#+end_example
+
+Great! Now we have a new seed phrase to use. Now, we'll take that seed
+phrase and write generate the settings for ~params.yml~.
+
+
+#+begin_src bash :exports both verbatim :results output example
+seed="author obvious basket copy mention frequent duck add surprise camp month cycle"
+polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
+    jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | \
+    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+#+end_src
+
+#+RESULTS:
+#+begin_example
+zkevm_l2_sequencer_address: "0xb60D3C495c9b90524e4b511bC54f374aB4ad216A"
+zkevm_l2_sequencer_private_key: "0x1a540ca8d6504bf2df8aa75bebaba1466fa47e383fe7cae8f03d6bfac885c4c4"
+
+zkevm_l2_aggregator_address: "0x6f84bE941517B3910d8f9754d81aE963Cf0bA988"
+zkevm_l2_aggregator_private_key: "0x3b24b06a5b83fcde7b19837339cd887041b9c8edd3009c8d8c5389d958cb7916"
+
+zkevm_l2_claimtxmanager_address: "0xCc67Ef95593015E0B28E938BAC388f6583163317"
+zkevm_l2_claimtxmanager_private_key: "0xf3b58e615bad5017900c8fbed211256fdb87b881f7ce9143e03600ff63f39ab2"
+
+zkevm_l2_timelock_address: "0x58C7dF3c513293da6C3140d66CFFf7709E4f2b12"
+zkevm_l2_timelock_private_key: "0x8af6b387e4e53bfae6bac42484119aab0c987c11fb46f2bdd2597234c4090820"
+
+zkevm_l2_admin_address: "0x17C8c765f260e146673f90B11C7fbBC76AE6E35A"
+zkevm_l2_admin_private_key: "0x8790fa937488a93936cafa62d38ac9e89e381b48c693a5af9c3a7c7aa2846299"
+
+zkevm_l2_loadtest_address: "0x5b8f6ccaCD4316B78bc905563CF5b7cC962131f8"
+zkevm_l2_loadtest_private_key: "0x335311b1d2d0176eabeaa9340f24ab673a9066cde39968a701ff368618306651"
+
+zkevm_l2_agglayer_address: "0xAfC6DFA032955ab25DA91251fFd73Eba7a29605C"
+zkevm_l2_agglayer_private_key: "0x517056b9385650c75b92902bc9593d976dff042790677a98f402ff2e9d7f18f3"
+
+zkevm_l2_dac_address: "0x150d590DfE9F0AA82F58F88E234e2Fe51E6D0D9F"
+zkevm_l2_dac_private_key: "0xeb87dbe57cfd4d0dd6a47efc773663688a0111137626b1634bf6d4fa1de33118"
+
+zkevm_l2_proofsigner_address: "0x6C74057824D373d6eA23f27aDFb17142d6ae9e4f"
+zkevm_l2_proofsigner_private_key: "0xccecc1f06529cc071a074c9a66d2b7dcee92eb0d8dc3d17ab7e239bb811f58e1"
+
+#+end_example
+
+We're going to take these generated values and place them into the
+[[../params.yml]] file. Each one of these settings should already exist
+and you're simply replacing the keys that are already in this file.
+
+** L1 Configuration
+
+Now we need to adjust the parameters for L1 specifically for
+Sepolia. First, let's create a new mnemonic specifically for running
+contract deployment.
+
+#+begin_src bash :exports both verbatim :results output example
+cast wallet new-mnemonic
+#+end_src
+
+#+RESULTS:
+: [32mSuccessfully generated a new mnemonic.[0m
+: Phrase:
+: emotion include grocery record sport divorce mushroom lesson attitude drop sausage gospel
+: 
+: Accounts:
+: - Account 0:
+: Address:     0x3AEaB9aF3bcB6B37EB94AB7633d8ce2DfFCb591C
+: Private key: 0x3e241870743f80488c9c35e474650fae3e9485b0eb704386432b7c89b012d4c1
+: 
+
+We'll take that mnemonic and configure ~l1_preallocated_mnemonic~ with
+this value.
+
+#+begin_src bash
+yq -Y --in-place '.args.l1_preallocated_mnemonic = "emotion include grocery record sport divorce mushroom lesson attitude drop sausage gospel"' params.yml
+#+end_src
+
+This account is used for two things. It sends funds to the accounts
+that need funds on L1 (e.g. sequencer, aggregator, admin).  This
+account also does the contract deployment. Accordingly, we'll need to
+send funds to this account. For this tutorial, I'm going to [[https://sepolia.etherscan.io/tx/0x8b44ab7ae1e7455aac011ab138f7ccd9af798a93fc0390f5f9db61cd35faf1e2][send]] 25
+ETH.
+
+There are a few other values we need to configure for L1.
+
+#+begin_src bash
+yq -Y --in-place '.args.l1_chain_id = 11155111' params.yml
+yq -Y --in-place '.args.l1_funding_amount = "5ether"' params.yml
+yq -Y --in-place '.args.l1_rpc_url = "https://YOUR-SEPOLIA-RPC.invalid"' params.yml
+yq -Y --in-place '.args.l1_ws_url = "wss://YOUR-SEPOLIA-RPC.invalid"' params.yml
+#+end_src
+
+** Optional Setup
+
+By default, the Kurtosis CDK package is configured to produce batches
+very quickly for fast testing. This is helpful for very quick L1
+settlement. When we're testing with a local L1, this is free. But on
+Sepolia, it's probably not desirable to sequence empty batches every
+few seconds. It will be "expensive". To slow things down, we should
+modify these three settings in the [[../templates/trusted-node/node-config.toml][node config]].
+
+
+The default configuration below would sequence batches roughly every
+minute even if the batches are empty.
+
+#+begin_src toml
+# ------------------------------------------------------------------------------
+# MaxBatchesForL1 is used to configure the maximum number of batches
+# for a single sequence. If you want batches to be virtualized and
+# verified faster, decreasing this number will help ensure that you're
+# sequencing more often.
+# ------------------------------------------------------------------------------
+MaxBatchesForL1 = 10
+# ------------------------------------------------------------------------------
+# BatchMaxDeltaTimestamp determines the max amount of time that a
+# batch will be held open assuming it's not empty.
+# ------------------------------------------------------------------------------
+BatchMaxDeltaTimestamp = "5s"
+# ------------------------------------------------------------------------------
+# VerifyProofInterval is the interval of time to verify and send
+# proofs to L1
+# ------------------------------------------------------------------------------
+VerifyProofInterval = "5m0s"
+# ------------------------------------------------------------------------------
+# LastBatchVirtualizationTimeMaxWaitPeriod defines the max amount of
+# time that we'll allow to pass before virtualizing. E.g. if we have
+# sequences to send and it's been more than
+# LastBatchVirtualizationTimeMaxWaitPeriod since the last time we've
+# virtualized, we'll send the sequences. Otherwise we'll wait longer.
+# ------------------------------------------------------------------------------
+LastBatchVirtualizationTimeMaxWaitPeriod = "5s"
+#+end_src
+
+In order to slow things down a bit, I'm going to configure
+~BatchMaxDeltaTimestamp~ to ~2m~,
+~LastBatchVirtualizationTimeMaxWaitPeriod~ to ~15m~, and
+~MaxBatchesForL1~ to ~15~. The idea is that an idle network would only
+be sequecing batches every 15 minutes.
+
+** Running the Network
+
+All of the configuration should be set. Let's run things:
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+#+end_src
+
+Once this completes, you'll probably want to see your deployed
+contracts an on-chain activity.
+
+#+begin_src bash :exports both verbatim :results output code
+kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json'
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+{
+  "polygonRollupManagerAddress": "0x6637B10d998840e6b3B8fB8C5d59e8ff0b195F2A",
+  "polygonZkEVMBridgeAddress": "0xcD8a6AE3b7e2827CE9ca9d05C7175990bf5D9DE8",
+  "polygonZkEVMGlobalExitRootAddress": "0x7906f55F26D5Cf9DfC53143ae0e38BF17ac0e7E1",
+  "polTokenAddress": "0xe712F6f08f1f00515c840179E59426BBc1308Ee2",
+  "zkEVMDeployerContract": "0x944a6A500AC29B2a14E5831A4062E9DafBb5d8f4",
+  "deployerAddress": "0x17C8c765f260e146673f90B11C7fbBC76AE6E35A",
+  "timelockContractAddress": "0x38d59F21cdd8B837E1EC6d4b03472b6FEEdF736a",
+  "deploymentRollupManagerBlockNumber": 6087639,
+  "upgradeToULxLyBlockNumber": 6087639,
+  "admin": "0x17C8c765f260e146673f90B11C7fbBC76AE6E35A",
+  "trustedAggregator": "0x6f84bE941517B3910d8f9754d81aE963Cf0bA988",
+  "proxyAdminAddress": "0xCde3964eB272b209706141029e0782A7576Af5cD",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "polygonDataCommitteeAddress": "0xb2Eaeb06385d6d0662B181f1d919eBbCaA3fd083",
+  "firstBatchData": {
+    "transactions": "0xf9010380808401c9c38094cd8a6ae3b7e2827ce9ca9d05c7175990bf5d9de880b8e4f811bff7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a40d5f56745a118d0906a34e69aec8c0db1cb8fa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ca1ab1e0000000000000000000000000000000000000000000000000000000005ca1ab1e1bff",
+    "globalExitRoot": "0xad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5",
+    "timestamp": 1718135664,
+    "sequencer": "0xb60D3C495c9b90524e4b511bC54f374aB4ad216A"
+  },
+  "genesis": "0x305a087de2e9e45c8eb69acacba4aa57c1f5683a5aa7307241091ef5bb22a056",
+  "createRollupBlockNumber": 6087643,
+  "rollupAddress": "0x5b9B90d84148B88d279b6efA653e2d31388e89CC",
+  "verifierAddress": "0x7F679477902817D740ad2942EB91e4d5106A3bBB",
+  "consensusContract": "PolygonValidiumEtrog",
+  "polygonZkEVMGlobalExitRootL2Address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+}
+#+end_src
+
+These are all of the generated details from the network. We can see
+some of the contracts in Etherscan / Blockscout now:
+
+- Sequenced batches should show up here https://sepolia.etherscan.io/address/0x5b9B90d84148B88d279b6efA653e2d31388e89CC
+- Verifed batches should show up here https://sepolia.etherscan.io/address/0x6637B10d998840e6b3B8fB8C5d59e8ff0b195F2A
+
+
+* Troubleshooting
+
+One piece of general advice: if your ~kurtosis run~ fails for some
+reason in the middle of the run, you'll usually want to do a full
+cleanup of the enclave before trying to run again.
+
+#+begin_src bash
+kurtosis clean --all
+#+end_src
+
+
+** Replay-Protected Transactions
+
+After ~kurtosis run~ you might see an error like this:
+
+#+begin_example
+ProviderError: only replay-protected (EIP-155) transactions allowed over RPC
+#+end_example
+
+The deployment of the [[https://github.com/0xPolygonHermez/zkevm-contracts][zkevm-contracts]] uses a specific method to
+maintain [[https://yamenmerhi.medium.com/nicks-method-ethereum-keyless-execution-168a6659479c#0c39][consistent addresses]] across chains. If you're seeing this
+error, it means your RPC provider is blocking these transactions. If
+you're running your own node you'll need to make some configuration
+changes. E.g. in [[https://geth.ethereum.org/docs/fundamentals/command-line-options][geth]] you would set ~rpc.allow-unprotected-txs~:
+
+#+begin_example
+    --rpc.allow-unprotected-txs         (default: false)                   ($GETH_RPC_ALLOW_UNPROTECTED_TXS)
+          Allow for unprotected (non EIP155 signed) transactions to be submitted via RPC
+#+end_example
+
+If you're not running your own node, you'll need to use an RPC
+provider that allows unprotected transactions. In the example for this
+guide, I've used [[https://www.alchemy.com/][Alchmey]].
+
+** Cannot find module './deploy_output.json'
+
+If you've been running into issues or potentially run ~kurtosis run~
+multiple times, it's possible that you run into an issue like this:
+
+#+begin_example
+Proxy admin was already deployed to: 0xCde3964eB272b209706141029e0782A7576Af5cD
+Error: Proxy admin was deployed, but the owner is not the deployer, deployer address: 0x17C8c765f260e146673f90B11C7fbBC76AE6E35A, proxyAdmin: 0x38d59F21cdd8B837E1EC6d4b03472b6FEEdF736a
     at main (/opt/zkevm-contracts/deployment/v2/3_deployContracts.ts:190:15)
     at processTicksAndRejections (node:internal/process/task_queues:95:5)
-[2024-05-09 14:21:30] Step 5: Creating rollup
+[2024-06-11 20:28:54] Step 5: Creating rollup
+
 > @0xpolygonhermez/zkevm-contracts@3.0.0 npx
 > hardhat run deployment/v2/4_createRollup.ts --network localhost
+
 Error: Cannot find module './deploy_output.json'
 Require stack:
 - /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
-    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1143:15)
-```
+    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at Function.Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (/opt/zkevm-contracts/node_modules/@cspotcode/source-map-support/source-map-support.js:811:30)
+    at Function.Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at require (node:internal/modules/helpers:179:18)
+    at Object.<anonymous> (/opt/zkevm-contracts/deployment/v2/4_createRollup.ts:17:22)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14)
+    at Module.m._compile (/opt/zkevm-contracts/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1416:10)
+    at Object.require.extensions.<computed> [as .ts] (/opt/zkevm-contracts/node_modules/ts-node/src/index.ts:1621:12) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/opt/zkevm-contracts/deployment/v2/4_createRollup.ts' ]
+}
+#+end_example
 
-Try changing the `salt` value in `deploy_parameters.yml` and do a fresh deployment again. Successful deployment should have logs like below:
+This can happen if the same address is used to deploy the contracts
+multiple times with the same salt. In order to do a clean up there are
+a few things you should do.
 
-```!
-Deploying zkevm contracts on L1
-Command returned with exit code '0' and the following output:
---------------------
-[2024-05-10 01:03:39] Waiting for the L1 RPC to be available
+First, you should make sure you've cleaned up your local environment
+properly:
 
-blockHash               0x02dd2e746e726de2f80c1761d54a92b44811e0bc604c8019d4ba1a53b1c964c5
-blockNumber             5870999
-contractAddress         
-cumulativeGasUsed       385156
-effectiveGasPrice       3000458876
-from                    0x5A13035786d906732509D1a0815906c7124fB58C
-gasUsed                 21000
-logs                    []
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0xcbcf45e37a0933b1f173d8fa40697502589a5a02de22253bbbb876fca36da0e1
-transactionIndex        4
-type                    2
-to                      0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
-[2024-05-10 01:03:56] L1 RPC is now available
-[2024-05-10 01:03:56] Funding important accounts on l1
-[2024-05-10 01:03:56] Funding admin account
+#+begin_src bash
+kurtosis clean --all
+#+end_src
 
-blockHash               0xc70a02e31b507ccbd8fd20a6fb8f114d8a5921f248e93a968d53de9f86cc6682
-blockNumber             5871001
-contractAddress         
-cumulativeGasUsed       174182
-effectiveGasPrice       3000390130
-from                    0x5A13035786d906732509D1a0815906c7124fB58C
-gasUsed                 21000
-logs                    []
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0xd10a88461254c80f6de784a7efd3f1fea60dd0f153dce3dabfba31875edc12be
-transactionIndex        3
-type                    2
-to                      0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-[2024-05-10 01:04:18] Funding sequencer account
+Once you've cleaned up your environment, you should either rotate your
+~l1_preallocated_mnemonic~ to a new address in order to avoid the
+conflict or you can update the ~salt~ value in the
+[[../templates/contract-deploy/deploy_parameters.json][deploy_parameters.json]] file. Each run of the contract deployment needs
+to be a new combination of ~l1_preallocated_mnemonic~ and
+~salt~. Swapping the salt is probably the easiest way to do another
+deployment.
 
-blockHash               0x95422a87457d9517cd9e5e6d5bc08f60e5478e624cfba1d9265dfce5651b23a1
-blockNumber             5871002
-contractAddress         
-cumulativeGasUsed       114685
-effectiveGasPrice       3000362694
-from                    0x5A13035786d906732509D1a0815906c7124fB58C
-gasUsed                 21000
-logs                    []
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0xb19e8b429d38dabeb259accf8096146991367317de68afd1365b0b8238a6606b
-transactionIndex        3
-type                    2
-to                      0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
-[2024-05-10 01:04:28] Funding aggregator account
+We don't encounter this issue in local testing because we reset the
+entire L1 chain between tests / contract deployments.
 
-blockHash               0x8a10e9ee8047ce2292eb6dc280ae714c86dc87558be52610b20e1883fdcb38ac
-blockNumber             5871004
-contractAddress         
-cumulativeGasUsed       709250
-effectiveGasPrice       3000365802
-from                    0x5A13035786d906732509D1a0815906c7124fB58C
-gasUsed                 21000
-logs                    []
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0x6f59dfe631d245dc9afbd31860686b8f00018436305a8da539e8e4aefab165d0
-transactionIndex        5
-type                    2
-to                      0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d
-[2024-05-10 01:04:51] Funding agglayer account
-
-blockHash               0x12b0a753afa3716647d5289a7096dbfbd93d2335dd87a88fdfa6119c37dd56a8
-blockNumber             5871005
-contractAddress         
-cumulativeGasUsed       1560625
-effectiveGasPrice       3000360192
-from                    0x5A13035786d906732509D1a0815906c7124fB58C
-gasUsed                 21000
-logs                    []
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0x34cd108ad87b358b4cf53155306c85530bd6000c24b44fe2105e3d44eb17df4e
-transactionIndex        1
-type                    2
-to                      0x351e560852ee001d5D19b5912a269F849f59479a
-[2024-05-10 01:05:02] Funding claimtxmanager account
-
-blockHash               0x078f1881f3d4205dd351e1aacd8d6d7045b9b99627936e64e31cfd45f386dae4
-blockNumber             5871006
-contractAddress         
-cumulativeGasUsed       350178
-effectiveGasPrice       3000336941
-from                    0x5A13035786d906732509D1a0815906c7124fB58C
-gasUsed                 21000
-logs                    []
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0xc04ef70f2f23a754ec480c6f023832b8983363746e002771d8da9efb1884e96e
-transactionIndex        9
-type                    2
-to                      0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
-/opt/zkevm-contracts /opt
-[2024-05-10 01:05:17] Deploying zkevm contracts to L1
-[2024-05-10 01:05:17] Step 1: Preparing tesnet
-
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> hardhat run deployment/testnet/prepareTestnet.ts --network localhost
-
-#######################
-
-pol deployed to: 0x66aB447a8D8D13E6d2f9E3B317FED8668cc10075
-[2024-05-10 01:05:38] Step 2: Creating genesis
-
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> ts-node deployment/v2/1_createGenesis.ts
-
-Warning: Potentially unsafe deployment of contracts/PolygonZkEVMGlobalExitRootL2.sol:PolygonZkEVMGlobalExitRootL2
-
-    You are using the `unsafeAllow.state-variable-immutable` flag.
-
-Warning: Potentially unsafe deployment of contracts/PolygonZkEVMGlobalExitRootL2.sol:PolygonZkEVMGlobalExitRootL2
-
-    You are using the `unsafeAllow.constructor` flag.
-
-[2024-05-10 01:05:42] Step 3: Deploying PolygonZKEVMDeployer
-
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost
-
-#######################
-
-polygonZkEVMDeployer already deployed on:  0xe5CF69183CFCF0571E733D59a1a53d4E6ceD6E85
-[2024-05-10 01:05:44] Step 4: Deploying contracts
-
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> hardhat run deployment/v2/3_deployContracts.ts --network localhost
-
-#######################
-
-Proxy admin deployed to: 0xD73b976745bBABbd20674f8937452412b9739CBF
-#######################
-
-bridge impl deployed to: 0xA39B543Ee657c5e89F17adD608552b7970E4cBDd
-
-#######################
-##### Deployment TimelockContract  #####
-#######################
-minDelayTimelock: 3600
-timelockAdminAddress: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-Rollup Manager: 0x010822310E62c42B6FDD7A56fe2173b1F0548446
-#######################
-
-Polygon timelockContract deployed to: 0xc841dC5bce9412f492ec287Ca0b2c757c458bCC6
-
-#######################
-#####  Checks TimelockContract  #####
-#######################
-polygonZkEVM (Rollup Manager): 0x010822310E62c42B6FDD7A56fe2173b1F0548446
-#######################
-
-PolygonZkEVMBridge deployed to: 0xe7D2a1A57C88AD0373d304Cf63eA9aDC780Eb83F
-
-#######################
-#####    Checks PolygonZkEVMBridge   #####
-#######################
-PolygonZkEVMGlobalExitRootAddress: 0xD064B30fBf9103DcFc4b7B966534943E78E8aE93
-networkID: 0n
-Rollup Manager: 0x010822310E62c42B6FDD7A56fe2173b1F0548446
-Warning: Potentially unsafe deployment of contracts/v2/PolygonZkEVMGlobalExitRootV2.sol:PolygonZkEVMGlobalExitRootV2
-
-    You are using the `unsafeAllow.state-variable-immutable` flag.
-
-Warning: Potentially unsafe deployment of contracts/v2/PolygonZkEVMGlobalExitRootV2.sol:PolygonZkEVMGlobalExitRootV2
-
-    You are using the `unsafeAllow.constructor` flag.
-
-#######################
-
-polygonZkEVMGlobalExitRoot deployed to: 0xD064B30fBf9103DcFc4b7B966534943E78E8aE93
-
-#######################
-##### Deployment Rollup Manager #####
-#######################
-deployer: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-PolygonZkEVMGlobalExitRootAddress: 0xD064B30fBf9103DcFc4b7B966534943E78E8aE93
-polTokenAddress: 0x66aB447a8D8D13E6d2f9E3B317FED8668cc10075
-polygonZkEVMBridgeContract: 0xe7D2a1A57C88AD0373d304Cf63eA9aDC780Eb83F
-trustedAggregator: 0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d
-pendingStateTimeout: 604799
-trustedAggregatorTimeout: 604799
-admin: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-timelockContract: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-emergencyCouncilAddress: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-Warning: Potentially unsafe deployment of contracts/v2/newDeployments/PolygonRollupManagerNotUpgraded.sol:PolygonRollupManagerNotUpgraded
-
-    You are using the `unsafeAllow.state-variable-immutable` flag.
-
-Warning: Potentially unsafe deployment of contracts/v2/newDeployments/PolygonRollupManagerNotUpgraded.sol:PolygonRollupManagerNotUpgraded
-
-    You are using the `unsafeAllow.constructor` flag.
-
-#######################
-
-polygonRollupManagerContract deployed to: 0x010822310E62c42B6FDD7A56fe2173b1F0548446
-
-#######################
-#####    Checks  Rollup Manager  #####
-#######################
-PolygonZkEVMGlobalExitRootAddress: 0xD064B30fBf9103DcFc4b7B966534943E78E8aE93
-polTokenAddress: 0x66aB447a8D8D13E6d2f9E3B317FED8668cc10075
-polygonZkEVMBridgeContract: 0xe7D2a1A57C88AD0373d304Cf63eA9aDC780Eb83F
-pendingStateTimeout: 604799n
-trustedAggregatorTimeout: 604799n
-[2024-05-10 01:07:43] Step 5: Creating rollup
-
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> hardhat run deployment/v2/4_createRollup.ts --network localhost
-
-#######################
-
-Verifier deployed to: 0x2D4ad6bD18B4F6a31CE440B6F4f0D535D9D4C02e
-#######################
-
-Added new Rollup Type deployed
-#######################
-
-Created new Rollup: 0xCfD26022600CE3b9CA4296D2f2DCB667B85d05E1
-Warning: Potentially unsafe deployment of contracts/v2/consensus/validium/PolygonDataCommittee.sol:PolygonDataCommittee
-
-    You are using the `unsafeAllow.constructor` flag.
-
-[2024-05-10 01:09:26] Combining contract deploy files
-/opt
-/opt/zkevm /opt
-[2024-05-10 01:09:26] Creating combined.json
-[2024-05-10 01:09:26] Approving the rollup address to transfer POL tokens on behalf of the sequencer
-
-blockHash               0xebfbeec560249c5a85211560e504872f3136a345ffb15c4050f1520a65b729db
-blockNumber             5871029
-contractAddress         
-cumulativeGasUsed       21579165
-effectiveGasPrice       11182118
-from                    0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
-gasUsed                 46267
-logs                    [{"address":"0x66ab447a8d8d13e6d2f9e3b317fed8668cc10075","topics":["0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925","0x0000000000000000000000005b06837a43bdc3dd9f114558daf4b26ed49842ed","0x000000000000000000000000cfd26022600ce3b9ca4296d2f2dcb667b85d05e1"],"data":"0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000","blockHash":"0xebfbeec560249c5a85211560e504872f3136a345ffb15c4050f1520a65b729db","blockNumber":"0x5995b5","transactionHash":"0xbc244825e172a4db0bfd9bbee4b6d08cabc0bfe29143207601a4db3667c3f596","transactionIndex":"0x7e","logIndex":"0x17c","removed":false}]
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000008020000000000000000000000010000000000000040000000000000000000000000000000000080000000000000000000100000000000000000000000000000000010000000000000000000000001000000000000040000100000000000000000
-root                    
-status                  1
-transactionHash         0xbc244825e172a4db0bfd9bbee4b6d08cabc0bfe29143207601a4db3667c3f596
-transactionIndex        126
-type                    0
-to                      0x66aB447a8D8D13E6d2f9E3B317FED8668cc10075
-[2024-05-10 01:09:54] Setting the data availability committee
-
-blockHash               0xbffc93a4c6a5b9119577c4ab4237f84a686db6364bc40b4e0dd8408c6fe8df4b
-blockNumber             5871030
-contractAddress         
-cumulativeGasUsed       795333
-effectiveGasPrice       3000467524
-from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-gasUsed                 146938
-logs                    [{"address":"0x139359d5f2c27e10c2a0bbf3eaabefee697fbe72","topics":["0x831403fd381b3e6ac875d912ec2eee0e0203d0d29f7b3e0c96fc8f582d6db657"],"data":"0xe4e05261d6d69a2de8d0b41196695761a8e911eb19355d391a8ce19d9a9f7cbe","blockHash":"0xbffc93a4c6a5b9119577c4ab4237f84a686db6364bc40b4e0dd8408c6fe8df4b","blockNumber":"0x5995b6","transactionHash":"0x1da02320c283ce31b98beeb261ecbb82a627c1cb4c26ebed4c1a33694ee0c903","transactionIndex":"0x4","logIndex":"0x3","removed":false}]
-logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000001
-root                    
-status                  1
-transactionHash         0x1da02320c283ce31b98beeb261ecbb82a627c1cb4c26ebed4c1a33694ee0c903
-transactionIndex        4
-type                    2
-to                      0x139359d5F2c27E10c2a0bbf3eAabEFEe697Fbe72
-[2024-05-10 01:10:03] Setting the data availability protocol
-
-blockHash               0xf69cb9130f1ed963d5862f45ce4d742ae4e5ce2eb5fbda96b227c15d7a868971
-blockNumber             5871031
-contractAddress         
-cumulativeGasUsed       243659
-effectiveGasPrice       3000440604
-from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-gasUsed                 32178
-logs                    [{"address":"0xcfd26022600ce3b9ca4296d2f2dcb667b85d05e1","topics":["0xd331bd4c4cd1afecb94a225184bded161ff3213624ba4fb58c4f30c5a861144a"],"data":"0x000000000000000000000000139359d5f2c27e10c2a0bbf3eaabefee697fbe72","blockHash":"0xf69cb9130f1ed963d5862f45ce4d742ae4e5ce2eb5fbda96b227c15d7a868971","blockNumber":"0x5995b7","transactionHash":"0x8c79ae2f6a79d3dc2a5ee6f30a666d27ddf4e2b29e0a6de3e4da5aecef126acf","transactionIndex":"0x2","logIndex":"0x9","removed":false}]
-logsBloom               0x00008000000000000000010000000000001000000000001000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000
-root                    
-status                  1
-transactionHash         0x8c79ae2f6a79d3dc2a5ee6f30a666d27ddf4e2b29e0a6de3e4da5aecef126acf
-transactionIndex        2
-type                    2
-to                      0xCfD26022600CE3b9CA4296D2f2DCB667B85d05E1
-[2024-05-10 01:10:12] Granting the aggregator role to the agglayer so that it can also verify batches
-
-blockHash               0xb15815813a5ee4e8891566473d5326e0ca02eca9ea134148586293387197db74
-blockNumber             5871032
-contractAddress         
-cumulativeGasUsed       786716
-effectiveGasPrice       3000475237
-from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
-gasUsed                 58519
-logs                    [{"address":"0x010822310e62c42b6fdd7a56fe2173b1f0548446","topics":["0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d","0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4","0x000000000000000000000000351e560852ee001d5d19b5912a269f849f59479a","0x000000000000000000000000e34aaf64b29273b7d567fcfc40544c014eee9970"],"data":"0x","blockHash":"0xb15815813a5ee4e8891566473d5326e0ca02eca9ea134148586293387197db74","blockNumber":"0x5995b8","transactionHash":"0xf56626c13692c95efae770a414303718ecf009a1bf72f4f75a41858fa75b57b9","transactionIndex":"0x7","logIndex":"0xb","removed":false}]
-logsBloom               0x00000004000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000004000000000000040000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000110000000000008000000000000000000000000000001000000030000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000001000000000000000
-root                    
-status                  1
-transactionHash         0xf56626c13692c95efae770a414303718ecf009a1bf72f4f75a41858fa75b57b9
-transactionIndex        7
-type                    2
-to                      0x010822310E62c42B6FDD7A56fe2173b1F0548446
-
---------------------
-```
