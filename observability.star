@@ -4,6 +4,7 @@ prometheus_package = import_module(
 grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
 
 service_package = import_module("./lib/service.star")
+sequencer_package = import_module("./lib/sequencer.star")
 
 
 def start_panoptichain(plan, args):
@@ -42,8 +43,9 @@ def start_panoptichain(plan, args):
 
 
 def run(plan, args):
+    l2_rpc_name = sequencer_package.get_l2_rpc_name(args)
     for service in plan.get_services():
-        if service.name == args["l2_rpc_name"] + args["deployment_suffix"]:
+        if service.name == l2_rpc_name:
             args["zkevm_rpc_url"] = "http://{}:{}".format(
                 service.ip_address, service.ports["http-rpc"].number
             )

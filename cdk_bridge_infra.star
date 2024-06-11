@@ -1,4 +1,5 @@
 service_package = import_module("./lib/service.star")
+sequencer_package = import_module("./lib/sequencer.star")
 zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 databases = import_module("./databases.star")
@@ -93,7 +94,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "l1_rpc_url": args["l1_rpc_url"],
-                    "l2_rpc_name": args["l2_rpc_name"],
+                    "l2_rpc_name": sequencer_package.get_l2_rpc_name(args),
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # ports
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
@@ -130,9 +131,7 @@ def create_reverse_proxy_config_artifact(plan, args):
     )
 
     l1rpc_service = plan.get_service("el-1-geth-lighthouse")
-    l2rpc_service = plan.get_service(
-        name=args["l2_rpc_name"] + args["deployment_suffix"]
-    )
+    l2rpc_service = plan.get_service(name=sequencer_package.get_l2_rpc_name(args))
     bridge_service = plan.get_service(
         name="zkevm-bridge-service" + args["deployment_suffix"]
     )

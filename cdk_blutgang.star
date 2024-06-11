@@ -1,15 +1,13 @@
+sequencer_package = import_module("./lib/sequencer.star")
+
+
 def run(plan, args):
     blutgang_name = "blutgang" + args["deployment_suffix"]
     blutgang_config_template = read_file(
         src="./templates/blutgang/blutgang-config.toml"
     )
 
-    zkevm_sequencer_service = plan.get_service(
-        name=args["sequencer_name"] + args["deployment_suffix"]
-    )
-    zkevm_sequencer_http_url = "http://{}:{}".format(
-        zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
-    )
+    sequencer_rpc_url = sequencer_package.get_sequencer_rpc_url(plan, args)
 
     zkevm_rpc_service = plan.get_service(
         name="zkevm-node-rpc" + args["deployment_suffix"]
@@ -39,7 +37,7 @@ def run(plan, args):
             "blutgang-config.toml": struct(
                 template=blutgang_config_template,
                 data={
-                    "l2_sequencer_url": zkevm_sequencer_http_url,
+                    "l2_sequencer_url": sequencer_rpc_url,
                     "l2_rpc_url": zkevm_rpc_http_url,
                     "l2_ws_url": zkevm_rpc_ws_url,
                     "l2_rpc_pless_url": zkevm_rpc_pless_http_url,
