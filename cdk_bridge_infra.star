@@ -93,6 +93,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "l1_rpc_url": args["l1_rpc_url"],
+                    "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # ports
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
@@ -129,7 +130,9 @@ def create_reverse_proxy_config_artifact(plan, args):
     )
 
     l1rpc_service = plan.get_service("el-1-geth-lighthouse")
-    l2rpc_service = plan.get_service(name="cdk-erigon-node" + args["deployment_suffix"])
+    l2rpc_service = plan.get_service(
+        name=args["l2_rpc_name"] + args["deployment_suffix"]
+    )
     bridge_service = plan.get_service(
         name="zkevm-bridge-service" + args["deployment_suffix"]
     )

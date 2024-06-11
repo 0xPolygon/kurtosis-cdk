@@ -14,7 +14,9 @@ def create_zkevm_sequence_sender_config(
             "config.toml": struct(
                 data=args
                 | {
-                    "zkevm_is_validium": data_availability_package.is_cdk_validium(args)
+                    "zkevm_is_validium": data_availability_package.is_cdk_validium(
+                        args
+                    ),
                 },
                 template=sequence_sender_config_template,
             ),

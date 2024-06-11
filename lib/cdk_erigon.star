@@ -13,14 +13,14 @@ def start_node(
         ports["rpc"] = PortSpec(
             args["zkevm_rpc_http_port"], application_protocol="http"
         )
-        name = "cdk-erigon-sequencer" + args["deployment_suffix"]
+        name = args["sequencer_name"] + args["deployment_suffix"]
     else:
         ports = {
             "http-rpc": PortSpec(
                 args["zkevm_rpc_http_port"], application_protocol="http"
             )
         }
-        name = "cdk-erigon-node" + args["deployment_suffix"]
+        name = args["l2_rpc_name"] + args["deployment_suffix"]
 
     if is_sequencer:
         ports["data-streamer"] = PortSpec(

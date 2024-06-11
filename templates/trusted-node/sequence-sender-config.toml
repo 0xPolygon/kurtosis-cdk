@@ -14,7 +14,7 @@ SequencesTxFileName = "/app/data/sequencesender.json"
 WaitPeriodPurgeTxFile = "48h"
 MaxPendingTx = 1
 	[SequenceSender.StreamClient]
-		Server = "cdk-erigon-sequencer{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 	[SequenceSender.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
