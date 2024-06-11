@@ -9,7 +9,8 @@ observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
-cdk_erigon_package = import_module("./cdk_erigon.star")
+sequencer_package = "./lib/sequencer.star"
+cdk_erigon_package = "./lib/cdk_erigon.star"
 
 
 def run(
@@ -42,20 +43,10 @@ def run(
     Returns:
         A full deployment of Polygon CDK.
     """
-
+    # Parse arguments.
     args = import_module(input_parser).parse_args(args)
 
     plan.print("Deploying CDK environment...")
-
-    if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
-    if args["sequencer_type"] == "erigon":
-        args["sequencer_name"] = "cdk-erigon-sequencer"
-    else:
-        args["sequencer_name"] = "zkevm-node-sequencer"
 
     # Deploy a local L1.
     if deploy_l1:
@@ -100,10 +91,11 @@ def run(
             src="/opt/zkevm/genesis.json",
         )
 
-    # Deploy cdk-erigon sequencer node.
-    if args["sequencer_type"] == "erigon":
+    # Deploy cdk-erigon sequencer.
+    # TODO: This should be merged into cdk central/trusted environment
+    if sequencer_package.is_cdk_erigon_sequencer(args):
         plan.print("Deploying cdk-erigon sequencer")
-        cdk_erigon_package.run_sequencer(plan, args)
+        cdk_erigon_package.start_sequencer(plan, args)
     else:
         plan.print("Skipping the deployment of cdk-erigon sequencer")
 
@@ -119,11 +111,12 @@ def run(
         plan.print("Skipping the deployment of cdk central/trusted environment")
 
     # Deploy cdk-erigon node.
+    # TODO: This should be merged into cdk central/trusted environment
     if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        cdk_erigon_package.run_rpc(plan, args)
+        plan.print("Deploying cdk-erigon rpc")
+        cdk_erigon_package.start_rpc(plan, args)
     else:
-        plan.print("Skipping the deployment of cdk-erigon node")
+        plan.print("Skipping the deployment of cdk-erigon rpc")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
