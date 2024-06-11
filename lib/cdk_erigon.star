@@ -2,18 +2,6 @@ service_package = import_module("./lib/service.star")
 sequencer_package = import_module("./lib/sequencer.star")
 
 
-def start_rpc(plan, args):
-    _start_node(
-        plan=plan,
-        args=args,
-        name="cdk-erigon-rpc" + args["deployment_suffix"],
-        ports={
-            "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
-        },
-        env_vars={},
-    )
-
-
 def start_sequencer(plan, args):
     _start_node(
         plan=plan,
@@ -26,6 +14,18 @@ def start_sequencer(plan, args):
             ),
         },
         env_vars={"CDK_ERIGON_SEQUENCER": "1"},
+    )
+
+
+def start_rpc(plan, args):
+    _start_node(
+        plan=plan,
+        args=args,
+        name="cdk-erigon-rpc" + args["deployment_suffix"],
+        ports={
+            "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
+        },
+        env_vars={},
     )
 
 
