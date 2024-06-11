@@ -31,16 +31,16 @@ def start_rpc(plan, args):
 
 def _create_config(plan, args):
     # node config
-    is_cdk_erigon_sequencer = sequencer_package.is_cdk_erigon_sequencer(args)
+    is_sequencer = sequencer_package.is_cdk_erigon_sequencer(args)
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     data = (
         args
         | contract_setup_addresses
         | {
-            "is_cdk_erigon_sequencer": is_cdk_erigon_sequencer,
+            "is_sequencer": is_sequencer,
         }
     )
-    if is_cdk_erigon_sequencer:
+    if is_sequencer:
         data["zkevm_data_stream_port"] = args["zkevm_data_streamer_port"]
     else:
         sequencer_rpc_url = sequencer_package.get_sequencer_rpc_url(plan, args)
