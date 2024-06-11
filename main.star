@@ -9,7 +9,7 @@ observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
-sequencer_package = "./lib/sequencer.star"
+sequencer_package = import_module("./lib/sequencer.star")
 cdk_erigon_package = "./lib/cdk_erigon.star"
 
 
@@ -95,7 +95,7 @@ def run(
     # TODO: This should be merged into cdk central/trusted environment
     if sequencer_package.is_cdk_erigon_sequencer(args):
         plan.print("Deploying cdk-erigon sequencer")
-        cdk_erigon_package.start_sequencer(plan, args)
+        import_module(cdk_erigon_package).start_sequencer(plan, args)
     else:
         plan.print("Skipping the deployment of cdk-erigon sequencer")
 
@@ -114,7 +114,7 @@ def run(
     # TODO: This should be merged into cdk central/trusted environment
     if deploy_cdk_erigon_node:
         plan.print("Deploying cdk-erigon rpc")
-        cdk_erigon_package.start_rpc(plan, args)
+        import_module(cdk_erigon_package).start_rpc(plan, args)
     else:
         plan.print("Skipping the deployment of cdk-erigon rpc")
 

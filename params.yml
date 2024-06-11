@@ -9,19 +9,22 @@ deploy_l1: true
 deploy_zkevm_contracts_on_l1: true
 
 # Deploy zkevm node and cdk peripheral databases.
-deploy_databases: true
+deploy_databases: false
 
 # Deploy cdk central/trusted environment.
-deploy_cdk_central_environment: true
+deploy_cdk_central_environment: false
 
 # Deploy cdk/bridge infrastructure.
-deploy_cdk_bridge_infra: true
+deploy_cdk_bridge_infra: false
 
 # Deploy permissionless node.
 deploy_zkevm_permissionless_node: false
 
+# Deploy cdk-erigon.
+deploy_cdk_erigon_node: false
+
 # Deploy observability stack.
-deploy_observability: true
+deploy_observability: false
 
 # Deploy Blockscout stack.
 deploy_l2_blockscout: false
