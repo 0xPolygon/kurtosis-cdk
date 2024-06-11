@@ -97,13 +97,6 @@ def run(
     else:
         plan.print("Skipping the deployment of cdk-erigon sequencer")
 
-    # Deploy cdk-erigon node.
-    if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        cdk_erigon_package.run_rpc(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon node")
-
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
         plan.print("Deploying cdk central/trusted environment")
@@ -114,6 +107,13 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
+
+    # Deploy cdk-erigon node.
+    if deploy_cdk_erigon_node:
+        plan.print("Deploying cdk-erigon node")
+        cdk_erigon_package.run_rpc(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
