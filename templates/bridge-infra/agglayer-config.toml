@@ -1,6 +1,6 @@
 [FullNodeRPCs]
 # TODO switch this to permissionless
-# TODO switch zkevm-node-rpc to cdk-erigon-node when getBatchByNumber endpoint is fixed
+# TODO replace zkevm-node-rpc with {{.l2_rpc_name}} when getBatchByNumber endpoint is fixed
 1 = "http://zkevm-node-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 [ProofSigners]

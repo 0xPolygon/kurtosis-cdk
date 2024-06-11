@@ -3,7 +3,7 @@ ethereum_package = import_module(
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.0"
-LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-minimal"
+LIGHTHOUSE_IMAGE = "sigp/lighthouse:v5.2.0"
 
 
 def run(plan, args):
