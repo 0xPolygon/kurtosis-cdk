@@ -1,6 +1,7 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "data_availability_mode": "cdk-validium",
+    "sequencer_type": "zkevm-node",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.0",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.6.5",
     "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
@@ -14,7 +15,6 @@ DEFAULT_ARGS = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.0.9",
     "toolbox_image": "leovct/toolbox:0.0.1",
-    "sequencer_type": "zkevm-node",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
