@@ -73,6 +73,7 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_agglayer_port": args["zkevm_agglayer_port"],
                     "zkevm_prometheus_port": args["zkevm_prometheus_port"],
+                    "l2_rpc_name": args["l2_rpc_name"],
                 }
                 | contract_setup_addresses
                 | db_configs,
