@@ -38,8 +38,6 @@ def create_zkevm_sequence_sender_config(
             "-c",
             "/app/zkevm-seqsender run --network custom --custom-network-file /etc/zkevm/genesis.json --cfg /etc/zkevm/config.toml",
         ],
-        # entrypoint=["sh", "-c"],
-        # cmd=["sleep infinity"]
     )
 
     return {sequence_sender_name: sequence_sender_service_config}
