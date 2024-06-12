@@ -702,7 +702,6 @@ L1SyncCheckL2BlockNumberhModulus = 30
 # ------------------------------------------------------------------------------
 L1SynchronizationMode = "sequential"
 
-L1SyncCheckL2BlockNumberhModulus = 600
 [Synchronizer.L1BlockCheck]
 Enable = true
 L1SafeBlockPoint = "finalized"
