@@ -692,7 +692,7 @@ L1SyncCheckL2BlockHash = true
 # L1SyncCheckL2BlockHash is also enabled. E.g. if this value is set to
 # 30, we'll trigger the checks every 30th L2 block.
 # ------------------------------------------------------------------------------
-L1SyncCheckL2BlockNumberhModulus = 30
+L1SyncCheckL2BlockNumberhModulus = 600
 
 # ------------------------------------------------------------------------------
 # L1SynchronizationMode determines which mode of synchronization we
