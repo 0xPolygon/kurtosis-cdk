@@ -3,8 +3,8 @@ service_package = import_module("./lib/service.star")
 sequencer_package = import_module("./lib/sequencer.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
+cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 databases = import_module("./databases.star")
 
 
@@ -45,7 +45,7 @@ def run(plan, args):
                 template=node_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                    "is_cdk_validium": is_cdk_validium,
                 }
                 | db_configs,
             )
@@ -58,6 +58,22 @@ def run(plan, args):
         plan, args, node_config_artifact, genesis_artifact
     )
 
+    # Start the sequencer.
+    if sequencer_package.is_zkevm_node_sequencer(args):
+        plan.print("Deploying zkevm-node sequencer")
+        zkevm_node_package.start_sequencer(
+            plan, args, node_config_artifact, genesis_artifact
+        )
+    elif sequencer_package.is_cdk_erigon_sequencer(args):
+        plan.print("Deploying cdk-erigon sequencer")
+        cdk_erigon_package.start_sequencer(plan, args)
+    else:
+        fail(
+            "The sequencer type: '{}' is not supported by Kurtosis CDK".format(
+                args["sequencer_type"]
+            )
+        )
+
     # Start the rest of the zkevm node components.
     keystore_artifacts = get_keystores_artifacts(plan, args)
     zkevm_node_components_configs = (
@@ -65,23 +81,10 @@ def run(plan, args):
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
     )
-
     plan.add_services(
         configs=zkevm_node_components_configs,
         description="Starting the rest of the zkevm node components",
     )
-
-    if sequencer_package.is_cdk_erigon_sequencer(args):
-        sequence_sender_config = (
-            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
-                plan, args, genesis_artifact, keystore_artifacts.sequencer
-            )
-        )
-
-        plan.add_services(
-            configs=sequence_sender_config,
-            description="Starting the rest of the zkevm node components",
-        )
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):

@@ -2,7 +2,14 @@ service_package = import_module("./service.star")
 sequencer_package = import_module("./sequencer.star")
 
 
-def start_sequencer(plan, args):
+def start_sequencer(
+    plan,
+    args,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
+):
     _start_node(
         plan=plan,
         args=args,
@@ -16,10 +23,21 @@ def start_sequencer(plan, args):
             ),
         },
         env_vars={"CDK_ERIGON_SEQUENCER": "1"},
+        node_config_artifact=node_config_artifact,
+        chain_spec_artifact=chain_spec_artifact,
+        chain_config_artifact=chain_config_artifact,
+        chain_allocs_artifact=chain_allocs_artifact,
     )
 
 
-def start_rpc(plan, args):
+def start_rpc(
+    plan,
+    args,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
+):
     _start_node(
         plan=plan,
         args=args,
@@ -30,17 +48,24 @@ def start_rpc(plan, args):
             ),
         },
         env_vars={},
+        node_config_artifact=node_config_artifact,
+        chain_spec_artifact=chain_spec_artifact,
+        chain_config_artifact=chain_config_artifact,
+        chain_allocs_artifact=chain_allocs_artifact,
     )
 
 
-def _start_node(plan, args, name, ports, env_vars):
-    [
-        node_config_artifact,
-        chain_spec_artifact,
-        chain_config_artifact,
-        chain_allocs_artifact,
-    ] = _create_config(plan, args)
-
+def _start_node(
+    plan,
+    args,
+    name,
+    ports,
+    env_vars,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
+):
     plan.add_service(
         name=name,
         config=ServiceConfig(

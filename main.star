@@ -11,7 +11,6 @@ observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
-cdk_erigon_package = "./lib/cdk_erigon.star"
 
 
 def run(
@@ -104,13 +103,6 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
-        # Deploy cdk-erigon sequencer node.
-        if sequencer_package.is_cdk_erigon_sequencer(args):
-            plan.print("Deploying cdk-erigon sequencer")
-            import_module(cdk_erigon_package).start_sequencer(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon sequencer")
-
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact

@@ -7,6 +7,10 @@ SEQUENCER_TYPES = struct(
 )
 
 
+def is_zkevm_node_sequencer(args):
+    return args["sequencer_type"] == SEQUENCER_TYPES.zkevm_node
+
+
 def is_cdk_erigon_sequencer(args):
     return args["sequencer_type"] == SEQUENCER_TYPES.cdk_erigon
 
