@@ -45,13 +45,24 @@ def run(plan, args):
                 template=node_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": is_cdk_validium,
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                 }
                 | db_configs,
             )
         },
         name="trusted-node-config",
     )
+
+    # Create cdk-erigon configurations files.
+    cdk_erigon_node_config_template = read_file(
+        src="./templates/cdk-erigon/config.yaml"
+    )
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+    [
+        cdk_erigon_chain_spec_artifact,
+        cdk_erigon_chain_config_artifact,
+        cdk_erigon_chain_allocs_artifact,
+    ] = _create_cdk_erigon_sequencer_config(plan, args)
 
     # Start the synchronizer.
     zkevm_node_package.start_synchronizer(
@@ -66,7 +77,29 @@ def run(plan, args):
         )
     elif sequencer_package.is_cdk_erigon_sequencer(args):
         plan.print("Deploying cdk-erigon sequencer")
-        cdk_erigon_package.start_sequencer(plan, args)
+
+        cdk_erigon_sequencer_config_artifact = plan.render_templates(
+            name="cdk-erigon-sequencer-config",
+            config={
+                "config.yaml": struct(
+                    template=cdk_erigon_node_config_template,
+                    data=args
+                    | contract_setup_addresses
+                    | {
+                        "is_sequencer": True,
+                    },
+                ),
+            },
+        )
+
+        cdk_erigon_package.start_sequencer(
+            plan,
+            args,
+            cdk_erigon_sequencer_config_artifact,
+            cdk_erigon_chain_spec_artifact,
+            cdk_erigon_chain_config_artifact,
+            cdk_erigon_chain_allocs_artifact,
+        )
     else:
         fail(
             "The sequencer type: '{}' is not supported by Kurtosis CDK".format(
@@ -84,6 +117,40 @@ def run(plan, args):
     plan.add_services(
         configs=zkevm_node_components_configs,
         description="Starting the rest of the zkevm node components",
+    )
+
+    # Deploy cdk-erigon rpc.
+    sequencer_name = sequencer_package.get_sequencer_name(plan, args)
+    sequencer_service = plan.get_service(name=sequencer_name)
+    sequencer_rpc_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["http-rpc"].number
+    )
+    datastreamer_url = "{}:{}".format(
+        sequencer_service.ip_address,
+        sequencer_service.ports["data-streamer"].number,
+    )
+    cdk_erigon_rpc_config_artifact = plan.render_templates(
+        name="cdk-erigon-rpc-config",
+        config={
+            "config.yaml": struct(
+                template=cdk_erigon_node_config_template,
+                data=args
+                | contract_setup_addresses
+                | {
+                    "is_sequencer": False,
+                    "zkevm_sequencer_url": sequencer_rpc_url,
+                    "zkevm_datastreamer_url": datastreamer_url,
+                },
+            ),
+        },
+    )
+    cdk_erigon_package.start_rpc(
+        plan,
+        args,
+        cdk_erigon_rpc_config_artifact,
+        cdk_erigon_chain_spec_artifact,
+        cdk_erigon_chain_config_artifact,
+        cdk_erigon_chain_allocs_artifact,
     )
 
     # Start the DAC if in validium mode.
@@ -148,3 +215,37 @@ def create_dac_config_artifact(plan, args, db_configs):
             )
         },
     )
+
+
+def _create_cdk_erigon_sequencer_config(plan, args):
+    # Create the cdk-erigon chain spec config.
+    cdk_erigon_chain_spec_template = read_file(
+        src="./templates/cdk-erigon/chainspec.json"
+    )
+    cdk_erigon_chain_spec_artifact = plan.render_templates(
+        name="cdk-erigon-chain-spec",
+        config={
+            "dynamic-kurtosis-chainspec.json": struct(
+                template=cdk_erigon_chain_spec_template,
+                data={
+                    "chain_id": args["zkevm_rollup_chain_id"],
+                },
+            ),
+        },
+    )
+
+    # Retrieve the cdk-erigon chain config.
+    cdk_erigon_chain_config_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-config",
+    )
+
+    # Retrieve the cdk-erigon chain allocs.
+    cdk_erigon_chain_allocs_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-allocs",
+    )
+
+    return [
+        cdk_erigon_chain_spec_artifact,
+        cdk_erigon_chain_config_artifact,
+        cdk_erigon_chain_allocs_artifact,
+    ]

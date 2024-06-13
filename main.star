@@ -6,6 +6,7 @@ deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
+cdk_erigon_package = "./lib/cdk_erigon.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
 observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
@@ -111,13 +112,6 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
-
-    # Deploy cdk-erigon node.
-    if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        import_module(cdk_erigon_package).start_rpc(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:

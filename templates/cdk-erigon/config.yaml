@@ -34,7 +34,7 @@ zkevm.executor-strict: false
 # The host of the data streamer.
 zkevm.data-stream-host: "0.0.0.0"
 # The port of the data streamer.
-zkevm.data-stream-port: "{{.zkevm_data_stream_port}}"
+zkevm.data-stream-port: "{{.zkevm_data_streamer_port}}"
 # The fork id to start the network with.
 zkevm.sequencer-initial-fork-id: "{{.zkevm_rollup_fork_id}}"
 {{else}}
