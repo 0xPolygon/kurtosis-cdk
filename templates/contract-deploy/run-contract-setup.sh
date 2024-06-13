@@ -153,14 +153,14 @@ jq_script='
 output_json=$(jq "$jq_script" /opt/zkevm/genesis.json)
 
 # Handle jq errors
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Error processing JSON with jq"
     exit 1
 fi
 
 # Write the output JSON to a file
 echo "$output_json" | jq . > dynamic-kurtosis-allocs.json
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Error writing to file dynamic-kurtosis-allocs.json"
     exit 1
 fi

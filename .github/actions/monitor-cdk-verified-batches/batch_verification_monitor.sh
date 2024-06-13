@@ -17,7 +17,7 @@ timeout="$2"
 # Name of RPC service to query
 rpc_service="$3"
 
-if [ -z "$rpc_service" ]; then
+if [[ -z "$rpc_service" ]]; then
   rpc_service="zkevm-node-rpc-001"
 fi
 
