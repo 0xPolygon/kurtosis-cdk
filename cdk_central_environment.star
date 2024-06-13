@@ -10,6 +10,7 @@ databases = import_module("./databases.star")
 
 def run(plan, args):
     db_configs = databases.get_db_configs(args["deployment_suffix"])
+
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"
@@ -77,7 +78,6 @@ def run(plan, args):
         )
     elif sequencer_package.is_cdk_erigon_sequencer(args):
         plan.print("Deploying cdk-erigon sequencer")
-
         cdk_erigon_sequencer_config_artifact = plan.render_templates(
             name="cdk-erigon-sequencer-config",
             config={
@@ -91,7 +91,6 @@ def run(plan, args):
                 ),
             },
         )
-
         cdk_erigon_package.start_sequencer(
             plan,
             args,
