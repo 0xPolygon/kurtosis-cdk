@@ -83,14 +83,19 @@ def _create_config(plan, args):
     if is_sequencer:
         data["zkevm_data_stream_port"] = args["zkevm_data_streamer_port"]
     else:
-        sequencer_rpc_url = sequencer_package.get_sequencer_rpc_url(plan, args)
+        sequencer_name = sequencer_package.get_sequencer_name(plan, args)
+        sequencer_service = plan.get_service(name=sequencer_name)
+
+        sequencer_rpc_url = "http://{}:{}".format(
+            sequencer_service.ip_address, sequencer_service.ports["rpc"].number
+        )
         data["zkevm_sequencer_url"] = sequencer_rpc_url
 
-        zkevm_datastreamer_url = "{}:{}".format(
-            zkevm_sequencer_service.ip_address,
-            zkevm_sequencer_service.ports["data-streamer"].number,
+        datastreamer_url = "{}:{}".format(
+            sequencer_service.ip_address,
+            sequencer_service.ports["data-streamer"].number,
         )
-        data["zkevm_datastreamer_url"] = zkevm_datastreamer_url
+        data["zkevm_datastreamer_url"] = datastreamer_url
 
     node_config_template = read_file(src="../templates/cdk-erigon/config.yaml")
     node_config_artifact = plan.render_templates(

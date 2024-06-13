@@ -11,9 +11,5 @@ def is_cdk_erigon_sequencer(args):
     return args["sequencer_type"] == SEQUENCER_TYPES.cdk_erigon
 
 
-def get_sequencer_rpc_url(plan, args):
-    sequencer_name = args["sequencer_type"] + "-sequencer" + args["deployment_suffix"]
-    sequencer_service = plan.get_service(name=sequencer_name)
-    return "http://{}:{}".format(
-        sequencer_service.ip_address, sequencer_service.ports["rpc"].number
-    )
+def get_sequencer_name(plan, args):
+    return args["sequencer_type"] + "-sequencer" + args["deployment_suffix"]
