@@ -9,6 +9,7 @@ observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
+cdk_erigon_package = import_module("./cdk_erigon.star")
 
 
 def run(
@@ -18,7 +19,8 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=False,
+    deploy_zkevm_permissionless_node=True,
+    deploy_cdk_erigon_node=False,
     deploy_observability=True,
     deploy_l2_blockscout=False,
     deploy_blutgang=False,
@@ -44,6 +46,16 @@ def run(
     args = import_module(input_parser).parse_args(args)
 
     plan.print("Deploying CDK environment...")
+
+    if deploy_cdk_erigon_node:
+        args["l2_rpc_name"] = "cdk-erigon-node"
+    else:
+        args["l2_rpc_name"] = "zkevm-node-rpc"
+
+    if args["sequencer_type"] == "erigon":
+        args["sequencer_name"] = "cdk-erigon-sequencer"
+    else:
+        args["sequencer_name"] = "zkevm-node-sequencer"
 
     # Deploy a local L1.
     if deploy_l1:
@@ -90,6 +102,13 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
+        # Deploy cdk-erigon sequencer node.
+        if args["sequencer_type"] == "erigon":
+            plan.print("Deploying cdk-erigon sequencer")
+            cdk_erigon_package.run_sequencer(plan, args)
+        else:
+            plan.print("Skipping the deployment of cdk-erigon sequencer")
+
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
@@ -98,6 +117,13 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
+
+    # Deploy cdk-erigon node.
+    if deploy_cdk_erigon_node:
+        plan.print("Deploying cdk-erigon node")
+        cdk_erigon_package.run_rpc(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
@@ -125,7 +151,7 @@ def run(
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
 
-    # Deploy observability stack
+    # Deploy observability stack.
     if deploy_observability:
         plan.print("Deploying the observability stack")
         observability_args = dict(args)

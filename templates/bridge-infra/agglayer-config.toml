@@ -1,6 +1,6 @@
 [FullNodeRPCs]
 # TODO switch this to permissionless
-1 = "http://zkevm-node-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 [ProofSigners]
 # 1 = "{{.zkevm_l2_proofsigner_address}}"

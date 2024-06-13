@@ -63,7 +63,10 @@ args:
   panoptichain_image: minhdvu/panoptichain
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
+  zkevm_sequence_sender_image: "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4"
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
   toolbox_image: leovct/toolbox:0.0.1
+  sequencer_type: "zkevm-node"
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -126,6 +129,8 @@ args:
     # dora, # beaconchain explorer
     # el_forkmon, # fork monitor tool
   ]
+  l1_preset: mainnet
+  l1_seconds_per_slot: 12
 
   ## Rollup configuration.
 
