@@ -100,15 +100,15 @@ def run(
             src="/opt/zkevm/genesis.json",
         )
 
-    # Deploy cdk-erigon sequencer node.
-    if args["sequencer_type"] == "erigon":
-        plan.print("Deploying cdk-erigon sequencer")
-        cdk_erigon_package.run_sequencer(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon sequencer")
-
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
+        # Deploy cdk-erigon sequencer node.
+        if args["sequencer_type"] == "erigon":
+            plan.print("Deploying cdk-erigon sequencer")
+            cdk_erigon_package.run_sequencer(plan, args)
+        else:
+            plan.print("Skipping the deployment of cdk-erigon sequencer")
+
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
