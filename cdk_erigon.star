@@ -24,6 +24,7 @@ def run_rpc(plan, args):
             "config.yaml": struct(
                 template=cdk_erigon_node_config_template,
                 data={
+                    "is_sequencer": False,
                     "zkevm_sequencer_url": zkevm_sequence_url,
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
                 }
@@ -68,7 +69,7 @@ def run_rpc(plan, args):
 
 def run_sequencer(plan, args):
     cdk_erigon_node_config_template = read_file(
-        src="./templates/cdk-erigon/config-sequencer.yaml"
+        src="./templates/cdk-erigon/config.yaml"
     )
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_node_config_artifact = plan.render_templates(
@@ -77,6 +78,7 @@ def run_sequencer(plan, args):
             "config.yaml": struct(
                 template=cdk_erigon_node_config_template,
                 data={
+                    "is_sequencer": True,
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                 }
                 | args
