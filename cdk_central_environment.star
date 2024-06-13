@@ -1,5 +1,6 @@
 data_availability_package = import_module("./lib/data_availability.star")
 service_package = import_module("./lib/service.star")
+sequencer_package = import_module("./lib/sequencer.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
@@ -70,7 +71,7 @@ def run(plan, args):
         description="Starting the rest of the zkevm node components",
     )
 
-    if args["sequencer_type"] == "erigon":
+    if sequencer_package.is_cdk_erigon_sequencer(args):
         sequence_sender_config = (
             zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
                 plan, args, genesis_artifact, keystore_artifacts.sequencer

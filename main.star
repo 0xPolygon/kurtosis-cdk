@@ -11,6 +11,8 @@ workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
 cdk_erigon_package = "./lib/cdk_erigon.star"
 
+sequencer_package = import_module("./lib/cdk_erigon.star")
+
 
 def run(
     plan,
@@ -52,7 +54,7 @@ def run(
     else:
         args["l2_rpc_name"] = "zkevm-node-rpc"
 
-    if args["sequencer_type"] == "erigon":
+    if sequencer_package.is_cdk_erigon_sequencer(args):
         args["sequencer_name"] = "cdk-erigon-sequencer"
     else:
         args["sequencer_name"] = "zkevm-node-sequencer"
@@ -103,7 +105,7 @@ def run(
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
         # Deploy cdk-erigon sequencer node.
-        if args["sequencer_type"] == "erigon":
+        if sequencer_package.is_cdk_erigon_sequencer(args):
             plan.print("Deploying cdk-erigon sequencer")
             import_module(cdk_erigon_package).start_sequencer(plan, args)
         else:
