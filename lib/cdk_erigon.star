@@ -8,7 +8,9 @@ def start_sequencer(plan, args):
         args=args,
         name="cdk-erigon-sequencer" + args["deployment_suffix"],
         ports={
-            "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
+            "http-rpc": PortSpec(
+                args["zkevm_rpc_http_port"], application_protocol="http"
+            ),
             "data-streamer": PortSpec(
                 args["zkevm_data_streamer_port"], application_protocol="datastream"
             ),
@@ -23,7 +25,9 @@ def start_rpc(plan, args):
         args=args,
         name="cdk-erigon-rpc" + args["deployment_suffix"],
         ports={
-            "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
+            "http-rpc": PortSpec(
+                args["zkevm_rpc_http_port"], application_protocol="http"
+            ),
         },
         env_vars={},
     )

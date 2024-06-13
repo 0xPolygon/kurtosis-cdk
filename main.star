@@ -50,7 +50,7 @@ def run(
     plan.print("Deploying CDK environment...")
 
     if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
+        args["l2_rpc_name"] = "cdk-erigon-rpc"
     else:
         args["l2_rpc_name"] = "zkevm-node-rpc"
 
