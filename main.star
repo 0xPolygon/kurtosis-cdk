@@ -1,4 +1,6 @@
-input_parser = "./input_parser.star"
+sequencer_package = import_module("./lib/sequencer.star")
+
+input_parser_package = "./input_parser.star"
 ethereum_package = "./ethereum.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 databases_package = "./databases.star"
@@ -10,8 +12,6 @@ blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
 cdk_erigon_package = "./lib/cdk_erigon.star"
-
-sequencer_package = import_module("./lib/cdk_erigon.star")
 
 
 def run(
@@ -45,7 +45,7 @@ def run(
         A full deployment of Polygon CDK.
     """
 
-    args = import_module(input_parser).parse_args(args)
+    args = import_module(input_parser_package).parse_args(args)
 
     plan.print("Deploying CDK environment...")
 
