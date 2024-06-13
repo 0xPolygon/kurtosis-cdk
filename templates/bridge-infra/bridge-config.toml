@@ -14,7 +14,7 @@ MaxConns = 20
 
 [Etherman]
 l1URL = "{{.l1_rpc_url}}"
-L2URLs = ["http://zkevm-node-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
+L2URLs = ["http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
 
 [Synchronizer]
 SyncInterval = "5s"
