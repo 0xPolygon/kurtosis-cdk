@@ -44,6 +44,13 @@ args:
   # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
   data_availability_mode: cdk-validium
 
+  # The type of sequencer to use.
+  # Note that by default, the main L2 RPC will be of the same type.
+  # Options:
+  # - 'zkevm-node': The legacy sequencer used in the original zkEVM implementation.
+  # - 'cdk-erigon': The new sequencer built on top of the Erigon Ethereum client.
+  sequencer_type: "zkevm-node"
+
   # Docker images and repositories used to spin up services.
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
@@ -66,7 +73,6 @@ args:
   zkevm_sequence_sender_image: "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4"
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
   toolbox_image: leovct/toolbox:0.0.1
-  sequencer_type: "zkevm-node"
 
   # Port configuration.
   zkevm_hash_db_port: 50061
