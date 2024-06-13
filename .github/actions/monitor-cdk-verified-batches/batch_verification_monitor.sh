@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # This script monitors the verification progress of zkEVM batches.
-# Usage: ./batch_verification_monitor <verified_batches_target> <timeout>
+
+# Check if the required arguments are provided.
+if [ "$#" -lt 2 ]; then
+  echo "Usage: $0 <verified_batches_target> <timeout> [rpc_service]"
+  exit 1
+fi
 
 # The number of batches to be verified.
 verified_batches_target="$1"
