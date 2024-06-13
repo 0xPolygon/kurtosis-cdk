@@ -1,5 +1,5 @@
-service_package = import_module("./lib/service.star")
-sequencer_package = import_module("./lib/sequencer.star")
+service_package = import_module("./service.star")
+sequencer_package = import_module("./sequencer.star")
 
 
 def start_sequencer(plan, args):
