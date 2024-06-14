@@ -115,7 +115,7 @@ description: |-
   l1_funding_amount: 100ether
   l1_rpc_url: http://el-1-geth-lighthouse:8545
   l1_ws_url: ws://el-1-geth-lighthouse:8546
-  # https://github.com/kurtosis-tech/ethereum-package/tree/main?tab=readme-ov-file#configuration
+  # https://github.com/ethpandaops/ethereum-package/tree/main?tab=readme-ov-file#configuration
   l1_additional_services: [
     # blockscout, # block explorer
     # dora, # beaconchain explorer

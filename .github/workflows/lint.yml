@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  KURTOSIS_VERSION: 0.89.3
+  KURTOSIS_VERSION: 0.90.1
 
 jobs:
   check:
