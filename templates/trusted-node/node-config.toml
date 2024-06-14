@@ -1038,6 +1038,8 @@ Level = "info"
 #
 # ------------------------------------------------------------------------------
 [SequenceSender]
+# TODO
+IsValidiumMode = {{.is_cdk_validium}}
 
 # ------------------------------------------------------------------------------
 # WaitPeriodSendSequence will determine how long we wait to check for
@@ -1121,6 +1123,45 @@ SenderAddress = "{{.zkevm_l2_sequencer_address}}"
 [SequenceSender.PrivateKey]
 Path = "/etc/zkevm/sequencer.keystore"
 Password = "{{.zkevm_l2_keystore_password}}"
+
+[SequenceSender.StreamClient]
+# TODO
+Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+
+[SequenceSender.EthTxManager]
+# TODO
+FrequencyToMonitorTxs = "1s"
+# TODO
+WaitTxToBeMined = "2m"
+# TODO
+ConsolidationL1ConfirmationBlocks = 5
+# TODO
+FinalizationL1ConfirmationBlocks = 10
+# TODO
+WaitReceiptToBeGenerated = "8s"
+# TODO
+PrivateKeys = [
+  {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+]
+# TODO
+ForcedGas = 0
+# TODO
+GasPriceMarginFactor = 1
+# TODO
+MaxGasPriceLimit = 0
+# TODO
+PersistenceFilename = "/app/data/ethtxmanager.json"
+
+[SequenceSender.EthTxManager.Etherman]
+# TODO
+URL = "{{.l1_rpc_url}}"
+# TODO
+MultiGasProvider = false
+# TODO
+L1ChainID = {{.l1_chain_id}}
+# TODO
+HTTPHeaders = []
+
 
 # ==============================================================================
 #     _    ____  ____ ____  _____ ____    _  _____ ___  ____

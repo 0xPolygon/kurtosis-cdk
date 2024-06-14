@@ -1,15 +1,17 @@
-input_parser = "./input_parser.star"
+sequencer_package = import_module("./lib/sequencer.star")
+
+input_parser_package = "./input_parser.star"
 ethereum_package = "./ethereum.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
+cdk_erigon_package = "./lib/cdk_erigon.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
 observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
-cdk_erigon_package = import_module("./cdk_erigon.star")
 
 
 def run(
@@ -43,16 +45,16 @@ def run(
         A full deployment of Polygon CDK.
     """
 
-    args = import_module(input_parser).parse_args(args)
+    args = import_module(input_parser_package).parse_args(args)
 
     plan.print("Deploying CDK environment...")
 
     if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
+        args["l2_rpc_name"] = "cdk-erigon-rpc"
     else:
         args["l2_rpc_name"] = "zkevm-node-rpc"
 
-    if args["sequencer_type"] == "erigon":
+    if sequencer_package.is_cdk_erigon_sequencer(args):
         args["sequencer_name"] = "cdk-erigon-sequencer"
     else:
         args["sequencer_name"] = "zkevm-node-sequencer"
@@ -102,13 +104,6 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
-        # Deploy cdk-erigon sequencer node.
-        if args["sequencer_type"] == "erigon":
-            plan.print("Deploying cdk-erigon sequencer")
-            cdk_erigon_package.run_sequencer(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon sequencer")
-
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
@@ -117,13 +112,6 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
-
-    # Deploy cdk-erigon node.
-    if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        cdk_erigon_package.run_rpc(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:

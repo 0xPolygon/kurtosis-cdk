@@ -40,8 +40,13 @@ args:
   # Note: It should be a string.
   deployment_suffix: "-001"
 
-  # Sequence type. Choose from ["erigon", "zkevm-node"]
-  sequencer_type: "erigon"
+  # The type of sequencer to use.
+  # Note that by default, the main L2 RPC will be of the same type.
+  # Options:
+  # - 'zkevm-node': The legacy sequencer used in the original zkEVM implementation.
+  # - 'cdk-erigon': The new sequencer built on top of the Erigon Ethereum client.
+  sequencer_type: "cdk-erigon"
+
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.

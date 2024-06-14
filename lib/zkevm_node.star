@@ -52,7 +52,10 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
 
 
-def create_sequencer_service_config(args, config_artifact, genesis_artifact):
+# The sequencer is not required to run before any other zkevm node component but since we allow
+# multiple sequencer types (e.g. zkevm-node and cdk-erigon), it should have its own start method.
+# This is why this component does not have a `create_service_config` method.
+def start_sequencer(plan, args, config_artifact, genesis_artifact):
     sequencer_name = "zkevm-node-sequencer" + args["deployment_suffix"]
     sequencer_service_config = _create_node_component_service_config(
         image=data_availability_package.get_node_image(args),
@@ -70,7 +73,7 @@ def create_sequencer_service_config(args, config_artifact, genesis_artifact):
         components=NODE_COMPONENTS.sequencer + "," + NODE_COMPONENTS.rpc,
         http_api="eth,net,debug,zkevm,txpool,web3",
     )
-    return {sequencer_name: sequencer_service_config}
+    plan.add_service(name=sequencer_name, config=sequencer_service_config)
 
 
 def create_sequence_sender_service_config(
@@ -203,6 +206,12 @@ def create_zkevm_node_components_config(
     genesis_artifact,
     keystore_artifacts,
 ):
+    sequence_sender_config = create_sequence_sender_service_config(
+        args,
+        config_artifact,
+        genesis_artifact,
+        keystore_artifacts.sequencer,
+    )
     aggregator_config = create_aggregator_service_config(
         args,
         config_artifact,
@@ -222,22 +231,10 @@ def create_zkevm_node_components_config(
     l2_gas_pricer_config = create_l2_gas_pricer_service_config(
         args, config_artifact, genesis_artifact
     )
-    configs = (
-        aggregator_config | rpc_config | eth_tx_manager_config | l2_gas_pricer_config
+    return (
+        sequence_sender_config
+        | aggregator_config
+        | rpc_config
+        | eth_tx_manager_config
+        | l2_gas_pricer_config
     )
-
-    if args["sequencer_type"] == "zkevm-node":
-        sequencer_config = create_sequencer_service_config(
-            args, config_artifact, genesis_artifact
-        )
-
-        sequence_sender_config = create_sequence_sender_service_config(
-            args,
-            config_artifact,
-            genesis_artifact,
-            keystore_artifacts.sequencer,
-        )
-
-        return configs | sequencer_config | sequence_sender_config
-    else:
-        return configs

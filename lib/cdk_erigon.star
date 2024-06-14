@@ -1,32 +1,71 @@
-def start_node(
+service_package = import_module("./service.star")
+sequencer_package = import_module("./sequencer.star")
+
+
+def start_sequencer(
     plan,
     args,
-    cdk_erigon_node_config_artifact,
-    cdk_erigon_node_chain_spec_artifact,
-    cdk_erigon_node_chain_config_artifact,
-    cdk_erigon_node_chain_allocs_artifact,
-    is_sequencer,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
 ):
-    envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
-    ports = {}
-    if is_sequencer:
-        ports["rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"], application_protocol="http"
-        )
-        name = args["sequencer_name"] + args["deployment_suffix"]
-    else:
-        ports = {
+    _start_node(
+        plan=plan,
+        args=args,
+        name="cdk-erigon-sequencer" + args["deployment_suffix"],
+        ports={
             "http-rpc": PortSpec(
                 args["zkevm_rpc_http_port"], application_protocol="http"
-            )
-        }
-        name = args["l2_rpc_name"] + args["deployment_suffix"]
+            ),
+            "data-streamer": PortSpec(
+                args["zkevm_data_streamer_port"], application_protocol="datastream"
+            ),
+        },
+        env_vars={"CDK_ERIGON_SEQUENCER": "1"},
+        node_config_artifact=node_config_artifact,
+        chain_spec_artifact=chain_spec_artifact,
+        chain_config_artifact=chain_config_artifact,
+        chain_allocs_artifact=chain_allocs_artifact,
+    )
 
-    if is_sequencer:
-        ports["data-streamer"] = PortSpec(
-            args["zkevm_data_streamer_port"], application_protocol="datastream"
-        )
 
+def start_rpc(
+    plan,
+    args,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
+):
+    _start_node(
+        plan=plan,
+        args=args,
+        name="cdk-erigon-rpc" + args["deployment_suffix"],
+        ports={
+            "http-rpc": PortSpec(
+                args["zkevm_rpc_http_port"], application_protocol="http"
+            ),
+        },
+        env_vars={},
+        node_config_artifact=node_config_artifact,
+        chain_spec_artifact=chain_spec_artifact,
+        chain_config_artifact=chain_config_artifact,
+        chain_allocs_artifact=chain_allocs_artifact,
+    )
+
+
+def _start_node(
+    plan,
+    args,
+    name,
+    ports,
+    env_vars,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
+):
     plan.add_service(
         name=name,
         config=ServiceConfig(
@@ -35,25 +74,25 @@ def start_node(
             files={
                 "/etc/cdk-erigon": Directory(
                     artifact_names=[
-                        cdk_erigon_node_config_artifact,
-                        cdk_erigon_node_chain_spec_artifact,
-                        cdk_erigon_node_chain_config_artifact,
-                        cdk_erigon_node_chain_allocs_artifact,
+                        node_config_artifact,
+                        chain_spec_artifact,
+                        chain_config_artifact,
+                        chain_allocs_artifact,
                     ],
                 ),
                 "/home/erigon/dynamic-configs/": Directory(
                     artifact_names=[
-                        cdk_erigon_node_chain_spec_artifact,
-                        cdk_erigon_node_chain_config_artifact,
-                        cdk_erigon_node_chain_allocs_artifact,
+                        chain_spec_artifact,
+                        chain_config_artifact,
+                        chain_allocs_artifact,
                     ]
                 ),
             },
+            env_vars=env_vars,
+            # Sleep for 10 seconds in order to wait for datastream server getting ready.
+            # TODO: Find a better way instead of waiting.
             entrypoint=["sh", "-c"],
-            # Sleep for 10 seconds in order to wait for datastream server getting ready
-            # TODO: find a better way instead of waiting
             cmd=["sleep 10 && cdk-erigon --config /etc/cdk-erigon/config.yaml"],
             # cmd=["--config=/etc/cdk-erigon/config.yaml"],
-            env_vars=envs,
         ),
     )

@@ -1,14 +1,16 @@
 data_availability_package = import_module("./lib/data_availability.star")
 service_package = import_module("./lib/service.star")
+sequencer_package = import_module("./lib/sequencer.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
+cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 databases = import_module("./databases.star")
 
 
 def run(plan, args):
     db_configs = databases.get_db_configs(args["deployment_suffix"])
+
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"
@@ -52,10 +54,57 @@ def run(plan, args):
         name="trusted-node-config",
     )
 
+    # Create cdk-erigon configurations files.
+    cdk_erigon_node_config_template = read_file(
+        src="./templates/cdk-erigon/config.yaml"
+    )
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+    [
+        cdk_erigon_chain_spec_artifact,
+        cdk_erigon_chain_config_artifact,
+        cdk_erigon_chain_allocs_artifact,
+    ] = _create_cdk_erigon_sequencer_config(plan, args)
+
     # Start the synchronizer.
     zkevm_node_package.start_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
+
+    # Start the sequencer.
+    if sequencer_package.is_zkevm_node_sequencer(args):
+        plan.print("Deploying zkevm-node sequencer")
+        zkevm_node_package.start_sequencer(
+            plan, args, node_config_artifact, genesis_artifact
+        )
+    elif sequencer_package.is_cdk_erigon_sequencer(args):
+        plan.print("Deploying cdk-erigon sequencer")
+        cdk_erigon_sequencer_config_artifact = plan.render_templates(
+            name="cdk-erigon-sequencer-config",
+            config={
+                "config.yaml": struct(
+                    template=cdk_erigon_node_config_template,
+                    data=args
+                    | contract_setup_addresses
+                    | {
+                        "is_sequencer": True,
+                    },
+                ),
+            },
+        )
+        cdk_erigon_package.start_sequencer(
+            plan,
+            args,
+            cdk_erigon_sequencer_config_artifact,
+            cdk_erigon_chain_spec_artifact,
+            cdk_erigon_chain_config_artifact,
+            cdk_erigon_chain_allocs_artifact,
+        )
+    else:
+        fail(
+            "The sequencer type: '{}' is not supported by Kurtosis CDK".format(
+                args["sequencer_type"]
+            )
+        )
 
     # Start the rest of the zkevm node components.
     keystore_artifacts = get_keystores_artifacts(plan, args)
@@ -64,23 +113,44 @@ def run(plan, args):
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
     )
-
     plan.add_services(
         configs=zkevm_node_components_configs,
         description="Starting the rest of the zkevm node components",
     )
 
-    if args["sequencer_type"] == "erigon":
-        sequence_sender_config = (
-            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
-                plan, args, genesis_artifact, keystore_artifacts.sequencer
-            )
-        )
-
-        plan.add_services(
-            configs=sequence_sender_config,
-            description="Starting the rest of the zkevm node components",
-        )
+    # Deploy cdk-erigon rpc.
+    sequencer_name = sequencer_package.get_sequencer_name(plan, args)
+    sequencer_service = plan.get_service(name=sequencer_name)
+    sequencer_rpc_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["http-rpc"].number
+    )
+    datastreamer_url = "{}:{}".format(
+        sequencer_service.ip_address,
+        sequencer_service.ports["data-streamer"].number,
+    )
+    cdk_erigon_rpc_config_artifact = plan.render_templates(
+        name="cdk-erigon-rpc-config",
+        config={
+            "config.yaml": struct(
+                template=cdk_erigon_node_config_template,
+                data=args
+                | contract_setup_addresses
+                | {
+                    "is_sequencer": False,
+                    "zkevm_sequencer_url": sequencer_rpc_url,
+                    "zkevm_datastreamer_url": datastreamer_url,
+                },
+            ),
+        },
+    )
+    cdk_erigon_package.start_rpc(
+        plan,
+        args,
+        cdk_erigon_rpc_config_artifact,
+        cdk_erigon_chain_spec_artifact,
+        cdk_erigon_chain_config_artifact,
+        cdk_erigon_chain_allocs_artifact,
+    )
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):
@@ -144,3 +214,37 @@ def create_dac_config_artifact(plan, args, db_configs):
             )
         },
     )
+
+
+def _create_cdk_erigon_sequencer_config(plan, args):
+    # Create the cdk-erigon chain spec config.
+    cdk_erigon_chain_spec_template = read_file(
+        src="./templates/cdk-erigon/chainspec.json"
+    )
+    cdk_erigon_chain_spec_artifact = plan.render_templates(
+        name="cdk-erigon-chain-spec",
+        config={
+            "dynamic-kurtosis-chainspec.json": struct(
+                template=cdk_erigon_chain_spec_template,
+                data={
+                    "chain_id": args["zkevm_rollup_chain_id"],
+                },
+            ),
+        },
+    )
+
+    # Retrieve the cdk-erigon chain config.
+    cdk_erigon_chain_config_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-config",
+    )
+
+    # Retrieve the cdk-erigon chain allocs.
+    cdk_erigon_chain_allocs_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-allocs",
+    )
+
+    return [
+        cdk_erigon_chain_spec_artifact,
+        cdk_erigon_chain_config_artifact,
+        cdk_erigon_chain_allocs_artifact,
+    ]
