@@ -43,7 +43,7 @@ def start_panoptichain(plan, args):
 
 def run(plan, args):
     for service in plan.get_services():
-        if service.name == "zkevm-node-rpc" + args["deployment_suffix"]:
+        if service.name == args["l2_rpc_name"] + args["deployment_suffix"]:
             args["zkevm_rpc_url"] = "http://{}:{}".format(
                 service.ip_address, service.ports["http-rpc"].number
             )

@@ -3,6 +3,7 @@ service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 databases = import_module("./databases.star")
 
 
@@ -63,10 +64,23 @@ def run(plan, args):
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
     )
+
     plan.add_services(
         configs=zkevm_node_components_configs,
         description="Starting the rest of the zkevm node components",
     )
+
+    if args["sequencer_type"] == "erigon":
+        sequence_sender_config = (
+            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
+                plan, args, genesis_artifact, keystore_artifacts.sequencer
+            )
+        )
+
+        plan.add_services(
+            configs=sequence_sender_config,
+            description="Starting the rest of the zkevm node components",
+        )
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):

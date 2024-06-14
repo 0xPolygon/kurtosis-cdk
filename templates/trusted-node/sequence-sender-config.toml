@@ -1,0 +1,35 @@
+[Log]
+Environment = "development"
+Level = "debug"
+Outputs = ["stdout"]
+
+[SequenceSender]
+IsValidiumMode={{.zkevm_is_validium}}
+WaitPeriodSendSequence = "15s"
+LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
+MaxTxSizeForL1 = 131072
+L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
+PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+SequencesTxFileName = "/app/data/sequencesender.json"
+WaitPeriodPurgeTxFile = "48h"
+MaxPendingTx = 1
+	[SequenceSender.StreamClient]
+		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+	[SequenceSender.EthTxManager]
+		FrequencyToMonitorTxs = "1s"
+		WaitTxToBeMined = "2m"
+		ConsolidationL1ConfirmationBlocks = 5
+		FinalizationL1ConfirmationBlocks = 10
+		WaitReceiptToBeGenerated = "8s"
+		PrivateKeys = [
+			{Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+		]
+		ForcedGas = 0
+		GasPriceMarginFactor = 1
+		MaxGasPriceLimit = 0
+		PersistenceFilename = "/app/data/ethtxmanager.json"
+			[SequenceSender.EthTxManager.Etherman]
+				URL = "{{.l1_rpc_url}}"
+				MultiGasProvider = false
+				L1ChainID =  {{.l1_chain_id}}
+				HTTPHeaders = []

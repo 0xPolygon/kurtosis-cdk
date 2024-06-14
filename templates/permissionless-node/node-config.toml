@@ -75,7 +75,7 @@ WriteTimeout = "60s"
 BatchRequestsEnabled = true
 BatchRequestsLimit = 500
 MaxRequestsPerIPAndSecond = 5000
-SequencerNodeURI = "{{.trusted_sequencer_node_uri}}"
+SequencerNodeURI = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 EnableL2SuggestedGasPricePolling = true
         [RPC.WebSockets]
                 Enabled = true
