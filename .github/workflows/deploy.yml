@@ -230,10 +230,11 @@ jobs:
 
       - name: Deploy the rest of the components
         run: |
-          # Enable all deployment steps.
-          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = true else . end)' params.yml
           # Do not deploy l1 and zkevm contracts.
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
+
+          # Deploy databases, cdk central/trusted environment, cdk/bridge infra and observability stack.
+          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
