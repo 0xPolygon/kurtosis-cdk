@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script is responsible for deploying the contracts for zkEVM/CDK.
-
+set -x
 echo_ts() {
     timestamp=$(date +"[%Y-%m-%d %H:%M:%S]")
     echo "$timestamp $1"
@@ -35,14 +35,22 @@ fund_account_on_l1() {
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
-    echo "This script has already been executed"
-    exit
+    2>&1 echo "This script has already been executed"
+    exit 1
 fi
 
 # Wait for the L1 RPC to be available.
 echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
+
+if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
+    2>&1 echo "We have a genesis and combined output file from a previous deployment"
+    cp /opt/contract-deploy/* /opt/zkevm/
+    exit
+else
+    2>&1 echo "No previous output detected. Starting clean contract deployment"
+fi
 
 # Fund accounts on L1.
 echo_ts "Funding important accounts on l1"

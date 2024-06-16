@@ -21,8 +21,21 @@ ARTIFACTS = [
 
 
 def run(plan, args):
+    artifact_paths = list(ARTIFACTS)
+    # If we are configured to use a previous deployment, we'll
+    # dynamically add artifacts for the genesis and combined outputs.
+    if "use_previously_deployed_contracts" in args and args["use_previously_deployed_contracts"]:
+        artifact_paths.append({
+            "name": "genesis.json",
+            "file": "./templates/contract-deploy/genesis.json",
+        })
+        artifact_paths.append({
+            "name": "combined.json",
+            "file": "./templates/contract-deploy/combined.json",
+        })
+
     artifacts = []
-    for artifact_cfg in ARTIFACTS:
+    for artifact_cfg in artifact_paths:
         template = read_file(src=artifact_cfg["file"])
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
