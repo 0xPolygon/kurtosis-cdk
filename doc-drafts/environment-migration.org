@@ -372,6 +372,7 @@ polycli parseethwallet --hexkey "0x5f54d3ba1e3c4e04659be1ce69db0057bb0d451a9309f
 cat /tmp/seq/UTC* | jq '.' | tee sequencer-new.keystore
 docker cp sequencer-new.keystore zkevm-node-sequence-sender-001--9fa2ad90b6bc4089926282b47e3b97f0:/etc/zkevm/sequencer.keystore
 docker cp sequencer-new.keystore zkevm-node-eth-tx-manager-001--ed96326026604904be780bfb4dcdb308:/etc/zkevm/sequencer.keystore
+docker cp sequencer-new.keystore zkevm-node-aggregator-001--55067133acc84b658235a61374516b9e:/etc/zkevm/sequencer.keystore
 
 
 docker cp zkevm-node-sequence-sender-001--9fa2ad90b6bc4089926282b47e3b97f0:/etc/zkevm/node-config.toml sequencer-config.toml
