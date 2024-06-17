@@ -322,7 +322,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yaml --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
