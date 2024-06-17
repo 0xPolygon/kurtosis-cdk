@@ -32,12 +32,12 @@ cast wallet new-mnemonic
 #+begin_example
 Successfully generated a new mnemonic.
 Phrase:
-author obvious basket copy mention frequent duck add surprise camp month cycle
+multiply smoke dash galaxy priority speak sell decade diamond crew charge because
 
 Accounts:
 - Account 0:
-Address:     0xb60D3C495c9b90524e4b511bC54f374aB4ad216A
-Private key: 0x1a540ca8d6504bf2df8aa75bebaba1466fa47e383fe7cae8f03d6bfac885c4c4
+Address:     0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC
+Private key: 0x8a4758bf2a9c144e4421327f6155f52e31c12ed4684e6c852b91a7d7f7e6c75f
 #+end_example
 
 Great! Now we have a new seed phrase to use. Now, we'll take that seed
@@ -45,7 +45,7 @@ phrase and write generate the settings for ~params.yml~.
 
 
 #+begin_src bash :exports both verbatim :results output example
-seed="author obvious basket copy mention frequent duck add surprise camp month cycle"
+seed="multiply smoke dash galaxy priority speak sell decade diamond crew charge because"
 polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
     jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | \
     awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
@@ -53,32 +53,32 @@ polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
 
 #+RESULTS:
 #+begin_example
-zkevm_l2_sequencer_address: "0xb60D3C495c9b90524e4b511bC54f374aB4ad216A"
-zkevm_l2_sequencer_private_key: "0x1a540ca8d6504bf2df8aa75bebaba1466fa47e383fe7cae8f03d6bfac885c4c4"
+zkevm_l2_sequencer_address: "0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC"
+zkevm_l2_sequencer_private_key: "0x8a4758bf2a9c144e4421327f6155f52e31c12ed4684e6c852b91a7d7f7e6c75f"
 
-zkevm_l2_aggregator_address: "0x6f84bE941517B3910d8f9754d81aE963Cf0bA988"
-zkevm_l2_aggregator_private_key: "0x3b24b06a5b83fcde7b19837339cd887041b9c8edd3009c8d8c5389d958cb7916"
+zkevm_l2_aggregator_address: "0x26CA15d9120865bE26B793f2723bC5b72a3cC005"
+zkevm_l2_aggregator_private_key: "0x5da908dcdbdd4b218200d19f515100aa6ccf174493ecbb5935bbd8a3902817a5"
 
-zkevm_l2_claimtxmanager_address: "0xCc67Ef95593015E0B28E938BAC388f6583163317"
-zkevm_l2_claimtxmanager_private_key: "0xf3b58e615bad5017900c8fbed211256fdb87b881f7ce9143e03600ff63f39ab2"
+zkevm_l2_claimtxmanager_address: "0x6988E26EA35F7A89EA7D585Ed4C2531C49536db0"
+zkevm_l2_claimtxmanager_private_key: "0xb1d376a41eba806b05ae5943a481d9fb084c8e4d86b195e802bbc0396bc65299"
 
-zkevm_l2_timelock_address: "0x58C7dF3c513293da6C3140d66CFFf7709E4f2b12"
-zkevm_l2_timelock_private_key: "0x8af6b387e4e53bfae6bac42484119aab0c987c11fb46f2bdd2597234c4090820"
+zkevm_l2_timelock_address: "0xD9158B5689165A2bD7C9458f90937918a224A366"
+zkevm_l2_timelock_private_key: "0x173498fcb664d6b7a4d96815b17c01ecdc297617868b9b64ff7eeab72c6cdf4f"
 
-zkevm_l2_admin_address: "0x17C8c765f260e146673f90B11C7fbBC76AE6E35A"
-zkevm_l2_admin_private_key: "0x8790fa937488a93936cafa62d38ac9e89e381b48c693a5af9c3a7c7aa2846299"
+zkevm_l2_admin_address: "0x66415f84060F1E29249854B3adD1005c13B179e8"
+zkevm_l2_admin_private_key: "0x0a32ff2b564f2aaef2edbccc0b17dd5e8b7c4095fb401656628e9d152c905436"
 
-zkevm_l2_loadtest_address: "0x5b8f6ccaCD4316B78bc905563CF5b7cC962131f8"
-zkevm_l2_loadtest_private_key: "0x335311b1d2d0176eabeaa9340f24ab673a9066cde39968a701ff368618306651"
+zkevm_l2_loadtest_address: "0xb4448643d356E4BB2538A02FC71D4Ff44a557f68"
+zkevm_l2_loadtest_private_key: "0x9e3ebe432983e6ad85d1dc888f035149bbbed49360ddcf2b7ec7571be537227a"
 
-zkevm_l2_agglayer_address: "0xAfC6DFA032955ab25DA91251fFd73Eba7a29605C"
-zkevm_l2_agglayer_private_key: "0x517056b9385650c75b92902bc9593d976dff042790677a98f402ff2e9d7f18f3"
+zkevm_l2_agglayer_address: "0x7Aa41178DAEfad8f5028305e56561909253057c4"
+zkevm_l2_agglayer_private_key: "0x88c9cbb351cc8d3958f95aeb67a94feb82ff1e846b49b7bd16141e42b1c505b5"
 
-zkevm_l2_dac_address: "0x150d590DfE9F0AA82F58F88E234e2Fe51E6D0D9F"
-zkevm_l2_dac_private_key: "0xeb87dbe57cfd4d0dd6a47efc773663688a0111137626b1634bf6d4fa1de33118"
+zkevm_l2_dac_address: "0x87f4AE221e4a03b418018dB2077aB41D96AEacD7"
+zkevm_l2_dac_private_key: "0x50a99f789dc2642b90e584a855966500f02ba2cdf7d02fb4cbc6c4dc8f082f68"
 
-zkevm_l2_proofsigner_address: "0x6C74057824D373d6eA23f27aDFb17142d6ae9e4f"
-zkevm_l2_proofsigner_private_key: "0xccecc1f06529cc071a074c9a66d2b7dcee92eb0d8dc3d17ab7e239bb811f58e1"
+zkevm_l2_proofsigner_address: "0xcE6F58538ec91FA812De605eB7e0213e027618bB"
+zkevm_l2_proofsigner_private_key: "0xf5e2efe3537d9dc8db5c05840fd8c8172de3d988487832fe6e43b7ba3e41bbd4"
 
 #+end_example
 
@@ -97,21 +97,22 @@ cast wallet new-mnemonic
 #+end_src
 
 #+RESULTS:
-: [32mSuccessfully generated a new mnemonic.[0m
-: Phrase:
-: emotion include grocery record sport divorce mushroom lesson attitude drop sausage gospel
-: 
-: Accounts:
-: - Account 0:
-: Address:     0x3AEaB9aF3bcB6B37EB94AB7633d8ce2DfFCb591C
-: Private key: 0x3e241870743f80488c9c35e474650fae3e9485b0eb704386432b7c89b012d4c1
-: 
+#+begin_example
+Phrase:
+proof slam law choose steak beach fee cousin rate soup bunker undo
+
+Accounts:
+- Account 0:
+Address:     0x2eEfbBbbb4344CAa1180593EBCDFC20a60f54bae
+Private key: 0xff4eacda829d92184a5f385097daf968fd0730e48a7ed4ab321f79e5154d5096
+#+end_example
+
 
 We'll take that mnemonic and configure ~l1_preallocated_mnemonic~ with
 this value.
 
 #+begin_src bash
-yq -Y --in-place '.args.l1_preallocated_mnemonic = "emotion include grocery record sport divorce mushroom lesson attitude drop sausage gospel"' params.yml
+yq -Y --in-place '.args.l1_preallocated_mnemonic = "proof slam law choose steak beach fee cousin rate soup bunker undo"' params.yml
 #+end_src
 
 This account is used for two things. It sends funds to the accounts
@@ -194,40 +195,41 @@ kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json'
 #+RESULTS:
 #+begin_src json
 {
-  "polygonRollupManagerAddress": "0x6084F261c8b9D4339e4C0a2FB6E886fAd1fF0259",
-  "polygonZkEVMBridgeAddress": "0x3f147C0011EC51772F36a11c1e1a3201Cb7B9516",
-  "polygonZkEVMGlobalExitRootAddress": "0xc07DcCf6e6db9c34400148a4707558De21D1cB1D",
-  "polTokenAddress": "0x0Fa919B5631C56F0Bdc9Ef5C3cD2b709CcEB4157",
-  "zkEVMDeployerContract": "0x944a6A500AC29B2a14E5831A4062E9DafBb5d8f4",
-  "deployerAddress": "0x17C8c765f260e146673f90B11C7fbBC76AE6E35A",
-  "timelockContractAddress": "0x4bABa1E82942Dd65807077cE043441f987D549af",
-  "deploymentRollupManagerBlockNumber": 6088004,
-  "upgradeToULxLyBlockNumber": 6088004,
-  "admin": "0x17C8c765f260e146673f90B11C7fbBC76AE6E35A",
-  "trustedAggregator": "0x6f84bE941517B3910d8f9754d81aE963Cf0bA988",
-  "proxyAdminAddress": "0x1082d14f5d8cc63AB76225C84792C7B0C7027009",
-  "salt": "0x0000000000000000000000000000000000000000000000000000000000000006",
-  "polygonDataCommitteeAddress": "0x0869B6765f2f586e5391DafBB264a8E02786d4Ae",
+  "polygonRollupManagerAddress": "0xa05884c86C76739c66945d7E66eb2fB13E621255",
+  "polygonZkEVMBridgeAddress": "0xeB6F870e0E6CF8fF8A7881982327431d05ffbD93",
+  "polygonZkEVMGlobalExitRootAddress": "0x8f4CE36c293A7caaF205A590989352fB5123b964",
+  "polTokenAddress": "0x5123511db2b62a43DD070db5551706AE9c204931",
+  "zkEVMDeployerContract": "0x28222Da90CE840645B66bf3d6E2F1B4C720d7292",
+  "deployerAddress": "0x66415f84060F1E29249854B3adD1005c13B179e8",
+  "timelockContractAddress": "0x0231594192139Ff58DcD06ECa523650839c0318d",
+  "deploymentRollupManagerBlockNumber": 6126974,
+  "upgradeToULxLyBlockNumber": 6126974,
+  "admin": "0x66415f84060F1E29249854B3adD1005c13B179e8",
+  "trustedAggregator": "0x26CA15d9120865bE26B793f2723bC5b72a3cC005",
+  "proxyAdminAddress": "0xDFF353766806798f2eD7D55e637bC24f6E18304D",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000007",
+  "polygonDataCommitteeAddress": "0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5",
   "firstBatchData": {
-    "transactions": "0xf9010380808401c9c380943f147c0011ec51772f36a11c1e1a3201cb7b951680b8e4f811bff7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a40d5f56745a118d0906a34e69aec8c0db1cb8fa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ca1ab1e0000000000000000000000000000000000000000000000000000000005ca1ab1e1bff",
+    "transactions": "0xf9010380808401c9c38094eb6f870e0e6cf8ff8a7881982327431d05ffbd9380b8e4f811bff7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a40d5f56745a118d0906a34e69aec8c0db1cb8fa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ca1ab1e0000000000000000000000000000000000000000000000000000000005ca1ab1e1bff",
     "globalExitRoot": "0xad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5",
-    "timestamp": 1718140272,
-    "sequencer": "0xb60D3C495c9b90524e4b511bC54f374aB4ad216A"
+    "timestamp": 1718630196,
+    "sequencer": "0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC"
   },
-  "genesis": "0xc423cb33712aa17422986d234ef9edfdf473b862396be3bf690839e40d8fe501",
-  "createRollupBlockNumber": 6088008,
-  "rollupAddress": "0x025a2916663273d21F102d2F9f8bace92534E56A",
-  "verifierAddress": "0x19a9189DADDAB4F952c4060FbC7BE2B6E5C698c3",
+  "genesis": "0xa73667acab468fafc42e3432b7df4995e1132ebee920c95f84909196a14245d5",
+  "createRollupBlockNumber": 6126978,
+  "rollupAddress": "0x358F5433Bd221E1647C40C360fc206A6d6a00A44",
+  "verifierAddress": "0x8d9fA4b7c32729D2bF6023E4875D2cf4E085B102",
   "consensusContract": "PolygonValidiumEtrog",
   "polygonZkEVMGlobalExitRootL2Address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
 }
+
 #+end_src
 
 These are all of the generated details from the network. We can see
 some of the contracts in Etherscan / Blockscout now:
 
-- Sequenced batches should show up here https://sepolia.etherscan.io/address/0x025a2916663273d21F102d2F9f8bace92534E56A
-- Verifed batches should show up here https://sepolia.etherscan.io/address/0x6084F261c8b9D4339e4C0a2FB6E886fAd1fF0259
+- Sequenced batches should show up here https://sepolia.etherscan.io/address/0x358F5433Bd221E1647C40C360fc206A6d6a00A44
+- Verified batches should show up here https://sepolia.etherscan.io/address/0xa05884c86C76739c66945d7E66eb2fB13E621255
 
 * Separate Contract Deployment
 
