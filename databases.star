@@ -1,9 +1,9 @@
+POSTGRES_HOSTNAME = "35.189.78.223"
 POSTGRES_IMAGE = "postgres:16.2"
-POSTGRES_SERVICE_NAME = "postgres"
 POSTGRES_PORT = 5432
-POSTGRES_MASTER_DB = "master"
-POSTGRES_MASTER_USER = "master_user"
-POSTGRES_MASTER_PASSWORD = "master_password"
+POSTGRES_MASTER_DB = "kurtosis-persistent-postgres"
+POSTGRES_MASTER_USER = "postgres"
+POSTGRES_MASTER_PASSWORD = "REDACTED"
 
 CDK_DATABASES = {
     "event_db": {

@@ -161,7 +161,7 @@
      * "local" if no external database is used (data will be stored in
      * cache)
      */ -}}
-    "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
+    "databaseURL": "postgresql://prover_user:SR5xq2KZPgvQkPDranCRhvkv6pnqfo77@35.189.78.223:5432/prover_db",
 
 {{- /*
      * dbNodesTableName is the schema and name of the nodes table in

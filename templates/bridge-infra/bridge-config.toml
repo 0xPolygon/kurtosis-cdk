@@ -5,11 +5,11 @@ Outputs = ["stderr"]
 
 [SyncDB]
 Database = "postgres"
-User = "{{.bridge_db.user}}"
-Name = "{{.bridge_db.name}}"
-Password = "{{.bridge_db.password}}"
-Host = "{{.bridge_db.hostname}}"
-Port = "{{.bridge_db.port}}"
+User = "bridge_user"
+Name = "bridge_db"
+Password = "aXPqaRvgo5DfnTbHtpYS9rMhVpjvb6tY"
+Host = "35.189.78.223"
+Port = "5432"
 MaxConns = 20
 
 [Etherman]
