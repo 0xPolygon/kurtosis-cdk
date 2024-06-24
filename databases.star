@@ -97,7 +97,11 @@ def create_postgres_service(plan, db_configs, suffix):
             "POSTGRES_USER": POSTGRES_MASTER_USER,
             "POSTGRES_PASSWORD": POSTGRES_MASTER_PASSWORD,
         },
-        files={"/docker-entrypoint-initdb.d/": init_script},
+        files={
+            "tmp/persistent-postgres/": Directory(
+                persistent_key="persistent-postgres",
+            ),
+        },
         cmd=["-N 1000"],
     )
 
