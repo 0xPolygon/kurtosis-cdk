@@ -21,7 +21,7 @@ deploy_cdk_bridge_infra: true
 deploy_zkevm_permissionless_node: false
 
 # Deploy observability stack.
-deploy_observability: true
+deploy_observability: false
 
 # Deploy Blockscout stack.
 deploy_l2_blockscout: false
@@ -62,7 +62,7 @@ args:
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   panoptichain_image: minhdvu/panoptichain
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
-  zkevm_bridge_proxy_image: haproxy:2.9.7
+  zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
   toolbox_image: leovct/toolbox:0.0.1
 
   # Port configuration.
