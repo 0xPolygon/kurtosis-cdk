@@ -76,5 +76,5 @@ def run(plan, args):
         prometheus_url,
         "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards",
         name="grafana" + args["deployment_suffix"],
-        grafana_alerts_file=read_file(src="./static-files/alerts.yaml"),
+        grafana_alerts_file="github.com/0xPolygon/kurtosis-cdk/static-files/alerts.yaml",
     )
