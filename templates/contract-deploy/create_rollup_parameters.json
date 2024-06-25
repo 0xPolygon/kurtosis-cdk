@@ -13,6 +13,6 @@
     "networkName": "kurtosis-test",
     "realVerifier": "false",
     "trustedSequencer": "{{.zkevm_l2_sequencer_address}}",
-    "trustedSequencerURL": "http://zkevm-node-sequencer{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}",
+    "trustedSequencerURL": "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}",
     "trustedAggregator":"{{.zkevm_l2_aggregator_address}}"
 }

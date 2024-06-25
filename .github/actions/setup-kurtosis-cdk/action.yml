@@ -6,7 +6,7 @@ inputs:
   kurtosis-version:
     description: The version of kurtosis
     required: false
-    default: '0.89.12' # https://github.com/kurtosis-tech/kurtosis/releases
+    default: '0.90.1' # https://github.com/kurtosis-tech/kurtosis/releases
 
 runs:
   using: "composite"

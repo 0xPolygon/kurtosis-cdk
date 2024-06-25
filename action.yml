@@ -26,7 +26,7 @@ inputs:
   kurtosis_cli:
     description: kurtosis-tech/kurtosis (release tag)
     required: false
-    default: '0.89.3'
+    default: '0.90.1'
   kurtosis_cdk:
     description: 0xPolygon/kurtosis-cdk (release tag)
     required: false

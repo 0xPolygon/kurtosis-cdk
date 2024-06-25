@@ -23,6 +23,12 @@ kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ```
 
+The command above launches deploys a CDK stack using [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. Alternatively, to launch a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer, you can run the following command.
+
+```bash
+kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
+```
+
 Let's do a simple L2 RPC test call.
 
 First, you will need to figure out which port Kurtoiss is using for the RPC. You can get a general feel for the entire network layout by running the following command:

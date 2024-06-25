@@ -1,33 +1,47 @@
-name: github.com/0xPolygon/kurtosis-cdk
-description: |-
-  Polygon CDK
-  ========
-  This package allows you to provision a Polygon CDK Devnet within Kurtosis
+---
+# Deployment parameters.
+# The deployment process is divided into various stages.
 
-  Configuration
-  -------------
-  Currently, the deployment process includes the following stages:
+# Deploy local L1.
+deploy_l1: true
 
-  Deploy Local L1.
-  Deploy zkEVM contracts on L1.
-  Deploy zkEVM node and CDK peripheral databases.
-  Deploy CDK central/trusted environment.
-  Deploy CDK/bridge infrastructure.
-  Deploy permissionless node.
-  Deploy CDK erigon node.
-  Deploy observability stack.
-  Deploy eth load balancer.
-  Apply workload to the different components of the CDK stack.
+# Deploy zkevm contracts on L1 (and also fund accounts).
+deploy_zkevm_contracts_on_l1: true
 
-  These are configurable via the form inputs.
+# Deploy zkevm node and cdk peripheral databases.
+deploy_databases: true
 
-  The following other args optionally configurable via args object. Here are the default values:
+# Deploy cdk central/trusted environment.
+deploy_cdk_central_environment: true
 
-  ```yml
+# Deploy cdk/bridge infrastructure.
+deploy_cdk_bridge_infra: true
+
+# Deploy permissionless node.
+deploy_zkevm_permissionless_node: false
+
+# Deploy cdk-erigon node.
+deploy_cdk_erigon_node: true
+
+# Deploy observability stack.
+deploy_observability: true
+
+# Deploy Blockscout stack.
+deploy_l2_blockscout: false
+
+# Deploy eth load balancer.
+deploy_blutgang: false
+
+# Apply workload to the different components of the CDK stack.
+apply_workload: false
+
+args:
   # Suffix appended to service names.
   # Note: It should be a string.
   deployment_suffix: "-001"
 
+  # Sequence type. Choose from ["erigon", "zkevm-node"]
+  sequencer_type: "erigon"
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
@@ -36,29 +50,25 @@ description: |-
   data_availability_mode: cdk-validium
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC9
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
-
-  zkevm_node_image: hermeznetwork/zkevm-node:v0.6.5
-  cdk_node_image: 0xpolygon/cdk-validium-node:0.6.5-cdk
-  # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.6.7
+  cdk_node_image: 0xpolygon/cdk-validium-node:0.6.7-cdk
 
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
+  # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:0.1.0
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.1.3
   panoptichain_image: minhdvu/panoptichain
-
-  # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
-
-  zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
+  workload_image: leovct/workload:0.0.1
+  zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC5
   toolbox_image: leovct/toolbox:0.0.1
-  sequencer_type: zkevm-node
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -109,20 +119,20 @@ description: |-
   # Keystore password.
   zkevm_l2_keystore_password: pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m
 
-    ## L1 configuration.
+  ## L1 configuration.
   l1_chain_id: 271828
   l1_preallocated_mnemonic: code code code code code code code code code code code quality
   l1_funding_amount: 100ether
   l1_rpc_url: http://el-1-geth-lighthouse:8545
   l1_ws_url: ws://el-1-geth-lighthouse:8546
-  # https://github.com/ethpandaops/ethereum-package/tree/main?tab=readme-ov-file#configuration
+  # https://github.com/kurtosis-tech/ethereum-package/tree/main?tab=readme-ov-file#configuration
   l1_additional_services: [
     # blockscout, # block explorer
     # dora, # beaconchain explorer
     # el_forkmon, # fork monitor tool
   ]
-  l1_preset: mainnet
-  l1_seconds_per_slot: 12
+  l1_preset: minimal
+  l1_seconds_per_slot: 1
 
   ## Rollup configuration.
 
@@ -131,6 +141,16 @@ description: |-
 
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
+
+  # The address of the rollup manager contract on L1.
+  # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.
+  # zkevm_rollup_manager_address: ""
+  # # The block number at which the rollup manager contract was deployed.
+  # zkevm_rollup_manager_block_number: 0
+  # # The address of the global exit root contract on L2.
+  # zkevm_global_exit_root_l2_address: ""
+  # # The address of the Polygon data committee contract on L1.
+  # polygon_data_committee_address: ""
 
   polygon_zkevm_explorer: https://explorer.private/
   l1_explorer_url: https://sepolia.etherscan.io/
@@ -154,11 +174,10 @@ description: |-
     "polycli_loadtest_on_l2.sh 7",  # erc721 mints
     "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
     "polycli_rpcfuzz_on_l2.sh",     # rpc calls
-    "bridge.sh",                    # bridge tokens l1 -> l2 and l2 -> l1
+    "bridge.sh", # bridge tokens l1 -> l2 and l2 -> l1
   ]
 
   ## ETH Load balancer configuration.
   blutgang_image: makemake1337/blutgang:0.3.5
   blutgang_rpc_port: 55555
   blutgang_admin_port: 55556
-  ```

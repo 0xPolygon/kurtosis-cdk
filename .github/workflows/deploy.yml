@@ -19,7 +19,7 @@ jobs:
     steps:
       - run: true
 
-  # Deploy the CDK environment in one step, with the gas token feature enabled.
+  # Deploy the CDK environment in one step.
   monolithic:
     needs: authorize
     runs-on: ubuntu-latest
@@ -118,6 +118,12 @@ jobs:
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
+
+      - name: Deploy CDK erigon node
+        run: |
+          yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
 
       - name: Deploy observability stack
         run: |
@@ -224,10 +230,11 @@ jobs:
 
       - name: Deploy the rest of the components
         run: |
-          # Enable all deployment steps.
-          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = true else . end)' params.yml
           # Do not deploy l1 and zkevm contracts.
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
+
+          # Deploy databases, cdk central/trusted environment, cdk/bridge infra and observability stack.
+          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
@@ -298,6 +305,24 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment with cdk-erigon as a sequencer.
+  cdk-erigon-sequencer:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
