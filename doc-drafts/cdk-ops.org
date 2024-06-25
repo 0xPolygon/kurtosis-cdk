@@ -1,44 +1,112 @@
+* Connect Directly to Container Network
 
 #+begin_src bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
-
-kurtosis files download cdk-v1 zkevm /tmp
-pol_addr=$(cat /tmp/zkevm/combined.json | jq -r '.polTokenAddress')
-rollup_addr=$(cat /tmp/zkevm/combined.json | jq -r '.rollupAddress')
-
-cast call $pol_addr 'balanceOf(address)(uint256)' 0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
-
-# do an approval for spend
-cast send --private-key 0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181 $pol_addr 'mint(address,uint256)' $rollup_addr 10000000000000000000000000
-#+end_src
-
-
-#+begin_src bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-trusted-rpc-001 http-rpc)"
-cast rpc zkevm_batchNumber
-cast rpc zkevm_virtualBatchNumber
-cast rpc zkevm_verifiedBatchNumber
-#+end_src
-
-Check DAC and Sequencing
-#+begin_src bash
-kurtosis files download cdk-v1 zkevm /tmp
-cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) $(jq -r .rollupAddress /tmp/zkevm/combined.json) 'dataAvailabilityProtocol()(address)'
-cast call --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) $(jq -r .polygonDataCommitteeAddress /tmp/zkevm/combined.json) 'requiredAmountOfSignatures()(uint256)'
-
-cat *.json | jq '.abi[] | select(.type != "receive")' | jq -s | polycli abi decode | sort -t: -k3 -u
 docker run -it --net=container:f0ce09999e30 nicolaka/netshoot:latest /bin/bash
 #+end_src
 
-
-Confirm that we're on the correct fork
-#+begin_src bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
-cast call 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 1
-#+end_src
 * Chaos
 
 #+begin_src bash
-apt install iproute2
+docker run --rm --name dsapp --network kt-cdk-v1 -it -v $PWD:/app ubuntu:latest /bin/bash
 
+#inside container
+apt update
+apt install iproute2 curl
+cd app
+./dsapp client --server zkevm-node-sequencer-001:6900
+
+# pumba
+./.bin/github.com/alexei-led/pumba netem --duration 5m rate --rate 10bit dsapp
+./.bin/github.com/alexei-led/pumba netem --duration 1m delay --time 100000 dsapp
+./.bin/github.com/alexei-led/pumba pause --duration 1m dsapp
 #+end_src
+
+* Interruption
+
+#+begin_src bash
+
+docker run --rm --name dsapp --network kt-cdk-v1 -it -v $PWD:/app ubuntu:latest /bin/bash
+cd app
+./dsapp relay --server zkevm-node-sequencer-001:6900
+
+docker network inspect kt-cdk-v1
+
+client_ip="172.16.0.5"
+server_ip="172.16.0.18"
+
+# Drop
+sudo iptables -I DOCKER -s $client_ip -d $server_ip -j DROP
+sudo iptables -I DOCKER -s $server_ip -d $client_ip -j DROP
+
+# Restore
+sudo iptables -D DOCKER -s $client_ip -d $server_ip -j DROP
+sudo iptables -D DOCKER -s $server_ip -d $client_ip -j DROP
+
+docker run -it --net=container:dsapp nicolaka/netshoot:latest /bin/bash
+
+sudo /usr/sbin/tcpkill -i br-7a2f0e0fd743 host $client_ip and host $server_ip
+#+end_src
+
+* Slow Outbound from Sequencer
+
+#+begin_src bash
+docker run -it --rm --name seqshoot --net=container:zkevm-node-sequencer-001--ede742f7c75e4d8d860c2a54756df797 nicolaka/netshoot:latest /bin/bash
+./.bin/github.com/alexei-led/pumba netem --duration 1m --egress-port 6900 rate --rate 10bit seqshoot
+#+end_src
+
+
+docker exec --user root zkevm-bridge-proxy-001--11080806da274998a84dc3170d251565 cat /usr/local/etc/haproxy/haproxy.cfg
+
+# Global settings
+global
+    log stdout format raw local0
+
+# Default settings for all proxies
+defaults
+    log global
+    mode http
+    option httplog
+    option dontlognull
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+# Frontend configuration
+frontend http_in
+    bind *:80
+
+    # CORS settings
+    http-response set-header Access-Control-Allow-Origin "*"
+    http-response set-header Access-Control-Allow-Methods "GET, DELETE, OPTIONS, POST, PUT"
+
+    # Define ACLs for URL matching
+    acl url_l1rpc path_beg /l1rpc
+    acl url_l2rpc path_beg /l2rpc
+    acl url_bridgeservice path_beg /bridgeservice
+
+    # Use backend based on ACL match
+    use_backend backend_l1rpc if url_l1rpc
+    use_backend backend_l2rpc if url_l2rpc
+    use_backend backend_bridgeservice if url_bridgeservice
+    default_backend backend_default
+
+# Backend configuration for /l1rpc
+backend backend_l1rpc
+    http-request set-path /
+    server server1 172.16.0.10:8545
+
+# Backend configuration for /l2rpc
+backend backend_l2rpc
+    http-request set-path /
+    server server2 172.16.0.20:8123
+
+# Backend configuration for /bridgeservice
+backend backend_bridgeservice
+    http-request set-path "%[path,regsub(^/bridgeservice/,/)]"
+    server server3 172.16.0.26:8080
+
+# Default backend configuration
+backend backend_default
+    server server4 172.16.0.28:80
+
+
