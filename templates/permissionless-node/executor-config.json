@@ -52,7 +52,7 @@
     "executorClientHost": "127.0.0.1",
 
     "hashDBServerPort": {{.zkevm_hash_db_port}},
-    "hashDBURL": "local",
+    "hashDBURL": "35.189.78.223",
 
     "aggregatorServerPort": {{.zkevm_aggregator_port}},
     "aggregatorClientPort": {{.zkevm_aggregator_port}},

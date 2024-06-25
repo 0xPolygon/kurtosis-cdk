@@ -131,7 +131,7 @@
      * don't have access to the database, but this will lead to a
      * pretty large performance trade-off
      */ -}}
-    "hashDBURL": "local",
+    "hashDBURL": "35.189.78.223",
 
 {{- /*
      * aggregatorClientPort is the grpc port that this prover will
