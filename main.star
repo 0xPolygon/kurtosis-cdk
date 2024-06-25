@@ -1,7 +1,7 @@
 input_parser = "./input_parser.star"
 ethereum_package = "./ethereum.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
-cdk_databases_package = "./cdk_databases.star"
+databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
@@ -9,6 +9,7 @@ observability_package = "./observability.star"
 blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
+cdk_erigon_package = import_module("./cdk_erigon.star")
 
 
 def run(
@@ -18,7 +19,8 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=False,
+    deploy_zkevm_permissionless_node=True,
+    deploy_cdk_erigon_node=False,
     deploy_observability=True,
     deploy_l2_blockscout=False,
     deploy_blutgang=False,
@@ -44,6 +46,16 @@ def run(
     args = import_module(input_parser).parse_args(args)
 
     plan.print("Deploying CDK environment...")
+
+    if deploy_cdk_erigon_node:
+        args["l2_rpc_name"] = "cdk-erigon-node"
+    else:
+        args["l2_rpc_name"] = "zkevm-node-rpc"
+
+    if args["sequencer_type"] == "erigon":
+        args["sequencer_name"] = "cdk-erigon-sequencer"
+    else:
+        args["sequencer_name"] = "zkevm-node-sequencer"
 
     # Deploy a local L1.
     if deploy_l1:
@@ -74,13 +86,13 @@ def run(
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        import_module(cdk_databases_package).run(plan, args)
+        import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
     # Get the genesis file.
     genesis_artifact = ""
-    if deploy_cdk_central_environment or deploy_zkevm_permissionless_node:
+    if deploy_cdk_central_environment:
         plan.print("Getting genesis file...")
         genesis_artifact = plan.store_service_files(
             name="genesis",
@@ -90,6 +102,13 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
+        # Deploy cdk-erigon sequencer node.
+        if args["sequencer_type"] == "erigon":
+            plan.print("Deploying cdk-erigon sequencer")
+            cdk_erigon_package.run_sequencer(plan, args)
+        else:
+            plan.print("Skipping the deployment of cdk-erigon sequencer")
+
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
@@ -98,6 +117,13 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
+
+    # Deploy cdk-erigon node.
+    if deploy_cdk_erigon_node:
+        plan.print("Deploying cdk-erigon node")
+        cdk_erigon_package.run_rpc(plan, args)
+    else:
+        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
@@ -111,17 +137,21 @@ def run(
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_node_args = dict(args)
+        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
         permissionless_node_args["deployment_suffix"] = (
             "-pless" + args["deployment_suffix"]
         )
         permissionless_node_args["genesis_artifact"] = genesis_artifact
+        import_module(databases_package).run_pless(
+            plan, suffix=permissionless_node_args["original_suffix"]
+        )
         import_module(zkevm_permissionless_node_package).run(
-            plan, permissionless_node_args
+            plan, permissionless_node_args, genesis_artifact
         )
     else:
         plan.print("Skipping the deployment of zkevm permissionless node")
 
-    # Deploy observability stack
+    # Deploy observability stack.
     if deploy_observability:
         plan.print("Deploying the observability stack")
         observability_args = dict(args)

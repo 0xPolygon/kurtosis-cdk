@@ -1,59 +1,47 @@
+data_availability_package = import_module("./lib/data_availability.star")
+
+ARTIFACTS = [
+    {
+        "name": "deploy_parameters.json",
+        "file": "./templates/contract-deploy/deploy_parameters.json",
+    },
+    {
+        "name": "create_rollup_parameters.json",
+        "file": "./templates/contract-deploy/create_rollup_parameters.json",
+    },
+    {
+        "name": "run-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-contract-setup.sh",
+    },
+    {
+        "name": "create-keystores.sh",
+        "file": "./templates/contract-deploy/create-keystores.sh",
+    },
+]
+
+
 def run(plan, args):
-    # Create deploy parameters
-    deploy_parameters_template = read_file(
-        src="./templates/contract-deploy/deploy_parameters.json"
-    )
-    deploy_parameters_artifact = plan.render_templates(
-        name="deploy-parameters-artifact",
-        config={
-            "deploy_parameters.json": struct(
-                template=deploy_parameters_template,
-                data=args,
-            )
-        },
-    )
-
-    # Create rollup paramaters
-    create_rollup_parameters_template = read_file(
-        src="./templates/contract-deploy/create_rollup_parameters.json"
-    )
-    create_rollup_parameters_artifact = plan.render_templates(
-        name="create-rollup-parameters-artifact",
-        config={
-            "create_rollup_parameters.json": struct(
-                template=create_rollup_parameters_template,
-                data=args,
-            )
-        },
-    )
-
-    # Create contract deployment script
-    contract_deployment_script_template = read_file(
-        src="./templates/contract-deploy/run-contract-setup.sh"
-    )
-    contract_deployment_script_artifact = plan.render_templates(
-        name="contract-deployment-script-artifact",
-        config={
-            "run-contract-setup.sh": struct(
-                template=contract_deployment_script_template,
-                data=args,
-            ),
-        },
-    )
-
-    # Create keystores script
-    create_keystores_script_template = read_file(
-        src="./templates/contract-deploy/create-keystores.sh"
-    )
-    create_keystores_script_artifact = plan.render_templates(
-        name="create-keystores-script-artifact",
-        config={
-            "create-keystores.sh": struct(
-                template=create_keystores_script_template,
-                data=args,
-            ),
-        },
-    )
+    artifacts = []
+    for artifact_cfg in ARTIFACTS:
+        template = read_file(src=artifact_cfg["file"])
+        artifact = plan.render_templates(
+            name=artifact_cfg["name"],
+            config={
+                artifact_cfg["name"]: struct(
+                    template=template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
+                            args
+                        ),
+                    },
+                )
+            },
+        )
+        artifacts.append(artifact)
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
@@ -66,14 +54,7 @@ def run(plan, args):
             image=zkevm_contracts_image,
             files={
                 "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
-                "/opt/contract-deploy/": Directory(
-                    artifact_names=[
-                        deploy_parameters_artifact,
-                        create_rollup_parameters_artifact,
-                        contract_deployment_script_artifact,
-                        create_keystores_script_artifact,
-                    ]
-                ),
+                "/opt/contract-deploy/": Directory(artifact_names=artifacts),
             },
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
@@ -118,4 +99,17 @@ def run(plan, args):
                 ),
             ]
         ),
+    )
+
+    # Store CDK configs.
+    cdk_erigon_node_chain_config_artifact = plan.store_service_files(
+        name="cdk-erigon-node-chain-config",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/dynamic-kurtosis-conf.json",
+    )
+
+    cdk_erigon_node_chain_allocs_artifact = plan.store_service_files(
+        name="cdk-erigon-node-chain-allocs",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/dynamic-kurtosis-allocs.json",
     )

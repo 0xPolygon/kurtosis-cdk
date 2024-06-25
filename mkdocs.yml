@@ -26,7 +26,7 @@ nav:
   - Overview: index.md
   - Deploy and manage a CDK stack:
     - Deploy the CDK stack: quickstart/deploy-stack.md
-    - Set up a permissionless node: quickstart/set-up-node.md
+    - Set up a permissionless node: quickstart/set-up-permissionless-node.md
     - Observability: quickstart/observability.md
     - Breakdown the deployment: quickstart/breakdown-deployment.md
   - How to:

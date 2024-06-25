@@ -11,7 +11,7 @@ To begin, you will need to install [Docker](https://docs.docker.com/get-docker/)
 You will also need a few other tools. Run this script to check you have the required versions.
 
 ```bash
-sh scripts/tool_check.sh
+./scripts/tool_check.sh
 ```
 
 Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally.
@@ -21,6 +21,12 @@ This process typically takes around ten minutes.
 ```bash
 kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+```
+
+The command above launches deploys a CDK stack using [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. Alternatively, to launch a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer, you can run the following command.
+
+```bash
+kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
 ```
 
 Let's do a simple L2 RPC test call.
@@ -90,7 +96,7 @@ If the number of verified batches is increasing, then it means the system works 
 To access the `zkevm-bridge` user interface, open this URL in your web browser.
 
 ```bash
-open $(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 bridge-interface)
+open $(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 web-ui)
 ```
 
 When everything is done, you might want to clean up with this command which stops everything and deletes it.

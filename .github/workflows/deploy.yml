@@ -1,8 +1,8 @@
 ---
-name: Deploy Kurtosis CDK
+name: Deploy
 
 on:
-  pull_request:
+  pull_request_target:
   push:
     branches: [main]
 
@@ -10,47 +10,40 @@ concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  KURTOSIS_VERSION: 0.89.3
-  GO_VERSION: 1.21
-  BATCH_VERIFICATION_MONITOR_TARGET: 30
-  BATCH_VERIFICATION_MONITOR_TIMEOUT: 600 # 10 minutes
-
 jobs:
-  # Deploy the CDK environment in one step, with the gas token feature enabled.
+  # Job that requires project maintainers to approve PR to access Github Action secrets.
+  # https://dvc.ai/blog/testing-external-contributions-using-github-actions-secrets
+  authorize:
+    environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository && 'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+
+  # Deploy the CDK environment in one step.
   monolithic:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: 1.21
           cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
 
-      - name: Install yq
-        run: pip3 install yq
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      # Deploy components.
-      - name: Enable gas token feature
-        run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
+      - name: Enable workload
+        run: yq -Y --in-place '.apply_workload = true' params.yml
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      - name: Check that batches are being verified
-        working-directory: ./scripts
-        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
       # Compare configs.
       - name: Dump configs
@@ -72,25 +65,16 @@ jobs:
 
   # Deploy the CDK environment incrementally, stage by stage.
   incremental:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
 
-      - name: Install yq
-        run: pip3 install yq
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      # Deploy components.
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
 
@@ -126,9 +110,20 @@ jobs:
 
       - name: Deploy zkEVM permissionless node
         run: |
+          # Retrieve genesis file.
+          kurtosis files download cdk-v1 genesis /tmp
+          cp /tmp/genesis.json templates/permissionless-node/genesis.json
+
+          # Deploy permisionless node.
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
+
+      - name: Deploy CDK erigon node
+        run: |
+          yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
 
       - name: Deploy observability stack
         run: |
@@ -154,57 +149,62 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
-      - name: Check that batches are being verified
-        working-directory: ./scripts
-        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
 
   # Deploy the CDK environment without specifying any parameter file.
   configless:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
-
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       # Deploy components.
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
-      - name: Check that batches are being verified
-        working-directory: ./scripts
-        run: ./batch_verification_monitor.sh ${{ env.BATCH_VERIFICATION_MONITOR_TARGET }} ${{ env.BATCH_VERIFICATION_MONITOR_TIMEOUT }}
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
 
-  # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
-  pre-deployed-contracts:
+  # Deploy the CDK environment with the gas token feature enabled.
+  gas-token:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
-      # Install tools.
-      - name: Install kurtosis
-        run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
-          sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
-          kurtosis analytics disable
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
 
-      - name: Install yq
-        run: pip3 install yq
+      - name: Enable gas token feature
+        run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
 
-      - name: Install foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      # Deploy components.
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
+  pre-deployed-contracts:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
       - name: Deploy L1 and zkEVM contracts
         run: |
           # Disable all deployment steps.
@@ -230,9 +230,99 @@ jobs:
 
       - name: Deploy the rest of the components
         run: |
-          # Enable all deployment steps.
-          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = true else . end)' params.yml
           # Do not deploy l1 and zkevm contracts.
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
 
+          # Deploy databases, cdk central/trusted environment, cdk/bridge infra and observability stack.
+          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
+
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy a standalone permisionless node against Sepolia.
+  permisionless-node:
+    needs: authorize
+    # Prevent this job to run on forks.
+    if: github.repository == '0xPolygon/kurtosis-cdk'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Configure permisionless node parameters
+        run: |
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
+          yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
+
+      - name: Deploy the permisionless node
+        run: |
+          # Disable all steps except permisionless node.
+          yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+  # Deploy the CDK environment in rollup mode (data availability).
+  rollup-da-mode:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Set rollup data availability mode
+        run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment in cdk-validium mode (data availability).
+  cdk-validium-da-mode:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Set cdk-validium data availability mode
+        run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment with cdk-erigon as a sequencer.
+  cdk-erigon-sequencer:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
