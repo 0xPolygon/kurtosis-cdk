@@ -52,7 +52,7 @@
     "executorClientHost": "127.0.0.1",
 
     "hashDBServerPort": {{.zkevm_hash_db_port}},
-    "hashDBURL": "35.189.78.223",
+    "hashDBURL": "local",
 
     "aggregatorServerPort": {{.zkevm_aggregator_port}},
     "aggregatorClientPort": {{.zkevm_aggregator_port}},
@@ -69,7 +69,7 @@
 
     "outputPath": "output",
 
-    "databaseURL": "postgresql://prover_user:SR5xq2KZPgvQkPDranCRhvkv6pnqfo77@35.189.78.223:5432/prover_db",
+    "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
     "dbNodesTableName": "state.nodes",
     "dbProgramTableName": "state.program",
     "dbMultiWrite": true,
