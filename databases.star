@@ -4,6 +4,7 @@ POSTGRES_PORT = 5432
 POSTGRES_MASTER_DB = "kurtosis-persistent-postgres"
 POSTGRES_MASTER_USER = "postgres"
 POSTGRES_MASTER_PASSWORD = "REDACTED"
+POSTGRES_SERVICE_NAME = "postgres"
 
 CDK_DATABASES = {
     "event_db": {
