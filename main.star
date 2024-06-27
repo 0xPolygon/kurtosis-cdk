@@ -90,7 +90,7 @@ def run(
             plan.print(
                 "Skipping local db deployment as using remote postgres instances"
             )
-              
+
             # when deploying db's locally, override hostname configs for each
             db_keys = [
                 "event_db_hostname",
@@ -99,9 +99,9 @@ def run(
                 "state_db_hostname",
                 "agglayer_db_hostname",
                 "bridge_db_hostname",
-                "dac_db_hostname"
+                "dac_db_hostname",
             ]
-            
+
             postgres_service_name = "postgres"
             for key in db_keys:
                 args[key] = postgres_service_name + args["suffix"]
