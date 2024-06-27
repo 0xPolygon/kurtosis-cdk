@@ -84,65 +84,6 @@ args:
   zkevm_dac_port: 8484
   blockscout_public_port: 50101
 
-
-  # REMOTE DATABASE CONFIGURATION (Optional)
-  # use_remote_postgres = false: all databases will be created locally
-  # use_remote_postgres = true: all 7 external postgres instances should have
-  # been pre-configured beforehand. The database credentials and..
-  # networking details MUST BE UPDATED BELOW PER YOUR USE CASE !
-  use_remote_postgres: false
-  
-  # Event DB
-  event_db_hostname: "redacted"
-  event_db_port: 5432
-  event_db_name: "event_db"
-  event_db_user: "event_user"
-  event_db_password: "redacted"
-  
-  # Pool DB
-  pool_db_hostname: "redacted"
-  pool_db_port: 5432
-  pool_db_name: "pool_db"
-  pool_db_user: "pool_user"
-  pool_db_password: "redacted"
-  
-  # Prover DB
-  prover_db_hostname: "redacted"
-  prover_db_port: 5432
-  prover_db_name: "prover_db"
-  prover_db_user: "prover_user"
-  prover_db_password: "redacted"
-  
-  # State DB
-  state_db_hostname: "redacted"
-  state_db_port: 5432
-  state_db_name: "state_db"
-  state_db_user: "state_user"
-  state_db_password: "redacted"
-  
-  # Agglayer DB
-  agglayer_db_hostname: "redacted"
-  agglayer_db_port: 5432
-  agglayer_db_name: "agglayer_db"
-  agglayer_db_user: "agglayer_user"
-  agglayer_db_password: "redacted"
-  
-  # Bridge DB
-  bridge_db_hostname: "redacted"
-  bridge_db_port: 5432
-  bridge_db_name: "bridge_db"
-  bridge_db_user: "bridge_user"
-  bridge_db_password: "redacted"
-  
-  # DAC DB
-  dac_db_hostname: "redacted"
-  dac_db_port: 5432
-  dac_db_name: "dac_db"
-  dac_db_user: "dac_user"
-  dac_db_password: "redacted"
-
-
-
   # Addresses and private keys of the different components.
   # They have been generated using the following command:
   # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
@@ -238,3 +179,59 @@ args:
   blutgang_image: makemake1337/blutgang:0.3.5
   blutgang_rpc_port: 55555
   blutgang_admin_port: 55556
+  
+  # REMOTE DATABASE CONFIGURATION (Optional)
+  # use_remote_postgres = false: all databases will be created locally
+  # use_remote_postgres = true: all 7 external postgres instances should have
+  # been pre-configured beforehand. The database credentials and..
+  # networking details MUST BE UPDATED BELOW PER YOUR USE CASE !
+  use_remote_postgres: false
+  
+  # Event DB
+  event_db_hostname: "redacted"
+  event_db_port: 5432
+  event_db_name: "event_db"
+  event_db_user: "event_user"
+  event_db_password: "redacted"
+  
+  # Pool DB
+  pool_db_hostname: "redacted"
+  pool_db_port: 5432
+  pool_db_name: "pool_db"
+  pool_db_user: "pool_user"
+  pool_db_password: "redacted"
+  
+  # Prover DB
+  prover_db_hostname: "redacted"
+  prover_db_port: 5432
+  prover_db_name: "prover_db"
+  prover_db_user: "prover_user"
+  prover_db_password: "redacted"
+  
+  # State DB
+  state_db_hostname: "redacted"
+  state_db_port: 5432
+  state_db_name: "state_db"
+  state_db_user: "state_user"
+  state_db_password: "redacted"
+  
+  # Agglayer DB
+  agglayer_db_hostname: "redacted"
+  agglayer_db_port: 5432
+  agglayer_db_name: "agglayer_db"
+  agglayer_db_user: "agglayer_user"
+  agglayer_db_password: "redacted"
+  
+  # Bridge DB
+  bridge_db_hostname: "redacted"
+  bridge_db_port: 5432
+  bridge_db_name: "bridge_db"
+  bridge_db_user: "bridge_user"
+  bridge_db_password: "redacted"
+  
+  # DAC DB
+  dac_db_hostname: "redacted"
+  dac_db_port: 5432
+  dac_db_name: "dac_db"
+  dac_db_user: "dac_user"
+  dac_db_password: "redacted"
