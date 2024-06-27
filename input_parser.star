@@ -76,6 +76,7 @@ DEFAULT_ARGS = {
     "blutgang_image": "makemake1337/blutgang:0.3.5",
     "blutgang_rpc_port": 55555,
     "blutgang_admin_port": 55556,
+    "use_remote_postgres": False,
 }
 
 
