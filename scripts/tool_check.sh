@@ -19,7 +19,7 @@ ensure_optional_tool_is_installed() {
     local tool="$1"
     local install_docs="$2"
     if ! command -v "$tool" &>/dev/null; then
-        echo "⚠️  $tool is not installed. You can install $tool at: $install_docs"
+        echo "🟡 Optional $tool is not installed. You can install $tool at: $install_docs"
         return 1
     fi
 }
