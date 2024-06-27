@@ -90,7 +90,7 @@ def run(
             plan.print(
                 "Skipping local db deployment as using remote postgres instances"
             )
-
+        else:
             # when deploying db's locally, override hostname configs for each
             db_keys = [
                 "event_db_hostname",
@@ -105,7 +105,6 @@ def run(
             postgres_service_name = "postgres"
             for key in db_keys:
                 args[key] = postgres_service_name + args["suffix"]
-        else:
             import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
