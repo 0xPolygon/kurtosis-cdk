@@ -8,11 +8,11 @@ Outputs = ["stderr"]
 
 [State]
         [State.DB]
-        User = "{{.state_db_user}}"
-        Password = "{{.state_db_password}}"
-        Name = "{{.state_db_name}}"
-        Host = "{{.state_db_hostname}}"
-        Port = "{{.state_db_port}}"
+        User = "{{.state_db.user}}"
+        Password = "{{.state_db.password}}"
+        Name = "{{.state_db.name}}"
+        Host = "{{.state_db.hostname}}"
+        Port = "{{.state_db.port}}"
         EnableLog = false
         MaxConns = 200
         [State.Batch]
@@ -52,11 +52,11 @@ GlobalQueue = 1024
                 EthTransferL1GasPriceFactor = 0
                 L2GasPriceSuggesterFactor = 0.5
         [Pool.DB]
-        User = "{{.pool_db_user}}"
-        Password = "{{.pool_db_password}}"
-        Name = "{{.pool_db_name}}"
-        Host = "{{.pool_db_hostname}}"
-        Port = "{{.pool_db_port}}"
+        User = "{{.pool_db.user}}"
+        Password = "{{.pool_db.password}}"
+        Name = "{{.pool_db.name}}"
+        Host = "{{.pool_db.hostname}}"
+        Port = "{{.pool_db.port}}"
         EnableLog = false
         MaxConns = 200
 
@@ -127,19 +127,19 @@ ProfilingEnabled = true
 
 [EventLog]
         [EventLog.DB]
-        User = "{{.event_db_user}}"
-        Password = "{{.event_db_password}}"
-        Name = "{{.event_db_name}}"
-        Host = "{{.event_db_hostname}}"
-        Port = "{{.event_db_port}}"
+        User = "{{.event_db.user}}"
+        Password = "{{.event_db.password}}"
+        Name = "{{.event_db.name}}"
+        Host = "{{.event_db.hostname}}"
+        Port = "{{.event_db.port}}"
         EnableLog = true
         MaxConns = 200
 
 [HashDB]
-User = "{{.prover_db_user}}"
-Password = "{{.prover_db_password}}"
-Name = "{{.prover_db_name}}"
-Host = "{{.prover_db_hostname}}"
-Port = "{{.prover_db_port}}"
+User = "{{.prover_db.user}}"
+Password = "{{.prover_db.password}}"
+Name = "{{.prover_db.name}}"
+Host = "{{.prover_db.hostname}}"
+Port = "{{.prover_db.port}}"
 EnableLog = false
 MaxConns = 200

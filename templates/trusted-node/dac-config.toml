@@ -17,11 +17,11 @@ Level = "info"
 Outputs = ["stderr"]
 
 [DB]
-User = "{{.dac_db_user}}"
-Password = "{{.dac_db_password}}"
-Name = "{{.dac_db_name}}"
-Host = "{{.dac_db_hostname}}"
-Port = "{{.dac_db_port}}"
+User = "{{.dac_db.user}}"
+Password = "{{.dac_db.password}}"
+Name = "{{.dac_db.name}}"
+Host = "{{.dac_db.hostname}}"
+Port = "{{.dac_db.port}}"
 EnableLog = false
 MaxConns = 200
 
