@@ -86,11 +86,11 @@ args:
 
 
   # REMOTE DATABASE CONFIGURATION (Optional)
-  # If use_remote_postgres set to false, all databases will be created locally
-  # If use_remote_postgres set to true, all 7 remote databases should have already been..
-  # pre-configured by user beforehand. Their credentials and networking details..
-  # MUST BE UPDATED HERE FOR YOUR USE CASE !
-  use_remote_postgres: true
+  # use_remote_postgres = false: all databases will be created locally
+  # use_remote_postgres = true: all 7 external postgres instances should have
+  # been pre-configured beforehand. The database credentials and..
+  # networking details MUST BE UPDATED BELOW PER YOUR USE CASE !
+  use_remote_postgres: false
   
   # Event DB
   event_db_hostname: "redacted"
