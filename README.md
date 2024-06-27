@@ -14,7 +14,9 @@ You will also need a few other tools. Run this script to check you have the requ
 ./scripts/tool_check.sh
 ```
 
-Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally. This process typically takes around ten minutes.
+Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally.
+
+This process typically takes around ten minutes.
 
 ```bash
 kurtosis clean --all
