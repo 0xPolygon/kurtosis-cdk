@@ -308,28 +308,28 @@ ForkID = 0
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.pool_db.user}}"
+User = "{{.pool_db_user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.pool_db.password}}"
+Password = "{{.pool_db_password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.pool_db.name}}"
+Name = "{{.pool_db_name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.pool_db.hostname}}"
+Host = "{{.pool_db_hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.pool_db.port}}"
+Port = "{{.pool_db_port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
@@ -1463,28 +1463,28 @@ ProfilingEnabled = true
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.event_db.user}}"
+User = "{{.event_db_user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.event_db.password}}"
+Password = "{{.event_db_password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.event_db.name}}"
+Name = "{{.event_db_name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.event_db.hostname}}"
+Host = "{{.event_db_hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.event_db.port}}"
+Port = "{{.event_db_port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
@@ -1511,28 +1511,28 @@ MaxConns = 20
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.prover_db.user}}"
+User = "{{.prover_db_user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.prover_db.password}}"
+Password = "{{.prover_db_password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.prover_db.name}}"
+Name = "{{.prover_db_name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.prover_db.hostname}}"
+Host = "{{.prover_db_hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.prover_db.port}}"
+Port = "{{.prover_db_port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
@@ -1578,28 +1578,28 @@ AvoidForkIDInMemory = false
 # ------------------------------------------------------------------------------
 # User specifies the username for database connection authentication.
 # ------------------------------------------------------------------------------
-User = "{{.state_db.user}}"
+User = "{{.state_db_user}}"
 
 # ------------------------------------------------------------------------------
 # Password is the authentication credential for the database connection.
 # ------------------------------------------------------------------------------
-Password = "{{.state_db.password}}"
+Password = "{{.state_db_password}}"
 
 # ------------------------------------------------------------------------------
 # Name is the identifier of the target database to connect to.
 # ------------------------------------------------------------------------------
-Name = "{{.state_db.name}}"
+Name = "{{.state_db_name}}"
 
 # ------------------------------------------------------------------------------
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.state_db.hostname}}"
+Host = "{{.state_db_hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = "{{.state_db.port}}"
+Port = "{{.state_db_port}}"
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this

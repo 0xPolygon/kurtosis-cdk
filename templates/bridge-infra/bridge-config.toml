@@ -5,11 +5,11 @@ Outputs = ["stderr"]
 
 [SyncDB]
 Database = "postgres"
-User = "{{.bridge_db.user}}"
-Name = "{{.bridge_db.name}}"
-Password = "{{.bridge_db.password}}"
-Host = "{{.bridge_db.hostname}}"
-Port = "{{.bridge_db.port}}"
+User = "{{.bridge_db_user}}"
+Name = "{{.bridge_db_name}}"
+Password = "{{.bridge_db_password}}"
+Host = "{{.bridge_db_hostname}}"
+Port = "{{.bridge_db_port}}"
 MaxConns = 20
 
 [Etherman]
@@ -33,11 +33,11 @@ BridgeVersion = "v1"
     # Read only
     [BridgeServer.DB]
     Database = "postgres"
-    User = "{{.bridge_db.user}}"
-    Name = "{{.bridge_db.name}}"
-    Password = "{{.bridge_db.password}}"
-    Host = "{{.bridge_db.hostname}}"
-    Port = "{{.bridge_db.port}}"
+    User = "{{.bridge_db_user}}"
+    Name = "{{.bridge_db_name}}"
+    Password = "{{.bridge_db_password}}"
+    Host = "{{.bridge_db_hostname}}"
+    Port = "{{.bridge_db_port}}"
     MaxConns = 20
 
 [NetworkConfig]

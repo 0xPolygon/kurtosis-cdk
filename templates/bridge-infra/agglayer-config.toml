@@ -18,11 +18,11 @@ Level = "info"
 Outputs = ["stderr"]
 
 [DB]
-User = "{{.agglayer_db.user}}"
-Password = "{{.agglayer_db.password}}"
-Name = "{{.agglayer_db.name}}"
-Host = "{{.agglayer_db.hostname}}"
-Port = "{{.agglayer_db.port}}"
+User = "{{.agglayer_db_user}}"
+Password = "{{.agglayer_db_password}}"
+Name = "{{.agglayer_db_name}}"
+Host = "{{.agglayer_db_hostname}}"
+Port = "{{.agglayer_db_port}}"
 EnableLog = false
 MaxConns = 200
 

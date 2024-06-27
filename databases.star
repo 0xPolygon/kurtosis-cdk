@@ -73,6 +73,9 @@ def get_pless_db_configs(suffix):
 
 
 def create_postgres_service(plan, db_configs, suffix):
+    print(f"Creating PostgreSQL service with suffix: {suffix}")
+    print(f"Database configs: {db_configs}")
+
     init_script_tpl = read_file(src="./templates/databases/init.sql")
     init_script = plan.render_templates(
         name="init.sql" + suffix,
@@ -106,12 +109,16 @@ def create_postgres_service(plan, db_configs, suffix):
         },
         cmd=["-N 1000"],
     )
+    
+    print(f"PostgreSQL service config: {postgres_service_cfg}")
 
     plan.add_service(
         name=_service_name(suffix),
         config=postgres_service_cfg,
         description="Starting Postgres Service",
     )
+    
+    print("PostgreSQL service added successfully.")    
 
 
 def run(plan, suffix):
