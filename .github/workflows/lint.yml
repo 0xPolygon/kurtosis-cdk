@@ -55,10 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-  
+
       - name: Install yq
         run: pip3 install yq
-  
+
       - name: Compare default parameters
         run: ./scripts/compare_default_params.sh
         continue-on-error: true
