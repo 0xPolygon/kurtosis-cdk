@@ -86,7 +86,7 @@ def run(
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        if use_remote_postgres:
+        if args["use_remote_postgres"]:
             plan.print(
                 "Skipping local db deployment as using remote postgres instances"
             )
