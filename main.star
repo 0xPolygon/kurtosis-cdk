@@ -104,7 +104,7 @@ def run(
 
             postgres_service_name = "postgres"
             for key in db_keys:
-                args[key] = postgres_service_name + args["suffix"]
+                args[key] = postgres_service_name + args["deployment_suffix"]
             import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
