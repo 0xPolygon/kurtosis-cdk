@@ -131,7 +131,7 @@
      * don't have access to the database, but this will lead to a
      * pretty large performance trade-off
      */ -}}
-    "hashDBURL": "local",
+    "hashDBURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
 
 {{- /*
      * aggregatorClientPort is the grpc port that this prover will
