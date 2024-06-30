@@ -76,5 +76,10 @@ def run(plan, args):
         prometheus_url,
         "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards",
         name="grafana" + args["deployment_suffix"],
-        grafana_alerts_file="github.com/0xPolygon/kurtosis-cdk/static-files/alerts.yaml",
+        grafana_alerting_template="github.com/0xPolygon/kurtosis-cdk/static-files/alerting.yml.tmpl",
+        grafana_alerting_data={
+            "SlackChannel": args["slack_channel"],
+            "SlackToken": args["slack_token"],
+            "MentionUsers": args["mention_users"],
+        },
     )
