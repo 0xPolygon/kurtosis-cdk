@@ -70,6 +70,14 @@ def run(plan, args):
         name="prometheus" + args["deployment_suffix"],
     )
 
+    grafana_alerting_data = {}
+    if args["enable_slack_alerting"]:
+        grafana_alerting_data = {
+            "SlackChannel": args["slack_channel"],
+            "SlackToken": args["slack_token"],
+            "MentionUsers": args["mention_users"],
+        }
+
     # Start grafana.
     grafana_package.run(
         plan,
@@ -77,9 +85,5 @@ def run(plan, args):
         "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards",
         name="grafana" + args["deployment_suffix"],
         grafana_alerting_template="github.com/0xPolygon/kurtosis-cdk/static-files/alerting.yml.tmpl",
-        grafana_alerting_data={
-            "SlackChannel": args["slack_channel"],
-            "SlackToken": args["slack_token"],
-            "MentionUsers": args["mention_users"],
-        },
+        grafana_alerting_data=grafana_alerting_data,
     )
