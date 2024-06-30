@@ -37,7 +37,7 @@ First, you will need to figure out which port Kurtoiss is using for the RPC. You
 kurtosis enclave inspect cdk-v1
 ```
 
-That output is quite useful might might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable.
+That output is quite useful might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable.
 
 ```bash
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
