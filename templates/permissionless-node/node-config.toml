@@ -138,7 +138,7 @@ ProfilingEnabled = true
 [HashDB]
 User = "{{.prover_db.user}}"
 Password = "{{.prover_db.password}}"
-Name = "{{.prover_db.name}}"
+Name = "executor_db"
 Host = "{{.prover_db.hostname}}"
 Port = "{{.prover_db.port}}"
 EnableLog = false
