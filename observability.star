@@ -1,8 +1,9 @@
 prometheus_package = import_module(
     "github.com/kurtosis-tech/prometheus-package/main.star"
 )
-grafana_package = import_module("github.com/kurtosis-tech/grafana-package/main.star")
-
+grafana_package = import_module(
+    "github.com/kurtosis-tech/grafana-package/main.star@b02c67487350e1c0ccf6229c998eb36087dd45b0"
+)
 service_package = import_module("./lib/service.star")
 
 
@@ -71,10 +72,21 @@ def run(plan, args):
         name="prometheus" + args["deployment_suffix"],
     )
 
+    grafana_alerting_data = {}
+    if "slack_alerts" in args:
+        grafana_alerting_data = {
+            "SlackChannel": args["slack_alerts"]["slack_channel"],
+            "SlackToken": args["slack_alerts"]["slack_token"],
+            "MentionUsers": args["slack_alerts"]["mention_users"],
+        }
+
     # Start grafana.
     grafana_package.run(
         plan,
         prometheus_url,
         "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards",
         name="grafana" + args["deployment_suffix"],
+        grafana_version="11.1.0",
+        grafana_alerting_template="github.com/0xPolygon/kurtosis-cdk/static-files/alerting.yml.tmpl",
+        grafana_alerting_data=grafana_alerting_data,
     )
