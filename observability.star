@@ -71,7 +71,7 @@ def run(plan, args):
     )
 
     grafana_alerting_data = {}
-    if args["slack_alerts"]:
+    if "slack_alerts" in args:
         grafana_alerting_data = {
             "SlackChannel": args["slack_alerts"]["slack_channel"],
             "SlackToken": args["slack_alerts"]["slack_token"],
