@@ -1,3 +1,6 @@
+USE_REMOTE_POSTGRES = True
+
+POSTGRES_HOSTNAME = "postgres-001"  # replace this, only if USE_REMOTE_POSTGRES = True
 POSTGRES_IMAGE = "postgres:16.2"
 POSTGRES_SERVICE_NAME = "postgres"
 POSTGRES_PORT = 5432
@@ -9,24 +12,22 @@ CDK_DATABASES = {
     "event_db": {
         "name": "event_db",
         "user": "event_user",
-        "password": "rJXJN6iUAczh4oz8HRKYbVM8yC7tPeZm",
-        "init": read_file(src="./templates/databases/event-db-init.sql"),
+        "password": "redacted",
     },
     "pool_db": {
         "name": "pool_db",
         "user": "pool_user",
-        "password": "Qso5wMcLAN3oF7EfaawzgWKUUKWM3Vov",
+        "password": "redacted",
     },
     "prover_db": {
         "name": "prover_db",
         "user": "prover_user",
-        "password": "SR5xq2KZPgvQkPDranCRhvkv6pnqfo77",
-        "init": read_file(src="./templates/databases/prover-db-init.sql"),
+        "password": "redacted",
     },
     "state_db": {
         "name": "state_db",
         "user": "state_user",
-        "password": "rHTX7EpajF8zYDPatN32rH3B2pn89dmq",
+        "password": "redacted",
     },
 }
 
@@ -34,17 +35,17 @@ DATABASES = CDK_DATABASES | {
     "agglayer_db": {
         "name": "agglayer_db",
         "user": "agglayer_user",
-        "password": "PzycR2uB6PQv8ahj465ExvdyRLkknRNW",
+        "password": "redacted",
     },
     "bridge_db": {
         "name": "bridge_db",
         "user": "bridge_user",
-        "password": "aXPqaRvgo5DfnTbHtpYS9rMhVpjvb6tY",
+        "password": "redacted",
     },
     "dac_db": {
         "name": "dac_db",
         "user": "dac_user",
-        "password": "PzycR2uB6PQv8ahj465ExvdyRLkknRNW",
+        "password": "redacted",
     },
 }
 
@@ -59,17 +60,15 @@ def _pless_suffix(suffix):
 
 def get_db_configs(suffix):
     return {
-        k: v | {"hostname": _service_name(suffix), "port": POSTGRES_PORT}
+        k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(suffix), "port": POSTGRES_PORT}
         for k, v in DATABASES.items()
     }
 
-
 def get_pless_db_configs(suffix):
     return {
-        k: v | {"hostname": _service_name(_pless_suffix(suffix)), "port": POSTGRES_PORT}
+        k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(_pless_suffix(suffix)), "port": POSTGRES_PORT}
         for k, v in CDK_DATABASES.items()
     }
-
 
 def create_postgres_service(plan, db_configs, suffix):
     init_script_tpl = read_file(src="./templates/databases/init.sql")
@@ -109,10 +108,10 @@ def create_postgres_service(plan, db_configs, suffix):
 
 
 def run(plan, suffix):
-    db_configs = DATABASES.values()
+    db_configs = get_db_configs(suffix)
     create_postgres_service(plan, db_configs, suffix)
 
 
 def run_pless(plan, suffix):
-    db_configs = CDK_DATABASES.values()
+    db_configs = get_pless_db_configs(suffix)
     create_postgres_service(plan, db_configs, _pless_suffix(suffix))
