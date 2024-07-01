@@ -180,8 +180,8 @@ args:
   blutgang_rpc_port: 55555
   blutgang_admin_port: 55556
 
-  ## Observability alerting configuration.	
-  # slack_alerts:	
-    # slack_channel: ""	
-    # slack_token: ""	
+  ## Observability alerting configuration.
+  # slack_alerts:
+    # slack_channel: ""
+    # slack_token: ""
     # mention_users: ""
