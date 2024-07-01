@@ -4,7 +4,7 @@ prometheus_package = import_module(
 grafana_package = import_module(
     "github.com/kurtosis-tech/grafana-package/main.star@b02c67487350e1c0ccf6229c998eb36087dd45b0"
 )
-kservice_package = import_module("./lib/service.star")
+service_package = import_module("./lib/service.star")
 
 
 def start_panoptichain(plan, args):
