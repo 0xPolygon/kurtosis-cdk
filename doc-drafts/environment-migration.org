@@ -1,0 +1,517 @@
+We're going to try to use this package to simulate the migration of an
+environment. A full migration should have these steps:
+
+1. Initial material setup and verification
+2. Pre-migration sync
+3. Soft-switch
+4. Clean-halt
+5. New sequencer
+6. Full switch over
+
+
+This test is just a simulation, so we'll skip the pre-migration sync
+where we would get a clean copy of the state db, bridge db, and DAC
+db.
+
+- Rollup https://sepolia.etherscan.io/address/0x358F5433Bd221E1647C40C360fc206A6d6a00A44
+- Rollup Manager https://sepolia.etherscan.io/address/0xa05884c86C76739c66945d7E66eb2fB13E621255
+
+
+The current sequencer is ~0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC~
+and the current admin is ~0x66415f84060F1E29249854B3adD1005c13B179e8~.
+
+* Admin Setup
+Let's first create a new wallet for the admin.
+
+#+begin_src bash :exports both verbatim :results output code
+cast wallet new
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+Successfully created new keypair.
+Address:     0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158
+Private key: 0x582fb4c16b0acd6c084d939ef1195a71205bd67621cd3ab78fd411c72938086f
+#+end_src
+
+We've got a new wallet to use as our admin. Let's try to udpate the
+admin for our rollup?
+
+#+begin_src bash :exports both verbatim :results output code
+old_admin_pkey="0x0a32ff2b564f2aaef2edbccc0b17dd5e8b7c4095fb401656628e9d152c905436"
+new_admin_addr="0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158"
+cast send --rpc-url https://eth-sepolia.public.blastapi.io --private-key $old_admin_pkey 0x358F5433Bd221E1647C40C360fc206A6d6a00A44 'transferAdminRole(address)' $new_admin_addr
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0xbf9a9f313792b1dc70def8f5e05d21392d72c7fb68711421c5a213672f939ede
+blockNumber             6127012
+contractAddress         
+cumulativeGasUsed       316507
+effectiveGasPrice       6275160673
+from                    0x66415f84060F1E29249854B3adD1005c13B179e8
+gasUsed                 52099
+logs                    [{"address":"0x358f5433bd221e1647c40c360fc206a6d6a00a44","topics":["0xa5b56b7906fd0a20e3f35120dd8343db1e12e037a6c90111c7e42885e82a1ce6"],"data":"0x000000000000000000000000d03c837b1c09dc463e3dc7efc337e38fb01fc158","blockHash":"0xbf9a9f313792b1dc70def8f5e05d21392d72c7fb68711421c5a213672f939ede","blockNumber":"0x5d7da4","transactionHash":"0x99f843b1ead429a40040b220f2a35f50edb4c9d9ea39b5eae188d42acd7c48d6","transactionIndex":"0x6","logIndex":"0x5","removed":false}]
+logsBloom               0x00000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000
+root                    
+status                  1
+transactionHash         0x99f843b1ead429a40040b220f2a35f50edb4c9d9ea39b5eae188d42acd7c48d6
+transactionIndex        6
+type                    2
+to                      0x358F5433Bd221E1647C40C360fc206A6d6a00A44
+#+end_src
+
+That [[https://sepolia.etherscan.io/tx/0x99f843b1ead429a40040b220f2a35f50edb4c9d9ea39b5eae188d42acd7c48d6][transaction]] worked, it looks like we have a new pending admin. I
+need to make a second call now to accept the admin role using the new
+wallet. Let's try to accept the admin role.
+
+#+begin_src bash :exports both verbatim :results output code
+new_admin_pkey="0x582fb4c16b0acd6c084d939ef1195a71205bd67621cd3ab78fd411c72938086f"
+cast send --rpc-url https://eth-sepolia.public.blastapi.io --private-key $new_admin_pkey 0x358F5433Bd221E1647C40C360fc206A6d6a00A44 'acceptAdminRole()'
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0x01ca71246c72d265a63cf6cc57f2fecc9d5f82d4e0325372c1a56941d0a4c023
+blockNumber             6127021
+contractAddress         
+cumulativeGasUsed       1279789
+effectiveGasPrice       7113595722
+from                    0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158
+gasUsed                 34582
+logs                    [{"address":"0x358f5433bd221e1647c40c360fc206a6d6a00a44","topics":["0x056dc487bbf0795d0bbb1b4f0af523a855503cff740bfb4d5475f7a90c091e8e"],"data":"0x000000000000000000000000d03c837b1c09dc463e3dc7efc337e38fb01fc158","blockHash":"0x01ca71246c72d265a63cf6cc57f2fecc9d5f82d4e0325372c1a56941d0a4c023","blockNumber":"0x5d7dad","transactionHash":"0x7cf18029c5330c2e59f1bccbcac8056d9dbdf0dc4474733c0ae1209bceed8cf4","transactionIndex":"0xc","logIndex":"0x8","removed":false}]
+logsBloom               0x00000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000400000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000020000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                    
+status                  1
+transactionHash         0x7cf18029c5330c2e59f1bccbcac8056d9dbdf0dc4474733c0ae1209bceed8cf4
+transactionIndex        12
+type                    2
+to                      0x358F5433Bd221E1647C40C360fc206A6d6a00A44
+#+end_src
+
+
+* DAC Setup
+
+Alright, our rollup has a new admin now. We'll also need to transfer
+ownership of the dac.
+
+#+begin_src bash :exports both verbatim :results output code
+old_admin_pkey="0x0a32ff2b564f2aaef2edbccc0b17dd5e8b7c4095fb401656628e9d152c905436"
+new_admin_addr="0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158"
+cast send --rpc-url https://eth-sepolia.public.blastapi.io --private-key $old_admin_pkey 0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5 'transferOwnership(address)' $new_admin_addr
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0x62ee47eecbfa43e2493e6e4c47ecda8059dd1d6e27fc23fd3680af73919af807
+blockNumber             6127029
+contractAddress         
+cumulativeGasUsed       4575972
+effectiveGasPrice       7167671856
+from                    0x66415f84060F1E29249854B3adD1005c13B179e8
+gasUsed                 35690
+logs                    [{"address":"0xee4b418d20a13113ebed4842b42c1412f31c1dd5","topics":["0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0","0x00000000000000000000000066415f84060f1e29249854b3add1005c13b179e8","0x000000000000000000000000d03c837b1c09dc463e3dc7efc337e38fb01fc158"],"data":"0x","blockHash":"0x62ee47eecbfa43e2493e6e4c47ecda8059dd1d6e27fc23fd3680af73919af807","blockNumber":"0x5d7db5","transactionHash":"0x2b1434c41ab00fb52a0909597450b46a29c32bbc1566eef48572555ad7d0c225","transactionIndex":"0x9","logIndex":"0x4","removed":false}]
+logsBloom               0x00000000000000000000000000000000000000000000000000800004000000000000000000000000000000000000000200000000400000000000000000000000000000000000000000400000000000000001000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000004000000000008000000000000000000000000000000000000000000400000000000000000000
+root                    
+status                  1
+transactionHash         0x2b1434c41ab00fb52a0909597450b46a29c32bbc1566eef48572555ad7d0c225
+transactionIndex        9
+type                    2
+to                      0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5
+#+end_src
+
+
+Now we should see if we can rotate a key for the DAC. In production it
+might be safer to add a few additional nodes rather than trying a
+migration like this.
+
+Let's create a new key for our DAC member:
+
+#+begin_src bash :exports both verbatim :results output code
+cast wallet new
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+Successfully created new keypair.
+Address:     0x5018895310B962aC12b837FAD66e177aC7863Ca5
+Private key: 0x941c1830f5dcb7439c2c6387840664bbe306323eee24f6000a30ab91ac782a58
+#+end_src
+
+Let's update this value on chain
+
+#+begin_src bash :exports both verbatim :results output code
+new_admin_pkey="0x582fb4c16b0acd6c084d939ef1195a71205bd67621cd3ab78fd411c72938086f"
+dac_addr="0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5"
+cast send \
+    --private-key "$new_admin_pkey" \
+    --rpc-url "https://eth-sepolia.public.blastapi.io" \
+    "$dac_addr" \
+    'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
+    1 ["http://zkevm-dac-001:8484"] 0x5018895310B962aC12b837FAD66e177aC7863Ca5
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0x44d3b075507b532bac0a34d13bbdafd0fb38b7a10ba243c1e56424260f7340e7
+blockNumber             6127152
+contractAddress         
+cumulativeGasUsed       437741
+effectiveGasPrice       5971707627
+from                    0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158
+gasUsed                 53690
+logs                    [{"address":"0xee4b418d20a13113ebed4842b42c1412f31c1dd5","topics":["0x831403fd381b3e6ac875d912ec2eee0e0203d0d29f7b3e0c96fc8f582d6db657"],"data":"0xc89c320a62c522717b4d8a55699989e1d681af9afc3f66503c0c34ac9bf91cb0","blockHash":"0x44d3b075507b532bac0a34d13bbdafd0fb38b7a10ba243c1e56424260f7340e7","blockNumber":"0x5d7e30","transactionHash":"0x0fe3ca4db862dbfb7599c8a24800066bcbaca41d14cf95e728f2b2e1fb4079e3","transactionIndex":"0xc","logIndex":"0x4","removed":false}]
+logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000001000000000000000000000000000000000000000000000000000000000000000000000400000000000000000001
+root                    
+status                  1
+transactionHash         0x0fe3ca4db862dbfb7599c8a24800066bcbaca41d14cf95e728f2b2e1fb4079e3
+transactionIndex        12
+type                    2
+to                      0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5
+#+end_src
+
+
+Okay there should be a new DAC key for onchain
+verification. Unfortately, the application requires a keystore, so
+we'll need to wrangle private key into a keystore file.
+
+#+begin_src bash :exports both verbatim :results output code
+polycli parseethwallet --hexkey "0x941c1830f5dcb7439c2c6387840664bbe306323eee24f6000a30ab91ac782a58" --password "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m" --keystore /tmp/dac
+cat /tmp/dac/UTC* | jq '.' | tee dac-new.keystore
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+{
+  "address": "5018895310b962ac12b837fad66e177ac7863ca5",
+  "crypto": {
+    "cipher": "aes-128-ctr",
+    "ciphertext": "994f3b65263a85b2cdc6d246d868dbc82dba4633b8b813689b06f981374bd1df",
+    "cipherparams": {
+      "iv": "14c034e7254c1f2338009ce201d54942"
+    },
+    "kdf": "scrypt",
+    "kdfparams": {
+      "dklen": 32,
+      "n": 262144,
+      "p": 1,
+      "r": 8,
+      "salt": "e66f05a9ac1f372515c93d761d4da29bf3ccdb7e026ea7321397461dc463c127"
+    },
+    "mac": "43c0594597e61e06e3dd4c081b3c525a4225de702ed2021ca459862e7bf2d7bd"
+  },
+  "id": "71e11b91-7aa9-483b-95f0-7cc18a349b59",
+  "version": 3
+}
+#+end_src
+
+We now have a new file that we can use as the keystore for our
+dac. We're going to copy this file into the image and restart it. If I
+run ~kurtosis enclave inspect cdk-v1 --full-uuids~ I'll be able to get
+the UUID for the ~zkevm-dac-001~ and then write a copy command to
+replace the current keystore.
+
+#+begin_src bash
+docker cp dac-new.keystore zkevm-dac-001--d098ab1fe97e40b1a0c2a77331466c38:/etc/zkevm/dac.keystore
+kurtosis service stop cdk-v1 zkevm-dac-001
+kurtosis service start cdk-v1 zkevm-dac-001
+#+end_src
+
+#+RESULTS:
+| [36mINFO[0m[2024-06-17T09:38:42-04:00] | Stopping | service | 'zkevm-dac-001' |
+| [36mINFO[0m[2024-06-17T09:38:45-04:00] | Starting | service | 'zkevm-dac-001' |
+
+I can see these logs in the sequence sender
+
+#+begin_example
+[zkevm-node-sequence-sender-001] {"level":"info","ts":1718632391.4257238,"caller":"datacommittee/datacommittee.go:210","msg":"sending request to sign the sequence to 0x5018895310B962aC12b837FAD66e177aC7863Ca5 at http://zkevm-dac-001:8484","pid":6,"version":"0.6.5+cdk"}
+[zkevm-node-sequence-sender-001] {"level":"info","ts":1718632391.4280317,"caller":"datacommittee/datacommittee.go:195","msg":"received signature from 0x5018895310B962aC12b837FAD66e177aC7863Ca5","pid":6,"version":"0.6.5+cdk"}
+#+end_example
+
+I think that's a good thing since that's the address for our new DAC
+member. Now we can see that a sequenced with signatures from the new
+DAC key:
+https://sepolia.etherscan.io/tx/0x8d32aa5da27bf41ffeb59cd42369d6c1266dbca357e29411e6c8d01cc088d115
+
+* Sequencer Update
+
+At this point, we should be good to try to rotate the sequencer
+key. The first thing we'll do is modify the sequencer's config in
+order to halt on a specific batch number. The script here will get the
+current trusted batch number, add 3 to it, and configure the sequencer
+to halt on that new batch number.
+
+
+#+begin_src bash :exports both verbatim :results output code
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+cur_batch_number=$(cast rpc zkevm_batchNumber | jq -r '.' | sed 's/^0x//' | tr '[:lower:]' '[:upper:]')
+halt_number=$(bc <<< "ibase=16; $cur_batch_number + 3")
+docker cp zkevm-node-sequencer-001--fac8f717e30e4d32a09263b2e5df2379:/etc/zkevm/node-config.toml sequencer-config.toml
+tomlq -t --in-place ".Sequencer.Finalizer.HaltOnBatchNumber = $halt_number" sequencer-config.toml
+docker cp sequencer-config.toml zkevm-node-sequencer-001--fac8f717e30e4d32a09263b2e5df2379:/etc/zkevm/node-config.toml
+kurtosis service stop cdk-v1 zkevm-node-sequencer-001
+kurtosis service start cdk-v1 zkevm-node-sequencer-001
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+[36mINFO[0m[2024-06-17T10:32:52-04:00] Stopping service 'zkevm-node-sequencer-001'  
+[36mINFO[0m[2024-06-17T10:32:55-04:00] Starting service 'zkevm-node-sequencer-001'  
+#+end_src
+
+Now we can watch the logs of the sequencer to see when the sequencer
+will halt. At that point we should wait for the verified batch number
+to catch up. While we wait for that, we can start with some of the
+sequencer prep. We'll need a new sequencer and it will need some POL
+token associated with it.
+
+
+#+begin_src bash :exports both verbatim :results output code
+cast wallet new
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+Successfully created new keypair.
+Address:     0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1
+Private key: 0x5f54d3ba1e3c4e04659be1ce69db0057bb0d451a9309fe49e8021bca338c8bd6
+#+end_src
+
+
+Let's mint pol tokens to the new sequencer
+
+#+begin_src bash :exports both verbatim :results output code
+cast send --rpc-url https://eth-sepolia.public.blastapi.io --private-key 0x5f54d3ba1e3c4e04659be1ce69db0057bb0d451a9309fe49e8021bca338c8bd6 0x5123511db2b62a43DD070db5551706AE9c204931 'mint(address,uint256)' 0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1 100000000000000000000000
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0x536b874698b63c695cd1c6555f34e8efb0d1a3e0bfa5f6fd5e8ea6dd43c8b70a
+blockNumber             6127538
+contractAddress         
+cumulativeGasUsed       764753
+effectiveGasPrice       3830813660
+from                    0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1
+gasUsed                 51167
+logs                    [{"address":"0x5123511db2b62a43dd070db5551706ae9c204931","topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x00000000000000000000000068a5e28f05710f68b9ebefdb46e047ee104b0ec1"],"data":"0x00000000000000000000000000000000000000000000152d02c7e14af6800000","blockHash":"0x536b874698b63c695cd1c6555f34e8efb0d1a3e0bfa5f6fd5e8ea6dd43c8b70a","blockNumber":"0x5d7fb2","transactionHash":"0xe00cf05e64d13286389857c188c23f154122c41550d9a4df9ba937721c575720","transactionIndex":"0xb","logIndex":"0x9","removed":false}]
+logsBloom               0x00000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000080000008000000000000000000000000000000000000010000000000020010000000000000000800000000000000000000000010000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000
+root                    
+status                  1
+transactionHash         0xe00cf05e64d13286389857c188c23f154122c41550d9a4df9ba937721c575720
+transactionIndex        11
+type                    2
+to                      0x5123511db2b62a43DD070db5551706AE9c204931
+#+end_src
+
+
+We also need to approve the rollup to spend this POL:
+
+#+begin_src bash :exports both verbatim :results output code
+cast send --rpc-url https://eth-sepolia.public.blastapi.io --private-key 0x5f54d3ba1e3c4e04659be1ce69db0057bb0d451a9309fe49e8021bca338c8bd6 0x5123511db2b62a43DD070db5551706AE9c204931 'approve(address,uint256)' 0x358F5433Bd221E1647C40C360fc206A6d6a00A44 100000000000000000000000
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0xb5dbc5e2ffd127c5ed17ef756afb4a45ce31aff65e3c0e3b46d570d01d59014c
+blockNumber             6127548
+contractAddress         
+cumulativeGasUsed       1305470
+effectiveGasPrice       3715148608
+from                    0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1
+gasUsed                 46255
+logs                    [{"address":"0x5123511db2b62a43dd070db5551706ae9c204931","topics":["0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925","0x00000000000000000000000068a5e28f05710f68b9ebefdb46e047ee104b0ec1","0x000000000000000000000000358f5433bd221e1647c40c360fc206a6d6a00a44"],"data":"0x00000000000000000000000000000000000000000000152d02c7e14af6800000","blockHash":"0xb5dbc5e2ffd127c5ed17ef756afb4a45ce31aff65e3c0e3b46d570d01d59014c","blockNumber":"0x5d7fbc","transactionHash":"0xb2ae949aa543c19b51f153ca5871401157a5e9dcbddb808bddbc4a69751a982e","transactionIndex":"0xb","logIndex":"0xd","removed":false}]
+logsBloom               0x00000000000000000000000000000100000000002000000000000080000000000000000000000000000000000000000000100000000000000000000000200000000000000000000080000000000000000000000000000000000000000000010000000000000010000000000000000000000000000000000000000000000000000000000000000100000000400000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000
+root                    
+status                  1
+transactionHash         0xb2ae949aa543c19b51f153ca5871401157a5e9dcbddb808bddbc4a69751a982e
+transactionIndex        11
+type                    2
+to                      0x5123511db2b62a43DD070db5551706AE9c204931
+#+end_src
+
+
+
+In my sequencer logs, I now see messages like this:
+
+#+begin_example
+halting finalizer, error: finalizer reached stop sequencer on batch number: 42
+#+end_example
+
+So I think we just need to wait for everything to get finalized. We
+can use a snippet like this to wait for the verified batch number to
+catch up. If we're in a hurry, we can make some tweaks in order to
+speed up the batch verification process.
+
+#+begin_src bash :exports both verbatim :results output code
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+cast rpc zkevm_batchNumber
+cast rpc zkevm_virtualBatchNumber
+cast rpc zkevm_verifiedBatchNumber
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+"0x29"
+"0x29"
+"0x29"
+#+end_src
+
+
+It looks like everything is in sync. Let's try to modify the sequencer
+key now.
+
+#+begin_src bash :exports both verbatim :results output code
+polycli parseethwallet --hexkey "0x5f54d3ba1e3c4e04659be1ce69db0057bb0d451a9309fe49e8021bca338c8bd6" --password "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m" --keystore /tmp/seq
+cat /tmp/seq/UTC* | jq '.' | tee sequencer-new.keystore
+docker cp sequencer-new.keystore zkevm-node-sequence-sender-001--9fa2ad90b6bc4089926282b47e3b97f0:/etc/zkevm/sequencer.keystore
+docker cp sequencer-new.keystore zkevm-node-eth-tx-manager-001--ed96326026604904be780bfb4dcdb308:/etc/zkevm/sequencer.keystore
+docker cp sequencer-new.keystore zkevm-node-aggregator-001--55067133acc84b658235a61374516b9e:/etc/zkevm/sequencer.keystore
+
+
+docker cp zkevm-node-sequence-sender-001--9fa2ad90b6bc4089926282b47e3b97f0:/etc/zkevm/node-config.toml sequencer-config.toml
+tomlq -t --in-place ".Sequencer.Finalizer.HaltOnBatchNumber = 0" sequencer-config.toml
+tomlq -t --in-place ".SequenceSender.L2Coinbase = \"0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1\"" sequencer-config.toml
+tomlq -t --in-place ".SequenceSender.SenderAddress = \"0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1\"" sequencer-config.toml
+docker cp sequencer-config.toml zkevm-node-sequencer-001--fac8f717e30e4d32a09263b2e5df2379:/etc/zkevm/node-config.toml
+docker cp sequencer-config.toml zkevm-node-sequence-sender-001--9fa2ad90b6bc4089926282b47e3b97f0:/etc/zkevm/node-config.toml
+docker cp sequencer-config.toml zkevm-node-eth-tx-manager-001--ed96326026604904be780bfb4dcdb308:/etc/zkevm/node-config.toml
+docker cp sequencer-config.toml zkevm-node-aggregator-001--55067133acc84b658235a61374516b9e:/etc/zkevm/node-config.toml
+kurtosis service stop cdk-v1 zkevm-node-sequencer-001
+kurtosis service stop cdk-v1 zkevm-node-sequence-sender-001
+kurtosis service stop cdk-v1 zkevm-node-eth-tx-manager-001
+kurtosis service stop cdk-v1 zkevm-node-aggregator-001
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+{
+  "address": "68a5e28f05710f68b9ebefdb46e047ee104b0ec1",
+  "crypto": {
+    "cipher": "aes-128-ctr",
+    "ciphertext": "58f93110626159d68dacd181fea5472e5722cf48645ff16a4641f590d98d012f",
+    "cipherparams": {
+      "iv": "f2e10c1b46f0c3709e18ade8b54d761f"
+    },
+    "kdf": "scrypt",
+    "kdfparams": {
+      "dklen": 32,
+      "n": 262144,
+      "p": 1,
+      "r": 8,
+      "salt": "3f8213b4330a397930db47a24e036687a6fd60c403df0cc2dc2a5c2929735ec9"
+    },
+    "mac": "d42508d11e77fa1f6fd85c7f5dce9493f8c42227a7b20a82611827f7c4322021"
+  },
+  "id": "46c5a5b3-81b7-4806-b408-6a93e89993f6",
+  "version": 3
+}
+[36mINFO[0m[2024-06-17T11:15:59-04:00] Stopping service 'zkevm-node-sequencer-001'  
+[36mINFO[0m[2024-06-17T11:16:02-04:00] Stopping service 'zkevm-node-sequence-sender-001' 
+#+end_src
+
+Now let's do the on-chain call to update the trusted sequencer
+
+#+begin_src bash :exports both verbatim :results output code
+new_admin_pkey="0x582fb4c16b0acd6c084d939ef1195a71205bd67621cd3ab78fd411c72938086f"
+cast send --rpc-url https://eth-sepolia.public.blastapi.io --private-key $new_admin_pkey 0x358F5433Bd221E1647C40C360fc206A6d6a00A44 'setTrustedSequencer(address)' 0x68a5E28F05710f68b9eBeFDB46e047ee104b0EC1
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+
+blockHash               0xc94bab2cca6f20c06b98fd1acd224c06ff0f0861c6f8c9f1af69eb50dcaa6103
+blockNumber             6127561
+contractAddress         
+cumulativeGasUsed       1079852
+effectiveGasPrice       3915255258
+from                    0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158
+gasUsed                 34976
+logs                    [{"address":"0x358f5433bd221e1647c40c360fc206a6d6a00a44","topics":["0xf54144f9611984021529f814a1cb6a41e22c58351510a0d9f7e822618abb9cc0"],"data":"0x00000000000000000000000068a5e28f05710f68b9ebefdb46e047ee104b0ec1","blockHash":"0xc94bab2cca6f20c06b98fd1acd224c06ff0f0861c6f8c9f1af69eb50dcaa6103","blockNumber":"0x5d7fc9","transactionHash":"0x5a97ba2409db3667182a9d6068d699831195217f202002b85ab1a9e202716729","transactionIndex":"0xd","logIndex":"0xc","removed":false}]
+logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000010000000020000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                    
+status                  1
+transactionHash         0x5a97ba2409db3667182a9d6068d699831195217f202002b85ab1a9e202716729
+transactionIndex        13
+type                    2
+to                      0x358F5433Bd221E1647C40C360fc206A6d6a00A44
+#+end_src
+
+
+Now let's start things back up.
+
+#+begin_src bash :exports both verbatim :results output code
+kurtosis service start cdk-v1 zkevm-node-sequencer-001
+kurtosis service start cdk-v1 zkevm-node-sequence-sender-001
+kurtosis service start cdk-v1 zkevm-node-eth-tx-manager-001
+kurtosis service stop cdk-v1 zkevm-dac-001
+kurtosis service start cdk-v1 zkevm-dac-001
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+[36mINFO[0m[2024-06-17T11:17:47-04:00] Starting service 'zkevm-node-sequencer-001'  
+[36mINFO[0m[2024-06-17T11:17:49-04:00] Starting service 'zkevm-node-sequence-sender-001' 
+#+end_src
+
+This transaction updates the trusted sequencer:
+https://sepolia.etherscan.io/tx/0x9a00fbfa133627d4e7814252d7bfa74fb94c17e925d8949312ab26dc5f51fa36
+
+We previously halted on batch ~0xd7f~, so we need to make sure that we
+sequence and verify batches after this number.
+
+
+I'm seeing errors like this in the sequence sender, so it looks like
+the DAC doesn't like something. Let's just try to restart it for the
+time being.
+
+#+begin_example
+[zkevm-node-sequence-sender-001] {"level":"error","ts":1718556755.4117923,"caller":"datacommittee/datacommittee.go:188","msg":"error when trying to get signature from 0x9060731071861B4B39bdE13dE60af2894a787e24: -32000 unauthorized%!(EXTRA string=\n/home/runner/work/cdk-validium-node/cdk-validium-node/log/log.go:142 github.com/0xPolygonHermez/zkevm-node/log.appendStackTraceMaybeArgs()\n/home/runner/work/cdk-validium-node/cdk-validium-node/log/log.go:251 github.com/0xPolygonHermez/zkevm-node/log.Errorf()\n/home/runner/work/cdk-validium-node/cdk-validium-node/dataavailability/datacommittee/datacommittee.go:188 github.com/0xPolygonHermez/zkevm-node/dataavailability/datacommittee.(*DataCommitteeBackend).PostSequence()\n/home/runner/work/cdk-validium-node/cdk-validium-node/dataavailability/dataavailability.go:55 github.com/0xPolygonHermez/zkevm-node/dataavailability.(*DataAvailability).PostSequence()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencesender/sequencesender.go:188 github.com/0xPolygonHermez/zkevm-node/sequencesender.(*SequenceSender).tryToSendSequence()\n/home/runner/work/cdk-validium-node/cdk-validium-node/sequencesender/sequencesender.go:60 github.com/0xPolygonHermez/zkevm-node/sequencesender.(*SequenceSender).Start()\n)","pid":7,"version":"0.6.5+cdk","stacktrace":"github.com/0xPolygonHermez/zkevm-node/dataavailability/datacommittee.(*DataCommitteeBackend).PostSequence\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/dataavailability/datacommittee/datacommittee.go:188\ngithub.com/0xPolygonHermez/zkevm-node/dataavailability.(*DataAvailability).PostSequence\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/dataavailability/dataavailability.go:55\ngithub.com/0xPolygonHermez/zkevm-node/sequencesender.(*SequenceSender).tryToSendSequence\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencesender/sequencesender.go:188\ngithub.com/0xPolygonHermez/zkevm-node/sequencesender.(*SequenceSender).Start\n\t/home/runner/work/cdk-validium-node/cdk-validium-node/sequencesender/sequencesender.go:60"}
+
+#+end_example
+
+
+#+begin_src bash :exports both verbatim :results output code
+kurtosis service stop cdk-v1 zkevm-dac-001
+kurtosis service start cdk-v1 zkevm-dac-001
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+[36mINFO[0m[2024-06-16T12:58:34-04:00] Stopping service 'zkevm-dac-001'             
+[36mINFO[0m[2024-06-16T12:58:36-04:00] Starting service 'zkevm-dac-001'             
+#+end_src
+
+
+Things look better after the restart. It looks like the change in
+sequencer will require a restart on the DAC.
+
+#+begin_example
+[zkevm-node-sequence-sender-001] {"level":"info","ts":1718557119.9034042,"caller":"datacommittee/datacommittee.go:210","msg":"sending request to sign the sequence to 0x9060731071861B4B39bdE13dE60af2894a787e24 at http://zkevm-dac-001:8484","pid":7,"version":"0.6.5+cdk"}
+[zkevm-node-sequence-sender-001] {"level":"info","ts":1718557119.907728,"caller":"datacommittee/datacommittee.go:195","msg":"received signature from 0x9060731071861B4B39bdE13dE60af2894a787e24","pid":7,"version":"0.6.5+cdk"}
+#+end_example
+
+It looks like we're able to sequence batches now. This this is the first sequenced batch with the new address:
+https://sepolia.etherscan.io/tx/0x50c810e6bdc6577eb1fa20289c6a1063f9265697f6543f596b70c5b84b180ab5
+
+#+begin_src bash
+https://sepolia.etherscan.io/tx/0x50c810e6bdc6577eb1fa20289c6a1063f9265697f6543f596b70c5b84b180ab5
+#+end_src
+
+The aggregator and agglayer are having some issues now. 
+
+#+begin_example
+failed to send tx to the interop: -32602 Invalid params
+#+end_example
+
+
+#+begin_src bash
+kurtosis service stop cdk-v1 zkevm-agglayer-001
+kurtosis service start cdk-v1 zkevm-agglayer-001
+#+end_src

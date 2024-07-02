@@ -1,0 +1,335 @@
+* Deploy to Sepolia
+
+In some scenarios, it's desirable to run the Kurtosis CDK package with
+a real testnet rather than using a local chain. This document will
+show how to modify the configuration of the Kurtosis CDK package in
+order to deploy to [[https://sepolia.etherscan.io/][Sepolia]].
+
+** Disable Local L1
+
+The first thing we should do is make sure that Kurtosis doesn't bother
+doing the L1 deployment. We're going to use [[https://github.com/kislyuk/yq][yq]] to do carry this out.
+
+#+begin_src bash
+yq -Y --in-place '.deploy_l1 = false' params.yml
+#+end_src
+
+This will stop Kurtosis from using spinning up the L1 [[https://github.com/kurtosis-tech/ethereum-package][Ethereum package]]. Since we're using Sepolia, there will be no need.
+
+
+** Application Key Rotation
+
+By default, the CDK package has some hard coded keys. This is fine for
+local testing, but if you run on sepolia, you're likely to get your
+funds stolen even if it's inadvertent. First, let's create a new
+mnemonic seed phrase to derive our application keys.
+
+#+begin_src bash :exports both verbatim :results output example
+cast wallet new-mnemonic
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Successfully generated a new mnemonic.
+Phrase:
+multiply smoke dash galaxy priority speak sell decade diamond crew charge because
+
+Accounts:
+- Account 0:
+Address:     0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC
+Private key: 0x8a4758bf2a9c144e4421327f6155f52e31c12ed4684e6c852b91a7d7f7e6c75f
+#+end_example
+
+Great! Now we have a new seed phrase to use. Now, we'll take that seed
+phrase and write generate the settings for ~params.yml~.
+
+
+#+begin_src bash :exports both verbatim :results output example
+seed="multiply smoke dash galaxy priority speak sell decade diamond crew charge because"
+polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
+    jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | \
+    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+#+end_src
+
+#+RESULTS:
+#+begin_example
+zkevm_l2_sequencer_address: "0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC"
+zkevm_l2_sequencer_private_key: "0x8a4758bf2a9c144e4421327f6155f52e31c12ed4684e6c852b91a7d7f7e6c75f"
+
+zkevm_l2_aggregator_address: "0x26CA15d9120865bE26B793f2723bC5b72a3cC005"
+zkevm_l2_aggregator_private_key: "0x5da908dcdbdd4b218200d19f515100aa6ccf174493ecbb5935bbd8a3902817a5"
+
+zkevm_l2_claimtxmanager_address: "0x6988E26EA35F7A89EA7D585Ed4C2531C49536db0"
+zkevm_l2_claimtxmanager_private_key: "0xb1d376a41eba806b05ae5943a481d9fb084c8e4d86b195e802bbc0396bc65299"
+
+zkevm_l2_timelock_address: "0xD9158B5689165A2bD7C9458f90937918a224A366"
+zkevm_l2_timelock_private_key: "0x173498fcb664d6b7a4d96815b17c01ecdc297617868b9b64ff7eeab72c6cdf4f"
+
+zkevm_l2_admin_address: "0x66415f84060F1E29249854B3adD1005c13B179e8"
+zkevm_l2_admin_private_key: "0x0a32ff2b564f2aaef2edbccc0b17dd5e8b7c4095fb401656628e9d152c905436"
+
+zkevm_l2_loadtest_address: "0xb4448643d356E4BB2538A02FC71D4Ff44a557f68"
+zkevm_l2_loadtest_private_key: "0x9e3ebe432983e6ad85d1dc888f035149bbbed49360ddcf2b7ec7571be537227a"
+
+zkevm_l2_agglayer_address: "0x7Aa41178DAEfad8f5028305e56561909253057c4"
+zkevm_l2_agglayer_private_key: "0x88c9cbb351cc8d3958f95aeb67a94feb82ff1e846b49b7bd16141e42b1c505b5"
+
+zkevm_l2_dac_address: "0x87f4AE221e4a03b418018dB2077aB41D96AEacD7"
+zkevm_l2_dac_private_key: "0x50a99f789dc2642b90e584a855966500f02ba2cdf7d02fb4cbc6c4dc8f082f68"
+
+zkevm_l2_proofsigner_address: "0xcE6F58538ec91FA812De605eB7e0213e027618bB"
+zkevm_l2_proofsigner_private_key: "0xf5e2efe3537d9dc8db5c05840fd8c8172de3d988487832fe6e43b7ba3e41bbd4"
+
+#+end_example
+
+We're going to take these generated values and place them into the
+[[../params.yml]] file. Each one of these settings should already exist
+and you're simply replacing the keys that are already in this file.
+
+** L1 Configuration
+
+Now we need to adjust the parameters for L1 specifically for
+Sepolia. First, let's create a new mnemonic specifically for running
+contract deployment.
+
+#+begin_src bash :exports both verbatim :results output example
+cast wallet new-mnemonic
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Phrase:
+proof slam law choose steak beach fee cousin rate soup bunker undo
+
+Accounts:
+- Account 0:
+Address:     0x2eEfbBbbb4344CAa1180593EBCDFC20a60f54bae
+Private key: 0xff4eacda829d92184a5f385097daf968fd0730e48a7ed4ab321f79e5154d5096
+#+end_example
+
+
+We'll take that mnemonic and configure ~l1_preallocated_mnemonic~ with
+this value.
+
+#+begin_src bash
+yq -Y --in-place '.args.l1_preallocated_mnemonic = "proof slam law choose steak beach fee cousin rate soup bunker undo"' params.yml
+#+end_src
+
+This account is used for two things. It sends funds to the accounts
+that need funds on L1 (e.g. sequencer, aggregator, admin).  This
+account also does the contract deployment. Accordingly, we'll need to
+send funds to this account. For this tutorial, I'm going to [[https://sepolia.etherscan.io/tx/0x8b44ab7ae1e7455aac011ab138f7ccd9af798a93fc0390f5f9db61cd35faf1e2][send]] 25
+ETH.
+
+There are a few other values we need to configure for L1.
+
+#+begin_src bash
+yq -Y --in-place '.args.l1_chain_id = 11155111' params.yml
+yq -Y --in-place '.args.l1_funding_amount = "5ether"' params.yml
+yq -Y --in-place '.args.l1_rpc_url = "https://YOUR-SEPOLIA-RPC.invalid"' params.yml
+yq -Y --in-place '.args.l1_ws_url = "wss://YOUR-SEPOLIA-RPC.invalid"' params.yml
+#+end_src
+
+** Optional Setup
+
+By default, the Kurtosis CDK package is configured to produce batches
+very quickly for fast testing. This is helpful for very quick L1
+settlement. When we're testing with a local L1, this is free. But on
+Sepolia, it's probably not desirable to sequence empty batches every
+few seconds. It will be "expensive". To slow things down, we should
+modify these three settings in the [[../templates/trusted-node/node-config.toml][node config]].
+
+
+The default configuration below would sequence batches roughly every
+minute even if the batches are empty.
+
+#+begin_src toml
+# ------------------------------------------------------------------------------
+# MaxBatchesForL1 is used to configure the maximum number of batches
+# for a single sequence. If you want batches to be virtualized and
+# verified faster, decreasing this number will help ensure that you're
+# sequencing more often.
+# ------------------------------------------------------------------------------
+MaxBatchesForL1 = 10
+# ------------------------------------------------------------------------------
+# BatchMaxDeltaTimestamp determines the max amount of time that a
+# batch will be held open assuming it's not empty.
+# ------------------------------------------------------------------------------
+BatchMaxDeltaTimestamp = "5s"
+# ------------------------------------------------------------------------------
+# VerifyProofInterval is the interval of time to verify and send
+# proofs to L1
+# ------------------------------------------------------------------------------
+VerifyProofInterval = "5m0s"
+# ------------------------------------------------------------------------------
+# LastBatchVirtualizationTimeMaxWaitPeriod defines the max amount of
+# time that we'll allow to pass before virtualizing. E.g. if we have
+# sequences to send and it's been more than
+# LastBatchVirtualizationTimeMaxWaitPeriod since the last time we've
+# virtualized, we'll send the sequences. Otherwise we'll wait longer.
+# ------------------------------------------------------------------------------
+LastBatchVirtualizationTimeMaxWaitPeriod = "5s"
+#+end_src
+
+In order to slow things down a bit, I'm going to configure
+~BatchMaxDeltaTimestamp~ to ~2m~,
+~LastBatchVirtualizationTimeMaxWaitPeriod~ to ~15m~, and
+~MaxBatchesForL1~ to ~15~. The idea is that an idle network would only
+be sequecing batches every 15 minutes.
+
+** Running the Network
+
+All of the configuration should be set. Let's run things:
+
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+#+end_src
+
+Once this completes, you'll probably want to see your deployed
+contracts an on-chain activity.
+
+#+begin_src bash :exports both verbatim :results output code
+kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json'
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+{
+  "polygonRollupManagerAddress": "0xa05884c86C76739c66945d7E66eb2fB13E621255",
+  "polygonZkEVMBridgeAddress": "0xeB6F870e0E6CF8fF8A7881982327431d05ffbD93",
+  "polygonZkEVMGlobalExitRootAddress": "0x8f4CE36c293A7caaF205A590989352fB5123b964",
+  "polTokenAddress": "0x5123511db2b62a43DD070db5551706AE9c204931",
+  "zkEVMDeployerContract": "0x28222Da90CE840645B66bf3d6E2F1B4C720d7292",
+  "deployerAddress": "0x66415f84060F1E29249854B3adD1005c13B179e8",
+  "timelockContractAddress": "0x0231594192139Ff58DcD06ECa523650839c0318d",
+  "deploymentRollupManagerBlockNumber": 6126974,
+  "upgradeToULxLyBlockNumber": 6126974,
+  "admin": "0x66415f84060F1E29249854B3adD1005c13B179e8",
+  "trustedAggregator": "0x26CA15d9120865bE26B793f2723bC5b72a3cC005",
+  "proxyAdminAddress": "0xDFF353766806798f2eD7D55e637bC24f6E18304D",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000007",
+  "polygonDataCommitteeAddress": "0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5",
+  "firstBatchData": {
+    "transactions": "0xf9010380808401c9c38094eb6f870e0e6cf8ff8a7881982327431d05ffbd9380b8e4f811bff7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a40d5f56745a118d0906a34e69aec8c0db1cb8fa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ca1ab1e0000000000000000000000000000000000000000000000000000000005ca1ab1e1bff",
+    "globalExitRoot": "0xad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5",
+    "timestamp": 1718630196,
+    "sequencer": "0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC"
+  },
+  "genesis": "0xa73667acab468fafc42e3432b7df4995e1132ebee920c95f84909196a14245d5",
+  "createRollupBlockNumber": 6126978,
+  "rollupAddress": "0x358F5433Bd221E1647C40C360fc206A6d6a00A44",
+  "verifierAddress": "0x8d9fA4b7c32729D2bF6023E4875D2cf4E085B102",
+  "consensusContract": "PolygonValidiumEtrog",
+  "polygonZkEVMGlobalExitRootL2Address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+}
+
+#+end_src
+
+These are all of the generated details from the network. We can see
+some of the contracts in Etherscan / Blockscout now:
+
+- Sequenced batches should show up here https://sepolia.etherscan.io/address/0x358F5433Bd221E1647C40C360fc206A6d6a00A44
+- Verified batches should show up here https://sepolia.etherscan.io/address/0xa05884c86C76739c66945d7E66eb2fB13E621255
+
+* Separate Contract Deployment
+
+If we followed the steps above, we would have local test environment
+that using Sepolia as the L1 chain, but the environment itself would
+not be persistent and there wouldn't be a straight forward way to use
+a separate contract deployment.
+
+#+begin_src bash
+kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq '.' > templates/contract-deploy/combined.json
+kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/genesis.json' | tail -n +2 | jq '.' > templates/contract-deploy/genesis.json
+#+end_src
+
+
+* Troubleshooting
+
+One piece of general advice: if your ~kurtosis run~ fails for some
+reason in the middle of the run, you'll usually want to do a full
+cleanup of the enclave before trying to run again.
+
+#+begin_src bash
+kurtosis clean --all
+#+end_src
+
+
+** Replay-Protected Transactions
+
+After ~kurtosis run~ you might see an error like this:
+
+#+begin_example
+ProviderError: only replay-protected (EIP-155) transactions allowed over RPC
+#+end_example
+
+The deployment of the [[https://github.com/0xPolygonHermez/zkevm-contracts][zkevm-contracts]] uses a specific method to
+maintain [[https://yamenmerhi.medium.com/nicks-method-ethereum-keyless-execution-168a6659479c#0c39][consistent addresses]] across chains. If you're seeing this
+error, it means your RPC provider is blocking these transactions. If
+you're running your own node you'll need to make some configuration
+changes. E.g. in [[https://geth.ethereum.org/docs/fundamentals/command-line-options][geth]] you would set ~rpc.allow-unprotected-txs~:
+
+#+begin_example
+    --rpc.allow-unprotected-txs         (default: false)                   ($GETH_RPC_ALLOW_UNPROTECTED_TXS)
+          Allow for unprotected (non EIP155 signed) transactions to be submitted via RPC
+#+end_example
+
+If you're not running your own node, you'll need to use an RPC
+provider that allows unprotected transactions. In the example for this
+guide, I've used [[https://www.alchemy.com/][Alchmey]].
+
+** Cannot find module './deploy_output.json'
+
+If you've been running into issues or potentially run ~kurtosis run~
+multiple times, it's possible that you run into an issue like this:
+
+#+begin_example
+Proxy admin was already deployed to: 0xCde3964eB272b209706141029e0782A7576Af5cD
+Error: Proxy admin was deployed, but the owner is not the deployer, deployer address: 0x17C8c765f260e146673f90B11C7fbBC76AE6E35A, proxyAdmin: 0x38d59F21cdd8B837E1EC6d4b03472b6FEEdF736a
+    at main (/opt/zkevm-contracts/deployment/v2/3_deployContracts.ts:190:15)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2024-06-11 20:28:54] Step 5: Creating rollup
+
+> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
+> hardhat run deployment/v2/4_createRollup.ts --network localhost
+
+Error: Cannot find module './deploy_output.json'
+Require stack:
+- /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
+    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
+    at Function.Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (/opt/zkevm-contracts/node_modules/@cspotcode/source-map-support/source-map-support.js:811:30)
+    at Function.Module._load (node:internal/modules/cjs/loader:986:27)
+    at Module.require (node:internal/modules/cjs/loader:1233:19)
+    at require (node:internal/modules/helpers:179:18)
+    at Object.<anonymous> (/opt/zkevm-contracts/deployment/v2/4_createRollup.ts:17:22)
+    at Module._compile (node:internal/modules/cjs/loader:1358:14)
+    at Module.m._compile (/opt/zkevm-contracts/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1416:10)
+    at Object.require.extensions.<computed> [as .ts] (/opt/zkevm-contracts/node_modules/ts-node/src/index.ts:1621:12) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/opt/zkevm-contracts/deployment/v2/4_createRollup.ts' ]
+}
+#+end_example
+
+This can happen if the same address is used to deploy the contracts
+multiple times with the same salt. In order to do a clean up there are
+a few things you should do.
+
+First, you should make sure you've cleaned up your local environment
+properly:
+
+#+begin_src bash
+kurtosis clean --all
+#+end_src
+
+Once you've cleaned up your environment, you should either rotate your
+~l1_preallocated_mnemonic~ to a new address in order to avoid the
+conflict or you can update the ~salt~ value in the
+[[../templates/contract-deploy/deploy_parameters.json][deploy_parameters.json]] file. Each run of the contract deployment needs
+to be a new combination of ~l1_preallocated_mnemonic~ and
+~salt~. Swapping the salt is probably the easiest way to do another
+deployment.
+
+We don't encounter this issue in local testing because we reset the
+entire L1 chain between tests / contract deployments.
+

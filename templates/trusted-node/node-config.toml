@@ -463,7 +463,7 @@ WriteTimeout = "1m0s"
 # load balancer and several RPCs, it's possible that a user might be
 # rate limited on just one of them
 # ------------------------------------------------------------------------------
-MaxRequestsPerIPAndSecond = 50
+MaxRequestsPerIPAndSecond = 5000
 
 # ------------------------------------------------------------------------------
 # SequencerNodeURI if configured will cause the RPC to relay certain
