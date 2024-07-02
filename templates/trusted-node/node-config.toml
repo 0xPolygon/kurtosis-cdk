@@ -1527,7 +1527,7 @@ Name = "{{.prover_db.name}}"
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "postgres-001"
+Host = "{{.prover_db.hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
