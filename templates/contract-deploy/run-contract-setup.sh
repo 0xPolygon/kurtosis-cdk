@@ -21,6 +21,20 @@ wait_for_rpc_to_be_available() {
     done
 }
 
+wait_for_finalized_block() {
+    counter=0
+    max_retries=100
+    until cast block --rpc-url "{{.l1_rpc_url}}" finalized; do
+        ((counter++))
+        echo_ts "L1 RPC might not be ready... Retrying ($counter)..."
+        if [[ $counter -ge $max_retries ]]; then
+            echo_ts "Exceeded maximum retry attempts. Exiting."
+            exit 1
+        fi
+        sleep 5
+    done
+}
+
 fund_account_on_l1() {
     name="$1"
     address="$2"
@@ -230,6 +244,16 @@ cast send \
     "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
     'grantRole(bytes32,address)' \
     "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+
+# If we've configured the l1 network with the minimal preset, we
+# should probably wait for the first finalized block. This isn't
+# strictly specific to minimal preset, but if we don't have "minimal"
+# configured, it's going to take like 25 minutes for the first
+# finalized block
+l1_preset="{{.l1_preset}}"
+if [[ $l1_preset == "minimal" ]]; then
+    wait_for_finalized_block;
+fi
 
 # The contract setup is done!
 touch .init-complete.lock

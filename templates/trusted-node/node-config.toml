@@ -798,6 +798,16 @@ ReprocessFullBatchOnClose = false
 # ------------------------------------------------------------------------------
 CheckLastL2BlockHashOnCloseBatch = true
 
+# TODO - use the defaults for now
+# [Synchronizer.L1BlockCheck]
+# Enabled = true
+# L1SafeBlockPoint = "latest"
+# L1SafeBlockOffset = 0
+# ForceCheckBeforeStart = true
+# PreCheckEnabled = true
+# L1PreSafeBlockPoint = "latest"
+# L1PreSafeBlockOffset = 0
+
 # ==============================================================================
 #  ____  _____ ___  _   _ _____ _   _  ____ _____ ____
 # / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|  _ \
