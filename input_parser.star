@@ -6,7 +6,7 @@ DEFAULT_ARGS = {
     "cdk_node_image": "0xpolygon/cdk-validium-node:0.6.5-cdk",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
-    "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:0.1.0",
+    "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
     "panoptichain_image": "minhdvu/panoptichain",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",

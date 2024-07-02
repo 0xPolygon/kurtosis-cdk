@@ -47,7 +47,7 @@ description: |-
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
-  zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:0.1.0
+  zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   panoptichain_image: minhdvu/panoptichain
 
@@ -161,4 +161,10 @@ description: |-
   blutgang_image: makemake1337/blutgang:0.3.5
   blutgang_rpc_port: 55555
   blutgang_admin_port: 55556
+
+  ## Observability alerting configuration.
+  # slack_alerts:
+    # slack_channel: ""
+    # slack_token: ""
+    # mention_users: ""
   ```
