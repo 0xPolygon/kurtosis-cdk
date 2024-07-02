@@ -59,16 +59,20 @@ def _pless_suffix(suffix):
 
 
 def get_db_configs(suffix):
-    return {
+    configs = {
         k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(suffix), "port": POSTGRES_PORT}
         for k, v in DATABASES.items()
     }
+    print("DB Configs:", configs)
+    return configs
 
 def get_pless_db_configs(suffix):
-    return {
+    configs = {
         k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(_pless_suffix(suffix)), "port": POSTGRES_PORT}
         for k, v in CDK_DATABASES.items()
     }
+    print("Pless DB Configs:", configs)
+    return configs
 
 def create_postgres_service(plan, db_configs, suffix):
     init_script_tpl = read_file(src="./templates/databases/init.sql")
@@ -105,6 +109,7 @@ def create_postgres_service(plan, db_configs, suffix):
         config=postgres_service_cfg,
         description="Starting Postgres Service",
     )
+    print("Postgres service config:", postgres_service_cfg)
 
 
 def run(plan, suffix):
