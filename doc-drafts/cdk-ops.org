@@ -31,8 +31,8 @@ cd app
 
 docker network inspect kt-cdk-v1
 
-client_ip="172.16.0.5"
-server_ip="172.16.0.18"
+client_ip="172.16.0.19"
+server_ip="172.16.0.15"
 
 # Drop
 sudo iptables -I DOCKER -s $client_ip -d $server_ip -j DROP
@@ -42,9 +42,9 @@ sudo iptables -I DOCKER -s $server_ip -d $client_ip -j DROP
 sudo iptables -D DOCKER -s $client_ip -d $server_ip -j DROP
 sudo iptables -D DOCKER -s $server_ip -d $client_ip -j DROP
 
-docker run -it --net=container:dsapp nicolaka/netshoot:latest /bin/bash
+docker run -it --net=container:zkevm-prover-001--620987a8d7e44c60a3bc8a8742025635 nicolaka/netshoot:latest /bin/bash
 
-sudo /usr/sbin/tcpkill -i br-7a2f0e0fd743 host $client_ip and host $server_ip
+sudo /usr/sbin/tcpkill -i br-edd588fc6880 host $client_ip and host $server_ip
 #+end_src
 
 * Slow Outbound from Sequencer
@@ -54,59 +54,34 @@ docker run -it --rm --name seqshoot --net=container:zkevm-node-sequencer-001--ed
 ./.bin/github.com/alexei-led/pumba netem --duration 1m --egress-port 6900 rate --rate 10bit seqshoot
 #+end_src
 
+* Determine interface
 
-docker exec --user root zkevm-bridge-proxy-001--11080806da274998a84dc3170d251565 cat /usr/local/etc/haproxy/haproxy.cfg
+From inside the container we'll need to get the details of the link:
 
-# Global settings
-global
-    log stdout format raw local0
+#+begin_src bash
+ip link show eth0
+#+end_src
 
-# Default settings for all proxies
-defaults
-    log global
-    mode http
-    option httplog
-    option dontlognull
-    timeout connect 5000ms
-    timeout client 50000ms
-    timeout server 50000ms
+#+begin_example
+294: eth0@if295: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1440 qdisc noqueue state UP mode DEFAULT group default 
+    link/ether 02:42:ac:10:00:11 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+#+end_example
 
-# Frontend configuration
-frontend http_in
-    bind *:80
+In this case 294 is the ifindex for the interface within the
+container. ~eth0@if295~ indicates that this interface is iflink.
 
-    # CORS settings
-    http-response set-header Access-Control-Allow-Origin "*"
-    http-response set-header Access-Control-Allow-Methods "GET, DELETE, OPTIONS, POST, PUT"
+From the host OS, I can run:
 
-    # Define ACLs for URL matching
-    acl url_l1rpc path_beg /l1rpc
-    acl url_l2rpc path_beg /l2rpc
-    acl url_bridgeservice path_beg /bridgeservice
+#+begin_src bash
+ip link | grep ^295
+#+end_src
 
-    # Use backend based on ACL match
-    use_backend backend_l1rpc if url_l1rpc
-    use_backend backend_l2rpc if url_l2rpc
-    use_backend backend_bridgeservice if url_bridgeservice
-    default_backend backend_default
+#+begin_example
+295: veth39145be@if294: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1440 qdisc noqueue master br-edd588fc6880 state UP mode DEFAULT group default 
+#+end_example
 
-# Backend configuration for /l1rpc
-backend backend_l1rpc
-    http-request set-path /
-    server server1 172.16.0.10:8545
+Now I have the interface name ~br-edd588fc6880~ and I can use that for
+~tcpdump~, ~tcpkill~ and things like that
 
-# Backend configuration for /l2rpc
-backend backend_l2rpc
-    http-request set-path /
-    server server2 172.16.0.20:8123
-
-# Backend configuration for /bridgeservice
-backend backend_bridgeservice
-    http-request set-path "%[path,regsub(^/bridgeservice/,/)]"
-    server server3 172.16.0.26:8080
-
-# Default backend configuration
-backend backend_default
-    server server4 172.16.0.28:80
-
+https://github.com/torvalds/linux/blob/55027e689933ba2e64f3d245fb1ff185b3e7fc81/Documentation/ABI/testing/sysfs-class-net#L188-L207
 
