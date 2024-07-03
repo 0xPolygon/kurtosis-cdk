@@ -154,7 +154,7 @@ groups:
             model:
               disableTextWrap: false
               editorMode: builder
-              expr: avg(panoptichain_rpc_zkevm_last_batch_sequenced)
+              expr: avg by(network) (panoptichain_rpc_zkevm_last_batch_sequenced)
               fullMetaSearch: false
               includeNullMetadata: true
               instant: true
@@ -175,7 +175,7 @@ groups:
                 uid: PBFA97CFB590B2093
               disableTextWrap: false
               editorMode: builder
-              expr: avg(panoptichain_rpc_zkevm_last_verified_batch)
+              expr: avg by(network) (panoptichain_rpc_zkevm_last_verified_batch)
               fullMetaSearch: false
               includeNullMetadata: true
               instant: true
