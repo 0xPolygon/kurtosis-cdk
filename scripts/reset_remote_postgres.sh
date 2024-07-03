@@ -1,6 +1,7 @@
 #!/bin/bash
+# prerequirement: psql must already be installed
 
-PGPASSWORD='postgres' psql -h <your_pg_server> -p 5432 -U postgres -d postgres <<EOF
+PGPASSWORD='postgres' psql -h <your-server-ip> -p 5432 -U postgres -d postgres <<EOF
 -- Drop and recreate the event_db
 DROP DATABASE IF EXISTS event_db;
 CREATE DATABASE event_db;
@@ -10,8 +11,8 @@ GRANT USAGE ON SCHEMA public TO event_user;
 GRANT CREATE ON SCHEMA public TO event_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO event_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO event_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.event TO event_user;
-GRANT USAGE, SELECT ON SEQUENCE public.event_id_seq TO event_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO event_user;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO event_user;
 
 -- Drop and recreate the pool_db
 DROP DATABASE IF EXISTS pool_db;
@@ -27,7 +28,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO pool_use
 DROP DATABASE IF EXISTS prover_db;
 CREATE DATABASE prover_db;
 \c prover_db
--- Grant permissions to prover_user
+-- Create state schema and grant permissions to prover_user
+CREATE SCHEMA state;
 GRANT USAGE ON SCHEMA public TO prover_user;
 GRANT CREATE ON SCHEMA public TO prover_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO prover_user;
