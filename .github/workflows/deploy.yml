@@ -228,6 +228,9 @@ jobs:
           polygon_data_committee_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
           yq -Y --in-place ".args.polygon_data_committee_address = $polygon_data_committee_address" params.yml
 
+          zkevm_admin_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .admin)
+          yq -Y --in-place ".args.zkevm_admin_address = $zkevm_admin_address" params.yml
+
       - name: Deploy the rest of the components
         run: |
           # Do not deploy l1 and zkevm contracts.
