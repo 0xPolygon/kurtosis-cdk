@@ -1,88 +1,60 @@
 #!/bin/bash
-# prerequirement: psql must already be installed
 
-PGPASSWORD='postgres' psql -h <your-server-ip> -p 5432 -U postgres -d postgres <<EOF
--- Drop and recreate the event_db
-DROP DATABASE IF EXISTS event_db;
-CREATE DATABASE event_db;
-\c event_db
--- Grant permissions to event_user
-GRANT USAGE ON SCHEMA public TO event_user;
-GRANT CREATE ON SCHEMA public TO event_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO event_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO event_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO event_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO event_user;
+DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "agglayer_db" "bridge_db" "dac_db")
+DB_USERS=("event_user" "pool_user" "prover_user" "state_user" "agglayer_user" "bridge_user" "dac_user")
 
--- Drop and recreate the pool_db
-DROP DATABASE IF EXISTS pool_db;
-CREATE DATABASE pool_db;
-\c pool_db
--- Grant permissions to pool_user
-GRANT USAGE ON SCHEMA public TO pool_user;
-GRANT CREATE ON SCHEMA public TO pool_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO pool_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO pool_user;
+PGPASSWORD='postgres'
+HOST='your_server_ip'
+PORT=5432
 
--- Drop and recreate the prover_db
-DROP DATABASE IF EXISTS prover_db;
-CREATE DATABASE prover_db;
-\c prover_db
--- Create state schema and grant permissions to prover_user
-CREATE SCHEMA state;
-GRANT USAGE ON SCHEMA public TO prover_user;
-GRANT CREATE ON SCHEMA public TO prover_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO prover_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO prover_user;
-GRANT USAGE ON SCHEMA state TO prover_user;
-GRANT CREATE ON SCHEMA state TO prover_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA state GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO prover_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA state GRANT EXECUTE ON FUNCTIONS TO prover_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA state TO prover_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA state TO prover_user;
+for i in "${!DB_NAMES[@]}"; do
+    DB_NAME="${DB_NAMES[$i]}"
+    DB_USER="${DB_USERS[$i]}"
 
--- Drop and recreate the state_db
-DROP DATABASE IF EXISTS state_db;
-CREATE DATABASE state_db;
-\c state_db
--- Grant permissions to state_user
-GRANT USAGE ON SCHEMA public TO state_user;
-GRANT CREATE ON SCHEMA public TO state_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO state_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO state_user;
+    echo "Resetting database: $DB_NAME"
 
--- Drop and recreate the agglayer_db
-DROP DATABASE IF EXISTS agglayer_db;
-CREATE DATABASE agglayer_db;
-\c agglayer_db
--- Grant permissions to agglayer_user
-GRANT USAGE ON SCHEMA public TO agglayer_user;
-GRANT CREATE ON SCHEMA public TO agglayer_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO agglayer_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO agglayer_user;
-
--- Drop and recreate the bridge_db
-DROP DATABASE IF EXISTS bridge_db;
-CREATE DATABASE bridge_db;
-\c bridge_db
--- Grant permissions to bridge_user
-GRANT USAGE ON SCHEMA public TO bridge_user;
-GRANT CREATE ON SCHEMA public TO bridge_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO bridge_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO bridge_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bridge_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO bridge_user;
-
--- Drop and recreate the dac_db
-DROP DATABASE IF EXISTS dac_db;
-CREATE DATABASE dac_db;
-\c dac_db
--- Grant permissions to dac_user
-GRANT USAGE ON SCHEMA public TO dac_user;
-GRANT CREATE ON SCHEMA public TO dac_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dac_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO dac_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO dac_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO dac_user;
-
+    PGPASSWORD=$PGPASSWORD psql -h $HOST -p $PORT -U postgres <<EOF
+    DROP DATABASE IF EXISTS $DB_NAME;
+    CREATE DATABASE $DB_NAME;
+    GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 EOF
+
+    echo "Database $DB_NAME has been reset and permissions granted to $DB_USER."
+
+    if [ "$DB_NAME" == "event_db" ]; then
+        echo "Setting up schema for $DB_NAME"
+        PGPASSWORD=$PGPASSWORD psql -h $HOST -p $PORT -U postgres -d $DB_NAME <<EOF
+        CREATE TYPE level_t AS ENUM ('emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug');
+
+        CREATE TABLE public.event (
+           id BIGSERIAL PRIMARY KEY,
+           received_at timestamp WITH TIME ZONE default CURRENT_TIMESTAMP,
+           ip_address inet,
+           source varchar(32) not null,
+           component varchar(32),
+           level level_t not null,
+           event_id varchar(32) not null,
+           description text,
+           data bytea,
+           json jsonb
+        );
+EOF
+    fi
+
+    if [ "$DB_NAME" == "prover_db" ]; then
+        echo "Setting up schema for $DB_NAME"
+        PGPASSWORD=$PGPASSWORD psql -h $HOST -p $PORT -U postgres -d $DB_NAME <<EOF
+        CREATE SCHEMA state;
+
+        CREATE TABLE state.nodes (
+           hash BYTEA PRIMARY KEY,
+           data BYTEA NOT NULL
+        );
+
+        CREATE TABLE state.program (
+           hash BYTEA PRIMARY KEY,
+           data BYTEA NOT NULL
+        );
+EOF
+    fi
+done
