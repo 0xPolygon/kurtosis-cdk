@@ -60,7 +60,7 @@ args:
   # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-  panoptichain_image: minhdvu/panoptichain
+  panoptichain_image: minhdvu/panoptichain:0.1.47
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
   zkevm_sequence_sender_image: "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4"
@@ -124,11 +124,10 @@ args:
   l1_rpc_url: http://el-1-geth-lighthouse:8545
   l1_ws_url: ws://el-1-geth-lighthouse:8546
   # https://github.com/ethpandaops/ethereum-package/tree/main?tab=readme-ov-file#configuration
-  l1_additional_services: [
-    # blockscout, # block explorer
-    # dora, # beaconchain explorer
-    # el_forkmon, # fork monitor tool
-  ]
+  l1_additional_services: []
+  # blockscout, # block explorer
+  # dora, # beaconchain explorer
+  # el_forkmon, # fork monitor tool
   l1_preset: mainnet
   l1_seconds_per_slot: 12
 
@@ -167,13 +166,13 @@ args:
 
   ## Workload configuration.
   workload_commands: [
-    "polycli_loadtest_on_l2.sh t",  # eth transfers
-    "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-    "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-    "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
-    "polycli_rpcfuzz_on_l2.sh",     # rpc calls
-    "bridge.sh", # bridge tokens l1 -> l2 and l2 -> l1
-  ]
+      "polycli_loadtest_on_l2.sh t", # eth transfers
+      "polycli_loadtest_on_l2.sh 2", # erc20 transfers
+      "polycli_loadtest_on_l2.sh 7", # erc721 mints
+      "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
+      "polycli_rpcfuzz_on_l2.sh", # rpc calls
+      "bridge.sh", # bridge tokens l1 -> l2 and l2 -> l1
+    ]
 
   ## ETH Load balancer configuration.
   blutgang_image: makemake1337/blutgang:0.3.5
@@ -182,6 +181,6 @@ args:
 
   ## Observability alerting configuration.
   # slack_alerts:
-    # slack_channel: ""
-    # slack_token: ""
-    # mention_users: ""
+  # slack_channel: ""
+  # slack_token: ""
+  # mention_users: ""
