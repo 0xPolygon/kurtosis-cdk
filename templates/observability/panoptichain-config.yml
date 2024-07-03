@@ -147,7 +147,8 @@ observers:
   - "uncles"
   - "validator_wallet_balance"
   - "zkevm_batches"
-  - "zkevm_contract"
+  - "rollup_manager"
+  - "span"
 
 # Networks allows you to define custom networks. If defined here, you can use it
 # in the provider as the `name` field.
