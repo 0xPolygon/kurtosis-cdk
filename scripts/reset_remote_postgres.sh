@@ -31,6 +31,7 @@ EOF
 
     if [ "$DB_NAME" == "event_db" ]; then
         PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
+        GRANT USAGE, SELECT ON SEQUENCE public.event_id_seq TO $DB_USER;
         CREATE TYPE level_t AS ENUM ('emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug');
 
         CREATE TABLE IF NOT EXISTS public.event (
