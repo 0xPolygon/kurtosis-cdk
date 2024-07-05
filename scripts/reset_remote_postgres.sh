@@ -14,14 +14,14 @@ for i in "${!DB_NAMES[@]}"; do
 
     echo "Resetting database: $DB_NAME"
 
-    # initially connect as master postgres user to drop/recreate dbs
+    # Initially connect as master postgres user to drop/recreate dbs
     PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER <<EOF
     DROP DATABASE IF EXISTS $DB_NAME;
     CREATE DATABASE $DB_NAME;
     GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;   
 EOF
 
-    # connect to specific database for db initialization                                                                                                                                                                                                                                                                                                                  
+    # Connect to specific database for db initialization                                                                                                                                                                                                                                                                                                                  
     PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
     CREATE SCHEMA IF NOT EXISTS public;
     GRANT USAGE ON SCHEMA public TO $DB_USER;
@@ -36,7 +36,7 @@ EOF
     if [ "$DB_NAME" == "event_db" ]; then
         echo "Setting up 'public.event' table for $DB_NAME"
         PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
-        CREATE TYPE IF NOT EXISTS level_t AS ENUM ('emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug');
+        CREATE TYPE level_t AS ENUM ('emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug');
 
         CREATE TABLE IF NOT EXISTS public.event (
            id BIGSERIAL PRIMARY KEY,
