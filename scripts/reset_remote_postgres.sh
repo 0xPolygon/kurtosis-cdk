@@ -12,8 +12,6 @@ for i in "${!DB_NAMES[@]}"; do
     DB_NAME="${DB_NAMES[$i]}"
     DB_USER="${DB_USERS[$i]}"
 
-    echo "Resetting database: $DB_NAME"
-
     # Initially connect as master postgres user to drop/recreate dbs
     PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER <<EOF
     DROP DATABASE IF EXISTS $DB_NAME;
@@ -30,10 +28,8 @@ EOF
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO $DB_USER;
     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;  
 EOF
-    echo "\n$DB_NAME reset, perms granted for $DB_USER\n\n"
 
     if [ "$DB_NAME" == "event_db" ]; then
-        echo "Setting up 'public.event' table for $DB_NAME"
         PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
         CREATE TYPE level_t AS ENUM ('emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug');
 
@@ -53,7 +49,6 @@ EOF
     fi
 
     if [ "$DB_NAME" == "prover_db" ]; then
-        echo "Setting up schema 'state' for $DB_NAME"
         PGPASSWORD=$PGPASSWORD psql -h $PGHOST  -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
         CREATE SCHEMA IF NOT EXISTS state;
         GRANT USAGE ON SCHEMA state TO $DB_USER;
@@ -74,4 +69,5 @@ EOF
         );
 EOF
     fi
+    echo "🟢 $DB_NAME reset, permissions granted for $DB_USER 🟢"
 done
