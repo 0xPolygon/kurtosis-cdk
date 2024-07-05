@@ -69,5 +69,5 @@ EOF
         );
 EOF
     fi
-    echo "🟢 $DB_NAME reset, permissions granted for $DB_USER 🟢"
+    echo "🟢  '$DB_NAME' reset, permissions granted for '$DB_USER'"
 done
