@@ -23,7 +23,6 @@ EOF
 
     # Connect to specific database for db initialization                                                                                                                                                                                                                                                                                                                  
     PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
-    CREATE SCHEMA IF NOT EXISTS public;
     GRANT USAGE ON SCHEMA public TO $DB_USER;
     GRANT CREATE ON SCHEMA public TO $DB_USER;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $DB_USER;
@@ -31,7 +30,7 @@ EOF
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO $DB_USER;
     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;  
 EOF
-    echo "Database $DB_NAME reset, permissions granted for user $DB_USER"
+    echo "\n$DB_NAME reset, perms granted for $DB_USER\n\n"
 
     if [ "$DB_NAME" == "event_db" ]; then
         echo "Setting up 'public.event' table for $DB_NAME"
