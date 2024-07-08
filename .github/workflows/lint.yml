@@ -61,4 +61,3 @@ jobs:
 
       - name: Compare default parameters
         run: ./scripts/compare_default_params.sh
-        continue-on-error: true
