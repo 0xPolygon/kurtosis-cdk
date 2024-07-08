@@ -8,7 +8,7 @@ databases = import_module("./databases.star")
 
 
 def run(plan, args):
-    db_configs = databases.get_db_configs(plan, args["deployment_suffix"])
+    db_configs = databases.get_db_configs(args["deployment_suffix"])
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"

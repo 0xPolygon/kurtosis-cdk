@@ -4,7 +4,7 @@ databases = import_module("./databases.star")
 
 
 def run(plan, args, genesis_artifact):
-    db_config = databases.get_pless_db_configs(plan, args["original_suffix"])
+    db_config = databases.get_pless_db_configs(args["original_suffix"])
 
     # Start executor.
     executor_config_template = read_file(

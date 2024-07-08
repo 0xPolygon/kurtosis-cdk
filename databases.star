@@ -1,14 +1,25 @@
+# We support both local and remote Postgres databases within our Kurtosis-CDK package
+# When 'use_remote_pg' is set False, service automatically creates all CDK databases locally
+# When 'use_remote_pg' is set True, service remains only for param reference across stack
+# For clarity, 'use_remote_pg' True, stores all state on preconfigured postgres databases
 USE_REMOTE_POSTGRES = False
 
-POSTGRES_HOSTNAME = "127.0.0.1"  # change this when USE_REMOTE_POSTGRES set True
+# When 'use_remote_pg' is set True, replace 'postgres_hostname' with your master database IP/hostname
+POSTGRES_HOSTNAME = "127.0.0.1"
+
 POSTGRES_IMAGE = "postgres:16.2"
 POSTGRES_SERVICE_NAME = "postgres"
 POSTGRES_PORT = 5432
+# Below 'postgres_master' params only relevant when 'use_remote_pg' is set False
 POSTGRES_MASTER_DB = "master"
 POSTGRES_MASTER_USER = "master_user"
 POSTGRES_MASTER_PASSWORD = "master_password"
 
-CDK_DATABASES = {
+# When 'use_remote_pg' is set True, update passwords to match your remote postgres dbs
+# Strongly recommended to keep existing db names and user names
+# This allows users to immediately leverage our 'scripts/reset_remote_postgres.sh'
+# Which automatically wipes all CDK databases and configures all db permissions
+TRUSTED_DATABASES = {
     "event_db": {
         "name": "event_db",
         "user": "event_user",
@@ -31,7 +42,7 @@ CDK_DATABASES = {
     },
 }
 
-DATABASES = CDK_DATABASES | {
+PERMISSIONLESS_DATABASES = {
     "agglayer_db": {
         "name": "agglayer_db",
         "user": "agglayer_user",
@@ -49,6 +60,7 @@ DATABASES = CDK_DATABASES | {
     },
 }
 
+DATABASES = TRUSTED_DATABASES | PERMISSIONLESS_DATABASES
 
 def _service_name(suffix):
     return POSTGRES_SERVICE_NAME + suffix
@@ -58,20 +70,18 @@ def _pless_suffix(suffix):
     return "-pless" + suffix
 
 
-def get_db_configs(plan, suffix):
+def get_db_configs(suffix):
     configs = {
         k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(suffix), "port": POSTGRES_PORT}
         for k, v in DATABASES.items()
     }
-    plan.print("DB Configs: " + str(configs))
     return configs
 
-def get_pless_db_configs(plan, suffix):
+def get_pless_db_configs(suffix):
     configs = {
         k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(_pless_suffix(suffix)), "port": POSTGRES_PORT}
-        for k, v in CDK_DATABASES.items()
+        for k, v in PERMISSIONLESS_DATABASES.items()
     }
-    plan.print("Pless DB Configs: " + str(configs))
     return configs
 
 def create_postgres_service(plan, db_configs, suffix):
@@ -109,14 +119,13 @@ def create_postgres_service(plan, db_configs, suffix):
         config=postgres_service_cfg,
         description="Starting Postgres Service",
     )
-    plan.print("Postgres service config: " + str(postgres_service_cfg))
 
 
 def run(plan, suffix):
-    db_configs = get_db_configs(plan, suffix)
+    db_configs = get_db_configs(suffix)
     create_postgres_service(plan, db_configs, suffix)
 
 
 def run_pless(plan, suffix):
-    db_configs = get_pless_db_configs(plan, suffix)
+    db_configs = get_pless_db_configs(suffix)
     create_postgres_service(plan, db_configs, _pless_suffix(suffix))
