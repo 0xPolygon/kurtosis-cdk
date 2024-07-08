@@ -65,6 +65,7 @@ PERMISSIONLESS_DATABASES = {
 
 DATABASES = TRUSTED_DATABASES | PERMISSIONLESS_DATABASES
 
+
 def _service_name(suffix):
     return POSTGRES_SERVICE_NAME + suffix
 
@@ -75,17 +76,31 @@ def _pless_suffix(suffix):
 
 def get_db_configs(suffix):
     configs = {
-        k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(suffix), "port": POSTGRES_PORT}
+        k: v
+        | {
+            "hostname": POSTGRES_HOSTNAME
+            if USE_REMOTE_POSTGRES
+            else _service_name(suffix),
+            "port": POSTGRES_PORT,
+        }
         for k, v in DATABASES.items()
     }
     return configs
 
+
 def get_pless_db_configs(suffix):
     configs = {
-        k: v | {"hostname": POSTGRES_HOSTNAME if USE_REMOTE_POSTGRES else _service_name(_pless_suffix(suffix)), "port": POSTGRES_PORT}
+        k: v
+        | {
+            "hostname": POSTGRES_HOSTNAME
+            if USE_REMOTE_POSTGRES
+            else _service_name(_pless_suffix(suffix)),
+            "port": POSTGRES_PORT,
+        }
         for k, v in PERMISSIONLESS_DATABASES.items()
     }
     return configs
+
 
 def create_postgres_service(plan, db_configs, suffix):
     init_script_tpl = read_file(src="./templates/databases/init.sql")
