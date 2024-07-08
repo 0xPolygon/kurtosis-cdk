@@ -25,6 +25,7 @@ TRUSTED_DATABASES = {
         "name": "event_db",
         "user": "event_user",
         "password": "redacted",
+        "init": read_file(src="./templates/databases/event-db-init.sql"),
     },
     "pool_db": {
         "name": "pool_db",
@@ -35,6 +36,7 @@ TRUSTED_DATABASES = {
         "name": "prover_db",
         "user": "prover_user",
         "password": "redacted",
+        "init": read_file(src="./templates/databases/prover-db-init.sql"),
     },
     "state_db": {
         "name": "state_db",
