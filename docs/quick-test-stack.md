@@ -46,16 +46,16 @@ Status `1` signifies a successful transaction.
 
 1. Add the network details manually to MetaMask and accept the defaults and auto-populating fields.
 
-    ![MetaMask manual network entry](../img/how-to/manual-network-entry.png)
+    ![MetaMask manual network entry](img/how-to/manual-network-entry.png)
 
 2. In local/test setup you will find a pre-funded account with private key: `0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625`. Import the account into MetaMask.
 
     <center>
-    ![Import pre-funded account](../img/how-to/account.png){ width=45% }
+    ![Import pre-funded account](img/how-to/account.png){ width=45% }
     </center>
 
 3. Send a transaction to another MetaMask account.
 
-    ![Transaction sending success](../img/how-to/tx-success.png)
+    ![Transaction sending success](img/how-to/tx-success.png)
 
 </br>
