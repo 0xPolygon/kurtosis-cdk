@@ -1,3 +1,5 @@
+data_availability_package = import_module("./lib/data_availability.star")
+
 ARTIFACTS = [
     {
         "name": "deploy_parameters.json",
@@ -24,7 +26,20 @@ def run(plan, args):
         template = read_file(src=artifact_cfg["file"])
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
-            config={artifact_cfg["name"]: struct(template=template, data=args)},
+            config={
+                artifact_cfg["name"]: struct(
+                    template=template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
+                            args
+                        ),
+                    },
+                )
+            },
         )
         artifacts.append(artifact)
 
@@ -84,4 +99,17 @@ def run(plan, args):
                 ),
             ]
         ),
+    )
+
+    # Store CDK configs.
+    cdk_erigon_node_chain_config_artifact = plan.store_service_files(
+        name="cdk-erigon-node-chain-config",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/dynamic-kurtosis-conf.json",
+    )
+
+    cdk_erigon_node_chain_allocs_artifact = plan.store_service_files(
+        name="cdk-erigon-node-chain-allocs",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/dynamic-kurtosis-allocs.json",
     )

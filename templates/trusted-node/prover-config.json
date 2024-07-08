@@ -161,7 +161,7 @@
      * "local" if no external database is used (data will be stored in
      * cache)
      */ -}}
-    "databaseURL": "postgresql://{{.zkevm_db_prover_user}}:{{.zkevm_db_prover_password}}@{{.zkevm_db_prover_hostname}}{{.deployment_suffix}}:{{.zkevm_db_postgres_port}}/{{.zkevm_db_prover_name}}",
+    "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
 
 {{- /*
      * dbNodesTableName is the schema and name of the nodes table in

@@ -8,10 +8,10 @@ A [Kurtosis](https://github.com/kurtosis-tech/kurtosis) package that deploys a p
 
 To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) and [Kurtosis](https://docs.kurtosis.com/install/).
 
-You will also need a few other tools. Run this script to check you have the required versions.
+You will also need a few other tools. Run this script to check if you have the required versions:
 
 ```bash
-sh scripts/tool_check.sh
+./scripts/tool_check.sh
 ```
 
 Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally.
@@ -23,6 +23,12 @@ kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 ```
 
+The command above deploys a CDK stack using [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. Alternatively, to launch a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer, you can run the following command.
+
+```bash
+kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
+```
+
 Let's do a simple L2 RPC test call.
 
 First, you will need to figure out which port Kurtoiss is using for the RPC. You can get a general feel for the entire network layout by running the following command:
@@ -31,7 +37,7 @@ First, you will need to figure out which port Kurtoiss is using for the RPC. You
 kurtosis enclave inspect cdk-v1
 ```
 
-That output is quite useful might might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable.
+That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
 
 ```bash
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
@@ -43,7 +49,7 @@ That is the same environment variable that `cast` uses, so you should now be abl
 cast block-number
 ```
 
-By default, the CDK is configured in `test` mode which means there is some pre-funded value in the admin account with address `0xE34aaF64b29273B7D567FCFc40544c014EEe9970`.
+By default, the CDK is configured in `test` mode, which means there is some pre-funded value in the admin account with address `0xE34aaF64b29273B7D567FCFc40544c014EEe9970`.
 
 ```bash
 cast balance --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
@@ -90,7 +96,7 @@ If the number of verified batches is increasing, then it means the system works 
 To access the `zkevm-bridge` user interface, open this URL in your web browser.
 
 ```bash
-open $(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 bridge-interface)
+open $(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 web-ui)
 ```
 
 When everything is done, you might want to clean up with this command which stops everything and deletes it.

@@ -1,6 +1,6 @@
 [FullNodeRPCs]
 # TODO switch this to permissionless
-1 = "http://zkevm-node-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 [ProofSigners]
 # 1 = "{{.zkevm_l2_proofsigner_address}}"
@@ -18,11 +18,11 @@ Level = "info"
 Outputs = ["stderr"]
 
 [DB]
-User = "{{.zkevm_db_agglayer_user}}"
-Password = "{{.zkevm_db_agglayer_password}}"
-Name = "{{.zkevm_db_agglayer_name}}"
-Host = "{{.zkevm_db_agglayer_hostname}}{{.deployment_suffix}}"
-Port = "{{.zkevm_db_postgres_port}}"
+User = "{{.agglayer_db.user}}"
+Password = "{{.agglayer_db.password}}"
+Name = "{{.agglayer_db.name}}"
+Host = "{{.agglayer_db.hostname}}"
+Port = "{{.agglayer_db.port}}"
 EnableLog = false
 MaxConns = 200
 

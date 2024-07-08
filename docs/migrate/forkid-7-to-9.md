@@ -5,9 +5,9 @@ comments: true
 This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis package.
 
 !!! tip
-    These steps are similar a production build, except you have to use a [timelock](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v5.0.1-rc.2-fork.8/contracts/PolygonZkEVMTimelock.sol) contract to make the calls.
+    These steps are similar to a production build, except you have to use a [timelock](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v5.0.1-rc.2-fork.8/contracts/PolygonZkEVMTimelock.sol) contract to make the calls.
 
-## Prequisite steps and set up
+## Prerequisite steps and set up
 
 1. Run a clean command to remove any lingering state:
 
@@ -42,9 +42,6 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
     # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
     -  zkevm_rollup_fork_id: 9
     +  zkevm_rollup_fork_id: 7
-
-    # The consensus contract name of the new rollup.
-    zkevm_rollup_consensus: PolygonValidiumEtrog
     ```
 
 3. Now kick-off a full redeploy:
@@ -224,7 +221,7 @@ After a few minutes, the number of verified batches should increase (the first b
         "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" 1
     ```
 
-8. Set up the data availability protcol again:
+8. Set up the data availability protocol again:
 
     ```sh
     dac="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonDataCommittee /opt/zkevm/combined.json" | tail -n +2)"

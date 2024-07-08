@@ -137,6 +137,46 @@ jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].po
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 
+# Create cdk-erigon node configs
+jq_script='
+.genesis | map({
+  (.address): {
+    contractName: (if .contractName == "" then null else .contractName end),
+    balance: (if .balance == "" then null else .balance end),
+    nonce: (if .nonce == "" then null else .nonce end),
+    code: (if .bytecode == "" then null else .bytecode end),
+    storage: (if .storage == null or .storage == {} then null else (.storage | to_entries | sort_by(.key) | from_entries) end)
+  }
+}) | add'
+
+# Use jq to transform the input JSON into the desired format
+output_json=$(jq "$jq_script" /opt/zkevm/genesis.json)
+
+# Handle jq errors
+if [[ $? -ne 0 ]]; then
+    echo "Error processing JSON with jq"
+    exit 1
+fi
+
+# Write the output JSON to a file
+echo "$output_json" | jq . > dynamic-kurtosis-allocs.json
+if [[ $? -ne 0 ]]; then
+    echo "Error writing to file dynamic-kurtosis-allocs.json"
+    exit 1
+fi
+
+echo "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
+
+jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
+
+batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
+
+jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
+
+mv tmp_output.json dynamic-kurtosis-conf.json
+
+cat dynamic-kurtosis-conf.json
+
 # Configure contracts.
 
 # The sequencer needs to pay POL when it sequences batches.
@@ -151,6 +191,7 @@ cast send \
     'approve(address,uint256)(bool)' \
     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
+{{if .is_cdk_validium}}
 # The DAC needs to be configured with a required number of signatures.
 # Right now the number of DAC nodes is not configurable.
 # If we add more nodes, we'll need to make sure the urls and keys are sorted.
@@ -170,6 +211,7 @@ cast send \
     "$(jq -r '.rollupAddress' combined.json)" \
     'setDataAvailabilityProtocol(address)' \
     "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+{{end}}
 
 # Grant the aggregator role to the agglayer so that it can also verify batches.
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"

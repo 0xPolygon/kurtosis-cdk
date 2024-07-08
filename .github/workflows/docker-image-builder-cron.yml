@@ -3,7 +3,8 @@ name: Docker Image Builder Cron
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 6 AM Paris time (UTC+2).
+    # Run this workflow every Monday at 6 AM Paris time (UTC+2).
+    - cron: 0 6 * * 1
   workflow_dispatch:
 
 concurrency:
@@ -16,6 +17,8 @@ env:
 
 jobs:
   zkevm-contracts:
+    # Prevent this job to run on forks.
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
 
     strategy:
@@ -60,6 +63,8 @@ jobs:
           push: true
 
   zkevm-bridge-ui:
+    # Prevent this job to run on forks.
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -94,6 +99,8 @@ jobs:
           push: true
 
   toolbox:
+    # Prevent this job to run on forks.
+    if: github.repository == '0xPolygon/kurtosis-cdk'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -5,7 +5,7 @@ def run(plan, args):
     )
 
     zkevm_sequencer_service = plan.get_service(
-        name="zkevm-node-sequencer" + args["deployment_suffix"]
+        name=args["sequencer_name"] + args["deployment_suffix"]
     )
     zkevm_sequencer_http_url = "http://{}:{}".format(
         zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
