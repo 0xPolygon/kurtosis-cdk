@@ -1,0 +1,296 @@
+---
+name: Nightly
+
+on:
+  schedule:
+    # Run this workflow every day at 6 AM Paris time (UTC+2).
+    - cron: 0 6 * * *
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Deploy the CDK environment in one step.
+  monolithic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.21
+          cache-dependency-path: scripts/zkevm-config-diff/go.sum
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Enable workload
+        run: yq -Y --in-place '.apply_workload = true' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+      # Compare configs.
+      - name: Dump configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: |
+          mkdir -p default-configs kurtosis-cdk-configs
+          sh zkevm_config.sh dump default ./default-configs
+          echo
+          sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
+
+      - name: Compare configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
+
+      - name: Diff configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
+
+
+  # Deploy the CDK environment incrementally, stage by stage.
+  incremental:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Disable all deployment steps
+        run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
+
+      - name: Deploy L1
+        run: |
+          yq -Y --in-place '.deploy_l1 = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_l1 = false' params.yml # reset
+
+      - name: Deploy zkEVM contracts on L1
+        run: |
+          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
+
+      - name: Deploy zkEVM node and cdk peripheral databases
+        run: |
+          yq -Y --in-place '.deploy_databases = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_databases = false' params.yml # reset
+
+      - name: Deploy CDK central environment
+        run: |
+          yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
+
+      - name: Deploy CDK bridge infrastructure
+        run: |
+          yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
+
+      - name: Deploy zkEVM permissionless node
+        run: |
+          # Retrieve genesis file.
+          kurtosis files download cdk-v1 genesis /tmp
+          cp /tmp/genesis.json templates/permissionless-node/genesis.json
+
+          # Deploy permisionless node.
+          yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
+
+      - name: Deploy CDK erigon node
+        run: |
+          yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
+
+      - name: Deploy observability stack
+        run: |
+          yq -Y --in-place '.deploy_observability = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_observability = false' params.yml # reset
+
+      - name: Deploy Blockscout stack
+        run: |
+          yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
+
+      - name: Deploy ETH load balancer
+        run: |
+          yq -Y --in-place '.deploy_blutgang = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
+
+      - name: Apply workload
+        run: |
+          yq -Y --in-place '.apply_workload = true' params.yml
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
+          yq -Y --in-place '.apply_workload = false' params.yml # reset
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+
+  # Deploy the CDK environment without specifying any parameter file.
+  configless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      # Deploy components.
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment with the gas token feature enabled.
+  gas-token:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Enable gas token feature
+        run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
+  pre-deployed-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy L1 and zkEVM contracts
+        run: |
+          # Disable all deployment steps.
+          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
+          # Only deploy l1 and zkevm contracts.
+          yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Specify the rollup manager contract address and a few other parameters
+        run: |
+          zkevm_rollup_manager_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
+          yq -Y --in-place ".args.zkevm_rollup_manager_address = $zkevm_rollup_manager_address" params.yml
+
+          zkevm_rollup_manager_block_number=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .deploymentRollupManagerBlockNumber)
+          yq -Y --in-place ".args.zkevm_rollup_manager_block_number = $zkevm_rollup_manager_block_number" params.yml
+
+          zkevm_global_exit_root_l2_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonZkEVMGlobalExitRootL2Address)
+          yq -Y --in-place ".args.zkevm_global_exit_root_l2_address = $zkevm_global_exit_root_l2_address" params.yml
+
+          polygon_data_committee_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
+          yq -Y --in-place ".args.polygon_data_committee_address = $polygon_data_committee_address" params.yml
+
+          zkevm_admin_address=$(kurtosis service exec cdk-v1 contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .admin)
+          yq -Y --in-place ".args.zkevm_admin_address = $zkevm_admin_address" params.yml
+
+      - name: Deploy the rest of the components
+        run: |
+          # Do not deploy l1 and zkevm contracts.
+          yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml
+
+          # Deploy databases, cdk central/trusted environment, cdk/bridge infra and observability stack.
+          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy a standalone permisionless node against Sepolia.
+  permisionless-node:
+    # Prevent this job to run on forks.
+    if: github.repository == '0xPolygon/kurtosis-cdk'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Configure permisionless node parameters
+        run: |
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
+          yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
+
+      - name: Deploy the permisionless node
+        run: |
+          # Disable all steps except permisionless node.
+          yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
+
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+
+  # Deploy the CDK environment in rollup mode (data availability).
+  rollup-da-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Set rollup data availability mode
+        run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment in cdk-validium mode (data availability).
+  cdk-validium-da-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Set cdk-validium data availability mode
+        run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+
+  # Deploy the CDK environment with cdk-erigon as a sequencer.
+  cdk-erigon-sequencer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy Kurtosis CDK package
+        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
