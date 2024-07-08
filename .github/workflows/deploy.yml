@@ -17,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
