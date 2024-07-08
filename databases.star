@@ -1,25 +1,27 @@
 # We support both local and remote Postgres databases within our Kurtosis-CDK package
-# When 'use_remote_pg' is set False, service automatically creates all CDK databases locally
-# When 'use_remote_pg' is set True, service remains only for param reference across stack
-# For clarity, 'use_remote_pg' True, stores all state on preconfigured postgres databases
+# When 'USE_REMOTE_POSTGRES' is False, service automatically creates all CDK databases locally
+# When 'USE_REMOTE_POSTGRES' is True, service is created just as a helper for param injection across pods
+# When 'USE_REMOTE_POSTGRES' is True, all state is stored on your preconfigured Postgres instances
 USE_REMOTE_POSTGRES = False
 
-# When 'use_remote_pg' is set True, replace 'postgres_hostname' with your master database IP/hostname
+# When 'USE_REMOTE_POSTGRES' is True, replace 'POSTGRES_HOSTNAME' with your master database IP/hostname
 POSTGRES_HOSTNAME = "127.0.0.1"
 
+# Mostly static params unless user has specialized postgres configuration
 POSTGRES_IMAGE = "postgres:16.2"
 POSTGRES_SERVICE_NAME = "postgres"
 POSTGRES_PORT = 5432
-# Below 'postgres_master' params only relevant when 'use_remote_pg' is set False
+
+# Below 'POSTGRES_MASTER_' params only apply when 'USE_REMOTE_POSTGRES' is False
 POSTGRES_MASTER_DB = "master"
 POSTGRES_MASTER_USER = "master_user"
 POSTGRES_MASTER_PASSWORD = "master_password"
 
-# When 'use_remote_pg' is set True, update passwords to match your remote postgres dbs
-# Strongly recommended to keep existing db names and user names
-# This allows users to immediately leverage our 'scripts/reset_postgres.sh'
-# Which automatically wipes all CDK databases and reconfigures proper db permissions
-# TO DO: add env var support for secrets
+# When 'USE_REMOTE_POSTGRES' is True, update following credentials to match your remote postgres DBs
+# It is recommended users keep existing DB names and usernames for stability
+# This way, users can also leverage our 'reset_postgres.sh' script,
+# Which automatically wipes all CDK databases and reapplies proper db permissions
+# TO DO: add env var support for credentials
 TRUSTED_DATABASES = {
     "event_db": {
         "name": "event_db",

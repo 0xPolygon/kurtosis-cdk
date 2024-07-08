@@ -12,7 +12,7 @@ DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "agglayer_db" "bridge_db" 
 DB_USERS=("event_user" "pool_user" "prover_user" "state_user" "agglayer_user" "bridge_user" "dac_user")
 
 # Update credentials to match remote master postgres instance and user
-# TO DO: add env var support for secrets
+# TO DO: add env var support for credentials
 PGPASSWORD='postgres'
 PGUSER='postgres'
 PGHOST='your_server_ip'
