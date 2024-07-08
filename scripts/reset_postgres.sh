@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# USE CAUTION: script has ability to drop/recreate all CDK databases
-# Strongly recommended to run this only for testing and not for production instances
+# USE CAUTION !!! Script has ability to drop/recreate all CDK databases
+# Strongly recommended to run only for testing and not production use cases
 
-# To use for testing, follow these steps:
+# For testing, follow these steps:
 # 1. kurtosis clean --all (clear existing resources)
 # 2. update PGPASSWORD, PGUSER, and PGHOST params per your use case (modify configs)
 # 3. run ./scripts/reset_postgres.sh (drop/recreate dbs and permissions)
@@ -11,7 +11,7 @@
 DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "agglayer_db" "bridge_db" "dac_db")
 DB_USERS=("event_user" "pool_user" "prover_user" "state_user" "agglayer_user" "bridge_user" "dac_user")
 
-# Update credentials to match your remote master postgres instance and user
+# Update credentials to match remote master postgres instance and user
 PGPASSWORD='postgres'
 PGUSER='postgres'
 PGHOST='your_server_ip'
