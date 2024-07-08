@@ -19,6 +19,7 @@ POSTGRES_MASTER_PASSWORD = "master_password"
 # Strongly recommended to keep existing db names and user names
 # This allows users to immediately leverage our 'scripts/reset_postgres.sh'
 # Which automatically wipes all CDK databases and reconfigures proper db permissions
+# TO DO: add env var support for secrets
 TRUSTED_DATABASES = {
     "event_db": {
         "name": "event_db",
