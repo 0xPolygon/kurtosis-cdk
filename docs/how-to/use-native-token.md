@@ -30,9 +30,6 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
     kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
     ```
 
-    !!! tip
-        For full set up and deploy instructions, check out the [quickstart](../quickstart/deploy-stack.md) documentation.
-
     It takes a few minutes to compile and deploy the full set of contracts. 
     
     The screenshot below shows the full set of deployed services and highlights the bridge UI, L1 RPC, and L2 RPC services which we will focus on throughout this document.
