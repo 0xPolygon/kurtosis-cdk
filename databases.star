@@ -18,7 +18,7 @@ POSTGRES_MASTER_PASSWORD = "master_password"
 # When 'use_remote_pg' is set True, update passwords to match your remote postgres dbs
 # Strongly recommended to keep existing db names and user names
 # This allows users to immediately leverage our 'scripts/reset_postgres.sh'
-# Which automatically wipes all CDK databases and configures all db permissions
+# Which automatically wipes all CDK databases and reconfigures proper db permissions
 TRUSTED_DATABASES = {
     "event_db": {
         "name": "event_db",
