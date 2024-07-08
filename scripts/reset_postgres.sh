@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# USE CAUTION !!! Script has ability to drop/recreate all CDK databases
+# BEWARE !!! Script has ability to drop/recreate all CDK databases
 # Strongly recommended to run only for testing and not production use cases
 
 # For testing, follow these steps:
@@ -11,7 +11,7 @@
 DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "agglayer_db" "bridge_db" "dac_db")
 DB_USERS=("event_user" "pool_user" "prover_user" "state_user" "agglayer_user" "bridge_user" "dac_user")
 
-# Update credentials to match remote master postgres instance and user
+# User must update credentials with master postgres IP/hostname and username
 # TO DO: add env var support for credentials
 PGPASSWORD='postgres'
 PGUSER='postgres'
@@ -23,24 +23,24 @@ for i in "${!DB_NAMES[@]}"; do
     DB_USER="${DB_USERS[$i]}"
 
     # Initially connect as master postgres user to drop/recreate dbs
-    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER <<EOF
-    DROP DATABASE IF EXISTS $DB_NAME;
-    CREATE DATABASE $DB_NAME;
-    GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;   
+    PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" <<EOF
+    DROP DATABASE IF EXISTS "$DB_NAME";
+    CREATE DATABASE "$DB_NAME";
+    GRANT ALL PRIVILEGES ON DATABASE "$DB_NAME" TO "$DB_USER";   
 EOF
 
     # Connect to specific database for db initialization                                                                                                                                                                                                                                                                                                                  
-    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
-    GRANT USAGE ON SCHEMA public TO $DB_USER;
-    GRANT CREATE ON SCHEMA public TO $DB_USER;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $DB_USER;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO $DB_USER;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO $DB_USER;
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;  
+    PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$DB_NAME" <<EOF
+    GRANT USAGE ON SCHEMA public TO "$DB_USER";
+    GRANT CREATE ON SCHEMA public TO "$DB_USER";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "$DB_USER";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO "$DB_USER";
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "$DB_USER";
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "$DB_USER";  
 EOF
 
     if [ "$DB_NAME" == "event_db" ]; then
-        PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
+        PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$DB_NAME" <<EOF
         CREATE TYPE level_t AS ENUM ('emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug');
 
         CREATE TABLE IF NOT EXISTS public.event (
@@ -56,19 +56,19 @@ EOF
            json jsonb
         );
 
-        GRANT USAGE, SELECT ON SEQUENCE public.event_id_seq TO $DB_USER;
+        GRANT USAGE, SELECT ON SEQUENCE public.event_id_seq TO "$DB_USER";
 EOF
     fi
 
     if [ "$DB_NAME" == "prover_db" ]; then
-        PGPASSWORD=$PGPASSWORD psql -h $PGHOST  -p $PGPORT -U $PGUSER -d $DB_NAME <<EOF
+        PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$DB_NAME" <<EOF
         CREATE SCHEMA IF NOT EXISTS state;
-        GRANT USAGE ON SCHEMA state TO $DB_USER;
-        GRANT CREATE ON SCHEMA state TO $DB_USER;
-        ALTER DEFAULT PRIVILEGES IN SCHEMA state GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $DB_USER;
-        ALTER DEFAULT PRIVILEGES IN SCHEMA state GRANT EXECUTE ON FUNCTIONS TO $DB_USER;
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA state TO $DB_USER;
-        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA state TO $DB_USER;
+        GRANT USAGE ON SCHEMA state TO "$DB_USER";
+        GRANT CREATE ON SCHEMA state TO "$DB_USER";
+        ALTER DEFAULT PRIVILEGES IN SCHEMA state GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "$DB_USER";
+        ALTER DEFAULT PRIVILEGES IN SCHEMA state GRANT EXECUTE ON FUNCTIONS TO "$DB_USER";
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA state TO "$DB_USER";
+        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA state TO "$DB_USER";
 
         CREATE TABLE IF NOT EXISTS state.nodes (
            hash BYTEA PRIMARY KEY,

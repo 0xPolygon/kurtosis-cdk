@@ -1,7 +1,7 @@
 # We support both local and remote Postgres databases within our Kurtosis-CDK package
 # When 'USE_REMOTE_POSTGRES' is False, service automatically creates all CDK databases locally
 # When 'USE_REMOTE_POSTGRES' is True, service is created just as a helper for param injection across pods
-# When 'USE_REMOTE_POSTGRES' is True, all state is stored on your preconfigured Postgres instances
+# When 'USE_REMOTE_POSTGRES' is True, all state is stored on your preconfigured remote Postgres instances
 USE_REMOTE_POSTGRES = False
 
 # When 'USE_REMOTE_POSTGRES' is True, replace 'POSTGRES_HOSTNAME' with your master database IP/hostname
@@ -66,7 +66,6 @@ PERMISSIONLESS_DATABASES = {
 }
 
 DATABASES = TRUSTED_DATABASES | PERMISSIONLESS_DATABASES
-
 
 def _service_name(suffix):
     return POSTGRES_SERVICE_NAME + suffix
