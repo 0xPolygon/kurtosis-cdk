@@ -30,7 +30,7 @@ inputs:
   kurtosis_cdk:
     description: 0xPolygon/kurtosis-cdk (release tag)
     required: false
-    default: 'v0.2.0'
+    default: 'v0.2.3'
 
 runs:
   using: "composite"
@@ -99,11 +99,26 @@ runs:
           echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
         fi
 
-    # Install tools
-    - name: Install Kurtosis CDK tools
-      uses: ./.github/actions/setup-kurtosis-cdk
-      with:
-        kurtosis-version: ${{ inputs.kurtosis_cli }}
+    - name: Install kurtosis
+      shell: bash
+      run: |
+        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+        sudo apt update
+        sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+        kurtosis version
+
+    - name: Disable kurtosis analytics
+      shell: bash
+      run: kurtosis analytics disable
+
+    - name: Install yq
+      shell: bash
+      run: |
+        pip3 install yq
+        yq --version
+
+    - name: Install foundry
+      uses: foundry-rs/foundry-toolchain@v1
 
     - name: Install polycli
       shell: bash
@@ -162,24 +177,36 @@ runs:
           node_docker_hub="0xpolygon/cdk-validium-node"
         fi
 
-        cat params.yml
-
         yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
 
-        cat params.yml
-
     - name: Deploy Kurtosis CDK package
       shell: bash
       run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-    - name: Monitor verified batches
-      uses: ./.github/actions/monitor-verified-batches
+    - name: Check that batches are being verified
+      run: |
+        timeout_minutes=10
+        end_time=$((start_time + timeout_minutes*60))
+        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        while [ $(date +'%M' | sed 's/^0*//') -lt $end_time ]; do
+            current_time=$(date +%s)
+            if (( current_time > end_time )); then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+                exit 1
+            fi
+            verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+            if (( verified_batches > 30 )); then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                exit 0
+            fi
+            sleep 10
+        done
 
-    # Perform loadtest.
     - name: Perform load test
       shell: bash
       run: |
