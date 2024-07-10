@@ -2,9 +2,10 @@ prometheus_package = import_module(
     "github.com/kurtosis-tech/prometheus-package/main.star"
 )
 grafana_package = import_module(
-    "github.com/kurtosis-tech/grafana-package/main.star@b02c67487350e1c0ccf6229c998eb36087dd45b0"
+    "github.com/kurtosis-tech/grafana-package/main.star@6772a4e4ae07cf5256b8a10e466587b73119bab5"
 )
 service_package = import_module("./lib/service.star")
+databases_package = import_module("./databases.star")
 
 
 def start_panoptichain(plan, args):
@@ -49,6 +50,14 @@ def run(plan, args):
                 service.ip_address, service.ports["http-rpc"].number
             )
 
+        if (
+            service.name
+            == databases_package.POSTGRES_SERVICE_NAME + args["deployment_suffix"]
+        ):
+            args["postgres_url"] = "{}:{}".format(
+                service.ip_address, service.ports["postgres"].number
+            )
+
     # Start panoptichain.
     start_panoptichain(plan, args)
 
@@ -80,6 +89,18 @@ def run(plan, args):
             "MentionUsers": args["slack_alerts"]["mention_users"],
         }
 
+    databases = []
+    for database in databases_package.DATABASES.values():
+        databases.append(
+            {
+                "URL": args["postgres_url"],
+                "Name": database["name"],
+                "User": database["user"],
+                "Password": database["password"],
+                "Version": 1500,
+            }
+        )
+
     # Start grafana.
     grafana_package.run(
         plan,
@@ -89,4 +110,5 @@ def run(plan, args):
         grafana_version="11.1.0",
         grafana_alerting_template="github.com/0xPolygon/kurtosis-cdk/static-files/alerting.yml.tmpl",
         grafana_alerting_data=grafana_alerting_data,
+        postgres_databases=databases,
     )
