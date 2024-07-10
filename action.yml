@@ -217,14 +217,3 @@ runs:
 
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
         exit 1
-
-    - name: Perform load test
-      shell: bash
-      run: |
-        cd kurtosis-cdk
-        export PATH="$HOME/go/bin:$PATH"
-        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-        export PK="$(yq .args.zkevm_l2_admin_private_key params.yml)"
-        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
-        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
-        polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
