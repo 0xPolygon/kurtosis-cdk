@@ -117,8 +117,18 @@ runs:
         pip3 install yq
         yq --version
 
-    - name: Install foundry
-      uses: foundry-rs/foundry-toolchain@v1
+    - name: Install Foundry
+      shell: bash
+      run: |
+        curl -LO https://github.com/foundry-rs/foundry/releases/download/nightly-de33b6af53005037b463318d2628b5cfcaf39916/foundry_nightly_linux_amd64.tar.gz
+        tar -xzvf foundry_nightly_linux_amd64.tar.gz
+
+    - name: Clone internal kurtosis-cdk repo
+      shell: bash
+      run: |
+        git clone https://github.com/0xPolygon/kurtosis-cdk.git
+        cd kurtosis-cdk 
+        git checkout "${{ inputs.kurtosis_cdk }}"
 
     - name: Install polycli
       shell: bash
@@ -128,14 +138,11 @@ runs:
         make install
         export PATH="$HOME/go/bin:$PATH"
 
-    # Deploy components.
-    - name: Use specific version of kurtosis-cdk
-      shell: bash
-      run: git checkout ${{ inputs.kurtosis_cdk }}
-
     - name: Use local docker containers
       shell: bash
       run: |
+        cd kurtosis-cdk 
+        
         # When short commit hash given, reference custom image built earlier tagged 'local'.
         if [[ ${{ inputs.zkevm_agglayer }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           agglayer_tag="local"
@@ -185,7 +192,9 @@ runs:
 
     - name: Deploy Kurtosis CDK package
       shell: bash
-      run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+      run: |
+        cd kurtosis-cdk 
+        kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
     - name: Check that batches are being verified
       shell: bash
