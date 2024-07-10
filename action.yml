@@ -200,22 +200,26 @@ runs:
       shell: bash
       run: |
         timeout_minutes=10
+        start_time=$(date +%s)
         end_time=$((start_time + timeout_minutes*60))
         export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-        while [ $(date +'%M' | sed 's/^0*//') -lt $end_time ]; do
+
+        while (( $(date +%s) <= end_time )); do
             current_time=$(date +%s)
-            if (( current_time > end_time )); then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
-                exit 1
-            fi
+            
             verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+            
             if (( verified_batches > 30 )); then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
                 exit 0
             fi
+            
             sleep 10
         done
+
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+        exit 1
 
     - name: Perform load test
       shell: bash
