@@ -188,6 +188,7 @@ runs:
       run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
     - name: Check that batches are being verified
+      shell: bash
       run: |
         timeout_minutes=10
         end_time=$((start_time + timeout_minutes*60))
