@@ -1,5 +1,5 @@
 name: Regression Tests - Polygon CDK
-description: Deploy a local Polygon CDK devnet using Kurtosis and perform series of regression tests
+description: Deploy a local Polygon CDK devnet, using Kurtosis, and perform series of regression tests
 author: devtools@polygon.technology
 
 inputs:
