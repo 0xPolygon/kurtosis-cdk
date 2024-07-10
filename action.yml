@@ -131,7 +131,7 @@ runs:
     # Deploy components.
     - name: Use specific version of kurtosis-cdk
       shell: bash
-      run: git checkout "${{ inputs.kurtosis_cdk }}"
+      run: git checkout ${{ inputs.kurtosis_cdk }}
 
     - name: Use local docker containers
       shell: bash
