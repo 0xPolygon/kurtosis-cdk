@@ -14,10 +14,27 @@ jobs:
         with:
           go-version: 1.21
           cache-dependency-path: scripts/zkevm-config-diff/go.sum
-          repository: 0xPolygon/kurtosis-cdk
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Enable workload
         run: yq -Y --in-place '.apply_workload = true' params.yml
@@ -25,8 +42,28 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
       # Compare configs.
       - name: Dump configs
@@ -51,8 +88,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
@@ -116,8 +171,28 @@ jobs:
           yq -Y --in-place '.apply_workload = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.apply_workload = false' params.yml # reset
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -126,15 +201,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       # Deploy components.
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
@@ -142,8 +255,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Enable gas token feature
         run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
@@ -151,8 +282,28 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
@@ -160,8 +311,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Deploy L1 and zkEVM contracts
         run: |
@@ -189,8 +358,28 @@ jobs:
           # Deploy databases, cdk central/trusted environment, cdk/bridge infra and observability stack.
           yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
   # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
@@ -200,8 +389,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Configure permisionless node parameters
         run: |
@@ -218,8 +425,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Set rollup data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
@@ -227,8 +452,28 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
@@ -236,8 +481,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Set cdk-validium data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
@@ -245,8 +508,28 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
 
   # Deploy the CDK environment with cdk-erigon as a sequencer.
   cdk-erigon-sequencer:
@@ -254,11 +537,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install kurtosis-cli=${{ inputs.kurtosis_cli }}
+          kurtosis version
+
+      - name: Disable kurtosis analytics
+        shell: bash
+        run: kurtosis analytics disable
+
+      - name: Install yq
+        shell: bash
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Install foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+      - name: Check that batches are being verified
+        shell: bash
+        run: |
+          timeout_minutes=10
+          start_time=$(date +%s)
+          end_time=$((start_time + timeout_minutes*60))
+          export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+          while (( $(date +%s) <= end_time )); do
+              current_time=$(date +%s)
+              
+              verified_batches=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber | sed 's/"//g'))
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+              
+              if (( verified_batches > 30 )); then
+                  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Confirmed verified batches incrementing."
+                  exit 0
+              fi
+              
+              sleep 10
+          done
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached. No batches were verified."
+          exit 1
