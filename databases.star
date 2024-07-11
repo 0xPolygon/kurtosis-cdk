@@ -143,11 +143,11 @@ def create_postgres_service(plan, db_configs, suffix):
 
 def run(plan, suffix):
     db_configs = get_db_configs(suffix)
-    plan.print("DB Configs: ", db_configs)
+    plan.print("DB Configs: " + str(db_configs))
     create_postgres_service(plan, db_configs, suffix)
 
 
 def run_pless(plan, suffix):
     db_configs = get_pless_db_configs(suffix)
-    plan.print("DB Configs: ", db_configs)
+    plan.print("DB Configs: " + str(db_configs))
     create_postgres_service(plan, db_configs, _pless_suffix(suffix))
