@@ -99,7 +99,7 @@ def get_pless_db_configs(suffix):
             else _service_name(_pless_suffix(suffix)),
             "port": POSTGRES_PORT,
         }
-        for k, v in PERMISSIONLESS_DATABASES.items()
+        for k, v in TRUSTED_DATABASES.items()
     }
     return configs
 
