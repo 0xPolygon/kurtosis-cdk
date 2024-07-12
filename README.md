@@ -109,7 +109,7 @@ For more information about the CDK stack and setting up Kurtosis, visit our [doc
 
 ## Contact
 
-- For technical issues, join our [Discord](https://discord.gg/0xpolygondevs).
+- For technical issues, join our [Discord](https://discord.gg/0xpolygonrnd).
 - For documentation issues, raise an issue on the published live doc at [our main repo](https://github.com/0xPolygon/polygon-docs).
 
 ## License
