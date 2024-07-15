@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define minimum versions required to run the Kurtosis CDK packages.
-KURTOSIS_VERSION_SUPPORTED=0.89
+KURTOSIS_VERSION_SUPPORTED=1.0
 DOCKER_VERSION_SUPPORTED=24.7
 YQ_VERSION_SUPPORTED=3.2
 
