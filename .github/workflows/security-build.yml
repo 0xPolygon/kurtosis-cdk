@@ -2,29 +2,18 @@
 name: Security Build
 on:
   push:
-    branches:
-      - main
-  pull_request_target:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  # Job that requires project maintainers to approve PR to access Github Action secrets.
-  # https://dvc.ai/blog/testing-external-contributions-using-github-actions-secrets
-  authorize:
-    environment: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository && 'external' || 'internal' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: true
-
   sonarcloud:
-    needs: authorize
     runs-on: ubuntu-latest
     # Prevent this job to run on forks.
     if: github.repository == '0xPolygon/kurtosis-cdk'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           # Disabling shallow clone is recommended for improving relevancy of reporting.
           fetch-depth: 0
 
