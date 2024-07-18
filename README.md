@@ -40,10 +40,12 @@ kurtosis enclave inspect cdk-v1
 That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
 
 ```bash
+# if zkevm-node is the sequencer
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-```
 
-if using cdk-erigon: `export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 rpc)"`
+# if cdk-erigon is the sequencer
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-sequencer-001 rpc)"
+```
 
 That is the same environment variable that `cast` uses, so you should now be able to run this command. Note that the steps below will assume you have the [Foundry toolchain](https://book.getfoundry.sh/getting-started/installation) installed.
 
@@ -67,7 +69,7 @@ cast send --legacy --private-key "$PK" --value 0.01ether 0x000000000000000000000
 Okay let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/maticnetwork/polygon-cli) installed.
 
 ```bash
-polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 50000 --rate-limit 5 --mode t
+polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 50000 --rate-limit 50 --mode t --concurrency 5
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 3  --mode uniswapv3
