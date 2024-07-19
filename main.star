@@ -110,6 +110,13 @@ def run(
         else:
             plan.print("Skipping the deployment of cdk-erigon sequencer")
 
+        # Deploy cdk-erigon node.
+        if deploy_cdk_erigon_node:
+            plan.print("Deploying cdk-erigon node")
+            cdk_erigon_package.run_rpc(plan, args)
+        else:
+            plan.print("Skipping the deployment of cdk-erigon node")
+
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
@@ -118,13 +125,6 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
-
-    # Deploy cdk-erigon node.
-    if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        cdk_erigon_package.run_rpc(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
