@@ -8,7 +8,7 @@ DEFAULT_ARGS = {
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
-    "panoptichain_image": "minhdvu/panoptichain",
+    "panoptichain_image": "minhdvu/panoptichain:0.1.47",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",

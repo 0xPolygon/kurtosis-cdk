@@ -22,22 +22,16 @@ theme:
     - content.code.copy
     - content.action.edit
 
+
 nav:
-  - Overview: index.md
-  - Deploy and manage a CDK stack:
-    - Deploy the CDK stack: quickstart/deploy-stack.md
-    - Set up a permissionless node: quickstart/set-up-permissionless-node.md
-    - Observability: quickstart/observability.md
-    - Breakdown the deployment: quickstart/breakdown-deployment.md
-  - How to:
-    - Migrate:
-      - Fork id 7 to 9: how-to/migrate/forkid-7-to-9.md
-      - General guide for partners: how-to/migrate/fork.md
-    - Mint, bridge, and use tokens: how-to/use-native-token.md
-    - Integrate a DAC: how-to/integrate-da.md
-    - Manage allowlists with policies: how-to/manage-policies.md
-    - Quickly test a running stack: how-to/quick-test-stack.md
-    - Connect to CDK testnets: quickstart/connect-testnet.md
+  - Migrate:
+    - Fork id 7 to 9: migrate/forkid-7-to-9.md
+    - General guide for partners: migrate/fork.md
+  - Create custom native token: use-native-token.md
+  - Integrate a DAC: integrate-da.md
+  - Manage allowlists with policies: manage-policies.md
+  - Quickly test a running stack: quick-test-stack.md
+  - Connect to CDK testnets: connect-testnet.md
 
 
 
@@ -82,7 +76,7 @@ validation:
   absolute_links: ignore
 
 extra_javascript:
-  - https://cdnjs.cloudflare.com/polyfill/
+  - https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?version=4.8.0
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js
   - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js

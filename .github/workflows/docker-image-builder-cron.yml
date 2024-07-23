@@ -3,7 +3,8 @@ name: Docker Image Builder Cron
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 6 AM Paris time (UTC+2).
+    # Run this workflow every Monday at 6 AM Paris time (UTC+2).
+    - cron: 0 6 * * 1
   workflow_dispatch:
 
 concurrency:
