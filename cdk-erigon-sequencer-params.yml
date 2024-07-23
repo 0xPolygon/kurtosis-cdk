@@ -62,7 +62,7 @@ args:
   # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.1.3
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta11
   panoptichain_image: minhdvu/panoptichain
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.7
