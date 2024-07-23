@@ -28,14 +28,15 @@ local/zkevm-contracts   fork9     54d894c6a5bd   10 minutes ago   2.3GB
 
 Here's a quick reference matrix for mapping fork IDs to branches/releases:
 
-| Fork ID | Branch             |
-| ------- | ------------------ |
-| fork4   | v1.1.0-fork.4      |
-| fork5   | v2.0.0-fork.5      |
-| fork6   | v3.0.0-fork.6      |
-| fork7   | v4.0.0-fork.7      |
-| fork8   | v5.0.1-rc.2-fork.8 |
-| fork9   | develop            |
+| Fork ID | Branch              |
+| ------- | ------------------- |
+| fork4   | v1.1.0-fork.4       |
+| fork5   | v2.0.0-fork.5       |
+| fork6   | v3.0.0-fork.6       |
+| fork7   | v4.0.0-fork.7       |
+| fork8   | v5.0.1-rc.2-fork.8  |
+| fork9   | v6.0.0-rc.1-fork.9  |
+| fork10  | v7.0.0-rc.1-fork.10 |
 
 ## zkEVM Bridge UI
 

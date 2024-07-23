@@ -37,6 +37,8 @@ jobs:
             branch: v5.0.1-rc.2-fork.8
           - id: fork9
             branch: v6.0.0-rc.1-fork.9
+          - id: fork10
+            branch: v7.0.0-rc.1-fork.10
           - id: develop
             branch: develop
 
