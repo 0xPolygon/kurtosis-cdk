@@ -1,0 +1,118 @@
+ForkUpgradeBatchNumber = 0
+ForkUpgradeNewForkId = 0
+
+[Common]
+IsValidiumMode = {{.zkevm_is_validium}}
+ContractVersions = "elderberry"
+[Common.Translator]
+		FullMatchRules = []
+
+[Log]
+Environment = "development" # "production" or "development"
+Level = "info"
+Outputs = ["stderr"]
+
+[SequenceSender]
+IsValidiumMode={{.zkevm_is_validium}}
+WaitPeriodSendSequence = "15s"
+LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
+L1BlockTimestampMargin = "30s"
+MaxTxSizeForL1 = 131072
+MaxBatchesForL1 = 2
+L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
+PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+SequencesTxFileName = "/app/data/sequencesender.json"
+WaitPeriodPurgeTxFile = "48h"
+MaxPendingTx = 1
+	[SequenceSender.StreamClient]
+		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+	[SequenceSender.EthTxManager]
+		FrequencyToMonitorTxs = "1s"
+		WaitTxToBeMined = "2m"
+		ConsolidationL1ConfirmationBlocks = 5
+		FinalizationL1ConfirmationBlocks = 10
+		WaitReceiptToBeGenerated = "8s"
+		PrivateKeys = [
+			{Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+		]
+		ForcedGas = 0
+		GasPriceMarginFactor = 1
+		MaxGasPriceLimit = 0
+		PersistenceFilename = "/app/data/ethtxmanager.json"
+			[SequenceSender.EthTxManager.Etherman]
+				URL = "{{.l1_rpc_url}}"
+				MultiGasProvider = false
+				L1ChainID =  {{.l1_chain_id}}
+				HTTPHeaders = []
+[Aggregator]
+Host = "0.0.0.0"
+Port = 50081
+RetryTime = "5s"
+VerifyProofInterval = "10s"
+TxProfitabilityCheckerType = "acceptall"
+TxProfitabilityMinReward = "1.1"
+ProofStatePollingInterval = "5s"
+SenderAddress = ""
+CleanupLockedProofsInterval = "2m"
+GeneratingProofCleanupThreshold = "10m"
+ForkId = 9
+GasOffset = 0
+WitnessURL = "localhost:8123"
+UseL1BatchData = true
+UseFullWitness = false
+SettlementBackend = "l1"
+AggLayerTxTimeout = "5m"
+AggLayerURL = ""
+SequencerPrivateKey = {}
+	[Aggregator.DB]
+		Name = "aggregator_db"
+		User = "aggregator_user"
+		Password = "aggregator_password"
+		Host = "cdk-aggregator-db"
+		Port = "5432"
+		EnableLog = false	
+		MaxConns = 200
+	[Aggregator.Log]
+		Environment = "development" # "production" or "development"
+		Level = "info"
+		Outputs = ["stderr"]
+	[Aggregator.StreamClient]
+		Server = "localhost:6900"
+	[Aggregator.EthTxManager]
+		FrequencyToMonitorTxs = "1s"
+		WaitTxToBeMined = "2m"
+		GetReceiptMaxTime = "250ms"
+		GetReceiptWaitInterval = "1s"
+		PrivateKeys = [
+			{Path = "/pk/aggregator.keystore", Password = "testonly"},
+		]
+		ForcedGas = 0
+		GasPriceMarginFactor = 1
+		MaxGasPriceLimit = 0
+		PersistenceFilename = ""
+		ReadPendingL1Txs = false
+		SafeStatusL1NumberOfBlocks = 0
+		FinalizedStatusL1NumberOfBlocks = 0
+			[Aggregator.EthTxManager.Etherman]
+				URL = ""
+				L1ChainID = {{.l1_chain_id}}
+				HTTPHeaders = []
+	[Aggregator.Synchronizer]
+		[Aggregator.Synchronizer.DB]
+			Name = "sync_db"
+			User = "sync_user"
+			Password = "sync_password"
+			Host = "cdk-l1-sync-db"
+			Port = "5432"
+			EnableLog = false
+			MaxConns = 10
+		[Aggregator.Synchronizer.Synchronizer]
+			SyncInterval = "10s"
+			SyncChunkSize = 1000
+			GenesisBlockNumber = 5511080
+			SyncUpToBlock = "finalized"
+			BlockFinality = "finalized"
+			OverrideStorageCheck = false
+		[Aggregator.Synchronizer.Etherman]
+			[Aggregator.Synchronizer.Etherman.Validium]
+				Enabled = {{.zkevm_is_validium}}

@@ -67,7 +67,8 @@ args:
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
   toolbox_image: leovct/toolbox:0.0.1
   sequencer_type: "zkevm-node"
-
+  # sequencer_sender_type "zkevm" or "cdk"
+  sequencer_sender_type: "cdk"
   # Port configuration.
   zkevm_hash_db_port: 50061
   zkevm_executor_port: 50071
