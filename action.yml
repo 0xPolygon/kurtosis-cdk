@@ -23,6 +23,14 @@ inputs:
     description: 0xPolygon/cdk-validium-node (short commit hash or release tag)
     required: false
     default: '0.6.5-cdk'
+  erigon_node:
+    description: 0xPolygonHermez/cdk-erigon (short commit hash or release tag)
+    required: false
+    default: 'v1.1.5.8'
+  node_choice:
+    description: Choose the node to use (erigon or zkevm)
+    required: false
+    default: 'zkevm'
   kurtosis_cli:
     description: kurtosis-tech/kurtosis (release tag)
     required: false
@@ -87,9 +95,10 @@ runs:
           echo "Skipping building cdk-data-availability as release tag provided: ${{ inputs.zkevm_dac }}"
         fi
 
-    - name: Clone and build cdk-validium-node, if no release tag given
-      shell: bash
-      run: |
+    - name: Determine node to use and build if necessary
+    shell: bash
+    run: |
+      if [[ ${{ inputs.node_choice }} == "zkevm" ]]; then
         if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
           git clone https://github.com/0xPolygon/cdk-validium-node.git
           cd cdk-validium-node
@@ -98,6 +107,16 @@ runs:
         else
           echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
         fi
+      elif [[ ${{ inputs.node_choice }} == "erigon" ]]; then
+        if [[ ${{ inputs.erigon_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+          git clone https://github.com/0xPolygonHermez/cdk-erigon.git
+          cd cdk-erigon
+          git checkout "${{ inputs.erigon_node }}"
+          docker build -t cdk-erigon-node:local -f ./Dockerfile .
+        else
+          echo "Skipping building cdk-erigon-node as release tag provided: ${{ inputs.erigon_node }}"
+        fi
+      fi
 
     # Install tools
     - name: Install Kurtosis CDK tools
@@ -154,27 +173,50 @@ runs:
           dac_docker_hub="0xpolygon/cdk-data-availability"
         fi
 
-        if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
-          node_tag="local"
-          node_docker_hub="cdk-validium-node"
-        else
-          node_tag="${{ inputs.zkevm_node }}"
-          node_docker_hub="0xpolygon/cdk-validium-node"
+        if [[ ${{ inputs.node_choice }} == "zkevm" ]]; then
+          if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+            node_tag="local"
+            node_docker_hub="cdk-validium-node"
+          else
+            node_tag="${{ inputs.zkevm_node }}"
+            node_docker_hub="0xpolygon/cdk-validium-node"
+          fi
+        elif [[ ${{ inputs.node_choice }} == "erigon" ]]; then
+          if [[ ${{ inputs.erigon_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+            node_tag="local"
+            node_docker_hub="cdk-erigon-node"
+          else
+            node_tag="${{ inputs.erigon_node }}"
+            node_docker_hub="hermeznetwork/cdk-erigon"
+          fi
         fi
 
-        cat params.yml
-
-        yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
-        yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
-        yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
-        yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
-        yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
-
-        cat params.yml
+        if [[ ${{ inputs.node_choice }} ==  "zkevm" ]]; then
+          cat params.yml
+          yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
+          yq -Y --in-place ".args.zkevm_node_image = \"$node_docker_hub:$node_tag\"" params.yml
+          cat params.yml
+        elif [[ ${{ inputs.node_choice }} == "erigon" ]]; then
+          cat cdk-erigon-sequencer-params.yml
+          yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" cdk-erigon-sequencer-params.yml
+          yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" cdk-erigon-sequencer-params.yml
+          yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" cdk-erigon-sequencer-params.yml
+          yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" cdk-erigon-sequencer-params.yml
+          yq -Y --in-place ".args.cdk_erigon_node_image = \"$node_docker_hub:$node_tag\"" cdk-erigon-sequencer-params.yml
+          cat cdk-erigon-sequencer-params.yml
+        fi
 
     - name: Deploy Kurtosis CDK package
       shell: bash
-      run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+      run: |
+        if [[ ${{ inputs.node_choice }} == "zkevm" ]]; then
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        elif [[ ${{ inputs.node_choice }} == "erigon" ]]; then
+          kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
+        fi
 
     - name: Monitor verified batches
       uses: ./.github/actions/monitor-verified-batches
