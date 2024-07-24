@@ -96,27 +96,27 @@ runs:
         fi
 
     - name: Determine node to use and build if necessary
-    shell: bash
-    run: |
-      if [[ ${{ inputs.node_choice }} == "zkevm" ]]; then
-        if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
-          git clone https://github.com/0xPolygon/cdk-validium-node.git
-          cd cdk-validium-node
-          git checkout "${{ inputs.zkevm_node }}"
-          docker build -t cdk-validium-node:local -f ./Dockerfile .
-        else
-          echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
+      shell: bash
+      run: |
+        if [[ ${{ inputs.node_choice }} == "zkevm" ]]; then
+          if [[ ${{ inputs.zkevm_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+            git clone https://github.com/0xPolygon/cdk-validium-node.git
+            cd cdk-validium-node
+            git checkout "${{ inputs.zkevm_node }}"
+            docker build -t cdk-validium-node:local -f ./Dockerfile .
+          else
+            echo "Skipping building cdk-validium-node as release tag provided: ${{ inputs.zkevm_node }}"
+          fi
+        elif [[ ${{ inputs.node_choice }} == "erigon" ]]; then
+          if [[ ${{ inputs.erigon_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
+            git clone https://github.com/0xPolygonHermez/cdk-erigon.git
+            cd cdk-erigon
+            git checkout "${{ inputs.erigon_node }}"
+            docker build -t cdk-erigon-node:local -f ./Dockerfile .
+          else
+            echo "Skipping building cdk-erigon-node as release tag provided: ${{ inputs.erigon_node }}"
+          fi
         fi
-      elif [[ ${{ inputs.node_choice }} == "erigon" ]]; then
-        if [[ ${{ inputs.erigon_node }} =~ ^[0-9a-fA-F]{7}$ ]]; then
-          git clone https://github.com/0xPolygonHermez/cdk-erigon.git
-          cd cdk-erigon
-          git checkout "${{ inputs.erigon_node }}"
-          docker build -t cdk-erigon-node:local -f ./Dockerfile .
-        else
-          echo "Skipping building cdk-erigon-node as release tag provided: ${{ inputs.erigon_node }}"
-        fi
-      fi
 
     # Install tools
     - name: Install Kurtosis CDK tools
