@@ -4,7 +4,7 @@ A [Kurtosis](https://github.com/kurtosis-tech/kurtosis) package that deploys a p
 
 ## Getting Started
 
-![Architecture Diagram](./docs/img/architecture.png)
+![Architecture Diagram](./docs/img/architecture-diagram.png)
 
 To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) and [Kurtosis](https://docs.kurtosis.com/install/).
 
