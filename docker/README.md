@@ -76,7 +76,7 @@ Here's a quick reference matrix for mapping fork IDs to branches/releases:
 
 </details>
 
-## ZkEVM Bridge UI
+### ZkEVM Bridge UI
 
 This image contains an enhanced version of the zkEVM bridge UI with relative URL support enabled.
 
@@ -100,7 +100,7 @@ local/zkevm-bridge-ui   multi-network   040905e1cabe   28 seconds ago   377MB
 
 </details>
 
-## Toolbox
+### Toolbox
 
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
 
