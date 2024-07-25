@@ -68,7 +68,7 @@ args:
   toolbox_image: leovct/toolbox:0.0.1
   sequencer_type: "zkevm-node"
   # sequencer_sender_type "zkevm" or "cdk"
-  sequencer_sender_type: "cdk"
+  sequencer_sender_type: "zkevm"
   # Port configuration.
   zkevm_hash_db_port: 50061
   zkevm_executor_port: 50071
