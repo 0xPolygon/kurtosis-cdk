@@ -9,18 +9,31 @@ def start_node(
 ):
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
     ports = {}
+    ports["pprof"] = PortSpec(
+        args["zkevm_pprof_port"], application_protocol="http", wait=None,
+    )
+    ports["prometheus"] = PortSpec(
+        args["zkevm_prometheus_port"], application_protocol="http", wait=None,
+    )
+
     if is_sequencer:
-        ports["rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"], application_protocol="http"
-        )
         name = args["sequencer_name"] + args["deployment_suffix"]
+        # TODO these port names seem weird... http-rpc / rpc? I don't
+        # get it. There seem to be a bunch of weird dependencies on
+        # both of these existing. It seems likt they should be called
+        # the same thing and the only difference is if this a
+        # sequencer or an rpc.. the port itself shouldn't be named
+        # differently and there certainly shouldn't be dependencies on
+        # those names
+        ports["rpc"] = PortSpec(
+            args["zkevm_rpc_http_port"], application_protocol="http",
+        )
     else:
-        ports = {
-            "http-rpc": PortSpec(
-                args["zkevm_rpc_http_port"], application_protocol="http"
-            )
-        }
         name = args["l2_rpc_name"] + args["deployment_suffix"]
+        ports["http-rpc"] = PortSpec(
+            args["zkevm_rpc_http_port"], application_protocol="http",
+        )
+
 
     if is_sequencer:
         ports["data-streamer"] = PortSpec(
@@ -52,7 +65,7 @@ def start_node(
             entrypoint=["sh", "-c"],
             # Sleep for 10 seconds in order to wait for datastream server getting ready
             # TODO: find a better way instead of waiting
-            cmd=["sleep 10 && cdk-erigon --config /etc/cdk-erigon/config.yaml"],
+            cmd=["sleep 10 && cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"],
             # cmd=["--config=/etc/cdk-erigon/config.yaml"],
             env_vars=envs,
         ),

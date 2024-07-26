@@ -24,8 +24,18 @@ zkevm.datastream-version: 2
 
 externalcl: true
 http.port: {{.zkevm_rpc_http_port}}
-http.api: [eth, debug, net, trace, web3, erigon, zkevm]
+http.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
 http.addr: 0.0.0.0
 http.vhosts: "*"
 http.corsdomain: "*"
 ws: true
+
+pprof: true
+pprof.port: {{.zkevm_pprof_port}}
+pprof.addr: 0.0.0.0
+
+metrics: true
+metrics.addr: 0.0.0.0
+metrics.port: {{.zkevm_prometheus_port}}
+
+
