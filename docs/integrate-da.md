@@ -1,7 +1,3 @@
----
-comments: true
----
-
 This document shows you how to integrate a third-party data availability (DAC) solution into your CDK stack.
 
 ## Prerequisites
@@ -19,7 +15,7 @@ This section shows you how to create a custom CDK validium DAC contract.
 
 3. Run `npm install` from the root.
 
-4. `cd` to the `contracts/v2/consensus/validium` directory. 
+4. `cd` to the `contracts/v2/consensus/validium` directory.
 
     !!! tip
         - Until further notice, these contracts run on the [etrog release](https://polygon.technology/blog/polygon-zkevm-the-etrog-upgrade-is-live-on-mainnet).
@@ -35,9 +31,7 @@ This section shows you how to create a custom CDK validium DAC contract.
     ```solidity
     // Name of the data availability protocol
     string internal constant _PROTOCOL_NAME = "<MY_PROTOCOL_NAME>";
-
     ...
-
     /**
      * @notice Return the protocol name
      */
@@ -52,7 +46,7 @@ This section shows you how to create a custom CDK validium DAC contract.
     const supporteDataAvailabilityProtocols = ["<CONTRACT_NAME>"];
     ```
 
-8. Make your contract deployable by copying, editing for your custom implementation, and pasting back in, the `if` statement from the [/deployment/v2/4_createRollup.ts#L251](https://github.com/0xPolygonHermez/zkevm-contracts/blob/54f58c8b64806429bc4d5c52248f29cf80ba401c/deployment/v2/4_createRollup.ts#L260) node creation script. 
+8. Make your contract deployable by copying, editing for your custom implementation, and pasting back in, the `if` statement from the [/deployment/v2/4_createRollup.ts#L251](https://github.com/0xPolygonHermez/zkevm-contracts/blob/54f58c8b64806429bc4d5c52248f29cf80ba401c/deployment/v2/4_createRollup.ts#L260) node creation script.
 
 !!! info "`PolygonValidiumEtrog.sol` solution"
 
@@ -113,7 +107,7 @@ This section shows you how to deploy the Docker image containing your custom DAC
 4. Edit [docker/scripts/v2/deploy-docker.sh](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v6.0.0-rc.1-fork.9/docker/scripts/v2/deploy-docker.sh) to add the following line:
 
     ```sh
-    sudo chmod -R go+rxw docker/gethData before docker build -t hermeznetwork/geth-zkevm-contracts -f docker/Dockerfile .  
+    sudo chmod -R go+rxw docker/gethData before docker build -t hermeznetwork/geth-zkevm-contracts -f docker/Dockerfile .
     ```
 
 5. In the [deployment/v2/4_createRollup.ts](https://github.com/0xPolygonHermez/zkevm-contracts/blob/54f58c8b64806429bc4d5c52248f29cf80ba401c/deployment/v2/4_createRollup.ts#L290) file, uncomment the 290-291, and add a `console.log` output that grabs the address of the DAC:
@@ -131,7 +125,7 @@ This section shows you how to deploy the Docker image containing your custom DAC
     sudo npm run docker:contracts
     ```
 
-7. Tag the image with the following command, where `XXXX` is custom: 
+7. Tag the image with the following command, where `XXXX` is custom:
 
     ```sh
     docker image tag hermeznetwork/geth-zkevm-contracts hermeznetwork/geth-cdk-validium-contracts:XXXX
@@ -141,7 +135,7 @@ This section shows you how to deploy the Docker image containing your custom DAC
 
 This section shows you how to set up your CDK node that sends and receives data from the DAC.
 
-1. Create a package that implements the [`DABackender`](https://github.com/0xPolygon/cdk-validium-node/blob/b6ee6cb087099c2e97f3e596f84672fc021b517a/dataavailability/interfaces.go#L14) interface and place it under the [`cdk-validium-node/tree/develop/dataavailability`](https://github.com/0xPolygon/cdk-validium-node/tree/develop/dataavailability) directory. 
+1. Create a package that implements the [`DABackender`](https://github.com/0xPolygon/cdk-validium-node/blob/b6ee6cb087099c2e97f3e596f84672fc021b517a/dataavailability/interfaces.go#L14) interface and place it under the [`cdk-validium-node/tree/develop/dataavailability`](https://github.com/0xPolygon/cdk-validium-node/tree/develop/dataavailability) directory.
 
 2. Add a new constant to the [/dataavailability/config.go](https://github.com/0xPolygon/cdk-validium-node/blob/b6ee6cb087099c2e97f3e596f84672fc021b517a/dataavailability/config.go) file that represents the DAC.
 
@@ -161,7 +155,7 @@ This section shows you how to set up your CDK node that sends and receives data 
 ## Test the integration
 
 !!! tip
-    - By default, all E2E tests run using the DAC. 
+    - By default, all E2E tests run using the DAC.
     - It is possible to run the E2E tests using other DAC backends by amending the `test.node.config.toml` file.
 
 To test your DAC integration, follow the steps below.
@@ -195,4 +189,3 @@ To test your DAC integration, follow the steps below.
 4. Update the contracts Docker image tag with the custom tag you created at the [deploy Docker image](#deploy-docker-image) section, step 7, by amending the node's [Docker compose file](https://github.com/0xPolygon/cdk-validium-node/blob/develop/test/docker-compose.yml).
 
 5. Modify the Makefile so it can run your test. Use the [Polygon DAC Makefile](https://github.com/0xPolygon/cdk-validium-node/blob/develop/test/Makefile) as an example.
-

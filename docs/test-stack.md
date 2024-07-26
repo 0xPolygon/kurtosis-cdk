@@ -1,7 +1,3 @@
----
-comments: true
----
-
 A quick and easy method for testing a running CDK stack, whether in validium or rollup mode, is by sending a zero-value transaction and examining the result.
 
 ## Get the URL
@@ -14,7 +10,7 @@ zkevm-node-rpc-001    http-rpc: 8123/tcp -> http://127.0.0.1:32803
 
 ## Send transaction with cast
 
-In a terminal window, run the following command where the mnemonic is used just for testing and the address can be any valid account address. 
+In a terminal window, run the following command where the mnemonic is used just for testing and the address can be any valid account address.
 
 ```sh
 cast send --legacy --mnemonic 'code code code code code code code code code code code quality' --value 0 --gas-price 0 --rpc-url http://127.0.0.1:8123 0x0bb7AA0b4FdC2D2862c088424260e99ed6299148
@@ -25,7 +21,7 @@ You should see something like this as output:
 ```sh
 blockHash               0x5d6d45f46e54c5d0890dd8a4ede989dc8042d7d3aeada375ea11d2e77c91a298
 blockNumber             1
-contractAddress        
+contractAddress
 cumulativeGasUsed       21000
 effectiveGasPrice       0
 from                    0x85dA99c8a7C2C95964c8EfD687E95E632Fc533D6
