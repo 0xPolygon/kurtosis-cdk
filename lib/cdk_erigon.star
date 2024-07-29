@@ -10,10 +10,14 @@ def start_node(
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
     ports = {}
     ports["pprof"] = PortSpec(
-        args["zkevm_pprof_port"], application_protocol="http", wait=None,
+        args["zkevm_pprof_port"],
+        application_protocol="http",
+        wait=None,
     )
     ports["prometheus"] = PortSpec(
-        args["zkevm_prometheus_port"], application_protocol="http", wait=None,
+        args["zkevm_prometheus_port"],
+        application_protocol="http",
+        wait=None,
     )
 
     if is_sequencer:
@@ -26,14 +30,15 @@ def start_node(
         # differently and there certainly shouldn't be dependencies on
         # those names
         ports["rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"], application_protocol="http",
+            args["zkevm_rpc_http_port"],
+            application_protocol="http",
         )
     else:
         name = args["l2_rpc_name"] + args["deployment_suffix"]
         ports["http-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"], application_protocol="http",
+            args["zkevm_rpc_http_port"],
+            application_protocol="http",
         )
-
 
     if is_sequencer:
         ports["data-streamer"] = PortSpec(
@@ -65,7 +70,9 @@ def start_node(
             entrypoint=["sh", "-c"],
             # Sleep for 10 seconds in order to wait for datastream server getting ready
             # TODO: find a better way instead of waiting
-            cmd=["sleep 10 && cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"],
+            cmd=[
+                "sleep 10 && cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"
+            ],
             env_vars=envs,
         ),
     )

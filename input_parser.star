@@ -54,7 +54,7 @@ DEFAULT_ARGS = {
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
     "l1_additional_services": [],
-    "l1_preset": "mainnet",
+    "l1_preset": "minimal",
     "l1_seconds_per_slot": 12,
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_fork_id": 9,
