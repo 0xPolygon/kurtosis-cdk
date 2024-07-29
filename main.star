@@ -103,6 +103,7 @@ def run(
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
         # Deploy cdk-erigon sequencer node.
+        # TODO this is a little weird if the erigon sequencer is deployed before the exector?
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
             cdk_erigon_package.run_sequencer(plan, args)
@@ -128,6 +129,7 @@ def run(
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
         plan.print("Deploying cdk/bridge infrastructure")
+        args["deploy_l1"] = deploy_l1
         import_module(cdk_bridge_infra_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")

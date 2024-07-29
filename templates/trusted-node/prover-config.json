@@ -254,7 +254,7 @@
      * useAssociativeCache to use associative cache as Database MT
      * cache, which is faster than regular cache
      */ -}}
-    "useAssociativeCache": true,
+    "useAssociativeCache": false,
 
 
 {{- /***************************************************************************

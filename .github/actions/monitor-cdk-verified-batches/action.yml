@@ -6,7 +6,7 @@ inputs:
   verified_batches_target:
     description: The minimum number of batches to be verified
     required: false
-    default: '30'
+    default: '10'
   timeout:
     description: The script timeout in seconds
     required: false

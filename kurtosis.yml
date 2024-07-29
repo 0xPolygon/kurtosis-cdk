@@ -36,11 +36,11 @@ description: |-
   data_availability_mode: cdk-validium
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.0
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.2
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
-  zkevm_node_image: hermeznetwork/zkevm-node:v0.6.5
-  cdk_node_image: 0xpolygon/cdk-validium-node:0.6.5-cdk
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
+  cdk_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
@@ -53,7 +53,7 @@ description: |-
 
   # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
-  zkevm_bridge_proxy_image: haproxy:2.9.7
+  zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
 
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
@@ -121,7 +121,7 @@ description: |-
     # dora, # beaconchain explorer
     # el_forkmon, # fork monitor tool
   ]
-  l1_preset: mainnet
+  l1_preset: minimal
   l1_seconds_per_slot: 12
 
   ## Rollup configuration.
