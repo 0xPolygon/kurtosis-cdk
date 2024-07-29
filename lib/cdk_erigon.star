@@ -66,7 +66,6 @@ def start_node(
             # Sleep for 10 seconds in order to wait for datastream server getting ready
             # TODO: find a better way instead of waiting
             cmd=["sleep 10 && cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"],
-            # cmd=["--config=/etc/cdk-erigon/config.yaml"],
             env_vars=envs,
         ),
     )

@@ -18,7 +18,6 @@ metrics.addr: "0.0.0.0"
 
 private.api.addr: localhost:9092
 torrent.port: 42070
-txpool.disable: false
 ws: true
 externalcl: true
 log.console.verbosity: debug
@@ -28,8 +27,6 @@ zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
 zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
-zkevm.data-stream-host: "0.0.0.0"
-zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 zkevm.datastream-version: 2
 
 zkevm.executor-strict: false
@@ -47,5 +44,14 @@ zkevm.l1-rpc-url: {{.l1_rpc_url}}
 zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 
 zkevm.rpc-ratelimit: 250
-# zkevm.sequencer-initial-fork-id: 9
 zkevm.disable-virtual-counters: false
+
+{{if .is_sequencer}}
+txpool.disable: false
+zkevm.data-stream-host: "0.0.0.0"
+zkevm.data-stream-port: {{.zkevm_data_stream_port}}
+{{else}}
+txpool.disable: true
+zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
+zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+{{end}}

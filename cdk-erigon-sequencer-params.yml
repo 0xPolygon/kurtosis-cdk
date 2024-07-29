@@ -63,6 +63,7 @@ args:
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:beta13-candidate3-5225235-amd64
+  # cdk_erigon_node_image: erigon:loop-wait
   panoptichain_image: minhdvu/panoptichain
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
