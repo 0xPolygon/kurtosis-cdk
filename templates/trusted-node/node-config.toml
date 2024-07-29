@@ -1161,7 +1161,7 @@ RetryTime = "30s"
 # VerifyProofInterval is the interval of time to verify and send
 # proofs to L1
 # ------------------------------------------------------------------------------
-VerifyProofInterval = "5m0s"
+VerifyProofInterval = "1m0s"
 
 # ------------------------------------------------------------------------------
 # ProofStatePollingInterval will determine how long we wait between
