@@ -1,0 +1,88 @@
+Setup the full environment:
+#+begin_src bash
+kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+#+end_src
+
+
+Setup some variables for testing
+
+#+begin_src bash
+rpc="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+pk="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
+#+end_src
+
+Make sure we have a balance
+
+#+begin_src bash
+cast balance --rpc-url $rpc --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+#+end_src
+
+* Case 1 - Overflow
+
+There is nothing wrong with this particular scenario. Given the
+~gas-limit~ here, it makes sense that we've overruning the counters.
+
+#+begin_src bash
+cast send --legacy --private-key "$pk" --rpc-url $rpc --gas-limit 1000000 --create 0x600160015B810190630000000456
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+server returned an error response: error code -32000: failed to add tx to the pool: not enough step counters to continue the execution
+#+end_src
+
+* Case 2 - Success
+
+This case works fine as well because the limit is well under the limit. It can be executed and mined properly
+
+#+begin_src bash
+cast send --legacy --private-key "$pk" --rpc-url $rpc --gas-limit 100000 --create 0x600160015B810190630000000456
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+blockHash               0x809c4398ec9a73d8ec5376dae1e2f952e3c1b48d234a4eea8fc738559488a725
+blockNumber             108
+contractAddress         0xB9a916D022f06778AB3a68139e125E7E7CFBbc66
+cumulativeGasUsed       100000
+effectiveGasPrice       31250000
+from                    0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+gasUsed                 100000
+logs                    []
+logsBloom               0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root
+status                  0 (failed)
+transactionHash         0xd0c18757686bd86e9e621689762b7cf345bcebef4b72b286497d58a41f588ee1
+transactionIndex        0
+type                    0
+blobGasPrice
+blobGasUsed
+#+end_src
+
+* Case 3 - Transaction accepted into the pool but never mined
+
+In this case the gas limit is configured such that it's low enough to
+be accepted into the pool but still too high that it can't be mined.
+
+#+begin_src bash
+cast send --legacy --private-key "$pk" --rpc-url $rpc --gas-limit 644500 --create 0x600160015B810190630000000456
+#+end_src
+
+
+#+begin_example
+[zkevm-node-sequencer-001] {"level":"error","ts":1722365384.1269314,"caller":"sequencer/worker.go:68","msg":"outOfCounters error (node level) for tx 0x223c6462046d94291d8913ea6f2dc9f0fe58eb52f3702c355d00873be220fba6","pid":7,"version":"v0.7.0","stacktrace":"github.com/0xPolygonHermez/zkevm-node/sequencer.(*Worker).addTxTracker\n\t/src/sequencer/worker.go:68\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*Worker).AddTxTracker\n\t/src/sequencer/worker.go:53\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*Sequencer).addTxToWorker\n\t/src/sequencer/sequencer.go:227\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*Sequencer).loadFromPool\n\t/src/sequencer/sequencer.go:210"}
+#+end_example
+
+
+* Case 4 - Finalizer Halt
+
+If we dial down the gas limit a little further, we actually uncover a
+slightly different scenario:
+
+#+begin_src bash
+cast send --legacy --private-key "$pk" --rpc-url $rpc --gas-limit 643535 --create 0x600160015B810190630000000456
+#+end_src
+
+#+begin_example
+[zkevm-node-sequencer-001] {"level":"error","ts":1722365674.0208342,"caller":"sequencer/finalizer.go:904","msg":"halting finalizer, error: closing wip batch 140 without L2 blocks and should have at least 1%!(EXTRA string=\n/src/log/log.go:142 github.com/0xPolygonHermez/zkevm-node/log.appendStackTraceMaybeArgs()\n/src/log/log.go:251 github.com/0xPolygonHermez/zkevm-node/log.Errorf()\n/src/sequencer/finalizer.go:904 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt()\n/src/sequencer/batch.go:359 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeWIPBatch()\n/src/sequencer/batch.go:261 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch()\n/src/sequencer/batch.go:191 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch()\n/src/sequencer/finalizer.go:411 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches()\n/src/sequencer/finalizer.go:184 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start()\n)","pid":7,"version":"v0.7.0","stacktrace":"github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt\n\t/src/sequencer/finalizer.go:904\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeWIPBatch\n\t/src/sequencer/batch.go:359\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch\n\t/src/sequencer/batch.go:261\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch\n\t/src/sequencer/batch.go:191\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches\n\t/src/sequencer/finalizer.go:411\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start\n\t/src/sequencer/finalizer.go:184"}
+#+end_example
