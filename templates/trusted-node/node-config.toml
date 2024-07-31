@@ -1272,8 +1272,16 @@ AggLayerTxTimeout = "600s"
 
 # ------------------------------------------------------------------------------
 # AggLayerURL is the RPC URL of the agglayer itself
+# In the case of attaching multiple CDKs, the AgglayerURL 
+# should always follow the first deployment_suffix "-001"
+# by default.
 # ------------------------------------------------------------------------------
+{{if .deploy_agglayer}}
 AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
+{{else}}
+AggLayerURL = "http://zkevm-agglayer-001:{{.zkevm_agglayer_port}}"
+{{end}}
+
 {{else}}
 
 # ------------------------------------------------------------------------------

@@ -15,6 +15,7 @@ cdk_erigon_package = import_module("./cdk_erigon.star")
 def run(
     plan,
     deploy_l1=True,
+    deploy_agglayer=True,
     deploy_zkevm_contracts_on_l1=True,
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
@@ -31,6 +32,7 @@ def run(
 
     Args:
         deploy_l1 (bool): Deploy local l1.
+        deploy_agglayer (bool): Deploy agglayer service.
         deploy_zkevm_contracts_on_l1(bool): Deploy zkevm contracts on L1 (and also fund accounts).
         deploy_databases(bool): Deploy zkevm node and cdk peripheral databases.
         deploy_cdk_central_environment(bool): Deploy cdk central/trusted environment.
@@ -130,6 +132,7 @@ def run(
     if deploy_cdk_bridge_infra:
         plan.print("Deploying cdk/bridge infrastructure")
         args["deploy_l1"] = deploy_l1
+        args["deploy_agglayer"] = deploy_agglayer
         import_module(cdk_bridge_infra_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")

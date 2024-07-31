@@ -22,23 +22,30 @@ def run(plan, args):
     )
 
     # Create the agglayer service config.
-    agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, contract_setup_addresses, db_configs
-    )
-    agglayer_keystore_artifact = plan.store_service_files(
-        name="agglayer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/agglayer.keystore",
-    )
-    agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
-        args, agglayer_config_artifact, agglayer_keystore_artifact
-    )
+    if args["deploy_agglayer"]:
+        agglayer_config_artifact = create_agglayer_config_artifact(
+            plan, args, contract_setup_addresses, db_configs
+        )
+        agglayer_keystore_artifact = plan.store_service_files(
+            name="agglayer-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/agglayer.keystore",
+        )
+        agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
+            args, agglayer_config_artifact, agglayer_keystore_artifact
+        )
 
     # Start the bridge service and the agglayer.
-    bridge_infra_services = plan.add_services(
-        configs=bridge_config | agglayer_config,
-        description="Starting bridge infra",
-    )
+    if args["deploy_agglayer"]:
+        bridge_infra_services = plan.add_services(
+            configs=bridge_config | agglayer_config,
+            description="Starting bridge infra",
+        )
+    else:
+        bridge_infra_services = plan.add_services(
+            configs=bridge_config,
+            description="Starting bridge infra",
+        )
 
     # Start the bridge UI.
     bridge_ui_config_artifact = create_bridge_ui_config_artifact(

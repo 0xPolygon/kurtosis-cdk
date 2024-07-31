@@ -32,6 +32,9 @@ deploy_blutgang: false
 # Apply workload to the different components of the CDK stack.
 apply_workload: false
 
+# Deploy agglayer.
+deploy_agglayer: true
+
 args:
   # Suffix appended to service names.
   # Note: It should be a string.

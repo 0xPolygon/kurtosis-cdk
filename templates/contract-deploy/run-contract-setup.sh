@@ -48,10 +48,35 @@ fund_account_on_l1() {
 
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
+# We want to run this script again when deploying a second CDK.
+{{if .deploy_agglayer}}
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
     2>&1 echo "This script has already been executed"
     exit 1
 fi
+# If there is already a successful deployment with an Agglayer service 
+# then we want to deploy the rollup onchain to attach it.
+{{else}}
+if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
+fund_account_on_l1 "admin-002" "{{.zkevm_l2_admin_address}}"
+
+2>&1 echo "Deploying rollup onchain using the L1 rollup manager contract"
+rpc_url="{{.l1_rpc_url}}"
+zkevm_rollup_manager_address="{{.zkevm_rollup_manager_address}}"
+zkevm_rollup_manager_deployer="{{.zkevm_rollup_manager_deployer}}"
+zkevm_rollup_manager_deployer_private_key="{{.zkevm_rollup_manager_deployer_private_key}}"
+zkevm_rollup_type_id="{{.zkevm_rollup_type_id}}"
+zkevm_rollup_chain_id="{{.zkevm_rollup_chain_id}}"
+zkevm_l2_admin_address="{{.zkevm_l2_admin_address}}"
+zkevm_l2_sequencer_address="{{.zkevm_l2_sequencer_address}}"
+zkevm_gas_token_address="{{.zkevm_gas_token_address}}"
+zkevm_l2_sequencer_url=""
+zkevm_network_name="Kurtosis CDK"
+tx_input=$(cast calldata 'createNewRollup(uint32,uint64,address,address,address,string,string)' "$zkevm_rollup_type_id" "$zkevm_rollup_chain_id" "$zkevm_l2_admin_address" "$zkevm_l2_sequencer_address" "$zkevm_gas_token_address"  "$zkevm_l2_sequencer_url" "$zkevm_network_name")
+cast send --private-key $zkevm_rollup_manager_deployer_private_key --rpc-url $rpc_url $zkevm_rollup_manager_address $tx_input --legacy
+2>&1 echo "Onchain rollup has been created"
+fi
+{{end}}
 
 # Wait for the L1 RPC to be available.
 echo_ts "Waiting for the L1 RPC to be available"
@@ -150,6 +175,7 @@ if [[ fork_id -lt 8 ]]; then
 fi
 
 # NOTE there is a disconnect in the necessary configurations here between the validium node and the zkevm node
+{{if .deploy_agglayer}}
 jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = $c[0].upgradeToULxLyBlockNumber' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.genesisBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
@@ -158,6 +184,17 @@ jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c
 jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
+{{else}}
+############################################################################################################################################################################# TODO FIX THIS 
+jq --slurpfile c combined.json '.rollupCreationBlockNumber = 68' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = 19' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.genesisBlockNumber = 68' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config = {chainId:{{.l1_chain_id}}}' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polTokenAddress = "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"' genesis.json > g.json; mv g.json genesis.json
+jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568"' genesis.json > g.json; mv g.json genesis.json
+{{end}}
 
 # Create cdk-erigon node configs
 jq_script='
