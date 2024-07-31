@@ -15,7 +15,7 @@ cdk_erigon_package = import_module("./cdk_erigon.star")
 def run(
     plan,
     deploy_l1=True,
-    deploy_agglayer=True,
+    deploy_agglayer=False,
     deploy_zkevm_contracts_on_l1=True,
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
@@ -74,14 +74,15 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    if (
-        "zkevm_rollup_manager_address" in args
-        and "zkevm_rollup_manager_block_number" in args
-        and "zkevm_global_exit_root_l2_address" in args
-        and "polygon_data_committee_address" in args
-    ):
-        plan.print("Deploying helper service to retrieve rollup data")
-        deploy_helper_service(plan, args)
+    if deploy_agglayer:
+        if (
+            "zkevm_rollup_manager_address" in args
+            and "zkevm_rollup_manager_block_number" in args
+            and "zkevm_global_exit_root_l2_address" in args
+            and "polygon_data_committee_address" in args
+        ):
+            plan.print("Deploying helper service to retrieve rollup data")
+            deploy_helper_service(plan, args)
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
@@ -104,6 +105,7 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
+        args["deploy_agglayer"] = deploy_agglayer
         # Deploy cdk-erigon sequencer node.
         # TODO this is a little weird if the erigon sequencer is deployed before the exector?
         if args["sequencer_type"] == "erigon":

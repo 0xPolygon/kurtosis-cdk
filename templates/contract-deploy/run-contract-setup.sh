@@ -60,9 +60,9 @@ fi
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
 fund_account_on_l1 "admin-002" "{{.zkevm_l2_admin_address}}"
 
-2>&1 echo "Deploying rollup onchain using the L1 rollup manager contract"
+echo_ts "Deploying rollup onchain using the L1 rollup manager contract"
 rpc_url="{{.l1_rpc_url}}"
-zkevm_rollup_manager_address="{{.zkevm_rollup_manager_address}}"
+rollup_manager_address="{{.rollup_manager_address}}"
 zkevm_rollup_manager_deployer="{{.zkevm_rollup_manager_deployer}}"
 zkevm_rollup_manager_deployer_private_key="{{.zkevm_rollup_manager_deployer_private_key}}"
 zkevm_rollup_type_id="{{.zkevm_rollup_type_id}}"
@@ -70,11 +70,20 @@ zkevm_rollup_chain_id="{{.zkevm_rollup_chain_id}}"
 zkevm_l2_admin_address="{{.zkevm_l2_admin_address}}"
 zkevm_l2_sequencer_address="{{.zkevm_l2_sequencer_address}}"
 zkevm_gas_token_address="{{.zkevm_gas_token_address}}"
-zkevm_l2_sequencer_url=""
+zkevm_l2_sequencer_url="http://zkevm-node-sequencer{{.deployment_suffix}}:8123"
 zkevm_network_name="Kurtosis CDK"
 tx_input=$(cast calldata 'createNewRollup(uint32,uint64,address,address,address,string,string)' "$zkevm_rollup_type_id" "$zkevm_rollup_chain_id" "$zkevm_l2_admin_address" "$zkevm_l2_sequencer_address" "$zkevm_gas_token_address"  "$zkevm_l2_sequencer_url" "$zkevm_network_name")
-cast send --private-key $zkevm_rollup_manager_deployer_private_key --rpc-url $rpc_url $zkevm_rollup_manager_address $tx_input --legacy
-2>&1 echo "Onchain rollup has been created"
+cast send --private-key $zkevm_rollup_manager_deployer_private_key --rpc-url $rpc_url $rollup_manager_address $tx_input --legacy
+echo_ts "Onchain rollup has been created"
+
+echo_ts "Retrieve rollup data"
+pushd /opt/zkevm-contracts || exit 1
+jq '.polygonRollupManagerAddress = "{{.rollup_manager_address}}"' /opt/zkevm-contracts/tools/getRollupData/rollupDataParams.json.example > /opt/zkevm-contracts/tools/getRollupData/tmp && mv  /opt/zkevm-contracts/tools/getRollupData/tmp  /opt/zkevm-contracts/tools/getRollupData/rollupDataParams.json
+jq '.rollupID = {{.zkevm_rollup_id}}' /opt/zkevm-contracts/tools/getRollupData/rollupDataParams.json > /opt/zkevm-contracts/tools/getRollupData/tmp && mv  /opt/zkevm-contracts/tools/getRollupData/tmp  /opt/zkevm-contracts/tools/getRollupData/rollupDataParams.json
+awk '!/upgradeToULxLyBlockNumber/' /opt/zkevm-contracts/tools/getRollupData/getRollupData.ts > /opt/zkevm-contracts/tools/getRollupData/tmp && mv /opt/zkevm-contracts/tools/getRollupData/tmp /opt/zkevm-contracts/tools/getRollupData/getRollupData.ts
+sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' /opt/zkevm-contracts/hardhat.config.ts
+npx hardhat run --network localhost /opt/zkevm-contracts/tools/getRollupData/getRollupData.ts
+sed -i 's#{{.l1_rpc_url}}#http://127.0.0.1:8545#' /opt/zkevm-contracts/hardhat.config.ts
 fi
 {{end}}
 
@@ -120,6 +129,27 @@ forge create \
 # In this case, we'll configure the create rollup parameters to have a gas token
 jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # shellcheck disable=SC1056,SC1072,SC1073,SC1009
+{{end}}
+
+# Deploy the DAC contracts if deploying an attaching CDK.
+# Then transfer ownership, and activate the DAC.
+{{if not .deploy_agglayer}}
+
+pushd /opt/zkevm-contracts || exit 1
+echo_ts "Deploying DAC for attaching CDK"
+jq '.admin = "{{.zkevm_l2_admin_address}}"' /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.example > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp && mv /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json
+jq '.deployerPvtKey = "{{.zkevm_rollup_manager_deployer_private_key}}"' /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp && mv /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json
+npx hardhat run /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deployPolygonDataCommittee.ts --network localhost > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json
+
+echo_ts "Transferring ownership of the DAC"
+dac_address=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
+cast call --rpc-url "{{.l1_rpc_url}}" $dac_address 'owner()(address)'
+cast send --private-key "{{.zkevm_rollup_manager_deployer_private_key}}" --rpc-url "{{.l1_rpc_url}}" $dac_address 'transferOwnership(address)' "{{.zkevm_l2_admin_address}}"
+
+echo_ts "Activate the DAC"
+rollup_address=$(jq -r '.rollupAddress' /opt/zkevm-contracts/tools/getRollupData/create_rollup_output.json)
+cast call --rpc-url "{{.l1_rpc_url}}" $rollup_address 'dataAvailabilityProtocol()'
+cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" $rollup_address 'setDataAvailabilityProtocol(address)' $dac_address
 {{end}}
 
 # Deploy contracts.
@@ -185,15 +215,23 @@ jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].po
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
 {{else}}
-############################################################################################################################################################################# TODO FIX THIS 
-jq --slurpfile c combined.json '.rollupCreationBlockNumber = 68' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = 19' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.genesisBlockNumber = 68' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.L1Config = {chainId:{{.l1_chain_id}}}' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.L1Config.polTokenAddress = "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"' genesis.json > g.json; mv g.json genesis.json
-jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568"' genesis.json > g.json; mv g.json genesis.json
+rollupCreationBlockNumber=$(jq -r '.createRollupBlockNumber' /opt/zkevm-contracts/tools/getRollupData/create_rollup_output.json)
+rollupManagerCreationBlockNumber=$(jq -r '.deploymentRollupManagerBlockNumber' /opt/zkevm-contracts/tools/getRollupData/deploy_output.json)
+genesisBlockNumber=$(jq -r '.createRollupBlockNumber' /opt/zkevm-contracts/tools/getRollupData/create_rollup_output.json)
+polygonZkEVMGlobalExitRootAddress=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm-contracts/tools/getRollupData/deploy_output.json)
+polygonRollupManagerAddress=$(jq -r '.polygonRollupManagerAddress' /opt/zkevm-contracts/tools/getRollupData/deploy_output.json)
+polTokenAddress=$(jq -r '.polTokenAddress' /opt/zkevm-contracts/tools/getRollupData/deploy_output.json)
+polygonZkEVMAddress=$(jq -r '.rollupAddress' /opt/zkevm-contracts/tools/getRollupData/create_rollup_output.json)
+polygonZkEVMBridgeAddress=$(cast call --rpc-url "{{.l1_rpc_url}}" "$polygonRollupManagerAddress" "bridgeAddress()(address)")
+
+jq --argjson rollupCreationBlockNumber "$rollupCreationBlockNumber" '.rollupCreationBlockNumber = $rollupCreationBlockNumber' genesis.json > g.json; mv g.json genesis.json
+jq --argjson rollupManagerCreationBlockNumber "$rollupManagerCreationBlockNumber" '.rollupManagerCreationBlockNumber = $rollupManagerCreationBlockNumber' genesis.json > g.json; mv g.json genesis.json
+jq --argjson genesisBlockNumber "$genesisBlockNumber" '.genesisBlockNumber = $genesisBlockNumber' genesis.json > g.json; mv g.json genesis.json
+jq '.L1Config = {chainId:{{.l1_chain_id}}}' genesis.json > g.json; mv g.json genesis.json
+jq --arg polygonZkEVMGlobalExitRootAddress "$polygonZkEVMGlobalExitRootAddress" '.L1Config.polygonZkEVMGlobalExitRootAddress = $polygonZkEVMGlobalExitRootAddress' genesis.json > g.json; mv g.json genesis.json
+jq --arg polygonRollupManagerAddress "$polygonRollupManagerAddress" '.L1Config.polygonRollupManagerAddress = $polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
+jq --arg polTokenAddress "$polTokenAddress" '.L1Config.polTokenAddress = $polTokenAddress' genesis.json > g.json; mv g.json genesis.json
+jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.L1Config.polygonZkEVMAddress = $polygonZkEVMAddress' genesis.json > g.json; mv g.json genesis.json
 {{end}}
 
 # Create cdk-erigon node configs
@@ -250,7 +288,7 @@ cast send \
     'approve(address,uint256)(bool)' \
     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
-{{if .is_cdk_validium}}
+{{if and .is_cdk_validium .deploy_agglayer}}
 # The DAC needs to be configured with a required number of signatures.
 # Right now the number of DAC nodes is not configurable.
 # If we add more nodes, we'll need to make sure the urls and keys are sorted.
@@ -274,6 +312,7 @@ cast send \
 
 # Grant the aggregator role to the agglayer so that it can also verify batches.
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
+{{if .deploy_agglayer}}
 echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
 cast send \
     --private-key "{{.zkevm_l2_admin_private_key}}" \
@@ -281,6 +320,7 @@ cast send \
     "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
     'grantRole(bytes32,address)' \
     "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+{{end}}
 
 # If we've configured the l1 network with the minimal preset, we
 # should probably wait for the first finalized block. This isn't

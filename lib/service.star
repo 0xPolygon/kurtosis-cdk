@@ -22,8 +22,10 @@ def get_contract_setup_addresses(plan, args):
         extract=extract,
     )
     service_name = "contracts"
-    if "zkevm_rollup_manager_address" in args:
-        service_name = "helper"
+    if args["deploy_agglayer"]:
+        plan.print("Changing querying service name to helper")
+        if "zkevm_rollup_manager_address" in args:
+            service_name = "helper"
     service_name += args["deployment_suffix"]
     result = plan.exec(
         description="Getting contract setup addresses from {} service".format(
