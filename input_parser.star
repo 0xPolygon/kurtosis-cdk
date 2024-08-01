@@ -3,7 +3,7 @@ DEFAULT_ARGS = {
     "data_availability_mode": "cdk-validium",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.2",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0",
-    "cdk_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
+    "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
