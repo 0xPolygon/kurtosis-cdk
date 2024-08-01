@@ -25,22 +25,27 @@ start_time=$(date +%s)
 end_time=$((start_time + timeout))
 
 rpc_url="$(kurtosis port print cdk-v1 $rpc_service http-rpc)"
-pk="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 
 while true; do
   verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
-  # This is here to take up somce space within the batch in order to make sure the batches actually increase during the duration of the test
-  cast send --legacy --rpc-url "$rpc_url" --private-key "$pk" --gas-limit 643528 --create 0x600160015B810190630000000456
+  # This is here to take up somce space within the batch in order to make sure the batches actually increase during the duration of the test.
+  cast send \
+    --legacy \
+    --rpc-url "$rpc_url" \
+    --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
+    --gas-limit 643528 \
+    --create 0x600160015B810190630000000456 \
+    >/dev/null 2>&1
 
   current_time=$(date +%s)
-  if (( current_time > end_time )); then
+  if ((current_time > end_time)); then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached!"
     exit 1
   fi
 
-  if (( verified_batches > verified_batches_target )); then
+  if ((verified_batches > verified_batches_target)); then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batches batches were verified!"
     exit 0
   fi
