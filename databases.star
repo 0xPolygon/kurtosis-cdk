@@ -58,11 +58,6 @@ TRUSTED_DATABASES = {
 }
 
 PERMISSIONLESS_DATABASES = {
-    "agglayer_db": {
-        "name": "agglayer_db",
-        "user": "agglayer_user",
-        "password": "redacted",
-    },
     "bridge_db": {
         "name": "bridge_db",
         "user": "bridge_user",
