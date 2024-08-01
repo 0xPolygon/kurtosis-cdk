@@ -86,3 +86,65 @@ cast send --legacy --private-key "$pk" --rpc-url $rpc --gas-limit 643535 --creat
 #+begin_example
 [zkevm-node-sequencer-001] {"level":"error","ts":1722365674.0208342,"caller":"sequencer/finalizer.go:904","msg":"halting finalizer, error: closing wip batch 140 without L2 blocks and should have at least 1%!(EXTRA string=\n/src/log/log.go:142 github.com/0xPolygonHermez/zkevm-node/log.appendStackTraceMaybeArgs()\n/src/log/log.go:251 github.com/0xPolygonHermez/zkevm-node/log.Errorf()\n/src/sequencer/finalizer.go:904 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt()\n/src/sequencer/batch.go:359 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeWIPBatch()\n/src/sequencer/batch.go:261 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch()\n/src/sequencer/batch.go:191 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch()\n/src/sequencer/finalizer.go:411 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches()\n/src/sequencer/finalizer.go:184 github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start()\n)","pid":7,"version":"v0.7.0","stacktrace":"github.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Halt\n\t/src/sequencer/finalizer.go:904\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeWIPBatch\n\t/src/sequencer/batch.go:359\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).closeAndOpenNewWIPBatch\n\t/src/sequencer/batch.go:261\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeWIPBatch\n\t/src/sequencer/batch.go:191\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).finalizeBatches\n\t/src/sequencer/finalizer.go:411\ngithub.com/0xPolygonHermez/zkevm-node/sequencer.(*finalizer).Start\n\t/src/sequencer/finalizer.go:184"}
 #+end_example
+
+
+
+* ZKEVM Node
+
+#+begin_src bash
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 15000000 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 7500000 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 3750000 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 1875000 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 937500 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 468750 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 703125 --create 0x600160015B810190630000000456 # OOC
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 585937 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 644531 --create 0x600160015B810190630000000456 # stuck
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 615234 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 629882 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 637207 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 640869 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 642700 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643615 --create 0x600160015B810190630000000456 # stuck
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643157 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643386 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643501 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643558 --create 0x600160015B810190630000000456 # stuck
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643529 --create 0x600160015B810190630000000456 # worked
+cast send --legacy --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8123 --gas-limit 643544 --create 0x600160015B810190630000000456 # halt
+#+end_src
+
+
+* RC2
+#+begin_src bash
+cast send --gas-limit 15000000 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 7500000 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 3750000 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 1875000 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 937500 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 468750 --legacy --private-key "$PK" --create 5B630000000056 # worked 
+cast send --gas-limit 703125 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 585937 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 527343 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 498046 --legacy --private-key "$PK" --create 5B630000000056 # OOC
+cast send --gas-limit 483398 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 476074 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 472412 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 474243 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 475158 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 475616 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475387 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475272 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475215 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475186 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475172 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475165 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+cast send --gas-limit 475161 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 475163 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 475164 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 475165 --legacy --private-key "$PK" --create 5B630000000056 # worked
+cast send --gas-limit 475166 --legacy --private-key "$PK" --create 5B630000000056 # stuck
+
+cast send --legacy --private-key "$PK" --gas-limit 643544 --create 0x600160015B810190630000000456 # halt
+#+end_src

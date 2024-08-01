@@ -48,7 +48,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.2
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
-  zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.7.2-RC2
   cdk_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
