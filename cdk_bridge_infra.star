@@ -51,7 +51,8 @@ def run(plan, args):
     bridge_ui_config_artifact = create_bridge_ui_config_artifact(
         plan, args, contract_setup_addresses
     )
-    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+    if args["deploy_agglayer"]:
+        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
     # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
     if args["deploy_l1"]:

@@ -186,6 +186,9 @@ pushd /opt/zkevm/ || exit 1
 echo_ts "Creating combined.json"
 cp genesis.json genesis.original.json
 jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
+# Extract L2 Bridge contract address.
+polygonZkEVML2BridgeAddress=$(grep "PolygonZkEVMBridge deployed to:" /opt/zkevm-contracts/04_deploy_contracts.out | awk '{print $NF}')
+jq --arg polygonZkEVML2BridgeAddress "$polygonZkEVML2BridgeAddress" '.polygonZkEVML2BridgeAddress = $polygonZkEVML2BridgeAddress' combined.json > c.json; mv c.json combined.json
 
 # Add the L2 GER Proxy address in combined.json (for panoptichain).
 zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
