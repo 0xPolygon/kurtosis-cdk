@@ -26,3 +26,18 @@ jobs:
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+  
+  deploy-zkevm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy Kurtosis CDK package
+        run: |
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{args: {sequencer_type="zkevm"}}'
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
