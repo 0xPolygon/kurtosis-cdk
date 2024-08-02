@@ -21,7 +21,7 @@ deploy_cdk_bridge_infra: true
 deploy_zkevm_permissionless_node: false
 
 # Deploy observability stack.
-deploy_observability: true
+deploy_observability: false
 
 # Deploy Blockscout stack.
 deploy_l2_blockscout: false

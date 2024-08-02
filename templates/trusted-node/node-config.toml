@@ -944,7 +944,7 @@ HaltOnBatchNumber = 0
 # performance by not blocking the main execution flow while the sanity
 # check is completed.
 # ------------------------------------------------------------------------------
-SequentialBatchSanityCheck = false
+SequentialBatchSanityCheck = true
 
 # ------------------------------------------------------------------------------
 # SequentialProcessL2Block determines the threading context for the
@@ -961,7 +961,7 @@ SequentialBatchSanityCheck = false
 # state transitions, at the cost of potential delays in state
 # integration.
 # ------------------------------------------------------------------------------
-SequentialProcessL2Block = false
+SequentialProcessL2Block = true
 
 [Sequencer.Finalizer.Metrics]
 # ------------------------------------------------------------------------------
