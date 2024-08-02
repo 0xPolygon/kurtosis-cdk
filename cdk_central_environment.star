@@ -39,14 +39,18 @@ def run(plan, args):
 
     if args["sequencer_type"] == "zkevm":
         # Create the zkevm node config.
-        node_config_template = read_file(src="./templates/trusted-node/node-config.toml")
+        node_config_template = read_file(
+            src="./templates/trusted-node/node-config.toml"
+        )
         node_config_artifact = plan.render_templates(
             config={
                 "node-config.toml": struct(
                     template=node_config_template,
                     data=args
                     | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
                     }
                     | db_configs,
                 )
@@ -58,7 +62,7 @@ def run(plan, args):
         zkevm_node_package.start_synchronizer(
             plan, args, node_config_artifact, genesis_artifact
         )
-        
+
         # Start the rest of the zkevm node components.
         keystore_artifacts = get_keystores_artifacts(plan, args)
         zkevm_node_components_configs = (
@@ -85,8 +89,12 @@ def run(plan, args):
 
     if args["sequencer_type"] == "erigon":
         # Create the cdk node config.
-        node_config_template = read_file(src="./templates/trusted-node/cdk-node-config.toml")
-        contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+        node_config_template = read_file(
+            src="./templates/trusted-node/cdk-node-config.toml"
+        )
+        contract_setup_addresses = service_package.get_contract_setup_addresses(
+            plan, args
+        )
         node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
             config={
@@ -94,7 +102,9 @@ def run(plan, args):
                     template=node_config_template,
                     data=args
                     | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
                     }
                     | db_configs
                     | contract_setup_addresses,
@@ -104,10 +114,8 @@ def run(plan, args):
 
         # Start the cdk components.
         keystore_artifacts = get_keystores_artifacts(plan, args)
-        cdk_node_configs = (
-            cdk_node_package.create_cdk_node_service_config(
-                args, node_config_artifact, genesis_artifact, keystore_artifacts
-            )
+        cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
+            args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
 
         plan.add_services(

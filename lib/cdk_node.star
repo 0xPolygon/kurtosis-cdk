@@ -5,6 +5,7 @@ NODE_COMPONENTS = struct(
     aggregator="aggregator",
 )
 
+
 def create_cdk_node_service_config(
     args,
     config_artifact,
@@ -37,10 +38,13 @@ def create_cdk_node_service_config(
         # Sleep for 20 seconds in order to wait for datastream server getting ready
         # TODO: find a better way instead of waiting
         cmd=[
-            "sleep 20 && cdk-node run " +
-            "-cfg=/etc/cdk/cdk-node-config.toml " +
-            "-custom-network-file=/etc/cdk/genesis.json " +
-            "-components=" + NODE_COMPONENTS.sequence_sender + "," + NODE_COMPONENTS.aggregator,
+            "sleep 20 && cdk-node run "
+            + "-cfg=/etc/cdk/cdk-node-config.toml "
+            + "-custom-network-file=/etc/cdk/genesis.json "
+            + "-components="
+            + NODE_COMPONENTS.sequence_sender
+            + ","
+            + NODE_COMPONENTS.aggregator,
         ],
     )
 
