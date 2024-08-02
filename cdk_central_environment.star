@@ -37,6 +37,7 @@ def run(plan, args):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
+    keystore_artifacts = get_keystores_artifacts(plan, args)
     if args["sequencer_type"] == "zkevm":
         # Create the zkevm node config.
         node_config_template = read_file(
@@ -64,7 +65,6 @@ def run(plan, args):
         )
 
         # Start the rest of the zkevm node components.
-        keystore_artifacts = get_keystores_artifacts(plan, args)
         zkevm_node_components_configs = (
             zkevm_node_package.create_zkevm_node_components_config(
                 args, node_config_artifact, genesis_artifact, keystore_artifacts
@@ -113,7 +113,6 @@ def run(plan, args):
         )
 
         # Start the cdk components.
-        keystore_artifacts = get_keystores_artifacts(plan, args)
         cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
