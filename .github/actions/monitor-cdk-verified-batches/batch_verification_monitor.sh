@@ -30,7 +30,7 @@ while true; do
   verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
 
-  # This is here to take up somce space within the batch in order to make sure the batches actually increase during the duration of the test.
+  # The aim is to take up some space in the batch, so that the number of batches actually increases during the test.
   cast send \
     --legacy \
     --rpc-url "$rpc_url" \
