@@ -11,13 +11,19 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Install kurtosis
       shell: bash
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
         sudo apt install kurtosis-cli=${{ inputs.kurtosis-version }}
-        kurtosis engine start --github-auth-token="${{ github.token }}"
         kurtosis version
 
     - name: Disable kurtosis analytics
