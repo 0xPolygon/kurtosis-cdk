@@ -6,7 +6,7 @@ inputs:
   kurtosis-version:
     description: The version of kurtosis
     required: false
-    default: '0.90.1' # https://github.com/kurtosis-tech/kurtosis/releases
+    default: '1.0.0' # https://github.com/kurtosis-tech/kurtosis/releases
 
 runs:
   using: "composite"
@@ -17,6 +17,7 @@ runs:
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
         sudo apt install kurtosis-cli=${{ inputs.kurtosis-version }}
+        kurtosis engine start --github-auth-token="${{ secrets.GITHUB_TOKEN }}"
         kurtosis version
 
     - name: Disable kurtosis analytics
