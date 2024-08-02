@@ -126,6 +126,7 @@ def run(plan, args):
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):
         dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
+        keystore_artifacts = get_keystores_artifacts(plan, args)
         dac_config = zkevm_dac_package.create_dac_service_config(
             args, dac_config_artifact, keystore_artifacts.dac
         )
