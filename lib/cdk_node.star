@@ -15,7 +15,7 @@ def create_cdk_node_service_config(
     cdk_node_name = "cdk-node" + args["deployment_suffix"]
 
     cdk_node_service_config = ServiceConfig(
-        image=data_availability_package.get_node_image(args),
+        image=args["cdk_node_image"],
         ports={
             "aggregator": PortSpec(
                 args["zkevm_aggregator_port"], application_protocol="grpc"
