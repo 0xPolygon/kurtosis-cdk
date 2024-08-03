@@ -41,3 +41,5 @@ jobs:
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc_service: zkevm-node-rpc-001
