@@ -22,7 +22,8 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: |
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{apply_workload: true}'
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -37,7 +38,7 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{deploy_zkevm_permissionless_node: true, args: {sequencer_type: "zkevm"}}'
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{deploy_zkevm_permissionless_node: true, args: {sequencer_type: "zkevm"}, apply_workload: true}'
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
