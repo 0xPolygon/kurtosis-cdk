@@ -28,6 +28,8 @@ description: |-
   # Note: It should be a string.
   deployment_suffix: "-001"
 
+  sequencer_type: erigon
+  
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
@@ -58,7 +60,6 @@ description: |-
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta13
   toolbox_image: leovct/toolbox:0.0.1
-  sequencer_type: erigon
 
   # Port configuration.
   zkevm_hash_db_port: 50061
