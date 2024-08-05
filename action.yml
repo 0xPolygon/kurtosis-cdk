@@ -103,7 +103,7 @@ runs:
     - uses: actions/checkout@v4
 
     - name: Install Kurtosis CDK tools
-      uses: ./actions/setup-kurtosis-cdk
+      uses: .github/actions/setup-kurtosis-cdk
       with:
         kurtosis-version: ${{ inputs.kurtosis_cli }}
 
@@ -179,7 +179,7 @@ runs:
       run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
     - name: Monitor verified batches
-      uses: ./actions/monitor-verified-batches
+      uses: .github/actions/monitor-verified-batches
 
     # Perform loadtest.
     - name: Perform load test
