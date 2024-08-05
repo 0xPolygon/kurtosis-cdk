@@ -25,4 +25,4 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
+        run: ./.github/actions/scripts/monitor-verified-batches.sh
