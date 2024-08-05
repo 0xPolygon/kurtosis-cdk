@@ -35,6 +35,8 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v4
+
     # Build docker images.
     - name: Clone and build agglayer, if no release tag given
       shell: bash
