@@ -15,6 +15,7 @@ jobs:
   # Deploy the CDK environment in one step.
   monolithic:
     runs-on: ubuntu-latest
+    if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
