@@ -103,7 +103,7 @@ runs:
     - uses: actions/checkout@v4
 
     - name: Install Kurtosis CDK tools
-      run: .github/actions/scripts/setup.sh
+      run: .github/actions/.github/scripts/setup.sh
       with:
         kurtosis-version: ${{ inputs.kurtosis_cli }}
 

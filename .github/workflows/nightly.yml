@@ -24,7 +24,7 @@ jobs:
           cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Enable workload
         run: yq -Y --in-place '.apply_workload = true' params.yml
@@ -33,7 +33,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
       # Compare configs.
       - name: Dump configs
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
@@ -137,7 +137,7 @@ jobs:
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -147,14 +147,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       # Deploy components.
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
@@ -163,7 +163,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Enable gas token feature
         run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
@@ -172,7 +172,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
@@ -181,7 +181,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Deploy L1 and zkEVM contracts
         run: |
@@ -220,7 +220,7 @@ jobs:
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
   # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
@@ -231,7 +231,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Configure permisionless node parameters
         run: |
@@ -252,7 +252,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Set rollup data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
@@ -261,7 +261,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
@@ -270,7 +270,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Set cdk-validium data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
@@ -279,7 +279,7 @@ jobs:
         run: kurtosis run --enclave cdk-v1 --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
 
   # Deploy the CDK environment with cdk-erigon as a sequencer.
   cdk-erigon-sequencer:
@@ -288,10 +288,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: scripts/setup.sh
+        run: .github/scripts/setup.sh
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
 
       - name: Monitor verified batches
-        run: ./.github/actions/scripts/monitor-verified-batches.sh
+        run: ./.github/actions/.github/scripts/monitor-verified-batches.sh
