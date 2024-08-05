@@ -96,14 +96,14 @@ main() {
   echo -e "\n> Setup complete"
 
   # Show tool versions.
-  echo -e "\n$ forge --version"
-  forge --version
+  echo -e "\n$ kurtosis version"
+  kurtosis version
 
   echo -e "\n$ yq --version"
   yq --version
 
-  echo -e "\n$ kurtosis version"
-  kurtosis version
+  echo -e "\n$ forge --version"
+  forge --version
 }
 
 # Call main function with all script arguments
