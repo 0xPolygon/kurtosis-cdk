@@ -24,7 +24,7 @@ jobs:
           cache-dependency-path: scripts/zkevm-config-diff/go.sum
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Enable workload
         run: yq -Y --in-place '.apply_workload = true' params.yml
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
@@ -147,7 +147,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       # Deploy components.
       - name: Deploy Kurtosis CDK package
@@ -163,7 +163,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Enable gas token feature
         run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
@@ -181,7 +181,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Deploy L1 and zkEVM contracts
         run: |
@@ -231,7 +231,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Configure permisionless node parameters
         run: |
@@ -252,7 +252,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Set rollup data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
@@ -270,7 +270,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Set cdk-validium data availability mode
         run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
@@ -288,7 +288,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        run: ./github/workflows/scripts/setup.sh
+        run: scripts/setup.sh
 
       - name: Deploy Kurtosis CDK package
         run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
