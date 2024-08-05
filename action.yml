@@ -177,7 +177,7 @@ runs:
 
     - name: Monitor verified batches
       shell: bash
-      uses: ./.github/scripts/monitor-verified-batches.sh
+      run: ./.github/scripts/monitor-verified-batches.sh
 
     # Perform loadtest.
     - name: Perform load test
