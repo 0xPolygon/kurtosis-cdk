@@ -100,6 +100,10 @@ runs:
         fi
 
     # Install tools
+    - name: Use specific version of kurtosis-cdk
+      shell: bash
+      run: git checkout "${{ inputs.kurtosis_cdk }}"
+
     - name: Install Kurtosis CDK tools
       shell: bash
       run: .github/scripts/setup.sh --kurtosis-version ${{ inputs.kurtosis_cli }}
@@ -113,10 +117,6 @@ runs:
         export PATH="$HOME/go/bin:$PATH"
 
     # Deploy components.
-    - name: Use specific version of kurtosis-cdk
-      shell: bash
-      run: git checkout "${{ inputs.kurtosis_cdk }}"
-
     - name: Use local docker containers
       shell: bash
       run: |
