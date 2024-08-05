@@ -1,4 +1,4 @@
-name: Regression Tests
+name: Test
 
 on:
   workflow_dispatch:
