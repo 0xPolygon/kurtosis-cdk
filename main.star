@@ -10,6 +10,7 @@ blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
+zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 
 def run(
@@ -125,6 +126,13 @@ def run(
         cdk_erigon_package.run_rpc(plan, args)
     else:
         plan.print("Skipping the deployment of cdk-erigon node")
+
+    # Deploy zkevm-pool-manager service.
+    if deploy_cdk_erigon_node:
+        plan.print("Deploying zkevm-pool-manager service")
+        zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
+    else:
+        plan.print("Skipping the deployment of zkevm-pool-manager service")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:
