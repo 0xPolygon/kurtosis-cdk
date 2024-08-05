@@ -182,7 +182,7 @@ be sequecing batches every 15 minutes.
 All of the configuration should be set. Let's run things:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+kurtosis run --enclave cdk-v1 --args-file params.yml .
 #+end_src
 
 Once this completes, you'll probably want to see your deployed
@@ -332,4 +332,3 @@ deployment.
 
 We don't encounter this issue in local testing because we reset the
 entire L1 chain between tests / contract deployments.
-

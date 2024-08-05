@@ -7,7 +7,7 @@
 # 1. kurtosis clean --all (clear existing resources)
 # 2. update PGPASSWORD, PGUSER, and PGHOST params per your use case (modify configs)
 # 3. run ./scripts/reset_postgres.sh (drop/recreate dbs and permissions)
-# 4. kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . (deploy with fresh dbs)
+# 4. kurtosis run --enclave cdk-v1 --args-file params.yml . (deploy with fresh dbs)
 DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "agglayer_db" "bridge_db" "dac_db")
 DB_USERS=("event_user" "pool_user" "prover_user" "state_user" "agglayer_user" "bridge_user" "dac_user")
 
@@ -26,17 +26,17 @@ for i in "${!DB_NAMES[@]}"; do
     PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" <<EOF
     DROP DATABASE IF EXISTS "$DB_NAME";
     CREATE DATABASE "$DB_NAME";
-    GRANT ALL PRIVILEGES ON DATABASE "$DB_NAME" TO "$DB_USER";   
+    GRANT ALL PRIVILEGES ON DATABASE "$DB_NAME" TO "$DB_USER";
 EOF
 
-    # Connect to specific database for db initialization                                                                                                                                                                                                                                                                                                                  
+    # Connect to specific database for db initialization
     PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$DB_NAME" <<EOF
     GRANT USAGE ON SCHEMA public TO "$DB_USER";
     GRANT CREATE ON SCHEMA public TO "$DB_USER";
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "$DB_USER";
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO "$DB_USER";
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "$DB_USER";
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "$DB_USER";  
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "$DB_USER";
 EOF
 
     if [ "$DB_NAME" == "event_db" ]; then

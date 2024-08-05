@@ -29,7 +29,7 @@ jobs:
         run: yq -Y --in-place '.apply_workload = true' params.yml
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -73,7 +73,7 @@ jobs:
       - name: Deploy zkEVM contracts on L1
         run: |
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
       - name: Deploy zkEVM node and cdk peripheral databases
@@ -150,7 +150,7 @@ jobs:
 
       # Deploy components.
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --image-download always .
+        run: kurtosis run --enclave cdk-v1 .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -168,7 +168,7 @@ jobs:
         run: yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -189,7 +189,7 @@ jobs:
           # Only deploy l1 and zkevm contracts.
           yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
 
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
 
       - name: Specify the rollup manager contract address and a few other parameters
         run: |
@@ -216,7 +216,7 @@ jobs:
           # Deploy databases, cdk central/trusted environment, cdk/bridge infra and observability stack.
           yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
 
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -242,7 +242,7 @@ jobs:
           # Disable all steps except permisionless node.
           yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
 
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+          kurtosis run --enclave cdk-v1 --args-file params.yml .
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
@@ -257,7 +257,7 @@ jobs:
         run: yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --image-download always .
+        run: kurtosis run --enclave cdk-v1 .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -275,7 +275,7 @@ jobs:
         run: yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --image-download always .
+        run: kurtosis run --enclave cdk-v1 .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -290,7 +290,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file cdk-erigon-sequencer-params.yml .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches

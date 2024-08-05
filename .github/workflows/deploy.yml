@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: kurtosis run --enclave cdk-v1 --args-file params.yml .
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches

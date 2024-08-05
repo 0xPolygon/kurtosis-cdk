@@ -22,7 +22,7 @@ Run the following command:
 
 ```sh
 yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+kurtosis run --enclave cdk-v1 --args-file params.yml .
 ```
 
 ## Sync an external permissionless node
@@ -62,7 +62,7 @@ You can also use the package you have just set up to sync data from a production
 
     ```sh
     yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    kurtosis run --enclave cdk-v1 --args-file params.yml .
     ```
 
 <br/>
