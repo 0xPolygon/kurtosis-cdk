@@ -56,7 +56,7 @@ DEFAULT_ARGS = {
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
     "l1_additional_services": [],
     "l1_preset": "minimal",
-    "l1_seconds_per_slot": 1,
+    "l1_seconds_per_slot": 12,
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_fork_id": 9,
     "polygon_zkevm_explorer": "https://explorer.private/",
@@ -67,11 +67,11 @@ DEFAULT_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
     "polycli_version": "v0.1.42",
     "workload_commands": [
-        "polycli_loadtest_on_l2.sh t",  # eth transfers
-        "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-        "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-        "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
-        "polycli_rpcfuzz_on_l2.sh",  # rpc calls
+        # "polycli_loadtest_on_l2.sh t",  # eth transfers
+        # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
+        # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
+        # "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
+        # "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
     ],
     "blutgang_image": "makemake1337/blutgang:0.3.5",
