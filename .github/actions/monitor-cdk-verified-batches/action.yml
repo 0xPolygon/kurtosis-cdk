@@ -18,6 +18,6 @@ runs:
     - uses: actions/checkout@v4
 
     - name: Check that batches are being verified
-      working-directory: .github/actions/monitor-cdk-verified-batches
+      working-directory: ./.github/actions/monitor-cdk-verified-batches
       shell: bash
       run: ./batch_verification_monitor.sh ${{ inputs.verified_batches_target }} ${{ inputs.timeout }}
