@@ -8,11 +8,13 @@ def run_zkevm_pool_manager(plan, args):
     zkevm_pool_manager_config_artifact = create_zkevm_pool_manager_config_artifact(
         plan, args, db_configs
     )
-    zkevm_pool_manager_config = zkevm_pool_manager_package.create_zkevm_pool_manager_service_config(
-        args, zkevm_pool_manager_config_artifact
+    zkevm_pool_manager_config = (
+        zkevm_pool_manager_package.create_zkevm_pool_manager_service_config(
+            args, zkevm_pool_manager_config_artifact
+        )
     )
 
-     # Start the pool manager service.
+    # Start the pool manager service.
     zkevm_pool_manager_services = plan.add_services(
         configs=zkevm_pool_manager_config,
         description="Starting pool manager infra",
@@ -32,7 +34,6 @@ def create_zkevm_pool_manager_config_artifact(plan, args, db_configs):
                 | {
                     "deployment_suffix": args["deployment_suffix"],
                     "zkevm_pool_manager_port": args["zkevm_pool_manager_port"],
-
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                 }

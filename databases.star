@@ -38,7 +38,7 @@ TRUSTED_DATABASES = {
         "name": "pool_manager_db",
         "user": "pool_manager_user",
         "password": "redacted",
-    },    
+    },
     "prover_db": {
         "name": "prover_db",
         "user": "prover_user",
