@@ -72,9 +72,7 @@ install_yq() {
 install_foundry() {
   local foundry_version=$1
   curl -L https://foundry.paradigm.xyz | bash
-  cat /home/runner/.bashrc
-  # shellcheck source=/dev/null
-  source /home/runner/.bashrc
+  export PATH="$PATH:/home/runner/.config/.foundry/bin"
   foundryup --version "$foundry_version"
 }
 
