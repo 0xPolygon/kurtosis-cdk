@@ -35,11 +35,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-      with:
-        sparse-checkout: .github/actions
-        path: actions
-
     # Build docker images.
     - name: Clone and build agglayer, if no release tag given
       shell: bash
@@ -105,6 +100,8 @@ runs:
         fi
 
     # Install tools
+    - uses: actions/checkout@v4
+
     - name: Install Kurtosis CDK tools
       uses: ./actions/setup-kurtosis-cdk
       with:
