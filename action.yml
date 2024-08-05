@@ -100,9 +100,8 @@ runs:
         fi
 
     # Install tools
-    - uses: actions/checkout@v4
-
     - name: Install Kurtosis CDK tools
+      shell: bash
       run: .github/scripts/setup.sh --kurtosis-version ${{ inputs.kurtosis_cli }}
 
     - name: Install polycli
@@ -177,6 +176,7 @@ runs:
       run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
     - name: Monitor verified batches
+      shell: bash
       uses: ./.github/scripts/monitor-verified-batches.sh
 
     # Perform loadtest.
