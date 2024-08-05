@@ -11,7 +11,7 @@ def run(plan, args):
     bridge_template = read_file(src="./templates/workload/bridge.sh")
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    zkevm_rpc_service = plan.get_service("zkevm-node-rpc" + args["deployment_suffix"])
+    zkevm_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
     zkevm_rpc_url = "http://{}:{}".format(
         zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["http-rpc"].number
     )
