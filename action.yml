@@ -36,6 +36,9 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
+      with:
+        sparse-checkout: .github/actions
+        path: actions
 
     # Build docker images.
     - name: Clone and build agglayer, if no release tag given
@@ -103,7 +106,7 @@ runs:
 
     # Install tools
     - name: Install Kurtosis CDK tools
-      uses: ${{ github.action_path }}/.github/actions/setup-kurtosis-cdk
+      uses: ./actions/setup-kurtosis-cdk
       with:
         kurtosis-version: ${{ inputs.kurtosis_cli }}
 
@@ -179,7 +182,7 @@ runs:
       run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
 
     - name: Monitor verified batches
-      uses: ${{ github.action_path }}//.github/actions/monitor-verified-batches
+      uses: ./actions/monitor-verified-batches
 
     # Perform loadtest.
     - name: Perform load test
