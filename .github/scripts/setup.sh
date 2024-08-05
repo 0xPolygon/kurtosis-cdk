@@ -21,10 +21,10 @@ FOUNDRY_VERSION="nightly" # https://github.com/foundry-rs/foundry/releases
 usage() {
   echo "Usage: $0 [OPTIONS]"
   echo "Options:"
-  echo "  --kurtosis-version VERSION  Specify kurtosis version (default: $KURTOSIS_VERSION)"
-  echo "  --yq-version VERSION        Specify yq version (default: $YQ_VERSION)"
-  echo "  --foundry-version VERSION   Specify foundry version (default: $FOUNDRY_VERSION)"
-  echo "  -h, --help                  Display this help message"
+  echo "  --kurtosis-version  Specify kurtosis version (default: $KURTOSIS_VERSION)"
+  echo "  --yq-version        Specify yq version (default: $YQ_VERSION)"
+  echo "  --foundry-version   Specify foundry version (default: $FOUNDRY_VERSION)"
+  echo "  -h, --help          Display this help message"
 }
 
 parse_arguments() {
