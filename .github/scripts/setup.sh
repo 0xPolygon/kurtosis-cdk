@@ -73,7 +73,7 @@ install_foundry() {
   local foundry_version=$1
   curl -L https://foundry.paradigm.xyz | bash
   # shellcheck source=/dev/null
-  source "$HOME/.bashrc"
+  source /home/runner/.bashrc
   foundryup --version "$foundry_version"
 }
 
