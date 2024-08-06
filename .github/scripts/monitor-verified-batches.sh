@@ -3,6 +3,8 @@
 # This script monitors the verification progress of zkEVM batches.
 # It queries a specified RPC URL and tracks the number of verified batches.
 
+set -e
+
 # Function to display usage information.
 usage() {
   echo "Usage: $0 --rpc-url <URL> --target <TARGET> --timeout <TIMEOUT>"
