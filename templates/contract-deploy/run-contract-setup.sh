@@ -141,6 +141,11 @@ jq '.admin = "{{.zkevm_l2_admin_address}}"' /opt/zkevm-contracts/tools/deployPol
 jq '.deployerPvtKey = "{{.zkevm_rollup_manager_deployer_private_key}}"' /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp && mv /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json
 npx hardhat run /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deployPolygonDataCommittee.ts --network localhost > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json
 
+# Extract newly deployed DAC address
+polygonDataCommitteeAddress=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
+jq --arg polygonDataCommitteeAddress "$polygonDataCommitteeAddress" '.polygonDataCommitteeAddress = $polygonDataCommitteeAddress' combined.json > c.json; mv c.json combined.json
+
+# polygon_data_committee_address
 echo_ts "Transferring ownership of the DAC"
 dac_address=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 cast call --rpc-url "{{.l1_rpc_url}}" $dac_address 'owner()(address)'

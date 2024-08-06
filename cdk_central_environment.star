@@ -84,12 +84,13 @@ def run(plan, args):
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):
+        contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
         dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
         dac_config = zkevm_dac_package.create_dac_service_config(
             args, dac_config_artifact, keystore_artifacts.dac
         )
         plan.add_services(
-            configs=dac_config,
+            configs=dac_config | contract_setup_addresses,
             description="Starting the DAC",
         )
 

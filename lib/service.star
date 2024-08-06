@@ -1,10 +1,10 @@
 data_availability_package = import_module("./data_availability.star")
 
-
 def get_contract_setup_addresses(plan, args):
     extract = {
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
         "zkevm_l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",
         "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
         "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
@@ -13,10 +13,11 @@ def get_contract_setup_addresses(plan, args):
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
     }
-    if data_availability_package.is_cdk_validium(args):
-        extract[
-            "polygon_data_committee_address"
-        ] = "fromjson | .polygonDataCommitteeAddress"
+    if args["deploy_agglayer"]:
+        if data_availability_package.is_cdk_validium(args):
+            extract[
+                "polygon_data_committee_address"
+            ] = "fromjson | .polygonDataCommitteeAddress"
 
     exec_recipe = ExecRecipe(
         command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
