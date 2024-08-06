@@ -236,8 +236,8 @@ jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.L1Config.polygonZkEVMAddre
 polygonDataCommitteeAddress=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 jq --arg polygonDataCommitteeAddress "$polygonDataCommitteeAddress" '.polygonDataCommitteeAddress = $polygonDataCommitteeAddress' combined.json > c.json; mv c.json combined.json
 jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.rollupAddress = $polygonZkEVMAddress' combined.json > c.json; mv c.json combined.json
-jq --arg polygonZkEVMGlobalExitRootAddress "$polygonZkEVMGlobalExitRootAddress" '.polygonZkEVMGlobalExitRootAddress = $polygonZkEVMGlobalExitRootAddress' combined.json > c.json; mv c.json combined.json
-jq --arg genesisBlockNumber "$genesisBlockNumber" '.createRollupBlockNumber = $genesisBlockNumber' combined.json > c.json; mv c.json combined.json
+# jq --arg polygonZkEVMGlobalExitRootAddress "$polygonZkEVMGlobalExitRootAddress" '.polygonZkEVMGlobalExitRootAddress = $polygonZkEVMGlobalExitRootAddress' combined.json > c.json; mv c.json combined.json
+# jq --arg genesisBlockNumber "$genesisBlockNumber" '.createRollupBlockNumber = $genesisBlockNumber' combined.json > c.json; mv c.json combined.json
 
 {{end}}
 

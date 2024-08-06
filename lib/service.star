@@ -4,6 +4,7 @@ def get_contract_setup_addresses(plan, args):
     extract = {
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
         "zkevm_l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "zkevm_rollup_manager_block_number": "fromjson | .createRollupBlockNumber",
         "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",
         "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
@@ -12,7 +13,7 @@ def get_contract_setup_addresses(plan, args):
         "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
-    }
+    } 
     if data_availability_package.is_cdk_validium(args):
         extract[
             "polygon_data_committee_address"
