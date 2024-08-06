@@ -319,10 +319,11 @@ cast send \
 # Grant the aggregator role to the agglayer so that it can also verify batches.
 # cast keccak "TRUSTED_AGGREGATOR_ROLE"
 echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
+polygonRollupManagerAddress=$(jq -r '.polygonRollupManagerAddress' /opt/zkevm-contracts/tools/getRollupData/deploy_output.json)
 cast send \
     --private-key "{{.zkevm_l2_admin_private_key}}" \
     --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
+    $polygonRollupManagerAddress \
     'grantRole(bytes32,address)' \
     "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 
