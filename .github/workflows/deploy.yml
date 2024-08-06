@@ -28,9 +28,10 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: |
           kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
+            --enclave="${{ env.ENCLAVE_NAME }}" \
             --show-enclave-inspect=false \
-            --args-file=params.yml . \
+            --args-file=params.yml \
+            . \
             '{
               "apply_workload": true,
               "args": {
@@ -39,12 +40,12 @@ jobs:
             }'
 
       - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+        run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
 
       - name: Monitor verified batches
         run: |
           ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)
+            --rpc-url $(kurtosis port print "${{ env.ENCLAVE_NAME }}" cdk-erigon-node-001 http-rpc)
 
   deploy-zkevm:
     runs-on: ubuntu-latest
@@ -58,9 +59,10 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: |
           kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
+            --enclave="${{ env.ENCLAVE_NAME }}" \
             --show-enclave-inspect=false \
-            --args-file=params.yml . \
+            --args-file=params.yml \
+            . \
             '{
               "deploy_zkevm_permissionless_node": true,
               "deploy_cdk_erigon_node": false,
@@ -71,9 +73,9 @@ jobs:
             }'
 
       - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+        run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
 
       - name: Monitor verified batches
         run: |
           ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)
+            --rpc-url $(kurtosis port print "${{ env.ENCLAVE_NAME }}" zkevm-node-rpc-001 http-rpc)
