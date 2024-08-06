@@ -36,7 +36,7 @@ kurtosis enclave inspect cdk-v1
 That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
 
 ```bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 rpc)"
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
 ```
 
 That is the same environment variable that `cast` uses, so you should now be able to run this command. Note that the steps below will assume you have the [Foundry toolchain](https://book.getfoundry.sh/getting-started/installation) installed.
