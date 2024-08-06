@@ -59,12 +59,14 @@ end_time=$((start_time + timeout))
 # Main loop to monitor batch verification.
 while true; do
   # Query the number of verified batches from the RPC URL.
-  verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
+  batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_batchNumber | sed 's/"//g')")"
+  virtual_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_virtualBatchNumber | sed 's/"//g')")"
+  verified_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Latest Batch: $batch_number, Virtual Batch: $virtual_batch_number, Verified Batch: $verified_batch_number"
 
   # Check if the verified batches target has been reached.
-  if [ -n "$target" ] && ((verified_batches > target)); then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batches batches were verified!"
+  if [ -n "$target" ] && ((verified_batch_number > target)); then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batch_number batches were verified!"
     exit 0
   fi
 
