@@ -28,9 +28,9 @@ jobs:
             '{"apply_workload": true}'
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: cdk-erigon-node-001
+        run: |
+          ./.github/scripts/monitor-verified-batches.sh\
+            --rpc-url $(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)
 
   deploy-zkevm:
     runs-on: ubuntu-latest
@@ -54,6 +54,6 @@ jobs:
             }'
 
       - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-001
+        run: |
+          ./.github/scripts/monitor-verified-batches.sh\
+            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
