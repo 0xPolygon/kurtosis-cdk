@@ -145,7 +145,7 @@
      */ -}}
     {{if eq .sequencer_type "zkevm-node"}}
     "aggregatorClientHost": "zkevm-node-aggregator{{.deployment_suffix}}",
-    {{else if .sequencer_type "erigon"}}
+    {{else if eq .sequencer_type "erigon"}}
     "aggregatorClientHost": "cdk-node{{.deployment_suffix}}",
     {{end}}
 
