@@ -46,7 +46,7 @@ if [ -z "$rpc_url" ]; then
 fi
 
 # Print script parameters for debug purposes.
-echo "Starting script..."
+echo "Running script with values:"
 echo "- RPC URL: $rpc_url"
 echo "- Target: $target"
 echo "- Timeout: $timeout"
@@ -62,22 +62,22 @@ while true; do
   batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_batchNumber | sed 's/"//g')")"
   virtual_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_virtualBatchNumber | sed 's/"//g')")"
   verified_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
-  echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] Latest Batch: $batch_number, Virtual Batch: $virtual_batch_number, Verified Batch: $verified_batch_number\n"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Latest Batch: $batch_number, Virtual Batch: $virtual_batch_number, Verified Batch: $verified_batch_number"
 
   # Check if the verified batches target has been reached.
-  if [ -n "$target" ] && ((verified_batch_number > target)); then
-    echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batch_number batches were verified!"
+  if ((verified_batch_number > target)); then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batch_number batches were verified!"
     exit 0
   fi
 
   # Check if the timeout has been reached.
   current_time=$(date +%s)
-  if [ -n "$timeout" ] && ((current_time > end_time)); then
-    echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached!"
+  if ((current_time > end_time)); then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached!"
     exit 1
   fi
 
-  # Send a transaction to increase the number of batches.
+  echo "Sending a transaction to increase the batch number..."
   cast send \
     --legacy \
     --rpc-url "$rpc_url" \
@@ -85,6 +85,7 @@ while true; do
     --gas-limit 643528 \
     --create 0x600160015B810190630000000456
 
-  # Wait a few seconds before the next iteration.
+  echo "Waiting a few seconds before the next iteration..."
+  echo
   sleep 10
 done
