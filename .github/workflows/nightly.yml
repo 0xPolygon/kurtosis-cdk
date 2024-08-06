@@ -16,42 +16,45 @@ env:
 
 jobs:
   compare-configs:
-    - uses: actions/checkout@v4
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Install Kurtosis CDK tools
-      uses: ./.github/actions/setup-kurtosis-cdk
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
 
-    # Deploy components.
-    - name: Deploy Kurtosis CDK package
-      run: |
-        kurtosis run \
-          --enclave="${{ env.ENCLAVE_NAME }}" \
-          --show-enclave-inspect=false \
-          --args-file=params.yml \
-          . \
-          '{
-            "apply_workload": true,
-            "args": {
-              "l1_seconds_per_slot": 1
-            }
-          }'
+      # Deploy components.
+      - name: Deploy Kurtosis CDK package
+        run: |
+          kurtosis run \
+            --enclave="${{ env.ENCLAVE_NAME }}" \
+            --show-enclave-inspect=false \
+            --args-file=params.yml \
+            . \
+            '{
+              "apply_workload": true,
+              "args": {
+                "l1_seconds_per_slot": 1
+              }
+            }'
 
-    # Compare configs.
-    - name: Dump configs
-      working-directory: ./scripts/zkevm-config-diff
-      run: |
-        mkdir -p default-configs kurtosis-cdk-configs
-        sh zkevm_config.sh dump default ./default-configs
-        echo
-        sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
+      # Compare configs.
+      - name: Dump configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: |
+          mkdir -p default-configs kurtosis-cdk-configs
+          sh zkevm_config.sh dump default ./default-configs
+          echo
+          sh zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
 
-    - name: Compare configs
-      working-directory: ./scripts/zkevm-config-diff
-      run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
+      - name: Compare configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: sh zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
 
-    - name: Diff configs
-      working-directory: ./scripts/zkevm-config-diff
-      run: diff -r ./default-configs ./kurtosis-cdk-configs || true
+      - name: Diff configs
+        working-directory: ./scripts/zkevm-config-diff
+        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
 
   # Deploy the CDK environment without specifying any parameter file.
   configless:
