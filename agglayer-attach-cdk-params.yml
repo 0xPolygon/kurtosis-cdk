@@ -108,8 +108,8 @@ args:
   zkevm_l2_loadtest_address: "0x2d1bd6e35fD386066fDebbf54eb75B436DFa93b4"
   zkevm_l2_loadtest_private_key: "c63cd87974fc7742a5f92df58e365517e4ef134864cd8b1d600d1fdf3d3d5049"
 
-  zkevm_l2_agglayer_address: "0x1Bf81F72A112B7b485db45f523ED93734C2630ff"
-  zkevm_l2_agglayer_private_key: "1455c65719e11c70183234ae0e840a39bad98c8c65109721871bbb605fd13754"
+  zkevm_l2_agglayer_address: "0x351e560852ee001d5D19b5912a269F849f59479a"
+  zkevm_l2_agglayer_private_key: "0x1d45f90c0a9814d8b8af968fa0677dab2a8ff0266f33b136e560fe420858a419"
 
   zkevm_l2_dac_address: "0xfA2542aca48930aae82C9291f1F029a189C6921b"
   zkevm_l2_dac_private_key: "3d7ca1abd8651954b6d060e06c2d2cee72cb95252f2ec48c0034c3fb078eecf1"
