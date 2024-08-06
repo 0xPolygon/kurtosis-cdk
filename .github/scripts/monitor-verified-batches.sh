@@ -62,18 +62,18 @@ while true; do
   batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_batchNumber | sed 's/"//g')")"
   virtual_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_virtualBatchNumber | sed 's/"//g')")"
   verified_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Latest Batch: $batch_number, Virtual Batch: $virtual_batch_number, Verified Batch: $verified_batch_number"
+  echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] Latest Batch: $batch_number, Virtual Batch: $virtual_batch_number, Verified Batch: $verified_batch_number\n"
 
   # Check if the verified batches target has been reached.
   if [ -n "$target" ] && ((verified_batch_number > target)); then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batch_number batches were verified!"
+    echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batch_number batches were verified!"
     exit 0
   fi
 
   # Check if the timeout has been reached.
   current_time=$(date +%s)
   if [ -n "$timeout" ] && ((current_time > end_time)); then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached!"
+    echo -e "\n[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached!"
     exit 1
   fi
 
@@ -83,8 +83,7 @@ while true; do
     --rpc-url "$rpc_url" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     --gas-limit 643528 \
-    --create 0x600160015B810190630000000456 \
-    >/dev/null 2>&1
+    --create 0x600160015B810190630000000456
 
   # Wait a few seconds before the next iteration.
   sleep 10
