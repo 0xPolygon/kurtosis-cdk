@@ -76,17 +76,6 @@ def run(plan, args):
             description="Starting the rest of the zkevm node components",
         )
 
-        sequence_sender_config = (
-            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
-                plan, args, genesis_artifact, keystore_artifacts.sequencer
-            )
-        )
-
-        plan.add_services(
-            configs=sequence_sender_config,
-            description="Starting the zkevm sequence-sender components",
-        )
-
     if args["sequencer_type"] == "erigon":
         # Create the cdk node config.
         node_config_template = read_file(
