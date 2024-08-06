@@ -15,7 +15,7 @@ jobs:
   # Deploy the CDK environment in one step.
   monolithic:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -58,7 +58,7 @@ jobs:
   # Deploy the CDK environment incrementally, stage by stage.
   incremental:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -148,7 +148,7 @@ jobs:
   # Deploy the CDK environment without specifying any parameter file.
   configless:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -167,7 +167,7 @@ jobs:
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -188,7 +188,7 @@ jobs:
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -240,7 +240,7 @@ jobs:
   permisionless-node:
     if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -262,7 +262,7 @@ jobs:
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -283,7 +283,7 @@ jobs:
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -304,7 +304,7 @@ jobs:
   # Deploy the CDK environment with cdk-erigon as a sequencer.
   cdk-erigon-sequencer:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
