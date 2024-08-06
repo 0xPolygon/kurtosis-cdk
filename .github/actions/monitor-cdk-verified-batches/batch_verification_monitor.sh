@@ -26,6 +26,14 @@ end_time=$((start_time + timeout))
 
 rpc_url="$(kurtosis port print cdk-v1 $rpc_service http-rpc)"
 
+# Debug output for each parameter
+echo "Starting script..."
+echo "- Verified batches target: $verified_batches_target"
+echo "- Timeout (seconds): $timeout"
+echo "- RPC service: $rpc_service"
+echo "- RPC URL: $rpc_url"
+echo "- Private key: $pk"
+
 while true; do
   verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
