@@ -40,7 +40,10 @@ args:
   # Note: It should be a string.
   deployment_suffix: "-001"
 
-  # Sequence type. Choose from ["erigon", "zkevm-node"]
+  # The type of the sequencer to deploy.
+  # Options:
+  # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
+  # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
   sequencer_type: "erigon"
 
   # The type of data availability to use.
