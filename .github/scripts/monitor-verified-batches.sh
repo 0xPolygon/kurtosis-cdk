@@ -81,6 +81,7 @@ while true; do
 
   echo "Sending a transaction to increase the batch number..."
   cast send \
+    --async \
     --legacy \
     --rpc-url "$rpc_url" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
