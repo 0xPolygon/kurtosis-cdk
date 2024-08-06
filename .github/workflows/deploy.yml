@@ -44,8 +44,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print "${{ env.ENCLAVE_NAME }}" cdk-erigon-node-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
   deploy-zkevm:
     runs-on: ubuntu-latest
@@ -77,5 +77,5 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print "${{ env.ENCLAVE_NAME }}" zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"

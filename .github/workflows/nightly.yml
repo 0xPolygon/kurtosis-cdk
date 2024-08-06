@@ -34,8 +34,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
       # Compare configs.
       - name: Dump configs
@@ -141,8 +141,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
 
   # Deploy the CDK environment without specifying any parameter file.
@@ -161,8 +161,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
   # Deploy the CDK environment with the gas token feature enabled.
   gas-token:
@@ -182,8 +182,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   pre-deployed-contracts:
@@ -233,8 +233,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
   # Deploy a standalone permisionless node against Sepolia.
   permisionless-node:
@@ -277,8 +277,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
   # Deploy the CDK environment in cdk-validium mode (data availability).
   cdk-validium-da-mode:
@@ -298,8 +298,8 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
 
   # Deploy the CDK environment with cdk-erigon as a sequencer.
   cdk-erigon-sequencer:
@@ -316,5 +316,5 @@ jobs:
 
       - name: Monitor verified batches
         run: |
-          ./.github/scripts/monitor-verified-batches.sh\
-            --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)
+          rpc_url="$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url "$rpc_url"
