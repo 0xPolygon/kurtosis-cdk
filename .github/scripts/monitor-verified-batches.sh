@@ -66,7 +66,7 @@ while true; do
 
   # Check if the verified batches target has been reached.
   if ((verified_batch_number > target)); then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batch_number batches were verified!"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... More than $target batches were verified!"
     exit 0
   fi
 
