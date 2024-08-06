@@ -291,18 +291,21 @@ cast send \
     'approve(address,uint256)(bool)' \
     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
-{{if and .is_cdk_validium .deploy_agglayer}}
+{{if .is_cdk_validium}}
 # The DAC needs to be configured with a required number of signatures.
 # Right now the number of DAC nodes is not configurable.
 # If we add more nodes, we'll need to make sure the urls and keys are sorted.
 echo_ts "Setting the data availability committee"
+dac_address=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 cast send \
     --private-key "{{.zkevm_l2_admin_private_key}}" \
     --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
+    $dac_address \
     'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
     1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+{{end}}
 
+{{if and .is_cdk_validium .deploy_agglayer}}
 # The DAC needs to be enabled with a call to set the DA protocol.
 echo_ts "Setting the data availability protocol"
 cast send \
