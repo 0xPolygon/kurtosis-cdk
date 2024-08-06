@@ -29,7 +29,7 @@ description: |-
   deployment_suffix: "-001"
 
   sequencer_type: erigon
-  
+
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
@@ -123,7 +123,7 @@ description: |-
     # el_forkmon, # fork monitor tool
   ]
   l1_preset: minimal
-  l1_seconds_per_slot: 1
+  l1_seconds_per_slot: 12
 
   ## Rollup configuration.
 

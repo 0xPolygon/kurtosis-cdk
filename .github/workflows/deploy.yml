@@ -25,7 +25,12 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: |
           kurtosis run --enclave cdk-v1 --args-file params.yml . \
-            '{"apply_workload": true}'
+            '{
+              "apply_workload": true,
+              "args": {
+                "l1_seconds_per_slot": 1
+              }
+            }'
 
       - name: Monitor verified batches
         run: |
