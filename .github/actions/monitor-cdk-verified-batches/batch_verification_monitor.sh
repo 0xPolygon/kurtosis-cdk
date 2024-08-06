@@ -27,6 +27,14 @@ end_time=$((start_time + timeout))
 rpc_url="$(kurtosis port print cdk-v1 $rpc_service http-rpc)"
 pk="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 
+# Debug output for each parameter
+echo "Starting script..."
+echo "- Verified batches target: $verified_batches_target"
+echo "- Timeout (seconds): $timeout"
+echo "- RPC service: $rpc_service"
+echo "- RPC URL: $rpc_url"
+echo "- Private key: $pk"
+
 while true; do
   verified_batches="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_verifiedBatchNumber | sed 's/"//g')")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Verified Batches: $verified_batches"
@@ -35,12 +43,12 @@ while true; do
   cast send --legacy --rpc-url "$rpc_url" --private-key "$pk" --gas-limit 643528 --create 0x600160015B810190630000000456
 
   current_time=$(date +%s)
-  if (( current_time > end_time )); then
+  if ((current_time > end_time)); then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Timeout reached!"
     exit 1
   fi
 
-  if (( verified_batches > verified_batches_target )); then
+  if ((verified_batches > verified_batches_target)); then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... $verified_batches batches were verified!"
     exit 0
   fi
