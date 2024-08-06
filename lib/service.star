@@ -13,11 +13,10 @@ def get_contract_setup_addresses(plan, args):
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
     }
-    if args["deploy_agglayer"]:
-        if data_availability_package.is_cdk_validium(args):
-            extract[
-                "polygon_data_committee_address"
-            ] = "fromjson | .polygonDataCommitteeAddress"
+    if data_availability_package.is_cdk_validium(args):
+        extract[
+            "polygon_data_committee_address"
+        ] = "fromjson | .polygonDataCommitteeAddress"
 
     exec_recipe = ExecRecipe(
         command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
