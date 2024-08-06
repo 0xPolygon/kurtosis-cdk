@@ -18,7 +18,7 @@ def get_node_image(args):
     # Map data availability modes to node images.
     node_images = {
         DATA_AVAILABILITY_MODES.rollup: args["zkevm_node_image"],
-        DATA_AVAILABILITY_MODES.cdk_validium: args["cdk_node_image"],
+        DATA_AVAILABILITY_MODES.cdk_validium: args["cdk_validium_node_image"],
     }
     return node_images.get(args["data_availability_mode"])
 

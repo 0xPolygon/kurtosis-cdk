@@ -28,6 +28,8 @@ description: |-
   # Note: It should be a string.
   deployment_suffix: "-001"
 
+  sequencer_type: erigon
+  
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
@@ -36,12 +38,12 @@ description: |-
   data_availability_mode: cdk-validium
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.2
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC18
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
-  cdk_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  # cdk_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
+  cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.9
 
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
@@ -56,9 +58,8 @@ description: |-
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
 
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta13
   toolbox_image: leovct/toolbox:0.0.1
-  sequencer_type: zkevm-node
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -122,7 +123,7 @@ description: |-
     # el_forkmon, # fork monitor tool
   ]
   l1_preset: minimal
-  l1_seconds_per_slot: 12
+  l1_seconds_per_slot: 1
 
   ## Rollup configuration.
 
@@ -149,11 +150,11 @@ description: |-
 
   ## Workload configuration.
   workload_commands: [
-    "polycli_loadtest_on_l2.sh t",  # eth transfers
-    "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-    "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-    "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
-    "polycli_rpcfuzz_on_l2.sh",     # rpc calls
+    # "polycli_loadtest_on_l2.sh t",  # eth transfers
+    # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
+    # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
+    # "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
+    # "polycli_rpcfuzz_on_l2.sh",     # rpc calls
     "bridge.sh",                    # bridge tokens l1 -> l2 and l2 -> l1
   ]
 

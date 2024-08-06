@@ -8,7 +8,7 @@
 # 2. update PGPASSWORD, PGUSER, and PGHOST params per your use case (modify configs)
 # 3. run ./scripts/reset_postgres.sh (drop/recreate dbs and permissions)
 # 4. kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . (deploy with fresh dbs)
-DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "agglayer_db" "bridge_db" "dac_db")
+DB_NAMES=("event_db" "pool_db" "prover_db" "state_db" "bridge_db" "dac_db")
 DB_USERS=("event_user" "pool_user" "prover_user" "state_user" "agglayer_user" "bridge_user" "dac_user")
 
 # User must update credentials with master postgres IP/hostname and username
