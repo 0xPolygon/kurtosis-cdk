@@ -41,6 +41,9 @@ args:
   # Deploy agglayer.
   deploy_agglayer: false
 
+  # Sequence type. Choose from ["erigon", "zkevm-node"]
+  sequencer_type: "erigon"
+
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
