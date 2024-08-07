@@ -55,11 +55,6 @@ mint_gas_token_on_l1() {
         "{{.zkevm_gas_token_address}}" 'mint(address,uint256)' "$address" 10000000000000000000000
 }
 
-# rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
-# cast send --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-#     --rpc-url $rpc_url \
-#     0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E 'mint(address,uint256)' 0xF4ee37aAc3ccd6B71A4a795700b065d2CA479581 10000000000000000000000
-
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
 # We want to run this script again when deploying a second CDK.
