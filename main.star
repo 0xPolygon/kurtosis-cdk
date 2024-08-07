@@ -11,7 +11,6 @@ workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
 
-
 def run(
     plan,
     deploy_l1=True,

@@ -1,6 +1,7 @@
 PROVER_TYPE = struct(
     prover="prover",
     executor="executor",
+    stateless_executor="stateless-executor",
 )
 
 
@@ -10,6 +11,9 @@ def start_prover(plan, args, config_artifact):
 
 def start_executor(plan, args, config_artifact):
     return _start_service(plan, PROVER_TYPE.executor, args, config_artifact)
+
+def start_stateless_executor(plan, args, config_artifact):
+    return _start_service(plan, PROVER_TYPE.stateless_executor, args, config_artifact)
 
 
 def _start_service(plan, type, args, config_artifact):
