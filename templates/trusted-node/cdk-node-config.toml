@@ -1,0 +1,133 @@
+ForkUpgradeBatchNumber = 0
+ForkUpgradeNewForkId = 0
+
+[Common]
+IsValidiumMode = {{.is_cdk_validium}}
+ContractVersions = "elderberry"
+
+[Log]
+Environment = "development" # "production" or "development"
+Level = "debug"
+Outputs = ["stderr"]
+
+[SequenceSender]
+WaitPeriodSendSequence = "15s"
+LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
+MaxTxSizeForL1 = 131072
+L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
+PrivateKey = {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+SequencesTxFileName = "/data/sequencesender.json"
+GasOffset = 80000
+WaitPeriodPurgeTxFile = "15m"
+MaxPendingTx = 1
+	[SequenceSender.StreamClient]
+		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+	[SequenceSender.EthTxManager]
+		FrequencyToMonitorTxs = "1s"
+		WaitTxToBeMined = "2m"
+		ConsolidationL1ConfirmationBlocks = 5
+		FinalizationL1ConfirmationBlocks = 10
+		WaitReceiptToBeGenerated = "8s"
+		PrivateKeys = [
+			{Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+		]
+		ForcedGas = 0
+		GasPriceMarginFactor = 1
+		MaxGasPriceLimit = 0
+		PersistenceFilename = "/data/ethtxmanager.json"
+		[SequenceSender.EthTxManager.Etherman]
+			URL = "{{.l1_rpc_url}}"
+			L1ChainID = {{.l1_chain_id}}
+			HTTPHeaders = []
+
+[Aggregator]
+	Host = "0.0.0.0"
+	Port = "{{.zkevm_aggregator_port}}"
+	RetryTime = "30s"
+	VerifyProofInterval = "30s"
+	ProofStatePollingInterval = "5s"
+	TxProfitabilityCheckerType = "acceptall"
+	TxProfitabilityMinReward = "1.1"
+	IntervalAfterWhichBatchConsolidateAnyway = "0s"
+	ChainID = "{{.zkevm_rollup_chain_id}}"
+	ForkId = 9
+	CleanupLockedProofsInterval = "2m0s"
+	GeneratingProofCleanupThreshold = "10m"
+	GasOffset = 150000
+	UpgradeEtrogBatchNumber = 0
+	WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+	{{if .is_cdk_validium}}
+	SenderAddress = "{{.zkevm_l2_agglayer_address}}"
+	SettlementBackend = "agglayer"
+	AggLayerTxTimeout = "600s"
+	AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
+	{{else}}
+
+	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
+	{{end}}
+
+	[Aggregator.SequencerPrivateKey]
+		Path = "/etc/cdk/sequencer.keystore"
+		Password = "{{.zkevm_l2_keystore_password}}"
+	
+	[Aggregator.DB]
+		Name = "{{.aggregator_db.name}}"
+		User = "{{.aggregator_db.user}}"
+		Password = "{{.aggregator_db.password}}"
+		Host = "{{.aggregator_db.hostname}}"
+		Port = "{{.aggregator_db.port}}"
+		EnableLog = false
+		MaxConns = 200
+	[Aggregator.Log]
+		Environment = "development" # "production" or "development"
+		Level = "debug"
+		Outputs = ["stderr"]
+	[Aggregator.StreamClient]
+		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+	[Aggregator.EthTxManager]
+		FrequencyToMonitorTxs = "1s"
+		WaitTxToBeMined = "2m"
+		GetReceiptMaxTime = "250ms"
+		GetReceiptWaitInterval = "1s"
+		PrivateKeys = [
+			{Path = "/etc/cdk/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+		]
+		ForcedGas = 0
+		GasPriceMarginFactor = 1
+		MaxGasPriceLimit = 0
+		PersistenceFilename = ""
+		ReadPendingL1Txs = false
+		SafeStatusL1NumberOfBlocks = 0
+		FinalizedStatusL1NumberOfBlocks = 0
+		[Aggregator.EthTxManager.Etherman]
+			URL = "{{.l1_rpc_url}}"
+			L1ChainID = {{.l1_chain_id}}
+			HTTPHeaders = []
+	[Aggregator.Synchronizer]
+		[Aggregator.Synchronizer.DB]
+			Name = "{{.aggregator_syncer_db.name}}"
+			User = "{{.aggregator_syncer_db.user}}"
+			Password = "{{.aggregator_syncer_db.password}}"
+			Host = "{{.aggregator_syncer_db.hostname}}"
+			Port = "{{.aggregator_syncer_db.port}}"
+			EnableLog = false
+			MaxConns = 10
+		[Aggregator.Synchronizer.Synchronizer]
+			SyncInterval = "10s"
+			SyncChunkSize = 1000
+			GenesisBlockNumber = 1
+			SyncUpToBlock = "latest"
+			BlockFinality = "latest"
+			OverrideStorageCheck = false
+		[Aggregator.Synchronizer.Etherman]
+			[Aggregator.Synchronizer.Etherman.Validium]
+				Enabled = {{.is_cdk_validium}}
+
+[RPC]
+
+[NetworkConfig.L1]
+ChainID = "{{.l1_chain_id}}"
+PolAddr = "{{.pol_token_address}}"
+ZkEVMAddr = "{{.zkevm_rollup_address}}"
+RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
+GlobalExitRootManagerAddr = "{{.zkevm_global_exit_root_address}}"

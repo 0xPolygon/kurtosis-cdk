@@ -4,6 +4,7 @@ zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
+cdk_node_package = import_module("./lib/cdk_node.star")
 databases = import_module("./databases.star")
 
 
@@ -36,50 +37,78 @@ def run(plan, args):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
-    # Create the zkevm node config.
-    node_config_template = read_file(src="./templates/trusted-node/node-config.toml")
-    node_config_artifact = plan.render_templates(
-        config={
-            "node-config.toml": struct(
-                template=node_config_template,
-                data=args
-                | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
-                }
-                | db_configs,
-            )
-        },
-        name="trusted-node-config",
-    )
-
-    # Start the synchronizer.
-    zkevm_node_package.start_synchronizer(
-        plan, args, node_config_artifact, genesis_artifact
-    )
-
-    # Start the rest of the zkevm node components.
     keystore_artifacts = get_keystores_artifacts(plan, args)
-    zkevm_node_components_configs = (
-        zkevm_node_package.create_zkevm_node_components_config(
-            args, node_config_artifact, genesis_artifact, keystore_artifacts
+    if args["sequencer_type"] == "zkevm":
+        # Create the zkevm node config.
+        node_config_template = read_file(
+            src="./templates/trusted-node/node-config.toml"
         )
-    )
+        node_config_artifact = plan.render_templates(
+            config={
+                "node-config.toml": struct(
+                    template=node_config_template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                    }
+                    | db_configs,
+                )
+            },
+            name="trusted-node-config",
+        )
 
-    plan.add_services(
-        configs=zkevm_node_components_configs,
-        description="Starting the rest of the zkevm node components",
-    )
+        # Start the synchronizer.
+        zkevm_node_package.start_synchronizer(
+            plan, args, node_config_artifact, genesis_artifact
+        )
 
-    if args["sequencer_type"] == "erigon":
-        sequence_sender_config = (
-            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
-                plan, args, genesis_artifact, keystore_artifacts.sequencer
+        # Start the rest of the zkevm node components.
+        zkevm_node_components_configs = (
+            zkevm_node_package.create_zkevm_node_components_config(
+                args, node_config_artifact, genesis_artifact, keystore_artifacts
             )
         )
 
         plan.add_services(
-            configs=sequence_sender_config,
+            configs=zkevm_node_components_configs,
             description="Starting the rest of the zkevm node components",
+        )
+
+    if args["sequencer_type"] == "erigon":
+        # Create the cdk node config.
+        node_config_template = read_file(
+            src="./templates/trusted-node/cdk-node-config.toml"
+        )
+        contract_setup_addresses = service_package.get_contract_setup_addresses(
+            plan, args
+        )
+        node_config_artifact = plan.render_templates(
+            name="cdk-node-config-artifact",
+            config={
+                "cdk-node-config.toml": struct(
+                    template=node_config_template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                    }
+                    | db_configs
+                    | contract_setup_addresses,
+                )
+            },
+        )
+
+        # Start the cdk components.
+        cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
+            args, node_config_artifact, genesis_artifact, keystore_artifacts
+        )
+
+        plan.add_services(
+            configs=cdk_node_configs,
+            description="Starting the cdk node components",
         )
 
     # Start the DAC if in validium mode.
