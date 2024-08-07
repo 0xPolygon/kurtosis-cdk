@@ -1,6 +1,9 @@
 #!/bin/bash
 # This script is responsible for deploying the contracts for zkEVM/CDK.
 set -x
+
+echo "DEBUG!!! {{.deploy_agglayer}}"
+
 echo_ts() {
     timestamp=$(date +"[%Y-%m-%d %H:%M:%S]")
     echo "$timestamp $1"
@@ -117,6 +120,7 @@ fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
 fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
 fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}"
 
+# Only fund POL for attaching CDK.
 {{if not .deploy_agglayer}}
 mint_gas_token_on_l1 "{{.zkevm_l2_admin_address}}"
 mint_gas_token_on_l1 "{{.zkevm_l2_sequencer_address}}"
@@ -128,7 +132,6 @@ mint_gas_token_on_l1 "{{.zkevm_l2_loadtest_address}}"
 mint_gas_token_on_l1 "{{.zkevm_l2_dac_address}}"
 mint_gas_token_on_l1 "{{.zkevm_l2_proofsigner_address}}"
 {{end}}
-
 
 # Configure zkevm contract deploy parameters.
 pushd /opt/zkevm-contracts || exit 1
@@ -156,7 +159,6 @@ jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/
 # Deploy the DAC contracts if deploying an attaching CDK.
 # Then transfer ownership, and activate the DAC.
 {{if not .deploy_agglayer}}
-
 pushd /opt/zkevm-contracts || exit 1
 echo_ts "Deploying DAC for attaching CDK"
 jq '.admin = "{{.zkevm_l2_admin_address}}"' /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.example > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp && mv /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json
@@ -260,7 +262,6 @@ jq --arg polygonDataCommitteeAddress "$polygonDataCommitteeAddress" '.polygonDat
 jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.rollupAddress = $polygonZkEVMAddress' combined.json > c.json; mv c.json combined.json
 # jq --arg polygonZkEVMGlobalExitRootAddress "$polygonZkEVMGlobalExitRootAddress" '.polygonZkEVMGlobalExitRootAddress = $polygonZkEVMGlobalExitRootAddress' combined.json > c.json; mv c.json combined.json
 # jq --arg genesisBlockNumber "$genesisBlockNumber" '.createRollupBlockNumber = $genesisBlockNumber' combined.json > c.json; mv c.json combined.json
-
 {{end}}
 
 # Create cdk-erigon node configs
@@ -317,10 +318,27 @@ cast send \
     'approve(address,uint256)(bool)' \
     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
-{{if .is_cdk_validium}}
+{{if and .is_cdk_validium .deploy_agglayer}}
 # The DAC needs to be configured with a required number of signatures.
 # Right now the number of DAC nodes is not configurable.
 # If we add more nodes, we'll need to make sure the urls and keys are sorted.
+echo_ts "Setting the data availability committee"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
+    'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
+    1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+
+# The DAC needs to be enabled with a call to set the DA protocol.
+echo_ts "Setting the data availability protocol"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.rollupAddress' combined.json)" \
+    'setDataAvailabilityProtocol(address)' \
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+{{else}}
 echo_ts "Setting the data availability committee"
 dac_address=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 cast send \
@@ -335,17 +353,6 @@ rollup_address=$(jq -r '.rollupAddress' /opt/zkevm-contracts/tools/getRollupData
 dac_address=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 cast call --rpc-url "{{.l1_rpc_url}}" $rollup_address 'dataAvailabilityProtocol()'
 cast send --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" $rollup_address 'setDataAvailabilityProtocol(address)' $dac_address
-{{end}}
-
-{{if and .is_cdk_validium .deploy_agglayer}}
-# The DAC needs to be enabled with a call to set the DA protocol.
-echo_ts "Setting the data availability protocol"
-cast send \
-    --private-key "{{.zkevm_l2_admin_private_key}}" \
-    --rpc-url "{{.l1_rpc_url}}" \
-    "$(jq -r '.rollupAddress' combined.json)" \
-    'setDataAvailabilityProtocol(address)' \
-    "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 {{end}}
 
 {{if .deploy_agglayer}}

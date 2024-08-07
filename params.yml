@@ -39,7 +39,7 @@ args:
   deployment_suffix: "-001"
 
   # Deploy agglayer.
-  deploy_agglayer: false
+  deploy_agglayer: true
 
   # The type of data availability to use.
   # Options:
