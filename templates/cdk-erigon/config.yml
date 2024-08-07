@@ -46,6 +46,9 @@ zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 zkevm.rpc-ratelimit: 250
 zkevm.disable-virtual-counters: false
 
+nodiscover: true
+maxpeers: 0
+
 # sequencer {{if .is_sequencer}}
 txpool.disable: false
 zkevm.data-stream-host: "0.0.0.0"
