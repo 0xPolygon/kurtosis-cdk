@@ -2,8 +2,6 @@
 # This script is responsible for deploying the contracts for zkEVM/CDK.
 set -x
 
-echo "DEBUG!!! {{.deploy_agglayer}}"
-
 echo_ts() {
     timestamp=$(date +"[%Y-%m-%d %H:%M:%S]")
     echo "$timestamp $1"
@@ -237,6 +235,9 @@ jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c
 jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
+
+jq --slurpfile c combined.json '.bridgeGenBlockNumber = $c[0].createRollupBlockNumber' combined.json > c.json; mv c.json combined.json
+
 {{else}}
 rollupCreationBlockNumber=$(jq -r '.createRollupBlockNumber' /opt/zkevm-contracts/tools/getRollupData/create_rollup_output.json)
 rollupManagerCreationBlockNumber=$(jq -r '.deploymentRollupManagerBlockNumber' /opt/zkevm-contracts/tools/getRollupData/deploy_output.json)
@@ -261,7 +262,7 @@ polygonDataCommitteeAddress=$(grep "PolygonDataCommittee deployed to:" /opt/zkev
 jq --arg polygonDataCommitteeAddress "$polygonDataCommitteeAddress" '.polygonDataCommitteeAddress = $polygonDataCommitteeAddress' combined.json > c.json; mv c.json combined.json
 jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.rollupAddress = $polygonZkEVMAddress' combined.json > c.json; mv c.json combined.json
 # jq --arg polygonZkEVMGlobalExitRootAddress "$polygonZkEVMGlobalExitRootAddress" '.polygonZkEVMGlobalExitRootAddress = $polygonZkEVMGlobalExitRootAddress' combined.json > c.json; mv c.json combined.json
-# jq --arg genesisBlockNumber "$genesisBlockNumber" '.createRollupBlockNumber = $genesisBlockNumber' combined.json > c.json; mv c.json combined.json
+jq --arg genesisBlockNumber "$genesisBlockNumber" '.bridgeGenBlockNumber = $genesisBlockNumber' combined.json > c.json; mv c.json combined.json
 {{end}}
 
 # Create cdk-erigon node configs
