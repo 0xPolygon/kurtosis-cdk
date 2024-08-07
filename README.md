@@ -21,9 +21,11 @@ This process typically takes around ten minutes.
 ```bash
 kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+```
 
+**Optional - deploy another CDK and attach to the agglayer service** 
+```bash
 kurtosis run --enclave cdk-v1 --args-file agglayer-attach-cdk-params.yml --image-download always .
-
 ```
 
 The command above deploys a CDK stack using [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. Alternatively, to launch a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer, you can run the following command.
