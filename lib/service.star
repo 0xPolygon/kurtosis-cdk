@@ -4,7 +4,7 @@ def get_contract_setup_addresses(plan, args):
     extract = {
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
         "zkevm_l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
-        "zkevm_gen_block_number": "fromjson | .bridgeGenBlockNumber",
+        "zkevm_gen_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",
         "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
