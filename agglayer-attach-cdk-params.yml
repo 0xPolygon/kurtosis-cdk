@@ -42,7 +42,7 @@ args:
   deployment_suffix: "-002"
 
   # Sequence type. Choose from ["erigon", "zkevm-node"]
-  sequencer_type: "zkevm-node"
+  sequencer_type: "erigon"
 
   # Deploy agglayer.
   deploy_agglayer: false
