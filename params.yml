@@ -52,7 +52,7 @@ args:
 
   # Docker images and repositories used to spin up services.
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC5-fork.12
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC18
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
@@ -145,7 +145,7 @@ args:
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
 
-  erigon_strict_mode: false
+  erigon_strict_mode: true
 
   # The address of the rollup manager contract on L1.
   # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.
