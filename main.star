@@ -10,6 +10,7 @@ blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
 blutgang_package = "./cdk_blutgang.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
+zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 
 def run(
@@ -20,8 +21,8 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=True,
-    deploy_cdk_erigon_node=False,
+    deploy_zkevm_permissionless_node=False,
+    deploy_cdk_erigon_node=True,
     deploy_observability=True,
     deploy_l2_blockscout=False,
     deploy_blutgang=False,
@@ -113,6 +114,20 @@ def run(
         else:
             plan.print("Skipping the deployment of cdk-erigon sequencer")
 
+        # Deploy cdk-erigon node.
+        if deploy_cdk_erigon_node:
+            plan.print("Deploying cdk-erigon node")
+            cdk_erigon_package.run_rpc(plan, args)
+        else:
+            plan.print("Skipping the deployment of cdk-erigon node")
+
+        # Deploy zkevm-pool-manager service.
+        if deploy_cdk_erigon_node:
+            plan.print("Deploying zkevm-pool-manager service")
+            zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
+        else:
+            plan.print("Skipping the deployment of zkevm-pool-manager service")
+
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
@@ -121,13 +136,6 @@ def run(
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
-
-    # Deploy cdk-erigon node.
-    if deploy_cdk_erigon_node:
-        plan.print("Deploying cdk-erigon node")
-        cdk_erigon_package.run_rpc(plan, args)
-    else:
-        plan.print("Skipping the deployment of cdk-erigon node")
 
     # Deploy cdk/bridge infrastructure.
     if deploy_cdk_bridge_infra:

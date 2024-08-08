@@ -11,6 +11,10 @@ inputs:
     description: The script timeout in seconds
     required: false
     default: '600' # 10 minutes
+  rpc_service:
+    description: The RPC service to use
+    required: false
+    default: 'cdk-erigon-node-001'
 
 runs:
   using: "composite"
@@ -18,4 +22,4 @@ runs:
     - name: Check that batches are being verified
       working-directory: .github/actions/monitor-cdk-verified-batches
       shell: bash
-      run: ./batch_verification_monitor.sh ${{ inputs.verified_batches_target }} ${{ inputs.timeout }}
+      run: ./batch_verification_monitor.sh ${{ inputs.verified_batches_target }} ${{ inputs.timeout }} ${{ inputs.rpc_service }}

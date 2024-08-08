@@ -13,7 +13,7 @@ concurrency:
 jobs:
   # Basic deployment workflow.
   # Note that more advanced use cases are tested in the nightly workflow.
-  deploy:
+  deploy-cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +22,25 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+        run: |
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{apply_workload: true}'
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
+  
+  deploy-zkevm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy Kurtosis CDK package
+        run: |
+          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{deploy_zkevm_permissionless_node: true, args: {sequencer_type: "zkevm"}, deploy_cdk_erigon_node: false, apply_workload: true}'
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc_service: zkevm-node-rpc-001

@@ -1,9 +1,11 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.2",
+    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC18",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0",
-    "cdk_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
+    "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.9",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
@@ -12,9 +14,9 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v1.0.9",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:2.0.0-beta13",
     "toolbox_image": "leovct/toolbox:0.0.1",
-    "sequencer_type": "zkevm-node",
+    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
@@ -28,6 +30,7 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_port": 80,
     "zkevm_agglayer_port": 4444,
     "zkevm_dac_port": 8484,
+    "zkevm_pool_manager_port": 8545,
     "blockscout_public_port": 50101,  # IANA registered ports up to 49151
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
     "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
@@ -55,7 +58,7 @@ DEFAULT_ARGS = {
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
     "l1_additional_services": [],
     "l1_preset": "minimal",
-    "l1_seconds_per_slot": 12,
+    "l1_seconds_per_slot": 1,
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_fork_id": 9,
     "polygon_zkevm_explorer": "https://explorer.private/",
@@ -66,11 +69,11 @@ DEFAULT_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
     "polycli_version": "v0.1.42",
     "workload_commands": [
-        "polycli_loadtest_on_l2.sh t",  # eth transfers
-        "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-        "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-        "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
-        "polycli_rpcfuzz_on_l2.sh",  # rpc calls
+        # "polycli_loadtest_on_l2.sh t",  # eth transfers
+        # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
+        # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
+        # "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
+        # "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
     ],
     "blutgang_image": "makemake1337/blutgang:0.3.5",
