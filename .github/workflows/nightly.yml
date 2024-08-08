@@ -27,11 +27,8 @@ jobs:
       # Deploy components.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . '{"args": {"l1_seconds_per_slot": 1}}'
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
       # Compare configs.
       - name: Dump configs
@@ -63,12 +60,8 @@ jobs:
       # Deploy components.
       - name: Deploy Kurtosis CDK package
         run: |
-          yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . '{"args": {"l1_seconds_per_slot": 1}}'
+          yq -Y --in-place '(.args.l1_seconds_per_slot = 1) | (.apply_workload = true)' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
@@ -94,12 +87,8 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . '{"args": {"l1_seconds_per_slot": 1}}'
+          yq -Y --in-place '(.args.l1_seconds_per_slot = 1) | (.apply_workload = true)' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
@@ -124,8 +113,7 @@ jobs:
 
       - name: Deploy L1
         run: |
-          yq -Y --in-place '.deploy_l1 = true' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml
+          yq -Y --in-place '(.deploy_l1 = true) | (.args.l1_seconds_per_slot = 1)' params.yml
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml .
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
@@ -211,16 +199,8 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{"args": {
-              "l1_seconds_per_slot": 1,
-              "zkevm_use_gas_token_contract": true
-            }}'
+          yq -Y --in-place '(.args.zkevm_use_gas_token_contract = true) | (.args.l1_seconds_per_slot = 1) | (.apply_workload = true)' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
@@ -245,8 +225,7 @@ jobs:
 
       - name: Deploy L1 and zkEVM contracts
         run: |
-          yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml
+          yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true) | (.args.l1_seconds_per_slot = 1)' params.yml
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml .
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml # reset
 
@@ -293,16 +272,8 @@ jobs:
 
       - name: Deploy the permisionless node
         run: |
-          yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{ "args": {
-              "l1_rpc_url": "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}",
-              "genesis_file": "templates/permissionless-node/test-genesis.json"
-            }}'
+          yq -Y --in-place '(.args.l1_rpc_url = ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}) | (.args.genesis_file = "templates/permissionless-node/test-genesis.json")' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
@@ -316,16 +287,8 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{"args": {
-              "data_availability_mode": "rollup",
-              "l1_seconds_per_slot": 1
-            }}'
+          yq -Y --in-place '(.args.data_availability_mode = "rollup") | (.args.l1_seconds_per_slot = 1) | (.apply_workload = true)' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
@@ -347,16 +310,8 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run \
-            --enclave="${{ env.ENCLAVE_NAME }}" \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{"args": {
-              "data_availability_mode": "cdk-validium",
-              "l1_seconds_per_slot": 1
-            }}'
+          yq -Y --in-place '(.args.data_availability_mode = "cdk-validium") | (.args.l1_seconds_per_slot = 1) | (.apply_workload = true)' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
