@@ -38,7 +38,7 @@ description: |-
   data_availability_mode: cdk-validium
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC18
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
@@ -58,8 +58,9 @@ description: |-
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
 
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta13
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta15
   toolbox_image: leovct/toolbox:0.0.1
+  zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
   zkevm_hash_db_port: 50061
@@ -75,6 +76,7 @@ description: |-
   zkevm_bridge_ui_port: 80
   zkevm_agglayer_port: 4444
   zkevm_dac_port: 8484
+  zkevm_pool_manager_port: 8545
   blockscout_public_port: 50101
 
   # Addresses and private keys of the different components.
@@ -132,6 +134,8 @@ description: |-
 
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
+
+  erigon_strict_mode: true
 
   polygon_zkevm_explorer: https://explorer.private/
   l1_explorer_url: https://sepolia.etherscan.io/

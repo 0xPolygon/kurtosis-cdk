@@ -78,7 +78,12 @@
      * everything to be as realistic as possible, but don't want to
      * run the full prover.
      */ -}}
+    {{if .stateless_executor}}
+    "runAggregatorClientMock": false,
+    {{else}}
     "runAggregatorClientMock": true,
+    {{end}}
+
 
 {{- /*
      * aggregatorClientMockTimeout is the amount of time in
@@ -165,7 +170,12 @@
      * "local" if no external database is used (data will be stored in
      * cache)
      */ -}}
+    {{if .stateless_executor}}
+    "databaseURL": "local",
+    "dbReadOnly": true,
+    {{else}}
     "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
+    {{end}}
 
 {{- /*
      * dbNodesTableName is the schema and name of the nodes table in
