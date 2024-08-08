@@ -42,7 +42,7 @@ args:
   deploy_agglayer: true
 
   # Sequence type. Choose from ["erigon", "zkevm-node"]
-  sequencer_type: "erigon"
+  sequencer_type: "zkevm-node"
 
   # The type of data availability to use.
   # Options:
@@ -73,7 +73,6 @@ args:
   zkevm_sequence_sender_image: "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4"
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.0.9
   toolbox_image: leovct/toolbox:0.0.1
-  sequencer_type: "zkevm-node"
 
   # Port configuration.
   zkevm_hash_db_port: 50061
