@@ -33,7 +33,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "apply_workload": true,
+              ".apply_workload": true,
               "args": {
                 "l1_seconds_per_slot": 1
               }
@@ -75,7 +75,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "apply_workload": true,
+              ".apply_workload": true,
               "args": {
                 "l1_seconds_per_slot": 1
               }
@@ -111,7 +111,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "apply_workload": true,
+              ".apply_workload": true,
               "args": {
                 "l1_seconds_per_slot": 1
               }
@@ -142,29 +142,29 @@ jobs:
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
             '{
-              "deploy_l1": true,
+              ".deploy_l1": true,
               "args": {"l1_seconds_per_slot": 1}
             }'
 
       - name: Deploy zkEVM contracts on L1
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_zkevm_contracts_on_l1": true}'
+            '{".deploy_zkevm_contracts_on_l1": true}'
 
       - name: Deploy zkEVM node and cdk peripheral databases
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_databases": true}'
+            '{".deploy_databases": true}'
 
       - name: Deploy CDK central environment
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_cdk_central_environment": true}'
+            '{".deploy_cdk_central_environment": true}'
 
       - name: Deploy CDK bridge infrastructure
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_cdk_bridge_infra": true}'
+            '{".deploy_cdk_bridge_infra": true}'
 
       - name: Deploy zkEVM permissionless node
         run: |
@@ -174,32 +174,32 @@ jobs:
 
           # Deploy permisionless node.
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_zkevm_permissionless_node": true}'
+            '{".deploy_zkevm_permissionless_node": true}'
 
       - name: Deploy CDK erigon node
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_cdk_erigon_node": true}'
+            '{".deploy_cdk_erigon_node": true}'
 
       - name: Deploy observability stack
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_observability": true}'
+            '{".deploy_observability": true}'
 
       - name: Deploy Blockscout stack
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_l2_blockscout": true}'
+            '{".deploy_l2_blockscout": true}'
 
       - name: Deploy ETH load balancer
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"deploy_blutgang": true}'
+            '{".deploy_blutgang": true}'
 
       - name: Apply workload
         run: |
           kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . \
-            '{"apply_workload": true}'
+            '{".apply_workload": true}'
 
       - name: Inspect enclave
         run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
@@ -227,7 +227,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "apply_workload": true,
+              ".apply_workload": true,
               "args": {
                 "zkevm_use_gas_token_contract": true,
                 "l1_seconds_per_slot": 1
@@ -262,8 +262,8 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "deploy_l1": true,
-              "deploy_zkevm_contracts_on_l1": true,
+              ".deploy_l1": true,
+              ".deploy_zkevm_contracts_on_l1": true,
               "args": {
                 "l1_seconds_per_slot": 1
               }
@@ -283,10 +283,10 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "deploy_databases": true,
-              "deploy_cdk_central_environment": true,
-              "deploy_cdk_bridge_infra": true,
-              "apply_workload": true,
+              ".deploy_databases": true,
+              ".deploy_cdk_central_environment": true,
+              ".deploy_cdk_bridge_infra": true,
+              ".apply_workload": true,
               "args": {
                 "zkevm_rollup_manager_address": $zkevm_rollup_manager_address,
                 "zkevm_rollup_manager_block_number": $zkevm_rollup_manager_block_number,
@@ -326,7 +326,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "deploy_zkevm_permissionless_node": true,
+              ".deploy_zkevm_permissionless_node": true,
               "args": {
                 "l1_rpc_url": "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}",
                 "genesis_file": "templates/permissionless-node/test-genesis.json"
@@ -351,7 +351,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "apply_workload": true,
+              ".apply_workload": true,
               "args": {
                 "data_availability_mode": "rollup",
                 "l1_seconds_per_slot": 1
@@ -384,7 +384,7 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "apply_workload": true,
+              ".apply_workload": true,
               "args": {
                 "data_availability_mode": "cdk-validium",
                 "l1_seconds_per_slot": 1
