@@ -6,22 +6,20 @@
 
 # Extracting default parameters from the different files.
 echo "Extracting default parameters from input_parser.star..."
-sed -n '/DEFAULT_ARGS = {/,/}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' input_parser.star | yq --yaml-output >.input_parser.star
-if [ $? -ne 0 ]; then
+if ! sed -n '/DEFAULT_ARGS = {/,/}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' input_parser.star | yq --yaml-output >.input_parser.star; then
   echo "Error: Failed to extract parameters from input_parser.star."
   exit 1
 fi
 
 echo "Extracting default parameters from kurtosis.yml..."
-sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' kurtosis.yml | yq --yaml-output >.kurtosis.yml
-if [ $? -ne 0 ]; then
+# shellcheck disable=SC2016
+if ! sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' kurtosis.yml | yq --yaml-output >.kurtosis.yml; then
   echo "Error: Failed to extract parameters from kurtosis.yml."
   exit 1
 fi
 
 echo "Extracting default parameters from params.yml..."
-yq --yaml-output .args params.yml >.params.yml
-if [ $? -ne 0 ]; then
+if ! yq --yaml-output .args params.yml >.params.yml; then
   echo "Error: Failed to extract parameters from params.yml."
   exit 1
 fi
