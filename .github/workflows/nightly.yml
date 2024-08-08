@@ -125,7 +125,8 @@ jobs:
       - name: Deploy L1
         run: |
           yq -Y --in-place '.deploy_l1 = true' params.yml
-          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . '{"args": {"l1_seconds_per_slot": 1}}'
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml .
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
       - name: Deploy zkEVM contracts on L1
