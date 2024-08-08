@@ -1,16 +1,71 @@
 #!/bin/bash
 
-# This script compares default parameters specified in main.star, kurtosis.yml, and params.yml.
-# The true reference for default parameters is params.yml.
+# This script compares default parameters specified in three files: `input_parser.star`,
+# `kurtosis.yml` and `params.yml` where `params.yml` is the source of truth for default parameters.
+# The script outputs the differences between the specified parameters in each file compared to `params.yml`.
 
-echo "Dumping default parameters..."
-sed -n '/DEFAULT_ARGS = {/,/}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' input_parser.star | yq --yaml-output > input-parser-args.yml
-# shellcheck disable=SC2016
-sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' kurtosis.yml | yq --yaml-output > kurtosis-args.yml
-yq --yaml-output .args params.yml > params-args.yml
+# Extracting default parameters from the different files.
+echo "Extracting default parameters from input_parser.star..."
+sed -n '/DEFAULT_ARGS = {/,/}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' input_parser.star | yq --yaml-output >.input_parser.star
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to extract parameters from input_parser.star."
+  exit 1
+fi
 
-echo; echo "Diff input-parser-args.yml <> params-args.yml"
-diff input-parser-args.yml params-args.yml
+echo "Extracting default parameters from kurtosis.yml..."
+sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' kurtosis.yml | yq --yaml-output >.kurtosis.yml
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to extract parameters from kurtosis.yml."
+  exit 1
+fi
 
-echo; echo "Diff kurtosis-args.yml <> params-args.yml"
-diff kurtosis-args.yml params-args.yml
+echo "Extracting default parameters from params.yml..."
+yq --yaml-output .args params.yml >.params.yml
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to extract parameters from params.yml."
+  exit 1
+fi
+
+# Function to compare files and output differences in a structured format
+# Function to compare files and output differences in a structured format
+compare_with_source_of_truth() {
+  local file1=.params.yml
+  local file2=$1
+
+  echo
+  echo "🔍 Comparing $file1 and $file2..."
+  differences=$(diff "$file1" "$file2" | grep -E '^[<>]')
+  if [ -z "$differences" ]; then
+    echo "No differences found."
+  else
+    diff_count=$(echo "$differences" | grep -c '^<')
+    echo
+    echo "$diff_count differences found:"
+    echo
+
+    # Print differences for file1
+    echo "📄 $file1 (source of truth)"
+    echo "--------------------------------------------------------------------------------"
+    while IFS= read -r line; do
+      if [[ $line == "<"* ]]; then
+        echo "${line:2}"
+      fi
+    done <<<"$differences"
+
+    echo
+    # Print differences for file
+    echo "📄 $file2 (🚨 to be updated 🚨)"
+    echo "--------------------------------------------------------------------------------"
+    while IFS= read -r line; do
+      if [[ $line == ">"* ]]; then
+        echo "${line:2}"
+      fi
+    done <<<"$differences"
+  fi
+}
+
+echo
+compare_with_source_of_truth .input_parser.star
+echo
+echo
+compare_with_source_of_truth .kurtosis.yml
