@@ -20,7 +20,7 @@ This process typically takes around ten minutes.
 
 ```bash
 kurtosis clean --all
-kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+kurtosis run --enclave cdk-v1 --args-file params.yml . '{"args": {"l1_seconds_per_slot": 1}}'
 ```
 
 The command above deploys a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer.
@@ -33,7 +33,7 @@ First, you will need to figure out which port Kurtoiss is using for the RPC. You
 kurtosis enclave inspect cdk-v1
 ```
 
-That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
+That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `cdk-erigon-node-001` service and the `http-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
 
 ```bash
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
@@ -51,14 +51,14 @@ By default, the CDK is configured in `test` mode, which means there is some pre-
 cast balance --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 ```
 
-Okay let’s send some transactions...
+Okay, let’s send some transactions...
 
 ```bash
 export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 cast send --legacy --private-key "$PK" --value 0.01ether 0x0000000000000000000000000000000000000000
 ```
 
-Okay let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/maticnetwork/polygon-cli) installed.
+Okay, let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/maticnetwork/polygon-cli) installed.
 
 ```bash
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 50000 --rate-limit 50 --mode t --concurrency 5
@@ -76,7 +76,7 @@ kurtosis service logs cdk-v1 zkevm-agglayer-001
 In other cases, if you see an error, you might want to get a shell in the container to be able to poke around.
 
 ```bash
-kurtosis service shell cdk-v1 zkevm-node-sequencer-001
+kurtosis service shell cdk-v1 cdk-erigon-sequencer-001
 ```
 
 One of the most common ways to check the status of the system is to make sure that batches are going through the normal progression of trusted, virtual, and verified:
@@ -114,8 +114,8 @@ Copyright (c) 2024 PT Services DMCC
 
 Licensed under either:
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](./LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0), or
-- MIT license ([LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0, ([LICENSE-APACHE](./LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>), or
+- MIT license ([LICENSE-MIT](./LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 as your option.
 
