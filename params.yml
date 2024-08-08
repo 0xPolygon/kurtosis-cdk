@@ -147,6 +147,7 @@ args:
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
 
+  # If erigon is being used at the sequencer, this flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
 
   # The address of the rollup manager contract on L1.
