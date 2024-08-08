@@ -226,7 +226,7 @@ def create_zkevm_node_components_config(
         aggregator_config | rpc_config | eth_tx_manager_config | l2_gas_pricer_config
     )
 
-    if args["sequencer_type"] == "zkevm-node":
+    if args["sequencer_type"] == "zkevm":
         sequencer_config = create_sequencer_service_config(
             args, config_artifact, genesis_artifact
         )
