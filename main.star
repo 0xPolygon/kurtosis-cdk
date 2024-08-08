@@ -117,7 +117,7 @@ def run(
             cdk_erigon_package.run_rpc(plan, args)
         else:
             plan.print("Skipping the deployment of cdk-erigon node")
-            
+
         # Deploy zkevm-pool-manager service.
         if deploy_cdk_erigon_node:
             plan.print("Deploying zkevm-pool-manager service")
