@@ -125,7 +125,7 @@ jobs:
       - name: Deploy L1
         run: |
           yq -Y --in-place '.deploy_l1 = true' params.yml
-          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml .
+          kurtosis run --enclave="${{ env.ENCLAVE_NAME }}" --args-file=params.yml . '{"args": {"l1_seconds_per_slot": 1}}'
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
       - name: Deploy zkEVM contracts on L1
@@ -250,19 +250,19 @@ jobs:
 
       - name: Specify the rollup manager contract address and a few other parameters
         run: |
-          zkevm_rollup_manager_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }}" contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
+          zkevm_rollup_manager_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
           yq -Y --in-place ".args.zkevm_rollup_manager_address = $zkevm_rollup_manager_address" params.yml
 
-          zkevm_rollup_manager_block_number=$(kurtosis service exec ${{ env.ENCLAVE_NAME }}" contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .deploymentRollupManagerBlockNumber)
+          zkevm_rollup_manager_block_number=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .deploymentRollupManagerBlockNumber)
           yq -Y --in-place ".args.zkevm_rollup_manager_block_number = $zkevm_rollup_manager_block_number" params.yml
 
-          zkevm_global_exit_root_l2_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }}" contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonZkEVMGlobalExitRootL2Address)
+          zkevm_global_exit_root_l2_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonZkEVMGlobalExitRootL2Address)
           yq -Y --in-place ".args.zkevm_global_exit_root_l2_address = $zkevm_global_exit_root_l2_address" params.yml
 
-          polygon_data_committee_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }}" contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
+          polygon_data_committee_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
           yq -Y --in-place ".args.polygon_data_committee_address = $polygon_data_committee_address" params.yml
 
-          zkevm_admin_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }}" contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .admin)
+          zkevm_admin_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .admin)
           yq -Y --in-place ".args.zkevm_admin_address = $zkevm_admin_address" params.yml
 
       - name: Deploy the rest of the components
