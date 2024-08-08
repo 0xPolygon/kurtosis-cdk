@@ -70,14 +70,16 @@ def run(plan, args):
         if service.name.startswith("cdk-erigon"):
             metrics_path = "/debug/metrics/prometheus"
 
-        metrics_jobs.append({
-            "Name": service.name,
-            "Endpoint": "{0}:{1}".format(
-                service.ip_address,
-                service.ports["prometheus"].number,
-            ),
-            "MetricsPath": metrics_path,
-        })
+        metrics_jobs.append(
+            {
+                "Name": service.name,
+                "Endpoint": "{0}:{1}".format(
+                    service.ip_address,
+                    service.ports["prometheus"].number,
+                ),
+                "MetricsPath": metrics_path,
+            }
+        )
 
     # Start prometheus.
     prometheus_url = prometheus_package.run(
