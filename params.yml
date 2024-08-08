@@ -41,7 +41,7 @@ args:
   # Note: It should be a string.
   deployment_suffix: "-001"
 
-  # Sequence type. Choose from ["erigon", "zkevm-node"]
+  # Sequence type. Choose from ["erigon", "zkevm"]
   sequencer_type: "erigon"
 
   # Deploy agglayer.
