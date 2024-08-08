@@ -32,12 +32,7 @@ jobs:
             --show-enclave-inspect=false \
             --args-file=params.yml \
             . \
-            '{
-              "apply_workload": true,
-              "args": {
-                "l1_seconds_per_slot": 1
-              }
-            }'
+            '{"args": {"l1_seconds_per_slot": 1}}'
 
       # Compare configs.
       - name: Dump configs
