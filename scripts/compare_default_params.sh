@@ -65,5 +65,4 @@ compare_with_source_of_truth() {
 echo
 compare_with_source_of_truth .input_parser.star
 echo
-echo
 compare_with_source_of_truth .kurtosis.yml
