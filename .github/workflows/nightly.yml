@@ -270,6 +270,9 @@ jobs:
               }
             }'
 
+      - name: Inspect enclave
+        run: kurtosis enclave inspect "${{ env.ENCLAVE_NAME }}"
+
       - name: Deploy the rest of the components
         run: |
           zkevm_rollup_manager_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
