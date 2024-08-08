@@ -16,6 +16,7 @@ DEFAULT_ARGS = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:2.0.0-beta13",
     "toolbox_image": "leovct/toolbox:0.0.1",
+    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
@@ -29,6 +30,7 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_port": 80,
     "zkevm_agglayer_port": 4444,
     "zkevm_dac_port": 8484,
+    "zkevm_pool_manager_port": 8545,
     "blockscout_public_port": 50101,  # IANA registered ports up to 49151
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
     "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",

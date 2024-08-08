@@ -36,6 +36,8 @@ zkevm.sequencer-batch-seal-time: 12s # 12s
 zkevm.sequencer-block-seal-time: 6s # 6s
 zkevm.sequencer-non-empty-batch-seal-time: 3s # 3s
 
+zkevm.pool-manager-url: "http://zkevm-pool-manager{{.deployment_suffix}}:{{.zkevm_pool_manager_port}}"
+
 zkevm.l1-chain-id: {{.l1_chain_id}}
 zkevm.l1-first-block: 1
 zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
