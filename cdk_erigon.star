@@ -19,8 +19,9 @@ def run_rpc(plan, args):
                 )
             },
         )
-        zkevm_prover_package.start_stateless_executor(plan, args, stateless_executor_config_artifact)
-
+        zkevm_prover_package.start_stateless_executor(
+            plan, args, stateless_executor_config_artifact
+        )
 
     zkevm_sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
