@@ -1,8 +1,28 @@
 service_package = import_module("./lib/service.star")
 cdk_erigon_package = import_module("./lib/cdk_erigon.star")
+zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
 def run_rpc(plan, args):
+    if args["erigon_strict_mode"]:
+        stateless_configs = {}
+        stateless_configs["stateless_executor"] = True
+        stateless_executor_config_template = read_file(
+            src="./templates/trusted-node/prover-config.json"
+        )
+        stateless_executor_config_artifact = plan.render_templates(
+            name="stateless-executor-config-artifact",
+            config={
+                "stateless-executor-config.json": struct(
+                    template=stateless_executor_config_template,
+                    data=args | stateless_configs,
+                )
+            },
+        )
+        zkevm_prover_package.start_stateless_executor(
+            plan, args, stateless_executor_config_artifact
+        )
+
     zkevm_sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
@@ -14,9 +34,7 @@ def run_rpc(plan, args):
         zkevm_sequencer_service.ports["data-streamer"].number,
     )
 
-    cdk_erigon_node_config_template = read_file(
-        src="./templates/cdk-erigon/config.yaml"
-    )
+    cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_node_config_artifact = plan.render_templates(
         name="cdk-erigon-node-config-artifact",
@@ -26,6 +44,7 @@ def run_rpc(plan, args):
                 data={
                     "zkevm_sequencer_url": zkevm_sequence_url,
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
+                    "is_sequencer": False,
                 }
                 | args
                 | contract_setup_addresses,
@@ -67,9 +86,7 @@ def run_rpc(plan, args):
 
 
 def run_sequencer(plan, args):
-    cdk_erigon_node_config_template = read_file(
-        src="./templates/cdk-erigon/config-sequencer.yaml"
-    )
+    cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_node_config_artifact = plan.render_templates(
         name="cdk-erigon-node-config-artifact-sequencer",
@@ -78,6 +95,7 @@ def run_sequencer(plan, args):
                 template=cdk_erigon_node_config_template,
                 data={
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
+                    "is_sequencer": True,
                 }
                 | args
                 | contract_setup_addresses,

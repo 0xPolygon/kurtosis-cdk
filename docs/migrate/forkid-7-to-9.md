@@ -1,7 +1,3 @@
----
-comments: true
----
-
 This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis package.
 
 !!! tip

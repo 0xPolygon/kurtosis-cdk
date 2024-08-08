@@ -17,15 +17,6 @@ Environment = "production" # "production" or "development"
 Level = "info"
 Outputs = ["stderr"]
 
-[DB]
-User = "{{.agglayer_db.user}}"
-Password = "{{.agglayer_db.password}}"
-Name = "{{.agglayer_db.name}}"
-Host = "{{.agglayer_db.hostname}}"
-Port = "{{.agglayer_db.port}}"
-EnableLog = false
-MaxConns = 200
-
 [EthTxManager]
 FrequencyToMonitorTxs = "1s"
 WaitTxToBeMined = "2m"

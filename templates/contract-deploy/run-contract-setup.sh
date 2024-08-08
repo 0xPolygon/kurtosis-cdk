@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script is responsible for deploying the contracts for zkEVM/CDK.
-
+set -x
 echo_ts() {
     timestamp=$(date +"[%Y-%m-%d %H:%M:%S]")
     echo "$timestamp $1"
@@ -14,6 +14,20 @@ wait_for_rpc_to_be_available() {
         ((counter++))
         echo_ts "L1 RPC might not be ready... Retrying ($counter)..."
         if [ $counter -ge $max_retries ]; then
+            echo_ts "Exceeded maximum retry attempts. Exiting."
+            exit 1
+        fi
+        sleep 5
+    done
+}
+
+wait_for_finalized_block() {
+    counter=0
+    max_retries=100
+    until cast block --rpc-url "{{.l1_rpc_url}}" finalized; do
+        ((counter++))
+        echo_ts "L1 RPC might not be ready... Retrying ($counter)..."
+        if [[ $counter -ge $max_retries ]]; then
             echo_ts "Exceeded maximum retry attempts. Exiting."
             exit 1
         fi
@@ -35,14 +49,22 @@ fund_account_on_l1() {
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
-    echo "This script has already been executed"
-    exit
+    2>&1 echo "This script has already been executed"
+    exit 1
 fi
 
 # Wait for the L1 RPC to be available.
 echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
+
+if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
+    2>&1 echo "We have a genesis and combined output file from a previous deployment"
+    cp /opt/contract-deploy/* /opt/zkevm/
+    exit
+else
+    2>&1 echo "No previous output detected. Starting clean contract deployment"
+fi
 
 # Fund accounts on L1.
 echo_ts "Funding important accounts on l1"
@@ -222,6 +244,16 @@ cast send \
     "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
     'grantRole(bytes32,address)' \
     "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+
+# If we've configured the l1 network with the minimal preset, we
+# should probably wait for the first finalized block. This isn't
+# strictly specific to minimal preset, but if we don't have "minimal"
+# configured, it's going to take like 25 minutes for the first
+# finalized block
+l1_preset="{{.l1_preset}}"
+if [[ $l1_preset == "minimal" ]]; then
+    wait_for_finalized_block;
+fi
 
 # The contract setup is done!
 touch .init-complete.lock

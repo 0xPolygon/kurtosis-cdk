@@ -34,6 +34,11 @@ TRUSTED_DATABASES = {
         "user": "pool_user",
         "password": "redacted",
     },
+    "pool_manager_db": {
+        "name": "pool_manager_db",
+        "user": "pool_manager_user",
+        "password": "redacted",
+    },
     "prover_db": {
         "name": "prover_db",
         "user": "prover_user",
@@ -45,14 +50,19 @@ TRUSTED_DATABASES = {
         "user": "state_user",
         "password": "redacted",
     },
+    "aggregator_db": {
+        "name": "aggregator_db",
+        "user": "aggregator_user",
+        "password": "redacted",
+    },
+    "aggregator_syncer_db": {
+        "name": "syncer_db",
+        "user": "syncer_user",
+        "password": "redacted",
+    },
 }
 
 PERMISSIONLESS_DATABASES = {
-    "agglayer_db": {
-        "name": "agglayer_db",
-        "user": "agglayer_user",
-        "password": "redacted",
-    },
     "bridge_db": {
         "name": "bridge_db",
         "user": "bridge_user",

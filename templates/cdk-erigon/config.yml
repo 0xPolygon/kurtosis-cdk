@@ -1,0 +1,68 @@
+datadir: ./data/dynamic-kurtosis-sequencer
+chain: dynamic-kurtosis
+
+http.addr: "0.0.0.0"
+http.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
+http.corsdomain: "*"
+http.port: {{.zkevm_rpc_http_port}}
+http.vhosts: "*"
+http: true
+
+pprof: true
+pprof.addr: "0.0.0.0"
+pprof.port: "{{.zkevm_pprof_port}}"
+
+metrics: true
+metrics.port: "{{.zkevm_prometheus_port}}"
+metrics.addr: "0.0.0.0"
+
+private.api.addr: localhost:9092
+torrent.port: 42070
+ws: true
+externalcl: true
+log.console.verbosity: debug
+
+zkevm.address-admin: "{{.zkevm_admin_address}}"
+zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
+zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
+zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
+zkevm.datastream-version: 2
+
+
+# struct {{if .erigon_strict_mode}}
+zkevm.executor-strict: true
+zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}
+# not stricg {{else}}
+zkevm.executor-strict: false
+# end {{end}}
+
+
+zkevm.sequencer-batch-seal-time: 12s # 12s
+zkevm.sequencer-block-seal-time: 6s # 6s
+zkevm.sequencer-non-empty-batch-seal-time: 3s # 3s
+
+zkevm.pool-manager-url: "http://zkevm-pool-manager{{.deployment_suffix}}:{{.zkevm_pool_manager_port}}"
+
+zkevm.l1-chain-id: {{.l1_chain_id}}
+zkevm.l1-first-block: 1
+zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
+zkevm.l1-rollup-id: 1
+zkevm.l1-rpc-url: {{.l1_rpc_url}}
+zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
+
+zkevm.rpc-ratelimit: 250
+zkevm.disable-virtual-counters: false
+
+nodiscover: true
+maxpeers: 0
+
+# sequencer {{if .is_sequencer}}
+txpool.disable: false
+zkevm.data-stream-host: "0.0.0.0"
+zkevm.data-stream-port: {{.zkevm_data_stream_port}}
+# rpc node {{else}}
+txpool.disable: true
+zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
+zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+# end {{end}}

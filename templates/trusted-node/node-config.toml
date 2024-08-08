@@ -463,7 +463,7 @@ WriteTimeout = "1m0s"
 # load balancer and several RPCs, it's possible that a user might be
 # rate limited on just one of them
 # ------------------------------------------------------------------------------
-MaxRequestsPerIPAndSecond = 50
+MaxRequestsPerIPAndSecond = 5000
 
 # ------------------------------------------------------------------------------
 # SequencerNodeURI if configured will cause the RPC to relay certain
@@ -798,6 +798,16 @@ ReprocessFullBatchOnClose = false
 # ------------------------------------------------------------------------------
 CheckLastL2BlockHashOnCloseBatch = true
 
+# TODO - use the defaults for now
+# [Synchronizer.L1BlockCheck]
+# Enabled = true
+# L1SafeBlockPoint = "latest"
+# L1SafeBlockOffset = 0
+# ForceCheckBeforeStart = true
+# PreCheckEnabled = true
+# L1PreSafeBlockPoint = "latest"
+# L1PreSafeBlockOffset = 0
+
 # ==============================================================================
 #  ____  _____ ___  _   _ _____ _   _  ____ _____ ____
 # / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|  _ \
@@ -934,7 +944,7 @@ HaltOnBatchNumber = 0
 # performance by not blocking the main execution flow while the sanity
 # check is completed.
 # ------------------------------------------------------------------------------
-SequentialBatchSanityCheck = true
+SequentialBatchSanityCheck = false
 
 # ------------------------------------------------------------------------------
 # SequentialProcessL2Block determines the threading context for the
@@ -951,7 +961,7 @@ SequentialBatchSanityCheck = true
 # state transitions, at the cost of potential delays in state
 # integration.
 # ------------------------------------------------------------------------------
-SequentialProcessL2Block = true
+SequentialProcessL2Block = false
 
 [Sequencer.Finalizer.Metrics]
 # ------------------------------------------------------------------------------
@@ -1151,7 +1161,7 @@ RetryTime = "30s"
 # VerifyProofInterval is the interval of time to verify and send
 # proofs to L1
 # ------------------------------------------------------------------------------
-VerifyProofInterval = "5m0s"
+VerifyProofInterval = "1m0s"
 
 # ------------------------------------------------------------------------------
 # ProofStatePollingInterval will determine how long we wait between
