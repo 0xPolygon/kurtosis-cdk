@@ -1,5 +1,6 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "deploy_agglayer": True,
     "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
@@ -60,6 +61,7 @@ DEFAULT_ARGS = {
     "l1_preset": "minimal",
     "l1_seconds_per_slot": 1,
     "zkevm_rollup_chain_id": 10101,
+    "zkevm_rollup_id": 1,
     "zkevm_rollup_fork_id": 9,
     "erigon_strict_mode": True,
     "polygon_zkevm_explorer": "https://explorer.private/",
