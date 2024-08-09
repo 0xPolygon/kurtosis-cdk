@@ -119,12 +119,16 @@ apt update && apt install vim -y
 vim /etc/zkevm/agglayer-config.toml
 ```
 
+An example is shown below.
 ```
 [FullNodeRPCs]
+# Change the RPCs as necessary for Erigon/zkEVM RPCs
 # First CDK RPC
 1 = "http://zkevm-node-rpc-001:8123"
+# 1 = "http://cdk-erigon-node-001:8123"
 # Second CDK RPC
 2 = "http://zkevm-node-rpc-002:8123"
+# 2 = "http://cdk-erigon-node-002:8123"
 
 [ProofSigners]
 # First CDK Sequencer Address
