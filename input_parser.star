@@ -1,5 +1,6 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "deploy_agglayer": True,
     "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",

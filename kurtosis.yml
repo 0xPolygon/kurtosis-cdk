@@ -30,6 +30,8 @@ description: |-
 
   sequencer_type: erigon
 
+  deploy_agglayer: true
+
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.

@@ -59,6 +59,7 @@ mint_gas_token_on_l1() {
 # We want to avoid running this script twice.
 # In the future it might make more sense to exit with an error code.
 # We want to run this script again when deploying a second CDK.
+# shellcheck disable=SC1054,SC1083
 {{if .deploy_agglayer}}
 if [[ -e "/opt/zkevm/.init-complete.lock" ]]; then
     2>&1 echo "This script has already been executed"
@@ -119,6 +120,7 @@ fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
 fund_account_on_l1 "claimtxmanager" "{{.zkevm_l2_claimtxmanager_address}}"
 
 # Only fund POL for attaching CDK.
+# shellcheck disable=SC1054,SC1083
 {{if not .deploy_agglayer}}
 mint_gas_token_on_l1 "{{.zkevm_l2_admin_address}}"
 mint_gas_token_on_l1 "{{.zkevm_l2_sequencer_address}}"
@@ -156,6 +158,7 @@ jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/
 
 # Deploy the DAC contracts if deploying an attaching CDK.
 # Then transfer ownership, and activate the DAC.
+# shellcheck disable=SC1054,SC1083
 {{if not .deploy_agglayer}}
 pushd /opt/zkevm-contracts || exit 1
 echo_ts "Deploying DAC for attaching CDK"
@@ -163,7 +166,7 @@ jq '.admin = "{{.zkevm_l2_admin_address}}"' /opt/zkevm-contracts/tools/deployPol
 jq '.deployerPvtKey = "{{.zkevm_rollup_manager_deployer_private_key}}"' /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp && mv /opt/zkevm-contracts/tools/deployPolygonDataCommittee/tmp /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deploy_dataCommittee_parameters.json
 npx hardhat run /opt/zkevm-contracts/tools/deployPolygonDataCommittee/deployPolygonDataCommittee.ts --network localhost > /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json
 
-# polygon_data_committee_address
+# Transfer ownership of the deployed DAC.
 echo_ts "Transferring ownership of the DAC"
 dac_address=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 cast call --rpc-url "{{.l1_rpc_url}}" $dac_address 'owner()(address)'
@@ -226,6 +229,7 @@ if [[ fork_id -lt 8 ]]; then
 fi
 
 # NOTE there is a disconnect in the necessary configurations here between the validium node and the zkevm node
+# shellcheck disable=SC1054,SC1083
 {{if .deploy_agglayer}}
 jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = $c[0].upgradeToULxLyBlockNumber' genesis.json > g.json; mv g.json genesis.json
@@ -257,11 +261,10 @@ jq --arg polygonRollupManagerAddress "$polygonRollupManagerAddress" '.L1Config.p
 jq --arg polTokenAddress "$polTokenAddress" '.L1Config.polTokenAddress = $polTokenAddress' genesis.json > g.json; mv g.json genesis.json
 jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.L1Config.polygonZkEVMAddress = $polygonZkEVMAddress' genesis.json > g.json; mv g.json genesis.json
 
-# Extract newly deployed DAC address
+# Extract newly deployed DAC address and genesisBlockNumber
 polygonDataCommitteeAddress=$(grep "PolygonDataCommittee deployed to:" /opt/zkevm-contracts/tools/deployPolygonDataCommittee/output.json | awk '{print $NF}')
 jq --arg polygonDataCommitteeAddress "$polygonDataCommitteeAddress" '.polygonDataCommitteeAddress = $polygonDataCommitteeAddress' combined.json > c.json; mv c.json combined.json
 jq --arg polygonZkEVMAddress "$polygonZkEVMAddress" '.rollupAddress = $polygonZkEVMAddress' combined.json > c.json; mv c.json combined.json
-# jq --arg polygonZkEVMGlobalExitRootAddress "$polygonZkEVMGlobalExitRootAddress" '.polygonZkEVMGlobalExitRootAddress = $polygonZkEVMGlobalExitRootAddress' combined.json > c.json; mv c.json combined.json
 jq --arg genesisBlockNumber "$genesisBlockNumber" '.bridgeGenBlockNumber = $genesisBlockNumber' combined.json > c.json; mv c.json combined.json
 {{end}}
 

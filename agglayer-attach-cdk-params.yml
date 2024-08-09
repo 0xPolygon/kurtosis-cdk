@@ -35,6 +35,8 @@ deploy_blutgang: false
 # Apply workload to the different components of the CDK stack.
 apply_workload: false
 
+# Deploy agglayer.
+deploy_agglayer: false
 
 args:
   # Suffix appended to service names.
@@ -43,9 +45,6 @@ args:
 
   # Sequence type. Choose from ["erigon", "zkevm"]
   sequencer_type: "erigon"
-
-  # Deploy agglayer.
-  deploy_agglayer: false
 
   # The type of data availability to use.
   # Options:
