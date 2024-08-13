@@ -78,7 +78,12 @@
      * everything to be as realistic as possible, but don't want to
      * run the full prover.
      */ -}}
+    {{if .stateless_executor}}
+    "runAggregatorClientMock": false,
+    {{else}}
     "runAggregatorClientMock": true,
+    {{end}}
+
 
 {{- /*
      * aggregatorClientMockTimeout is the amount of time in
@@ -143,7 +148,11 @@
      * aggregatorClientHost is the hostname that this prover will
      * attempt to use while connecting to the aggregator
      */ -}}
-    "aggregatorClientHost": "zkevm-node-aggregator{{.deployment_suffix}}",
+     {{if eq .sequencer_type "zkevm"}}
+     "aggregatorClientHost": "zkevm-node-aggregator{{.deployment_suffix}}",
+     {{else if eq .sequencer_type "erigon"}}
+     "aggregatorClientHost": "cdk-node{{.deployment_suffix}}",
+     {{end}}
 
 {{- /*
      * keccakScriptFile is the keccak-f state machine script file
@@ -161,7 +170,12 @@
      * "local" if no external database is used (data will be stored in
      * cache)
      */ -}}
+    {{if .stateless_executor}}
+    "databaseURL": "local",
+    "dbReadOnly": true,
+    {{else}}
     "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
+    {{end}}
 
 {{- /*
      * dbNodesTableName is the schema and name of the nodes table in
