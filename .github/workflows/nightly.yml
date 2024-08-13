@@ -51,7 +51,6 @@ jobs:
         working-directory: ./scripts/zkevm-config-diff
         run: diff -r ./default-configs ./kurtosis-cdk-configs || true
 
-
   # Deploy the CDK environment incrementally, stage by stage.
   incremental:
     runs-on: ubuntu-latest
@@ -110,7 +109,6 @@ jobs:
           yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
           kurtosis run --enclave cdk-v1 --args-file params.yml .
           yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
-
       - name: Deploy observability stack
         run: |
           yq -Y --in-place '.deploy_observability = true' params.yml
@@ -137,7 +135,6 @@ jobs:
 
       - name: Monitor verified batches
         uses: ./.github/actions/monitor-cdk-verified-batches
-
 
   # Deploy the CDK environment without specifying any parameter file.
   configless:
@@ -243,6 +240,11 @@ jobs:
           yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
 
           kurtosis run --enclave cdk-v1 --args-file params.yml .
+
+      - name: Monitor verified batches
+        uses: ./.github/actions/monitor-cdk-verified-batches
+        with:
+          rpc_service: zkevm-node-rpc-pless-001
 
   # Deploy the CDK environment in rollup mode (data availability).
   rollup-da-mode:
