@@ -23,7 +23,16 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{deploy_zkevm_permissionless_node: true, apply_workload: true}'
+          kurtosis run --enclave cdk-v1 --args-file params.yml . \
+            '{
+              "deploy_cdk_erigon_node": true,
+              "deploy_zkevm_permissionless_node": true,
+              "apply_workload": true,
+              "args": {
+                "sequencer_type": "erigon",
+                "l1_seconds_per_slot": 1
+              }
+            }'
 
       - name: Monitor verified batches (CDK Erigon RPC)
         uses: ./.github/actions/monitor-cdk-verified-batches
@@ -45,7 +54,16 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{deploy_zkevm_permissionless_node: true, args: {sequencer_type: "zkevm"}, deploy_cdk_erigon_node: false, apply_workload: true}'
+          kurtosis run --enclave cdk-v1 --args-file params.yml . \
+            '{
+              "deploy_cdk_erigon_node": false,
+              "deploy_zkevm_permissionless_node": true,
+              "apply_workload": true,
+              "args": {
+                "sequencer_type": "zkevm",
+                "l1_seconds_per_slot": 1
+              }
+            }'
 
       - name: Monitor verified batches (zkEVM Node RPC)
         uses: ./.github/actions/monitor-cdk-verified-batches
