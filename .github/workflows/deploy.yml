@@ -13,7 +13,7 @@ concurrency:
 jobs:
   # Basic deployment workflow.
   # Note that more advanced use cases are tested in the nightly workflow.
-  deploy-cdk:
+  cdk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
         with:
           rpc_service: zkevm-node-rpc-pless-001
 
-  deploy-zkevm:
+  zkevm:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
