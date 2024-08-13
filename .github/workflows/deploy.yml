@@ -80,3 +80,5 @@ jobs:
         uses: ./.github/actions/monitor-cdk-verified-batches
         with:
           rpc_service: zkevm-node-rpc-pless-001
+
+      # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
