@@ -25,7 +25,6 @@ if ! yq --yaml-output .args params.yml >.params.yml; then
 fi
 
 # Function to compare files and output differences in a structured format
-# Function to compare files and output differences in a structured format
 compare_with_source_of_truth() {
   local file1=.params.yml
   local file2=$1
