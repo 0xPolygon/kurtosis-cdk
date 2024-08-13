@@ -4,7 +4,7 @@ data_availability_package = import_module("./data_availability.star")
 def get_contract_setup_addresses(plan, args):
     extract = {
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
-        "zkevm_l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "zkevm_l2_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
         "zkevm_gen_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",

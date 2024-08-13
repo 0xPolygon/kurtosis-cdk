@@ -14,7 +14,7 @@ MaxConns = 20
 
 [Etherman]
 l1URL = "{{.l1_rpc_url}}"
-L2URLs = ["http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
+L2URLs = ["http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}","http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
 
 [Synchronizer]
 SyncInterval = "5s"
@@ -46,7 +46,7 @@ PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 PolygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-L2PolygonBridgeAddresses = ["{{.zkevm_l2_bridge_address}}"]
+L2PolygonBridgeAddresses = ["{{.zkevm_l2_bridge_address}}","{{.zkevm_l2_bridge_address}}"]
 
 [ClaimTxManager]
 FrequencyToMonitorTxs = "5s"

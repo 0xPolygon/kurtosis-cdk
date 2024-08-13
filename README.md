@@ -105,6 +105,20 @@ For more information about the CDK stack and setting up Kurtosis, visit our [doc
 
 ## Attach another CDK to the Agglayer
 **Optional - deploy another CDK and attach to the agglayer service** 
+
+Before spinning up another collection of Kurotsis-CDK services, the [bridge-config.toml](./templates/bridge-infra/bridge-config.toml) should also be edited.
+
+```bash
+[Etherman]
+# L2URLs should now include the URL of the first CDK as well in the array.
+L2URLs = ["http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}","http://cdk-erigon-node-001:8123"]
+...
+[NetworkConfig]
+...
+# L2PolygonBridgeAddresses should now include the address of the first CDK bridge contract as well in the array.
+L2PolygonBridgeAddresses = ["{{.zkevm_l2_bridge_address}}","{{.zkevm_l2_bridge_address}}"]
+```
+
 ```bash
 kurtosis run --enclave cdk-v1 --args-file agglayer-attach-cdk-params.yml --image-download always .
 ```
