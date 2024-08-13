@@ -34,7 +34,7 @@ jobs:
               }
             }'
 
-      - name: Monitor verified batches (CDK Erigon RPC)
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         uses: ./.github/actions/monitor-cdk-verified-batches
         with:
           rpc_service: cdk-erigon-node-001
@@ -65,7 +65,7 @@ jobs:
               }
             }'
 
-      - name: Monitor verified batches (zkEVM Node RPC)
+      - name: Monitor verified batches (zkEVM Node Trusted RPC)
         uses: ./.github/actions/monitor-cdk-verified-batches
         with:
           rpc_service: zkevm-node-rpc-001
