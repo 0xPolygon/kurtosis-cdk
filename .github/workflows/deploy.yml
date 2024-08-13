@@ -25,11 +25,6 @@ jobs:
         run: |
           kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always . '{deploy_zkevm_permissionless_node: true, apply_workload: true}'
 
-      - name: Monitor verified batches
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: cdk-erigon-node-001
-
       - name: Monitor verified batches (CDK Erigon RPC)
         uses: ./.github/actions/monitor-cdk-verified-batches
         with:
