@@ -57,7 +57,7 @@ args:
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.11
+  cdk_node_image: arnaubennassar/cdk:fix-l1-info
 
   zkevm_da_image: arnaubennassar/cdk-data-availability:roman-fix-423
 
