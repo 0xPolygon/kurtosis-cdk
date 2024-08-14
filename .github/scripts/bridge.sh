@@ -73,6 +73,7 @@ polycli ulxly deposit-new \
   --destination-address "$address" \
   --amount 1000 \
   --verbosity 700
+echo
 
 # Loop until at least one claimable transaction is found.
 echo "Waiting for the bridge service to detect the bridge event..."
@@ -81,13 +82,14 @@ while true; do
   claimable_count=$(curl -s "$zkevm_bridge_service_url/bridges/$address" |
     jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == 1)] | length')
   if [ "$claimable_count" -gt 0 ]; then
-    echo "Claimable transaction found. Proceeding with further actions..."
+    echo "Claimable transaction found!"
     break
   else
     echo "No claimable transactions found. Retrying in 10 seconds..."
   fi
   sleep 10
 done
+echo
 
 # Claim on L2.
 echo "Claiming on L2..."
@@ -101,6 +103,7 @@ polycli ulxly deposit-claim \
   --destination-network 1 \
   --claim-address "$address" \
   --claim-index 0
+echo
 
 # Show balances.
 l1_balance="$(cast balance --ether --rpc-url "$l1_rpc_url" "$address")"
