@@ -4,7 +4,7 @@ A [Kurtosis](https://github.com/kurtosis-tech/kurtosis) package that deploys a p
 
 ## Getting Started
 
-![Architecture Diagram](./docs/img/architecture-diagram.png)
+![CDK Erigon Architecture Diagram](./docs/img/cdk-erigon-architecture-diagram.png)
 
 To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) and [Kurtosis](https://docs.kurtosis.com/install/).
 
@@ -20,10 +20,14 @@ This process typically takes around ten minutes.
 
 ```bash
 kurtosis clean --all
-kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+kurtosis run --enclave cdk-v1 --args-file params.yml . '{"args": {"l1_seconds_per_slot": 1}}'
 ```
 
-The command above deploys a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer.
+The command above deploys the CDK stack with [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon), serving as the sequencer. It also uses the [cdk-node](https://github.com/0xPolygon/cdk) for the remaining components.
+
+It is also possible to deploy the CDK stack using the legacy sequencer and the legacy node, referred to as the [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node).
+
+![zkEVM Node Architecture Diagram](./docs/img/zkevm-node-architecture-diagram.png)
 
 Let's do a simple L2 RPC test call.
 
@@ -33,7 +37,7 @@ First, you will need to figure out which port Kurtoiss is using for the RPC. You
 kurtosis enclave inspect cdk-v1
 ```
 
-That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `zkevm-node-rpc` service and the `trusted-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
+That output, while quite useful, might also be a little overwhelming. If you want to simply see the port mapping within the `cdk-v1` enclave for the `cdk-erigon-node-001` service and the `http-rpc` port, you can use the following command. For this test, let's store the RPC URL in an environment variable:
 
 ```bash
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
@@ -51,7 +55,7 @@ By default, the CDK is configured in `test` mode, which means there is some pre-
 cast balance --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 ```
 
-Okay let’s send some transactions...
+Okay, let’s send some transactions...
 
 ```bash
 export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
@@ -76,7 +80,7 @@ kurtosis service logs cdk-v1 zkevm-agglayer-001
 In other cases, if you see an error, you might want to get a shell in the container to be able to poke around.
 
 ```bash
-kurtosis service shell cdk-v1 zkevm-node-sequencer-001
+kurtosis service shell cdk-v1 cdk-erigon-sequencer-001
 ```
 
 One of the most common ways to check the status of the system is to make sure that batches are going through the normal progression of trusted, virtual, and verified:
@@ -114,8 +118,8 @@ Copyright (c) 2024 PT Services DMCC
 
 Licensed under either:
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](./LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0), or
-- MIT license ([LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0, ([LICENSE-APACHE](./LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>), or
+- MIT license ([LICENSE-MIT](./LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 as your option.
 
