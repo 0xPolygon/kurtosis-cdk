@@ -92,7 +92,7 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
   # Deploy the CDK environment in rollup data availability mode.
-  rollup-da-mode:
+  da-rollup:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -114,7 +114,7 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
   # Deploy the CDK environment in cdk-validium data availability mode.
-  cdk-validium-da-mode:
+  da-cdk-validium:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
