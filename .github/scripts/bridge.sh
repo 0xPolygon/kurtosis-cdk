@@ -2,6 +2,8 @@
 
 # This script bridges tokens from L1 to L2 and vice versa.
 
+set -e # Exit immediately if a command exits with a non-zero status
+
 # Function to display usage information.
 usage() {
   echo "Usage: $0 --l2-rpc-url <URL>"
