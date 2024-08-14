@@ -38,14 +38,12 @@ jobs:
             }'
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: cdk-erigon-node-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
 
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-pless-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)"
 
   zkevm:
     runs-on: ubuntu-latest
@@ -72,13 +70,11 @@ jobs:
             }'
 
       - name: Monitor verified batches (zkEVM Node Trusted RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
 
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-pless-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)"
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
