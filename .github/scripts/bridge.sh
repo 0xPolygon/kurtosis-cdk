@@ -55,8 +55,8 @@ echo "- L2 Chain ID: $l2_chain_id"
 echo
 
 # Show balances.
-l1_balance="$(cast balance --ether --rpc-url "$l1_rpc_url" $address)"
-l2_balance="$(cast balance --ether --rpc-url "$l2_rpc_url" $address)"
+l1_balance="$(cast balance --ether --rpc-url "$l1_rpc_url" "$address")"
+l2_balance="$(cast balance --ether --rpc-url "$l2_rpc_url" "$address")"
 echo "Balances before bridging: $l1_balance (L1) / $l2_balance (L2)"
 
 # Bridge from L1 to L2.
@@ -85,8 +85,8 @@ polycli ulxly deposit-claim \
   --claim-index 0
 
 # Show balances.
-l1_balance="$(cast balance --ether --rpc-url "$l1_rpc_url" $address)"
-l2_balance="$(cast balance --ether --rpc-url "$l2_rpc_url" $address)"
+l1_balance="$(cast balance --ether --rpc-url "$l1_rpc_url" "$address")"
+l2_balance="$(cast balance --ether --rpc-url "$l2_rpc_url" "$address")"
 echo "Balances after bridging: $l1_balance (L1) / $l2_balance (L2)"
 
 # TODO: Bridge from L2 to L1
