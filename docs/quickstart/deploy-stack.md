@@ -37,7 +37,7 @@ comments: true
 3. Run the Kurtosis enclave.
 
     ```sh
-    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    kurtosis run --enclave cdk-v1 --args-file params.yml .
     ```
 
     This command takes a few minutes to complete and sets up and runs an entire local CDK deployment.

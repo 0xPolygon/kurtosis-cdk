@@ -63,16 +63,23 @@ def run(plan, args):
 
     metrics_jobs = []
     for service in plan.get_services():
-        if "prometheus" in service.ports:
-            metrics_jobs.append(
-                {
-                    "Name": service.name,
-                    "Endpoint": "{0}:{1}".format(
-                        service.ip_address,
-                        service.ports["prometheus"].number,
-                    ),
-                }
-            )
+        if "prometheus" not in service.ports:
+            continue
+
+        metrics_path = "/metrics"
+        if service.name.startswith("cdk-erigon"):
+            metrics_path = "/debug/metrics/prometheus"
+
+        metrics_jobs.append(
+            {
+                "Name": service.name,
+                "Endpoint": "{0}:{1}".format(
+                    service.ip_address,
+                    service.ports["prometheus"].number,
+                ),
+                "MetricsPath": metrics_path,
+            }
+        )
 
     # Start prometheus.
     prometheus_url = prometheus_package.run(

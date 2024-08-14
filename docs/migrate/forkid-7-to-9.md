@@ -43,7 +43,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 3. Now kick-off a full redeploy:
 
     ```sh
-    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    kurtosis run --enclave cdk-v1 --args-file params.yml .
     ```
 
 4. Confirm onchain that fork 7 is running:
@@ -97,7 +97,7 @@ After a few minutes, the number of verified batches should increase (the first b
 2. Re-run Kurtosis:
 
     ```sh
-    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    kurtosis run --enclave cdk-v1 --args-file params.yml .
     ```
 
 3. Wait for the sequencer to halt and the verified batch to equal the latest batch and check the logs.
@@ -248,7 +248,7 @@ We're going to revert the parameters back to the versions of the node that worke
 3. Run Kurtosis to bring up the main node components.
 
     ```sh
-    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    kurtosis run --enclave cdk-v1 --args-file params.yml .
     ```
 
 4. The core services are now running and we should be able to send a transaction and see the batch numbers moving through their normal progression.
