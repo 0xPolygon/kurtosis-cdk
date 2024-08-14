@@ -23,14 +23,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       # Deploy the CDK environment with cdk-erigon, serving as the sequencer.
       # Set up the cdk-node for the remaining components.
       # Additionally, deploy cdk-erigon and zkevm-node as permissionless nodes or RPCs.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml . \
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=params.yml \
+            . \
             '{
               "deploy_cdk_erigon_node": true,
               "deploy_zkevm_permissionless_node": true,
@@ -40,6 +44,9 @@ jobs:
                 "l1_seconds_per_slot": 1
               }
             }'
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
@@ -56,14 +63,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       # Deploy the CDK environment with zkevm-node, serving as the sequencer.
       # Also set up the zkevm-node for the remaining components.
       # Additionally, deploy zkevm-node as permissionless node or RPC.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml . \
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=params.yml \
+            . \
             '{
               "deploy_cdk_erigon_node": false,
               "deploy_zkevm_permissionless_node": true,
@@ -73,6 +84,9 @@ jobs:
                 "l1_seconds_per_slot": 1
               }
             }'
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Monitor verified batches (zkEVM Node Trusted RPC)
         working-directory: .github/scripts

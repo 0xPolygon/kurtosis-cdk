@@ -23,12 +23,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -57,10 +57,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false github.com/0xPolygon/kurtosis-cdk
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false github.com/0xPolygon/kurtosis-cdk
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -77,12 +77,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -99,12 +99,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -121,12 +121,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -143,7 +143,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
@@ -151,7 +151,7 @@ jobs:
       - name: Deploy L1 and zkEVM contracts
         run: |
           yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml # reset
 
       - name: Specify the rollup manager contract address and a few other parameters
@@ -174,7 +174,7 @@ jobs:
       - name: Deploy the rest of the components
         run: |
           yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -191,7 +191,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Disable all deployment steps
         run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
@@ -199,31 +199,31 @@ jobs:
       - name: Deploy L1
         run: |
           yq -Y --in-place '.deploy_l1 = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
       - name: Deploy zkEVM contracts on L1
         run: |
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 
       - name: Deploy zkEVM node and cdk peripheral databases
         run: |
           yq -Y --in-place '.deploy_databases = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_databases = false' params.yml # reset
 
       - name: Deploy CDK central environment
         run: |
           yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
 
       - name: Deploy CDK bridge infrastructure
         run: |
           yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
 
       - name: Deploy zkEVM permissionless node
@@ -234,37 +234,37 @@ jobs:
 
           # Deploy permisionless node.
           yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
 
       - name: Deploy CDK erigon node
         run: |
           yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
 
       - name: Deploy observability stack
         run: |
           yq -Y --in-place '.deploy_observability = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_observability = false' params.yml # reset
 
       - name: Deploy Blockscout stack
         run: |
           yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
 
       - name: Deploy ETH load balancer
         run: |
           yq -Y --in-place '.deploy_blutgang = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
 
       - name: Apply workload
         run: |
           yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.apply_workload = false' params.yml # reset
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
@@ -280,7 +280,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
-        uses: .github/actions/setup-kurtosis-cdk
+        uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy the permisionless node
         run: |
@@ -289,7 +289,7 @@ jobs:
           # Configure pless node parameters.
           yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
           yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
-          kurtosis run --enclave ${{ env.ENCLAVE_NAME }} --show-enclave-inspect false --args-file params.yml .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
