@@ -113,4 +113,53 @@ echo "- L1: $l1_balance ETH"
 echo "- L2: $l2_balance ETH"
 echo
 
-# TODO: Bridge from L2 to L1
+# Bridge from L2 to L1.
+echo "Bridging from L2 to L1..."
+polycli ulxly deposit-new \
+  --private-key "${pk#0x}" \
+  --rpc-url "$l2_rpc_url" \
+  --chain-id "$l2_chain_id" \
+  --bridge-address "$zkevm_bridge_address" \
+  --destination-network 0 \
+  --destination-address "$address" \
+  --amount 500 \
+  --verbosity 700
+echo
+
+# Loop until at least one claimable transaction is found.
+echo "Waiting for the bridge service to detect the bridge event..."
+while true; do
+  # Query the bridge service and filter for claimable transactions on L2.
+  claimable_count=$(curl -s "$zkevm_bridge_service_url/bridges/$address" |
+    jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == 0)] | length')
+  if [ "$claimable_count" -gt 0 ]; then
+    echo "Claimable transaction found!"
+    break
+  else
+    echo "No claimable transactions found. Retrying in 10 seconds..."
+  fi
+  sleep 10
+done
+echo
+
+# Claim on L1.
+echo "Claiming on L1..."
+polycli ulxly deposit-claim \
+  --private-key "${pk#0x}" \
+  --rpc-url "$l1_rpc_url" \
+  --chain-id "$l1_chain_id" \
+  --bridge-address "$zkevm_bridge_address" \
+  --bridge-service-url "$zkevm_bridge_service_url" \
+  --origin-network 1 \
+  --destination-network 0 \
+  --claim-address "$address" \
+  --claim-index 1
+echo
+
+# Show balances.
+l1_balance="$(cast balance --ether --rpc-url "$l1_rpc_url" "$address")"
+l2_balance="$(cast balance --ether --rpc-url "$l2_rpc_url" "$address")"
+echo "Balances before bridging:"
+echo "- L1: $l1_balance ETH"
+echo "- L2: $l2_balance ETH"
+echo
