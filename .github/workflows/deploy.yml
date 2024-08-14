@@ -29,7 +29,7 @@ jobs:
           curl -L -o /tmp/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz https://github.com/0xPolygon/polygon-cli/releases/download/v${{ env.POLYCLI_VERSION }}/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
           pushd /tmp
           tar -xvzf polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
-          sudo mv polycli /usr/local/bin/
+          sudo mv polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64 /usr/local/bin/polycli
           polycli --version
 
       # Deploy the CDK environment with cdk-erigon, serving as the sequencer.
@@ -74,7 +74,7 @@ jobs:
           curl -L -o /tmp/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz https://github.com/0xPolygon/polygon-cli/releases/download/v${{ env.POLYCLI_VERSION }}/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
           pushd /tmp
           tar -xvzf polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
-          sudo mv polycli /usr/local/bin/
+          sudo mv polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64 /usr/local/bin/polycli
           polycli --version
 
       # Deploy the CDK environment with zkevm-node, serving as the sequencer.
