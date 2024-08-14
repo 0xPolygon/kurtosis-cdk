@@ -33,6 +33,7 @@ if [ -z "$l2_rpc_url" ]; then
 fi
 
 # Set universal parameters.
+echo "Retrieving script parameters..."
 address="$(yq --raw-output .args.zkevm_l2_admin_address params.yml)"
 pk="$(yq --raw-output .args.zkevm_l2_admin_private_key params.yml)"
 
