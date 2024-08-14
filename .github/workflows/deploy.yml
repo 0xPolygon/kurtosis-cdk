@@ -30,7 +30,7 @@ jobs:
           pushd /tmp
           tar -xvzf polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
           sudo mv polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64 /usr/local/bin/polycli
-          polycli --version
+          polycli version
 
       # Deploy the CDK environment with cdk-erigon, serving as the sequencer.
       # Set up the cdk-node for the remaining components.
@@ -75,7 +75,7 @@ jobs:
           pushd /tmp
           tar -xvzf polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
           sudo mv polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64 /usr/local/bin/polycli
-          polycli --version
+          polycli version
 
       # Deploy the CDK environment with zkevm-node, serving as the sequencer.
       # Also set up the zkevm-node for the remaining components.
