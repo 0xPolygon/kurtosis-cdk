@@ -27,7 +27,7 @@ jobs:
 
       - name: Deploy Kurtosis CDK package
         run: |
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
@@ -82,6 +82,7 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
@@ -104,6 +105,7 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
@@ -126,6 +128,7 @@ jobs:
       - name: Deploy Kurtosis CDK package
         run: |
           yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
@@ -151,6 +154,7 @@ jobs:
       - name: Deploy L1 and zkEVM contracts
         run: |
           yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml # reset
 
@@ -199,6 +203,7 @@ jobs:
       - name: Deploy L1
         run: |
           yq -Y --in-place '.deploy_l1 = true' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
           yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
