@@ -47,6 +47,10 @@ jobs:
         with:
           rpc_service: zkevm-node-rpc-pless-001
 
+      - name: Bridge tokens from L1 to L2 and vice versa
+        working-directory: .github/scripts
+        run: ./bridge.sh --l2-rpc-url "$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
+
   zkevm:
     runs-on: ubuntu-latest
     steps:
@@ -82,3 +86,7 @@ jobs:
           rpc_service: zkevm-node-rpc-pless-001
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
+
+      - name: Bridge tokens from L1 to L2 and vice versa
+        working-directory: .github/scripts
+        run: ./bridge.sh --l2-rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
