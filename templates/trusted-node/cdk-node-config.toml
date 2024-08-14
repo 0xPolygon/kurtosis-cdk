@@ -3,7 +3,7 @@ ForkUpgradeNewForkId = 0
 
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
-ContractVersions = "elderberry"
+ContractVersions = "banana"
 
 [Log]
 Environment = "development" # "production" or "development"
@@ -20,14 +20,16 @@ SequencesTxFileName = "/data/sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
+MaxBatchesForL1 = 300
 	[SequenceSender.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 	[SequenceSender.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
 		ConsolidationL1ConfirmationBlocks = 5
-		FinalizationL1ConfirmationBlocks = 10
-		WaitReceiptToBeGenerated = "8s"
+		FinalizedStatusL1NumberOfBlocks = 10
+		WaitReceiptMaxTime = "250ms"
+		WaitReceiptCheckInterval = "8s"
 		PrivateKeys = [
 			{Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 		]
@@ -50,14 +52,14 @@ MaxPendingTx = 1
 	TxProfitabilityMinReward = "1.1"
 	IntervalAfterWhichBatchConsolidateAnyway = "0s"
 	ChainID = "{{.zkevm_rollup_chain_id}}"
-	ForkId = 9
+	ForkId = 12
 	CleanupLockedProofsInterval = "2m0s"
 	GeneratingProofCleanupThreshold = "10m"
 	GasOffset = 150000
-	UpgradeEtrogBatchNumber = 0
 	WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 	{{if .is_cdk_validium}}
 	SenderAddress = "{{.zkevm_l2_agglayer_address}}"
+	SequencerPrivateKey = {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 	SettlementBackend = "agglayer"
 	AggLayerTxTimeout = "600s"
 	AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
@@ -65,11 +67,6 @@ MaxPendingTx = 1
 
 	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 	{{end}}
-
-	[Aggregator.SequencerPrivateKey]
-		Path = "/etc/cdk/sequencer.keystore"
-		Password = "{{.zkevm_l2_keystore_password}}"
-	
 	[Aggregator.DB]
 		Name = "{{.aggregator_db.name}}"
 		User = "{{.aggregator_db.user}}"
@@ -87,8 +84,8 @@ MaxPendingTx = 1
 	[Aggregator.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
-		GetReceiptMaxTime = "250ms"
-		GetReceiptWaitInterval = "1s"
+		WaitReceiptMaxTime = "250ms"
+		WaitReceiptCheckInterval = "1s"
 		PrivateKeys = [
 			{Path = "/etc/cdk/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 		]
@@ -126,7 +123,7 @@ MaxPendingTx = 1
 [RPC]
 
 [NetworkConfig.L1]
-ChainID = "{{.l1_chain_id}}"
+L1ChainID = "{{.l1_chain_id}}"
 PolAddr = "{{.pol_token_address}}"
 ZkEVMAddr = "{{.zkevm_rollup_address}}"
 RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"

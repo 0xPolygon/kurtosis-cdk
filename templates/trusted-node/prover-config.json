@@ -171,7 +171,8 @@
      * cache)
      */ -}}
     {{if .stateless_executor}}
-    "databaseURL": "local",
+     "hashDBSingleton": false,
+     "databaseURL": "local",
     "dbReadOnly": true,
     {{else}}
     "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",

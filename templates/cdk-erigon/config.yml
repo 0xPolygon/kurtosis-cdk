@@ -27,7 +27,7 @@ zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
 zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
-zkevm.datastream-version: 2
+zkevm.datastream-version: 3
 
 
 # struct {{if .erigon_strict_mode}}

@@ -1,4 +1,6 @@
 {
+    "hashDBSingleton": false,
+    "hashDbSingleton": false,
     "runExecutorServer": true,
     "runExecutorClient": false,
     "runExecutorClientMultithread": false,
@@ -37,8 +39,8 @@
     "saveResponseToFile": false,
     "loadDBToMemCache": true,
     "opcodeTracer": false,
-    "logRemoteDbReads": false,
-    "logExecutorServerResponses": false,
+    "logRemoteDbReads": true,
+    "logExecutorServerResponses": true,
 
     "proverServerPort": 50051,
     "proverServerMockPort": 50052,
