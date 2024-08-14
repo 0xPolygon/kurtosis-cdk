@@ -12,9 +12,6 @@ concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  POLYCLI_VERSION: "0.1.52"
-
 jobs:
   cdk:
     runs-on: ubuntu-latest
@@ -23,14 +20,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Install polycli
-        run: |
-          curl -L -o /tmp/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz https://github.com/0xPolygon/polygon-cli/releases/download/v${{ env.POLYCLI_VERSION }}/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
-          pushd /tmp
-          tar -xvzf polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
-          sudo mv polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64 /usr/local/bin/polycli
-          polycli version
 
       # Deploy the CDK environment with cdk-erigon, serving as the sequencer.
       # Set up the cdk-node for the remaining components.
@@ -68,14 +57,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Install polycli
-        run: |
-          curl -L -o /tmp/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz https://github.com/0xPolygon/polygon-cli/releases/download/v${{ env.POLYCLI_VERSION }}/polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
-          pushd /tmp
-          tar -xvzf polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz
-          sudo mv polycli_v${{ env.POLYCLI_VERSION }}_linux_amd64 /usr/local/bin/polycli
-          polycli version
 
       # Deploy the CDK environment with zkevm-node, serving as the sequencer.
       # Also set up the zkevm-node for the remaining components.
