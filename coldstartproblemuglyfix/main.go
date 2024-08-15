@@ -17,7 +17,7 @@ const (
 	pk         = "12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 	l1ChainID  = 271828
 	bridgeAddr = "0xD71f8F956AD979Cc2988381B8A743a2fE280537D"
-	l1RPC      = "http://localhost:33142"
+	l1RPC      = "http://localhost:32965"
 )
 
 func main() {

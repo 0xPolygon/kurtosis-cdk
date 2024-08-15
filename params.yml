@@ -57,9 +57,9 @@ args:
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  cdk_node_image: arnaubennassar/cdk:fix-l1-info
+  cdk_node_image: arnaubennassar/cdk:fix-banana-hash
 
-  zkevm_da_image: arnaubennassar/cdk-data-availability:roman-fix-423
+  zkevm_da_image: arnaubennassar/cdk-data-availability:fix-banana
 
   zkevm_contracts_image: arnaubennassar/zkevm-contracts   # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
