@@ -18,8 +18,10 @@ def run(plan, args):
 
 
 def get_tx_spammer_config(plan, args):
-    spam_script_template = read_file(src="../../templates/tx_spammer/spam.sh")
-    bridge_script_template = read_file(src="../../templates/workload/bridge.sh")
+    spam_script_template = read_file(src="../../static-files/tx-spammer-config/spam.sh")
+    bridge_script_template = read_file(
+        src="../../static-files/tx-spammer-config/bridge.sh"
+    )
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
 
