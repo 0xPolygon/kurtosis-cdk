@@ -1,5 +1,31 @@
 def run(plan, args):
-    blutgang_name = "blutgang" + args["deployment_suffix"]
+    blutgang_config = get_blutgang_config(plan, args)
+    plan.add_service(
+        name="blutgang" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image=args["blutgang_image"],
+            ports={
+                "http": PortSpec(
+                    args["blutgang_rpc_port"], application_protocol="http"
+                ),
+                "admin": PortSpec(
+                    args["blutgang_admin_port"], application_protocol="http"
+                ),
+            },
+            files={
+                "/etc/blutgang": Directory(
+                    artifact_names=[
+                        blutgang_config,
+                    ]
+                ),
+            },
+            cmd=["/app/blutgang", "-c", "/etc/blutgang/blutgang-config.toml"],
+        ),
+        description="Starting blutgang service",
+    )
+
+
+def get_blutgang_config(plan, args):
     blutgang_config_template = read_file(
         src="./templates/blutgang/blutgang-config.toml"
     )
@@ -33,7 +59,7 @@ def run(plan, args):
         zkevm_rpc_pless_service.ports["ws-rpc"].number,
     )
 
-    blutgang_config_artifact = plan.render_templates(
+    return plan.render_templates(
         name="blutgang-config-artifact",
         config={
             "blutgang-config.toml": struct(
@@ -48,26 +74,4 @@ def run(plan, args):
                 | args,
             )
         },
-    )
-
-    blutgang_service_config = ServiceConfig(
-        image=args["blutgang_image"],
-        ports={
-            "http": PortSpec(args["blutgang_rpc_port"], application_protocol="http"),
-            "admin": PortSpec(args["blutgang_admin_port"], application_protocol="http"),
-        },
-        files={
-            "/etc/blutgang": Directory(
-                artifact_names=[
-                    blutgang_config_artifact,
-                ]
-            ),
-        },
-        cmd=["/app/blutgang", "-c", "/etc/blutgang/blutgang-config.toml"],
-    )
-
-    plan.add_service(
-        name=blutgang_name,
-        config=blutgang_service_config,
-        description="Starting blutgang service",
     )
