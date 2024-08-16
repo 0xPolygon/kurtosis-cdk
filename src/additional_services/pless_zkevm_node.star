@@ -1,6 +1,6 @@
-zkevm_node_package = import_module("./lib/zkevm_node.star")
-zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-databases = import_module("./databases.star")
+zkevm_node_package = import_module("../../lib/zkevm_node.star")
+zkevm_prover_package = import_module("../../lib/zkevm_prover.star")
+databases = import_module("../../databases.star")
 
 
 def run(plan, args, genesis_artifact):

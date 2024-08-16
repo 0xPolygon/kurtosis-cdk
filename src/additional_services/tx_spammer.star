@@ -1,4 +1,4 @@
-service_package = import_module("./lib/service.star")
+service_package = import_module("../../lib/service.star")
 
 
 def run(plan, args):
