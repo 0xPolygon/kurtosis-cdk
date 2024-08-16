@@ -1,8 +1,8 @@
-databases_package = "./databases.star"
-deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
+databases_package = "./databases.star"
+deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
