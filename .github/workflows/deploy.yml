@@ -12,9 +12,13 @@ concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  ENCLAVE_NAME: cdk
+
 jobs:
   cdk:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +30,11 @@ jobs:
       # Additionally, deploy cdk-erigon and zkevm-node as permissionless nodes or RPCs.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave cdk-v1 --args-file params.yml . \
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=params.yml \
+            . \
             '{
               "deploy_cdk_erigon_node": true,
               "deploy_zkevm_permissionless_node": true,
@@ -37,18 +45,20 @@ jobs:
               }
             }'
 
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: cdk-erigon-node-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-pless-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
 
   zkevm:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -60,7 +70,11 @@ jobs:
       # Additionally, deploy zkevm-node as permissionless node or RPC.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run --enclave cdk-v1 --args-file params.yml . \
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=params.yml \
+            . \
             '{
               "deploy_cdk_erigon_node": false,
               "deploy_zkevm_permissionless_node": true,
@@ -71,14 +85,15 @@ jobs:
               }
             }'
 
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
       - name: Monitor verified batches (zkEVM Node Trusted RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)"
 
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        uses: ./.github/actions/monitor-cdk-verified-batches
-        with:
-          rpc_service: zkevm-node-rpc-pless-001
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
