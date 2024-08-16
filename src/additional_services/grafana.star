@@ -9,6 +9,10 @@ GRAFANA_ALERTING_TEMPLATE = (
     "github.com/0xPolygon/kurtosis-cdk/static-files/alerting.yml.tmpl"
 )
 
+SLACK_CHANNEL = ""
+SLACK_TOKEN = ""
+SLACK_MENTION_USERS = ""
+
 
 def run(plan, args):
     prometheus_service = plan.get_service(name="prometheus" + args["deployment_suffix"])
@@ -16,13 +20,11 @@ def run(plan, args):
         prometheus_service.ip_address, prometheus_service.ports["http"].number
     )
 
-    grafana_alerting_data = {}
-    if "slack_alerts" in args:
-        grafana_alerting_data = {
-            "SlackChannel": args["slack_alerts"]["slack_channel"],
-            "SlackToken": args["slack_alerts"]["slack_token"],
-            "MentionUsers": args["slack_alerts"]["mention_users"],
-        }
+    grafana_alerting_data = {
+        "SlackChannel": SLACK_CHANNEL,
+        "SlackToken": SLACK_TOKEN,
+        "MentionUsers": SLACK_MENTION_USERS,
+    }
 
     postgres_databases = []
     for db in databases_package.DATABASES.values():

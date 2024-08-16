@@ -174,9 +174,3 @@ args:
     # "polycli_rpcfuzz_on_l2.sh",     # rpc calls
     "bridge.sh", # bridge tokens l1 -> l2 and l2 -> l1
   ]
-
-  ## Observability alerting configuration.
-  # slack_alerts:
-    # slack_channel: ""
-    # slack_token: ""
-    # mention_users: ""
