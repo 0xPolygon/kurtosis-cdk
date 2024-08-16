@@ -18,11 +18,15 @@ def run(plan, args):
 
 
 def get_tx_spammer_config(plan, args):
-    apply_workload_template = read_file(src="../../templates/workload/apply_workload.sh")
+    apply_workload_template = read_file(
+        src="../../templates/workload/apply_workload.sh"
+    )
     polycli_loadtest_template = read_file(
         src="../../templates/workload/polycli_loadtest.sh"
     )
-    polycli_rpcfuzz_template = read_file(src="../../templates/workload/polycli_rpcfuzz.sh")
+    polycli_rpcfuzz_template = read_file(
+        src="../../templates/workload/polycli_rpcfuzz.sh"
+    )
     bridge_template = read_file(src="../../templates/workload/bridge.sh")
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
