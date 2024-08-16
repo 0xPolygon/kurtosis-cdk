@@ -124,29 +124,33 @@ def run(
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Parse additional services.
-    additional_services = args["additional_services"]
-    if "pless_zkevm_node" in additional_services:
-        # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)
-        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-        permissionless_node_args["deployment_suffix"] = (
-            "-pless" + args["deployment_suffix"]
-        )
-        import_module(pless_zkevm_node_package).run(
-            plan, permissionless_node_args, genesis_artifact
-        )
-    elif "blockscout" in additional_services:
-        deploy_additional_service(plan, "blockscout", blockscout_package, args)
-    elif "prometheus_grafana" in additional_services:
-        deploy_additional_service(plan, "prometheus", prometheus_package, args)
-        deploy_additional_service(plan, "grafana", prometheus_package, args)
-    elif "panoptichain" in additional_services:
-        deploy_additional_service(plan, "panoptichain", prometheus_package, args)
-    elif "blutgang" in additional_services:
-        deploy_additional_service(plan, "blutgang", blutgang_package, args)
-    elif "tx_spammer" in additional_services:
-        deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
+    # Launching additional services.
+    for index, additional_service in enumerate(args["additional_services"]):
+        if additional_service == "pless_zkevm_node":
+            plan.print("Launching permissionnless zkevm node")
+            # Note that an additional suffix will be added to the permissionless services.
+            permissionless_node_args = dict(args)
+            permissionless_node_args["original_suffix"] = args["deployment_suffix"]
+            permissionless_node_args["deployment_suffix"] = (
+                "-pless" + args["deployment_suffix"]
+            )
+            import_module(pless_zkevm_node_package).run(
+                plan, permissionless_node_args, genesis_artifact
+            )
+            plan.print("Successfully launched permissionless zkevm node")
+        elif additional_service == "blockscout":
+            deploy_additional_service(plan, "blockscout", blockscout_package, args)
+        elif additional_service == "prometheus_grafana":
+            deploy_additional_service(plan, "prometheus", prometheus_package, args)
+            deploy_additional_service(plan, "grafana", prometheus_package, args)
+        elif additional_service == "panoptichain":
+            deploy_additional_service(plan, "panoptichain", prometheus_package, args)
+        elif additional_service == "blutgang":
+            deploy_additional_service(plan, "blutgang", blutgang_package, args)
+        elif additional_service == "tx_spammer":
+            deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
+        else:
+            fail("Invalid additional service: %s" % (additional_service))
 
 
 def deploy_helper_service(plan, args):
@@ -195,6 +199,7 @@ def deploy_helper_service(plan, args):
 
 
 def deploy_additional_service(plan, name, package, args):
-    plan.print("Deploying " + name)
+    plan.print("Launching %s" % name)
     service_args = dict(args)
     import_module(package).run(plan, service_args)
+    plan.print("Successfully launched %s" % name)
