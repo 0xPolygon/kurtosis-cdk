@@ -11,7 +11,7 @@ def run(plan, args, genesis_artifact):
         src="../../templates/permissionless-node/executor-config.json"
     )
     executor_config_artifact = plan.render_templates(
-        name="executor-config",
+        name="executor-config" + args["deployment_suffix"],
         config={
             "executor-config.json": struct(
                 template=executor_config_template, data=args | db_config
@@ -34,7 +34,7 @@ def run(plan, args, genesis_artifact):
         src="../../templates/permissionless-node/node-config.toml"
     )
     node_config_artifact = plan.render_templates(
-        name="permissionless-node-config",
+        name="permissionless-node-config" + args["deployment_suffix"],
         config={
             "node-config.toml": struct(
                 template=node_config_template, data=args | db_config
