@@ -4,7 +4,6 @@ deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
-zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
@@ -12,8 +11,8 @@ zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
 grafana_package = "./src/additional_services/grafana.star"
-observability_package = "./src/additional_services/observability.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
+pless_zkevm_node_package = "./pless_zkevm_node_package.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
