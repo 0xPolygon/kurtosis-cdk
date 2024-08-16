@@ -1,3 +1,5 @@
+service_package = import_module("../../lib/service.star")
+
 BLUTGANG_IMAGE = "makemake1337/blutgang:0.3.6"
 
 RPC_PORT_NUMBER = 8555
