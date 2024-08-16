@@ -5,6 +5,7 @@ blockscout_package = import_module(
 
 FRONTEND_PORT_NUMBER = 3000
 
+
 def run(plan, args):
     zkevm_node_rpc_service = plan.get_service(
         name="zkevm-node-rpc" + args["deployment_suffix"]
