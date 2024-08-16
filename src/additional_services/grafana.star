@@ -15,6 +15,20 @@ SLACK_MENTION_USERS = ""
 
 
 def run(plan, args):
+    for service in plan.get_services():
+        if service.name == args["l2_rpc_name"] + args["deployment_suffix"]:
+            args["zkevm_rpc_url"] = "http://{}:{}".format(
+                service.ip_address, service.ports["http-rpc"].number
+            )
+
+        if (
+            service.name
+            == databases_package.POSTGRES_SERVICE_NAME + args["deployment_suffix"]
+        ):
+            args["postgres_url"] = "{}:{}".format(
+                service.ip_address, service.ports["postgres"].number
+            )
+
     prometheus_service = plan.get_service(name="prometheus" + args["deployment_suffix"])
     prometheus_url = "http://{}:{}".format(
         prometheus_service.ip_address, prometheus_service.ports["http"].number
