@@ -7,8 +7,6 @@ def run(plan, args, genesis_artifact):
     # Start dbs.
     import_module(databases_package).run_pless(plan, suffix=args["original_suffix"])
 
-    db_config = databases_package.get_pless_db_configs(args["original_suffix"])
-
     # Start executor.
     executor_config_template = read_file(
         src="../../templates/permissionless-node/executor-config.json"
