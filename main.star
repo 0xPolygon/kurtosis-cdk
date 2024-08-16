@@ -5,12 +5,14 @@ databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
-observability_package = "./observability.star"
-blockscout_package = "./blockscout.star"
 workload_package = "./workload.star"
-blutgang_package = "./cdk_blutgang.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+
+# Additional services packages.
+blockscout_package = "./src/additional_services/blockscout.star"
+blutgang_package = "./src/additional_services/blutgang.star"
+observability_package = "./src/additional_services/observability.star"
 
 
 def run(
@@ -135,7 +137,7 @@ def run(
                 # Note that an additional suffix will be added to the permissionless services.
                 "deployment_suffix": "-pless" + args["deployment_suffix"],
                 "genesis_artifact": genesis_artifact,
-            }
+            },
         )
     elif "blockscout" in args.additional_services:
         deploy_additional_service("blockscout", blockscout_package)
@@ -195,6 +197,7 @@ def deploy_helper_service(plan, args):
             ]
         ),
     )
+
 
 def deploy_additional_service(name, package, additional_args=None):
     plan.print(f"Deploying {name}")
