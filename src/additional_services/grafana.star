@@ -3,7 +3,7 @@ grafana_package = import_module(
     "github.com/kurtosis-tech/grafana-package/main.star@6772a4e4ae07cf5256b8a10e466587b73119bab5"
 )
 
-GRAFANA_VERSION = "11.1.0"
+GRAFANA_VERSION = "11.1.4"
 GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static-files/dashboards"
 GRAFANA_ALERTING_TEMPLATE = (
     "github.com/0xPolygon/kurtosis-cdk/static-files/alerting.yml.tmpl"
