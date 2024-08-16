@@ -131,10 +131,8 @@ def run(
         import_module(databases_package).run_pless(
             plan, suffix=args["deployment_suffix"]
         )
-        deploy_additional_service(
+        import_module(pless_zkevm_node_package).run(
             plan,
-            "zkevm permissionless node",
-            zkevm_permissionless_node_package,
             {
                 "original_suffix": args["deployment_suffix"],
                 # Note that an additional suffix will be added to the permissionless services.
@@ -142,6 +140,7 @@ def run(
                 "genesis_artifact": genesis_artifact,
             }
             | args,
+            genesis_artifact,
         )
     elif "blockscout" in additional_services:
         deploy_additional_service(plan, "blockscout", blockscout_package, args)
