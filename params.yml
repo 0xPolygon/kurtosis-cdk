@@ -20,9 +20,6 @@ deploy_cdk_bridge_infra: true
 # Deploy cdk-erigon node.
 deploy_cdk_erigon_node: true
 
-# Apply workload to the different components of the CDK stack.
-apply_workload: false
-
 args:
   # Suffix appended to service names.
   # Note: It should be a string.

@@ -5,7 +5,6 @@ databases_package = "./databases.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
-workload_package = "./workload.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
@@ -16,6 +15,7 @@ grafana_package = "./src/additional_services/grafana.star"
 observability_package = "./src/additional_services/observability.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
 prometheus_package = "./src/additional_services/prometheus.star"
+tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
 def run(
@@ -26,7 +26,6 @@ def run(
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
     deploy_cdk_erigon_node=True,
-    apply_workload=False,
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
@@ -151,13 +150,8 @@ def run(
         deploy_additional_service("panoptichain", prometheus_package)
     elif "blutgang" in args.additional_services:
         deploy_additional_service("blutgang", blutgang_package)
-
-    # Apply workload
-    if apply_workload:
-        plan.print("Applying workload")
-        import_module(workload_package).run(plan, args)
-    else:
-        plan.print("Skipping workload application")
+    elif "tx_spammer" in args.additional_services:
+        deploy_additional_service("tx-spammer", tx_spammer_package)
 
 
 def deploy_helper_service(plan, args):

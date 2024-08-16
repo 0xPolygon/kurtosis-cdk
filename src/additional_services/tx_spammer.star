@@ -2,7 +2,22 @@ service_package = import_module("./lib/service.star")
 
 
 def run(plan, args):
-    # Create scripts artifacts.
+    tx_spammer_config = get_tx_spammer_config(plan, args)
+    plan.add_service(
+        name="workload" + args["deployment_suffix"],
+        config=ServiceConfig(
+            image=args["toolbox_image"],
+            files={
+                "/usr/local/bin": Directory(artifact_names=[tx_spammer_config]),
+            },
+            entrypoint=["bash", "-c"],
+            cmd=["chmod +x /usr/local/bin/*.sh && apply_workload.sh"],
+            user=User(uid=0, gid=0),  # Run the container as root user.
+        ),
+    )
+
+
+def get_tx_spammer_config(plan, args):
     apply_workload_template = read_file(src="./templates/workload/apply_workload.sh")
     polycli_loadtest_template = read_file(
         src="./templates/workload/polycli_loadtest.sh"
@@ -59,17 +74,4 @@ def run(plan, args):
                 | contract_setup_addresses,
             ),
         },
-    )
-
-    plan.add_service(
-        name="workload" + args["deployment_suffix"],
-        config=ServiceConfig(
-            image=args["toolbox_image"],
-            files={
-                "/usr/local/bin": Directory(artifact_names=[workload_script_artifact]),
-            },
-            entrypoint=["bash", "-c"],
-            cmd=["chmod +x /usr/local/bin/*.sh && apply_workload.sh"],
-            user=User(uid=0, gid=0),  # Run the container as root user.
-        ),
     )
