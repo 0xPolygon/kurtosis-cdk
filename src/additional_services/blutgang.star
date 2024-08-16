@@ -21,7 +21,7 @@ def run(plan, args):
                     ]
                 ),
             },
-            cmd=["/app/blutgang", "-c", "/etc/blutgang/blutgang-config.toml"],
+            cmd=["/app/blutgang", "-c", "/etc/blutgang/config.toml"],
         ),
         description="Starting blutgang service",
     )
@@ -29,7 +29,7 @@ def run(plan, args):
 
 def get_blutgang_config(plan, args):
     blutgang_config_template = read_file(
-        src="../../templates/blutgang/blutgang-config.toml"
+        src="../../static-files/blutgang-config/config.toml"
     )
 
     zkevm_sequencer_service = plan.get_service(
