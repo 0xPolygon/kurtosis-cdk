@@ -128,19 +128,18 @@ def run(
     # Parse additional services.
     additional_services = args["additional_services"]
     if "pless_zkevm_node" in additional_services:
-        import_module(databases_package).run_pless(
-            plan, suffix=args["deployment_suffix"]
+        # Note that an additional suffix will be added to the permissionless services.
+        permissionless_node_args = dict(args)
+        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
+        permissionless_node_args["deployment_suffix"] = (
+            "-pless" + args["deployment_suffix"]
         )
-        import_module(pless_zkevm_node_package).run(
-            plan,
-            {
-                "original_suffix": args["deployment_suffix"],
-                # Note that an additional suffix will be added to the permissionless services.
-                "deployment_suffix": "-pless" + args["deployment_suffix"],
-                "genesis_artifact": genesis_artifact,
-            }
-            | args,
-            genesis_artifact,
+        permissionless_node_args["genesis_artifact"] = genesis_artifact
+        import_module(databases_package).run_pless(
+            plan, suffix=permissionless_node_args["deployment_suffix"]
+        )
+        import_module(zkevm_permissionless_node_package).run(
+            plan, permissionless_node_args, genesis_artifact
         )
     elif "blockscout" in additional_services:
         deploy_additional_service(plan, "blockscout", blockscout_package, args)
