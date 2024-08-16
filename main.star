@@ -134,10 +134,6 @@ def run(
         permissionless_node_args["deployment_suffix"] = (
             "-pless" + args["deployment_suffix"]
         )
-        permissionless_node_args["genesis_artifact"] = genesis_artifact
-        import_module(databases_package).run_pless(
-            plan, suffix=permissionless_node_args["deployment_suffix"]
-        )
         import_module(pless_zkevm_node_package).run(
             plan, permissionless_node_args, genesis_artifact
         )
