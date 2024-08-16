@@ -31,7 +31,6 @@ def get_panoptichain_config(plan, args):
                 data={
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l2_rpc_url": l2_rpc_urls.http,
-                    "zkevm_rpc_url": args["zkevm_rpc_url"],
                     "l1_chain_id": args["l1_chain_id"],
                     "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],
                 }
