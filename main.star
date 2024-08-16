@@ -127,11 +127,13 @@ def run(
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
     # Parse additional services.
-    if "pless_zkevm_node" in args.additional_services:
+    additional_services = args["additional_services"]
+    if "pless_zkevm_node" in additional_services:
         import_module(databases_package).run_pless(
             plan, suffix=args["deployment_suffix"]
         )
         deploy_additional_service(
+            plan,
             "zkevm permissionless node",
             zkevm_permissionless_node_package,
             {
@@ -139,19 +141,20 @@ def run(
                 # Note that an additional suffix will be added to the permissionless services.
                 "deployment_suffix": "-pless" + args["deployment_suffix"],
                 "genesis_artifact": genesis_artifact,
-            },
+            }
+            | args,
         )
-    elif "blockscout" in args.additional_services:
-        deploy_additional_service("blockscout", blockscout_package)
-    elif "prometheus_grafana" in args.additional_services:
-        deploy_additional_service("prometheus", prometheus_package)
-        deploy_additional_service("grafana", prometheus_package)
-    elif "panoptichain" in args.additional_services:
-        deploy_additional_service("panoptichain", prometheus_package)
-    elif "blutgang" in args.additional_services:
-        deploy_additional_service("blutgang", blutgang_package)
-    elif "tx_spammer" in args.additional_services:
-        deploy_additional_service("tx_spammer", tx_spammer_package)
+    elif "blockscout" in additional_services:
+        deploy_additional_service(plan, "blockscout", blockscout_package, args)
+    elif "prometheus_grafana" in additional_services:
+        deploy_additional_service(plan, "prometheus", prometheus_package, args)
+        deploy_additional_service(plan, "grafana", prometheus_package, args)
+    elif "panoptichain" in additional_services:
+        deploy_additional_service(plan, "panoptichain", prometheus_package, args)
+    elif "blutgang" in additional_services:
+        deploy_additional_service(plan, "blutgang", blutgang_package, args)
+    elif "tx_spammer" in additional_services:
+        deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
 
 
 def deploy_helper_service(plan, args):
@@ -199,9 +202,7 @@ def deploy_helper_service(plan, args):
     )
 
 
-def deploy_additional_service(name, package, additional_args=None):
+def deploy_additional_service(plan, name, package, args):
     plan.print("Deploying " + name)
     service_args = dict(args)
-    if additional_args:
-        service_args.update(additional_args)
     import_module(package).run(plan, service_args)
