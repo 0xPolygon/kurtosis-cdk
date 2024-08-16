@@ -41,8 +41,8 @@ jobs:
                 "sequencer_type": "erigon",
                 "l1_seconds_per_slot": 1,
                 "additional_services": [
-                  "zkevm-pless-node",
-                  "tx-spammer"
+                  "pless_zkevm_node",
+                  "tx_spammer"
                 ]
               }
             }'
@@ -84,7 +84,7 @@ jobs:
                 "l1_seconds_per_slot": 1,
                 "additional_services": [
                   "zkevm_pless_node",
-                  "tx-spammer"
+                  "tx_spammer"
                 ]
               }
             }'

@@ -127,7 +127,7 @@ def run(
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
     # Parse additional services.
-    if "zkevm-pless-node" in args.additional_services:
+    if "zkevm_pless_node" in args.additional_services:
         import_module(databases_package).run_pless(
             plan, suffix=args["deployment_suffix"]
         )
@@ -151,7 +151,7 @@ def run(
     elif "blutgang" in args.additional_services:
         deploy_additional_service("blutgang", blutgang_package)
     elif "tx_spammer" in args.additional_services:
-        deploy_additional_service("tx-spammer", tx_spammer_package)
+        deploy_additional_service("tx_spammer", tx_spammer_package)
 
 
 def deploy_helper_service(plan, args):
