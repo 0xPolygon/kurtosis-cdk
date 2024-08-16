@@ -10,7 +10,7 @@ inputs:
   polycli-version:
     description: The version of polygon-cli
     required: false
-    default: "v0.1.52" # https://github.com/0xPolygon/polygon-cli/releases
+    default: "v0.1.53" # https://github.com/0xPolygon/polygon-cli/releases
 
 runs:
   using: "composite"
