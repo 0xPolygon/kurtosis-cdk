@@ -27,9 +27,8 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 2. You can now run the stack:
 
     ```sh
-    kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+    kurtosis run --enclave cdk-v1 --args-file params.yml .
     ```
-
 
     It takes a few minutes to compile and deploy the full set of contracts.
 
@@ -160,7 +159,7 @@ The first derived private key from the `code...quality` mnemonic is
 
     ![Transfer to another L2 address](img/how-to/gas-token-img/07_bridge.png)
 
-2.  Check the balance in MetaMask after importing the private key `0903a9a721167e2abaa0a33553cbeb209dc9300d28e4e4d6d2fac2452f93e357`.
+2. Check the balance in MetaMask after importing the private key `0903a9a721167e2abaa0a33553cbeb209dc9300d28e4e4d6d2fac2452f93e357`.
 
     ![Balance of receiving account](img/how-to/gas-token-img/07_bridge.png)
 
