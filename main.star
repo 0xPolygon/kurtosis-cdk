@@ -12,7 +12,10 @@ zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 # Additional services packages.
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
+grafana_package = "./src/additional_services/grafana.star"
 observability_package = "./src/additional_services/observability.star"
+panoptichain_package = "./src/additional_services/panoptichain.star"
+prometheus_package = "./src/additional_services/prometheus.star"
 
 
 def run(
@@ -141,8 +144,11 @@ def run(
         )
     elif "blockscout" in args.additional_services:
         deploy_additional_service("blockscout", blockscout_package)
-    elif "observability" in args.additional_services:
-        deploy_additional_service("observability", observability_package)
+    elif "prometheus_grafana" in args.additional_services:
+        deploy_additional_service("prometheus", prometheus_package)
+        deploy_additional_service("grafana", prometheus_package)
+    elif "panoptichain" in args.additional_services:
+        deploy_additional_service("panoptichain", prometheus_package)
     elif "blutgang" in args.additional_services:
         deploy_additional_service("blutgang", blutgang_package)
 
