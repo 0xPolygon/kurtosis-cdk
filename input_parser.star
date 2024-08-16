@@ -77,8 +77,6 @@ DEFAULT_ARGS = {
         # "polycli_rpcfuzz_on_l2.sh",  # rpc calls
         "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
     ],
-    "blutgang_rpc_port": 55555,
-    "blutgang_admin_port": 55556,
 }
 
 

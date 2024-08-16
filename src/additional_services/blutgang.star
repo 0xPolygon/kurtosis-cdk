@@ -1,5 +1,8 @@
 BLUTGANG_IMAGE = "makemake1337/blutgang:0.3.6"
 
+RPC_PORT_NUMBER = 8555
+ADMIN_PORT_NUMBER = 8556
+
 
 def run(plan, args):
     blutgang_config = get_blutgang_config(plan, args)
@@ -8,12 +11,8 @@ def run(plan, args):
         config=ServiceConfig(
             image=BLUTGANG_IMAGE,
             ports={
-                "http": PortSpec(
-                    args["blutgang_rpc_port"], application_protocol="http"
-                ),
-                "admin": PortSpec(
-                    args["blutgang_admin_port"], application_protocol="http"
-                ),
+                "http": PortSpec(RPC_PORT_NUMBER),
+                "admin": PortSpec(ADMIN_PORT_NUMBER),
             },
             files={
                 "/etc/blutgang": Directory(
@@ -68,6 +67,8 @@ def get_blutgang_config(plan, args):
             "blutgang-config.toml": struct(
                 template=blutgang_config_template,
                 data={
+                    "blutgang_rpc_port": RPC_PORT_NUMBER,
+                    "blutgang_admin_port": ADMIN_PORT_NUMBER,
                     "l2_sequencer_url": zkevm_sequencer_http_url,
                     "l2_rpc_url": zkevm_rpc_http_url,
                     "l2_ws_url": zkevm_rpc_ws_url,

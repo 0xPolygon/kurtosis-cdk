@@ -175,10 +175,6 @@ args:
     "bridge.sh", # bridge tokens l1 -> l2 and l2 -> l1
   ]
 
-  ## ETH Load balancer configuration.
-  blutgang_rpc_port: 55555
-  blutgang_admin_port: 55556
-
   ## Observability alerting configuration.
   # slack_alerts:
     # slack_channel: ""
