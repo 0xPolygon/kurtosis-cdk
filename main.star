@@ -23,7 +23,6 @@ def run(
     deploy_cdk_erigon_node=True,
     deploy_observability=True,
     deploy_l2_blockscout=False,
-    deploy_blutgang=False,
     apply_workload=False,
     args={},
 ):
@@ -125,7 +124,7 @@ def run(
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Deploy permissionless node
+    # Parse additional services.
     if "zkevm-pless-node" in args.additional_services:
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
@@ -141,8 +140,10 @@ def run(
         import_module(zkevm_permissionless_node_package).run(
             plan, permissionless_node_args, genesis_artifact
         )
-    else:
-        plan.print("Skipping the deployment of zkevm permissionless node")
+    elif "blutgang" in args.additional_services:
+        plan.print("Deploying blutgang")
+        blutgang_args = dict(args)
+        import_module(blutgang_package).run(plan, blutgang_args)
 
     # Deploy observability stack.
     if deploy_observability:
@@ -165,14 +166,6 @@ def run(
         import_module(workload_package).run(plan, args)
     else:
         plan.print("Skipping workload application")
-
-    # Deploy blutgang for caching
-    if deploy_blutgang:
-        plan.print("Deploying blutgang")
-        blutgang_args = dict(args)
-        import_module(blutgang_package).run(plan, blutgang_args)
-    else:
-        plan.print("Skipping the deployment of blutgang")
 
 
 def deploy_helper_service(plan, args):

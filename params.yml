@@ -26,9 +26,6 @@ deploy_observability: false
 # Deploy Blockscout stack.
 deploy_l2_blockscout: false
 
-# Deploy eth load balancer.
-deploy_blutgang: false
-
 # Apply workload to the different components of the CDK stack.
 apply_workload: false
 
