@@ -4,7 +4,9 @@ grafana_package = import_module(
 )
 
 GRAFANA_VERSION = "11.1.4"
-GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static-files/grafana-config/dashboards"
+GRAFANA_DASHBOARDS = (
+    "github.com/0xPolygon/kurtosis-cdk/static-files/grafana-config/dashboards"
+)
 GRAFANA_ALERTING_TEMPLATE = (
     "github.com/0xPolygon/kurtosis-cdk/static-files/grafana-config/alerting.yml.tmpl"
 )
