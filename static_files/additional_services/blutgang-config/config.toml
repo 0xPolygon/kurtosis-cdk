@@ -73,9 +73,9 @@ max_per_second = 200
 
 [pless_zkevm_rpc]
 # The HTTP URL of the permissionless zkevm node (or rpc).
-url = "{{.l2_pless_zkevm_rpc}}"
+url = "{{.zkevm_rpc_pless_http_url}}"
 # The WS URL of the permissionless zkevm node (or rpc).
-ws_url = "{{.l2_pless_zkevm_rpc}}"
+ws_url = "{{.zkevm_rpc_pless_ws_url}}"
 # The maximum amount of time this rpc can be used in a row.
 max_consecutive = 150
 # The maximum amount of queries per second this rpc can handle.
