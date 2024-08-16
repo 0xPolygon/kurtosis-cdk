@@ -1,4 +1,4 @@
-service_package = import_module("../..lib/service.star")
+service_package = import_module("../../lib/service.star")
 
 PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.47"
 
