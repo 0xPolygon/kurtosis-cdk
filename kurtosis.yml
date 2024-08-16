@@ -152,14 +152,4 @@ description: |-
 
   ## Tools versions
   polycli_version: v0.1.42
-
-  ## Workload configuration.
-  workload_commands: [
-    # "polycli_loadtest_on_l2.sh t",  # eth transfers
-    # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-    # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-    # "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
-    # "polycli_rpcfuzz_on_l2.sh",     # rpc calls
-    "bridge.sh",                    # bridge tokens l1 -> l2 and l2 -> l1
-  ]
   ```

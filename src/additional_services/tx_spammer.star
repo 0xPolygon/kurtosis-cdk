@@ -18,24 +18,20 @@ def run(plan, args):
 
 
 def get_tx_spammer_config(plan, args):
-    apply_workload_template = read_file(
-        src="../../templates/workload/apply_workload.sh"
+    spam_script_template = read_file(
+        src="../../templates/tx_spammer/spam.sh"
     )
-    polycli_loadtest_template = read_file(
-        src="../../templates/workload/polycli_loadtest.sh"
-    )
-    polycli_rpcfuzz_template = read_file(
-        src="../../templates/workload/polycli_rpcfuzz.sh"
-    )
-    bridge_template = read_file(src="../../templates/workload/bridge.sh")
+    bridge_script_template = read_file(src="../../templates/workload/bridge.sh")
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+
     zkevm_rpc_service = plan.get_service(
         args["l2_rpc_name"] + args["deployment_suffix"]
     )
     zkevm_rpc_url = "http://{}:{}".format(
         zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["http-rpc"].number
     )
+
     zkevm_bridge_service = plan.get_service(
         "zkevm-bridge-service" + args["deployment_suffix"]
     )
@@ -46,28 +42,15 @@ def get_tx_spammer_config(plan, args):
     workload_script_artifact = plan.render_templates(
         name="workload-script-artifact",
         config={
-            "apply_workload.sh": struct(
-                template=apply_workload_template,
-                data={
-                    "commands": args["workload_commands"],
-                },
-            ),
-            "polycli_loadtest_on_l2.sh": struct(
-                template=polycli_loadtest_template,
-                data={
-                    "rpc_url": zkevm_rpc_url,
-                    "private_key": args["zkevm_l2_admin_private_key"],
-                },
-            ),
-            "polycli_rpcfuzz_on_l2.sh": struct(
-                template=polycli_rpcfuzz_template,
+            "spam.sh": struct(
+                template=spam_script_template,
                 data={
                     "rpc_url": zkevm_rpc_url,
                     "private_key": args["zkevm_l2_admin_private_key"],
                 },
             ),
             "bridge.sh": struct(
-                template=bridge_template,
+                template=bridge_script_template,
                 data={
                     "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
                     "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
