@@ -28,8 +28,7 @@ def run(
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
-
-    plan.print("Deploying CDK environment...")
+    plan.print("Deploying CDK environment with parameters: " + str(args))
 
     if deploy_cdk_erigon_node:
         args["l2_rpc_name"] = "cdk-erigon-node"
