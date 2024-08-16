@@ -40,8 +40,11 @@ args:
   # Note: It should be a string.
   deployment_suffix: "-001"
 
-  # Sequence type. Choose from ["erigon", "zkevm-node"]
-  sequencer_type: "erigon"
+  # The type of the sequencer to deploy.
+  # Options:
+  # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
+  # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
+  sequencer_type: erigon
 
   # The type of data availability to use.
   # Options:
@@ -132,9 +135,9 @@ args:
   l1_ws_url: ws://el-1-geth-lighthouse:8546
   # https://github.com/kurtosis-tech/ethereum-package/tree/main?tab=readme-ov-file#configuration
   l1_additional_services: [
-    # blockscout, # block explorer
-    # dora, # beaconchain explorer
-    # el_forkmon, # fork monitor tool
+  # blockscout, # block explorer
+  # dora, # beaconchain explorer
+  # el_forkmon, # fork monitor tool
   ]
   l1_preset: minimal
   l1_seconds_per_slot: 1
