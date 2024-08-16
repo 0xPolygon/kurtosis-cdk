@@ -20,7 +20,7 @@ This process typically takes around ten minutes.
 
 ```bash
 kurtosis clean --all
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave=cdk-v1 --args-file=params.yml .
 ```
 
 The command above deploys a CDK stack using [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as a sequencer.

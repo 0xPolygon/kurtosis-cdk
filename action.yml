@@ -6,31 +6,31 @@ inputs:
   zkevm_agglayer:
     description: 0xPolygon/agglayer (short commit hash or release tag)
     required: false
-    default: '0.1.4'
+    default: "0.1.4"
   zkevm_bridge_service:
     description: 0xPolygonHermez/zkevm-bridge-service (short commit hash or release tag)
     required: false
-    default: 'v0.4.2'
+    default: "v0.4.2"
   zkevm_bridge_ui:
     description: 0xPolygonHermez/zkevm-bridge-ui (short commit hash or release tag)
     required: false
-    default: '0006445'
+    default: "0006445"
   zkevm_dac:
     description: 0xPolygon/cdk-data-availability (short commit hash or release tag)
     required: false
-    default: '0.0.7'
+    default: "0.0.7"
   zkevm_node:
     description: 0xPolygon/cdk-validium-node (short commit hash or release tag)
     required: false
-    default: '0.6.5-cdk'
+    default: "0.6.5-cdk"
   kurtosis_cli:
     description: kurtosis-tech/kurtosis (release tag)
     required: false
-    default: '0.90.1'
+    default: "0.90.1"
   kurtosis_cdk:
     description: 0xPolygon/kurtosis-cdk (release tag)
     required: false
-    default: 'v0.2.0'
+    default: "v0.2.0"
 
 runs:
   using: "composite"
