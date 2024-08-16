@@ -125,27 +125,23 @@ def run(
 
     # Parse additional services.
     if "zkevm-pless-node" in args.additional_services:
-        plan.print("Deploying zkevm permissionless node")
-        # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)
-        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-        permissionless_node_args["deployment_suffix"] = (
-            "-pless" + args["deployment_suffix"]
-        )
-        permissionless_node_args["genesis_artifact"] = genesis_artifact
         import_module(databases_package).run_pless(
-            plan, suffix=permissionless_node_args["original_suffix"]
+            plan, suffix=args["deployment_suffix"]
         )
-        import_module(zkevm_permissionless_node_package).run(
-            plan, permissionless_node_args, genesis_artifact
+        deploy_additional_service(
+            "zkevm permissionless node",
+            zkevm_permissionless_node_package,
+            {
+                "original_suffix": args["deployment_suffix"],
+                # Note that an additional suffix will be added to the permissionless services.
+                "deployment_suffix": "-pless" + args["deployment_suffix"],
+                "genesis_artifact": genesis_artifact,
+            }
         )
     elif "blockscout" in args.additional_services:
-        plan.print("Deploying Blockscout stack")
-        import_module(blockscout_package).run(plan, args)
+        deploy_additional_service("blockscout", blockscout_package)
     elif "blutgang" in args.additional_services:
-        plan.print("Deploying blutgang")
-        blutgang_args = dict(args)
-        import_module(blutgang_package).run(plan, blutgang_args)
+        deploy_additional_service("blutgang", blutgang_package)
 
     # Deploy observability stack.
     if deploy_observability:
@@ -206,3 +202,10 @@ def deploy_helper_service(plan, args):
             ]
         ),
     )
+
+def deploy_additional_service(name, package, additional_args=None):
+    plan.print(f"Deploying {name}")
+    service_args = dict(args)
+    if additional_args:
+        service_args.update(additional_args)
+    import_module(package).run(plan, service_args)
