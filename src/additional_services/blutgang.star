@@ -1,9 +1,12 @@
+BLUTGANG_IMAGE = "makemake1337/blutgang:0.3.6"
+
+
 def run(plan, args):
     blutgang_config = get_blutgang_config(plan, args)
     plan.add_service(
         name="blutgang" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=args["blutgang_image"],
+            image=BLUTGANG_IMAGE,
             ports={
                 "http": PortSpec(
                     args["blutgang_rpc_port"], application_protocol="http"
