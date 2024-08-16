@@ -12,7 +12,7 @@ blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
 grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
-pless_zkevm_node_package = "/src/additional_services/pless_zkevm_node_package.star"
+pless_zkevm_node_package = "/src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
