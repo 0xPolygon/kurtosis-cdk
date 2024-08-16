@@ -22,7 +22,6 @@ def run(
     deploy_cdk_central_environment=True,
     deploy_cdk_erigon_node=True,
     deploy_observability=True,
-    deploy_l2_blockscout=False,
     apply_workload=False,
     args={},
 ):
@@ -140,6 +139,9 @@ def run(
         import_module(zkevm_permissionless_node_package).run(
             plan, permissionless_node_args, genesis_artifact
         )
+    elif "blockscout" in args.additional_services:
+        plan.print("Deploying Blockscout stack")
+        import_module(blockscout_package).run(plan, args)
     elif "blutgang" in args.additional_services:
         plan.print("Deploying blutgang")
         blutgang_args = dict(args)
@@ -152,13 +154,6 @@ def run(
         import_module(observability_package).run(plan, observability_args)
     else:
         plan.print("Skipping the deployment of the observability stack")
-
-    # Deploy observability stack
-    if deploy_l2_blockscout:
-        plan.print("Deploying Blockscout stack")
-        import_module(blockscout_package).run(plan, args)
-    else:
-        plan.print("Skipping the deployment of Blockscout stack")
 
     # Apply workload
     if apply_workload:

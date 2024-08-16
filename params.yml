@@ -23,9 +23,6 @@ deploy_cdk_erigon_node: true
 # Deploy observability stack.
 deploy_observability: false
 
-# Deploy Blockscout stack.
-deploy_l2_blockscout: false
-
 # Apply workload to the different components of the CDK stack.
 apply_workload: false
 
