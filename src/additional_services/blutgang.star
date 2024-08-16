@@ -66,8 +66,8 @@ def get_blutgang_config(plan, args):
                     "l2_sequencer_url": zkevm_sequencer_http_url,
                     "l2_rpc_url": l2_rpc_urls.http,
                     "l2_ws_url": l2_rpc_urls.ws,
-                    "l2_zkevm_rpc_pless_url": zkevm_rpc_pless_http_url,
-                    "l2_zkevm_ws_pless_url": zkevm_rpc_pless_ws_url,
+                    "l2_pless_zkevm_rpc": zkevm_rpc_pless_http_url,
+                    "l2_pless_zkevm_rpc": zkevm_rpc_pless_ws_url,
                 }
                 | args,
             )
