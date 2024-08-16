@@ -29,7 +29,7 @@ def run(plan, args):
 
 def get_blutgang_config(plan, args):
     blutgang_config_template = read_file(
-        src="../../static-files/blutgang-config/config.toml"
+        src="../../static-files/additional-services/blutgang-config/config.toml"
     )
 
     zkevm_sequencer_service = plan.get_service(
