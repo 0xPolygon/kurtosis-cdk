@@ -2,13 +2,13 @@ service_package = import_module("../../lib/service.star")
 
 
 def run(plan, args):
-    tx_spammer_config = get_tx_spammer_config(plan, args)
+    tx_spammer_config_artifact = get_tx_spammer_config(plan, args)
     plan.add_service(
         name="workload" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["toolbox_image"],
             files={
-                "/usr/local/bin": Directory(artifact_names=[tx_spammer_config]),
+                "/usr/local/bin": Directory(artifact_names=[tx_spammer_config_artifact]),
             },
             entrypoint=["bash", "-c"],
             cmd=["chmod +x /usr/local/bin/*.sh && apply_workload.sh"],

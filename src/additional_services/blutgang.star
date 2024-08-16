@@ -7,7 +7,7 @@ ADMIN_PORT_NUMBER = 8556
 
 
 def run(plan, args):
-    blutgang_config = get_blutgang_config(plan, args)
+    blutgang_config_artifact = get_blutgang_config(plan, args)
     plan.add_service(
         name="blutgang" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -19,7 +19,7 @@ def run(plan, args):
             files={
                 "/etc/blutgang": Directory(
                     artifact_names=[
-                        blutgang_config,
+                        blutgang_config_artifact,
                     ]
                 ),
             },

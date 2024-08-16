@@ -4,7 +4,7 @@ PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.47"
 
 
 def run(plan, args):
-    panoptichain_config = get_panoptichain_config(plan, args)
+    panoptichain_config_artifact = get_panoptichain_config(plan, args)
     plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
         config=ServiceConfig(
