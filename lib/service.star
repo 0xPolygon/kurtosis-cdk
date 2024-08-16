@@ -44,3 +44,19 @@ def get_exec_recipe_result(result):
             new_key = key[len(key_prefix) :]
             result_dict[new_key] = value
     return result_dict
+
+
+# Return the HTTP and WS URLs of the L2 RPC service.
+def get_l2_rpc_urls(plan, args):
+    l2_rpc_service = plan.get_service(
+        name=args["l2_rpc_name"] + args["deployment_suffix"]
+    )
+    return struct(
+        http="http://{}:{}".format(
+            l2_rpc_service.ip_address,
+            l2_rpc_service.ports["http-rpc"].number,
+        ),
+        ws="ws://{}:{}".format(
+            l2_rpc_service.ip_address, l2_rpc_service.ports["ws-rpc"].number
+        ),
+    )

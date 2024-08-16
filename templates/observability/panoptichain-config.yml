@@ -91,7 +91,7 @@ providers:
         rollup_manager_address: "{{.zkevm_rollup_manager_address}}"
 
     - name: "L2"
-      url: "{{.zkevm_rpc_url}}"
+      url: "{{.l2_rpc_url}}"
       label: "L2"
       contracts:
         global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
@@ -154,10 +154,10 @@ observers:
 # in the provider as the `name` field.
 networks:
   - name: "L1"
-    chain_id: {{.l1_chain_id}}
+    chain_id: { { .l1_chain_id } }
 
   - name: "L2"
-    chain_id: {{.zkevm_rollup_chain_id}}
+    chain_id: { { .zkevm_rollup_chain_id } }
 
 logs:
   # Pretty print logs. If running in production, you should probably set this to

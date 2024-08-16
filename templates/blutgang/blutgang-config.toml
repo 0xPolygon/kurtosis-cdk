@@ -77,9 +77,9 @@ max_consecutive = 150
 # Max amount of queries per second.
 max_per_second = 200
 
-[rpcpless]
-url = "{{.l2_rpc_pless_url}}"
-ws_url = "{{.l2_ws_pless_url}}"
+[zkevmrpcpless]
+url = "{{.l2_zkevm_rpc_pless_url}}"
+ws_url = "{{.l2_zkevm_ws_pless_url}}"
 # The maximum amount of time we can use this rpc in a row.
 max_consecutive = 150
 # Max amount of queries per second.

@@ -4,20 +4,6 @@ PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.47"
 
 
 def run(plan, args):
-    for service in plan.get_services():
-        if service.name == args["l2_rpc_name"] + args["deployment_suffix"]:
-            args["zkevm_rpc_url"] = "http://{}:{}".format(
-                service.ip_address, service.ports["http-rpc"].number
-            )
-
-        if (
-            service.name
-            == databases_package.POSTGRES_SERVICE_NAME + args["deployment_suffix"]
-        ):
-            args["postgres_url"] = "{}:{}".format(
-                service.ip_address, service.ports["postgres"].number
-            )
-
     panoptichain_config = get_panoptichain_config(plan, args)
     plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
@@ -36,6 +22,7 @@ def get_panoptichain_config(plan, args):
         src="../../templates/observability/panoptichain-config.yml"
     )
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+    l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
     return plan.render_templates(
         name="panoptichain-config",
         config={
@@ -43,6 +30,7 @@ def get_panoptichain_config(plan, args):
                 template=panoptichain_config_template,
                 data={
                     "l1_rpc_url": args["l1_rpc_url"],
+                    "l2_rpc_url": l2_rpc_urls.http,
                     "zkevm_rpc_url": args["zkevm_rpc_url"],
                     "l1_chain_id": args["l1_chain_id"],
                     "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],

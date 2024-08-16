@@ -4,20 +4,6 @@ prometheus_package = import_module(
 
 
 def run(plan, args):
-    for service in plan.get_services():
-        if service.name == args["l2_rpc_name"] + args["deployment_suffix"]:
-            args["zkevm_rpc_url"] = "http://{}:{}".format(
-                service.ip_address, service.ports["http-rpc"].number
-            )
-
-        if (
-            service.name
-            == databases_package.POSTGRES_SERVICE_NAME + args["deployment_suffix"]
-        ):
-            args["postgres_url"] = "{}:{}".format(
-                service.ip_address, service.ports["postgres"].number
-            )
-
     metrics_jobs = get_metrics_jobs(plan)
     prometheus_package.run(
         plan, metrics_jobs, name="prometheus" + args["deployment_suffix"]
