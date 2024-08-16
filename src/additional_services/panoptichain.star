@@ -17,7 +17,7 @@ def run(plan, args):
 
 def get_panoptichain_config(plan, args):
     panoptichain_config_template = read_file(
-        src="./templates/observability/panoptichain-config.yml"
+        src="../../templates/observability/panoptichain-config.yml"
     )
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(

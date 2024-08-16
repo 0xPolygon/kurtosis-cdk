@@ -8,7 +8,7 @@ def run(plan, args, genesis_artifact):
 
     # Start executor.
     executor_config_template = read_file(
-        src="./templates/permissionless-node/executor-config.json"
+        src="../../templates/permissionless-node/executor-config.json"
     )
     executor_config_artifact = plan.render_templates(
         name="executor-config",
@@ -31,7 +31,7 @@ def run(plan, args, genesis_artifact):
 
     # Start zkevm synchronizer and rpc.
     node_config_template = read_file(
-        src="./templates/permissionless-node/node-config.toml"
+        src="../../templates/permissionless-node/node-config.toml"
     )
     node_config_artifact = plan.render_templates(
         name="permissionless-node-config",
