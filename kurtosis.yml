@@ -54,7 +54,6 @@ description: |-
 
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-  panoptichain_image: minhdvu/panoptichain:0.1.47
 
   # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network

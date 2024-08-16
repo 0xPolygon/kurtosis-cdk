@@ -1,12 +1,14 @@
 service_package = import_module("../..lib/service.star")
 
+PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.47"
+
 
 def run(plan, args):
     panoptichain_config = get_panoptichain_config(plan, args)
     plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=args["panoptichain_image"],
+            image=PANOPTICHAIN_IMAGE,
             ports={
                 "prometheus": PortSpec(9090, application_protocol="http"),
             },
