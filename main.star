@@ -21,7 +21,6 @@ def run(
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
     deploy_cdk_erigon_node=True,
-    deploy_observability=True,
     apply_workload=False,
     args={},
 ):
@@ -140,16 +139,10 @@ def run(
         )
     elif "blockscout" in args.additional_services:
         deploy_additional_service("blockscout", blockscout_package)
+    elif "observability" in args.additional_services:
+        deploy_additional_service("observability", observability_package)
     elif "blutgang" in args.additional_services:
         deploy_additional_service("blutgang", blutgang_package)
-
-    # Deploy observability stack.
-    if deploy_observability:
-        plan.print("Deploying the observability stack")
-        observability_args = dict(args)
-        import_module(observability_package).run(plan, observability_args)
-    else:
-        plan.print("Skipping the deployment of the observability stack")
 
     # Apply workload
     if apply_workload:
