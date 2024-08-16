@@ -4,29 +4,24 @@ blockscout_package = import_module(
 
 
 def run(plan, args):
-    rpc_url = None
-    ws_url = None
-    for service in plan.get_services():
-        if service.name == "zkevm-node-rpc" + args["deployment_suffix"]:
-            rpc_url = "http://{}:{}".format(
-                service.ip_address, service.ports["http-rpc"].number
-            )
-            ws_url = "ws://{}:{}".format(
-                service.ip_address, service.ports["ws-rpc"].number
-            )
-            break
+    zkevm_node_rpc_service = plan.get_service(
+        name="zkevm-node-rpc" + args["deployment_suffix"]
+    )
+    zkevm_node_rpc_http_url = "http://{}:{}".format(
+        zkevm_node_rpc_service.ip_address,
+        zkevm_node_rpc_service.ports["http-rpc"].number,
+    )
+    zkevm_node_rpc_ws_url = "http://{}:{}".format(
+        zkevm_node_rpc_service.ip_address, zkevm_node_rpc_service.ports["ws-rpc"].number
+    )
 
-    if not (rpc_url and ws_url):
-        fail("Could not find the zkevm-node-rpc service")
-
-    # Start blockscout.
     blockscout_package.run(
         plan,
         args={
             "blockscout_public_port": args["blockscout_public_port"],
-            "rpc_url": rpc_url,
-            "trace_url": rpc_url,
-            "ws_url": ws_url,
+            "rpc_url": zkevm_node_rpc_http_url,
+            "trace_url": zkevm_node_rpc_http_url,
+            "ws_url": zkevm_node_rpc_ws_url,
             "chain_id": str(args["zkevm_rollup_chain_id"]),
             "deployment_suffix": args["deployment_suffix"],
         },
