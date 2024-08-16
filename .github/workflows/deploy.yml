@@ -37,11 +37,13 @@ jobs:
             . \
             '{
               "deploy_cdk_erigon_node": true,
-              "deploy_zkevm_permissionless_node": true,
               "apply_workload": true,
               "args": {
                 "sequencer_type": "erigon",
-                "l1_seconds_per_slot": 1
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "zkevm-pless-node"
+                ]
               }
             }'
 
@@ -77,11 +79,13 @@ jobs:
             . \
             '{
               "deploy_cdk_erigon_node": false,
-              "deploy_zkevm_permissionless_node": true,
               "apply_workload": true,
               "args": {
                 "sequencer_type": "zkevm",
-                "l1_seconds_per_slot": 1
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "zkevm_pless_node"
+                ]
               }
             }'
 

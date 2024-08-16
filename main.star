@@ -20,7 +20,6 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=False,
     deploy_cdk_erigon_node=True,
     deploy_observability=True,
     deploy_l2_blockscout=False,
@@ -28,22 +27,6 @@ def run(
     apply_workload=False,
     args={},
 ):
-    """Deploy a Polygon CDK Devnet with various configurable options.
-
-    Args:
-        deploy_l1 (bool): Deploy local l1.
-        deploy_zkevm_contracts_on_l1(bool): Deploy zkevm contracts on L1 (and also fund accounts).
-        deploy_databases(bool): Deploy zkevm node and cdk peripheral databases.
-        deploy_cdk_central_environment(bool): Deploy cdk central/trusted environment.
-        deploy_cdk_bridge_infra(bool): Deploy cdk/bridge infrastructure.
-        deploy_zkevm_permissionless_node(bool): Deploy permissionless node.
-        deploy_observability(bool): Deploys observability stack.
-        deploy_l2_blockscout(bool): Deploys Blockscout stack.
-        args(json): Configures other aspects of the environment.
-    Returns:
-        A full deployment of Polygon CDK.
-    """
-
     args = import_module(input_parser).parse_args(args)
 
     plan.print("Deploying CDK environment...")
@@ -143,7 +126,7 @@ def run(
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
     # Deploy permissionless node
-    if deploy_zkevm_permissionless_node:
+    if "zkevm-pless-node" in args.additional_services:
         plan.print("Deploying zkevm permissionless node")
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_node_args = dict(args)

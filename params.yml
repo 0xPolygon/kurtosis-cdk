@@ -17,9 +17,6 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
-# Deploy permissionless node.
-deploy_zkevm_permissionless_node: false
-
 # Deploy cdk-erigon node.
 deploy_cdk_erigon_node: true
 
@@ -52,6 +49,9 @@ args:
   # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
   # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
   data_availability_mode: cdk-validium
+
+  # Additional services to run alongside the network.
+  additional_services: []
 
   # Docker images and repositories used to spin up services.
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC5-fork.12
