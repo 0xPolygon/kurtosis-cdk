@@ -83,7 +83,7 @@ jobs:
                 "sequencer_type": "zkevm",
                 "l1_seconds_per_slot": 1,
                 "additional_services": [
-                  "zkevm_pless_node",
+                  "pless_zkevm_node",
                   "tx_spammer"
                 ]
               }
