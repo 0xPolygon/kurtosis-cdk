@@ -18,7 +18,9 @@ def run(plan, args):
 
 
 def get_tx_spammer_config(plan, args):
-    spam_script_template = read_file(src="../../static-files/additional-services/tx-spammer-config/spam.sh")
+    spam_script_template = read_file(
+        src="../../static-files/additional-services/tx-spammer-config/spam.sh"
+    )
     bridge_script_template = read_file(
         src="../../static-files/additional-services/tx-spammer-config/bridge.sh"
     )
