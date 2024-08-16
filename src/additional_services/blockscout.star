@@ -1,7 +1,7 @@
 blockscout_package = import_module(
     "github.com/xavier-romero/kurtosis-blockscout/main.star"
 )
-service_package = import_module("../..lib/service.star")
+service_package = import_module("../../lib/service.star")
 
 
 FRONTEND_PORT_NUMBER = 3000
