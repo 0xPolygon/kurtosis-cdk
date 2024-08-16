@@ -121,6 +121,7 @@ jobs:
             . \
             '{
               "args": {
+                "l1_seconds_per_slot": 1,
                 "additional_services": [
                   "blockscout",
                   "blutgang",
