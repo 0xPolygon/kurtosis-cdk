@@ -2,6 +2,7 @@ DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",
+    "additional_services": [],
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",

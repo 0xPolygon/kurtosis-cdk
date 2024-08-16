@@ -37,6 +37,9 @@ description: |-
   # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
   data_availability_mode: cdk-validium
 
+  # Additional services to run alongside the network.
+  additional_services: []
+
   # Docker images and repositories used to spin up services.
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v4.0.19
