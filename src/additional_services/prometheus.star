@@ -24,8 +24,7 @@ def get_metrics_jobs(plan):
             {
                 "Name": service.name,
                 "Endpoint": "{0}:{1}".format(
-                    service.ip_address,
-                    service.ports["prometheus"].number,
+                    service.ip_address, service.ports["prometheus"].number
                 ),
                 "MetricsPath": metrics_path,
             }

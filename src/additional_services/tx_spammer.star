@@ -8,7 +8,9 @@ def run(plan, args):
         config=ServiceConfig(
             image=args["toolbox_image"],
             files={
-                "/usr/local/bin": Directory(artifact_names=[tx_spammer_config_artifact]),
+                "/usr/local/bin": Directory(
+                    artifact_names=[tx_spammer_config_artifact]
+                ),
             },
             entrypoint=["bash", "-c"],
             cmd=["chmod +x /usr/local/bin/*.sh && apply_workload.sh"],
