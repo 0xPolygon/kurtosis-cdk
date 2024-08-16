@@ -21,6 +21,7 @@ GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
 MaxBatchesForL1 = 300
+BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
 	[SequenceSender.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 	[SequenceSender.EthTxManager]
@@ -120,7 +121,14 @@ MaxBatchesForL1 = 300
 			[Aggregator.Synchronizer.Etherman.Validium]
 				Enabled = {{.is_cdk_validium}}
 
-[RPC]
+[L1InfoTreeSync]
+DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
+GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
+SyncBlockChunkSize = 10
+BlockFinality = "LatestBlock"
+URLRPCL1 = "{{.l1_rpc_url}}"
+WaitForNewBlocksPeriod = "1s"
+InitialBlock = 0 # TODO: should be block were rollup manager was deployed
 
 [NetworkConfig.L1]
 L1ChainID = "{{.l1_chain_id}}"
