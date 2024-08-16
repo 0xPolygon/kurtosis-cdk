@@ -1,10 +1,10 @@
-input_parser = "./input_parser.star"
-ethereum_package = "./ethereum.star"
-deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 databases_package = "./databases.star"
-cdk_central_environment_package = "./cdk_central_environment.star"
+deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
+cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
+ethereum_package = "./ethereum.star"
+input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 # Additional services packages.
@@ -12,7 +12,7 @@ blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
 grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
-pless_zkevm_node_package = "/src/additional_services/pless_zkevm_node.star"
+pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
@@ -138,7 +138,7 @@ def run(
         import_module(databases_package).run_pless(
             plan, suffix=permissionless_node_args["deployment_suffix"]
         )
-        import_module(zkevm_permissionless_node_package).run(
+        import_module(pless_zkevm_node_package).run(
             plan, permissionless_node_args, genesis_artifact
         )
     elif "blockscout" in additional_services:
