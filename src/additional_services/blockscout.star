@@ -3,6 +3,8 @@ blockscout_package = import_module(
 )
 
 
+FRONTEND_PORT_NUMBER = 3000
+
 def run(plan, args):
     zkevm_node_rpc_service = plan.get_service(
         name="zkevm-node-rpc" + args["deployment_suffix"]
@@ -18,7 +20,7 @@ def run(plan, args):
     blockscout_package.run(
         plan,
         args={
-            "blockscout_public_port": args["blockscout_public_port"],
+            "blockscout_public_port": FRONTEND_PORT_NUMBER,
             "rpc_url": zkevm_node_rpc_http_url,
             "trace_url": zkevm_node_rpc_http_url,
             "ws_url": zkevm_node_rpc_ws_url,

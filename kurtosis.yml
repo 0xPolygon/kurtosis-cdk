@@ -79,7 +79,6 @@ description: |-
   zkevm_agglayer_port: 4444
   zkevm_dac_port: 8484
   zkevm_pool_manager_port: 8545
-  blockscout_public_port: 50101
 
   # Addresses and private keys of the different components.
   # They have been generated using the following command:

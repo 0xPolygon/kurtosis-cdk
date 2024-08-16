@@ -31,7 +31,6 @@ DEFAULT_ARGS = {
     "zkevm_agglayer_port": 4444,
     "zkevm_dac_port": 8484,
     "zkevm_pool_manager_port": 8545,
-    "blockscout_public_port": 50101,  # IANA registered ports up to 49151
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
     "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
     "zkevm_l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
