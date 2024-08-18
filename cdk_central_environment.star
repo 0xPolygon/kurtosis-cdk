@@ -1,3 +1,4 @@
+cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 cdk_node_package = import_module("./lib/cdk_node.star")
 data_availability_package = import_module("./lib/data_availability.star")
 databases = import_module("./databases.star")
@@ -80,6 +81,10 @@ def run(plan, args):
             description="Starting the rest of the zkevm node components",
         )
     elif args["sequencer_type"] == "erigon":
+        # Deploy CDK erigon sequencer.
+        plan.print("Deploying cdk-erigon sequencer")
+        cdk_erigon_package.start_sequencer(plan, args)
+
         # Deploy zkevm pool manager.
         zkevm_pool_manager_config_template = read_file(
             src="./templates/pool-manager/pool-manager-config.toml"

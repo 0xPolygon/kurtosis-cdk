@@ -1,6 +1,6 @@
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-cdk_erigon_package = import_module("./cdk_erigon.star")
+cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
@@ -83,18 +83,10 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
-        # Deploy cdk-erigon sequencer node.
-        # TODO this is a little weird if the erigon sequencer is deployed before the executor?
-        if args["sequencer_type"] == "erigon":
-            plan.print("Deploying cdk-erigon sequencer")
-            cdk_erigon_package.run_sequencer(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon sequencer")
-
         # Deploy cdk-erigon node.
         if deploy_cdk_erigon_node:
             plan.print("Deploying cdk-erigon node")
-            cdk_erigon_package.run_rpc(plan, args)
+            cdk_erigon_package.start_rpc(plan, args)
         else:
             plan.print("Skipping the deployment of cdk-erigon node")
 
