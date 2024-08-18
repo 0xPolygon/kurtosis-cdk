@@ -56,9 +56,9 @@ def get_blutgang_config(plan, args):
     )
 
     return plan.render_templates(
-        name="blutgang-config-artifact",
+        name="blutgang-config",
         config={
-            "blutgang-config.toml": struct(
+            "config.toml": struct(
                 template=blutgang_config_template,
                 data={
                     "blutgang_rpc_port": RPC_PORT_NUMBER,
