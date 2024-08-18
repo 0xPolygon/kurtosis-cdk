@@ -24,16 +24,10 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_cdk_erigon_node=True,
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
     plan.print("Deploying CDK environment with parameters: " + str(args))
-
-    if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
 
     # Deploy a local L1.
     if deploy_l1:
@@ -49,6 +43,16 @@ def run(
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
+    # Get the genesis file.
+    genesis_artifact = ""
+    if deploy_cdk_central_environment:
+        plan.print("Getting genesis file...")
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+        )
+
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
         "zkevm_rollup_manager_address" in args
@@ -61,22 +65,17 @@ def run(
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
+    if deploy_cdk_erigon_node:
+        args["l2_rpc_name"] = "cdk-erigon-node"
+    else:
+        args["l2_rpc_name"] = "zkevm-node-rpc"
+
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
         import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
-
-    # Get the genesis file.
-    genesis_artifact = ""
-    if deploy_cdk_central_environment:
-        plan.print("Getting genesis file...")
-        genesis_artifact = plan.store_service_files(
-            name="genesis",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
-        )
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
