@@ -35,11 +35,6 @@ def run(
     else:
         args["l2_rpc_name"] = "zkevm-node-rpc"
 
-    if args["sequencer_type"] == "erigon":
-        args["sequencer_name"] = "cdk-erigon-sequencer"
-    else:
-        args["sequencer_name"] = "zkevm-node-sequencer"
-
     # Deploy a local L1.
     if deploy_l1:
         plan.print("Deploying a local L1")

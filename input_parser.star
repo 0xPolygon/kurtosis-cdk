@@ -69,6 +69,14 @@ DEFAULT_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
 }
 
-
 def parse_args(args):
+    # Define the name of the sequencer.
+    sequencer_type = args["sequencer_type"]
+    if sequencer_type == "erigon":
+        args["sequencer_name"] = "cdk-erigon-sequencer"
+    elif sequencer_type == "zkevm":
+        args["sequencer_name"] = "zkevm-node-sequencer"
+    else:
+        fail("Unsupported sequencer type: " % args["sequencer_type"])
+
     return DEFAULT_ARGS | args
