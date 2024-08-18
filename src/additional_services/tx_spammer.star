@@ -4,7 +4,7 @@ service_package = import_module("../../lib/service.star")
 def run(plan, args):
     tx_spammer_config_artifacts = get_tx_spammer_config(plan, args)
     plan.add_service(
-        name="workload" + args["deployment_suffix"],
+        name="tx-spammer" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["toolbox_image"],
             files={
@@ -44,7 +44,7 @@ def get_tx_spammer_config(plan, args):
     )
 
     return plan.render_templates(
-        name="workload-script-artifact",
+        name="tx-spammer-scripts",
         config={
             "spam.sh": struct(
                 template=spam_script_template,
