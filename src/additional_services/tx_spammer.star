@@ -2,14 +2,14 @@ service_package = import_module("../../lib/service.star")
 
 
 def run(plan, args):
-    tx_spammer_config_artifact = get_tx_spammer_config(plan, args)
+    tx_spammer_config_artifacts = get_tx_spammer_config(plan, args)
     plan.add_service(
         name="workload" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["toolbox_image"],
             files={
                 "/usr/local/bin": Directory(
-                    artifact_names=[tx_spammer_config_artifact]
+                    artifact_names=[tx_spammer_config_artifacts]
                 ),
             },
             entrypoint=["bash", "-c"],
@@ -43,7 +43,7 @@ def get_tx_spammer_config(plan, args):
         zkevm_bridge_service.ip_address, zkevm_bridge_service.ports["rpc"].number
     )
 
-    workload_script_artifact = plan.render_templates(
+    return plan.render_templates(
         name="workload-script-artifact",
         config={
             "spam.sh": struct(
