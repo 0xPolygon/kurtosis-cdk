@@ -9,7 +9,24 @@ databases = import_module("./databases.star")
 
 
 def run(plan, args):
+    # Get databases.
     db_configs = databases.get_db_configs(args["deployment_suffix"])
+
+    # Get the genesis file artifact.
+    # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.
+    genesis_artifact = ""
+    if "genesis_artifact" in args:
+        genesis_artifact = args["genesis_artifact"]
+    else:
+        genesis_file = read_file(src=args["genesis_file"])
+        genesis_artifact = plan.render_templates(
+            name="genesis",
+            config={"genesis.json": struct(template=genesis_file, data={})},
+        )
+
+    # Get keystores.
+    keystore_artifacts = get_keystores_artifacts(plan, args)
+
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"
@@ -25,19 +42,6 @@ def run(plan, args):
     )
     zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
-    # Get the genesis file artifact.
-    # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.
-    genesis_artifact = ""
-    if "genesis_artifact" in args:
-        genesis_artifact = args["genesis_artifact"]
-    else:
-        genesis_file = read_file(src=args["genesis_file"])
-        genesis_artifact = plan.render_templates(
-            name="genesis",
-            config={"genesis.json": struct(template=genesis_file, data={})},
-        )
-
-    keystore_artifacts = get_keystores_artifacts(plan, args)
     if args["sequencer_type"] == "zkevm":
         # Create the zkevm node config.
         node_config_template = read_file(
@@ -70,13 +74,11 @@ def run(plan, args):
                 args, node_config_artifact, genesis_artifact, keystore_artifacts
             )
         )
-
         plan.add_services(
             configs=zkevm_node_components_configs,
             description="Starting the rest of the zkevm node components",
         )
-
-    if args["sequencer_type"] == "erigon":
+    elif args["sequencer_type"] == "erigon":
         # Create the cdk node config.
         node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
@@ -105,7 +107,6 @@ def run(plan, args):
         cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
-
         plan.add_services(
             configs=cdk_node_configs,
             description="Starting the cdk node components",
