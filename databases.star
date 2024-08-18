@@ -22,34 +22,7 @@ POSTGRES_MASTER_PASSWORD = "master_password"
 # This way, users can also leverage our 'reset_postgres.sh' script,
 # Which automatically wipes all CDK databases and reapplies proper db permissions
 # TO DO: add env var support for credentials
-TRUSTED_DATABASES = {
-    "event_db": {
-        "name": "event_db",
-        "user": "event_user",
-        "password": "redacted",
-        "init": read_file(src="./templates/databases/event-db-init.sql"),
-    },
-    "pool_db": {
-        "name": "pool_db",
-        "user": "pool_user",
-        "password": "redacted",
-    },
-    "pool_manager_db": {
-        "name": "pool_manager_db",
-        "user": "pool_manager_user",
-        "password": "redacted",
-    },
-    "prover_db": {
-        "name": "prover_db",
-        "user": "prover_user",
-        "password": "redacted",
-        "init": read_file(src="./templates/databases/prover-db-init.sql"),
-    },
-    "state_db": {
-        "name": "state_db",
-        "user": "state_user",
-        "password": "redacted",
-    },
+AGGREGATOR_DBS = {
     "aggregator_db": {
         "name": "aggregator_db",
         "user": "aggregator_user",
@@ -62,7 +35,43 @@ TRUSTED_DATABASES = {
     },
 }
 
-PERMISSIONLESS_DATABASES = {
+PROVER_DB = {
+    "prover_db": {
+        "name": "prover_db",
+        "user": "prover_user",
+        "password": "redacted",
+        "init": read_file(src="./templates/databases/prover-db-init.sql"),
+    }
+}
+
+CDK_ERIGON_DBS = {
+    "pool_manager_db": {
+        "name": "pool_manager_db",
+        "user": "pool_manager_user",
+        "password": "redacted",
+    },
+}
+
+ZKEVM_NODE_DBS = {
+    "event_db": {
+        "name": "event_db",
+        "user": "event_user",
+        "password": "redacted",
+        "init": read_file(src="./templates/databases/event-db-init.sql"),
+    },
+    "pool_db": {
+        "name": "pool_db",
+        "user": "pool_user",
+        "password": "redacted",
+    },
+    "state_db": {
+        "name": "state_db",
+        "user": "state_user",
+        "password": "redacted",
+    },
+}
+
+CDK_BRIDGE_INFRA_DBS = {
     "bridge_db": {
         "name": "bridge_db",
         "user": "bridge_user",
@@ -75,18 +84,24 @@ PERMISSIONLESS_DATABASES = {
     },
 }
 
-DATABASES = TRUSTED_DATABASES | PERMISSIONLESS_DATABASES
+
+DBS = AGGREGATOR_DBS | PROVER_DB | CDK_BRIDGE_INFRA_DBS
+PLESS_CDK_ERIGON_DBS = PROVER_DB | CDK_ERIGON_DBS
+PLESS_ZKEVM_NODE_DBS = PROVER_DB | ZKEVM_NODE_DBS
 
 
-def _service_name(suffix):
-    return POSTGRES_SERVICE_NAME + suffix
+def deploy_dbs(plan, sequencer_type, suffix):
+    if sequencer_type == "erigon":
+        db_configs = get_db_configs(suffix, DBS | CDK_ERIGON_DBS)
+        _create_postgres_service(plan, db_configs, suffix)
+    elif sequencer_type == "zkevm":
+        db_configs = get_db_configs(suffix, DBS | ZKEVM_NODE_DBS)
+        _create_postgres_service(plan, db_configs, suffix)
+    else:
+        fail("Unsupported sequencer type: " % sequencer_type)
 
 
-def _pless_suffix(suffix):
-    return "-pless" + suffix
-
-
-def get_db_configs(suffix):
+def get_db_configs(suffix, dbs):
     configs = {
         k: v
         | {
@@ -95,12 +110,21 @@ def get_db_configs(suffix):
             else _service_name(suffix),
             "port": POSTGRES_PORT,
         }
-        for k, v in DATABASES.items()
+        for k, v in dbs.items()
     }
     return configs
 
 
-def get_pless_db_configs(suffix):
+def _service_name(suffix):
+    return POSTGRES_SERVICE_NAME + suffix
+
+
+def deploy_pless_zkevm_dbs(plan, suffix):
+    db_configs = get_pless_zkevm_db_configs(suffix)
+    _create_postgres_service(plan, db_configs, _pless_suffix(suffix))
+
+
+def get_pless_zkevm_db_configs(suffix):
     configs = {
         k: v
         | {
@@ -109,12 +133,16 @@ def get_pless_db_configs(suffix):
             else _service_name(_pless_suffix(suffix)),
             "port": POSTGRES_PORT,
         }
-        for k, v in TRUSTED_DATABASES.items()
+        for k, v in PLESS_ZKEVM_NODE_DBS.items()
     }
     return configs
 
 
-def create_postgres_service(plan, db_configs, suffix):
+def _pless_suffix(suffix):
+    return "-pless" + suffix
+
+
+def _create_postgres_service(plan, db_configs, suffix):
     init_script_tpl = read_file(src="./templates/databases/init.sql")
     init_script = plan.render_templates(
         name="init.sql" + suffix,
@@ -149,13 +177,3 @@ def create_postgres_service(plan, db_configs, suffix):
         config=postgres_service_cfg,
         description="Starting Postgres Service",
     )
-
-
-def run(plan, suffix):
-    db_configs = get_db_configs(suffix)
-    create_postgres_service(plan, db_configs, suffix)
-
-
-def run_pless(plan, suffix):
-    db_configs = get_pless_db_configs(suffix)
-    create_postgres_service(plan, db_configs, _pless_suffix(suffix))

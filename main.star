@@ -73,14 +73,18 @@ def run(
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
+        import_module(databases_package).deploy_dbs(
+            plan,
+            sequencer_type=args["sequencer_type"],
+            suffix=args["deployment_suffix"],
+        )
     else:
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
         # Deploy cdk-erigon sequencer node.
-        # TODO this is a little weird if the erigon sequencer is deployed before the exector?
+        # TODO this is a little weird if the erigon sequencer is deployed before the executor?
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
             cdk_erigon_package.run_sequencer(plan, args)
