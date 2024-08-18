@@ -1,12 +1,12 @@
+cdk_databases_package = import_module("./cdk_databases.star")
 service_package = import_module("./lib/service.star")
 zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
-databases = import_module("./databases.star")
 
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = cdk_databases_package.get_db_configs(args["deployment_suffix"])
 
     # Create the bridge service config.
     bridge_config_artifact = create_bridge_config_artifact(

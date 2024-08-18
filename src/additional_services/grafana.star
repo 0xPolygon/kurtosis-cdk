@@ -1,4 +1,4 @@
-databases_package = import_module("../../databases.star")
+cdk_databases_package = import_module("../../cdk_databases.star")
 grafana_package = import_module(
     "github.com/kurtosis-tech/grafana-package/main.star@6772a4e4ae07cf5256b8a10e466587b73119bab5"
 )
@@ -26,12 +26,12 @@ def run(plan, args):
 
     postgres_databases = []
     postgres_service = plan.get_service(
-        databases_package.POSTGRES_SERVICE_NAME + args["deployment_suffix"]
+        cdk_databases_package.POSTGRES_SERVICE_NAME + args["deployment_suffix"]
     )
     postgres_url = "{}:{}".format(
         postgres_service.ip_address, postgres_service.ports["postgres"].number
     )
-    for db in databases_package.DATABASES.values():
+    for db in cdk_databases_package.DATABASES.values():
         postgres_databases.append(
             {
                 "URL": postgres_url,

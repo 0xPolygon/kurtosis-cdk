@@ -1,7 +1,7 @@
+cdk_databases_package = import_module("./cdk_databases.star")
 cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 cdk_node_package = import_module("./lib/cdk_node.star")
 data_availability_package = import_module("./lib/data_availability.star")
-databases = import_module("./databases.star")
 service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
@@ -12,7 +12,7 @@ zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star"
 
 def run(plan, args):
     # Get databases.
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = cdk_databases_package.get_db_configs(args["deployment_suffix"])
 
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.

@@ -1,12 +1,14 @@
+cdk_databases_package = import_module("../../cdk_databases.star")
 zkevm_node_package = import_module("../../lib/zkevm_node.star")
 zkevm_prover_package = import_module("../../lib/zkevm_prover.star")
-databases_package = import_module("../../databases.star")
 
 
 def run(plan, args, genesis_artifact):
     # Start dbs.
-    databases_package.deploy_pless_zkevm_dbs(plan, suffix=args["original_suffix"])
-    db_config = databases_package.get_pless_zkevm_db_configs(args["original_suffix"])
+    cdk_databases_package.deploy_pless_zkevm_dbs(plan, suffix=args["original_suffix"])
+    db_config = cdk_databases_package.get_pless_zkevm_db_configs(
+        args["original_suffix"]
+    )
 
     # Start executor.
     executor_config_template = read_file(
