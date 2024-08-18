@@ -1,11 +1,12 @@
+cdk_node_package = import_module("./lib/cdk_node.star")
 data_availability_package = import_module("./lib/data_availability.star")
+databases = import_module("./databases.star")
 service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
+zkevm_pool_manager_package = import_module("./lib/zkevm_pool_manager.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
-cdk_node_package = import_module("./lib/cdk_node.star")
-databases = import_module("./databases.star")
 
 
 def run(plan, args):
@@ -79,6 +80,36 @@ def run(plan, args):
             description="Starting the rest of the zkevm node components",
         )
     elif args["sequencer_type"] == "erigon":
+        # Deploy zkevm pool manager.
+        zkevm_pool_manager_config_template = read_file(
+            src="./templates/pool-manager/pool-manager-config.toml"
+        )
+        zkevm_pool_manager_config_artifact = plan.render_templates(
+            name="pool-manager-config-artifact",
+            config={
+                "pool-manager-config.toml": struct(
+                    template=zkevm_pool_manager_config_template,
+                    data=args
+                    | {
+                        "deployment_suffix": args["deployment_suffix"],
+                        "zkevm_pool_manager_port": args["zkevm_pool_manager_port"],
+                        # ports
+                        "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    }
+                    | db_configs,
+                )
+            },
+        )
+        zkevm_pool_manager_config = (
+            zkevm_pool_manager_package.create_zkevm_pool_manager_service_config(
+                args, zkevm_pool_manager_config_artifact
+            )
+        )
+        plan.add_services(
+            configs=zkevm_pool_manager_config,
+            description="Starting zkevm pool manager",
+        )
+
         # Create the cdk node config.
         node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
