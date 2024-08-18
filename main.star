@@ -4,7 +4,6 @@ cdk_databases_package = "./cdk_databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
-zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 # Additional services packages.
 blockscout_package = "./src/additional_services/blockscout.star"

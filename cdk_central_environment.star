@@ -12,7 +12,9 @@ zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star"
 
 def run(plan, args):
     # Get databases.
-    db_configs = cdk_databases_package.get_db_configs(args["deployment_suffix"])
+    db_configs = cdk_databases_package.get_db_configs(
+        sequencer_type=args["sequencer_type"], suffix=args["deployment_suffix"]
+    )
 
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.

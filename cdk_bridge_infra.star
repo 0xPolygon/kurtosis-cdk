@@ -6,7 +6,9 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    db_configs = cdk_databases_package.get_db_configs(args["deployment_suffix"])
+    db_configs = cdk_databases_package.get_db_configs(
+        sequencer_type=args["sequencer_type"], suffix=args["deployment_suffix"]
+    )
 
     # Create the bridge service config.
     bridge_config_artifact = create_bridge_config_artifact(

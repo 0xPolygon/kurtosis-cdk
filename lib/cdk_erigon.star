@@ -1,5 +1,10 @@
+service_package = import_module("./service.star")
+
+
 def start_sequencer(plan, args):
-    cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
+    cdk_erigon_node_config_template = read_file(
+        src="../templates/cdk-erigon/config.yml"
+    )
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_node_config_artifact = plan.render_templates(
         name="cdk-erigon-node-config-artifact-sequencer",
@@ -47,7 +52,9 @@ def start_rpc(plan, args):
         zkevm_sequencer_service.ports["data-streamer"].number,
     )
 
-    cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
+    cdk_erigon_node_config_template = read_file(
+        src="../templates/cdk-erigon/config.yml"
+    )
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_node_config_artifact = plan.render_templates(
         name="cdk-erigon-node-config-artifact",
@@ -73,7 +80,7 @@ def start_rpc(plan, args):
         name="cdk-erigon-node-chain-allocs",
     )
 
-    cdk_erigon_package.start_node(
+    start_cdk_erigon_node(
         plan,
         args,
         cdk_erigon_node_config_artifact,
@@ -86,7 +93,7 @@ def start_rpc(plan, args):
 
 def get_cdk_erigon_chain_spec_config(plan, args):
     cdk_erigon_node_chain_spec_template = read_file(
-        src="./templates/cdk-erigon/chainspec.json"
+        src="../templates/cdk-erigon/chainspec.json"
     )
     return plan.render_templates(
         name="cdk-erigon-node-chain-spec-artifact",

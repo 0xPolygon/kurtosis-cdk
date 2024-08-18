@@ -91,17 +91,19 @@ PLESS_ZKEVM_NODE_DBS = PROVER_DB | ZKEVM_NODE_DBS
 
 
 def deploy_dbs(plan, sequencer_type, suffix):
+    db_configs = get_db_configs(suffix, sequencer_type)
+    _create_postgres_service(plan, db_configs, suffix)
+
+
+def get_db_configs(suffix, sequencer_type):
+    dbs = None
     if sequencer_type == "erigon":
-        db_configs = get_db_configs(suffix, DBS | CDK_ERIGON_DBS)
-        _create_postgres_service(plan, db_configs, suffix)
+        dbs = DBS | CDK_ERIGON_DBS
     elif sequencer_type == "zkevm":
-        db_configs = get_db_configs(suffix, DBS | ZKEVM_NODE_DBS)
-        _create_postgres_service(plan, db_configs, suffix)
+        dbs = DBS | ZKEVM_NODE_DBS
     else:
         fail("Unsupported sequencer type: " % sequencer_type)
 
-
-def get_db_configs(suffix, dbs):
     configs = {
         k: v
         | {
