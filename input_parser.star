@@ -69,6 +69,7 @@ DEFAULT_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
 }
 
+
 def parse_args(args):
     # Define the name of the sequencer.
     sequencer_type = args["sequencer_type"]
