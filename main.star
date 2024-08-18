@@ -1,6 +1,6 @@
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-databases_package = "./databases.star"
+cdk_databases_package = "./cdk_databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
@@ -68,7 +68,7 @@ def run(
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
-        import_module(databases_package).deploy_dbs(
+        import_module(cdk_databases_package).deploy_dbs(
             plan,
             sequencer_type=args["sequencer_type"],
             suffix=args["deployment_suffix"],
