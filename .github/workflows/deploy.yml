@@ -36,11 +36,11 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "deploy_cdk_erigon_node": true,
               "args": {
                 "sequencer_type": "erigon",
                 "l1_seconds_per_slot": 1,
                 "additional_services": [
+                  "pless_cdk_erigon_node",
                   "pless_zkevm_node",
                   "tx_spammer"
                 ]
@@ -50,9 +50,13 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor verified batches (CDK Erigon RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-pless-001 http-rpc)"
 
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
@@ -78,11 +82,11 @@ jobs:
             --args-file=params.yml \
             . \
             '{
-              "deploy_cdk_erigon_node": false,
               "args": {
                 "sequencer_type": "zkevm",
                 "l1_seconds_per_slot": 1,
                 "additional_services": [
+                  "pless_cdk_erigon_node",
                   "pless_zkevm_node",
                   "tx_spammer"
                 ]
@@ -96,11 +100,13 @@ jobs:
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)"
 
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-pless-001 http-rpc)"
+
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
-
-      # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
 
   additional_services:
     runs-on: ubuntu-latest

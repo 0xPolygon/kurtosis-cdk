@@ -71,12 +71,14 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
-    # Define the name of the sequencer.
+    # Define the name of the sequencer and the L2 RPC.
     sequencer_type = args["sequencer_type"]
     if sequencer_type == "erigon":
         args["sequencer_name"] = "cdk-erigon-sequencer"
+        args["l2_rpc_name"] = "cdk-erigon-node"
     elif sequencer_type == "zkevm":
         args["sequencer_name"] = "zkevm-node-sequencer"
+        args["l2_rpc_name"] = "zkevm-node-rpc"
     else:
         fail("Unsupported sequencer type: " % args["sequencer_type"])
 

@@ -36,9 +36,6 @@ def start_sequencer(plan, args):
 
 
 def start_rpc(plan, args):
-    if args["erigon_strict_mode"]:
-        start_stateless_executor(plan, args)
-
     zkevm_sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
@@ -84,24 +81,6 @@ def start_rpc(plan, args):
         cdk_erigon_node_chain_config_artifact,
         cdk_erigon_node_chain_allocs_artifact,
         False,
-    )
-
-
-def start_stateless_executor(plan, args):
-    stateless_executor_config_template = read_file(
-        src="./templates/trusted-node/prover-config.json"
-    )
-    stateless_executor_config_artifact = plan.render_templates(
-        name="stateless-executor-config-artifact",
-        config={
-            "stateless-executor-config.json": struct(
-                template=stateless_executor_config_template,
-                data=args | {"stateless_executor": True},
-            )
-        },
-    )
-    zkevm_prover_package.start_stateless_executor(
-        plan, args, stateless_executor_config_artifact
     )
 
 

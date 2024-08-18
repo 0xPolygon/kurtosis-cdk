@@ -1,6 +1,5 @@
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
@@ -13,6 +12,7 @@ blutgang_package = "./src/additional_services/blutgang.star"
 grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
+pless_cdk_erigon_node_package = "./src/additional_services/pless_cdk_erigon_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
@@ -65,11 +65,6 @@ def run(
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
-    if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
     # Deploy zkevm node and cdk peripheral databases.
     if deploy_databases:
         plan.print("Deploying zkevm node and cdk peripheral databases")
@@ -83,13 +78,6 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
-        # Deploy cdk-erigon node.
-        if deploy_cdk_erigon_node:
-            plan.print("Deploying cdk-erigon node")
-            cdk_erigon_package.start_rpc(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon node")
-
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
@@ -107,11 +95,10 @@ def run(
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Launching additional services.
+    # Deploy permissionless nodes.
     additional_services = args["additional_services"]
-
     if "pless_zkevm_node" in additional_services:
-        plan.print("Launching permissionnless zkevm node")
+        plan.print("Deploying permissionless zkevm node")
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_node_args = dict(args)
         permissionless_node_args["original_suffix"] = args["deployment_suffix"]
@@ -121,11 +108,23 @@ def run(
         import_module(pless_zkevm_node_package).run(
             plan, permissionless_node_args, genesis_artifact
         )
-        plan.print("Successfully launched permissionless zkevm node")
+        plan.print("Successfully deployed permissionless zkevm node")
         additional_services.remove("pless_zkevm_node")
 
-    # TODO: cdk-erigon pless node
+    if "pless_cdk_erigon_node" in additional_services:
+        plan.print("Deploying permissionless cdk erigon node")
+        permissionless_node_args = dict(args)
+        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
+        permissionless_node_args["deployment_suffix"] = (
+            "-pless" + args["deployment_suffix"]
+        )
+        import_module(pless_cdk_erigon_node_package).run(
+            plan, permissionless_node_args, genesis_artifact
+        )
+        plan.print("Successfully deployed permissionless cdk erigon node")
+        additional_services.remove("pless_cdk_erigon_node")
 
+    # Deploy the rest of additional services.
     for index, additional_service in enumerate(additional_services):
         if additional_service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
