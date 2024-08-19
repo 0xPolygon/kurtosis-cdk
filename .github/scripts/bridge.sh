@@ -166,7 +166,7 @@ polycli ulxly deposit-claim \
   --origin-network 1 \
   --destination-network 0 \
   --claim-address "$address" \
-  --claim-index 1
+  --claim-index 0
 echo
 
 # Show balances.
