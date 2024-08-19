@@ -1,12 +1,14 @@
+cdk_databases_package = import_module("./cdk_databases.star")
 service_package = import_module("./lib/service.star")
 zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
-databases = import_module("./databases.star")
 
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = cdk_databases_package.get_db_configs(
+        sequencer_type=args["sequencer_type"], suffix=args["deployment_suffix"]
+    )
 
     # Create the bridge service config.
     bridge_config_artifact = create_bridge_config_artifact(
@@ -46,7 +48,7 @@ def run(plan, args):
     )
     zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
-    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
+    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1.
     if args["deploy_l1"]:
         proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
         zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)

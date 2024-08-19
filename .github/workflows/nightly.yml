@@ -277,7 +277,7 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
   # Deploy a standalone zkevm permisionless node against Sepolia (Ethereum Testnet).
-  sepolia-zkevm-pless-node:
+  sepolia-pless-zkevm-node:
     if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -289,9 +289,11 @@ jobs:
 
       - name: Deploy the permisionless node
         run: |
-          # Disable all steps except permisionless node.
-          yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-          # Configure pless node parameters.
+          # Disable all deployment steps
+          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
+
+          # Configure zkevm permissionless node parameters
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node"]' params.yml
           yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
           yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
