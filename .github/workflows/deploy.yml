@@ -30,22 +30,10 @@ jobs:
       # Additionally, deploy cdk-erigon and zkevm-node as permissionless nodes or RPCs.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{
-              "args": {
-                "sequencer_type": "erigon",
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "pless_cdk_erigon_node",
-                  "pless_zkevm_node",
-                  "tx_spammer"
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_cdk_erigon_node", "pless_zkevm_node", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -76,22 +64,10 @@ jobs:
       # Additionally, deploy zkevm-node as permissionless node or RPC.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{
-              "args": {
-                "sequencer_type": "zkevm",
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "pless_cdk_erigon_node",
-                  "pless_zkevm_node",
-                  "tx_spammer"
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_cdk_erigon_node", "pless_zkevm_node", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -120,23 +96,9 @@ jobs:
       # Deploy the default CDK environment with all additional services enabled.
       - name: Deploy Kurtosis CDK package
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{
-              "args": {
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "blockscout",
-                  "blutgang",
-                  "panoptichain",
-                  "pless_zkevm_node",
-                  "prometheus_grafana",
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.additional_services = ["blockscout", "blutgang", "panoptichain", "pless_cdk_erigon_node", "pless_zkevm_node", "prometheus_grafana"]' params.yml
+          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}

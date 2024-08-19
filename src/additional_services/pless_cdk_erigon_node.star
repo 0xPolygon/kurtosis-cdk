@@ -1,4 +1,5 @@
 cdk_erigon_package = import_module("../../lib/cdk_erigon.star")
+zkevm_prover_package = import_module("../../lib/zkevm_prover.star")
 
 
 def run(plan, args, genesis_artifact):
