@@ -17,6 +17,8 @@ prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
+
 def run(
     plan,
     deploy_l1=True,
@@ -182,7 +184,7 @@ def deploy_helper_service(plan, args):
     plan.add_service(
         name=helper_service_name,
         config=ServiceConfig(
-            image=args["toolbox_image"],
+            image=TX_SPAMMER_IMG,
             files={"/opt/zkevm": get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],

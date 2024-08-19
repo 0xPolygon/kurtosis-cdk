@@ -1,12 +1,13 @@
 service_package = import_module("../../lib/service.star")
 
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
 
 def run(plan, args):
     tx_spammer_config_artifacts = get_tx_spammer_config(plan, args)
     plan.add_service(
         name="tx-spammer" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=args["toolbox_image"],
+            image=TX_SPAMMER_IMG,
             files={
                 "/usr/local/bin": Directory(
                     artifact_names=[tx_spammer_config_artifacts]
