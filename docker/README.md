@@ -71,6 +71,7 @@ Here's a quick reference matrix for mapping fork IDs to branches/releases:
 | fork8   | v5.0.1-rc.2-fork.8  |
 | fork9   | v6.0.0-rc.1-fork.9  |
 | fork10  | v7.0.0-rc.1-fork.10 |
+| fork12  | v8.0.0-rc.1-fork.12 |
 
 </details>
 
