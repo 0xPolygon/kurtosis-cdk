@@ -42,16 +42,6 @@ def run(
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
-    # Get the genesis file.
-    genesis_artifact = ""
-    if deploy_cdk_central_environment:
-        plan.print("Getting genesis file...")
-        genesis_artifact = plan.store_service_files(
-            name="genesis",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
-        )
-
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
         "zkevm_rollup_manager_address" in args
@@ -76,7 +66,15 @@ def run(
         plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
 
     # Deploy cdk central/trusted environment.
+    genesis_artifact = ""
     if deploy_cdk_central_environment:
+        plan.print("Getting genesis file...")
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/genesis.json",
+        )
+
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact

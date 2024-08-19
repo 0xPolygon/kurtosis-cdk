@@ -48,7 +48,7 @@ def run(plan, args):
     )
     zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
-    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
+    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1.
     if args["deploy_l1"]:
         proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
         zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
