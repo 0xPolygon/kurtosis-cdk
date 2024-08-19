@@ -80,6 +80,6 @@ def parse_args(args):
         args["sequencer_name"] = "zkevm-node-sequencer"
         args["l2_rpc_name"] = "zkevm-node-rpc"
     else:
-        fail("Unsupported sequencer type: " % args["sequencer_type"])
+        fail("Unsupported sequencer type: %s" % args["sequencer_type"])
 
     return DEFAULT_ARGS | args

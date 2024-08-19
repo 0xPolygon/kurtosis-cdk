@@ -46,7 +46,8 @@ def run(plan, args):
     )
     zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
-    if args["sequencer_type"] == "zkevm":
+    sequencer_type = args["sequencer_type"]
+    if sequencer_type == "zkevm":
         # Create the zkevm node config.
         node_config_template = read_file(
             src="./templates/trusted-node/node-config.toml"
@@ -82,7 +83,7 @@ def run(plan, args):
             configs=zkevm_node_components_configs,
             description="Starting the rest of the zkevm node components",
         )
-    elif args["sequencer_type"] == "erigon":
+    elif sequencer_type == "erigon":
         # Deploy CDK erigon sequencer.
         plan.print("Deploying cdk-erigon sequencer")
         cdk_erigon_package.start_sequencer(plan, args)
@@ -149,6 +150,8 @@ def run(plan, args):
             configs=cdk_node_configs,
             description="Starting the cdk node components",
         )
+    else:
+        fail("Unsupported sequencer type: %s" % sequencer_type)
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):

@@ -102,7 +102,7 @@ def get_db_configs(suffix, sequencer_type):
     elif sequencer_type == "zkevm":
         dbs = DBS | ZKEVM_NODE_DBS
     else:
-        fail("Unsupported sequencer type: " % sequencer_type)
+        fail("Unsupported sequencer type: %s" % sequencer_type)
 
     configs = {
         k: v
