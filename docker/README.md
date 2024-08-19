@@ -56,8 +56,8 @@ docker build . \
 
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
-REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   fork9     54d894c6a5bd   10 minutes ago   2.3GB
+REPOSITORY              TAG      IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   fork10   54d894c6a5bd   10 minutes ago   2.3GB
 ```
 
 Here's a quick reference matrix for mapping fork IDs to branches/releases:
@@ -71,6 +71,7 @@ Here's a quick reference matrix for mapping fork IDs to branches/releases:
 | fork8   | v5.0.1-rc.2-fork.8  |
 | fork9   | v6.0.0-rc.1-fork.9  |
 | fork10  | v7.0.0-rc.1-fork.10 |
+| fork12  | v8.0.0-rc.1-fork.12 |
 
 </details>
 
