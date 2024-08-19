@@ -17,23 +17,8 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
-# Deploy permissionless node.
-deploy_zkevm_permissionless_node: false
-
 # Deploy cdk-erigon node.
 deploy_cdk_erigon_node: true
-
-# Deploy observability stack.
-deploy_observability: false
-
-# Deploy Blockscout stack.
-deploy_l2_blockscout: false
-
-# Deploy eth load balancer.
-deploy_blutgang: false
-
-# Apply workload to the different components of the CDK stack.
-apply_workload: false
 
 args:
   # Suffix appended to service names.
@@ -53,6 +38,9 @@ args:
   # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
   data_availability_mode: cdk-validium
 
+  # Additional services to run alongside the network.
+  additional_services: []
+
   # Docker images and repositories used to spin up services.
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC5-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
@@ -69,12 +57,11 @@ args:
   # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
-  panoptichain_image: minhdvu/panoptichain:0.1.47
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta15
-  toolbox_image: leovct/toolbox:0.0.1
+  toolbox_image: leovct/toolbox:0.0.2
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
@@ -92,7 +79,6 @@ args:
   zkevm_agglayer_port: 4444
   zkevm_dac_port: 8484
   zkevm_pool_manager_port: 8545
-  blockscout_public_port: 50101
 
   # Addresses and private keys of the different components.
   # They have been generated using the following command:
@@ -174,27 +160,3 @@ args:
   trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
   zkevm_aggregator_host: zkevm-node-aggregator-001
   genesis_file: templates/permissionless-node/genesis.json
-
-  ## Tools versions
-  polycli_version: v0.1.42
-
-  ## Workload configuration.
-  workload_commands: [
-    # "polycli_loadtest_on_l2.sh t",  # eth transfers
-    # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-    # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-    # "polycli_loadtest_on_l2.sh v3", # uniswapv3 swaps
-    # "polycli_rpcfuzz_on_l2.sh",     # rpc calls
-    "bridge.sh", # bridge tokens l1 -> l2 and l2 -> l1
-  ]
-
-  ## ETH Load balancer configuration.
-  blutgang_image: makemake1337/blutgang:0.3.5
-  blutgang_rpc_port: 55555
-  blutgang_admin_port: 55556
-
-  ## Observability alerting configuration.
-  # slack_alerts:
-    # slack_channel: ""
-    # slack_token: ""
-    # mention_users: ""

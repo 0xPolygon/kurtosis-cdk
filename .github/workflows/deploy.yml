@@ -37,11 +37,13 @@ jobs:
             . \
             '{
               "deploy_cdk_erigon_node": true,
-              "deploy_zkevm_permissionless_node": true,
-              "apply_workload": true,
               "args": {
                 "sequencer_type": "erigon",
-                "l1_seconds_per_slot": 1
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "pless_zkevm_node",
+                  "tx_spammer"
+                ]
               }
             }'
 
@@ -77,11 +79,13 @@ jobs:
             . \
             '{
               "deploy_cdk_erigon_node": false,
-              "deploy_zkevm_permissionless_node": true,
-              "apply_workload": true,
               "args": {
                 "sequencer_type": "zkevm",
-                "l1_seconds_per_slot": 1
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "pless_zkevm_node",
+                  "tx_spammer"
+                ]
               }
             }'
 
@@ -97,3 +101,36 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
+
+  additional_services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      # Deploy the default CDK environment with all additional services enabled.
+      - name: Deploy Kurtosis CDK package
+        run: |
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=params.yml \
+            . \
+            '{
+              "args": {
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "blockscout",
+                  "blutgang",
+                  "panoptichain",
+                  "pless_zkevm_node",
+                  "prometheus_grafana",
+                ]
+              }
+            }'
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
