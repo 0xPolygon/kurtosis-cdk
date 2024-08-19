@@ -48,8 +48,8 @@ Build the `zkevm-contracts` image.
 
 ```bash
 docker build . \
-  --tag local/zkevm-contracts:fork10 \
-  --build-arg ZKEVM_CONTRACTS_BRANCH=v7.0.0-rc.1-fork.10 \
+  --tag local/zkevm-contracts:fork12 \
+  --build-arg ZKEVM_CONTRACTS_BRANCH=v8.0.0-rc.1-fork.12 \
   --build-arg POLYCLI_VERSION=main \
   --file zkevm-contracts.Dockerfile
 ```
@@ -71,6 +71,7 @@ Here's a quick reference matrix for mapping fork IDs to branches/releases:
 | fork8   | v5.0.1-rc.2-fork.8  |
 | fork9   | v6.0.0-rc.1-fork.9  |
 | fork10  | v7.0.0-rc.1-fork.10 |
+| fork12  | v8.0.0-rc.1-fork.12 |
 
 </details>
 
