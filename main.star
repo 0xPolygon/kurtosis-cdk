@@ -19,6 +19,7 @@ tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
 
+
 def run(
     plan,
     deploy_l1=True,
