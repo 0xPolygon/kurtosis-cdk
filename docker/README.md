@@ -2,8 +2,6 @@
 
 We maintain a suite of custom Docker images tailored specifically for deploying the CDK stack. These images serve various purposes, including hosting distinct zkEVM contracts (each fork tagged separately), adapting the bridge UI to support relative URLs, and applying specific workloads.
 
-We ensure the continuous availability of our custom Docker images through an automated build process. A [cron](../.github/workflows/docker-image-builder-cron.yml) job is configured to run weekly, automatically triggering the build and push of these images. This ensures that the images are regularly updated with the latest changes and dependencies. Moreover, should immediate updates or manual initiation of the image-building process be required, users can access the GitHub UI for manual triggering. Alternatively, the images can be built locally by following the provided guide.
-
 ## Custom Docker Images
 
 If you ever need to build these images locally, here's a brief guide.
@@ -22,7 +20,7 @@ Install docker.
 curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" |tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt update
-apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
+apt install --yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
 docker run hello-world
 ```
 
@@ -50,7 +48,7 @@ Build the `zkevm-contracts` image.
 
 ```bash
 docker build . \
-  --tag local/zkevm-contracts:fork10 \
+  --tag local/zkevm-contracts:local \
   --build-arg ZKEVM_CONTRACTS_BRANCH=v7.0.0-rc.1-fork.10 \
   --build-arg POLYCLI_VERSION=main \
   --file zkevm-contracts.Dockerfile
@@ -58,8 +56,8 @@ docker build . \
 
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
-REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   fork9     54d894c6a5bd   10 minutes ago   2.3GB
+REPOSITORY              TAG     IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   local   54d894c6a5bd   10 minutes ago   2.3GB
 ```
 
 Here's a quick reference matrix for mapping fork IDs to branches/releases:
@@ -73,6 +71,7 @@ Here's a quick reference matrix for mapping fork IDs to branches/releases:
 | fork8   | v5.0.1-rc.2-fork.8  |
 | fork9   | v6.0.0-rc.1-fork.9  |
 | fork10  | v7.0.0-rc.1-fork.10 |
+| fork12  | v8.0.0-rc.1-fork.12 |
 
 </details>
 
@@ -87,15 +86,15 @@ Build the `zkevm-bridge-ui` image.
 
 ```bash
 docker build zkevm-bridge-ui \
-  --tag local/zkevm-bridge-ui:multi-network \
+  --tag local/zkevm-bridge-ui:local \
   --build-arg ZKEVM_BRIDGE_UI_TAG=develop \
   --file zkevm-bridge-ui/zkevm-bridge-ui.Dockerfile
 ```
 
 ```bash
 $ docker images --filter "reference=local/zkevm-bridge-ui"
-REPOSITORY              TAG             IMAGE ID       CREATED          SIZE
-local/zkevm-bridge-ui   multi-network   040905e1cabe   28 seconds ago   377MB
+REPOSITORY              TAG     IMAGE ID       CREATED          SIZE
+local/zkevm-bridge-ui   local   040905e1cabe   28 seconds ago   377MB
 ```
 
 </details>
@@ -111,15 +110,15 @@ Build the `toolbox` image.
 
 ```bash
 docker build . \
-  --tag local/toolbox:0.0.1 \
+  --tag local/toolbox:local \
   --build-arg POLYCLI_VERSION=main \
   --file toolbox.Dockerfile
 ```
 
 ```bash
 $ docker images --filter "reference=local/toolbox"
-REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
-local/toolbox   0.0.1     3f85f026aaf9   2 seconds ago   490MB
+REPOSITORY       TAG    IMAGE ID       CREATED         SIZE
+local/toolbox   local   3f85f026aaf9   2 seconds ago   490MB
 ```
 
 </details>

@@ -1,16 +1,20 @@
-input_parser = "./input_parser.star"
-ethereum_package = "./ethereum.star"
-deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
-databases_package = "./databases.star"
-cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
-zkevm_permissionless_node_package = "./zkevm_permissionless_node.star"
-observability_package = "./observability.star"
-blockscout_package = "./blockscout.star"
-workload_package = "./workload.star"
-blutgang_package = "./cdk_blutgang.star"
+cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_erigon_package = import_module("./cdk_erigon.star")
+databases_package = "./databases.star"
+deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
+ethereum_package = "./ethereum.star"
+input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+
+# Additional services packages.
+blockscout_package = "./src/additional_services/blockscout.star"
+blutgang_package = "./src/additional_services/blutgang.star"
+grafana_package = "./src/additional_services/grafana.star"
+panoptichain_package = "./src/additional_services/panoptichain.star"
+pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
+prometheus_package = "./src/additional_services/prometheus.star"
+tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
 def run(
@@ -21,34 +25,11 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_zkevm_permissionless_node=False,
     deploy_cdk_erigon_node=True,
-    deploy_observability=True,
-    deploy_l2_blockscout=False,
-    deploy_blutgang=False,
-    apply_workload=False,
     args={},
 ):
-    """Deploy a Polygon CDK Devnet with various configurable options.
-
-    Args:
-        deploy_l1 (bool): Deploy local l1.
-        deploy_agglayer (bool): Deploy agglayer service.
-        deploy_zkevm_contracts_on_l1(bool): Deploy zkevm contracts on L1 (and also fund accounts).
-        deploy_databases(bool): Deploy zkevm node and cdk peripheral databases.
-        deploy_cdk_central_environment(bool): Deploy cdk central/trusted environment.
-        deploy_cdk_bridge_infra(bool): Deploy cdk/bridge infrastructure.
-        deploy_zkevm_permissionless_node(bool): Deploy permissionless node.
-        deploy_observability(bool): Deploys observability stack.
-        deploy_l2_blockscout(bool): Deploys Blockscout stack.
-        args(json): Configures other aspects of the environment.
-    Returns:
-        A full deployment of Polygon CDK.
-    """
-
     args = import_module(input_parser).parse_args(args)
-
-    plan.print("Deploying CDK environment...")
+    plan.print("Deploying CDK environment with parameters: " + str(args))
 
     if deploy_cdk_erigon_node:
         args["l2_rpc_name"] = "cdk-erigon-node"
@@ -145,54 +126,39 @@ def run(
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Deploy permissionless node
-    if deploy_zkevm_permissionless_node:
-        plan.print("Deploying zkevm permissionless node")
+    # Launching additional services.
+    additional_services = args["additional_services"]
+
+    if "pless_zkevm_node" in additional_services:
+        plan.print("Launching permissionnless zkevm node")
         # Note that an additional suffix will be added to the permissionless services.
         permissionless_node_args = dict(args)
         permissionless_node_args["original_suffix"] = args["deployment_suffix"]
         permissionless_node_args["deployment_suffix"] = (
             "-pless" + args["deployment_suffix"]
         )
-        permissionless_node_args["genesis_artifact"] = genesis_artifact
-        import_module(databases_package).run_pless(
-            plan, suffix=permissionless_node_args["original_suffix"]
-        )
-        import_module(zkevm_permissionless_node_package).run(
+        import_module(pless_zkevm_node_package).run(
             plan, permissionless_node_args, genesis_artifact
         )
-    else:
-        plan.print("Skipping the deployment of zkevm permissionless node")
+        plan.print("Successfully launched permissionless zkevm node")
+        additional_services.remove("pless_zkevm_node")
 
-    # Deploy observability stack.
-    if deploy_observability:
-        plan.print("Deploying the observability stack")
-        observability_args = dict(args)
-        import_module(observability_package).run(plan, observability_args)
-    else:
-        plan.print("Skipping the deployment of the observability stack")
+    # TODO: cdk-erigon pless node
 
-    # Deploy observability stack
-    if deploy_l2_blockscout:
-        plan.print("Deploying Blockscout stack")
-        import_module(blockscout_package).run(plan, args)
-    else:
-        plan.print("Skipping the deployment of Blockscout stack")
-
-    # Apply workload
-    if apply_workload:
-        plan.print("Applying workload")
-        import_module(workload_package).run(plan, args)
-    else:
-        plan.print("Skipping workload application")
-
-    # Deploy blutgang for caching
-    if deploy_blutgang:
-        plan.print("Deploying blutgang")
-        blutgang_args = dict(args)
-        import_module(blutgang_package).run(plan, blutgang_args)
-    else:
-        plan.print("Skipping the deployment of blutgang")
+    for index, additional_service in enumerate(additional_services):
+        if additional_service == "blockscout":
+            deploy_additional_service(plan, "blockscout", blockscout_package, args)
+        elif additional_service == "prometheus_grafana":
+            deploy_additional_service(plan, "prometheus", prometheus_package, args)
+            deploy_additional_service(plan, "grafana", grafana_package, args)
+        elif additional_service == "panoptichain":
+            deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
+        elif additional_service == "blutgang":
+            deploy_additional_service(plan, "blutgang", blutgang_package, args)
+        elif additional_service == "tx_spammer":
+            deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
+        else:
+            fail("Invalid additional service: %s" % (additional_service))
 
 
 def deploy_helper_service(plan, args):
@@ -238,3 +204,10 @@ def deploy_helper_service(plan, args):
             ]
         ),
     )
+
+
+def deploy_additional_service(plan, name, package, args):
+    plan.print("Launching %s" % name)
+    service_args = dict(args)
+    import_module(package).run(plan, service_args)
+    plan.print("Successfully launched %s" % name)
