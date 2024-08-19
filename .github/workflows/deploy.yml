@@ -57,7 +57,7 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
 
       - name: Bridge tokens
-        run: ./.github/scripts/bridge.sh --l2-rpc-url "$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
+        run: ./.github/scripts/bridge.sh --l2-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)
 
   zkevm:
     runs-on: ubuntu-latest
@@ -102,4 +102,4 @@ jobs:
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
 
       - name: Bridge tokens
-        run: ./.github/scripts/bridge.sh --l2-rpc-url "$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        run: ./.github/scripts/bridge.sh --l2-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)
