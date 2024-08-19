@@ -48,16 +48,16 @@ Build the `zkevm-contracts` image.
 
 ```bash
 docker build . \
-  --tag local/zkevm-contracts:fork12 \
-  --build-arg ZKEVM_CONTRACTS_BRANCH=v8.0.0-rc.1-fork.12 \
+  --tag local/zkevm-contracts:fork10 \
+  --build-arg ZKEVM_CONTRACTS_BRANCH=v7.0.0-rc.1-fork.10 \
   --build-arg POLYCLI_VERSION=main \
   --file zkevm-contracts.Dockerfile
 ```
 
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
-REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   fork9     54d894c6a5bd   10 minutes ago   2.3GB
+REPOSITORY              TAG      IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   fork10   54d894c6a5bd   10 minutes ago   2.3GB
 ```
 
 Here's a quick reference matrix for mapping fork IDs to branches/releases:
