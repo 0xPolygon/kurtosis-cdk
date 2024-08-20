@@ -22,29 +22,37 @@ def run(plan, args):
     )
 
     # Create the agglayer service config.
-    agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, contract_setup_addresses, db_configs
-    )
-    agglayer_keystore_artifact = plan.store_service_files(
-        name="agglayer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/agglayer.keystore",
-    )
-    agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
-        args, agglayer_config_artifact, agglayer_keystore_artifact
-    )
+    if args["deploy_agglayer"]:
+        agglayer_config_artifact = create_agglayer_config_artifact(
+            plan, args, contract_setup_addresses, db_configs
+        )
+        agglayer_keystore_artifact = plan.store_service_files(
+            name="agglayer-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/agglayer.keystore",
+        )
+        agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
+            args, agglayer_config_artifact, agglayer_keystore_artifact
+        )
 
     # Start the bridge service and the agglayer.
-    bridge_infra_services = plan.add_services(
-        configs=bridge_config | agglayer_config,
-        description="Starting bridge infra",
-    )
+    if args["deploy_agglayer"]:
+        bridge_infra_services = plan.add_services(
+            configs=bridge_config | agglayer_config,
+            description="Starting bridge infra",
+        )
+    else:
+        bridge_infra_services = plan.add_services(
+            configs=bridge_config,
+            description="Starting bridge infra",
+        )
 
     # Start the bridge UI.
     bridge_ui_config_artifact = create_bridge_ui_config_artifact(
         plan, args, contract_setup_addresses
     )
-    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+    if args["deploy_agglayer"]:
+        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
     # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
     if args["deploy_l1"]:
@@ -70,6 +78,7 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                     "zkevm_l2_proofsigner_address": args[
                         "zkevm_l2_proofsigner_address"
                     ],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_agglayer_port": args["zkevm_agglayer_port"],
