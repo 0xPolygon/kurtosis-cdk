@@ -3,7 +3,7 @@
 By default, the Agglayer service will be deployed with the above deployment instructions. To create a devnet with multiple rollups attached to the agglayer:
 
 ```bash
-kurtosis run --enclave cdk-v1 --args-file agglayer-attach-cdk-params.yml . --experimental NO_INSTRUCTIONS_CACHING
+kurtosis run --enclave cdk-v1 --args-file agglayer-attach-cdk-params.yml .
 ```
 
 The above command will use `agglayer-attach-cdk-params.yml` as the input params which have a few tweaked parameters to attach to the existing Agglayer service.
