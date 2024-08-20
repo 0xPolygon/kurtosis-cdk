@@ -59,7 +59,7 @@ args:
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   cdk_node_image: arnaubennassar/cdk:use-l1info-7
 
-  zkevm_da_image: 0xpolygon/cdk-data-availability:v0.0.9
+  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
 
   zkevm_contracts_image: arnaubennassar/zkevm-contracts   # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
