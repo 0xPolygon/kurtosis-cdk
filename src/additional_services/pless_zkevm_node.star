@@ -6,9 +6,7 @@ databases_package = import_module("../../databases.star")
 def run(plan, args, genesis_artifact):
     # Start dbs.
     databases_package.run_pless(plan, suffix=args["original_suffix"])
-    db_config = databases_package.get_pless_zkevm_db_configs(
-        args["original_suffix"]
-    )
+    db_config = databases_package.get_pless_zkevm_db_configs(args["original_suffix"])
 
     # Start executor.
     executor_config_template = read_file(
