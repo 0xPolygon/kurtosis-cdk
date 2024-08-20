@@ -78,6 +78,7 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                     "zkevm_l2_proofsigner_address": args[
                         "zkevm_l2_proofsigner_address"
                     ],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_agglayer_port": args["zkevm_agglayer_port"],
