@@ -1,4 +1,4 @@
-PrivateKey = { Path = "/etc/zkevm/dac.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+PrivateKey = {Path = "/etc/zkevm/dac.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
 [L1]
 WsURL = "{{.l1_ws_url}}"
@@ -13,7 +13,7 @@ TrackSequencer = false
 
 [Log]
 Environment = "development" # "production" or "development"
-Level = "info"
+Level = "debug"
 Outputs = ["stderr"]
 
 [DB]
@@ -26,8 +26,8 @@ EnableLog = false
 MaxConns = 200
 
 [RPC]
-Port = {{.zkevm_dac_port}}
 Host = "0.0.0.0"
+Port = {{.zkevm_dac_port}}
 ReadTimeout = "60s"
 WriteTimeout = "60s"
 MaxRequestsPerIPAndSecond = 500

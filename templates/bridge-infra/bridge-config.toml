@@ -1,5 +1,5 @@
 [Log]
-Level = "info"
+Level = "debug"
 Environment = "production"
 Outputs = ["stderr"]
 
@@ -14,9 +14,7 @@ MaxConns = 20
 
 [Etherman]
 l1URL = "{{.l1_rpc_url}}"
-L2URLs = [
-    "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}",
-]
+L2URLs = ["http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
 
 [Synchronizer]
 SyncInterval = "5s"
@@ -32,15 +30,15 @@ HTTPPort = "{{.zkevm_bridge_rpc_port}}"
 DefaultPageLimit = 25
 MaxPageLimit = 100
 BridgeVersion = "v1"
-# Read only
-[BridgeServer.DB]
-Database = "postgres"
-User = "{{.bridge_db.user}}"
-Name = "{{.bridge_db.name}}"
-Password = "{{.bridge_db.password}}"
-Host = "{{.bridge_db.hostname}}"
-Port = "{{.bridge_db.port}}"
-MaxConns = 20
+    # Read only
+    [BridgeServer.DB]
+    Database = "postgres"
+    User = "{{.bridge_db.user}}"
+    Name = "{{.bridge_db.name}}"
+    Password = "{{.bridge_db.password}}"
+    Host = "{{.bridge_db.hostname}}"
+    Port = "{{.bridge_db.port}}"
+    MaxConns = 20
 
 [NetworkConfig]
 GenBlockNumber = 0
@@ -52,7 +50,7 @@ L2PolygonBridgeAddresses = ["{{.zkevm_l2_bridge_address}}"]
 
 [ClaimTxManager]
 FrequencyToMonitorTxs = "5s"
-PrivateKey = { Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+PrivateKey = {Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 Enabled = true
 RetryInterval = "1s"
 RetryNumber = 10

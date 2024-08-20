@@ -6,15 +6,15 @@
 1 = "{{.zkevm_l2_sequencer_address}}"
 
 [RPC]
-Port = {{.zkevm_agglayer_port}}
 Host = "0.0.0.0"
+Port = {{.zkevm_agglayer_port}}
 ReadTimeout = "60s"
 WriteTimeout = "60s"
 MaxRequestsPerIPAndSecond = 5000
 
 [Log]
 Environment = "production" # "production" or "development"
-Level = "info"
+Level = "debug"
 Outputs = ["stderr"]
 
 [EthTxManager]
@@ -24,7 +24,7 @@ ForcedGas = 0
 GasPriceMarginFactor = 1
 MaxGasPriceLimit = 0
 PrivateKeys = [
-	{ Path = "/etc/zkevm/agglayer.keystore", Password = "{{.zkevm_l2_keystore_password}}" },
+	{Path = "/etc/zkevm/agglayer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
 KMSKeyName = "" # Disable for local
 
