@@ -137,6 +137,7 @@ Below is a list of services available for deployment using Kurtosis:
 | `blutgang` | Deploys [Blutgang](https://github.com/rainshowerLabs/blutgang), an Ethereum load balancer that distributes network traffic evenly across multiple nodes to ensure high availability. |
 | `pless_zkevm_node` | Deploys a permissionless [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node). |
 | `prometheus_grafana` | Deploys [Prometheus](https://github.com/prometheus/prometheus) and [Grafana](https://github.com/grafana/grafana), two powerful monitoring tools that collect and visualize metrics for blockchain infrastructure health and performance. Additionally, it deploys [Panoptichain](https://github.com/0xPolygon/panoptichain), enhancing monitoring capabilities by allowing users to observe on-chain data and generate detailed Polygon CDK blockchain metrics. |
+| `tx_spammer` | Deploys a transaction spammer. |
 
 Here is a simple example that deploys Blockscout, Prometheus, Grafana, and Panoptichain:
 

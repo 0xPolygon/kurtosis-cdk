@@ -151,13 +151,12 @@ def run(
     for index, additional_service in enumerate(additional_services):
         if additional_service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
+        elif additional_service == "blutgang":
+            deploy_additional_service(plan, "blutgang", blutgang_package, args)
         elif additional_service == "prometheus_grafana":
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
-        elif additional_service == "panoptichain":
             deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
-        elif additional_service == "blutgang":
-            deploy_additional_service(plan, "blutgang", blutgang_package, args)
         elif additional_service == "tx_spammer":
             deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
         else:
