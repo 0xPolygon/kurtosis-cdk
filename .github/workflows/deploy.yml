@@ -138,9 +138,9 @@ jobs:
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
 
-      - name: Monitor verified batches of the second L2 chain (zkEVM Node Trusted RPC)
+      - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-002 http-rpc)"
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 http-rpc)"
 
       - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
