@@ -17,9 +17,13 @@ prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
+
+
 def run(
     plan,
     deploy_l1=True,
+    deploy_agglayer=True,
     deploy_zkevm_contracts_on_l1=True,
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
@@ -55,14 +59,15 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    if (
-        "zkevm_rollup_manager_address" in args
-        and "zkevm_rollup_manager_block_number" in args
-        and "zkevm_global_exit_root_l2_address" in args
-        and "polygon_data_committee_address" in args
-    ):
-        plan.print("Deploying helper service to retrieve rollup data")
-        deploy_helper_service(plan, args)
+    if deploy_agglayer:
+        if (
+            "zkevm_rollup_manager_address" in args
+            and "zkevm_rollup_manager_block_number" in args
+            and "zkevm_global_exit_root_l2_address" in args
+            and "polygon_data_committee_address" in args
+        ):
+            plan.print("Deploying helper service to retrieve rollup data")
+            deploy_helper_service(plan, args)
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
@@ -146,13 +151,12 @@ def run(
     for index, additional_service in enumerate(additional_services):
         if additional_service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
+        elif additional_service == "blutgang":
+            deploy_additional_service(plan, "blutgang", blutgang_package, args)
         elif additional_service == "prometheus_grafana":
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
-        elif additional_service == "panoptichain":
             deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
-        elif additional_service == "blutgang":
-            deploy_additional_service(plan, "blutgang", blutgang_package, args)
         elif additional_service == "tx_spammer":
             deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
         else:
@@ -180,7 +184,7 @@ def deploy_helper_service(plan, args):
     plan.add_service(
         name=helper_service_name,
         config=ServiceConfig(
-            image=args["toolbox_image"],
+            image=TX_SPAMMER_IMG,
             files={"/opt/zkevm": get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],

@@ -1,5 +1,6 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "deploy_agglayer": True,
     "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
@@ -15,7 +16,6 @@ DEFAULT_ARGS = {
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:2.0.0-beta15",
-    "toolbox_image": "leovct/toolbox:0.0.2",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
@@ -59,6 +59,7 @@ DEFAULT_ARGS = {
     "l1_preset": "minimal",
     "l1_seconds_per_slot": 1,
     "zkevm_rollup_chain_id": 10101,
+    "zkevm_rollup_id": 1,
     "zkevm_rollup_fork_id": 9,
     "erigon_strict_mode": True,
     "polygon_zkevm_explorer": "https://explorer.private/",

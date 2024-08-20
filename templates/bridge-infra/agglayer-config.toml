@@ -3,7 +3,7 @@
 1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 [ProofSigners]
-# 1 = "{{.zkevm_l2_proofsigner_address}}"
+1 = "{{.zkevm_l2_sequencer_address}}"
 
 [RPC]
 Host = "0.0.0.0"

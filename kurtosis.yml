@@ -30,6 +30,8 @@ description: |-
 
   sequencer_type: erigon
 
+  deploy_agglayer: true
+
   # The type of data availability to use.
   # Options:
   # - 'rollup': Transaction data is stored on-chain on L1.
@@ -61,7 +63,6 @@ description: |-
 
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta15
-  toolbox_image: leovct/toolbox:0.0.2
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
@@ -132,6 +133,9 @@ description: |-
 
   # The chain id of the new rollup.
   zkevm_rollup_chain_id: 10101
+
+  # The rollupID of the CDK.
+  zkevm_rollup_id: 1
 
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9

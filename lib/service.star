@@ -4,6 +4,9 @@ data_availability_package = import_module("./data_availability.star")
 def get_contract_setup_addresses(plan, args):
     extract = {
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
+        "zkevm_l2_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
+        "zkevm_gen_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+        "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",
         "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
         "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
@@ -22,8 +25,10 @@ def get_contract_setup_addresses(plan, args):
         extract=extract,
     )
     service_name = "contracts"
-    if "zkevm_rollup_manager_address" in args:
-        service_name = "helper"
+    if args["deploy_agglayer"]:
+        plan.print("Changing querying service name to helper")
+        if "zkevm_rollup_manager_address" in args:
+            service_name = "helper"
     service_name += args["deployment_suffix"]
     result = plan.exec(
         description="Getting contract setup addresses from {} service".format(
