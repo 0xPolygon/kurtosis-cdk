@@ -38,7 +38,7 @@ jobs:
 
       - name: Attach a second CDK L2 chain (erigon)
         run: |
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' agglayer-attach-cdk-params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml --experimental=NO_INSTRUCTIONS_CACHING .
 
       - name: Inspect enclave
@@ -103,7 +103,7 @@ jobs:
 
       - name: Attach a second CDK L2 chain (erigon)
         run: |
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' agglayer-attach-cdk-params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml --experimental=NO_INSTRUCTIONS_CACHING .
 
       - name: Inspect enclave
