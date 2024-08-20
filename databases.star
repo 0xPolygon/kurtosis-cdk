@@ -32,8 +32,8 @@ CENTRAL_ENV_DBS = {
         "password": "redacted",
     },
     "aggregator_syncer_db": {
-        "name": "syncer_db",
-        "user": "syncer_user",
+        "name": "aggregator_syncer_db",
+        "user": "aggregator_syncer_db_user",
         "password": "redacted",
     },
     "bridge_db": {
