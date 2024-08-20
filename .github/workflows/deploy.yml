@@ -178,4 +178,5 @@ jobs:
               echo "✅ Panoptichain metrics are collected!"
           else
               echo "❌ No Panoptichain metrics found..."
+              exit 1
           fi
