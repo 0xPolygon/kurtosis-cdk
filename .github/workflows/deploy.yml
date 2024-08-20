@@ -166,14 +166,14 @@ jobs:
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Verify blutgang rpc
-        run: cast bn --rpc-url $(kurtosis port print cdk-v1 blutgang-001 http)
+        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
       
       - name: Verify permissionless zkevm-node rpc
-        run: cast bn --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)
+        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
       
       - name: Verify panoptichain metrics
         run: |
-          panoptichain_metrics=$(curl $(kurtosis port print cdk-v1 panoptichain-001 prometheus)/metrics | grep "# TYPE panoptichain" | wc -l | xargs)
+          panoptichain_metrics=$(curl $(kurtosis port print ${{ env.ENCLAVE_NAME }} panoptichain-001 prometheus)/metrics | grep "# TYPE panoptichain" | wc -l | xargs)
           if "$panoptichain_metrics"; then
               echo "✅ Panoptichain metrics are collected!"
           else
