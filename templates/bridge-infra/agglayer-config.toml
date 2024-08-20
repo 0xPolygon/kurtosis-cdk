@@ -14,7 +14,7 @@ MaxRequestsPerIPAndSecond = 5000
 
 [Log]
 Environment = "production" # "production" or "development"
-Level = "debug"
+Level = "info"
 Outputs = ["stderr"]
 
 [EthTxManager]

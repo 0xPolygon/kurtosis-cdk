@@ -1,6 +1,6 @@
 [Log]
 Environment = "development"
-Level = "debug"
+Level = "info"
 Outputs = ["stdout"]
 
 [SequenceSender]

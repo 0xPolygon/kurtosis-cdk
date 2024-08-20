@@ -7,7 +7,7 @@ ContractVersions = "elderberry"
 
 [Log]
 Environment = "development" # "production" or "development"
-Level = "debug"
+Level = "info"
 Outputs = ["stderr"]
 
 [SequenceSender]
@@ -84,7 +84,7 @@ MaxPendingTx = 1
 		MaxConns = 200
 	[Aggregator.Log]
 		Environment = "development" # "production" or "development"
-		Level = "debug"
+		Level = "info"
 		Outputs = ["stderr"]
 	[Aggregator.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
