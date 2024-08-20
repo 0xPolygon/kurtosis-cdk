@@ -28,47 +28,18 @@ jobs:
       # Deploy the CDK environment with cdk-erigon, serving as the sequencer.
       # Set up the cdk-node for the remaining components.
       # Additionally, deploy cdk-erigon and zkevm-node as permissionless nodes or RPCs.
-      - name: Deploy Kurtosis CDK package
+      - name: Deploy L1 chain and a first CDK L2 chain (erigon)
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{
-              "deploy_cdk_erigon_node": true,
-              "args": {
-                "sequencer_type": "erigon",
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "pless_zkevm_node",
-                  "tx_spammer"
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Attach an additional CDK chain
+      - name: Attach a second CDK L2 chain (erigon)
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=agglayer-attach-cdk-params.yml \
-            --experimental=NO_INSTRUCTIONS_CACHING \
-            . \
-            '{
-              "deploy_cdk_erigon_node": true,
-              "args": {
-                "sequencer_type": "erigon",
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "pless_zkevm_node",
-                  "tx_spammer"
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml --experimental=NO_INSTRUCTIONS_CACHING .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -120,47 +91,20 @@ jobs:
       # Deploy the CDK environment with zkevm-node, serving as the sequencer.
       # Also set up the zkevm-node for the remaining components.
       # Additionally, deploy zkevm-node as permissionless node or RPC.
-      - name: Deploy Kurtosis CDK package
+      - name: Deploy L1 chain and a first CDK L2 chain (zkevm)
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{
-              "deploy_cdk_erigon_node": false,
-              "args": {
-                "sequencer_type": "zkevm",
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "pless_zkevm_node",
-                  "tx_spammer"
-                ]
-              }
-            }'
+          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
+          yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Attach an additional CDK chain
+      - name: Attach an additional CDK chain (erigon)
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=agglayer-attach-cdk-params.yml \
-            --experimental=NO_INSTRUCTIONS_CACHING \
-            . \
-            '{
-              "deploy_cdk_erigon_node": false,
-              "args": {
-                "sequencer_type": "zkevm",
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "pless_zkevm_node",
-                  "tx_spammer"
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml --experimental=NO_INSTRUCTIONS_CACHING .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -213,26 +157,10 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Deploy the default CDK environment with all additional services enabled.
-      - name: Deploy Kurtosis CDK package
+      - name: Deploy Kurtosis CDK package with additional services
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --show-enclave-inspect=false \
-            --args-file=params.yml \
-            . \
-            '{
-              "args": {
-                "l1_seconds_per_slot": 1,
-                "additional_services": [
-                  "blockscout",
-                  "blutgang",
-                  "panoptichain",
-                  "pless_zkevm_node",
-                  "prometheus_grafana",
-                ]
-              }
-            }'
+          yq -Y --in-place '.args.additional_services = ["blockscout", "blutgang", "pless_zkevm_node", "prometheus_grafana", "tx_spammer"]' params.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
