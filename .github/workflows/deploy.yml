@@ -50,13 +50,63 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+      - name: Attach an additional CDK chain
+        run: |
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=agglayer-attach-cdk-params.yml \
+            --experimental=NO_INSTRUCTIONS_CACHING \
+            . \
+            '{
+              "deploy_cdk_erigon_node": true,
+              "args": {
+                "sequencer_type": "erigon",
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "pless_zkevm_node",
+                  "tx_spammer"
+                ]
+              }
+            }'
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Update the agglayer config
+        run: |
+          # Download the agglayer config file.
+          kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
+          cd agglayer-config-artifact
+
+          # Update the config by adding the rpc and proof signer of the second chain.
+          tomlq -Y --toml-output --in-place '.FullNodeRPCs += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
+          proof_signer_2="$(yq --raw-output .args.zkevm_l2_sequencer_address ../agglayer-attach-cdk-params.yml)"
+          tomlq -Y --toml-output --arg proofSigner2 "$proof_signer_2" --in-place '.ProofSigners += {"2": $proofSigner2}' agglayer-config.toml
+
+          # Replace the agglayer config.
+          agglayer_container_id="$(docker ps --filter "name=zkevm-agglayer" --format "{{.ID}}")"
+          docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
+
+          # Restart the agglayer service.
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
+          kurtosis service start ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
+
+      - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
+      - name: Monitor verified batches of the first L2 chain (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
+
+      - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 http-rpc)"
+
+      - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
 
   zkevm:
     runs-on: ubuntu-latest
@@ -92,13 +142,65 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches (zkEVM Node Trusted RPC)
+      - name: Attach an additional CDK chain
+        run: |
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --show-enclave-inspect=false \
+            --args-file=agglayer-attach-cdk-params.yml \
+            --experimental=NO_INSTRUCTIONS_CACHING \
+            . \
+            '{
+              "deploy_cdk_erigon_node": false,
+              "args": {
+                "sequencer_type": "zkevm",
+                "l1_seconds_per_slot": 1,
+                "additional_services": [
+                  "pless_zkevm_node",
+                  "tx_spammer"
+                ]
+              }
+            }'
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Update the agglayer config
+        run: |
+          # Download the agglayer config file.
+          kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
+          cd agglayer-config-artifact
+
+          # Update the config by adding the rpc and proof signer of the second chain.
+          tomlq -Y --toml-output --in-place '.FullNodeRPCs += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
+          proof_signer_2="$(yq --raw-output .args.zkevm_l2_sequencer_address ../agglayer-attach-cdk-params.yml)"
+          tomlq -Y --toml-output --arg proofSigner2 "$proof_signer_2" --in-place '.ProofSigners += {"2": $proofSigner2}' agglayer-config.toml
+
+          # Replace the agglayer config.
+          agglayer_container_id="$(docker ps --filter "name=zkevm-agglayer" --format "{{.ID}}")"
+          docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
+
+          # Restart the agglayer service.
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
+          kurtosis service start ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
+
+      - name: Monitor verified batches of the first L2 chain (zkEVM Node Trusted RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)"
 
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
+      - name: Monitor verified batches of the first L2 chain (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
+
+      # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
+
+      - name: Monitor verified batches of the second L2 chain (zkEVM Node Trusted RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-002 http-rpc)"
+
+      - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
 
