@@ -23,17 +23,6 @@ POSTGRES_MASTER_PASSWORD = "master_password"
 # Which automatically wipes all CDK databases and reapplies proper db permissions
 # TO DO: add env var support for credentials
 
-# The prover database is a component of both central environment and permissionless zkEVM node environment.
-# Therefore, it is defined separately.
-PROVER_DB = {
-    "prover_db": {
-        "name": "prover_db",
-        "user": "prover_user",
-        "password": "redacted",
-        "init": read_file(src="./templates/databases/prover-db-init.sql"),
-    }
-}
-
 # Databases that make up the central environment of an L2 chain, including sequencer, aggregator,
 # prover, bridge service, and DAC.
 CENTRAL_ENV_DBS = {
@@ -57,7 +46,18 @@ CENTRAL_ENV_DBS = {
         "user": "dac_user",
         "password": "redacted",
     },
-} | PROVER_DB
+}
+
+# The prover database is a component of both central environment and permissionless zkEVM node environment.
+# Therefore, it is defined separately.
+PROVER_DB = {
+    "prover_db": {
+        "name": "prover_db",
+        "user": "prover_user",
+        "password": "redacted",
+        "init": read_file(src="./templates/databases/prover-db-init.sql"),
+    }
+}
 
 # Databases required for a zkevm node to function as either a sequencer or a permissionless node.
 ZKEVM_NODE_DBS = {
@@ -77,7 +77,7 @@ ZKEVM_NODE_DBS = {
         "user": "state_user",
         "password": "redacted",
     },
-} | PROVER_DB
+}
 
 # Databases required for a cdk erigon node to function as either a sequencer or a permissionless node.
 CDK_ERIGON_DBS = {
@@ -87,6 +87,8 @@ CDK_ERIGON_DBS = {
         "password": "redacted",
     }
 }
+
+DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS
 
 
 def run(plan, suffix, sequencer_type):
