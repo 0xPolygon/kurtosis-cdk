@@ -71,12 +71,16 @@ def run(
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
-    # Deploy zkevm node and cdk peripheral databases.
+    # Deploy databases.
     if deploy_databases:
-        plan.print("Deploying zkevm node and cdk peripheral databases")
-        import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
+        plan.print("Deploying databases")
+        import_module(databases_package).run(
+            plan,
+            suffix=args["deployment_suffix"],
+            sequencer_type=args["sequencer_type"],
+        )
     else:
-        plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
+        plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
     genesis_artifact = ""

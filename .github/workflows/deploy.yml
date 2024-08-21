@@ -38,6 +38,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List first CDK L2 chain databases (erigon)
+        run: |
+          postgres1_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-001 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres1_port" --username master_user --dbname master --list
 
       - name: Attach a second CDK L2 chain (erigon)
         run: |
@@ -46,6 +51,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List second CDK L2 chain databases (erigon)
+        run: |
+          postgres2_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-002 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres2_port" --username master_user --dbname master --list
 
       - name: Update the agglayer config
         run: |
@@ -104,6 +114,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List first CDK L2 chain databases (zkevm)
+        run: |
+          postgres1_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-001 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres1_port" --username master_user --dbname master --list
 
       - name: Attach a second CDK L2 chain (erigon)
         run: |
@@ -112,6 +127,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List second CDK L2 chain databases (erigon)
+        run: |
+          postgres2_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-002 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres2_port" --username master_user --dbname master --list
 
       - name: Update the agglayer config
         run: |
