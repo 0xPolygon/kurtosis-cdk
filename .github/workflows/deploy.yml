@@ -31,7 +31,7 @@ jobs:
       - name: Deploy L1 chain and a first CDK L2 chain (erigon)
         run: |
           yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
-          yq -Y --in-place '.args.sequencer_type = "cdk"' params.yml
+          yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
           yq -Y --in-place '.args.aggregator_sequence_sender_type = "cdk"' params.yml
           yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
