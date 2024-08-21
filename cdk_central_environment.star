@@ -39,15 +39,19 @@ def run(plan, args):
         )
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
-    if args["sequencer_type"] == "zkevm":
-        # Create the zkevm node config.
-        node_config_template = read_file(
+
+    # Create the zkevm-node configuration if needed.
+    if (args["sequencer_type"] == "zkevm") or (
+        args["aggregator_sequence_sender_type"]
+        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
+    ):
+        zkevm_node_config_template = read_file(
             src="./templates/trusted-node/node-config.toml"
         )
-        node_config_artifact = plan.render_templates(
+        zkevm_node_config_artifact = plan.render_templates(
             config={
                 "node-config.toml": struct(
-                    template=node_config_template,
+                    template=zkevm_node_config_template,
                     data=args
                     | {
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
@@ -60,15 +64,16 @@ def run(plan, args):
             name="trusted-node-config",
         )
 
+    if args["sequencer_type"] == "zkevm":
         # Start the synchronizer.
         zkevm_node_package.start_synchronizer(
-            plan, args, node_config_artifact, genesis_artifact
+            plan, args, zkevm_node_config_artifact, genesis_artifact
         )
 
         # Start the rest of the zkevm node components.
         zkevm_node_components_configs = (
             zkevm_node_package.create_zkevm_node_components_config(
-                args, node_config_artifact, genesis_artifact, keystore_artifacts
+                args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
             )
         )
 
@@ -119,25 +124,6 @@ def run(plan, args):
         args["aggregator_sequence_sender_type"]
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
-        zkevm_node_config_template = read_file(
-            src="./templates/trusted-node/node-config.toml"
-        )
-        zkevm_node_config_artifact = plan.render_templates(
-            config={
-                "node-config.toml": struct(
-                    template=zkevm_node_config_template,
-                    data=args
-                    | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(
-                            args
-                        ),
-                    }
-                    | db_configs,
-                )
-            },
-            name="trusted-node-config",
-        )
-
         zkevm_aggregator_service_config = (
             zkevm_node_package.create_aggregator_service_config(
                 args,
