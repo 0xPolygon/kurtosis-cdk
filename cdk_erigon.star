@@ -30,8 +30,8 @@ def run_rpc(plan, args):
         sequencer_service.ip_address, sequencer_service.ports["rpc"].number
     )
     datastreamer_url = "{}:{}".format(
-        sequencer_url.ip_address,
-        sequencer_url.ports["data-streamer"].number,
+        sequencer_service.ip_address,
+        sequencer_service.ports["data-streamer"].number,
     )
 
     cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
