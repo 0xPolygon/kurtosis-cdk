@@ -6,7 +6,9 @@ databases = import_module("./databases.star")
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
 
     # Create the bridge service config.
     bridge_config_artifact = create_bridge_config_artifact(
