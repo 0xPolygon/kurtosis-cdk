@@ -173,7 +173,7 @@ jobs:
       
       - name: Verify Prometheus collects Panoptichain metrics
         run: |
-          panoptichain_metric="panoptichain_system_uptimex"
+          panoptichain_metric="panoptichain_system_uptime"
           prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
           prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
           echo $prometheus_query | jq
