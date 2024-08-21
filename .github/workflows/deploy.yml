@@ -174,7 +174,7 @@ jobs:
       - name: Verify Prometheus collects Panoptichain metrics
         run: |
           echo "Wait for two minutes while Prometheus gathers metrics..."
-          sleep 120
+          sleep 60
 
           echo "Retrieve Panoptichain metrics from Prometheus..."
           panoptichain_metric="panoptichain_system_uptime"
