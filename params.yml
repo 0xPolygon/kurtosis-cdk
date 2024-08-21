@@ -46,6 +46,12 @@ args:
   data_availability_mode: cdk-validium
 
   # Additional services to run alongside the network.
+  # Options:
+  # - blockscout
+  # - blutgang
+  # - pless_zkevm_node
+  # - prometheus_grafana
+  # - tx_spammer
   additional_services: []
 
   # Docker images and repositories used to spin up services.
