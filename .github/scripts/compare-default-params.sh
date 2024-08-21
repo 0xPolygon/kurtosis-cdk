@@ -58,6 +58,7 @@ compare_with_source_of_truth() {
         echo "${line:2}"
       fi
     done <<<"$differences"
+    exit 1
   fi
 }
 
