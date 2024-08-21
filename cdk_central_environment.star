@@ -139,7 +139,7 @@ def run(plan, args):
         )
 
         zkevm_aggregator_service_config = (
-            cdk_node_package.create_aggregator_service_config(
+            zkevm_node_package.create_aggregator_service_config(
                 args,
                 zkevm_node_config_artifact,
                 genesis_artifact,
@@ -149,7 +149,7 @@ def run(plan, args):
             )
         )
         zkevm_sequence_sender_service_config = (
-            cdk_node_package.create_sequence_sender_service_config(
+            zkevm_node_package.create_sequence_sender_service_config(
                 args,
                 zkevm_node_config_artifact,
                 genesis_artifact,
