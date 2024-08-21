@@ -77,6 +77,7 @@ DEFAULT_ARGS = {
 
 def parse_args(args):
     validate_global_log_level(args["global_log_level"])
+    validate_aggregator_sequence_sender_type(args["aggregator_sequence_sender_type"])
     return DEFAULT_ARGS | args
 
 
@@ -96,5 +97,19 @@ def validate_global_log_level(global_log_level):
                 constants.GLOBAL_LOG_LEVEL.info,
                 constants.GLOBAL_LOG_LEVEL.debug,
                 constants.GLOBAL_LOG_LEVEL.trace,
+            )
+        )
+
+
+def validate_aggregator_sequence_sender_type(aggregator_sequence_sender_type):
+    if aggregator_sequence_sender_type not in (
+        constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk,
+        constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm,
+    ):
+        fail(
+            "Unsupported aggregator and sequence sender type: '{}', please use '{}' or '{}'".format(
+                aggregator_sequence_sender_type,
+                constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk,
+                constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm,
             )
         )
