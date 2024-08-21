@@ -1,8 +1,8 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "global_log_level": "info",
-    "deploy_agglayer": True,
     "sequencer_type": "erigon",
+    "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
@@ -12,7 +12,7 @@ DEFAULT_ARGS = {
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.5.0-RC9",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
