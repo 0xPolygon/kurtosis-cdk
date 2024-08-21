@@ -71,12 +71,16 @@ def run(
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
-    # Deploy zkevm node and cdk peripheral databases.
+    # Deploy databases.
     if deploy_databases:
-        plan.print("Deploying zkevm node and cdk peripheral databases")
-        import_module(databases_package).run(plan, suffix=args["deployment_suffix"])
+        plan.print("Deploying databases")
+        import_module(databases_package).run(
+            plan,
+            suffix=args["deployment_suffix"],
+            sequencer_type=args["sequencer_type"],
+        )
     else:
-        plan.print("Skipping the deployment of zkevm node and cdk peripheral databases")
+        plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
     genesis_artifact = ""
@@ -154,9 +158,9 @@ def run(
         elif additional_service == "blutgang":
             deploy_additional_service(plan, "blutgang", blutgang_package, args)
         elif additional_service == "prometheus_grafana":
+            deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
-            deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
         elif additional_service == "tx_spammer":
             deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
         else:

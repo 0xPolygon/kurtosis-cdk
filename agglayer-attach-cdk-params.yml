@@ -25,6 +25,10 @@ args:
   # Note: It should be a string.
   deployment_suffix: "-002"
 
+  # The global log level that all components of the stack should log at.
+  # Valid values are "error", "warn", "info", "debug", and "trace".
+  global_log_level: info
+
   # The type of the sequencer to deploy.
   # Options:
   # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
@@ -133,8 +137,11 @@ args:
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
 
-  # If erigon is being used as the sequencer, this flag will enable a stateless executor to verify the execution of the batches.
+  # If erigon is being used as the sequencer,
+  # This flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
+  # This flag will allow pre EIP155 transactions.
+  erigon_pre_eip155_transactions: true
 
   # The address of the rollup manager contract deployer on L1.
   zkevm_rollup_manager_deployer: "0xE34aaF64b29273B7D567FCFc40544c014EEe9970"

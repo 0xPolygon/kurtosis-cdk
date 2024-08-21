@@ -15,7 +15,7 @@ def run(plan, args):
                 ),
             },
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /usr/local/bin/*.sh && apply_workload.sh"],
+            cmd=["chmod +x /usr/local/bin/*.sh && spam.sh"],
             user=User(uid=0, gid=0),  # Run the container as root user.
         ),
     )

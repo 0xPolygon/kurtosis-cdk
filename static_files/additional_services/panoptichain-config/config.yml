@@ -172,4 +172,4 @@ logs:
   # - "error"
   # - "panic"
   # - "fatal"
-  verbosity: "trace"
+  verbosity: "{{.global_log_level}}"

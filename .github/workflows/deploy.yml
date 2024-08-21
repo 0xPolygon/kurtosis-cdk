@@ -35,6 +35,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List first CDK L2 chain databases (erigon)
+        run: |
+          postgres1_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-001 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres1_port" --username master_user --dbname master --list
 
       - name: Attach a second CDK L2 chain (erigon)
         run: |
@@ -43,6 +48,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List second CDK L2 chain databases (erigon)
+        run: |
+          postgres2_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-002 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres2_port" --username master_user --dbname master --list
 
       - name: Update the agglayer config
         run: |
@@ -103,6 +113,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List first CDK L2 chain databases (zkevm)
+        run: |
+          postgres1_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-001 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres1_port" --username master_user --dbname master --list
 
       - name: Attach a second CDK L2 chain (erigon)
         run: |
@@ -111,6 +126,11 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: List second CDK L2 chain databases (erigon)
+        run: |
+          postgres2_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-002 postgres | cut -d':' -f3)
+          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres2_port" --username master_user --dbname master --list
 
       - name: Update the agglayer config
         run: |
@@ -170,3 +190,26 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Verify Blutgang rpc
+        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+      
+      - name: Verify permissionless zkevm-node rpc
+        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+      
+      - name: Verify Prometheus collects Panoptichain metrics
+        run: |
+          echo "Wait for one minute while Prometheus gathers metrics..."
+          sleep 60
+
+          echo "Retrieve Panoptichain metrics from Prometheus..."
+          panoptichain_metric="panoptichain_system_uptime"
+          prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+          prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+          echo $prometheus_query | jq
+          if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+            echo "✅ Prometheus collects panoptichain metrics!"
+          else
+            echo "❌ Prometheus does not collect panoptichain metrics..."
+            exit 1
+          fi
