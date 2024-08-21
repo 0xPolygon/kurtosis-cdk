@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
@@ -76,19 +77,23 @@ def run(plan, args):
             description="Starting the rest of the zkevm node components",
         )
 
-    if args["sequencer_type"] == "erigon":
+    # Deploy aggregator and sequence sender.
+    if (
+        args["aggregator_sequence_sender_type"]
+        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk
+    ):
         # Create the cdk node config.
-        node_config_template = read_file(
+        cdk_node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
         )
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args
         )
-        node_config_artifact = plan.render_templates(
+        cdk_node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
             config={
                 "cdk-node-config.toml": struct(
-                    template=node_config_template,
+                    template=cdk_node_config_template,
                     data=args
                     | {
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
@@ -103,12 +108,34 @@ def run(plan, args):
 
         # Start the cdk components.
         cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
-            args, node_config_artifact, genesis_artifact, keystore_artifacts
+            args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
         )
 
         plan.add_services(
             configs=cdk_node_configs,
-            description="Starting the cdk node components",
+            description="Starting the cdk-node components",
+        )
+    elif (
+        args["aggregator_sequence_sender_type"]
+        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
+    ):
+        aggregator_config = cdk_node_package.create_aggregator_service_config(
+            args,
+            config_artifact,
+            genesis_artifact,
+            keystore_artifacts.sequencer,
+            keystore_artifacts.aggregator,
+            keystore_artifacts.proofsigner,
+        )
+        sequence_sender_config = cdk_node_package.create_sequence_sender_service_config(
+            args,
+            config_artifact,
+            genesis_artifact,
+            keystore_artifacts.sequencer,
+        )
+        plan.add_services(
+            configs=aggregator_config | sequence_sender_config,
+            description="Starting zkevm aggregator and sequence sender",
         )
 
     # Start the DAC if in validium mode.

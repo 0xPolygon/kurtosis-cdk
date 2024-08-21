@@ -203,14 +203,6 @@ def create_zkevm_node_components_config(
     genesis_artifact,
     keystore_artifacts,
 ):
-    aggregator_config = create_aggregator_service_config(
-        args,
-        config_artifact,
-        genesis_artifact,
-        keystore_artifacts.sequencer,
-        keystore_artifacts.aggregator,
-        keystore_artifacts.proofsigner,
-    )
     rpc_config = create_rpc_service_config(args, config_artifact, genesis_artifact)
     eth_tx_manager_config = create_eth_tx_manager_service_config(
         args,
@@ -222,22 +214,12 @@ def create_zkevm_node_components_config(
     l2_gas_pricer_config = create_l2_gas_pricer_service_config(
         args, config_artifact, genesis_artifact
     )
-    configs = (
-        aggregator_config | rpc_config | eth_tx_manager_config | l2_gas_pricer_config
-    )
+    configs = rpc_config | eth_tx_manager_config | l2_gas_pricer_config
 
     if args["sequencer_type"] == "zkevm":
         sequencer_config = create_sequencer_service_config(
             args, config_artifact, genesis_artifact
         )
-
-        sequence_sender_config = create_sequence_sender_service_config(
-            args,
-            config_artifact,
-            genesis_artifact,
-            keystore_artifacts.sequencer,
-        )
-
-        return configs | sequencer_config | sequence_sender_config
+        return configs | sequencer_config
     else:
         return configs
