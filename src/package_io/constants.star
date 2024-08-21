@@ -5,3 +5,8 @@ GLOBAL_LOG_LEVEL = struct(
     debug="debug",
     trace="trace",
 )
+
+AGGREGATOR_SEQUENCE_SENDER_TYPE = struct(
+    cdk="cdk",
+    zkevm="zkevm",
+)
