@@ -22,6 +22,7 @@ WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
 MaxBatchesForL1 = 300
 BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
+SanityCheckRPCURL = ""
 	[SequenceSender.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 	[SequenceSender.EthTxManager]
@@ -68,6 +69,10 @@ BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
 
 	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 	{{end}}
+	UseL1BatchData = true
+	UseFullWitness = false
+	MaxWitnessRetrievalWorkers = 2
+	SyncModeOnlyEnabled = false
 	[Aggregator.DB]
 		Name = "{{.aggregator_db.name}}"
 		User = "{{.aggregator_db.user}}"
