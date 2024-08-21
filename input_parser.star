@@ -4,6 +4,7 @@ DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "global_log_level": "info",
     "sequencer_type": "erigon",
+    "aggregator_sequence_sender_type": "cdk",
     "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
