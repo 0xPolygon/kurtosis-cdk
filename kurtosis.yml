@@ -144,7 +144,11 @@ description: |-
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 9
 
+  # If erigon is being used as the sequencer,
+  # This flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
+  # This flag will allow pre EIP155 transactions.
+  erigon_pre_eip155_transactions: true
 
   polygon_zkevm_explorer: https://explorer.private/
   l1_explorer_url: https://sepolia.etherscan.io/
