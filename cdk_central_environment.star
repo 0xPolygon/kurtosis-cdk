@@ -119,22 +119,46 @@ def run(plan, args):
         args["aggregator_sequence_sender_type"]
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
-        aggregator_config = cdk_node_package.create_aggregator_service_config(
-            args,
-            config_artifact,
-            genesis_artifact,
-            keystore_artifacts.sequencer,
-            keystore_artifacts.aggregator,
-            keystore_artifacts.proofsigner,
+        zkevm_node_config_template = read_file(
+            src="./templates/trusted-node/node-config.toml"
         )
-        sequence_sender_config = cdk_node_package.create_sequence_sender_service_config(
-            args,
-            config_artifact,
-            genesis_artifact,
-            keystore_artifacts.sequencer,
+        zkevm_node_config_artifact = plan.render_templates(
+            config={
+                "node-config.toml": struct(
+                    template=zkevm_node_config_template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                    }
+                    | db_configs,
+                )
+            },
+            name="trusted-node-config",
+        )
+
+        zkevm_aggregator_service_config = (
+            cdk_node_package.create_aggregator_service_config(
+                args,
+                zkevm_node_config_artifact,
+                genesis_artifact,
+                keystore_artifacts.sequencer,
+                keystore_artifacts.aggregator,
+                keystore_artifacts.proofsigner,
+            )
+        )
+        zkevm_sequence_sender_service_config = (
+            cdk_node_package.create_sequence_sender_service_config(
+                args,
+                zkevm_node_config_artifact,
+                genesis_artifact,
+                keystore_artifacts.sequencer,
+            )
         )
         plan.add_services(
-            configs=aggregator_config | sequence_sender_config,
+            configs=zkevm_aggregator_service_config
+            | zkevm_sequence_sender_service_config,
             description="Starting zkevm aggregator and sequence sender",
         )
 
