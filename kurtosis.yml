@@ -28,6 +28,10 @@ description: |-
   # Note: It should be a string.
   deployment_suffix: "-001"
 
+  # The global log level that all components of the stack should log at.
+  # Valid values are "error", "warn", "info", "debug", and "trace".
+  global_log_level: info
+
   sequencer_type: erigon
 
   deploy_agglayer: true

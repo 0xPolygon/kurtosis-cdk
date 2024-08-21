@@ -1,5 +1,6 @@
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "global_log_level": "info",
     "deploy_agglayer": True,
     "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",

@@ -1,5 +1,5 @@
 [Log]
-Level = "info"
+Level = "{{.global_log_level}}"
 Environment = "production"
 Outputs = ["stderr"]
 
