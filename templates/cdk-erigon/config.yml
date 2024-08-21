@@ -61,6 +61,6 @@ zkevm.data-stream-host: "0.0.0.0"
 zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # rpc node {{else}}
 txpool.disable: true
-zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
-zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+zkevm.l2-sequencer-rpc-url: {{.sequencer_url}}
+zkevm.l2-datastreamer-url: {{.datastreamer_url}}
 # end {{end}}

@@ -23,15 +23,15 @@ def run_rpc(plan, args):
             plan, args, stateless_executor_config_artifact
         )
 
-    zkevm_sequencer_service = plan.get_service(
+    sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
-    zkevm_sequence_url = "http://{}:{}".format(
-        zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
+    sequencer_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["rpc"].number
     )
-    zkevm_datastreamer_url = "{}:{}".format(
-        zkevm_sequencer_service.ip_address,
-        zkevm_sequencer_service.ports["data-streamer"].number,
+    datastreamer_url = "{}:{}".format(
+        sequencer_url.ip_address,
+        sequencer_url.ports["data-streamer"].number,
     )
 
     cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
@@ -42,8 +42,8 @@ def run_rpc(plan, args):
             "config.yaml": struct(
                 template=cdk_erigon_node_config_template,
                 data={
-                    "zkevm_sequencer_url": zkevm_sequence_url,
-                    "zkevm_datastreamer_url": zkevm_datastreamer_url,
+                    "sequencer_url": sequencer_url,
+                    "datastreamer_url": datastreamer_url,
                     "is_sequencer": False,
                 }
                 | args
