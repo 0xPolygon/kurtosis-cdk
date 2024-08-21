@@ -171,14 +171,15 @@ jobs:
       - name: Verify permissionless zkevm-node rpc
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
       
-      - name: Verify panoptichain metrics
+      - name: Verify Prometheus collects Panoptichain metrics
         run: |
-          panoptichain_metrics_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} panoptichain-001 prometheus)/metrics
-          metrics_count=$(curl $panoptichain_metrics_url | grep "# TYPE panoptichain" | wc -l | xargs)
-          echo
-          if [ "$metrics_count" -gt 0 ]; then
-            echo "✅ Found $metrics_count Panoptichain metrics!"
+          panoptichain_metric="panoptichain_system_uptimex"
+          prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+          prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+          echo $prometheus_query | jq
+          if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+            echo "✅ Prometheus collects panoptichain metrics!"
           else
-            echo "❌ No Panoptichain metrics found..."
+            echo "❌ Prometheus does not collect panoptichain metrics..."
             exit 1
           fi
