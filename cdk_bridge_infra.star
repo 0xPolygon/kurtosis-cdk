@@ -72,6 +72,7 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
+                    "global_log_level": args["global_log_level"],
                     "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
@@ -103,6 +104,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                 template=bridge_config_template,
                 data={
                     "deployment_suffix": args["deployment_suffix"],
+                    "global_log_level": args["global_log_level"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],

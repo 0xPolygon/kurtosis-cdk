@@ -3,7 +3,7 @@ IsTrustedSequencer = false
 
 [Log]
 Environment = "production" # "production" or "development"
-Level = "info"
+Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
 [State]

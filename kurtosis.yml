@@ -28,6 +28,10 @@ description: |-
   # Note: It should be a string.
   deployment_suffix: "-001"
 
+  # The global log level that all components of the stack should log at.
+  # Valid values are "error", "warn", "info", "debug", and "trace".
+  global_log_level: info
+
   sequencer_type: erigon
 
   deploy_agglayer: true
@@ -55,7 +59,7 @@ description: |-
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.4.2
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0-RC9
 
   # temporary fork https://github.com/praetoriansentry/zkevm-bridge-ui/commit/6eaa899997f70e53947d7b067ff7ae37ef1875f3
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network

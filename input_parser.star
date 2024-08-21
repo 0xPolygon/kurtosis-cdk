@@ -1,7 +1,10 @@
+constants = import_module("./src/package_io/constants.star")
+
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
-    "deploy_agglayer": True,
+    "global_log_level": "info",
     "sequencer_type": "erigon",
+    "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
@@ -11,7 +14,7 @@ DEFAULT_ARGS = {
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.5.0-RC9",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
@@ -72,4 +75,25 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
+    validate_global_log_level(args["global_log_level"])
     return DEFAULT_ARGS | args
+
+
+def validate_global_log_level(global_log_level):
+    if global_log_level not in (
+        constants.GLOBAL_LOG_LEVEL.error,
+        constants.GLOBAL_LOG_LEVEL.warn,
+        constants.GLOBAL_LOG_LEVEL.info,
+        constants.GLOBAL_LOG_LEVEL.debug,
+        constants.GLOBAL_LOG_LEVEL.trace,
+    ):
+        fail(
+            "Unsupported global log level: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
+                global_log_level,
+                constants.GLOBAL_LOG_LEVEL.error,
+                constants.GLOBAL_LOG_LEVEL.warn,
+                constants.GLOBAL_LOG_LEVEL.info,
+                constants.GLOBAL_LOG_LEVEL.debug,
+                constants.GLOBAL_LOG_LEVEL.trace,
+            )
+        )

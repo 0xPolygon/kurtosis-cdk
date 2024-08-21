@@ -14,7 +14,7 @@ MaxRequestsPerIPAndSecond = 5000
 
 [Log]
 Environment = "production" # "production" or "development"
-Level = "info"
+Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
 [EthTxManager]

@@ -25,6 +25,10 @@ args:
   # Note: It should be a string.
   deployment_suffix: "-002"
 
+  # The global log level that all components of the stack should log at.
+  # Valid values are "error", "warn", "info", "debug", and "trace".
+  global_log_level: info
+
   # The type of the sequencer to deploy.
   # Options:
   # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
