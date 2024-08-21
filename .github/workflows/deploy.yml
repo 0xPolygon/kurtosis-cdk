@@ -173,10 +173,12 @@ jobs:
       
       - name: Verify panoptichain metrics
         run: |
-          panoptichain_metrics=$(curl $(kurtosis port print ${{ env.ENCLAVE_NAME }} panoptichain-001 prometheus)/metrics | grep "# TYPE panoptichain" | wc -l | xargs)
-          if "$panoptichain_metrics"; then
-              echo "✅ Panoptichain metrics are collected!"
+          panoptichain_metrics_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} panoptichain-001 prometheus)/metrics
+          metrics_count=$(curl $panoptichain_metrics_url | grep "# TYPE panoptichain" | wc -l | xargs)
+          echo
+          if [ "$metrics_count" -gt 0 ]; then
+            echo "✅ Found $metrics_count Panoptichain metrics!"
           else
-              echo "❌ No Panoptichain metrics found..."
-              exit 1
+            echo "❌ No Panoptichain metrics found..."
+            exit 1
           fi
