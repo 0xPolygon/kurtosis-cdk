@@ -23,7 +23,7 @@
 # permissionless node forces the synchronizer to pull data from the
 # DAC because it assumes that it cannot pull from a trusted sequencer.
 # ------------------------------------------------------------------------------
-IsTrustedSequencer = true
+IsTrustedSequencer = {{.is_trusted_sequencer}}
 
 # ------------------------------------------------------------------------------
 # ForkUpgradeBatchNumber is used to configure a batch number that will

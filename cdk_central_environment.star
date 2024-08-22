@@ -48,15 +48,27 @@ def run(plan, args):
 
     # Create zkevm-node configuration if needed.
     # It can be used by both the sequencer, the aggregator and the sequence sender.
-    if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
+    if sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        zkevm_node_config_artifact = create_zkevm_node_config_artifact(
+            plan,
+            args,
+            db_configs,
+            is_trusted_sequencer=True,
+        )
+    elif (
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
         zkevm_node_config_artifact = create_zkevm_node_config_artifact(
-            plan, args, db_configs
+            plan,
+            args,
+            db_configs,
         )
 
-        # Start the synchronizer first.
+    if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
+        sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
+    ):
         zkevm_node_package.run_synchronizer(
             plan, args, zkevm_node_config_artifact, genesis_artifact
         )
@@ -199,7 +211,9 @@ def get_keystores_artifacts(plan, args):
     )
 
 
-def create_zkevm_node_config_artifact(plan, args, db_configs):
+def create_zkevm_node_config_artifact(
+    plan, args, db_configs, is_trusted_sequencer=False
+):
     zkevm_node_config_template = read_file(
         src="./templates/trusted-node/zkevm-node-config.toml"
     )
@@ -207,7 +221,11 @@ def create_zkevm_node_config_artifact(plan, args, db_configs):
         config={
             "node-config.toml": struct(
                 template=zkevm_node_config_template,
-                data=args | db_configs,
+                data=args
+                | db_configs
+                | {
+                    "is_trusted_sequencer": is_trusted_sequencer,
+                },
             )
         },
         name="trusted-node-config",
