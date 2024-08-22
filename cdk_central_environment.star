@@ -59,44 +59,7 @@ def run(plan, args):
 
     # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
-        cdk_erigon_sequencer_config_artifact = create_cdk_erigon_sequencer_artifact(
-            plan, args
-        )
-        cdk_erigon_chain_artifacts = create_cdk_erigon_chain_artifacts(plan, args)
-        cdk_erigon_package.run_sequencer(
-            plan,
-            args,
-            cdk_erigon_sequencer_config_artifact,
-            cdk_erigon_chain_artifacts,
-        )
-
-        cdk_erigon_rpc_config_artifact = create_cdk_erigon_rpc_artifact(plan, args)
-        zkevm_pool_manager_config_artifact = create_zkevm_pool_manager_config_artifact(
-            plan, args, db_configs
-        )
-        cdk_erigon_package.run_rpc(
-            plan,
-            args,
-            cdk_erigon_rpc_config_artifact,
-            cdk_erigon_chain_artifacts,
-            zkevm_pool_manager_config_artifact,
-        )
-
-        if args["erigon_strict_mode"]:
-            stateless_executor_config_artifact = plan.render_templates(
-                name="stateless-executor-config-artifact",
-                config={
-                    "stateless-executor-config.json": struct(
-                        template=read_file(
-                            src="./templates/trusted-node/prover-config.json"
-                        ),
-                        data=args | {"stateless_executor": True},
-                    )
-                },
-            )
-            zkevm_prover_package.start_stateless_executor(
-                plan, args, stateless_executor_config_artifact
-            )
+        run_erigon_sequencer(plan, args, db_configs)
     elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
         zkevm_node_package.run_sequencer(
             plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
@@ -164,6 +127,47 @@ def run(plan, args):
         plan.add_services(
             configs=dac_config,
             description="Starting cdk-validium data availability comitee",
+        )
+
+
+def run_erigon_sequencer(plan, args, db_configs):
+    cdk_erigon_sequencer_config_artifact = create_cdk_erigon_sequencer_artifact(
+        plan, args
+    )
+    cdk_erigon_chain_artifacts = create_cdk_erigon_chain_artifacts(plan, args)
+    cdk_erigon_package.run_sequencer(
+        plan,
+        args,
+        cdk_erigon_sequencer_config_artifact,
+        cdk_erigon_chain_artifacts,
+    )
+
+    cdk_erigon_rpc_config_artifact = create_cdk_erigon_rpc_artifact(plan, args)
+    zkevm_pool_manager_config_artifact = create_zkevm_pool_manager_config_artifact(
+        plan, args, db_configs
+    )
+    cdk_erigon_package.run_rpc(
+        plan,
+        args,
+        cdk_erigon_rpc_config_artifact,
+        cdk_erigon_chain_artifacts,
+        zkevm_pool_manager_config_artifact,
+    )
+
+    if args["erigon_strict_mode"]:
+        stateless_executor_config_artifact = plan.render_templates(
+            name="stateless-executor-config-artifact",
+            config={
+                "stateless-executor-config.json": struct(
+                    template=read_file(
+                        src="./templates/trusted-node/prover-config.json"
+                    ),
+                    data=args | {"stateless_executor": True},
+                )
+            },
+        )
+        zkevm_prover_package.start_stateless_executor(
+            plan, args, stateless_executor_config_artifact
         )
 
 
