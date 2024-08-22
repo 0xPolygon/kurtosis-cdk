@@ -94,6 +94,13 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
+        plan.print("Deploying cdk central/trusted environment")
+        central_environment_args = dict(args)
+        central_environment_args["genesis_artifact"] = genesis_artifact
+        import_module(cdk_central_environment_package).run(
+            plan, central_environment_args
+        )
+
         # Deploy cdk-erigon node and zkevm pool manager.
         if deploy_cdk_erigon_node:
             plan.print("Deploying cdk-erigon node")
@@ -101,13 +108,6 @@ def run(
             zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
         else:
             plan.print("Skipping the deployment of cdk-erigon node")
-
-        plan.print("Deploying cdk central/trusted environment")
-        central_environment_args = dict(args)
-        central_environment_args["genesis_artifact"] = genesis_artifact
-        import_module(cdk_central_environment_package).run(
-            plan, central_environment_args
-        )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 

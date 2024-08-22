@@ -61,7 +61,7 @@ def run(plan, args):
             plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
         )
     elif sequencer_type == constants.SEQUENCER_TYPE.erigon:
-        cdk_erigon_node_artifacts = create_cdk_erigon_node_config_artifacts(plan, args)
+        cdk_erigon_node_artifacts = create_cdk_erigon_node_artifacts(plan, args)
         cdk_erigon_package.run_sequencer(
             plan,
             args,
@@ -80,11 +80,6 @@ def run(plan, args):
         )
         cdk_node_package.run_aggregator_and_sequence_sender(
             args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
-        )
-
-        plan.add_services(
-            configs=cdk_node_configs,
-            description="Starting the cdk-node components",
         )
     elif (
         aggregator_sequence_sender_type
@@ -196,7 +191,7 @@ def create_cdk_node_config_artifact(plan, args, db_configs):
 
 
 def create_cdk_erigon_node_artifacts(plan, args):
-    node_config_template = read_file(src="../templates/cdk-erigon/config.yml")
+    node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     node_config_artifact = plan.render_templates(
         name="cdk-erigon-node-config-artifact-sequencer",
