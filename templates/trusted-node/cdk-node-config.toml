@@ -5,6 +5,9 @@ ForkUpgradeNewForkId = 0
 IsValidiumMode = {{.is_cdk_validium}}
 ContractVersions = "banana"
 
+[Etherman]
+URL = "{{.l1_rpc_url}}"
+
 [Log]
 Environment = "development" # "production" or "development"
 Level = "debug"
