@@ -14,7 +14,9 @@ def run(plan, args):
     sequencer_type = args["sequencer_type"]
     aggregator_sequence_sender_type = args["aggregator_sequence_sender_type"]
 
-    db_configs = databases.get_db_configs(args["deployment_suffix"], sequencer_type)
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], sequencer_type, aggregator_sequence_sender_type
+    )
 
     # Start prover.
     prover_config_template = read_file(

@@ -65,6 +65,7 @@ def run(
             plan,
             suffix=args["deployment_suffix"],
             sequencer_type=args["sequencer_type"],
+            aggregator_sequence_sender_type=args["aggregator_sequence_sender_type"],
         )
     else:
         plan.print("Skipping the deployment of databases")
