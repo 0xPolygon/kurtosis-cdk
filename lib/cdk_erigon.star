@@ -49,33 +49,16 @@ def start_node(
     cdk_erigon_node_chain_allocs_artifact,
     is_sequencer,
 ):
+    name = args["l2_rpc_name"] + args["deployment_suffix"]
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
-    ports = {}
-    ports["pprof"] = PortSpec(
-        args["zkevm_pprof_port"],
-        application_protocol="http",
-        wait=None,
-    )
-    ports["prometheus"] = PortSpec(
-        args["zkevm_prometheus_port"],
-        application_protocol="http",
-        wait=None,
-    )
+    ports = {
+        "http-rpc": PortSpec(args["zkevm_rpc_http_port"]),
+        "pprof": PortSpec(args["zkevm_pprof_port"]),
+        "prometheus": PortSpec(args["zkevm_prometheus_port"]),
+    }
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
-        ports["http-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="http",
-        )
-    else:
-        name = args["l2_rpc_name"] + args["deployment_suffix"]
-        ports["http-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="http",
-        )
-
-    if is_sequencer:
         ports["data-streamer"] = PortSpec(
             args["zkevm_data_streamer_port"], application_protocol="datastream"
         )

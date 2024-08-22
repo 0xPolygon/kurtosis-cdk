@@ -254,7 +254,7 @@ def create_cdk_erigon_rpc_artifact(plan, args):
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
     sequencer_url = "http://{}:{}".format(
-        sequencer_service.ip_address, sequencer_service.ports["rpc"].number
+        sequencer_service.ip_address, sequencer_service.ports["http-rpc"].number
     )
     datastreamer_url = "{}:{}".format(
         sequencer_service.ip_address,
