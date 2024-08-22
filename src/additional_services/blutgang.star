@@ -63,7 +63,7 @@ def get_blutgang_config(plan, args):
                 data={
                     "blutgang_rpc_port": RPC_PORT_NUMBER,
                     "blutgang_admin_port": ADMIN_PORT_NUMBER,
-                    "l2_sequencer_url": zkevm_sequencer_http_url,
+                    "l2_sequencer_url": sequencer_url,
                     "l2_rpc_url": l2_rpc_urls.http,
                     "l2_ws_url": l2_rpc_urls.ws,
                     "zkevm_rpc_pless_http_url": zkevm_rpc_pless_http_url,
