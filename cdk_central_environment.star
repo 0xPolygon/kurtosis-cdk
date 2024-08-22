@@ -56,11 +56,7 @@ def run(plan, args):
         )
 
     # Deploy sequencer.
-    if sequencer_type == constants.SEQUENCER_TYPE.zkevm:
-        zkevm_node_package.run_sequencer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
-        )
-    elif sequencer_type == constants.SEQUENCER_TYPE.erigon:
+    if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         cdk_erigon_node_artifacts = create_cdk_erigon_node_artifacts(plan, args)
         cdk_erigon_package.run_sequencer(
             plan,
@@ -69,6 +65,10 @@ def run(plan, args):
             cdk_erigon_node_artifacts.chain_spec,
             cdk_erigon_node_artifacts.chain_config,
             cdk_erigon_node_artifacts.chain_allocs,
+        )
+    elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        zkevm_node_package.run_sequencer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
         )
     else:
         fail("Unsupported sequencer type: '{}'".format(sequencer_type))
@@ -81,7 +81,7 @@ def run(plan, args):
         cdk_node_package.run_aggregator_and_sequence_sender(
             args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
         )
-    elif (
+    if (
         aggregator_sequence_sender_type
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
