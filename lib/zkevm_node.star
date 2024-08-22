@@ -40,10 +40,6 @@ def run_sequencer(
     genesis_artifact,
     keystore_artifacts,
 ):
-    # Start the synchronizer first.
-    run_synchronizer(plan, args, config_artifact, genesis_artifact)
-
-    # Then start the remaining components.
     sequencer_config = _create_sequencer_service_config(
         args, config_artifact, genesis_artifact
     )

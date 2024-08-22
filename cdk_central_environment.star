@@ -57,6 +57,11 @@ def run(plan, args):
             plan, args, db_configs
         )
 
+        # Start the synchronizer first.
+        zkevm_node_package.run_synchronizer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
+        )
+
     # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         run_erigon_sequencer(plan, args, db_configs)
@@ -82,11 +87,6 @@ def run(plan, args):
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
-        # Start the synchronizer first.
-        zkevm_node_package.run_synchronizer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact
-        )
-
         # Then start the aggregator and the sequence sender.
         zkevm_sequence_sender_service_config = (
             zkevm_node_package.create_sequence_sender_service_config(
