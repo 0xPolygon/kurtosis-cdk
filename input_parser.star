@@ -78,8 +78,9 @@ DEFAULT_ARGS = {
 
 def parse_args(args):
     validate_global_log_level(args["global_log_level"])
+    sequencer_args = validate_sequencer_type(args["sequencer_type"])
     validate_aggregator_sequence_sender_type(args["aggregator_sequence_sender_type"])
-    return DEFAULT_ARGS | args
+    return DEFAULT_ARGS | sequencer_args | args
 
 
 def validate_global_log_level(global_log_level):
@@ -100,6 +101,30 @@ def validate_global_log_level(global_log_level):
                 constants.GLOBAL_LOG_LEVEL.trace,
             )
         )
+
+
+def validate_sequencer_type(sequencer_type):
+    sequencer_name = ""
+    l2_rpc_name = ""
+    if sequencer_type == constants.SEQUENCER_TYPE.erigon:
+        sequencer_name = "cdk-erigon-sequencer"
+        l2_rpc_name = "cdk-erigon-node"
+    elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        sequencer_name = "zkevm-node-sequencer"
+        l2_rpc_name = "zkevm-node-rpc"
+    else:
+        fail(
+            "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
+                sequencer_type,
+                constants.SEQUENCER_TYPE.erigon,
+                constants.SEQUENCER_TYPE.zkevm,
+            )
+        )
+
+    return {
+        "sequencer_name": sequencer_name,
+        "l2_rpc_name": l2_rpc_name,
+    }
 
 
 def validate_aggregator_sequence_sender_type(aggregator_sequence_sender_type):

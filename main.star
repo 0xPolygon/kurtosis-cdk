@@ -31,13 +31,6 @@ def run(
     args = import_module(input_parser).parse_args(args)
     plan.print("Deploying CDK environment with parameters: " + str(args))
 
-    if args["sequencer_type"] == "erigon":
-        args["sequencer_name"] = "cdk-erigon-sequencer"
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["sequencer_name"] = "zkevm-node-sequencer"
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
     # Deploy a local L1.
     if deploy_l1:
         plan.print("Deploying a local L1")
