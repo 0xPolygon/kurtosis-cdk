@@ -138,9 +138,7 @@ def run(plan, args):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/update-ger.sh"
-                ),
+                "chmod +x {0} && {0}".format("/opt/contract-deploy/update-ger.sh"),
             ]
         ),
     )
