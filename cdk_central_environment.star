@@ -75,7 +75,7 @@ def run(plan, args):
         cdk_erigon_package.run_rpc(
             plan,
             args,
-            cdk_erigon_sequencer_config_artifact,
+            cdk_erigon_rpc_config_artifact,
             cdk_erigon_chain_artifacts,
             zkevm_pool_manager_config_artifact,
         )
