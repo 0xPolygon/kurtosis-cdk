@@ -12,10 +12,10 @@ zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star"
 
 def run(plan, args):
     sequencer_type = args["sequencer_type"]
-    aggregator_sequence_sender_type = args["aggregator_sequence_sender_type"]
+    sequence_sender_aggregator_type = args["sequence_sender_aggregator_type"]
 
     db_configs = databases.get_db_configs(
-        args["deployment_suffix"], sequencer_type, aggregator_sequence_sender_type
+        args["deployment_suffix"], sequencer_type, sequence_sender_aggregator_type
     )
 
     # Start prover.
@@ -50,8 +50,8 @@ def run(plan, args):
     # Create zkevm-node configuration if needed.
     # It can be used by both the sequencer, the aggregator and the sequence sender.
     if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
-        aggregator_sequence_sender_type
-        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
+        sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
         zkevm_node_config_artifact = create_zkevm_node_config_artifact(
             plan, args, db_configs
@@ -71,7 +71,7 @@ def run(plan, args):
         fail("Unsupported sequencer type: '{}'".format(sequencer_type))
 
     # Deploy aggregator and sequence sender.
-    if aggregator_sequence_sender_type == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk:
+    if sequence_sender_aggregator_type == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk:
         cdk_node_config_artifact = create_cdk_node_config_artifact(
             plan, args, db_configs
         )
@@ -79,8 +79,8 @@ def run(plan, args):
             plan, args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
         )
     elif (
-        aggregator_sequence_sender_type
-        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
+        sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
         # Start the synchronizer first.
         zkevm_node_package.run_synchronizer(
@@ -88,6 +88,14 @@ def run(plan, args):
         )
 
         # Then start the aggregator and the sequence sender.
+        zkevm_sequence_sender_service_config = (
+            zkevm_node_package.create_sequence_sender_service_config(
+                args,
+                zkevm_node_config_artifact,
+                genesis_artifact,
+                keystore_artifacts.sequencer,
+            )
+        )
         zkevm_aggregator_service_config = (
             zkevm_node_package.create_aggregator_service_config(
                 args,
@@ -98,23 +106,15 @@ def run(plan, args):
                 keystore_artifacts.proofsigner,
             )
         )
-        zkevm_sequence_sender_service_config = (
-            zkevm_node_package.create_sequence_sender_service_config(
-                args,
-                zkevm_node_config_artifact,
-                genesis_artifact,
-                keystore_artifacts.sequencer,
-            )
-        )
         plan.add_services(
-            configs=zkevm_aggregator_service_config
-            | zkevm_sequence_sender_service_config,
-            description="Starting zkevm aggregator and sequence sender",
+            configs=zkevm_sequence_sender_service_config
+            | zkevm_aggregator_service_config,
+            description="Starting zkevm sequence sender and aggregator",
         )
     else:
         fail(
-            "Unsupported aggregator and sequence sender type: '{}'".format(
-                aggregator_sequence_sender_type
+            "Unsupported sequence sender and aggregator type: '{}'".format(
+                sequence_sender_aggregator_type
             )
         )
 

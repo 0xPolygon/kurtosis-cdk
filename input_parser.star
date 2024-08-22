@@ -4,7 +4,7 @@ DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "global_log_level": "info",
     "sequencer_type": "erigon",
-    "aggregator_sequence_sender_type": "cdk",
+    "sequence_sender_aggregator_type": "cdk",
     "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
@@ -79,7 +79,7 @@ DEFAULT_ARGS = {
 def parse_args(args):
     validate_global_log_level(args["global_log_level"])
     sequencer_args = validate_sequencer_type(args["sequencer_type"])
-    validate_aggregator_sequence_sender_type(args["aggregator_sequence_sender_type"])
+    validate_sequence_sender_aggregator_type(args["sequence_sender_aggregator_type"])
     return DEFAULT_ARGS | sequencer_args | args
 
 
@@ -127,15 +127,15 @@ def validate_sequencer_type(sequencer_type):
     }
 
 
-def validate_aggregator_sequence_sender_type(aggregator_sequence_sender_type):
-    if aggregator_sequence_sender_type not in (
-        constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk,
-        constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm,
+def validate_sequence_sender_aggregator_type(sequence_sender_aggregator_type):
+    if sequence_sender_aggregator_type not in (
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk,
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm,
     ):
         fail(
-            "Unsupported aggregator and sequence sender type: '{}', please use '{}' or '{}'".format(
-                aggregator_sequence_sender_type,
-                constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk,
-                constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm,
+            "Unsupported sequence sender and aggregator type: '{}', please use '{}' or '{}'".format(
+                sequence_sender_aggregator_type,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm,
             )
         )

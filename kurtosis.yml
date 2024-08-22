@@ -34,11 +34,11 @@ description: |-
 
   sequencer_type: erigon
 
-  # The type of aggregator and sequence sender to deploy.
+  # The type of sequence sender and aggregator to deploy.
   # Options:
   # - 'cdk': Use the new cdk-node (https://github.com/0xPolygon/cdk).
   # - 'zkevm': Use the legacy aggregator and sequence sender (https://github.com/0xPolygonHermez/zkevm-node).
-  aggregator_sequence_sender_type: cdk
+  sequence_sender_aggregator_type: cdk
 
   deploy_agglayer: true
 

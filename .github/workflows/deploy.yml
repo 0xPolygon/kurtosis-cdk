@@ -28,7 +28,7 @@ jobs:
       - name: Deploy Kurtosis CDK package with zkevm sequencer and zkevm aggregator / sequence sender
         run: |
           yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
-          yq -Y --in-place '.args.aggregator_sequence_sender_type = "zkevm"' params.yml
+          yq -Y --in-place '.args.sequence_sender_aggregator_type = "zkevm"' params.yml
           yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
@@ -55,7 +55,7 @@ jobs:
       - name: Deploy Kurtosis CDK package with erigon sequencer and zkevm aggregator / sequence sender
         run: |
           yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
-          yq -Y --in-place '.args.aggregator_sequence_sender_type = "zkevm"' params.yml
+          yq -Y --in-place '.args.sequence_sender_aggregator_type = "zkevm"' params.yml
           yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
@@ -82,7 +82,7 @@ jobs:
       - name: Deploy Kurtosis CDK package with erigon sequencer and cdk-node aggregator / sequence sender
         run: |
           yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
-          yq -Y --in-place '.args.aggregator_sequence_sender_type = "cdk"' params.yml
+          yq -Y --in-place '.args.sequence_sender_aggregator_type = "cdk"' params.yml
           yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
@@ -152,7 +152,7 @@ jobs:
       - name: Deploy L1 chain and a first CDK L2 chain (new stack)
         run: |
           yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
-          yq -Y --in-place '.args.aggregator_sequence_sender_type = "cdk"' params.yml
+          yq -Y --in-place '.args.sequence_sender_aggregator_type = "cdk"' params.yml
           yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 

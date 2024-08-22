@@ -37,7 +37,7 @@ Note that it is also possible to deploy the CDK stack using the legacy sequencer
 
 ```bash
 yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
-yq -Y --in-place '.args.aggregator_sequence_sender_type = "zkevm"' params.yml
+yq -Y --in-place '.args.sequence_sender_aggregator_type = "zkevm"' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 ```
 

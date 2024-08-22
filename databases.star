@@ -97,12 +97,12 @@ CDK_NODE_DBS = {
 DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS | CDK_NODE_DBS
 
 
-def run(plan, suffix, sequencer_type, aggregator_sequence_sender_type):
-    db_configs = get_db_configs(suffix, sequencer_type, aggregator_sequence_sender_type)
+def run(plan, suffix, sequencer_type, sequence_sender_aggregator_type):
+    db_configs = get_db_configs(suffix, sequencer_type, sequence_sender_aggregator_type)
     create_postgres_service(plan, db_configs, suffix)
 
 
-def get_db_configs(suffix, sequencer_type, aggregator_sequence_sender_type):
+def get_db_configs(suffix, sequencer_type, sequence_sender_aggregator_type):
     dbs = CENTRAL_ENV_DBS | PROVER_DB
 
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
@@ -110,12 +110,12 @@ def get_db_configs(suffix, sequencer_type, aggregator_sequence_sender_type):
 
     if (
         sequencer_type == constants.SEQUENCER_TYPE.zkevm
-        or aggregator_sequence_sender_type
-        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
+        or sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
         dbs = dbs | ZKEVM_NODE_DBS
 
-    if aggregator_sequence_sender_type == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk:
+    if sequence_sender_aggregator_type == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk:
         dbs = dbs | CDK_NODE_DBS
 
     configs = {

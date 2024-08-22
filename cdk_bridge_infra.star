@@ -9,7 +9,7 @@ def run(plan, args):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"],
         args["sequencer_type"],
-        args["aggregator_sequence_sender_type"],
+        args["sequence_sender_aggregator_type"],
     )
 
     # Create the bridge service config.
