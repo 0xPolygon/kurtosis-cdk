@@ -34,11 +34,11 @@ def get_blutgang_config(plan, args):
         src="../../static_files/additional_services/blutgang-config/config.toml"
     )
 
-    zkevm_sequencer_service = plan.get_service(
+    sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
-    zkevm_sequencer_http_url = "http://{}:{}".format(
-        zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
+    sequencer_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["http-rpc"].number
     )
 
     l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
