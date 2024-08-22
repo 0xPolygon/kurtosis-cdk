@@ -1,17 +1,19 @@
-zkevm_node_package = import_module("./lib/zkevm_node.star")
-zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-databases = import_module("./databases.star")
+zkevm_node_package = import_module("../../lib/zkevm_node.star")
+zkevm_prover_package = import_module("../../lib/zkevm_prover.star")
+databases_package = import_module("../../databases.star")
 
 
 def run(plan, args, genesis_artifact):
-    db_config = databases.get_pless_db_configs(args["original_suffix"])
+    # Start dbs.
+    databases_package.run_pless_zkevm(plan, suffix=args["original_suffix"])
+    db_config = databases_package.get_pless_zkevm_db_configs(args["original_suffix"])
 
     # Start executor.
     executor_config_template = read_file(
-        src="./templates/permissionless-node/executor-config.json"
+        src="../../templates/permissionless-node/executor-config.json"
     )
     executor_config_artifact = plan.render_templates(
-        name="executor-config",
+        name="executor-config" + args["deployment_suffix"],
         config={
             "executor-config.json": struct(
                 template=executor_config_template, data=args | db_config
@@ -31,10 +33,10 @@ def run(plan, args, genesis_artifact):
 
     # Start zkevm synchronizer and rpc.
     node_config_template = read_file(
-        src="./templates/permissionless-node/node-config.toml"
+        src="../../templates/permissionless-node/node-config.toml"
     )
     node_config_artifact = plan.render_templates(
-        name="permissionless-node-config",
+        name="permissionless-node-config" + args["deployment_suffix"],
         config={
             "node-config.toml": struct(
                 template=node_config_template, data=args | db_config

@@ -20,7 +20,7 @@ private.api.addr: localhost:9092
 torrent.port: 42070
 ws: true
 externalcl: true
-log.console.verbosity: debug
+log.console.verbosity: "{{.global_log_level}}"
 
 zkevm.address-admin: "{{.zkevm_admin_address}}"
 zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
@@ -45,12 +45,13 @@ zkevm.pool-manager-url: "http://zkevm-pool-manager{{.deployment_suffix}}:{{.zkev
 zkevm.l1-chain-id: {{.l1_chain_id}}
 zkevm.l1-first-block: 1
 zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
-zkevm.l1-rollup-id: 1
+zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
 zkevm.l1-rpc-url: {{.l1_rpc_url}}
 zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 
 zkevm.rpc-ratelimit: 250
 zkevm.disable-virtual-counters: false
+zkevm.allow-pre-eip155-transactions: {{.erigon_pre_eip155_transactions}}
 
 nodiscover: true
 maxpeers: 0

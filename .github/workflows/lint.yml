@@ -16,6 +16,7 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -53,6 +54,7 @@ jobs:
 
   compare-default-parameters:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -60,4 +62,5 @@ jobs:
         run: pip3 install yq
 
       - name: Compare default parameters
-        run: ./scripts/compare_default_params.sh
+        working-directory: .github/scripts
+        run: ./compare-default-params.sh

@@ -10,7 +10,7 @@ URL = "{{.l1_rpc_url}}"
 
 [Log]
 Environment = "development" # "production" or "development"
-Level = "debug"
+Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
 [SequenceSender]
@@ -67,7 +67,11 @@ SanityCheckRPCURL = ""
 	SequencerPrivateKey = {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 	SettlementBackend = "agglayer"
 	AggLayerTxTimeout = "600s"
+	{{if .deploy_agglayer}}
 	AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
+	{{else}}
+	AggLayerURL = "http://zkevm-agglayer-001:{{.zkevm_agglayer_port}}"
+	{{end}}
 	{{else}}
 
 	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
@@ -86,7 +90,7 @@ SanityCheckRPCURL = ""
 		MaxConns = 200
 	[Aggregator.Log]
 		Environment = "development" # "production" or "development"
-		Level = "debug"
+		Level = "{{.global_log_level}}"
 		Outputs = ["stderr"]
 	[Aggregator.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"

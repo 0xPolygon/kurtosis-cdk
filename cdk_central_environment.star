@@ -9,7 +9,10 @@ databases = import_module("./databases.star")
 
 
 def run(plan, args):
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
+
     # Start prover.
     prover_config_template = read_file(
         src="./templates/trusted-node/prover-config.json"
@@ -162,6 +165,7 @@ def create_dac_config_artifact(plan, args, db_configs):
                 template=dac_config_template,
                 data={
                     "deployment_suffix": args["deployment_suffix"],
+                    "global_log_level": args["global_log_level"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],

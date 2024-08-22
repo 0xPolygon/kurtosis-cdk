@@ -11,7 +11,7 @@ def create_zkevm_sequence_sender_config(
     sequence_sender_config_artifact = plan.render_templates(
         name="zkevm-sequence-sender-config-artifact",
         config={
-            "config.toml": struct(
+            "sequence-sender-config.toml": struct(
                 data=args
                 | {
                     "zkevm_is_validium": data_availability_package.is_cdk_validium(
@@ -36,7 +36,7 @@ def create_zkevm_sequence_sender_config(
         cmd=[
             "/bin/sh",
             "-c",
-            "/app/zkevm-seqsender run --network custom --custom-network-file /etc/zkevm/genesis.json --cfg /etc/zkevm/config.toml",
+            "/app/zkevm-seqsender run --network custom --custom-network-file /etc/zkevm/genesis.json --cfg /etc/zkevm/sequence-sender-config.toml",
         ],
     )
 
