@@ -13,8 +13,8 @@ def run(plan, args):
         config=ServiceConfig(
             image=BLUTGANG_IMAGE,
             ports={
-                "http": PortSpec(RPC_PORT_NUMBER),
-                "admin": PortSpec(ADMIN_PORT_NUMBER),
+                "http": PortSpec(RPC_PORT_NUMBER, application_protocol="http"),
+                "admin": PortSpec(ADMIN_PORT_NUMBER, application_protocol="http"),
             },
             files={
                 "/etc/blutgang": Directory(
