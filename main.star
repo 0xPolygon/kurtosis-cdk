@@ -26,21 +26,17 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_cdk_erigon_node=True,
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
     plan.print("Deploying CDK environment with parameters: " + str(args))
 
-    if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
     if args["sequencer_type"] == "erigon":
         args["sequencer_name"] = "cdk-erigon-sequencer"
+        args["l2_rpc_name"] = "cdk-erigon-node"
     else:
         args["sequencer_name"] = "zkevm-node-sequencer"
+        args["l2_rpc_name"] = "zkevm-node-rpc"
 
     # Deploy a local L1.
     if deploy_l1:

@@ -17,9 +17,6 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
-# Deploy cdk-erigon node.
-deploy_cdk_erigon_node: true
-
 args:
   # Suffix appended to service names.
   # Note: It should be a string.
