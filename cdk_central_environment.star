@@ -55,7 +55,7 @@ def run(plan, args):
             plan, args, db_configs
         )
 
-    # Deploy sequencer.
+    # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         cdk_erigon_node_artifacts = create_cdk_erigon_node_artifacts(plan, args)
         cdk_erigon_package.run_sequencer(
@@ -109,7 +109,7 @@ def run(plan, args):
             description="Starting zkevm aggregator and sequence sender",
         )
 
-    # Start the DAC if in validium mode.
+    # If in cdk-validium mode, deploy the data availability comitee.
     if data_availability_package.is_cdk_validium(args):
         dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
         dac_config = zkevm_dac_package.create_dac_service_config(
@@ -117,7 +117,7 @@ def run(plan, args):
         )
         plan.add_services(
             configs=dac_config,
-            description="Starting the DAC",
+            description="Starting cdk-validium data availability comitee",
         )
 
 
