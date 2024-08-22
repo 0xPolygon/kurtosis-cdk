@@ -207,11 +207,7 @@ def create_zkevm_node_config_artifact(plan, args, db_configs):
         config={
             "node-config.toml": struct(
                 template=zkevm_node_config_template,
-                data=args
-                | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
-                }
-                | db_configs,
+                data=args | db_configs,
             )
         },
         name="trusted-node-config",
