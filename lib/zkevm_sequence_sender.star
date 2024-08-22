@@ -6,7 +6,7 @@ def create_zkevm_sequence_sender_config(
 ):
     sequence_sender_name = "zkevm-node-sequence-sender" + args["deployment_suffix"]
     sequence_sender_config_template = read_file(
-        src="../templates/trusted-node/sequence-sender-config.toml"
+        src="../templates/trusted-node/zkevm-sequence-sender-config.toml"
     )
     sequence_sender_config_artifact = plan.render_templates(
         name="zkevm-sequence-sender-config-artifact",
