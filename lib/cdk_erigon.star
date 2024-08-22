@@ -64,14 +64,7 @@ def start_node(
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
-        # TODO these port names seem weird... http-rpc / rpc? I don't
-        # get it. There seem to be a bunch of weird dependencies on
-        # both of these existing. It seems likt they should be called
-        # the same thing and the only difference is if this a
-        # sequencer or an rpc.. the port itself shouldn't be named
-        # differently and there certainly shouldn't be dependencies on
-        # those names
-        ports["rpc"] = PortSpec(
+        ports["http-rpc"] = PortSpec(
             args["zkevm_rpc_http_port"],
             application_protocol="http",
         )
