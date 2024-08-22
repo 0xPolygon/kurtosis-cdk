@@ -44,7 +44,7 @@ def run(plan, args, genesis_artifact):
         },
     )
 
-    zkevm_node_package.start_synchronizer(
+    zkevm_node_package.run_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
 

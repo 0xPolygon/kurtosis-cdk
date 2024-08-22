@@ -36,7 +36,7 @@ def _create_node_component_service_config(
 
 # The synchronizer is required to run before any other zkevm node component.
 # This is why this component does not have a `create_service_config` method.
-def start_synchronizer(plan, args, config_artifact, genesis_artifact):
+def run_synchronizer(plan, args, config_artifact, genesis_artifact):
     synchronizer_name = "zkevm-node-synchronizer" + args["deployment_suffix"]
     synchronizer_service_config = _create_node_component_service_config(
         image=data_availability_package.get_node_image(args),
@@ -52,7 +52,40 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
     plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
 
 
-def create_sequencer_service_config(args, config_artifact, genesis_artifact):
+def run_sequencer(
+    args,
+    config_artifact,
+    genesis_artifact,
+    keystore_artifacts,
+):
+    # Start the synchronizer first.
+    run_synchronizer(plan, args, config_artifact, genesis_artifact)
+
+    # Then start the remaining components.
+    sequencer_config = _create_sequencer_service_config(
+        args, config_artifact, genesis_artifact
+    )
+    eth_tx_manager_config = _create_eth_tx_manager_service_config(
+        args,
+        config_artifact,
+        genesis_artifact,
+        keystore_artifacts.sequencer,
+        keystore_artifacts.aggregator,
+    )
+    l2_gas_pricer_config = _create_l2_gas_pricer_service_config(
+        args, config_artifact, genesis_artifact
+    )
+    rpc_config = create_rpc_service_config(args, config_artifact, genesis_artifact)
+    plan.add_services(
+        configs=sequencer_config
+        | eth_tx_manager_config
+        | l2_gas_pricer_config
+        | rpc_config,
+        description="Starting the rest of the zkevm node components",
+    )
+
+
+def _create_sequencer_service_config(args, config_artifact, genesis_artifact):
     sequencer_name = "zkevm-node-sequencer" + args["deployment_suffix"]
     sequencer_service_config = _create_node_component_service_config(
         image=data_availability_package.get_node_image(args),
@@ -152,7 +185,7 @@ def create_rpc_service_config(args, config_artifact, genesis_artifact):
     return {rpc_name: rpc_service_config}
 
 
-def create_eth_tx_manager_service_config(
+def _create_eth_tx_manager_service_config(
     args,
     config_artifact,
     genesis_artifact,
@@ -181,7 +214,7 @@ def create_eth_tx_manager_service_config(
     return {eth_tx_manager_name: eth_tx_manager_service_config}
 
 
-def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact):
+def _create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact):
     l2_gas_pricer_name = "zkevm-node-l2-gas-pricer" + args["deployment_suffix"]
     l2_gas_pricer_service_config = _create_node_component_service_config(
         image=data_availability_package.get_node_image(args),
@@ -195,31 +228,3 @@ def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact)
         components=NODE_COMPONENTS.l2_gas_pricer,
     )
     return {l2_gas_pricer_name: l2_gas_pricer_service_config}
-
-
-def create_zkevm_node_components_config(
-    args,
-    config_artifact,
-    genesis_artifact,
-    keystore_artifacts,
-):
-    rpc_config = create_rpc_service_config(args, config_artifact, genesis_artifact)
-    eth_tx_manager_config = create_eth_tx_manager_service_config(
-        args,
-        config_artifact,
-        genesis_artifact,
-        keystore_artifacts.sequencer,
-        keystore_artifacts.aggregator,
-    )
-    l2_gas_pricer_config = create_l2_gas_pricer_service_config(
-        args, config_artifact, genesis_artifact
-    )
-    configs = rpc_config | eth_tx_manager_config | l2_gas_pricer_config
-
-    if args["sequencer_type"] == "zkevm":
-        sequencer_config = create_sequencer_service_config(
-            args, config_artifact, genesis_artifact
-        )
-        return configs | sequencer_config
-    else:
-        return configs

@@ -6,6 +6,11 @@ GLOBAL_LOG_LEVEL = struct(
     trace="trace",
 )
 
+SEQUENCER_TYPE = struct(
+    erigon="erigon",
+    zkevm="zkevm",
+)
+
 AGGREGATOR_SEQUENCE_SENDER_TYPE = struct(
     cdk="cdk",
     zkevm="zkevm",

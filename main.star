@@ -94,27 +94,13 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
-        # Deploy cdk-erigon sequencer node.
-        # TODO this is a little weird if the erigon sequencer is deployed before the exector?
-        if args["sequencer_type"] == "erigon":
-            plan.print("Deploying cdk-erigon sequencer")
-            cdk_erigon_package.run_sequencer(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon sequencer")
-
-        # Deploy cdk-erigon node.
+        # Deploy cdk-erigon node and zkevm pool manager.
         if deploy_cdk_erigon_node:
             plan.print("Deploying cdk-erigon node")
             cdk_erigon_package.run_rpc(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon node")
-
-        # Deploy zkevm-pool-manager service.
-        if deploy_cdk_erigon_node:
-            plan.print("Deploying zkevm-pool-manager service")
             zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
         else:
-            plan.print("Skipping the deployment of zkevm-pool-manager service")
+            plan.print("Skipping the deployment of cdk-erigon node")
 
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)

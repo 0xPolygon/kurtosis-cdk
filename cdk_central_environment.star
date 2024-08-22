@@ -10,9 +10,10 @@ databases = import_module("./databases.star")
 
 
 def run(plan, args):
-    db_configs = databases.get_db_configs(
-        args["deployment_suffix"], args["sequencer_type"]
-    )
+    sequencer_type = args["sequencer_type"]
+    aggregator_sequence_sender_type = args["aggregator_sequence_sender_type"]
+
+    db_configs = databases.get_db_configs(args["deployment_suffix"], sequencer_type)
 
     # Start prover.
     prover_config_template = read_file(
@@ -44,8 +45,8 @@ def run(plan, args):
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
     # Create the zkevm-node configuration if needed.
-    if (args["sequencer_type"] == "zkevm") or (
-        args["aggregator_sequence_sender_type"]
+    if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
+        aggregator_sequence_sender_type
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
         zkevm_node_config_template = read_file(
@@ -67,29 +68,20 @@ def run(plan, args):
             name="trusted-node-config",
         )
 
-    if args["sequencer_type"] == "zkevm":
-        # Start the synchronizer.
-        zkevm_node_package.start_synchronizer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact
+    # Deploying sequencer.
+    if sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        plan.print("Deploying zkevm-node sequencer")
+        zkevm_node_package.run_sequencer(
+            args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
         )
-
-        # Start the rest of the zkevm node components.
-        zkevm_node_components_configs = (
-            zkevm_node_package.create_zkevm_node_components_config(
-                args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
-            )
-        )
-
-        plan.add_services(
-            configs=zkevm_node_components_configs,
-            description="Starting the rest of the zkevm node components",
-        )
+    elif sequencer_type == constants.SEQUENCER_TYPE.erigon:
+        plan.print("Deploying cdk-erigon sequencer")
+        cdk_erigon_package.run_sequencer(plan, args)
+    else:
+        fail("Unsupported sequencer type: '{}'".format(sequencer_type))
 
     # Deploy aggregator and sequence sender.
-    if (
-        args["aggregator_sequence_sender_type"]
-        == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk
-    ):
+    if aggregator_sequence_sender_type == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.cdk:
         # Create the cdk node config.
         cdk_node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
@@ -124,7 +116,7 @@ def run(plan, args):
             description="Starting the cdk-node components",
         )
     elif (
-        args["aggregator_sequence_sender_type"]
+        aggregator_sequence_sender_type
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
         zkevm_aggregator_service_config = (
