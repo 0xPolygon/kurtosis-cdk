@@ -20,7 +20,7 @@ def run(plan, args):
 
     # Start prover.
     prover_config_template = read_file(
-        src="./templates/trusted-node/prover-config.json"
+        src="./templates/trusted-node/zkevm-prover-config.json"
     )
     prover_config_artifact = plan.render_templates(
         name="prover-config-artifact",
@@ -160,7 +160,7 @@ def run_erigon_sequencer(plan, args, db_configs):
             config={
                 "stateless-executor-config.json": struct(
                     template=read_file(
-                        src="./templates/trusted-node/prover-config.json"
+                        src="./templates/trusted-node/zkevm-prover-config.json"
                     ),
                     data=args | {"stateless_executor": True},
                 )
