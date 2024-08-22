@@ -7,7 +7,6 @@ service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 
 
 def run(plan, args):

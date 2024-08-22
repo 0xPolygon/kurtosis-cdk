@@ -11,6 +11,7 @@ Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
 [SequenceSender]
+IsValidiumMode={{.zkevm_is_validium}}
 WaitPeriodSendSequence = "15s"
 LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
 MaxTxSizeForL1 = 131072
