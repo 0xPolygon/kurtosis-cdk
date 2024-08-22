@@ -49,10 +49,15 @@ def run_synchronizer(plan, args, config_artifact, genesis_artifact):
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
         components=NODE_COMPONENTS.synchronizer,
     )
-    plan.add_service(name=synchronizer_name, config=synchronizer_service_config)
+    plan.add_service(
+        name=synchronizer_name,
+        config=synchronizer_service_config,
+        description="Starting zkevm-node synchronizer",
+    )
 
 
 def run_sequencer(
+    plan,
     args,
     config_artifact,
     genesis_artifact,
@@ -81,7 +86,7 @@ def run_sequencer(
         | eth_tx_manager_config
         | l2_gas_pricer_config
         | rpc_config,
-        description="Starting the rest of the zkevm node components",
+        description="Starting zkevm-node sequencer",
     )
 
 

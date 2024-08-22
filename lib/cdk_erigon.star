@@ -1,3 +1,22 @@
+def run_sequencer(
+    plan,
+    args,
+    node_config_artifact,
+    chain_spec_artifact,
+    chain_config_artifact,
+    chain_allocs_artifact,
+):
+    start_node(
+        plan,
+        args,
+        node_config_artifact,
+        chain_spec_artifact,
+        chain_config_artifact,
+        chain_allocs_artifact,
+        True,
+    )
+
+
 def start_node(
     plan,
     args,

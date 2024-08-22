@@ -6,7 +6,7 @@ NODE_COMPONENTS = struct(
 )
 
 
-def create_cdk_node_service_config(
+def run_aggregator_and_sequence_sender(
     args,
     config_artifact,
     genesis_artifact,
