@@ -226,7 +226,6 @@ def create_zkevm_node_config_artifact(
                 | {
                     "is_trusted_sequencer": is_trusted_sequencer,
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
-                | db_configs,
                 },
             )
         },
