@@ -1,19 +1,42 @@
+zkevm_prover_package = import_module("./zkevm_prover.star")
+zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+
+
 def run_sequencer(
     plan,
     args,
     node_config_artifact,
-    chain_spec_artifact,
-    chain_config_artifact,
-    chain_allocs_artifact,
+    chain_artifacts,
 ):
     start_node(
         plan,
         args,
         node_config_artifact,
-        chain_spec_artifact,
-        chain_config_artifact,
-        chain_allocs_artifact,
+        chain_artifacts.spec,
+        chain_artifacts.config,
+        chain_artifacts.allocs,
         True,
+    )
+
+
+def run_rpc(
+    plan,
+    args,
+    node_config_artifact,
+    chain_artifacts,
+    zkevm_pool_manager_config_artifact,
+):
+    start_node(
+        plan,
+        args,
+        node_config_artifact,
+        chain_artifacts.spec,
+        chain_artifacts.config,
+        chain_artifacts.allocs,
+        False,
+    )
+    zkevm_pool_manager_package.run_zkevm_pool_manager(
+        plan, args, zkevm_pool_manager_config_artifact
     )
 
 

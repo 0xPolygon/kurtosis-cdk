@@ -7,13 +7,13 @@ NODE_COMPONENTS = struct(
 
 
 def run_aggregator_and_sequence_sender(
+    plan,
     args,
     config_artifact,
     genesis_artifact,
     keystore_artifact,
 ):
     cdk_node_name = "cdk-node" + args["deployment_suffix"]
-
     cdk_node_service_config = ServiceConfig(
         image=args["cdk_node_image"],
         ports={
@@ -47,5 +47,8 @@ def run_aggregator_and_sequence_sender(
             + NODE_COMPONENTS.aggregator,
         ],
     )
-
-    return {cdk_node_name: cdk_node_service_config}
+    plan.add_service(
+        name=cdk_node_name,
+        config=cdk_node_service_config,
+        description="Starting cdk-node aggregator and sequence sender",
+    )

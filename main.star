@@ -1,11 +1,9 @@
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-cdk_erigon_package = import_module("./cdk_erigon.star")
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
-zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 # Additional services packages.
 blockscout_package = "./src/additional_services/blockscout.star"
@@ -100,14 +98,6 @@ def run(
         import_module(cdk_central_environment_package).run(
             plan, central_environment_args
         )
-
-        # Deploy cdk-erigon node and zkevm pool manager.
-        if deploy_cdk_erigon_node:
-            plan.print("Deploying cdk-erigon node")
-            cdk_erigon_package.run_rpc(plan, args)
-            zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon node")
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 

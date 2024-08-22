@@ -57,18 +57,50 @@ def run(plan, args):
 
     # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
-        cdk_erigon_node_artifacts = create_cdk_erigon_node_artifacts(plan, args)
+        cdk_erigon_sequencer_config_artifact = create_cdk_erigon_sequencer_artifact(
+            plan, args
+        )
+        cdk_erigon_chain_artifacts = create_cdk_erigon_chain_artifacts(plan, args)
         cdk_erigon_package.run_sequencer(
             plan,
             args,
-            cdk_erigon_node_artifacts.node_config,
-            cdk_erigon_node_artifacts.chain_spec,
-            cdk_erigon_node_artifacts.chain_config,
-            cdk_erigon_node_artifacts.chain_allocs,
+            cdk_erigon_sequencer_config_artifact,
+            cdk_erigon_chain_artifacts,
         )
+
+        cdk_erigon_rpc_config_artifact = create_cdk_erigon_rpc_artifact(plan, args)
+        zkevm_pool_manager_config_artifact = create_zkevm_pool_manager_config_artifact(
+            plan, args, db_configs
+        )
+        cdk_erigon_package.run_rpc(
+            plan,
+            args,
+            cdk_erigon_sequencer_config_artifact,
+            cdk_erigon_chain_artifacts,
+            zkevm_pool_manager_config_artifact,
+        )
+
+        if args["erigon_strict_mode"]:
+            stateless_executor_config_artifact = plan.render_templates(
+                name="stateless-executor-config-artifact",
+                config={
+                    "stateless-executor-config.json": struct(
+                        template=read_file(
+                            src="./templates/trusted-node/prover-config.json"
+                        ),
+                        data=args | {"stateless_executor": True},
+                    )
+                },
+            )
+            zkevm_prover_package.start_stateless_executor(
+                plan, args, stateless_executor_config_artifact
+            )
     elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
         zkevm_node_package.run_sequencer(
             plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
+        )
+        zkevm_node_package.run_rpc(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
         )
     else:
         fail("Unsupported sequencer type: '{}'".format(sequencer_type))
@@ -79,9 +111,9 @@ def run(plan, args):
             plan, args, db_configs
         )
         cdk_node_package.run_aggregator_and_sequence_sender(
-            args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
+            plan, args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
         )
-    if (
+    elif (
         aggregator_sequence_sender_type
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
@@ -107,6 +139,12 @@ def run(plan, args):
             configs=zkevm_aggregator_service_config
             | zkevm_sequence_sender_service_config,
             description="Starting zkevm aggregator and sequence sender",
+        )
+    else:
+        fail(
+            "Unsupported aggregator and sequence sender type: '{}'".format(
+                aggregator_sequence_sender_type
+            )
         )
 
     # If in cdk-validium mode, deploy the data availability comitee.
@@ -190,11 +228,11 @@ def create_cdk_node_config_artifact(plan, args, db_configs):
     )
 
 
-def create_cdk_erigon_node_artifacts(plan, args):
+def create_cdk_erigon_sequencer_artifact(plan, args):
     node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    node_config_artifact = plan.render_templates(
-        name="cdk-erigon-node-config-artifact-sequencer",
+    return plan.render_templates(
+        name="cdk-erigon-sequencer-config-artifact",
         config={
             "config.yaml": struct(
                 template=node_config_template,
@@ -208,6 +246,38 @@ def create_cdk_erigon_node_artifacts(plan, args):
         },
     )
 
+
+def create_cdk_erigon_rpc_artifact(plan, args):
+    node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+    sequencer_service = plan.get_service(
+        name=args["sequencer_name"] + args["deployment_suffix"]
+    )
+    sequencer_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["rpc"].number
+    )
+    datastreamer_url = "{}:{}".format(
+        sequencer_service.ip_address,
+        sequencer_service.ports["data-streamer"].number,
+    )
+    return plan.render_templates(
+        name="cdk-erigon-rpc-config-artifact",
+        config={
+            "config.yaml": struct(
+                template=node_config_template,
+                data={
+                    "sequencer_url": sequencer_url,
+                    "datastreamer_url": datastreamer_url,
+                    "is_sequencer": False,
+                }
+                | args
+                | contract_setup_addresses,
+            ),
+        },
+    )
+
+
+def create_cdk_erigon_chain_artifacts(plan, args):
     chain_spec_template = read_file(src="./templates/cdk-erigon/chainspec.json")
     chain_spec_artifact = plan.render_templates(
         name="cdk-erigon-node-chain-spec-artifact-sequencer",
@@ -228,10 +298,31 @@ def create_cdk_erigon_node_artifacts(plan, args):
         name="cdk-erigon-node-chain-allocs",
     )
     return struct(
-        node_config=node_config_artifact,
-        chain_spec=chain_spec_artifact,
-        chain_config=chain_config_artifact,
-        chain_allocs=chain_allocs_artifact,
+        spec=chain_spec_artifact,
+        config=chain_config_artifact,
+        allocs=chain_allocs_artifact,
+    )
+
+
+def create_zkevm_pool_manager_config_artifact(plan, args, db_configs):
+    zkevm_pool_manager_config_template = read_file(
+        src="./templates/pool-manager/pool-manager-config.toml"
+    )
+    return plan.render_templates(
+        name="pool-manager-config-artifact",
+        config={
+            "pool-manager-config.toml": struct(
+                template=zkevm_pool_manager_config_template,
+                data=args
+                | {
+                    "deployment_suffix": args["deployment_suffix"],
+                    "zkevm_pool_manager_port": args["zkevm_pool_manager_port"],
+                    # ports
+                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                }
+                | db_configs,
+            )
+        },
     )
 
 
