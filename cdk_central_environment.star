@@ -339,7 +339,7 @@ def create_zkevm_pool_manager_config_artifact(plan, args, db_configs):
 
 
 def create_dac_config_artifact(plan, args, db_configs):
-    dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
+    dac_config_template = read_file(src="./templates/trusted-node/cdk-dac-config.toml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(
         name="dac-config-artifact",
