@@ -119,6 +119,12 @@ def run(plan, args):
         aggregator_sequence_sender_type
         == constants.AGGREGATOR_SEQUENCE_SENDER_TYPE.zkevm
     ):
+        # Start the synchronizer first.
+        zkevm_node_package.run_synchronizer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
+        )
+
+        # Then start the aggregator and the sequence sender.
         zkevm_aggregator_service_config = (
             zkevm_node_package.create_aggregator_service_config(
                 args,
