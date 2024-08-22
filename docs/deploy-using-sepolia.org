@@ -137,7 +137,7 @@ very quickly for fast testing. This is helpful for very quick L1
 settlement. When we're testing with a local L1, this is free. But on
 Sepolia, it's probably not desirable to sequence empty batches every
 few seconds. It will be "expensive". To slow things down, we should
-modify these three settings in the [[../templates/trusted-node/node-config.toml][node config]].
+modify these three settings in the [[../templates/trusted-node/zkevm-node-config.toml][node config]].
 
 
 The default configuration below would sequence batches roughly every

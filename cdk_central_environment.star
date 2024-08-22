@@ -202,7 +202,7 @@ def get_keystores_artifacts(plan, args):
 
 def create_zkevm_node_config_artifact(plan, args, db_configs):
     zkevm_node_config_template = read_file(
-        src="./templates/trusted-node/node-config.toml"
+        src="./templates/trusted-node/zkevm-node-config.toml"
     )
     return plan.render_templates(
         config={
