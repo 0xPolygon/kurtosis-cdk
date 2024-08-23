@@ -3,7 +3,11 @@ ForkUpgradeNewForkId = 0
 
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
+{{if eq .zkevm_rollup_fork_id 9}}
+ContractVersions = "elderberry"
+{{else if eq .zkevm_rollup_fork_id 12}}
 ContractVersions = "banana"
+{{end}}
 
 [Etherman]
 URL = "{{.l1_rpc_url}}"
