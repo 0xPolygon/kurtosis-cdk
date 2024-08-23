@@ -1,5 +1,4 @@
 {
-    "hashDBSingleton": true,
     "runExecutorServer": true,
     "runExecutorClient": false,
     "runExecutorClientMultithread": false,
