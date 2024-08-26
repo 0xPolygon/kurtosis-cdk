@@ -47,24 +47,16 @@ def run(plan, args):
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Create zkevm-node configuration if needed.
-    # It can be used by both the sequencer, the aggregator and the sequence sender.
-    if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
-        sequence_sender_aggregator_type
-        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
-    ):
-        zkevm_node_config_artifact = create_zkevm_node_config_artifact(
-            plan, args, db_configs
-        )
-        # This component is required to run before any other zkevm node component.
-        zkevm_node_package.run_synchronizer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact
-        )
-
     # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         run_erigon_sequencer(plan, args, db_configs)
     elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        zkevm_node_config_artifact = create_zkevm_node_config_artifact(
+            plan, args, db_configs
+        )
+        zkevm_node_package.run_synchronizer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
+        )
         zkevm_node_package.run_sequencer(
             plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
         )
@@ -86,7 +78,6 @@ def run(plan, args):
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
-        # Then start the aggregator and the sequence sender.
         zkevm_sequence_sender_config_artifact = (
             create_zkevm_sequence_sender_config_artifact(plan, args)
         )
@@ -99,14 +90,15 @@ def run(plan, args):
             )
         )
 
+        zkevm_aggregator_config_artifact = create_zkevm_aggregator_config_artifact(
+            plan, args, db_configs
+        )
         zkevm_aggregator_service_config = (
-            zkevm_node_package.create_aggregator_service_config(
+            zkevm_aggregator_package.create_zkevm_aggregator_config(
                 args,
-                zkevm_node_config_artifact,
+                zkevm_aggregator_config_artifact,
                 genesis_artifact,
-                keystore_artifacts.sequencer,
                 keystore_artifacts.aggregator,
-                keystore_artifacts.proofsigner,
             )
         )
         plan.add_services(
@@ -223,20 +215,54 @@ def create_zkevm_node_config_artifact(plan, args, db_configs):
 
 
 def create_zkevm_sequence_sender_config_artifact(plan, args):
-    sequence_sender_config_template = read_file(
-        src="./templates/trusted-node/sequence-sender-config.toml"
+    zkevm_sequence_sender_config_template = read_file(
+        src="./templates/trusted-node/zkevm-sequence-sender-config.toml"
     )
     return plan.render_templates(
         name="zkevm-sequence-sender-config-artifact",
         config={
-            "sequence-sender-config.toml": struct(
+            "zkevm-sequence-sender-config.toml": struct(
                 data=args
                 | {
                     "zkevm_is_validium": data_availability_package.is_cdk_validium(
                         args
                     ),
                 },
-                template=sequence_sender_config_template,
+                template=zkevm_sequence_sender_config_template,
+            ),
+        },
+    )
+
+
+def create_zkevm_aggregator_config_artifact(plan, args, db_configs):
+    zkevm_aggregator_config_template = read_file(
+        src="./templates/trusted-node/zkevm-aggregator-config.toml"
+    )
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+
+    sequencer_service = plan.get_service(
+        name=args["sequencer_name"] + args["deployment_suffix"]
+    )
+    sequencer_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["http-rpc"].number
+    )
+    datastreamer_url = "{}:{}".format(
+        sequencer_service.ip_address,
+        sequencer_service.ports["data-streamer"].number,
+    )
+
+    return plan.render_templates(
+        name="zkevm-aggregator-config-artifact",
+        config={
+            "zkevm-aggregator-config.toml": struct(
+                data=args
+                | db_configs
+                | contract_setup_addresses
+                | {
+                    "sequencer_rpc_url": sequencer_url,
+                    "sequencer_ds_url": datastreamer_url,
+                },
+                template=zkevm_aggregator_config_template,
             ),
         },
     )

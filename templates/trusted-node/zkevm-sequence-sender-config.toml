@@ -1,0 +1,219 @@
+# ==============================================================================
+#  _     ___   ____
+# | |   / _ \ / ___|
+# | |  | | | | |  _
+# | |__| |_| | |_| |
+# |_____\___/ \____|
+#
+# ------------------------------------------------------------------------------
+[Log]
+# ------------------------------------------------------------------------------
+# Environment generally dictates the format of the logs and the
+# sampling rate. We often default to production even for development
+# because of the JSON encoding.
+#
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
+# ------------------------------------------------------------------------------
+Environment = "development"
+
+# ------------------------------------------------------------------------------
+# Level determines the log level that will be written to the
+# log. Generally we'll switch to debug if we want to troubleshoot
+# something specifically otherwise we leave it at info
+# ------------------------------------------------------------------------------
+Level = "{{.global_log_level}}"
+
+# ------------------------------------------------------------------------------
+# Outputs define the output paths for writing logs. The default is to
+# write to stderr, but other output paths should be supported
+#
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/writer.go#L32-L50
+# ------------------------------------------------------------------------------
+Outputs = ["stdout"]
+
+# ==============================================================================
+#  ____  _____ ___  _   _ _____ _   _  ____ _____ ____  _____ _   _ ____  _____ ____
+# / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____/ ___|| ____| \ | |  _ \| ____|  _ \
+# \___ \|  _|| | | | | | |  _| |  \| | |   |  _| \___ \|  _| |  \| | | | |  _| | |_) |
+#  ___) | |__| |_| | |_| | |___| |\  | |___| |___ ___) | |___| |\  | |_| | |___|  _ <
+# |____/|_____\__\_\\___/|_____|_| \_|\____|_____|____/|_____|_| \_|____/|_____|_| \_\
+#
+# ------------------------------------------------------------------------------
+[SequenceSender]
+# TODO
+IsValidiumMode={{.zkevm_is_validium}}
+
+# ------------------------------------------------------------------------------
+# WaitPeriodSendSequence will determine how long we wait to check for
+# new sequences to send assuming that we came up empty the last time
+# we checked. E.g. if we query and find 0 sequences to send, we'll
+# wait for WaitPeriodSendSequence before checking again
+# ------------------------------------------------------------------------------
+WaitPeriodSendSequence = "5s"
+
+# ------------------------------------------------------------------------------
+# LastBatchVirtualizationTimeMaxWaitPeriod defines the max amount of
+# time that we'll allow to pass before virtualizing. E.g. if we have
+# sequences to send and it's been more than
+# LastBatchVirtualizationTimeMaxWaitPeriod since the last time we've
+# virtualized, we'll send the sequences. Otherwise we'll wait longer.
+# ------------------------------------------------------------------------------
+LastBatchVirtualizationTimeMaxWaitPeriod = "5s"
+
+# ------------------------------------------------------------------------------
+# MaxTxSizeForL1 is the maximum size a single transaction can
+# have. This field has non-trivial consequences: larger transactions
+# than 128KB are significantly harder and more expensive to propagate;
+# larger transactions also take more resources to validate whether
+# they fit into the pool or not.
+# ------------------------------------------------------------------------------
+MaxTxSizeForL1 = 131072
+
+# ------------------------------------------------------------------------------
+# L2Coinbase should generally be the address of the trusted
+# sequencer. The coinbase will receive fees on L2. This is also used
+# to specify the coinbase in the batch and ultimately is used to
+# determine the beneficiary of the proof verification. When we
+# sequence batches on L1, we pay a batch fee. When the batches are
+# eventually proven that collateral is refunded to the L2Coinbase.
+# ------------------------------------------------------------------------------
+L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
+
+# ------------------------------------------------------------------------------
+# PrivateKey is a object with the keystore and password that are used
+# for signing transactions. The keystore is a standard go-ethereum
+# style keystore that is encrypted with the provided password. In this
+# particular context, this needs to be the sequencers private key.
+# ------------------------------------------------------------------------------
+PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+
+# TODO
+SequencesTxFileName = "/app/data/sequencesender.json"
+# TODO
+WaitPeriodPurgeTxFile = "48h"
+# TODO
+MaxPendingTx = 1
+
+# TODO
+[SequenceSender.StreamClient]
+# TODO
+Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
+
+# ==============================================================================
+#  _____ _____ _   _ _______  ____  __    _    _   _    _    ____ _____ ____
+# | ____|_   _| | | |_   _\ \/ /  \/  |  / \  | \ | |  / \  / ___| ____|  _ \
+# |  _|   | | | |_| | | |  \  /| |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |
+# | |___  | | |  _  | | |  /  \| |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <
+# |_____| |_| |_| |_| |_| /_/\_\_|  |_/_/   \_\_| \_/_/   \_\____|_____|_| \_\
+#
+# ------------------------------------------------------------------------------
+[SequenceSender.EthTxManager]
+# ------------------------------------------------------------------------------
+# FrequencyToMonitorTxs determines how often we'll process pending
+# monitored transactions. Essentially we'll query the database looking
+# for created, sent, and reorged transactions. For each one of those
+# txs, we'll try to send it or confirm if it has been sent and update
+# the status accordingly.
+#
+# Setting this duration can potentially create a lot of logs
+# especially if there is nothing to do.
+# ------------------------------------------------------------------------------
+FrequencyToMonitorTxs = "5s"
+
+# ------------------------------------------------------------------------------
+# WaitTxToBeMined will determine how long we'll wait for a transaction
+# to be mined after it's been published. If this interval is too
+# short, you're more likely to run into oddities where the nonce is
+# reused.
+#
+# The code for sending transactions does not create a goroutine. It
+# will block for the duration of the wait.
+# ------------------------------------------------------------------------------
+WaitTxToBeMined = "4m0s"
+
+# TODO
+ConsolidationL1ConfirmationBlocks = 5
+
+# TODO
+FinalizationL1ConfirmationBlocks = 10
+
+# TODO
+WaitReceiptToBeGenerated = "8s"
+
+# ------------------------------------------------------------------------------
+# PrivateKeys is an array of keystores and passwords that are used for
+# signing transactions. The keystores are standard go-ethereum style
+# keystores that are encrypted with the provided password. Depending
+# on your deployment setup, you'll need to configure the sequencer
+# and/org aggregator key so that the tx manager for the given
+# component can sign and send transactions.
+#
+# ------------------------------------------------------------------------------
+PrivateKeys = [
+{Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+]
+
+# ------------------------------------------------------------------------------
+# ForcedGas can be used to configure a default gas limit to use in the
+# case of a gas estimation error. If this is configured as 0, the
+# default behavior would be to return the gas estimation error and
+# retry later.
+# ------------------------------------------------------------------------------
+ForcedGas = 0
+
+# ------------------------------------------------------------------------------
+# GasPriceMarginFactor is used to bias the gas price by whatever the
+# configured factor is. If we want to make sure our transactions are
+# mined quickly especially if there is volatility, we could set this
+# factor to be 1.2 in order to make sure that our transactions are
+# attractive.
+#
+# Generally, we would not recommend setting this below 1. If you're
+# looking to save on gas costs, there are better ways.
+# ------------------------------------------------------------------------------
+GasPriceMarginFactor = 1.25
+
+# ------------------------------------------------------------------------------
+# MaxGasPriceLimit is used to specify in wei the upper limit price
+# that we would be willing to pay. If the current gas price exceeds
+# this limit, we'll adjust the gas price down to the configured limit
+# and try to send the transaction. If the limit is below the base fee,
+# the transaction probably would not be accepted by the RPC.
+# ------------------------------------------------------------------------------
+MaxGasPriceLimit = 0
+
+# TODO
+PersistenceFilename = "/app/data/ethtxmanager.json"
+
+# ==============================================================================
+#  _____ _____ _   _ _____ ____  __  __    _    _   _
+# | ____|_   _| | | | ____|  _ \|  \/  |  / \  | \ | |
+# |  _|   | | | |_| |  _| | |_) | |\/| | / _ \ |  \| |
+# | |___  | | |  _  | |___|  _ <| |  | |/ ___ \| |\  |
+# |_____| |_| |_| |_|_____|_| \_\_|  |_/_/   \_\_| \_|
+#
+# ------------------------------------------------------------------------------
+[SequenceSender.EthTxManager.Etherman]
+
+# ------------------------------------------------------------------------------
+# URL should be used to configure your L1 RPC address.
+# ------------------------------------------------------------------------------
+URL = "{{.l1_rpc_url}}"
+
+# ------------------------------------------------------------------------------
+# MultiGasProvider can be set to true in order to use a gas station
+# provider in addition to using a normal RPC gas pricer. This feature
+# is not used as far as we know
+#
+# Deprecated: This feature currently uses gas station which has been
+# decommissioned
+#
+# ------------------------------------------------------------------------------
+MultiGasProvider = false
+
+# TODO
+L1ChainID =  {{.l1_chain_id}}
+
+# TODO
+HTTPHeaders = []

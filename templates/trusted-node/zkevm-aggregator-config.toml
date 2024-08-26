@@ -1,0 +1,418 @@
+# ==============================================================================
+#     _    ____  ____ ____  _____ ____    _  _____ ___  ____
+#    / \  / ___|/ ___|  _ \| ____/ ___|  / \|_   _/ _ \|  _ \
+#   / _ \| |  _| |  _| |_) |  _|| |  _  / _ \ | || | | | |_) |
+#  / ___ \ |_| | |_| |  _ <| |__| |_| |/ ___ \| || |_| |  _ <
+# /_/   \_\____|\____|_| \_\_____\____/_/   \_\_| \___/|_| \_\
+# ------------------------------------------------------------------------------
+[Aggregator]
+
+# ------------------------------------------------------------------------------
+# Host is the IP address that the aggregator server will listen
+# on. The provers are clients for the aggregator server.
+# ------------------------------------------------------------------------------
+Host = "0.0.0.0"
+
+# ------------------------------------------------------------------------------
+# Port is the port that the aggregator service will be listening on
+# ------------------------------------------------------------------------------
+Port = {{.zkevm_aggregator_port}}
+
+# ------------------------------------------------------------------------------
+# RetryTime is the amount of time that the main loop will wait between
+# checking for proofs to aggregate or batches to prove.
+# ------------------------------------------------------------------------------
+RetryTime = "30s"
+
+# ------------------------------------------------------------------------------
+# VerifyProofInterval is the interval of time to verify and send
+# proofs to L1
+# ------------------------------------------------------------------------------
+VerifyProofInterval = "1m0s"
+
+# ------------------------------------------------------------------------------
+# ProofStatePollingInterval will determine how long we wait between
+# successive checks to see if a pending proof has been finished
+# ------------------------------------------------------------------------------
+ProofStatePollingInterval = "5s"
+
+# ------------------------------------------------------------------------------
+# TxProfitabilityCheckerType is used to specify an approach for
+# determining if it's profitable for the aggregator to validate a
+# batch.
+#
+# base: would check the amount of pending collateral and compare it to
+# the TxProfitabilityMinReward. If the reward surpasses the minimum,
+# we will verify the proof, otherwise we'll wait
+#
+# acceptall: will verify the even if there is very little reward
+# ------------------------------------------------------------------------------
+TxProfitabilityCheckerType = "acceptall"
+
+# ------------------------------------------------------------------------------
+# TxProfitabilityMinReward is used to configure the minimum reward
+# if we're using the base model for tx profitability
+# ------------------------------------------------------------------------------
+TxProfitabilityMinReward = "1.1"
+
+# ------------------------------------------------------------------------------
+# ForkId is the fork id that we're currently using
+#
+# Note: this value is likely overwritten from the values from onchain
+#
+# Deprecated: it seems like this particular field might not be used
+#
+# ------------------------------------------------------------------------------
+ForkId = 9
+
+# ------------------------------------------------------------------------------
+# CleanupLockedProofsInterval determines the wait duration between
+# successive calls to clean up locked proofs.
+# ------------------------------------------------------------------------------
+CleanupLockedProofsInterval = "2m0s"
+
+# ------------------------------------------------------------------------------
+# GeneratingProofCleanupThreshold determines the max amount of time
+# that we'd be willing to wait for a proof to be generated. Every
+# CleanupLockedProofsInterval we will check for proofs that have been
+# generating for longer than GeneratingProofCleanupThreshold. Those
+# proofs will be deleted and retried.
+# ------------------------------------------------------------------------------
+GeneratingProofCleanupThreshold = "10m"
+
+{{if .is_cdk_validium}}
+## CDK Validium Specific Settings
+
+# ------------------------------------------------------------------------------
+# SenderAddress is used as input for the prover. The address that's
+# configured here must match the ultimate sender of the aggregated
+# proof to L1. In this case the final sender is the agglayer itself
+# ------------------------------------------------------------------------------
+SenderAddress = "{{.zkevm_l2_agglayer_address}}"
+
+# ------------------------------------------------------------------------------
+# SettlementBackend determines if we're settling with the `agglayer'
+# or `direct' with L1
+# ------------------------------------------------------------------------------
+SettlementBackend = "agglayer"
+
+# ------------------------------------------------------------------------------
+# AggLayerTxTimeout determines how long we'll wait for the AggLayer to
+# respond successfully that a transaction has been mined on L1. The
+# current implementation will block while we wait, so it makes sense
+# not to push this number overly high.
+# ------------------------------------------------------------------------------
+AggLayerTxTimeout = "600s"
+
+# ------------------------------------------------------------------------------
+# AggLayerURL is the RPC URL of the agglayer itself
+# In the case of attaching multiple CDKs, the AgglayerURL 
+# should always follow the first deployment_suffix "-001"
+# by default.
+# ------------------------------------------------------------------------------
+{{if .deploy_agglayer}}
+AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
+{{else}}
+AggLayerURL = "http://zkevm-agglayer-001:{{.zkevm_agglayer_port}}"
+{{end}}
+
+{{else}}
+
+# ------------------------------------------------------------------------------
+# SenderAddress represents the address of the trusted aggregator
+# ------------------------------------------------------------------------------
+SenderAddress = "{{.zkevm_l2_aggregator_address}}"
+{{end}}
+
+# ------------------------------------------------------------------------------
+# GasOffset is an incremental last limit added to the estimation in
+# order to avoid reverts due to state volatility.
+# ------------------------------------------------------------------------------
+GasOffset = 150000
+
+# TODO
+WitnessURL = "{{.sequencer_rpc_url}}" # TODO!
+
+# TODO
+LERContract = "{{.zkevm_global_exit_root_l2_address}}"
+
+# T ODO
+UseL1BatchData = true
+
+# TODO
+UseFullWitness = false
+
+# TODO
+BatchProofSanityCheckEnabled = true
+
+# TODO: DB
+[Aggregator.DB]
+# ------------------------------------------------------------------------------
+# Name is the identifier of the target database to connect to.
+# ------------------------------------------------------------------------------
+Name = "{{.aggregator_db.name}}"
+
+# ------------------------------------------------------------------------------
+# User specifies the username for database connection authentication.
+# ------------------------------------------------------------------------------
+User = "{{.aggregator_db.user}}"
+
+# ------------------------------------------------------------------------------
+# Password is the authentication credential for the database connection.
+# ------------------------------------------------------------------------------
+Password = "{{.aggregator_db.password}}"
+
+# ------------------------------------------------------------------------------
+# Host is the network address (hostname or IP) used to establish a database
+# connection. Append deployment-specific suffixes as needed.
+# ------------------------------------------------------------------------------
+Host = "{{.aggregator_db.hostname}}"
+
+# ------------------------------------------------------------------------------
+# Port defines the network port used for the database connection.
+# ------------------------------------------------------------------------------
+Port = {{.aggregator_db.port}}
+
+# ------------------------------------------------------------------------------
+# EnableLog toggles the logging of all executed queries. Enabling this
+# feature will significantly increase log volume and may affect performance.
+# ------------------------------------------------------------------------------
+EnableLog = false
+
+# ------------------------------------------------------------------------------
+# MaxConns sets the maximum number of concurrent connections in the pool.
+# Adjust this value based on the database's configuration limits and expected
+# client load to optimize performance and resource utilization.
+# ------------------------------------------------------------------------------
+MaxConns = 200
+
+# ==============================================================================
+#  _     ___   ____
+# | |   / _ \ / ___|
+# | |  | | | | |  _
+# | |__| |_| | |_| |
+# |_____\___/ \____|
+#
+# ------------------------------------------------------------------------------
+[Aggregator.Log]
+# ------------------------------------------------------------------------------
+# Environment generally dictates the format of the logs and the
+# sampling rate. We often default to production even for development
+# because of the JSON encoding.
+#
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
+# ------------------------------------------------------------------------------
+Environment = "development"
+
+# ------------------------------------------------------------------------------
+# Level determines the log level that will be written to the
+# log. Generally we'll switch to debug if we want to troubleshoot
+# something specifically otherwise we leave it at info
+# ------------------------------------------------------------------------------
+Level = "{{.global_log_level}}"
+
+# ------------------------------------------------------------------------------
+# Outputs define the output paths for writing logs. The default is to
+# write to stderr, but other output paths should be supported
+#
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/writer.go#L32-L50
+# ------------------------------------------------------------------------------
+Outputs = ["stderr"]
+
+# TODO: StreamClient
+[Aggregator.StreamClient]
+# TODO
+Server = "{{.sequencer_ds_url}}" # TODO!
+
+# ==============================================================================
+#  _____ _____ _   _ _______  ____  __    _    _   _    _    ____ _____ ____
+# | ____|_   _| | | |_   _\ \/ /  \/  |  / \  | \ | |  / \  / ___| ____|  _ \
+# |  _|   | | | |_| | | |  \  /| |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |
+# | |___  | | |  _  | | |  /  \| |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <
+# |_____| |_| |_| |_| |_| /_/\_\_|  |_/_/   \_\_| \_/_/   \_\____|_____|_| \_\
+#
+# ------------------------------------------------------------------------------
+[Aggregator.EthTxManager]
+# ------------------------------------------------------------------------------
+# FrequencyToMonitorTxs determines how often we'll process pending
+# monitored transactions. Essentially we'll query the database looking
+# for created, sent, and reorged transactions. For each one of those
+# txs, we'll try to send it or confirm if it has been sent and update
+# the status accordingly.
+#
+# Setting this duration can potentially create a lot of logs
+# especially if there is nothing to do.
+# ------------------------------------------------------------------------------
+FrequencyToMonitorTxs = "5s"
+
+# ------------------------------------------------------------------------------
+# WaitTxToBeMined will determine how long we'll wait for a transaction
+# to be mined after it's been published. If this interval is too
+# short, you're more likely to run into oddities where the nonce is
+# reused.
+#
+# The code for sending transactions does not create a goroutine. It
+# will block for the duration of the wait.
+# ------------------------------------------------------------------------------
+WaitTxToBeMined = "4m0s"
+
+# ------------------------------------------------------------------------------
+# ForcedGas can be used to configure a default gas limit to use in the
+# case of a gas estimation error. If this is configured as 0, the
+# default behavior would be to return the gas estimation error and
+# retry later.
+# ------------------------------------------------------------------------------
+ForcedGas = 0
+
+# ------------------------------------------------------------------------------
+# GasPriceMarginFactor is used to bias the gas price by whatever the
+# configured factor is. If we want to make sure our transactions are
+# mined quickly especially if there is volatility, we could set this
+# factor to be 1.2 in order to make sure that our transactions are
+# attractive.
+#
+# Generally, we would not recommend setting this below 1. If you're
+# looking to save on gas costs, there are better ways.
+# ------------------------------------------------------------------------------
+GasPriceMarginFactor = 1.25
+
+# ------------------------------------------------------------------------------
+# MaxGasPriceLimit is used to specify in wei the upper limit price
+# that we would be willing to pay. If the current gas price exceeds
+# this limit, we'll adjust the gas price down to the configured limit
+# and try to send the transaction. If the limit is below the base fee,
+# the transaction probably would not be accepted by the RPC.
+# ------------------------------------------------------------------------------
+MaxGasPriceLimit = 0
+
+# TODO
+GetReceiptMaxTime = "250ms"
+
+# TODO
+GetReceiptWaitInterval = "1s"
+
+# ------------------------------------------------------------------------------
+# PrivateKeys is an array of keystores and passwords that are used for
+# signing transactions. The keystores are standard go-ethereum style
+# keystores that are encrypted with the provided password. Depending
+# on your deployment setup, you'll need to configure the sequencer
+# and/org aggregator key so that the tx manager for the given
+# component can sign and send transactions.
+#
+# ------------------------------------------------------------------------------
+PrivateKeys = [
+{Path = "/config/aggregator.keystore", Password = "{{.keystore_password}}"},
+]
+
+#  TODO
+PersistenceFilename = "/ethtxmanager_aggregator.json"
+# TODO
+ReadPendingL1Txs = false
+# TODO
+SafeStatusL1NumberOfBlocks = 1
+# TODO
+FinalizedStatusL1NumberOfBlocks = 1
+#		ConsolidationL1ConfirmationBlocks = 5
+#		FinalizationL1ConfirmationBlocks = 10
+#		WaitReceiptToBeGenerated = "8s"
+
+# ==============================================================================
+#  _____ _____ _   _ _____ ____  __  __    _    _   _
+# | ____|_   _| | | | ____|  _ \|  \/  |  / \  | \ | |
+# |  _|   | | | |_| |  _| | |_) | |\/| | / _ \ |  \| |
+# | |___  | | |  _  | |___|  _ <| |  | |/ ___ \| |\  |
+# |_____| |_| |_| |_|_____|_| \_\_|  |_/_/   \_\_| \_|
+#
+# ------------------------------------------------------------------------------
+[Aggregator.EthTxManager.Etherman]
+# ------------------------------------------------------------------------------
+# URL should be used to configure your L1 RPC address.
+# ------------------------------------------------------------------------------
+URL = "{{.l1_rpc_url}}"
+
+# TODO
+L1ChainID = {{.l1_chain_id}}
+
+# TODO
+HTTPHeaders = []
+
+# ==============================================================================
+#  ______   ___   _  ____ _   _ ____   ___  _   _ ___ __________ ____
+# / ___\ \ / / \ | |/ ___| | | |  _ \ / _ \| \ | |_ _|__  / ____|  _ \
+# \___ \\ V /|  \| | |   | |_| | |_) | | | |  \| || |  / /|  _| | |_) |
+#  ___) || | | |\  | |___|  _  |  _ <| |_| | |\  || | / /_| |___|  _ <
+# |____/ |_| |_| \_|\____|_| |_|_| \_\\___/|_| \_|___/____|_____|_| \_\
+#
+# ------------------------------------------------------------------------------
+[Aggregator.Synchronizer]
+
+[Aggregator.Synchronizer.DB]
+# ------------------------------------------------------------------------------
+# Name is the identifier of the target database to connect to.
+# ------------------------------------------------------------------------------
+Name = "{{.aggregator_syncer_db.name}}"
+
+# ------------------------------------------------------------------------------
+# User specifies the username for database connection authentication.
+# ------------------------------------------------------------------------------
+User = "{{.aggregator_syncer_db.user}}"
+
+# ------------------------------------------------------------------------------
+# Password is the authentication credential for the database connection.
+# ------------------------------------------------------------------------------
+Password = "{{.aggregator_syncer_db.password}}"
+
+# ------------------------------------------------------------------------------
+# Host is the network address (hostname or IP) used to establish a database
+# connection. Append deployment-specific suffixes as needed.
+# ------------------------------------------------------------------------------
+Host = "{{.zkevm_aggregator_syncer_db.hostname}}"
+
+# ------------------------------------------------------------------------------
+# Port defines the network port used for the database connection.
+# ------------------------------------------------------------------------------
+Port = {{.zkevm_aggregator_syncer_db.port}}
+
+# ------------------------------------------------------------------------------
+# EnableLog toggles the logging of all executed queries. Enabling this
+# feature will significantly increase log volume and may affect performance.
+# ------------------------------------------------------------------------------
+EnableLog = false
+
+# ------------------------------------------------------------------------------
+# MaxConns sets the maximum number of concurrent connections in the pool.
+# Adjust this value based on the database's configuration limits and expected
+# client load to optimize performance and resource utilization.
+# ------------------------------------------------------------------------------
+MaxConns = 10
+
+
+[Aggregator.Synchronizer.Synchronizer]
+# ------------------------------------------------------------------------------
+# SyncInterval defines the wait duration between reading new
+# information from the trusted sequencer, DAC, L1. Specifically, this
+# controls how long we wait between running sync operations and not
+# the frequence of syncs.
+# ------------------------------------------------------------------------------
+SyncInterval = "1s"
+
+# ------------------------------------------------------------------------------
+# SyncChunkSize determines how large of a range of blocks we'll
+# attempt to pull while getting the rollup information.
+# ------------------------------------------------------------------------------
+SyncChunkSize = 1000
+
+# TODO
+GenesisBlockNumber = 1 
+
+# TODO
+SyncUpToBlock = "latest"
+
+# TODO
+BlockFinality = "latest"
+
+[Aggregator.Synchronizer.Etherman]
+[Aggregator.Synchronizer.Etherman.Validium]
+# TODO
+Enabled = true
