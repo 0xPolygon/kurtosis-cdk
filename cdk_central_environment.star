@@ -56,14 +56,15 @@ def run(plan, args):
         zkevm_node_config_artifact = create_zkevm_node_config_artifact(
             plan, args, db_configs
         )
+        # This component is required to run before any other zkevm node component.
+        zkevm_node_package.run_synchronizer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
+        )
 
     # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         run_erigon_sequencer(plan, args, db_configs)
     elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
-        zkevm_node_package.run_synchronizer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact
-        )
         zkevm_node_package.run_sequencer(
             plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
         )
