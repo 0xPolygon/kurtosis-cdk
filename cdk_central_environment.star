@@ -7,6 +7,7 @@ service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 
 
 def run(plan, args):
@@ -48,35 +49,21 @@ def run(plan, args):
 
     # Create zkevm-node configuration if needed.
     # It can be used by both the sequencer, the aggregator and the sequence sender.
-    if sequencer_type == constants.SEQUENCER_TYPE.zkevm:
-        zkevm_node_config_artifact = create_zkevm_node_config_artifact(
-            plan,
-            args,
-            db_configs,
-            is_trusted_sequencer=True,
-        )
-    elif (
-        sequence_sender_aggregator_type
-        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
-    ):
-        zkevm_node_config_artifact = create_zkevm_node_config_artifact(
-            plan,
-            args,
-            db_configs,
-        )
-
     if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
-        zkevm_node_package.run_synchronizer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact
+        zkevm_node_config_artifact = create_zkevm_node_config_artifact(
+            plan, args, db_configs
         )
 
     # Deploy sequencer and rpc.
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         run_erigon_sequencer(plan, args, db_configs)
     elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        zkevm_node_package.run_synchronizer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
+        )
         zkevm_node_package.run_sequencer(
             plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
         )
@@ -99,14 +86,18 @@ def run(plan, args):
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
     ):
         # Then start the aggregator and the sequence sender.
+        zkevm_sequence_sender_config_artifact = (
+            create_zkevm_sequence_sender_config_artifact(plan, args)
+        )
         zkevm_sequence_sender_service_config = (
-            zkevm_node_package.create_sequence_sender_service_config(
+            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
                 args,
-                zkevm_node_config_artifact,
+                zkevm_sequence_sender_config_artifact,
                 genesis_artifact,
                 keystore_artifacts.sequencer,
             )
         )
+
         zkevm_aggregator_service_config = (
             zkevm_node_package.create_aggregator_service_config(
                 args,
@@ -211,9 +202,7 @@ def get_keystores_artifacts(plan, args):
     )
 
 
-def create_zkevm_node_config_artifact(
-    plan, args, db_configs, is_trusted_sequencer=False
-):
+def create_zkevm_node_config_artifact(plan, args, db_configs):
     zkevm_node_config_template = read_file(
         src="./templates/trusted-node/zkevm-node-config.toml"
     )
@@ -224,12 +213,31 @@ def create_zkevm_node_config_artifact(
                 data=args
                 | db_configs
                 | {
-                    "is_trusted_sequencer": is_trusted_sequencer,
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                 },
             )
         },
         name="trusted-node-config",
+    )
+
+
+def create_zkevm_sequence_sender_config_artifact(plan, args):
+    sequence_sender_config_template = read_file(
+        src="./templates/trusted-node/sequence-sender-config.toml"
+    )
+    return plan.render_templates(
+        name="zkevm-sequence-sender-config-artifact",
+        config={
+            "sequence-sender-config.toml": struct(
+                data=args
+                | {
+                    "zkevm_is_validium": data_availability_package.is_cdk_validium(
+                        args
+                    ),
+                },
+                template=sequence_sender_config_template,
+            ),
+        },
     )
 
 
