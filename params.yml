@@ -35,8 +35,8 @@ args:
   # The type of sequence sender and aggregator to deploy.
   # Options:
   # - 'cdk': Use the new cdk-node (https://github.com/0xPolygon/cdk).
-  # - 'zkevm': Use the legacy aggregator and sequence sender (https://github.com/0xPolygonHermez/zkevm-node).
-  sequence_sender_aggregator_type: cdk
+  # - 'zkevm': Use the legacy sequence sender (https://github.com/0xPolygonHermez/zkevm-sequence-sender) and aggregator (https://github.com/0xPolygonHermez/zkevm-node).
+  sequence_sender_aggregator_type: zkevm
 
   # Deploy agglayer.
   deploy_agglayer: true
