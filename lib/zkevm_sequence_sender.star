@@ -7,7 +7,7 @@ def create_zkevm_sequence_sender_config(
     genesis_artifact,
     sequencer_keystore_artifact,
 ):
-    sequence_sender_name = "zkevm-node-sequence-sender" + args["deployment_suffix"]
+    sequence_sender_name = "zkevm-sequence-sender" + args["deployment_suffix"]
     sequence_sender_service_config = ServiceConfig(
         image=args["zkevm_sequence_sender_image"],
         files={
