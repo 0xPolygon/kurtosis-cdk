@@ -202,7 +202,7 @@ index 5293da7..5e451b6 100644
    zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
 ```
 
-Optional: by default, your devnet disables fancy dashboards. If you want to view your devnet from a fancy dashboard such as Grafana then open the file `params.yml` and ensure that `deploy_observability` is set to `true`.
+Optional: by default, your devnet disables fancy dashboards. If you want to view your devnet from a fancy dashboard such as Grafana then open the file `params.yml` and ensure that `args.additional_services` includes `"prometheus_grafana"`.
 
 Spin up your devnet! Just as before, move to the root directory of the repo `kurtosis-cdk` and run
 
