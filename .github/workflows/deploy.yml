@@ -79,7 +79,7 @@ jobs:
       - name: Monitor verified batches (Central RPC)
         working-directory: ${{ github.workspace }}
         run: |
-          sequencer_type=$(yq '.args.sequencer_type' ${{ matrix.file_name }})
+          sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
           rpc_name=""
           if [[ "$sequencer_type" == "erigon" ]]; then
             rpc_name="cdk-erigon-node-001"
@@ -94,7 +94,7 @@ jobs:
       - name: Monitor verified batches (zkEVM Permissionless RPC)
         working-directory: ${{ github.workspace }}
         run: |
-          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.args.additional_services | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
           fi
@@ -102,7 +102,7 @@ jobs:
       - name: Verify Blutgang RPC
         working-directory: ${{ github.workspace }}
         run: |
-          result=$(yq '.args.additional_services | contains(["blutgang"])' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.args.additional_services | contains(["blutgang"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
             cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
           fi
@@ -110,7 +110,7 @@ jobs:
       - name: Verify Prometheus collects Panoptichain metrics
         working-directory: ${{ github.workspace }}
         run: |
-          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.args.additional_services | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
             echo "Wait for one minute while Prometheus gathers metrics..."
             sleep 60
