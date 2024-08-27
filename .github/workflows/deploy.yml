@@ -99,29 +99,37 @@ jobs:
 
       - name: Verify Blutgang RPC
         run: |
-          result=$(yq --raw-output '.args.additional_services // [] | contains(["blutgang"])' ${{ matrix.file_name }})
-          if [[ "$result" == "true" ]]; then
-            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+          if [ "${{ matrix.file_name }}" != "./.github/tests/additional-services.yml" ]; then
+            result=$(yq --raw-output '.args.additional_services // [] | contains(["blutgang"])' ${{ matrix.file_name }})
+            if [[ "$result" == "true" ]]; then
+              cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+            fi
+          else
+            echo "Skipping the verification of Blutgang RPC"
           fi
-      
+
       - name: Verify Prometheus collects Panoptichain metrics
         run: |
-          result=$(yq --raw-output '.args.additional_services // [] | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
-          if [[ "$result" == "true" ]]; then
-            echo "Wait for one minute while Prometheus gathers metrics..."
-            sleep 60
+          if [ "${{ matrix.file_name }}" != "./.github/tests/additional-services.yml" ]; then
+            result=$(yq --raw-output '.args.additional_services // [] | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
+            if [[ "$result" == "true" ]]; then
+              echo "Wait for one minute while Prometheus gathers metrics..."
+              sleep 60
 
-            echo "Retrieve Panoptichain metrics from Prometheus..."
-            panoptichain_metric="panoptichain_system_uptime"
-            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
-            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
-            echo $prometheus_query | jq
-            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
-              echo "✅ Prometheus collects panoptichain metrics!"
-            else
-              echo "❌ Prometheus does not collect panoptichain metrics..."
-              exit 1
+              echo "Retrieve Panoptichain metrics from Prometheus..."
+              panoptichain_metric="panoptichain_system_uptime"
+              prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+              prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+              echo $prometheus_query | jq
+              if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+                echo "✅ Prometheus collects panoptichain metrics!"
+              else
+                echo "❌ Prometheus does not collect panoptichain metrics..."
+                exit 1
+              fi
             fi
+          else
+            echo "Skipping the verification of Prometheus metrics"
           fi
 
   attach_cdks:
