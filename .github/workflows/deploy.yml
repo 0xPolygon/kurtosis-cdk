@@ -90,6 +90,7 @@ jobs:
             echo "Unknown sequencer type: $sequencer_type"
             exit 1
           fi
+          echo "RPC name: $rpc_name"
           ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name http-rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
@@ -97,17 +98,22 @@ jobs:
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+          else
+            echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
 
       - name: Verify Blutgang RPC
         run: |
           if [ "${{ matrix.file_name }}" != "./.github/tests/additional-services.yml" ]; then
-            result=$(yq --raw-output '.args.additional_services // [] | contains(["blutgang"])' ${{ matrix.file_name }})
+            result=$(yq --raw-output '.args.additional_services | contains(["blutgang"])' ${{ matrix.file_name }})
             if [[ "$result" == "true" ]]; then
               cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+            else
+              echo "Blutgang RPC should be deployed"
+              exit 1
             fi
           else
-            echo "Skipping the verification of Blutgang RPC"
+            echo "Skipping the verification of blutgang RPC"
           fi
 
       - name: Verify Prometheus collects Panoptichain metrics
@@ -115,20 +121,23 @@ jobs:
           if [ "${{ matrix.file_name }}" != "./.github/tests/additional-services.yml" ]; then
             result=$(yq --raw-output '.args.additional_services // [] | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
             if [[ "$result" == "true" ]]; then
-              echo "Wait for one minute while Prometheus gathers metrics..."
+              echo "Waiting for one minute while Prometheus gathers metrics..."
               sleep 60
 
-              echo "Retrieve Panoptichain metrics from Prometheus..."
+              echo "Retrieving Panoptichain metrics from Prometheus..."
               panoptichain_metric="panoptichain_system_uptime"
               prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
               prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
               echo $prometheus_query | jq
               if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
-                echo "✅ Prometheus collects panoptichain metrics!"
+                echo "Prometheus collected panoptichain metrics!"
               else
-                echo "❌ Prometheus does not collect panoptichain metrics..."
+                echo "Prometheus did not collect any panoptichain metrics..."
                 exit 1
               fi
+            else
+              echo "Prometheus and Grafana should be deployed"
+              exit 1
             fi
           else
             echo "Skipping the verification of Prometheus metrics"
