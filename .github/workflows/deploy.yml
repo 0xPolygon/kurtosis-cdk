@@ -34,7 +34,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-          file_name: ${{ fromJson(needs.list-yamls.outputs.matrix) }}
+          file_name: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v4
