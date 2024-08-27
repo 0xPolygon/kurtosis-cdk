@@ -1,6 +1,7 @@
 args:
   sequencer_type: erigon
   sequence_sender_aggregator_type: new-zkevm
+  data_availability_mode: cdk-validium
   additional_services:
     - pless_zkevm_node
     - tx_spammer
