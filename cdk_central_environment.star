@@ -4,6 +4,7 @@ constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 databases = import_module("./databases.star")
 service_package = import_module("./lib/service.star")
+zkevm_aggregator_package = import_module("./lib/zkevm_aggregator.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
@@ -76,7 +77,7 @@ def run(plan, args):
         )
     elif (
         sequence_sender_aggregator_type
-        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm
     ):
         zkevm_sequence_sender_config_artifact = (
             create_zkevm_sequence_sender_config_artifact(plan, args)
@@ -106,6 +107,12 @@ def run(plan, args):
             | zkevm_aggregator_service_config,
             description="Starting zkevm sequence sender and aggregator",
         )
+    elif (
+        sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm
+    ):
+        # TODO
+        plan.print("TODO")
     else:
         fail(
             "Unsupported sequence sender and aggregator type: '{}'".format(

@@ -81,7 +81,7 @@ CDK_ERIGON_DBS = {
 }
 
 # Databases required for a cdk-node to function as an aggregator and sequence sender.
-CDK_NODE_DBS = {
+ZKEVM_AGGREGATOR_DBS = {
     "aggregator_db": {
         "name": "aggregator_db",
         "user": "aggregator_user",
@@ -94,7 +94,9 @@ CDK_NODE_DBS = {
     },
 }
 
-DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS | CDK_NODE_DBS
+DATABASES = (
+    CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | ZKEVM_AGGREGATOR_DBS | CDK_ERIGON_DBS
+)
 
 
 def run(plan, suffix, sequencer_type, sequence_sender_aggregator_type):
@@ -111,12 +113,15 @@ def get_db_configs(suffix, sequencer_type, sequence_sender_aggregator_type):
     if (
         sequencer_type == constants.SEQUENCER_TYPE.zkevm
         or sequence_sender_aggregator_type
-        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm
     ):
         dbs = dbs | ZKEVM_NODE_DBS
 
-    if sequence_sender_aggregator_type == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk:
-        dbs = dbs | CDK_NODE_DBS
+    if (
+        sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm
+    ):
+        dbs = dbs | ZKEVM_AGGREGATOR_DBS
 
     configs = {
         k: v

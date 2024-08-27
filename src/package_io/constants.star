@@ -13,5 +13,6 @@ SEQUENCER_TYPE = struct(
 
 SEQUENCE_SENDER_AGGREGATOR_TYPE = struct(
     cdk="cdk",
-    zkevm="zkevm",
+    legacy_zkevm="legacy-zkevm",
+    new_zkevm="new-zkevm",
 )

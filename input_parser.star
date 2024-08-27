@@ -130,12 +130,14 @@ def validate_sequencer_type(sequencer_type):
 def validate_sequence_sender_aggregator_type(sequence_sender_aggregator_type):
     if sequence_sender_aggregator_type not in (
         constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk,
-        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm,
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm,
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm,
     ):
         fail(
-            "Unsupported sequence sender and aggregator type: '{}', please use '{}' or '{}'".format(
+            "Unsupported sequence sender and aggregator type: '{}', please use '{}', '{}' or '{}'".format(
                 sequence_sender_aggregator_type,
                 constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk,
-                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.zkevm,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm,
             )
         )
