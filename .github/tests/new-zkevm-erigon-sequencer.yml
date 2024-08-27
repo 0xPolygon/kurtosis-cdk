@@ -1,0 +1,6 @@
+args:
+  sequencer_type: erigon
+  sequence_sender_aggregator_type: new-zkevm
+  additional_services:
+    - pless_zkevm_node
+    - tx_spammer

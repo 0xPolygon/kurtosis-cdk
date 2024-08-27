@@ -1,0 +1,6 @@
+args:
+  sequencer_type: zkevm
+  sequence_sender_aggregator_type: legacy-zkevm
+  additional_services:
+    - pless_zkevm_node
+    - tx_spammer

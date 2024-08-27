@@ -1,0 +1,7 @@
+args:
+  additional_services:
+    - blockscout
+    - blutgang
+    - pless_zkevm_node
+    - prometheus_grafana
+    - tx_spammer

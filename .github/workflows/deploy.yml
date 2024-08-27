@@ -16,125 +16,91 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  legacy_stack:
+  # List all .yml files in the .github/tests directory.
+  list-ymls:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: echo "matrix=$(ls ./.github/tests/*.yml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+
+  run-with-args:
+    needs: list-ymls
+    runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 20
+    strategy:
+      matrix:
+          file_name: ${{ fromJson(needs.list-yamls.outputs.matrix) }}
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      - name: Deploy Kurtosis CDK package with zkevm sequencer and zkevm aggregator / sequence sender
+      - name: Run Starlark
         run: |
-          yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
-          yq -Y --in-place '.args.sequence_sender_aggregator_type = "legacy-zkevm"' params.yml
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+          kurtosis run \
+            --enclave=${{ env.ENCLAVE_NAME }} \
+            --args-file=${{ matrix.file_name }} \
+            --show-enclave-inspect=false \
+            ${{ github.workspace }}
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
       
-      - name: Monitor verified batches (zkEVM Node Trusted RPC)
+      - name: Monitor verified batches (Central RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc)"
-
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
-    
-  legacy_stack_with_new_sequencer:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package with erigon sequencer and zkevm aggregator / sequence sender
         run: |
-          yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
-          yq -Y --in-place '.args.sequence_sender_aggregator_type = "new-zkevm"' params.yml
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+          sequencer_type=$(yq '.args.sequencer_type' ${{ matrix.file_name }})
+          rpc_name=""
+          if [[ "$sequencer_type" == "erigon" ]]; then
+            rpc_name="cdk-erigon-node-001"
+          elif [[ "$sequencer_type" == "zkevm" ]]; then
+            rpc_name="zkevm-node-rpc-001"
+          else
+            echo "Unknown sequencer type"
+            exit 1
+          fi
+          ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name http-rpc)
 
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
-      - name: Monitor verified batches (CDK Erigon Central RPC)
+      - name: Monitor verified batches (zkEVM Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
-
-  new_stack:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package with erigon sequencer and cdk-node aggregator / sequence sender
         run: |
-          yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
-          yq -Y --in-place '.args.sequence_sender_aggregator_type = "cdk"' params.yml
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
+          if [[ "$result" == "true" ]]; then
+            ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+          fi
 
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
-      - name: Monitor verified batches (CDK Erigon Central RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-      
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
-
-  additional_services:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package with additional services
+      - name: Verify Blutgang RPC
         run: |
-          yq -Y --in-place '.args.additional_services = ["blockscout", "blutgang", "pless_zkevm_node", "prometheus_grafana", "tx_spammer"]' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Verify Blutgang rpc
-        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
-      
-      - name: Verify permissionless zkevm-node rpc
-        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+          result=$(yq '.args.additional_services | contains(["blutgang"])' ${{ matrix.file_name }})
+          if [[ "$result" == "true" ]]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+          fi
       
       - name: Verify Prometheus collects Panoptichain metrics
         run: |
-          echo "Wait for one minute while Prometheus gathers metrics..."
-          sleep 60
+          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
+          if [[ "$result" == "true" ]]; then
+            echo "Wait for one minute while Prometheus gathers metrics..."
+            sleep 60
 
-          echo "Retrieve Panoptichain metrics from Prometheus..."
-          panoptichain_metric="panoptichain_system_uptime"
-          prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
-          prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
-          echo $prometheus_query | jq
-          if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
-            echo "✅ Prometheus collects panoptichain metrics!"
-          else
-            echo "❌ Prometheus does not collect panoptichain metrics..."
-            exit 1
+            echo "Retrieve Panoptichain metrics from Prometheus..."
+            panoptichain_metric="panoptichain_system_uptime"
+            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+            echo $prometheus_query | jq
+            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+              echo "✅ Prometheus collects panoptichain metrics!"
+            else
+              echo "❌ Prometheus does not collect panoptichain metrics..."
+              exit 1
+            fi
           fi
 
   attach_cdks:
