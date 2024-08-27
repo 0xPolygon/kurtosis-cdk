@@ -77,7 +77,6 @@ jobs:
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
       
       - name: Monitor verified batches (Central RPC)
-        working-directory: .github/scripts
         run: |
           sequencer_type=$(yq '.args.sequencer_type' ${{ matrix.file_name }})
           rpc_name=""
@@ -89,14 +88,13 @@ jobs:
             echo "Unknown sequencer type"
             exit 1
           fi
-          ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name http-rpc)
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name http-rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
-        working-directory: .github/scripts
         run: |
           result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+            ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
           fi
 
       - name: Verify Blutgang RPC
