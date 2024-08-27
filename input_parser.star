@@ -78,10 +78,10 @@ DEFAULT_ARGS = {
 
 def parse_args(args):
     args = DEFAULT_ARGS | args
-    return sanity_check(plan, args)
+    return sanity_check(args)
 
 
-def sanity_check(plan, args):
+def sanity_check(args):
     validate_global_log_level(args["global_log_level"])
     sequencer_args = validate_sequencer_type(args["sequencer_type"])
     validate_sequence_sender_aggregator_type(args["sequence_sender_aggregator_type"])
