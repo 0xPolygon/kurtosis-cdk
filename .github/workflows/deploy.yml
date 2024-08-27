@@ -77,7 +77,6 @@ jobs:
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
       
       - name: Monitor verified batches (Central RPC)
-        working-directory: ${{ github.workspace }}
         run: |
           sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
           rpc_name=""
@@ -92,7 +91,6 @@ jobs:
           ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name http-rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
-        working-directory: ${{ github.workspace }}
         run: |
           result=$(yq --raw-output '.args.additional_services | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
@@ -100,7 +98,6 @@ jobs:
           fi
 
       - name: Verify Blutgang RPC
-        working-directory: ${{ github.workspace }}
         run: |
           result=$(yq --raw-output '.args.additional_services | contains(["blutgang"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
@@ -108,7 +105,6 @@ jobs:
           fi
       
       - name: Verify Prometheus collects Panoptichain metrics
-        working-directory: ${{ github.workspace }}
         run: |
           result=$(yq --raw-output '.args.additional_services | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
