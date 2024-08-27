@@ -104,7 +104,7 @@ jobs:
 
       - name: Verify Blutgang RPC
         run: |
-          if [ "${{ matrix.file_name }}" != "./.github/tests/additional-services.yml" ]; then
+          if [ "${{ matrix.file_name }}" == "./.github/tests/additional-services.yml" ]; then
             result=$(yq --raw-output '.args.additional_services | contains(["blutgang"])' ${{ matrix.file_name }})
             if [[ "$result" == "true" ]]; then
               cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
@@ -118,7 +118,7 @@ jobs:
 
       - name: Verify Prometheus collects Panoptichain metrics
         run: |
-          if [ "${{ matrix.file_name }}" != "./.github/tests/additional-services.yml" ]; then
+          if [ "${{ matrix.file_name }}" == "./.github/tests/additional-services.yml" ]; then
             result=$(yq --raw-output '.args.additional_services // [] | contains(["prometheus_grafana"])' ${{ matrix.file_name }})
             if [[ "$result" == "true" ]]; then
               echo "Waiting for one minute while Prometheus gathers metrics..."
