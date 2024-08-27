@@ -41,7 +41,7 @@ jobs:
           kurtosis run \
             --enclave=${{ env.ENCLAVE_NAME }} \
             --show-enclave-inspect=false \
-            github.com/0xPolygon/kurtosis-cdk
+            ${{ github.workspace }}
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
