@@ -78,12 +78,14 @@ jobs:
       
       - name: Monitor verified batches (Central RPC)
         run: |
-          sequencer_type=$(yq --raw-output '.args.sequencer_type // erigon' ${{ matrix.file_name }})
+          sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
           rpc_name=""
           if [[ "$sequencer_type" == "erigon" ]]; then
             rpc_name="cdk-erigon-node-001"
           elif [[ "$sequencer_type" == "zkevm" ]]; then
             rpc_name="zkevm-node-rpc-001"
+          elif [[ "$sequencer_type" == "null" ]]; then
+            rpc_name="cdk-erigon-node-001"
           else
             echo "Unknown sequencer type: $sequencer_type"
             exit 1
