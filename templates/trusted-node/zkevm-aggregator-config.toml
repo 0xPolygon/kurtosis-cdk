@@ -302,7 +302,7 @@ GetReceiptWaitInterval = "1s"
 #
 # ------------------------------------------------------------------------------
 PrivateKeys = [
-{Path = "/config/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+{Path = "/etc/zkevm/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
 
 #  TODO
