@@ -3,12 +3,11 @@ cdk_node_package = import_module("./lib/cdk_node.star")
 constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 databases = import_module("./databases.star")
+new_zkevm_package = import_module("./lib/new_zkevm.star")
 service_package = import_module("./lib/service.star")
-zkevm_aggregator_package = import_module("./lib/zkevm_aggregator.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 
 
 def run(plan, args):
@@ -48,20 +47,22 @@ def run(plan, args):
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Deploy sequencer and rpc.
-    if sequencer_type == constants.SEQUENCER_TYPE.erigon:
-        run_erigon_sequencer(plan, args, db_configs)
-    elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+    # Deploy zkevm-node synchronizer if needed.
+    if (sequencer_type == constants.SEQUENCER_TYPE.zkevm) or (
+        sequencer_type == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm
+    ):
         zkevm_node_config_artifact = create_zkevm_node_config_artifact(
             plan, args, db_configs
         )
         zkevm_node_package.run_synchronizer(
             plan, args, zkevm_node_config_artifact, genesis_artifact
         )
-        zkevm_node_package.run_sequencer(
-            plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
-        )
-        zkevm_node_package.run_rpc(
+
+    # Deploy sequencer and rpc.
+    if sequencer_type == constants.SEQUENCER_TYPE.erigon:
+        run_erigon_sequencer(plan, args, db_configs)
+    elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        zkevm_node_package.run_sequencer_and_rpc(
             plan, args, zkevm_node_config_artifact, genesis_artifact
         )
     else:
@@ -79,9 +80,6 @@ def run(plan, args):
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm
     ):
-        zkevm_sequence_sender_config_artifact = (
-            create_zkevm_sequence_sender_config_artifact(plan, args)
-        )
         zkevm_sequence_sender_service_config = (
             zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
                 args,
@@ -90,29 +88,19 @@ def run(plan, args):
                 keystore_artifacts.sequencer,
             )
         )
-
         zkevm_aggregator_config_artifact = create_zkevm_aggregator_config_artifact(
             plan, args, db_configs
         )
-        zkevm_aggregator_service_config = (
-            zkevm_aggregator_package.create_zkevm_aggregator_config(
-                args,
-                zkevm_aggregator_config_artifact,
-                genesis_artifact,
-                keystore_artifacts.aggregator,
-            )
-        )
-        plan.add_services(
-            configs=zkevm_sequence_sender_service_config
-            | zkevm_aggregator_service_config,
-            description="Starting zkevm sequence sender and aggregator",
+        new_zkevm_package.run_sequence_sender_and_aggregator(
+            plan, args, db_configs, genesis_artifact, keystore_artifacts
         )
     elif (
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm
     ):
-        # TODO
-        plan.print("TODO")
+        zkevm_node_package.run_zkevm_components(
+            plan, args, zkevm_node_config_artifact, genesis_artifact, keystore_artifacts
+        )
     else:
         fail(
             "Unsupported sequence sender and aggregator type: '{}'".format(
