@@ -76,7 +76,7 @@ def run(plan, args):
         cdk_node_config_artifact = create_cdk_node_config_artifact(
             plan, args, db_configs
         )
-        cdk_node_package.run_aggregator_and_sequence_sender(
+        cdk_node_package.run_cdk_node(
             plan, args, cdk_node_config_artifact, genesis_artifact, keystore_artifacts
         )
     elif (
@@ -86,17 +86,24 @@ def run(plan, args):
         zkevm_sequence_sender_config_artifact = (
             create_zkevm_sequence_sender_config_artifact(plan, args)
         )
+        new_zkevm_package.run_zkevm_sequence_sender(
+            plan,
+            args,
+            zkevm_sequence_sender_config_artifact,
+            genesis_artifact,
+            keystore_artifacts.sequencer,
+        )
+
         zkevm_aggregator_config_artifact = create_zkevm_aggregator_config_artifact(
             plan, args, db_configs
         )
-        new_zkevm_package.run_sequence_sender_and_aggregator(
+        new_zkevm_package.run_zkevm_aggregator(
             plan,
             args,
             db_configs,
-            zkevm_sequence_sender_config_artifact,
             zkevm_aggregator_config_artifact,
             genesis_artifact,
-            keystore_artifacts,
+            keystore_artifacts.aggregator,
         )
     elif (
         sequence_sender_aggregator_type

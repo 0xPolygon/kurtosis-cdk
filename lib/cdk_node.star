@@ -6,7 +6,7 @@ NODE_COMPONENTS = struct(
 )
 
 
-def run_aggregator_and_sequence_sender(
+def run_cdk_node(
     plan,
     args,
     config_artifact,
