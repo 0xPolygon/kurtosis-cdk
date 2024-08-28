@@ -38,7 +38,7 @@ zkevm.datastream-version: 2
 # strict mode {{if .erigon_strict_mode}}
 zkevm.executor-strict: true
 zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}
-# not strict mode {{else}}
+# default mode {{else}}
 zkevm.executor-strict: false
 # end {{end}}
 
