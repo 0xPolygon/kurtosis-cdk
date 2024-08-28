@@ -54,8 +54,8 @@ jobs:
     needs: list-ymls
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
           file_name: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
 
