@@ -15,7 +15,7 @@ def run_sequence_sender_and_aggregator(
         keystore_artifacts.sequencer,
     )
 
-    aggregator_config_artifact = _create_aggregator_service_config(
+    aggregator_service_config = _create_aggregator_service_config(
         plan,
         args,
         aggregator_config_artifact,
@@ -23,7 +23,7 @@ def run_sequence_sender_and_aggregator(
         keystore_artifacts.aggregator,
     )
     plan.add_services(
-        configs=sequence_sender_service_config | aggregator_config_artifact,
+        configs=sequence_sender_service_config | aggregator_service_config,
         description="Starting new zkevm components: zkevm-sequence-sender and zkevm-aggregator",
     )
 
