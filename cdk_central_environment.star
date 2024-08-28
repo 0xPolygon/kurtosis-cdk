@@ -62,7 +62,10 @@ def run(plan, args):
     if sequencer_type == constants.SEQUENCER_TYPE.erigon:
         run_erigon_sequencer(plan, args, db_configs)
     elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
-        zkevm_node_package.run_sequencer_and_rpc(
+        zkevm_node_package.run_sequencer(
+            plan, args, zkevm_node_config_artifact, genesis_artifact
+        )
+        zkevm_node_package.run_rpc(
             plan, args, zkevm_node_config_artifact, genesis_artifact
         )
     else:
