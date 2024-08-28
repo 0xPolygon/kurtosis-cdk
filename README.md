@@ -2,6 +2,8 @@
 
 A [Kurtosis](https://github.com/kurtosis-tech/kurtosis) package that deploys a private, portable, and modular [Polygon CDK](https://docs.polygon.technology/cdk/) devnet.
 
+> 🚨 This package is currently designed as a **development tool** for testing configurations and scenarios within the Polygon CDK stack. **It is not recommended for long-running or production environments such as testnets or mainnet**. If you need help, you can [reach out to the Polygon team](https://polygon.technology/interest-form) or [talk to an Implementation Partner (IP)](https://ecosystem.polygon.technology/spn/cdk/).
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -28,7 +30,7 @@ This process typically takes around ten minutes.
 
 ```bash
 kurtosis clean --all
-kurtosis run --enclave cdk-v1 --args-file params.yml . '{"args": {"l1_seconds_per_slot": 1}}'
+kurtosis run --enclave cdk-v1 --args-file params.yml .
 ```
 
 The command above deploys the CDK stack with [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon), serving as the sequencer. It also uses the [cdk-node](https://github.com/0xPolygon/cdk) for the remaining components.
@@ -36,8 +38,9 @@ The command above deploys the CDK stack with [cdk-erigon](https://github.com/0xP
 Note that it is also possible to deploy the CDK stack using the legacy sequencer and the legacy node, referred to as the [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node). In this scenario, you may need to adjust the various commands slightly; instead of targeting the `cdk-erigon-node-001` service, you should target the `zkevm-node-rpc-001`.
 
 ```bash
-kurtosis run --enclave cdk-v1 --args-file params.yml . \
-  '{"deploy_cdk_erigon_node": false, "args": {"sequencer_type": "zkevm", "l1_seconds_per_slot": 1}}'
+yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
+yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
+kurtosis run --enclave cdk-v1 --args-file params.yml .
 ```
 
 <details>
