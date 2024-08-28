@@ -131,7 +131,7 @@ SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 GasOffset = 150000
 
 # TODO
-WitnessURL = "{{.sequencer_rpc_url}}" # TODO!
+WitnessURL = "{{.sequencer_rpc_url}}"
 
 # TODO
 LERContract = "{{.zkevm_global_exit_root_l2_address}}"
@@ -302,7 +302,7 @@ GetReceiptWaitInterval = "1s"
 #
 # ------------------------------------------------------------------------------
 PrivateKeys = [
-{Path = "/config/aggregator.keystore", Password = "{{.keystore_password}}"},
+{Path = "/config/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
 
 #  TODO
@@ -367,12 +367,12 @@ Password = "{{.aggregator_syncer_db.password}}"
 # Host is the network address (hostname or IP) used to establish a database
 # connection. Append deployment-specific suffixes as needed.
 # ------------------------------------------------------------------------------
-Host = "{{.zkevm_aggregator_syncer_db.hostname}}"
+Host = "{{.aggregator_syncer_db.hostname}}"
 
 # ------------------------------------------------------------------------------
 # Port defines the network port used for the database connection.
 # ------------------------------------------------------------------------------
-Port = {{.zkevm_aggregator_syncer_db.port}}
+Port = {{.aggregator_syncer_db.port}}
 
 # ------------------------------------------------------------------------------
 # EnableLog toggles the logging of all executed queries. Enabling this
