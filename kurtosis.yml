@@ -57,11 +57,12 @@ description: |-
   
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  zkevm_aggregator_image: hermeznetwork/zkevm-aggregator:v0.0.3-RC3
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
+  zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC10
+  zkevm_aggregator_image: hermeznetwork/zkevm-aggregator:v0.0.3-RC4
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC21
 
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta15
+  #cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta15
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:acceptance-2.0.0-beta17-a61220d-amd64
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.9
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
