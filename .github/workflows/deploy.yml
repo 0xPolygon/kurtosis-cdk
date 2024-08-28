@@ -100,7 +100,7 @@ jobs:
 
       - name: Deploy L1 chain and CDK L2 chain (erigon + fork12)
         run: |
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params-fork12.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params-fork12.yml .
 
       - name: Inspect enclave
