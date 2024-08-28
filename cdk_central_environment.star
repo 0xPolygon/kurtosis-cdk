@@ -80,19 +80,20 @@ def run(plan, args):
         sequence_sender_aggregator_type
         == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm
     ):
-        zkevm_sequence_sender_service_config = (
-            zkevm_sequence_sender_package.create_zkevm_sequence_sender_config(
-                args,
-                zkevm_sequence_sender_config_artifact,
-                genesis_artifact,
-                keystore_artifacts.sequencer,
-            )
+        zkevm_sequence_sender_config_artifact = (
+            create_zkevm_sequence_sender_config_artifact(plan, args)
         )
         zkevm_aggregator_config_artifact = create_zkevm_aggregator_config_artifact(
             plan, args, db_configs
         )
         new_zkevm_package.run_sequence_sender_and_aggregator(
-            plan, args, db_configs, genesis_artifact, keystore_artifacts
+            plan,
+            args,
+            db_configs,
+            zkevm_sequence_sender_config_artifact,
+            zkevm_aggregator_config_artifact,
+            genesis_artifact,
+            keystore_artifacts,
         )
     elif (
         sequence_sender_aggregator_type
