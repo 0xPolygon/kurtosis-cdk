@@ -4,13 +4,13 @@ ForkUpgradeNewForkId = 0
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
 
-{{if eq .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12"}}
 ContractVersions = "banana"
 {{else}}
 ContractVersions = "elderberry"
 {{end}}
 
-{{if eq .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12"}}
 [Etherman]
 URL = "{{.l1_rpc_url}}"
 {{end}}
@@ -30,7 +30,7 @@ SequencesTxFileName = "/data/sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
-{{if eq .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12"}}
 MaxBatchesForL1 = 300
 BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
 SanityCheckRPCURL = ""
@@ -41,7 +41,7 @@ SanityCheckRPCURL = ""
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
 		ConsolidationL1ConfirmationBlocks = 5
-		{{if eq .zkevm_rollup_fork_id 12}}
+		{{if eq .zkevm_rollup_fork_id "12"}}
 		FinalizedStatusL1NumberOfBlocks = 10
 		WaitReceiptMaxTime = "250ms"
 		WaitReceiptCheckInterval = "8s"
@@ -90,7 +90,7 @@ SanityCheckRPCURL = ""
 	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 	{{end}}
 
-	{{if eq .zkevm_rollup_fork_id 12}}
+	{{if eq .zkevm_rollup_fork_id "12"}}
 	SequencerPrivateKey = {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 	UseL1BatchData = true
 	UseFullWitness = false
@@ -119,7 +119,7 @@ SanityCheckRPCURL = ""
 	[Aggregator.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
-		{{if eq .zkevm_rollup_fork_id 12}}
+		{{if eq .zkevm_rollup_fork_id "12"}}
 		WaitReceiptMaxTime = "250ms"
 		WaitReceiptCheckInterval = "1s"
 		{{else}}
@@ -161,7 +161,7 @@ SanityCheckRPCURL = ""
 			[Aggregator.Synchronizer.Etherman.Validium]
 				Enabled = {{.is_cdk_validium}}
 
-{{if eq .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12"}}
 [L1InfoTreeSync]
 DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
@@ -173,7 +173,7 @@ InitialBlock = 0 # TODO: should be block were rollup manager was deployed
 {{end}}
 
 [NetworkConfig.L1]
-{{if eq .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12"}}
 L1ChainID = "{{.l1_chain_id}}"
 {{else}}
 ChainID = "{{.l1_chain_id}}"
