@@ -28,17 +28,17 @@ zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
 
-{{if eq .zkevm_rollup_fork_id 12}}
+# fork12 {{if eq .zkevm_rollup_fork_id 12}}
 zkevm.datastream-version: 3
-{{else}}
+# fork9 {{else}}
 zkevm.datastream-version: 2
-{{end}}
+# end {{end}}
 
 
-# struct {{if .erigon_strict_mode}}
+# strict mode {{if .erigon_strict_mode}}
 zkevm.executor-strict: true
 zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}
-# not stricg {{else}}
+# not strict mode {{else}}
 zkevm.executor-strict: false
 # end {{end}}
 
@@ -65,7 +65,7 @@ maxpeers: 0
 txpool.disable: false
 zkevm.data-stream-host: "0.0.0.0"
 zkevm.data-stream-port: {{.zkevm_data_stream_port}}
-# rpc node {{else}}
+# rpc {{else}}
 txpool.disable: true
 zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
