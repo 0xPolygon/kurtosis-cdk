@@ -1,4 +1,38 @@
 # ==============================================================================
+#  _     ___   ____
+# | |   / _ \ / ___|
+# | |  | | | | |  _
+# | |__| |_| | |_| |
+# |_____\___/ \____|
+#
+# ------------------------------------------------------------------------------
+[Aggregator.Log]
+# ------------------------------------------------------------------------------
+# Environment generally dictates the format of the logs and the
+# sampling rate. We often default to production even for development
+# because of the JSON encoding.
+#
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
+# ------------------------------------------------------------------------------
+Environment = "development"
+
+# ------------------------------------------------------------------------------
+# Level determines the log level that will be written to the
+# log. Generally we'll switch to debug if we want to troubleshoot
+# something specifically otherwise we leave it at info
+# ------------------------------------------------------------------------------
+Level = "{{.global_log_level}}"
+
+# ------------------------------------------------------------------------------
+# Outputs define the output paths for writing logs. The default is to
+# write to stderr, but other output paths should be supported
+#
+# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/writer.go#L32-L50
+# ------------------------------------------------------------------------------
+Outputs = ["stderr"]
+
+# ==============================================================================
 #     _    ____  ____ ____  _____ ____    _  _____ ___  ____
 #    / \  / ___|/ ___|  _ \| ____/ ___|  / \|_   _/ _ \|  _ \
 #   / _ \| |  _| |  _| |_) |  _|| |  _  / _ \ | || | | | |_) |
@@ -63,7 +97,7 @@ TxProfitabilityMinReward = "1.1"
 # Deprecated: it seems like this particular field might not be used
 #
 # ------------------------------------------------------------------------------
-ForkId = 9
+ForkId = {{.zkevm_rollup_fork_id}}
 
 # ------------------------------------------------------------------------------
 # CleanupLockedProofsInterval determines the wait duration between
@@ -80,6 +114,7 @@ CleanupLockedProofsInterval = "2m0s"
 # ------------------------------------------------------------------------------
 GeneratingProofCleanupThreshold = "10m"
 
+# TODO: Not sure about these settings!
 {{if .is_cdk_validium}}
 ## CDK Validium Specific Settings
 
@@ -185,40 +220,6 @@ EnableLog = false
 # client load to optimize performance and resource utilization.
 # ------------------------------------------------------------------------------
 MaxConns = 200
-
-# ==============================================================================
-#  _     ___   ____
-# | |   / _ \ / ___|
-# | |  | | | | |  _
-# | |__| |_| | |_| |
-# |_____\___/ \____|
-#
-# ------------------------------------------------------------------------------
-[Aggregator.Log]
-# ------------------------------------------------------------------------------
-# Environment generally dictates the format of the logs and the
-# sampling rate. We often default to production even for development
-# because of the JSON encoding.
-#
-# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
-# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
-# ------------------------------------------------------------------------------
-Environment = "development"
-
-# ------------------------------------------------------------------------------
-# Level determines the log level that will be written to the
-# log. Generally we'll switch to debug if we want to troubleshoot
-# something specifically otherwise we leave it at info
-# ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
-
-# ------------------------------------------------------------------------------
-# Outputs define the output paths for writing logs. The default is to
-# write to stderr, but other output paths should be supported
-#
-# https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/writer.go#L32-L50
-# ------------------------------------------------------------------------------
-Outputs = ["stderr"]
 
 # TODO: StreamClient
 [Aggregator.StreamClient]
@@ -415,4 +416,4 @@ BlockFinality = "latest"
 [Aggregator.Synchronizer.Etherman]
 [Aggregator.Synchronizer.Etherman.Validium]
 # TODO
-Enabled = true
+Enabled = {{.zkevm_is_validium}}
