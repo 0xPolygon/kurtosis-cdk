@@ -265,7 +265,9 @@ def create_zkevm_aggregator_config_artifact(plan, args, db_configs):
                 | db_configs
                 | contract_setup_addresses
                 | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                    "zkevm_is_validium": data_availability_package.is_cdk_validium(
+                        args
+                    ),
                     "sequencer_rpc_url": sequencer_url,
                     "sequencer_ds_url": datastreamer_url,
                 },
