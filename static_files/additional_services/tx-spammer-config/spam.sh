@@ -9,6 +9,9 @@ requests=50000
 concurrency=5
 rate_limit=50
 
+# Make a few bridge calls.
+./bridge.sh
+
 # Deploy an ERC20 token.
 echo "Deploying an ERC20 token..."
 cast send \
