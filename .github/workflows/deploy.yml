@@ -100,7 +100,10 @@ jobs:
 
       - name: Deploy L1 chain and CDK L2 chain (erigon + fork12)
         run: |
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params-fork12.yml
+          # TODO: Investigate the compatibility issues between cdk-fork12 and pless-zkevm-node.
+          # https://github.com/0xPolygon/kurtosis-cdk/actions/runs/10605501419/job/29394416435?pr=242#step:4:1378
+          #yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params-fork12.yml
+          yq -Y --in-place '.args.additional_services = ["tx_spammer"]' params-fork12.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params-fork12.yml .
 
       - name: Inspect enclave
