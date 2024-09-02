@@ -3,7 +3,9 @@ databases = import_module("./databases.star")
 
 
 def run_zkevm_pool_manager(plan, args):
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
 
     zkevm_pool_manager_config_artifact = create_zkevm_pool_manager_config_artifact(
         plan, args, db_configs

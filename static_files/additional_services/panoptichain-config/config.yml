@@ -91,7 +91,7 @@ providers:
         rollup_manager_address: "{{.zkevm_rollup_manager_address}}"
 
     - name: "L2"
-      url: "{{.zkevm_rpc_url}}"
+      url: "{{.l2_rpc_url}}"
       label: "L2"
       contracts:
         global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
@@ -172,4 +172,4 @@ logs:
   # - "error"
   # - "panic"
   # - "fatal"
-  verbosity: "trace"
+  verbosity: "{{.global_log_level}}"

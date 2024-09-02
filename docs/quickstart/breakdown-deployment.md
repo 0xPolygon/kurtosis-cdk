@@ -48,7 +48,7 @@ yq -Y --in-place '.deploy_l1 = false' params.yml # reset
 
 ```sh
 yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
-kurtosis run --enclave cdk-v1 --args-file params.yml --image-download always .
+kurtosis run --enclave cdk-v1 --args-file params.yml .
 yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
 # Perform additional tasks...
 ```

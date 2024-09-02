@@ -1,0 +1,82 @@
+[blutgang]
+# The address of the RPC.
+address = "0.0.0.0:{{.blutgang_rpc_port}}"
+# Clear the cache db on startup.
+do_clear = true
+# Enable health checks.
+health_check = true
+# Suppress health check running info messages.
+supress_rpc_check = false
+# The moving average length for the latency.
+ma_length = 100
+# Sort RPCs by latency on startup.
+sort_on_startup = true
+# Enable content type header checking. Set it to `true` to be JSON-RPC compliant.
+header_check = true
+# The acceptable time to wait for a response, in ms.
+ttl = 30
+# How many times to retry a request before giving up.
+max_retries = 32
+# The block time in ms, used as a sanity check when not receiving subscriptions.
+expected_block_time = 20000
+# The time between health checks, in ms.
+health_check_ttl = 400
+
+[admin]
+# Enable the admin namespace.
+# NOTE: The admin namespace contains volatile functions and should not be exposed publicly.
+enabled = true
+# The address of the admin RPC.
+address = "0.0.0.0:{{.blutgang_admin_port}}"
+# Only allow read-only methods.
+readonly = true
+# Enable the use of JWT for auth.
+jwt = false
+# The JWT token.
+key = ""
+
+[sled]
+# Sled is the db used for caching.
+# The path to the cache db.
+db_path = "./blutgang-cache"
+# Sled mode, can be either HighThroughput or LowSpace.
+mode = "HighThroughput"
+# The cache capacity, in bytes.
+cache_capacity = 1000000000
+# Enable zstd compression which reduces size by 60/70% and increases CPU and latency by around 10% for db writes and 2% for reads.
+compression = false
+# Print db profile when dropped.
+print_profile = false
+# The frequency of flushes, in ms.
+flush_every_ms = 240
+
+# TODO: Add separate RPCs as TOML tables.
+# NOTE: DO NOT name an rpc `blutgang`, `admin`, or `sled`
+
+[sequencer]
+# The HTTP URL of the sequencer.
+url = "{{.l2_sequencer_url}}"
+# The maximum amount of time this rpc can be used in a row.
+max_consecutive = 150
+# The maximum amount of queries per second this rpc can handle.
+max_per_second = 200
+
+[rpc]
+# The HTTP URL of the centralized/trusted node (or rpc).
+url = "{{.l2_rpc_url}}"
+# The WS URL of the centralized/trusted node (or rpc).
+ws_url = "{{.l2_ws_url}}"
+# The maximum amount of time this rpc can be used in a row.
+max_consecutive = 150
+# The maximum amount of queries per second this rpc can handle.
+max_per_second = 200
+
+[pless_zkevm_rpc]
+# The HTTP URL of the permissionless zkevm node (or rpc).
+url = "{{.zkevm_rpc_pless_http_url}}"
+# The WS URL of the permissionless zkevm node (or rpc).
+ws_url = "{{.zkevm_rpc_pless_ws_url}}"
+# The maximum amount of time this rpc can be used in a row.
+max_consecutive = 150
+# The maximum amount of queries per second this rpc can handle.
+max_per_second = 200

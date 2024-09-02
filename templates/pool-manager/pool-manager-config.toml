@@ -1,6 +1,6 @@
 [Log]
 Environment = "development" # "production" or "development"
-Level = "debug"
+Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
 [Server]

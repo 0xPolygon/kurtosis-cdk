@@ -9,8 +9,8 @@ on:
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
-    # Prevent this job to run on forks.
-    if: github.repository == '0xPolygon/kurtosis-cdk'
+    timeout-minutes: 5
+    if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     steps:
       - uses: actions/checkout@v4
         with:

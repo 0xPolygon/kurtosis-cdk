@@ -3,10 +3,10 @@ bridge-deposits.json
 claimable-txs.json
 proof.json
 
-# default parameters
-input-parser-args.yml
-kurtosis-args.yml
-params-args.yml
+# compare default parameters
+.input_parser.star
+.kurtosis.yml
+.params.yml
 
 # docs
 .vscode

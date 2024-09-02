@@ -6,7 +6,9 @@ databases = import_module("./databases.star")
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    db_configs = databases.get_db_configs(args["deployment_suffix"])
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
 
     # Create the bridge service config.
     bridge_config_artifact = create_bridge_config_artifact(
@@ -22,29 +24,37 @@ def run(plan, args):
     )
 
     # Create the agglayer service config.
-    agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, contract_setup_addresses, db_configs
-    )
-    agglayer_keystore_artifact = plan.store_service_files(
-        name="agglayer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/agglayer.keystore",
-    )
-    agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
-        args, agglayer_config_artifact, agglayer_keystore_artifact
-    )
+    if args["deploy_agglayer"]:
+        agglayer_config_artifact = create_agglayer_config_artifact(
+            plan, args, contract_setup_addresses, db_configs
+        )
+        agglayer_keystore_artifact = plan.store_service_files(
+            name="agglayer-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/agglayer.keystore",
+        )
+        agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
+            args, agglayer_config_artifact, agglayer_keystore_artifact
+        )
 
     # Start the bridge service and the agglayer.
-    bridge_infra_services = plan.add_services(
-        configs=bridge_config | agglayer_config,
-        description="Starting bridge infra",
-    )
+    if args["deploy_agglayer"]:
+        bridge_infra_services = plan.add_services(
+            configs=bridge_config | agglayer_config,
+            description="Starting bridge infra",
+        )
+    else:
+        bridge_infra_services = plan.add_services(
+            configs=bridge_config,
+            description="Starting bridge infra",
+        )
 
     # Start the bridge UI.
     bridge_ui_config_artifact = create_bridge_ui_config_artifact(
         plan, args, contract_setup_addresses
     )
-    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+    if args["deploy_agglayer"]:
+        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
     # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
     if args["deploy_l1"]:
@@ -64,12 +74,14 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
+                    "global_log_level": args["global_log_level"],
                     "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "zkevm_l2_proofsigner_address": args[
                         "zkevm_l2_proofsigner_address"
                     ],
+                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_agglayer_port": args["zkevm_agglayer_port"],
@@ -94,6 +106,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                 template=bridge_config_template,
                 data={
                     "deployment_suffix": args["deployment_suffix"],
+                    "global_log_level": args["global_log_level"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],

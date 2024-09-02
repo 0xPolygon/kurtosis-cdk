@@ -1,7 +1,12 @@
+constants = import_module("./src/package_io/constants.star")
+
 DEFAULT_ARGS = {
     "deployment_suffix": "-001",
+    "global_log_level": "info",
     "sequencer_type": "erigon",
+    "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
+    "additional_services": [],
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
@@ -9,13 +14,11 @@ DEFAULT_ARGS = {
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.4.2",
-    "panoptichain_image": "minhdvu/panoptichain:0.1.47",
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.5.0-RC9",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:2.0.0-beta15",
-    "toolbox_image": "leovct/toolbox:0.0.1",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
@@ -31,7 +34,6 @@ DEFAULT_ARGS = {
     "zkevm_agglayer_port": 4444,
     "zkevm_dac_port": 8484,
     "zkevm_pool_manager_port": 8545,
-    "blockscout_public_port": 50101,  # IANA registered ports up to 49151
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
     "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
     "zkevm_l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
@@ -60,28 +62,39 @@ DEFAULT_ARGS = {
     "l1_preset": "minimal",
     "l1_seconds_per_slot": 1,
     "zkevm_rollup_chain_id": 10101,
+    "zkevm_rollup_id": 1,
     "zkevm_rollup_fork_id": 9,
     "erigon_strict_mode": True,
+    "erigon_pre_eip155_transactions": True,
     "polygon_zkevm_explorer": "https://explorer.private/",
     "l1_explorer_url": "https://sepolia.etherscan.io/",
     "zkevm_use_gas_token_contract": False,
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
     "genesis_file": "templates/permissionless-node/genesis.json",
-    "polycli_version": "v0.1.42",
-    "workload_commands": [
-        # "polycli_loadtest_on_l2.sh t",  # eth transfers
-        # "polycli_loadtest_on_l2.sh 2",  # erc20 transfers
-        # "polycli_loadtest_on_l2.sh 7",  # erc721 mints
-        # "polycli_loadtest_on_l2.sh v3",  # uniswapv3 swaps
-        # "polycli_rpcfuzz_on_l2.sh",  # rpc calls
-        "bridge.sh",  # bridge tokens l1 -> l2 and l2 -> l1
-    ],
-    "blutgang_image": "makemake1337/blutgang:0.3.5",
-    "blutgang_rpc_port": 55555,
-    "blutgang_admin_port": 55556,
 }
 
 
 def parse_args(args):
+    validate_global_log_level(args["global_log_level"])
     return DEFAULT_ARGS | args
+
+
+def validate_global_log_level(global_log_level):
+    if global_log_level not in (
+        constants.GLOBAL_LOG_LEVEL.error,
+        constants.GLOBAL_LOG_LEVEL.warn,
+        constants.GLOBAL_LOG_LEVEL.info,
+        constants.GLOBAL_LOG_LEVEL.debug,
+        constants.GLOBAL_LOG_LEVEL.trace,
+    ):
+        fail(
+            "Unsupported global log level: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
+                global_log_level,
+                constants.GLOBAL_LOG_LEVEL.error,
+                constants.GLOBAL_LOG_LEVEL.warn,
+                constants.GLOBAL_LOG_LEVEL.info,
+                constants.GLOBAL_LOG_LEVEL.debug,
+                constants.GLOBAL_LOG_LEVEL.trace,
+            )
+        )

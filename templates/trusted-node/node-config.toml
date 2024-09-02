@@ -68,7 +68,7 @@ Environment = "production"
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "info"
+Level = "{{.global_log_level}}"
 
 # ------------------------------------------------------------------------------
 # Outputs define the output paths for writing logs. The default is to
@@ -1037,7 +1037,7 @@ Environment = "production"
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "info"
+Level = "{{.global_log_level}}"
 
 # ==============================================================================
 #  ____  _____ ___  _   _ _____ _   _  ____ _____ ____  _____ _   _ ____  _____ ____
@@ -1272,8 +1272,16 @@ AggLayerTxTimeout = "600s"
 
 # ------------------------------------------------------------------------------
 # AggLayerURL is the RPC URL of the agglayer itself
+# In the case of attaching multiple CDKs, the AgglayerURL 
+# should always follow the first deployment_suffix "-001"
+# by default.
 # ------------------------------------------------------------------------------
+{{if .deploy_agglayer}}
 AggLayerURL = "http://zkevm-agglayer{{.deployment_suffix}}:{{.zkevm_agglayer_port}}"
+{{else}}
+AggLayerURL = "http://zkevm-agglayer-001:{{.zkevm_agglayer_port}}"
+{{end}}
+
 {{else}}
 
 # ------------------------------------------------------------------------------
