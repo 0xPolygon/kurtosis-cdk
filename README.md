@@ -38,8 +38,8 @@ The command above deploys the CDK stack with [cdk-erigon](https://github.com/0xP
 Note that it is also possible to deploy the CDK stack using the legacy sequencer and the legacy node, referred to as the [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node). In this scenario, you may need to adjust the various commands slightly; instead of targeting the `cdk-erigon-node-001` service, you should target the `zkevm-node-rpc-001`.
 
 ```bash
-yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
 yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
+yq -Y --in-place '.args.sequence_sender_aggregator_type = "zkevm"' params.yml
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 ```
 

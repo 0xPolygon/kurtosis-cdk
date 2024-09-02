@@ -13,8 +13,8 @@ def run(plan, args):
         config=ServiceConfig(
             image=BLUTGANG_IMAGE,
             ports={
-                "http": PortSpec(RPC_PORT_NUMBER),
-                "admin": PortSpec(ADMIN_PORT_NUMBER),
+                "http": PortSpec(RPC_PORT_NUMBER, application_protocol="http"),
+                "admin": PortSpec(ADMIN_PORT_NUMBER, application_protocol="http"),
             },
             files={
                 "/etc/blutgang": Directory(
@@ -34,11 +34,11 @@ def get_blutgang_config(plan, args):
         src="../../static_files/additional_services/blutgang-config/config.toml"
     )
 
-    zkevm_sequencer_service = plan.get_service(
+    sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
-    zkevm_sequencer_http_url = "http://{}:{}".format(
-        zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
+    sequencer_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["http-rpc"].number
     )
 
     l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
@@ -63,7 +63,7 @@ def get_blutgang_config(plan, args):
                 data={
                     "blutgang_rpc_port": RPC_PORT_NUMBER,
                     "blutgang_admin_port": ADMIN_PORT_NUMBER,
-                    "l2_sequencer_url": zkevm_sequencer_http_url,
+                    "l2_sequencer_url": sequencer_url,
                     "l2_rpc_url": l2_rpc_urls.http,
                     "l2_ws_url": l2_rpc_urls.ws,
                     "zkevm_rpc_pless_http_url": zkevm_rpc_pless_http_url,

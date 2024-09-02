@@ -4,22 +4,24 @@ DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "global_log_level": "info",
     "sequencer_type": "erigon",
+    "sequence_sender_aggregator_type": "cdk",
     "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
+    "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.9",
+    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
+    "zkevm_aggregator_image": "hermeznetwork/zkevm-aggregator:v0.0.3-RC4",
+    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC21",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta17",
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.14",
+    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
-    "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.5.0-RC9",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
-    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta17",
-    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
@@ -76,8 +78,15 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
+    args = DEFAULT_ARGS | args
+    return sanity_check(args)
+
+
+def sanity_check(args):
     validate_global_log_level(args["global_log_level"])
-    return DEFAULT_ARGS | args
+    sequencer_args = validate_sequencer_type(args["sequencer_type"])
+    validate_sequence_sender_aggregator_type(args["sequence_sender_aggregator_type"])
+    return args | sequencer_args
 
 
 def validate_global_log_level(global_log_level):
@@ -96,5 +105,45 @@ def validate_global_log_level(global_log_level):
                 constants.GLOBAL_LOG_LEVEL.info,
                 constants.GLOBAL_LOG_LEVEL.debug,
                 constants.GLOBAL_LOG_LEVEL.trace,
+            )
+        )
+
+
+def validate_sequencer_type(sequencer_type):
+    sequencer_name = ""
+    l2_rpc_name = ""
+    if sequencer_type == constants.SEQUENCER_TYPE.erigon:
+        sequencer_name = "cdk-erigon-sequencer"
+        l2_rpc_name = "cdk-erigon-node"
+    elif sequencer_type == constants.SEQUENCER_TYPE.zkevm:
+        sequencer_name = "zkevm-node-sequencer"
+        l2_rpc_name = "zkevm-node-rpc"
+    else:
+        fail(
+            "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
+                sequencer_type,
+                constants.SEQUENCER_TYPE.erigon,
+                constants.SEQUENCER_TYPE.zkevm,
+            )
+        )
+
+    return {
+        "sequencer_name": sequencer_name,
+        "l2_rpc_name": l2_rpc_name,
+    }
+
+
+def validate_sequence_sender_aggregator_type(sequence_sender_aggregator_type):
+    if sequence_sender_aggregator_type not in (
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk,
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm,
+        constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm,
+    ):
+        fail(
+            "Unsupported sequence sender and aggregator type: '{}', please use '{}', '{}' or '{}'".format(
+                sequence_sender_aggregator_type,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm,
+                constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm,
             )
         )

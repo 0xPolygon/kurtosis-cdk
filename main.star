@@ -1,11 +1,9 @@
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-cdk_erigon_package = import_module("./cdk_erigon.star")
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
-zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 # Additional services packages.
 blockscout_package = "./src/additional_services/blockscout.star"
@@ -28,21 +26,10 @@ def run(
     deploy_databases=True,
     deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
-    deploy_cdk_erigon_node=True,
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
     plan.print("Deploying CDK environment with parameters: " + str(args))
-
-    if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
-    if args["sequencer_type"] == "erigon":
-        args["sequencer_name"] = "cdk-erigon-sequencer"
-    else:
-        args["sequencer_name"] = "zkevm-node-sequencer"
 
     # Deploy a local L1.
     if deploy_l1:
@@ -78,6 +65,7 @@ def run(
             plan,
             suffix=args["deployment_suffix"],
             sequencer_type=args["sequencer_type"],
+            sequence_sender_aggregator_type=args["sequence_sender_aggregator_type"],
         )
     else:
         plan.print("Skipping the deployment of databases")
@@ -94,28 +82,6 @@ def run(
 
     # Deploy cdk central/trusted environment.
     if deploy_cdk_central_environment:
-        # Deploy cdk-erigon sequencer node.
-        # TODO this is a little weird if the erigon sequencer is deployed before the exector?
-        if args["sequencer_type"] == "erigon":
-            plan.print("Deploying cdk-erigon sequencer")
-            cdk_erigon_package.run_sequencer(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon sequencer")
-
-        # Deploy cdk-erigon node.
-        if deploy_cdk_erigon_node:
-            plan.print("Deploying cdk-erigon node")
-            cdk_erigon_package.run_rpc(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon node")
-
-        # Deploy zkevm-pool-manager service.
-        if deploy_cdk_erigon_node:
-            plan.print("Deploying zkevm-pool-manager service")
-            zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
-        else:
-            plan.print("Skipping the deployment of zkevm-pool-manager service")
-
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact

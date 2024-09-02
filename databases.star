@@ -1,3 +1,5 @@
+constants = import_module("./src/package_io/constants.star")
+
 # We support both local and remote Postgres databases within our Kurtosis-CDK package
 # When 'USE_REMOTE_POSTGRES' is False, service automatically creates all CDK databases locally
 # When 'USE_REMOTE_POSTGRES' is True, service is created just as a helper for param injection across pods
@@ -26,16 +28,6 @@ POSTGRES_MASTER_PASSWORD = "master_password"
 # Databases that make up the central environment of an L2 chain, including sequencer, aggregator,
 # prover, bridge service, and DAC.
 CENTRAL_ENV_DBS = {
-    "aggregator_db": {
-        "name": "aggregator_db",
-        "user": "aggregator_user",
-        "password": "redacted",
-    },
-    "aggregator_syncer_db": {
-        "name": "aggregator_syncer_db",
-        "user": "aggregator_syncer_db_user",
-        "password": "redacted",
-    },
     "bridge_db": {
         "name": "bridge_db",
         "user": "bridge_user",
@@ -88,22 +80,50 @@ CDK_ERIGON_DBS = {
     }
 }
 
-DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS
+# Databases required for a cdk-node or a zkevm-aggregator to function as an aggregator.
+AGGREGATOR_DBS = {
+    "aggregator_db": {
+        "name": "aggregator_db",
+        "user": "aggregator_user",
+        "password": "redacted",
+    },
+    "aggregator_syncer_db": {
+        "name": "aggregator_syncer_db",
+        "user": "aggregator_syncer_db_user",
+        "password": "redacted",
+    },
+}
+
+DATABASES = (
+    CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | AGGREGATOR_DBS | CDK_ERIGON_DBS
+)
 
 
-def run(plan, suffix, sequencer_type):
-    db_configs = get_db_configs(suffix, sequencer_type)
+def run(plan, suffix, sequencer_type, sequence_sender_aggregator_type):
+    db_configs = get_db_configs(suffix, sequencer_type, sequence_sender_aggregator_type)
     create_postgres_service(plan, db_configs, suffix)
 
 
-def get_db_configs(suffix, sequencer_type):
-    dbs = None
-    if sequencer_type == "erigon":
-        dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS
-    elif sequencer_type == "zkevm":
-        dbs = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS
-    else:
-        fail("Unsupported sequencer type: %s" % sequencer_type)
+def get_db_configs(suffix, sequencer_type, sequence_sender_aggregator_type):
+    dbs = CENTRAL_ENV_DBS | PROVER_DB
+
+    if sequencer_type == constants.SEQUENCER_TYPE.erigon:
+        dbs = dbs | CDK_ERIGON_DBS
+
+    if (
+        sequencer_type == constants.SEQUENCER_TYPE.zkevm
+        or sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.legacy_zkevm
+    ):
+        dbs = dbs | ZKEVM_NODE_DBS
+
+    if (
+        sequence_sender_aggregator_type
+        == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.new_zkevm
+    ) or (
+        sequence_sender_aggregator_type == constants.SEQUENCE_SENDER_AGGREGATOR_TYPE.cdk
+    ):
+        dbs = dbs | AGGREGATOR_DBS
 
     configs = {
         k: v

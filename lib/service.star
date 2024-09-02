@@ -6,7 +6,6 @@ def get_contract_setup_addresses(plan, args):
         "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
         "zkevm_l2_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
         "zkevm_gen_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
-        "polygon_data_committee_address": "fromjson | .polygonDataCommitteeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",
         "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
         "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",

@@ -1,3 +1,45 @@
+zkevm_prover_package = import_module("./zkevm_prover.star")
+zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+
+
+def run_sequencer(
+    plan,
+    args,
+    node_config_artifact,
+    chain_artifacts,
+):
+    start_node(
+        plan,
+        args,
+        node_config_artifact,
+        chain_artifacts.spec,
+        chain_artifacts.config,
+        chain_artifacts.allocs,
+        True,
+    )
+
+
+def run_rpc(
+    plan,
+    args,
+    node_config_artifact,
+    chain_artifacts,
+    zkevm_pool_manager_config_artifact,
+):
+    start_node(
+        plan,
+        args,
+        node_config_artifact,
+        chain_artifacts.spec,
+        chain_artifacts.config,
+        chain_artifacts.allocs,
+        False,
+    )
+    zkevm_pool_manager_package.run_zkevm_pool_manager(
+        plan, args, zkevm_pool_manager_config_artifact
+    )
+
+
 def start_node(
     plan,
     args,
@@ -7,40 +49,18 @@ def start_node(
     cdk_erigon_node_chain_allocs_artifact,
     is_sequencer,
 ):
+    name = args["l2_rpc_name"] + args["deployment_suffix"]
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
-    ports = {}
-    ports["pprof"] = PortSpec(
-        args["zkevm_pprof_port"],
-        application_protocol="http",
-        wait=None,
-    )
-    ports["prometheus"] = PortSpec(
-        args["zkevm_prometheus_port"],
-        application_protocol="http",
-        wait=None,
-    )
+    ports = {
+        "http-rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
+        "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+        "prometheus": PortSpec(
+            args["zkevm_prometheus_port"], application_protocol="http"
+        ),
+    }
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
-        # TODO these port names seem weird... http-rpc / rpc? I don't
-        # get it. There seem to be a bunch of weird dependencies on
-        # both of these existing. It seems likt they should be called
-        # the same thing and the only difference is if this a
-        # sequencer or an rpc.. the port itself shouldn't be named
-        # differently and there certainly shouldn't be dependencies on
-        # those names
-        ports["rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="http",
-        )
-    else:
-        name = args["l2_rpc_name"] + args["deployment_suffix"]
-        ports["http-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="http",
-        )
-
-    if is_sequencer:
         ports["data-streamer"] = PortSpec(
             args["zkevm_data_streamer_port"], application_protocol="datastream"
         )

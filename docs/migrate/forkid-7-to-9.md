@@ -79,10 +79,10 @@ After a few minutes, the number of verified batches should increase (the first b
     ```
 
     ```diff
-    diff --git a/templates/trusted-node/node-config.toml b/templates/trusted-node/node-config.toml
+    diff --git a/templates/trusted-node/zkevm-node-config.toml b/templates/trusted-node/zkevm-node-config.toml
     index 6c9b9fa..372d904 100644
-    --- a/templates/trusted-node/node-config.toml
-    +++ b/templates/trusted-node/node-config.toml
+    --- a/templates/trusted-node/zkevm-node-config.toml
+    +++ b/templates/trusted-node/zkevm-node-config.toml
     @@ -117,7 +117,7 @@ StateConsistencyCheckInterval = "5s"
                     BatchMaxDeltaTimestamp = "20s"
                     L2BlockMaxDeltaTimestamp = "4s"

@@ -17,9 +17,6 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
-# Deploy cdk-erigon node.
-deploy_cdk_erigon_node: true
-
 args:
   # Suffix appended to service names.
   # Note: It should be a string.
@@ -34,6 +31,12 @@ args:
   # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
   # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
   sequencer_type: erigon
+
+  # The type of sequence sender and aggregator to deploy.
+  # Options:
+  # - 'cdk': Use the new cdk-node (https://github.com/0xPolygon/cdk).
+  # - 'zkevm': Use the legacy aggregator and sequence sender (https://github.com/0xPolygonHermez/zkevm-node).
+  sequence_sender_aggregator_type: cdk
 
   # Deploy agglayer.
   deploy_agglayer: false
@@ -52,7 +55,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.9
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.14
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 

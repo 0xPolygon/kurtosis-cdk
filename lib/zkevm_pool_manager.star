@@ -1,4 +1,4 @@
-def create_zkevm_pool_manager_service_config(args, config_artifact):
+def run_zkevm_pool_manager(plan, args, config_artifact):
     zkevm_pool_manager_service_name = "zkevm-pool-manager" + args["deployment_suffix"]
     zkevm_pool_manager_service_config = ServiceConfig(
         image=args["zkevm_pool_manager_image"],
@@ -16,4 +16,8 @@ def create_zkevm_pool_manager_service_config(args, config_artifact):
             "/app/zkevm-pool-manager run --cfg /etc/pool-manager/pool-manager-config.toml",
         ],
     )
-    return {zkevm_pool_manager_service_name: zkevm_pool_manager_service_config}
+    plan.add_service(
+        name=zkevm_pool_manager_service_name,
+        config=zkevm_pool_manager_service_config,
+        description="Starting zkevm pool manager",
+    )

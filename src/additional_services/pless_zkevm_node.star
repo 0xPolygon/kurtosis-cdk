@@ -44,14 +44,7 @@ def run(plan, args, genesis_artifact):
         },
     )
 
-    zkevm_node_package.start_synchronizer(
+    zkevm_node_package.run_synchronizer(
         plan, args, node_config_artifact, genesis_artifact
     )
-
-    rpc_config = zkevm_node_package.create_rpc_service_config(
-        args, node_config_artifact, genesis_artifact
-    )
-    plan.add_services(
-        configs=rpc_config,
-        description="Starting zkevm node rpc",
-    )
+    zkevm_node_package.run_rpc(plan, args, node_config_artifact, genesis_artifact)
