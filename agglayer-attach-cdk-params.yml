@@ -65,7 +65,7 @@ args:
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:2.0.0-beta15
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.0.0-beta17
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
