@@ -15,7 +15,7 @@ DEFAULT_ARGS = {
     "zkevm_aggregator_image": "hermeznetwork/zkevm-aggregator:v0.0.3-RC4",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC21",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta17",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.9",
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.14",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.7",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
