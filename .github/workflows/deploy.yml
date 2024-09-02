@@ -113,10 +113,6 @@ jobs:
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
-
   zkevm:
     runs-on: ubuntu-latest
     timeout-minutes: 20
