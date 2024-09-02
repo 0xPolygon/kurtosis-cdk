@@ -75,7 +75,7 @@ SanityCheckRPCURL = ""
 	CleanupLockedProofsInterval = "2m0s"
 	GeneratingProofCleanupThreshold = "10m"
 	GasOffset = 150000
-	UpgradeEtrogBatchNumber = 0
+	UpgradeEtrogBatchNumber = "{{.zkevm_rollup_manager_block_number}}"
 	WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 	{{if .is_cdk_validium}}
 	SenderAddress = "{{.zkevm_l2_agglayer_address}}"
@@ -153,7 +153,7 @@ SanityCheckRPCURL = ""
 		[Aggregator.Synchronizer.Synchronizer]
 			SyncInterval = "10s"
 			SyncChunkSize = 1000
-			GenesisBlockNumber = 1
+			GenesisBlockNumber =  "{{.zkevm_rollup_manager_block_number}}"
 			SyncUpToBlock = "latest"
 			BlockFinality = "latest"
 			OverrideStorageCheck = false
