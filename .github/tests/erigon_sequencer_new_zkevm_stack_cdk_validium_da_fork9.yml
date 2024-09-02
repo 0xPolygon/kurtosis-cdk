@@ -1,7 +1,8 @@
 args:
-  sequencer_type: zkevm
-  sequence_sender_aggregator_type: legacy-zkevm
+  sequencer_type: erigon
+  sequence_sender_aggregator_type: new-zkevm
   data_availability_mode: cdk-validium
+  zkevm_rollup_fork_id: 9
   additional_services:
     - pless_zkevm_node
     - tx_spammer

@@ -1,7 +1,0 @@
-args:
-  sequencer_type: zkevm
-  sequence_sender_aggregator_type: legacy-zkevm
-  data_availability_mode: rollup
-  additional_services:
-    - pless_zkevm_node
-    - tx_spammer
