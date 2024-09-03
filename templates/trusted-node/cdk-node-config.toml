@@ -3,7 +3,15 @@ ForkUpgradeNewForkId = 0
 
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
+
+{{if eq .zkevm_rollup_fork_id "12"}}
+ContractVersions = "banana"
+{{else}}
 ContractVersions = "elderberry"
+{{end}}
+
+[Etherman]
+URL = "{{.l1_rpc_url}}"
 
 [Log]
 Environment = "development" # "production" or "development"
@@ -20,14 +28,25 @@ SequencesTxFileName = "/data/sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
+{{if eq .zkevm_rollup_fork_id "12"}}
+MaxBatchesForL1 = 300
+BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
+SanityCheckRPCURL = ""
+{{end}}
 	[SequenceSender.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 	[SequenceSender.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
 		ConsolidationL1ConfirmationBlocks = 5
+		{{if eq .zkevm_rollup_fork_id "12"}}
+		FinalizedStatusL1NumberOfBlocks = 10
+		WaitReceiptMaxTime = "250ms"
+		WaitReceiptCheckInterval = "8s"
+		{{else}}
 		FinalizationL1ConfirmationBlocks = 10
 		WaitReceiptToBeGenerated = "8s"
+		{{end}}
 		PrivateKeys = [
 			{Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 		]
@@ -50,7 +69,7 @@ MaxPendingTx = 1
 	TxProfitabilityMinReward = "1.1"
 	IntervalAfterWhichBatchConsolidateAnyway = "0s"
 	ChainID = "{{.zkevm_rollup_chain_id}}"
-	ForkId = 9
+	ForkId = {{.zkevm_rollup_fork_id}}
 	CleanupLockedProofsInterval = "2m0s"
 	GeneratingProofCleanupThreshold = "10m"
 	GasOffset = 150000
@@ -66,8 +85,14 @@ MaxPendingTx = 1
 	AggLayerURL = "http://zkevm-agglayer-001:{{.zkevm_agglayer_port}}"
 	{{end}}
 	{{else}}
-
 	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
+	{{end}}
+
+	{{if eq .zkevm_rollup_fork_id "12"}}
+	UseL1BatchData = true
+	UseFullWitness = false
+	MaxWitnessRetrievalWorkers = 2
+	SyncModeOnlyEnabled = false
 	{{end}}
 
 	[Aggregator.SequencerPrivateKey]
@@ -91,8 +116,15 @@ MaxPendingTx = 1
 	[Aggregator.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
+
+		{{if eq .zkevm_rollup_fork_id "12"}}
+		WaitReceiptMaxTime = "250ms"
+		WaitReceiptCheckInterval = "1s"
+		{{else}}
 		GetReceiptMaxTime = "250ms"
 		GetReceiptWaitInterval = "1s"
+		{{end}}
+		
 		PrivateKeys = [
 			{Path = "/etc/cdk/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 		]
@@ -127,10 +159,23 @@ MaxPendingTx = 1
 			[Aggregator.Synchronizer.Etherman.Validium]
 				Enabled = {{.is_cdk_validium}}
 
-[RPC]
+{{if eq .zkevm_rollup_fork_id "12"}}
+[L1InfoTreeSync]
+DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
+GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
+SyncBlockChunkSize = 10
+BlockFinality = "LatestBlock"
+URLRPCL1 = "{{.l1_rpc_url}}"
+WaitForNewBlocksPeriod = "1s"
+InitialBlock = 0 # TODO: should be block were rollup manager was deployed
+{{end}}
 
 [NetworkConfig.L1]
+{{if eq .zkevm_rollup_fork_id "12"}}
+L1ChainID = "{{.l1_chain_id}}"
+{{else}}
 ChainID = "{{.l1_chain_id}}"
+{{end}}
 PolAddr = "{{.pol_token_address}}"
 ZkEVMAddr = "{{.zkevm_rollup_address}}"
 RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
