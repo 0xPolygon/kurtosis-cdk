@@ -25,9 +25,25 @@ kurtosis run --enclave cdk --args-file params.yml .
 Once the environment is running, verify that fork 12 is deployed by executing the following commands:
 
 ```bash
-bridge_address="$(kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq --raw-output '.polygonZkEVMBridgeAddress')"
-rpc_url="$(kurtosis port print cdk cdk-erigon-node-001 http-rpc)"
-cast call --rpc-url "$rpc_url" "$bridge_address" "forkID"
+rollup_manager_address="$(kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq --raw-output '.polygonRollupManagerAddress')"
+rpc_url="$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
+sig="rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)"
+cast call --rpc-url $rpc_url $rollup_manager_address $sig 1
 ```
 
-You should see the output `12`, confirming that fork 12 is successfully deployed.
+You should expect the 4th value (fork id) to be equal to `12`, confirming that fork 12 is successfully deployed.
+
+```bash
+0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91
+10101 [1.01e4]
+0xf22E2B040B639180557745F47aB97dFA95B1e22a
+12
+0x0000000000000000000000000000000000000000000000000000000000000000
+1
+0
+0
+0
+0
+1
+0
+```
