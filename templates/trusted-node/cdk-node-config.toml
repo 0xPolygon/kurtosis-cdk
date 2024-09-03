@@ -10,10 +10,8 @@ ContractVersions = "banana"
 ContractVersions = "elderberry"
 {{end}}
 
-{{if eq .zkevm_rollup_fork_id "12"}}
 [Etherman]
 URL = "{{.l1_rpc_url}}"
-{{end}}
 
 [Log]
 Environment = "development" # "production" or "development"
@@ -91,16 +89,15 @@ SanityCheckRPCURL = ""
 	{{end}}
 
 	{{if eq .zkevm_rollup_fork_id "12"}}
-	SequencerPrivateKey = {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 	UseL1BatchData = true
 	UseFullWitness = false
 	MaxWitnessRetrievalWorkers = 2
 	SyncModeOnlyEnabled = false
-	{{else}}
+	{{end}}
+
 	[Aggregator.SequencerPrivateKey]
 		Path = "/etc/cdk/sequencer.keystore"
 		Password = "{{.zkevm_l2_keystore_password}}"
-	{{end}}
 	
 	[Aggregator.DB]
 		Name = "{{.aggregator_db.name}}"
@@ -119,6 +116,7 @@ SanityCheckRPCURL = ""
 	[Aggregator.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
+
 		{{if eq .zkevm_rollup_fork_id "12"}}
 		WaitReceiptMaxTime = "250ms"
 		WaitReceiptCheckInterval = "1s"
