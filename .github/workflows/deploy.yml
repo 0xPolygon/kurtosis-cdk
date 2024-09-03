@@ -84,7 +84,7 @@ jobs:
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 http-rpc)"
-      
+
       - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
@@ -102,6 +102,8 @@ jobs:
         run: |
           yq -Y --in-place '.args.zkevm_rollup_fork_id = "12"' params.yml
           yq -Y --in-place '.args.zkevm_prover_image = "hermeznetwork/zkevm-prover:v8.0.0-RC5-fork.12"' params.yml
+          # TODO: Use a tagged version for cdk-erigon node image.
+          yq -Y --in-place '.args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:fe54243ce2cd0563396b509ff19e178178e9d712"' params.yml
           # Fork12 is only supported by cdk-erigon, not by cdk-validium-node or zkevm-node.
           # That's why we don't deploy the permissionless zkevm-node in this job.
           yq -Y --in-place '.args.additional_services = ["tx_spammer"]' params.yml
