@@ -43,33 +43,37 @@ def get_blutgang_config(plan, args):
 
     l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
 
-    zkevm_rpc_pless_service = plan.get_service(
-        name="zkevm-node-rpc-pless" + args["deployment_suffix"]
-    )
-    zkevm_rpc_pless_http_url = "http://{}:{}".format(
-        zkevm_rpc_pless_service.ip_address,
-        zkevm_rpc_pless_service.ports["http-rpc"].number,
-    )
-    zkevm_rpc_pless_ws_url = "ws://{}:{}".format(
-        zkevm_rpc_pless_service.ip_address,
-        zkevm_rpc_pless_service.ports["ws-rpc"].number,
-    )
+    blutgang_data = {
+        "blutgang_rpc_port": RPC_PORT_NUMBER,
+        "blutgang_admin_port": ADMIN_PORT_NUMBER,
+        "l2_sequencer_url": zkevm_sequencer_http_url,
+        "l2_rpc_url": l2_rpc_urls.http,
+        "l2_ws_url": l2_rpc_urls.ws,
+        "pless_zkevm_node_rpc": False,
+    }
+
+    if "pless_zkevm_node" in args["additional_services"]:
+        zkevm_rpc_pless_service = plan.get_service(
+            name="zkevm-node-rpc-pless" + args["deployment_suffix"]
+        )
+        zkevm_rpc_pless_http_url = "http://{}:{}".format(
+            zkevm_rpc_pless_service.ip_address,
+            zkevm_rpc_pless_service.ports["http-rpc"].number,
+        )
+        zkevm_rpc_pless_ws_url = "ws://{}:{}".format(
+            zkevm_rpc_pless_service.ip_address,
+            zkevm_rpc_pless_service.ports["ws-rpc"].number,
+        )
+        blutgang_data["pless_zkevm_node_rpc"] = True
+        blutgang_data["zkevm_rpc_pless_http_url"] = zkevm_rpc_pless_http_url
+        blutgang_data["zkevm_rpc_pless_ws_url"] = zkevm_rpc_pless_ws_url
 
     return plan.render_templates(
         name="blutgang-config",
         config={
             "config.toml": struct(
                 template=blutgang_config_template,
-                data={
-                    "blutgang_rpc_port": RPC_PORT_NUMBER,
-                    "blutgang_admin_port": ADMIN_PORT_NUMBER,
-                    "l2_sequencer_url": zkevm_sequencer_http_url,
-                    "l2_rpc_url": l2_rpc_urls.http,
-                    "l2_ws_url": l2_rpc_urls.ws,
-                    "zkevm_rpc_pless_http_url": zkevm_rpc_pless_http_url,
-                    "zkevm_rpc_pless_ws_url": zkevm_rpc_pless_ws_url,
-                }
-                | args,
+                data=blutgang_data | args,
             )
         },
     )
