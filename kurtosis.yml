@@ -47,7 +47,7 @@ description: |-
   additional_services: []
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC5-fork.12
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.15
@@ -138,7 +138,7 @@ description: |-
   zkevm_rollup_id: 1
 
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
-  zkevm_rollup_fork_id: 12
+  zkevm_rollup_fork_id: 9
 
   # If erigon is being used as the sequencer,
   # This flag will enable a stateless executor to verify the execution of the batches.
