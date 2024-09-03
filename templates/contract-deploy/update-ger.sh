@@ -15,7 +15,7 @@ l1_rpc_url="{{.l1_rpc_url}}"
 bridge_sig="bridgeAsset(uint32 destinationNetwork, address destinationAddress, uint256 amount, address token, bool forceUpdateGlobalExitRoot, bytes permitData)"
 
 # Get our variables organized
-destination_net="7"
+destination_net="7" # random value (better to not use 1 as it could interfere with the network being deployed)
 destination_addr="0x0000000000000000000000000000000000000000"
 amount=0
 token="0x0000000000000000000000000000000000000000"
