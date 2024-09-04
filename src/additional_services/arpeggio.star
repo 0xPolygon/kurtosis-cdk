@@ -16,7 +16,7 @@ def run(plan, args):
             ports={
                 "rpc": PortSpec(RPC_PROXY_PORT),
                 "ws": PortSpec(WS_PROXY_PORT),
-                "prometeus": PortSpec(METRICS_PORT, application_protocol="http"),
+                "prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
             },
             files={"/etc/arpeggio": arpeggio_config_artifact},
         ),
