@@ -43,7 +43,7 @@ kurtosis run --enclave cdk-v1 --args-file params.yml .
 
 ![CDK Erigon Architecture Diagram](./docs/img/cdk-erigon-architecture-diagram.png)
 
-It is also possible to deploy the CDK stack using the legacy zkevm-node sequencer and/or the new zkevm or the legacy zkevm-node sequencer sender and aggregator.
+It is also possible to deploy the CDK stack using the legacy zkevm-node sequencer and/or the new zkevm or the legacy zkevm-node sequencer sender and aggregator by modyfing the configuration file `params.yml`.
 
 For example, the CDK stack can be alternatively deployed using zkevm-contracts ([fork 9](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v6.0.0-rc.1-fork.9)), with the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) serving as the sequencer, sequence sender and aggregator.
 
