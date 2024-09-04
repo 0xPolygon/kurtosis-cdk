@@ -263,7 +263,11 @@
      * stateManager will use the State Manager to consolidate states
      * before writing to Database
      */ -}}
+    {{if .stateless_executor}}
+    "stateManager": false,
+    {{else}}
     "stateManager": true,
+    {{end}}
 
 {{- /*
      * useAssociativeCache to use associative cache as Database MT
