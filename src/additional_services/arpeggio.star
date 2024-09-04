@@ -1,17 +1,22 @@
 service_package = import_module("../../lib/service.star")
 
-ARPEGGIO_IMAGE = "arpeggio" #TODO: publish image
+ARPEGGIO_IMAGE = "christophercampbell/arpeggio:v0.0.1"
+
+RPC_PROXY_PORT = 8545
+WS_PROXY_PORT = 8546
+METRICS_PORT = 9105
+
 
 def run(plan, args):
     arpeggio_config_artifact = get_arpeggio_config(plan, args)
     plan.add_service(
-        name="panoptichain" + args["deployment_suffix"],
+        name="arpeggio" + args["deployment_suffix"],
         config=ServiceConfig(
             image=ARPEGGIO_IMAGE,
             ports={
-                "http": HTTP_PROXY_PORT,
-                "ws": WS_PROXY_PORT,
-                "prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
+                "rpc": PortSpec(RPC_PROXY_PORT),
+                "ws": PortSpec(WS_PROXY_PORT),
+                "prometeus": PortSpec(METRICS_PORT, application_protocol="http"),
             },
             files={"/etc/arpeggio": arpeggio_config_artifact},
         ),
