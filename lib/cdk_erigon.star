@@ -39,8 +39,11 @@ def start_node(
             args["zkevm_rpc_http_port"],
             application_protocol="http",
         )
+        # Erigon upgrades the http traffic to ws when appropriate (I think?),
+        # so we use the http port for this config, but there may be another way
+        # to configure cdk-erigon such that it uses a different port for WS
         ports["ws-rpc"] = PortSpec(
-            args["zkevm_rpc_ws_port"],
+            args["zkevm_rpc_http_port"],
             application_protocol="ws"
         )
 

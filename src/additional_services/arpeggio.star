@@ -1,10 +1,9 @@
 service_package = import_module("../../lib/service.star")
 
 ARPEGGIO_IMAGE = "christophercampbell/arpeggio:v0.0.1"
-
 RPC_PROXY_PORT = 8545
 WS_PROXY_PORT = 8546
-METRICS_PORT = 9105
+#METRICS_PORT = 9105
 
 
 def run(plan, args):
@@ -14,9 +13,9 @@ def run(plan, args):
         config=ServiceConfig(
             image=ARPEGGIO_IMAGE,
             ports={
-                "rpc": PortSpec(RPC_PROXY_PORT),
-                "ws": PortSpec(WS_PROXY_PORT),
-                "prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
+                "rpc": PortSpec(RPC_PROXY_PORT, application_protocol="http"),
+                "ws": PortSpec(WS_PROXY_PORT, application_protocol="ws"),
+                #"prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
             },
             files={"/etc/arpeggio": arpeggio_config_artifact},
         ),
