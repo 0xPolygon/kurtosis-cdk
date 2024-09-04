@@ -43,8 +43,7 @@ def start_node(
         # so we use the http port for this config, but there may be another way
         # to configure cdk-erigon such that it uses a different port for WS
         ports["ws-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="ws"
+            args["zkevm_rpc_http_port"], application_protocol="ws"
         )
 
     if is_sequencer:
