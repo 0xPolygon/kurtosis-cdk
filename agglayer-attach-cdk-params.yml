@@ -46,19 +46,25 @@ args:
   data_availability_mode: cdk-validium
 
   # Additional services to run alongside the network.
+  # Options:
+  # - blockscout
+  # - blutgang
+  # - pless_zkevm_node
+  # - prometheus_grafana
+  # - tx_spammer
   additional_services: []
 
   # Docker images and repositories used to spin up services.
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.9
-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.15
+  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
   # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0-RC9
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0-RC10
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4

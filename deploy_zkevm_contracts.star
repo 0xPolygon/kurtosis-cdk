@@ -17,6 +17,10 @@ ARTIFACTS = [
         "name": "create-keystores.sh",
         "file": "./templates/contract-deploy/create-keystores.sh",
     },
+    {
+        "name": "update-ger.sh",
+        "file": "./templates/contract-deploy/update-ger.sh",
+    },
 ]
 
 
@@ -124,4 +128,17 @@ def run(plan, args):
         name="cdk-erigon-node-chain-allocs",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dynamic-kurtosis-allocs.json",
+    )
+
+    # Force update GER.
+    plan.exec(
+        description="Update the GER so the L1 Info Tree Index is greater than 0",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format("/opt/contract-deploy/update-ger.sh"),
+            ]
+        ),
     )
