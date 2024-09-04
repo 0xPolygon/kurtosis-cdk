@@ -47,6 +47,7 @@ args:
 
   # Additional services to run alongside the network.
   # Options:
+  # - arpeggio
   # - blockscout
   # - blutgang
   # - pless_zkevm_node
