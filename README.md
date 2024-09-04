@@ -1,41 +1,51 @@
 # Polygon CDK Kurtosis Package
 
-A [Kurtosis](https://github.com/kurtosis-tech/kurtosis) package that deploys a private, portable, and modular [Polygon CDK](https://docs.polygon.technology/cdk/) devnet.
+A [Kurtosis](https://github.com/kurtosis-tech/kurtosis) package that deploys a private, portable, and modular [Polygon CDK](https://docs.polygon.technology/cdk/) devnet over [Docker](https://www.docker.com/) or [Kubernetes](https://kubernetes.io/).
+
+Specifically, this package will deploy:
+
+1. A local L1 chain, fully customizable with multi-client support, using the [ethereum-package](https://github.com/ethpandaops/ethereum-package).
+2. A local L2 chain, using the [Polygon Chain Development Kit](https://docs.polygon.technology/cdk/) (CDK), with customizable components such as sequencer, sequence sender, aggregator, rpc, prover, dac, etc. It will first deploy the [Polygon zkEVM smart contracts](https://github.com/0xPolygonHermez/zkevm-contracts) on the L1 chain before deploying the different components.
+3. The [zkEVM bridge](https://github.com/0xPolygonHermez/zkevm-bridge-service) infrastructure to facilitate asset bridging between the L1 and L2 chains, and vice-versa.
+4. The [Agglayer](https://github.com/agglayer/agglayer-go), an in-development interoperability protocol, that allows for trustless cross-chain token transfers and message-passing, as well as more complex operations between L2 chains, secured by zk proofs.
+5. [Additional services](docs/additional-services.md) such as transaction spammer, monitoring tools, permissionless nodes etc.
 
 > 🚨 This package is currently designed as a **development tool** for testing configurations and scenarios within the Polygon CDK stack. **It is not recommended for long-running or production environments such as testnets or mainnet**. If you need help, you can [reach out to the Polygon team](https://polygon.technology/interest-form) or [talk to an Implementation Partner (IP)](https://ecosystem.polygon.technology/spn/cdk/).
 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-- [Additional Services](#additional-services)
 - [Contact](#contact)
 - [License](#license)
 - [Contribution](#contribution)
 
 ## Getting Started
 
-![CDK Erigon Architecture Diagram](./docs/img/cdk-erigon-architecture-diagram.png)
+### Install
 
-To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) and [Kurtosis](https://docs.kurtosis.com/install/).
+To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) (>= [v4.27.0](https://docs.docker.com/desktop/release-notes/#4270) for Mac users) and [Kurtosis](https://docs.kurtosis.com/install/).
 
-You will also need a few other tools. Run this script to check if you have the required versions:
+If you intend to interact with and debug the stack, you may also want to consider a few additional optional tools such as:
 
-```bash
-./scripts/tool_check.sh
-```
+- [jq](https://github.com/jqlang/jq)
+- [yq](https://pypi.org/project/yq/) (v3)
+- [cast](https://book.getfoundry.sh/getting-started/installation)
+- [polycli](https://github.com/0xPolygon/polygon-cli)
 
-Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally.
+### Deploy
 
-This process typically takes around ten minutes.
+Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally. The default deployment includes zkevm-contracts ([fork 9](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v6.0.0-rc.1-fork.9)), [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. This process typically takes around eight to ten minutes.
 
 ```bash
 kurtosis clean --all
 kurtosis run --enclave cdk-v1 --args-file params.yml .
 ```
 
-The command above deploys the CDK stack with [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon), serving as the sequencer. It also uses the [cdk-node](https://github.com/0xPolygon/cdk) for the remaining components.
+![CDK Erigon Architecture Diagram](./docs/img/cdk-erigon-architecture-diagram.png)
 
-Note that it is also possible to deploy the CDK stack using the legacy sequencer and the legacy node, referred to as the [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node). In this scenario, you may need to adjust the various commands slightly; instead of targeting the `cdk-erigon-node-001` service, you should target the `zkevm-node-rpc-001`.
+It is also possible to deploy the CDK stack using the legacy zkevm-node sequencer and/or the new zkevm or the legacy zkevm-node sequencer sender and aggregator.
+
+For example, the CDK stack can be alternatively deployed using zkevm-contracts ([fork 9](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v6.0.0-rc.1-fork.9)), with the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) serving as the sequencer, sequence sender and aggregator.
 
 ```bash
 yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
@@ -50,15 +60,17 @@ kurtosis run --enclave cdk-v1 --args-file params.yml .
 
 </details>
 
+### Interact
+
 Let's do a simple L2 RPC test call.
 
-First, you will need to figure out which port Kurtoiss is using for the RPC. You can get a general feel for the entire network layout by running the following command:
+First, you will need to figure out which port Kurtosis is using for the RPC. You can get a general feel for the entire network layout by running the following command:
 
 ```bash
 kurtosis enclave inspect cdk-v1
 ```
 
-That output, while quite useful, might also be a little overwhelming. Let's store the RPC URL in an environment variable.
+That output, while quite useful, might also be a little overwhelming. Let's store the RPC URL in an environment variable. Note that you may need to adjust the various commands slightly if you deployed the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. You should target the `zkevm-node-rpc-001` service instead of `cdk-erigon-node-001`.
 
 ```bash
 export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
@@ -86,7 +98,7 @@ cast send --legacy --private-key "$PK" --value 0.01ether 0x000000000000000000000
 Okay, let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/maticnetwork/polygon-cli) installed.
 
 ```bash
-polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 50000 --rate-limit 50 --mode t --concurrency 5
+polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 50000 --rate-limit 50 --concurrency 5 --mode t
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 3  --mode uniswapv3
 ```
@@ -104,7 +116,7 @@ kurtosis service shell cdk-v1 contracts-001
 jq . /opt/zkevm/combined.json
 ```
 
-One of the most common ways to check the status of the system is to make sure that batches are going through the normal progression of trusted, virtual, and verified:
+One of the most common ways to check the status of the system is to make sure that batches are going through the normal progression of [trusted, virtual, and verified](https://docs.polygon.technology/cdk/concepts/transaction-finality/):
 
 ```bash
 cast rpc zkevm_batchNumber
@@ -120,72 +132,13 @@ To access the `zkevm-bridge` user interface, open this URL in your web browser.
 open "$(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 web-ui)"
 ```
 
-When everything is done, you might want to clean up with this command which stops everything and deletes it.
+When everything is done, you might want to clean up with this command which stops the local devnet and deletes it.
 
 ```bash
 kurtosis clean --all
 ```
 
-For more information about the CDK stack and setting up Kurtosis, visit our [documentation](https://docs.polygon.technology/cdk/) on the Polygon Knowledge Layer.
-
-## Additional Services
-
-A variety of additional services can be deployed alongside the CDK stack, each designed to enhance its functionality and capabilities.
-
-Below is a list of services available for deployment using Kurtosis:
-
-| Service | Description |
-|-------- | ----------- |
-| `blockscout` | Deploys the [Blockscout](https://www.blockscout.com/) stack, a comprehensive blockchain explorer for Ethereum-based networks, allowing exploration of transaction histories, account balances, and smart contract details. |
-| `blutgang` | Deploys [Blutgang](https://github.com/rainshowerLabs/blutgang), an Ethereum load balancer that distributes network traffic evenly across multiple nodes to ensure high availability. |
-| `pless_zkevm_node` | Deploys a permissionless [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node). |
-| `prometheus_grafana` | Deploys [Prometheus](https://github.com/prometheus/prometheus) and [Grafana](https://github.com/grafana/grafana), two powerful monitoring tools that collect and visualize metrics for blockchain infrastructure health and performance. Additionally, it deploys [Panoptichain](https://github.com/0xPolygon/panoptichain), enhancing monitoring capabilities by allowing users to observe on-chain data and generate detailed Polygon CDK blockchain metrics. |
-| `tx_spammer` | Deploys a transaction spammer. |
-
-Here is a simple example that deploys Blockscout, Prometheus, Grafana, and Panoptichain:
-
-```yml
-args:
-  additional_services:
-    - blockscout
-    - prometheus_grafana
-```
-
-Once the services are deployed, you can access their web interfaces and interact with their RPCs using the following commands:
-
-Access the different web interfaces:
-
-- Blockscout:
-
-```bash
-open $(kurtosis port print cdk-v1 bs-frontend-001 frontend)
-```
-
-- Prometheus:
-
-```bash
-open $(kurtosis port print cdk-v1 prometheus-001 http)
-```
-
-- Grafana:
-
-```bash
-open $(kurtosis port print cdk-v1 grafana-001 dashboards)
-```
-
-Utilize the different RPC endpoints:
-
-- Interact with Blutgang's load balancer:
-
-```bash
-cast bn --rpc-url $(kurtosis port print cdk-v1 blutgang-001 http)
-```
-
-- Connect to the permissionless zkevm-node:
-
-```bash
-cast bn --rpc-url $(kurtosis port print cdk-v1 zkevm-node-rpc-pless-001 http-rpc)
-```
+For more information about the CDK stack, visit the [Polygon Knowledge Layer](https://docs.polygon.technology/cdk/).
 
 ## Contact
 
