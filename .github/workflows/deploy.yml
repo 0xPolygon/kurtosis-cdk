@@ -89,6 +89,30 @@ jobs:
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
 
+  cdk-fork11:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy L1 chain and CDK L2 chain (erigon)
+        run: |
+          yq -Y --in-place '.args.zkevm_rollup_fork_id = "11"' params.yml
+          yq -Y --in-place '.args.zkevm_prover_image = "hermeznetwork/zkevm-prover:v7.0.0-RC30"' params.yml
+          yq -Y --in-place '.args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:v2.0.0-beta18"' params.yml
+          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+
   cdk-fork12:
     runs-on: ubuntu-latest
     timeout-minutes: 30
