@@ -103,7 +103,9 @@ jobs:
           yq -Y --in-place '.args.zkevm_rollup_fork_id = "11"' params.yml
           yq -Y --in-place '.args.zkevm_prover_image = "hermeznetwork/zkevm-prover:v7.0.0-RC30-fork.11"' params.yml
           yq -Y --in-place '.args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:v2.0.0-beta18"' params.yml
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          # Fork11 is only supported by cdk-erigon, not by cdk-validium-node or zkevm-node.
+          # That's why we don't deploy the permissionless zkevm-node in this job.
+          yq -Y --in-place '.args.additional_services = ["tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
