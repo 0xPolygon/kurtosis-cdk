@@ -215,6 +215,9 @@ jobs:
       - name: Verify Blutgang rpc
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
 
+      - name: Verify Arpeggio rpc
+        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
+
       - name: Verify permissionless zkevm-node rpc
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
 
