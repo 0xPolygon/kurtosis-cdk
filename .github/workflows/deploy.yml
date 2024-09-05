@@ -88,6 +88,9 @@ jobs:
       - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
+      
+      - name: Bridge tokens
+        run: ./.github/scripts/bridge.sh --l2-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc) --enclave ${{ env.ENCLAVE_NAME }}
 
   cdk-fork12:
     runs-on: ubuntu-latest
@@ -194,6 +197,9 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
 
       # TODO(nit): Deploy a CDK Erigon Permissionless RPC and check that it can sync.
+
+      - name: Bridge tokens
+        run: ./.github/scripts/bridge.sh --l2-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-001 http-rpc) --enclave ${{ env.ENCLAVE_NAME }}
 
   additional_services:
     runs-on: ubuntu-latest
