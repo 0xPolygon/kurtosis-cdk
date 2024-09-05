@@ -34,6 +34,8 @@ BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
 {{end}}
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 GetBatchWaitInterval = "10s"
+	[SequenceSender.StreamClient]
+		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
 	[SequenceSender.EthTxManager]
 		FrequencyToMonitorTxs = "1s"
 		WaitTxToBeMined = "2m"
