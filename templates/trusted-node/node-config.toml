@@ -996,7 +996,7 @@ Filename = "/tmp/datastream.bin"
 # version number of a header to ensure they're reading from the
 # correct source.
 # ------------------------------------------------------------------------------
-Version = 0
+Version = 4
 
 # ------------------------------------------------------------------------------
 # ChainID is used to set the system id of the datastreamer. Like the
