@@ -4,6 +4,3 @@
 deploy_cdk_erigon_node: false
 args:
   sequencer_type: zkevm
-  additional_services:
-    - pless_zkevm_node
-    - tx_spammer
