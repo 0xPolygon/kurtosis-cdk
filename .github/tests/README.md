@@ -17,17 +17,9 @@ Here is an example:
 ```bash
 $ ./combine-ymls.sh
 Creating combinations...
-- combinations/fork10-legacy-zkevm-stack-cdk-validium.yml
-- combinations/fork10-new-cdk-stack-cdk-validium.yml
-- combinations/fork10-legacy-zkevm-stack-rollup.yml
-- combinations/fork10-new-cdk-stack-rollup.yml
-- combinations/fork11-legacy-zkevm-stack-cdk-validium.yml
 - combinations/fork11-new-cdk-stack-cdk-validium.yml
-- combinations/fork11-legacy-zkevm-stack-rollup.yml
 - combinations/fork11-new-cdk-stack-rollup.yml
-- combinations/fork12-legacy-zkevm-stack-cdk-validium.yml
 - combinations/fork12-new-cdk-stack-cdk-validium.yml
-- combinations/fork12-legacy-zkevm-stack-rollup.yml
 - combinations/fork12-new-cdk-stack-rollup.yml
 - combinations/fork9-legacy-zkevm-stack-cdk-validium.yml
 - combinations/fork9-new-cdk-stack-cdk-validium.yml
