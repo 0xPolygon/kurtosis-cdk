@@ -1,0 +1,8 @@
+# legacy zkevm stack:
+# - zkevm-node sequencer
+# - zkevm-node sequence-sender and aggregator
+args:
+  sequencer_type: erigon
+  additional_services:
+    - pless_zkevm_node
+    - tx_spammer
