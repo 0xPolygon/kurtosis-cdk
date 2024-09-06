@@ -76,8 +76,9 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
+    args = DEFAULT_ARGS | args
     validate_global_log_level(args["global_log_level"])
-    return DEFAULT_ARGS | args
+    return args
 
 
 def validate_global_log_level(global_log_level):
