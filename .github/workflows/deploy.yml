@@ -56,12 +56,6 @@ jobs:
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
         run: echo "matrix=$(ls -R params.yml ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
-      - name: Upload test combinations
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-combinations
-          path: ./.github/tests/combinations/*.yml
-
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
@@ -76,19 +70,14 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
       
-      - name: Download test combinations
-        uses: actions/download-artifact@v4
-        with:
-          name: test-combinations
-          path: ./.github/tests/combinations
-      
-      - name: Debug
-        run: ls -al ./.github/tests/combinations
+      - name: Generate test combinations
+        working-directory: .github/tests
+        run: ./combine-ymls.sh
       
       - name: Hash docker images
         id: hash-docker-images
         run: |
-          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' params.yml | sed "s/:/:/")
+          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' ${{ matrix.file_name }} | sed "s/:/:/")
           echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
 
       - name: Cache docker images
@@ -136,6 +125,17 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
+      
+      - name: Hash docker images
+        id: hash-docker-images
+        run: |
+          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' ./.github/tests/additional-services.yml | sed "s/:/:/")
+          echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-images-${{ runner.os }}-${{ steps.hash-docker-images.outputs.result }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
@@ -177,6 +177,17 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
+      
+      - name: Hash docker images
+        id: hash-docker-images
+        run: |
+          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' params.yml | sed "s/:/:/")
+          echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-images-${{ runner.os }}-${{ steps.hash-docker-images.outputs.result }}
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: |
