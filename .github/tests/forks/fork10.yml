@@ -1,8 +1,0 @@
-args:
-  zkevm_rollup_fork_id: 10
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.0-RC30-fork.10
-
-  additional_services:
-    # TODO: Investigate the issue with the permissionless zkevm-node.
-    #- pless_zkevm_node
-    - tx_spammer
