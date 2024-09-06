@@ -56,6 +56,12 @@ jobs:
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
         run: echo "matrix=$(ls -R params.yml ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
+      - name: Upload test combinations
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-combinations
+          path: .github/tests/combinations/*.yml
+
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
@@ -69,6 +75,11 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
+      
+      - name: Download test combinations
+        uses: actions/download-artifact@v4
+        with:
+          name: test-combinations
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false ${{ github.workspace }}
