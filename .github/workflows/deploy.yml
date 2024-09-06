@@ -73,17 +73,6 @@ jobs:
       - name: Generate test combinations
         working-directory: .github/tests
         run: ./combine-ymls.sh
-      
-      - name: Hash docker images
-        id: hash-docker-images
-        run: |
-          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' ${{ matrix.file_name }} | sed "s/:/:/")
-          echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache docker images
-        uses: ScribeMD/docker-cache@0.5.0
-        with:
-          key: docker-images-${{ runner.os }}-${{ steps.hash-docker-images.outputs.result }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false .
@@ -125,17 +114,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-      
-      - name: Hash docker images
-        id: hash-docker-images
-        run: |
-          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' ./.github/tests/additional-services.yml | sed "s/:/:/")
-          echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache docker images
-        uses: ScribeMD/docker-cache@0.5.0
-        with:
-          key: docker-images-${{ runner.os }}-${{ steps.hash-docker-images.outputs.result }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
@@ -177,17 +155,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-      
-      - name: Hash docker images
-        id: hash-docker-images
-        run: |
-          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' params.yml | sed "s/:/:/")
-          echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache docker images
-        uses: ScribeMD/docker-cache@0.5.0
-        with:
-          key: docker-images-${{ runner.os }}-${{ steps.hash-docker-images.outputs.result }}
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: |
