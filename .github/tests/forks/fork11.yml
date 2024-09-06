@@ -1,6 +1,7 @@
 args:
   zkevm_rollup_fork_id: 11
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.0-RC30-fork.11
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
 
   additional_services:
     # TODO: Investigate the issue with the permissionless zkevm-node.
