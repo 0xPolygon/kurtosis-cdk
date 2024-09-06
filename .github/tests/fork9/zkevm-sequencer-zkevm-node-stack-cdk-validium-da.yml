@@ -1,0 +1,10 @@
+args:
+  zkevm_rollup_fork_id: 9
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
+
+  sequencer_type: zkevm
+  additional_services:
+    - pless_zkevm_node
+    - tx_spammer
+  
+  data_availability_mode: cdk-validium
