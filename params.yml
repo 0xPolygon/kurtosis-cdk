@@ -47,6 +47,7 @@ args:
 
   # Additional services to run alongside the network.
   # Options:
+  # - arpeggio
   # - blockscout
   # - blutgang
   # - pless_zkevm_node
@@ -58,7 +59,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.15
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.16
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
   zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 
@@ -68,7 +69,7 @@ args:
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.0.0-beta17
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.0.0-beta18
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
@@ -173,3 +174,4 @@ args:
   trusted_sequencer_node_uri: zkevm-node-sequencer-001:6900
   zkevm_aggregator_host: zkevm-node-aggregator-001
   genesis_file: templates/permissionless-node/genesis.json
+  

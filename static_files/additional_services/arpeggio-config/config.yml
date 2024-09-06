@@ -1,0 +1,24 @@
+---
+logging:
+  level: info
+
+providers:
+  chainId: 1
+  nodes:
+    - name: "{{.l2_rpc_name}}"
+      rpc: "{{.l2_rpc_url}}"
+      ws: "{{.l2_ws_url}}"
+
+proxy:
+  poolSize:
+    http: 1000
+    ws: 2000
+
+  rateLimit:
+    active: false
+
+  metrics:
+    active: true
+    http:
+      host: localhost
+      port: 9105

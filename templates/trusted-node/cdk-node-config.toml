@@ -31,7 +31,8 @@ MaxPendingTx = 1
 {{if eq .zkevm_rollup_fork_id "12"}}
 MaxBatchesForL1 = 300
 BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
-SanityCheckRPCURL = ""
+RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+GetBatchWaitInterval = "10s"
 {{end}}
 	[SequenceSender.StreamClient]
 		Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
