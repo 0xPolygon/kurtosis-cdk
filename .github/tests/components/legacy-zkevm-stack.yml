@@ -2,4 +2,4 @@
 # - zkevm-node sequencer
 # - zkevm-node sequence-sender and aggregator
 args:
-  sequencer_type: erigon
+  sequencer_type: zkevm

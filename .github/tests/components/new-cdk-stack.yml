@@ -3,4 +3,4 @@
 # - cdk node sequence-sender and aggregator
 deploy_cdk_erigon_node: false
 args:
-  sequencer_type: zkevm
+  sequencer_type: erigon
