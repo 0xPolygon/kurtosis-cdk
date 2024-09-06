@@ -3,6 +3,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.0-RC30-fork.10
 
   sequencer_type: zkevm
+  deploy_cdk_erigon_node: false
   additional_services:
     - pless_zkevm_node
     - tx_spammer
