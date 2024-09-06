@@ -1,9 +1,9 @@
+deploy_cdk_erigon_node: false
 args:
   zkevm_rollup_fork_id: 11
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.0-RC30-fork.11
 
   sequencer_type: zkevm
-  deploy_cdk_erigon_node: false
   additional_services:
     - pless_zkevm_node
     - tx_spammer
