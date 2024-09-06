@@ -19,6 +19,13 @@ mkdir -p "$COMBINATIONS_FOLDER"
 for fork in "${forks[@]}"; do
     for da in "${data_availability[@]}"; do
         for comp in "${components[@]}"; do
+            # Skipping tests for zkevm-node and cdk-validium-node with fork 11 and fork 12, as they are currently not supported.
+            if [ "$(extract_base_name "$comp")" == "legacy-zkevm-stack" ] && {
+                [ "$(extract_base_name "$fork")" == "fork11" ] || [ "$(extract_base_name "$fork")" == "fork12" ];
+            }; then
+                continue
+            fi
+
             output_file="$COMBINATIONS_FOLDER/$(extract_base_name "$fork")-$(extract_base_name "$comp")-$(extract_base_name "$da").yml"
             yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output > "$output_file"
             echo "- $output_file"
