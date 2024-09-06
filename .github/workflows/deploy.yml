@@ -80,6 +80,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: test-combinations
+          path: .github/tests/combinations
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false ${{ github.workspace }}
