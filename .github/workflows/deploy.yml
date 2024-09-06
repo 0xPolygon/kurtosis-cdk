@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-combinations
-          path: .github/tests/combinations/*.yml
+          path: ./.github/tests/combinations/*.yml
 
   run-with-args:
     needs: list-ymls
@@ -80,10 +80,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: test-combinations
-          path: .github/tests/combinations
+          path: ./.github/tests/combinations
       
       - name: Debug
-        run: ls -al .github/tests/combinations
+        run: ls -al ./.github/tests/combinations
+      
+      - name: Hash docker images
+        id: hash-docker-images
+        run: |
+          images=$(yq --raw-output '.args | to_entries[] | select(.key | endswith("_image")) | .value' params.yml | sed "s/:/:/")
+          echo "result=$(echo $images | shasum | base64)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-images-${{ runner.os }}-${{ steps.hash-docker-images.outputs.result }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false .
