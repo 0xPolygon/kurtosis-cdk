@@ -8,6 +8,7 @@ input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 
 # Additional services packages.
+arpeggio_package = "./src/additional_services/arpeggio.star"
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
 grafana_package = "./src/additional_services/grafana.star"
@@ -153,7 +154,9 @@ def run(
     # TODO: cdk-erigon pless node
 
     for index, additional_service in enumerate(additional_services):
-        if additional_service == "blockscout":
+        if additional_service == "arpeggio":
+            deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
+        elif additional_service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
         elif additional_service == "blutgang":
             deploy_additional_service(plan, "blutgang", blutgang_package, args)
