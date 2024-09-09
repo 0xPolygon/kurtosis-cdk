@@ -104,11 +104,11 @@ wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
 if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
-    2>&1 echo "We have a genesis and combined output file from a previous deployment"
+    echo_ts "We have a genesis and combined output file from a previous deployment"
     cp /opt/contract-deploy/* /opt/zkevm/
     exit
 else
-    2>&1 echo "No previous output detected. Starting clean contract deployment"
+    echo_ts "No previous output detected. Starting clean contract deployment"
 fi
 
 # Fund accounts on L1.
@@ -177,19 +177,32 @@ cast send --private-key "{{.zkevm_rollup_manager_deployer_private_key}}" --rpc-u
 echo_ts "Deploying zkevm contracts to L1"
 
 echo_ts "Step 1: Preparing tesnet"
-npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost | tee 01_prepare_testnet.out
+npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
 
 echo_ts "Step 2: Creating genesis"
-MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts | tee 02_create_genesis.out
+MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
+if [[ ! -e deployment/v2/genesis.json ]]; then
+    echo_ts "The genesis file was not created after running createGenesis"
+    exit 1
+fi
 
 echo_ts "Step 3: Deploying PolygonZKEVMDeployer"
-npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost | tee 03_zkevm_deployer.out
+npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost 2>&1 | tee 03_zkevm_deployer.out
 
 echo_ts "Step 4: Deploying contracts"
-npx hardhat run deployment/v2/3_deployContracts.ts --network localhost | tee 04_deploy_contracts.out
+npx hardhat run deployment/v2/3_deployContracts.ts --network localhost 2>&1 | tee 04_deploy_contracts.out
+if [[ ! -e deployment/v2/deploy_output.json ]]; then
+    echo_ts "The deploy_output.json file was not created after running deployContracts"
+    exit 1
+fi
 
 echo_ts "Step 5: Creating rollup"
-npx hardhat run deployment/v2/4_createRollup.ts --network localhost | tee 05_create_rollup.out
+npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
+if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
+    echo_ts "The create_rollup_output.json file was not created after running createRollup"
+    exit 1
+fi
+
 
 # Combine contract deploy files.
 # At this point, all of the contracts /should/ have been deployed.
@@ -285,18 +298,18 @@ output_json=$(jq "$jq_script" /opt/zkevm/genesis.json)
 
 # Handle jq errors
 if [[ $? -ne 0 ]]; then
-    echo "Error processing JSON with jq"
+    echo_ts "Error processing JSON with jq"
     exit 1
 fi
 
 # Write the output JSON to a file
 echo "$output_json" | jq . > dynamic-kurtosis-allocs.json
 if [[ $? -ne 0 ]]; then
-    echo "Error writing to file dynamic-kurtosis-allocs.json"
+    echo_ts "Error writing to file dynamic-kurtosis-allocs.json"
     exit 1
 fi
 
-echo "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
+echo_ts "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
 
 jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
 
