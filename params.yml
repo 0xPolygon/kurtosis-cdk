@@ -147,6 +147,9 @@ args:
   # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
   zkevm_rollup_fork_id: 11
 
+  # By default a mock verifier is deployed. Change to true to deploye a real verifier which will require a real prover
+  zkevm_use_real_verifier: false
+
   # If erigon is being used as the sequencer,
   # This flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
