@@ -19,7 +19,7 @@ def run(plan, args):
                 "rpc": PortSpec(RPC_PORT, application_protocol="rpc"),
                 "metrics": PortSpec(METRICS_PORT, application_protocol="http"),
             },
-            files={"/etc/erpc": config_artifact},
+            files={"/root/erpc": config_artifact},
         ),
     )
 
