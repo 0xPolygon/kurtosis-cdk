@@ -3,8 +3,8 @@ service_package = import_module("../../lib/service.star")
 DOCKER_IMAGE = "christophercampbell/erpc:0.0.1-SNAPSHOT"
 
 SERVICE_NAME = "erpc"
-RPC_PORT = 4000
-METRICS_PORT = 4001
+RPC_PORT = 8080
+METRICS_PORT = 6060
 
 CHAIN_ID = 10101
 
