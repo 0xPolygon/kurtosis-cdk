@@ -1,0 +1,28 @@
+combinations:
+  - fork: 9
+    da-modes:
+      - cdk-validium
+      - rollup
+    components:
+      - legacy-zkevm-stack
+      # new-zkevm-stack # not implemented yet in kurtosis-cdk
+      - new-cdk-stack
+
+  - fork: 11
+    da-modes:
+      - cdk-validium
+      - rollup
+    components:
+      #- legacy-zkevm-stack # zkevm-node doesn't support fork11 yet.
+      # new-zkevm-stack # not implemented yet in kurtosis-cdk
+      - new-cdk-stack
+
+  - fork: 12
+    da-modes:
+      - cdk-validium
+      - rollup
+    components:
+      #- legacy-zkevm-stack # zkevm-node doesn't support fork12 yet.
+      # new-zkevm-stack # not implemented yet in kurtosis-cdk.
+      - new-cdk-stack
+
