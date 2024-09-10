@@ -206,7 +206,7 @@ jobs:
 
       - name: Deploy Kurtosis CDK package with additional services
         run: |
-          yq -Y --in-place '.args.additional_services = ["arpeggio", "blockscout", "blutgang", "pless_zkevm_node", "prometheus_grafana", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.additional_services = ["arpeggio", "blockscout", "blutgang", "erpc", "pless_zkevm_node", "prometheus_grafana", "tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
@@ -217,6 +217,9 @@ jobs:
 
       - name: Verify Arpeggio rpc
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
+
+      - name: Verify erpc rpc
+        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)
 
       - name: Verify permissionless zkevm-node rpc
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
