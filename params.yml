@@ -56,7 +56,7 @@ args:
   additional_services: []
 
   # Docker images and repositories used to spin up services.
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.3-RC20
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.0-RC30-fork.11
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.16
@@ -69,7 +69,7 @@ args:
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:2.9.9-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.0.0-beta18
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:acceptance-2.0.0-beta18-bde1b5e
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
@@ -144,6 +144,12 @@ args:
   # The rollupID of the CDK.
   zkevm_rollup_id: 1
 
+<<<<<<< HEAD
+=======
+  # The fork id of the new rollup. It indicates the prover (zkROM/executor) version.
+  zkevm_rollup_fork_id: 11
+
+>>>>>>> c3eb760 (fix: pool manager)
   # If erigon is being used as the sequencer,
   # This flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
