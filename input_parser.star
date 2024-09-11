@@ -10,7 +10,7 @@ DEFAULT_ARGS = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v6.0.3-RC20",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.0",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.15",
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.16",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.9",
     "zkevm_contracts_image": "leovct/zkevm-contracts",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
@@ -18,7 +18,7 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:2.9.9-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC4",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta17",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta18",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
@@ -76,8 +76,9 @@ DEFAULT_ARGS = {
 
 
 def parse_args(args):
+    args = DEFAULT_ARGS | args
     validate_global_log_level(args["global_log_level"])
-    return DEFAULT_ARGS | args
+    return args
 
 
 def validate_global_log_level(global_log_level):
