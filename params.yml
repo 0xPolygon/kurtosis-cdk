@@ -56,13 +56,13 @@ args:
   additional_services: []
 
   # Docker images and repositories used to spin up services.
+  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.4
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3-RC1
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
+
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.17
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
-  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
-
   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0-RC12
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
