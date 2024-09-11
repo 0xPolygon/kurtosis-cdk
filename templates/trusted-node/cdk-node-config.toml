@@ -61,6 +61,7 @@ GetBatchWaitInterval = "10s"
 			HTTPHeaders = []
 
 [Aggregator]
+	FinalProofSanityCheckEnabled = false
 	Host = "0.0.0.0"
 	Port = "{{.zkevm_aggregator_port}}"
 	RetryTime = "30s"

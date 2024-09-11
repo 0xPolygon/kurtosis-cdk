@@ -42,10 +42,8 @@ zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_exe
 zkevm.executor-strict: false
 # end {{end}}
 
-zkevm.sequencer-batch-seal-time: 12s # 12s
-zkevm.sequencer-block-seal-time: 6s # 6s
-
-zkevm.pool-manager-url: "http://zkevm-pool-manager{{.deployment_suffix}}:{{.zkevm_pool_manager_port}}"
+zkevm.sequencer-batch-seal-time: 600s # DO NOT MERGE THIS LINE
+zkevm.sequencer-block-seal-time: 6s
 
 zkevm.l1-chain-id: {{.l1_chain_id}}
 zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
