@@ -161,7 +161,7 @@ Next let's rebuild our edited docker image `zkevm-contracts`. Open a terminal in
 ```bash
 cd docker
 docker build . \
- --tag local/zkevm-contracts:fork9 \
+ --tag local/zkevm-contracts:v6.0.0-rc.1-fork.9 \
  --build-arg ZKEVM_CONTRACTS_BRANCH=v6.0.0-rc.1-fork.9 \
  --build-arg POLYCLI_VERSION=main \
  --file zkevm-contracts.Dockerfile
@@ -176,8 +176,8 @@ docker images --filter "reference=local/zkevm-contracts"
 should produce output like
 
 ```
-REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   fork9     fbd050369e61   22 minutes ago   2.37GB
+REPOSITORY              TAG                    IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   v6.0.0-rc.1-fork.9     fbd050369e61   22 minutes ago   2.37GB
 ```
 
 # Spin up a devnet with your new docker image
@@ -195,8 +195,8 @@ index 5293da7..5e451b6 100644
    zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
    # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
 
--  zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
-+  zkevm_contracts_image: local/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
+-  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
++  zkevm_contracts_image: local/zkevm-contracts:v6.0.0-rc.1-fork.9
 
    # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
    zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
