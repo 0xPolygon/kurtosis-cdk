@@ -5,7 +5,6 @@
 # The script outputs the differences between the specified parameters in each file compared to `params.yml`.
 
 INPUT_PARSER_PATH="../../input_parser.star"
-KURTOSIS_YML_PATH="../../kurtosis.yml"
 PARAMS_YML_PATH="../../params.yml"
 
 # Extracting default parameters from the different files.
