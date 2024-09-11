@@ -1,4 +1,5 @@
 # Policies in CDK
+
 * Allowlists
 * Denylists
 * AccessControlLists
@@ -17,7 +18,7 @@ By default, the two available policies:
 
 are set to false. This means the network will not have any restrictions. 
 
-![image](./policies-img/01_policies.png)
+![image](01_policies.png)
 
 Specific addresses can be blocked in this scenario using the below `psql` command:
 
@@ -27,7 +28,7 @@ PGPASSWORD=<zkevm_db_pool_password> psql -h localhost -d pool_db -U pool_user -p
 
 After some time (a few seconds with the default Kurtosis configuration) the network will block that address from making entering the pool_db completely.
 
-![image](./policies-img/02_policies.png)
+![image](02_policies.png)
 
 This can be undone by deleting the address from the `pool.blocked` table or using the below `psql` command:
 
@@ -36,7 +37,7 @@ PGPASSWORD=<zkevm_db_pool_password> psql -h localhost -d pool_db -U pool_user -p
 
 ```
 
-![image](./policies-img/03_policies.png)
+![image](03_policies.png)
 
 ## Access Control List (ACL)
 Adding addresses to the ACL will do the opposite of the policy. In this example where `send_tx` and `deploy` are set to `false`, adding addresses to the ACL will block them - similar to adding addresses to the blocklist.
@@ -45,7 +46,7 @@ Adding addresses to the ACL will do the opposite of the policy. In this example 
 PGPASSWORD=<zkevm_db_pool_password> psql -h localhost -d pool_db -U pool_user -p <pool_db_postgre_port> -c "INSERT INTO pool.acl (address, policy) VALUES ('<address_to_acl>', '<policy>') ON CONFLICT DO NOTHING"
 ```
 
-![image](./policies-img/04_policies.png)
+![image](04_policies.png)
 
 ```
 PGPASSWORD=<zkevm_db_pool_password> psql -h localhost -d pool_db -U pool_user -p <pool_db_postgre_port> -c "DELETE FROM pool.acl WHERE address = '<address_to_acl>' AND policy = '<policy>') ON CONFLICT DO NOTHING"
