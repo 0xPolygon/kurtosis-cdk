@@ -12,7 +12,7 @@ DEFAULT_ARGS = {
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.0.16",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.9",
-    "zkevm_contracts_image": "leovct/zkevm-contracts",
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v6.0.0-rc.1-fork.9",
     "zkevm_agglayer_image": "ghcr.io/agglayer/agglayer-rs:main",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.5.0-RC10",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
@@ -63,7 +63,6 @@ DEFAULT_ARGS = {
     "l1_seconds_per_slot": 1,
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_id": 1,
-    "zkevm_rollup_fork_id": 9,
     "erigon_strict_mode": True,
     "erigon_pre_eip155_transactions": True,
     "polygon_zkevm_explorer": "https://explorer.private/",
@@ -74,10 +73,17 @@ DEFAULT_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
 }
 
+# A list of fork identifiers currently supported by Kurtosis CDK.
+SUPPORTED_FORK_IDS = [9, 11, 12]
+
 
 def parse_args(args):
+    args = DEFAULT_ARGS | args
     validate_global_log_level(args["global_log_level"])
-    return DEFAULT_ARGS | args
+    fork_id = get_fork_id(args["zkevm_contracts_image"])
+    return args | {
+        "zkevm_rollup_fork_id": fork_id,
+    }
 
 
 def validate_global_log_level(global_log_level):
@@ -98,3 +104,33 @@ def validate_global_log_level(global_log_level):
                 constants.GLOBAL_LOG_LEVEL.trace,
             )
         )
+
+
+def get_fork_id(zkevm_contracts_image):
+    """
+    Extract the fork identifier from a zkevm contracts image name.
+
+    The zkevm contracts tags follow the convention:
+    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>
+
+    Where:
+    - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
+    - <RC_NUMBER> is the release candidate number.
+    - <FORK_ID> is the fork identifier.
+
+    Example:
+    - v8.0.0-rc.2-fork.12
+    - v7.0.0-rc.1-fork.10
+    """
+    result = zkevm_contracts_image.split("fork.")
+    if len(result) != 2:
+        fail(
+            "The zkevm contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
+                zkevm_contracts_image
+            )
+        )
+
+    fork_id = int(result[1])
+    if fork_id not in SUPPORTED_FORK_IDS:
+        fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
+    return fork_id

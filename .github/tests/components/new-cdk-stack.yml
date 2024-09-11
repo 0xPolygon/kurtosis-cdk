@@ -1,0 +1,5 @@
+# new cdk stack:
+# - erigon sequencer
+# - cdk node sequence-sender and aggregator
+args:
+  sequencer_type: erigon
