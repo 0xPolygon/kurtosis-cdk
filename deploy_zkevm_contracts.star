@@ -69,13 +69,10 @@ def run(plan, args):
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
-    zkevm_contracts_image = "{}:fork{}".format(
-        args["zkevm_contracts_image"], args["zkevm_rollup_fork_id"]
-    )
     plan.add_service(
         name=contracts_service_name,
         config=ServiceConfig(
-            image=zkevm_contracts_image,
+            image=args["zkevm_contracts_image"],
             files={
                 "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
                 "/opt/contract-deploy/": Directory(artifact_names=artifacts),
