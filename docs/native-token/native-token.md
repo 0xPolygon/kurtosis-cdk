@@ -15,7 +15,7 @@ The diagram below illustrates the interchange of assets between layers, focusing
 
 It depicts several scenarios, such as bridging an ERC20 token from mainnet to another ERC20 token in LY, bridging L1 ETH to the LY gas token, or bridging a wrapped ERC20 token living on LX to LY ETH.
 
-![Unfied bridge exchanges](img/how-to/gas-token-img/ulxly-exchanges.drawio.png)
+![Unfied bridge exchanges](ulxly-exchanges.drawio.png)
 
 ## Set up and prerequisites
 
@@ -34,7 +34,7 @@ It depicts several scenarios, such as bridging an ERC20 token from mainnet to an
 
     The screenshot below shows the full set of deployed services and highlights the bridge UI, L1 RPC, and L2 RPC services which we will focus on throughout this document.
 
-    ![Deployed services](img/how-to/gas-token-img/services.png)
+    ![Deployed services](services.png)
 
 ### Mint gas token on L1
 
@@ -104,7 +104,7 @@ The first derived private key from the `code...quality` mnemonic is
 
 1. On the bridge UI, click the token dropdown menu:
 
-    ![Token dropdown menu](img/how-to/gas-token-img/01_bridge.png)
+    ![Token dropdown menu](01_bridge.png)
 
 2. Get the ERC20 gas token address from earlier and paste it in with:
 
@@ -114,29 +114,29 @@ The first derived private key from the `code...quality` mnemonic is
 
     In my case, the gas token address is `0xBDF337Ae0209B33285034c476f35733BFC890707`.
 
-    ![Paste token in](img/how-to/gas-token-img/02_bridge.png)
+    ![Paste token in](02_bridge.png)
 
 3. Confirm the details and click the **Add CDK Gas Token** button.
 
-    ![Paste token in](img/how-to/gas-token-img/03_bridge.png)
+    ![Paste token in](03_bridge.png)
 
 ### Bridge tokens
 
 1. Select the token for bridging.
 
-    ![Select token for bridging](img/how-to/gas-token-img/04_bridge.png)
+    ![Select token for bridging](04_bridge.png)
 
 2. Add a value to bridge and click **Continue**.
 
-    ![Bridging details](img/how-to/gas-token-img/05_bridge.png)
+    ![Bridging details](05_bridge.png)
 
 3. Your bridge deposit should be pending.
 
-    ![Token bridging processing](img/how-to/gas-token-img/06_bridge.png)
+    ![Token bridging processing](06_bridge.png)
 
 4. After some time, the transaction should complete.
 
-    ![Bridging complete](img/how-to/gas-token-img/07_bridge.png)
+    ![Bridging complete](07_bridge.png)
 
     !!! tip
         If that doesn't happen, it's possible the auto-claiming service on L2 is not funded. Send it some Ether on L2 by running a command like this:
@@ -151,23 +151,23 @@ The first derived private key from the `code...quality` mnemonic is
 
 5. Switch to your L2 network on Metamask to see the bridged value on L2.
 
-    ![Check bridge success on L2 in MetaMask](img/how-to/gas-token-img/07_bridge.png)
+    ![Check bridge success on L2 in MetaMask](08_bridge.png)
 
 ### Transfer token
 
 1. To complete the test, lets transfer some of the value on L2 to another address.
 
-    ![Transfer to another L2 address](img/how-to/gas-token-img/07_bridge.png)
+    ![Transfer to another L2 address](09_bridge.png)
 
 2. Check the balance in MetaMask after importing the private key `0903a9a721167e2abaa0a33553cbeb209dc9300d28e4e4d6d2fac2452f93e357`.
 
-    ![Balance of receiving account](img/how-to/gas-token-img/07_bridge.png)
+    ![Balance of receiving account](10_bridge.png)
 
 ### Withdraw the token
 
 1. After initiating a withdraw transaction, wait for the transaction data to be proven on L1.
 
-    ![Balance of receiving account](img/how-to/gas-token-img/11_bridge.png)
+    ![Balance of receiving account](11_bridge.png)
 
     !!! warning
         - As of 2024-03-27, there might be a small bug in the bridge UI which causes the transaction not to be claimable on L1 with the UI.
@@ -176,7 +176,7 @@ The first derived private key from the `code...quality` mnemonic is
 
 2. Click **Finalize**.
 
-    ![Balance of receiving account](img/how-to/gas-token-img/12_bridge.png)
+    ![Balance of receiving account](12_bridge.png)
 
 ## Using cast to withdraw assets from the bridge
 
@@ -262,11 +262,11 @@ sh scripts/bridge-manual-claim.sh
 
 You should see something like this:
 
-![Output from cast bridging script](img/how-to/gas-token-img/14_bridge.png)
+![Output from cast bridging script](13_bridge.png)
 
 Confirm the claim went through using MetaMask and the bridge UI.
 
-![MetaMask confirmation](img/how-to/gas-token-img/15_bridge.png)
+![MetaMask confirmation](14_bridge.png)
 
 !!! info
     Even though the bridge UI didn't allow me to claim, it does correctly show that a claim was executed.
