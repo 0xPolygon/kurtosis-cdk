@@ -21,7 +21,7 @@ Specifically, this package will deploy:
 
 ## Getting Started
 
-### Install
+### Prerequisites
 
 To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) (>= [v4.27.0](https://docs.docker.com/desktop/release-notes/#4270) for Mac users) and [Kurtosis](https://docs.kurtosis.com/install/).
 
