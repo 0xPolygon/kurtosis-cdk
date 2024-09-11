@@ -21,6 +21,7 @@ def run(plan, args):
             },
             files={"/root": config_artifact},
         ),
+        cmd = ["/root/erpc-server"],
     )
 
 

@@ -4,17 +4,17 @@ database:
     driver: memory
 server:
   httpHostV4: 0.0.0.0
-  httpPort: "{{.erpc_rpc_port}}"
+  httpPort: {{.erpc_rpc_port}}
 metrics:
   enabled: true
   hostV4: 0.0.0.0
-  port: "{{.erpc_metrics_port}}"
+  port: {{.erpc_metrics_port}}
 projects:
   - id: main
     networks:
       - architecture: evm
         evm:
-          chainId: "{{.l2_chain_id}}"
+          chainId: {{.l2_chain_id}}
         failsafe:
           timeout:
             duration: 30s
@@ -33,7 +33,7 @@ projects:
         endpoint: "{{.l2_rpc_url}}"
         rateLimitBudget: default-budget
         evm:
-          chainId: 10101
+          chainId: {{.l2_chain_id}}
         failsafe:
           timeout:
             duration: 15s
