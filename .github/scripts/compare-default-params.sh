@@ -15,13 +15,6 @@ if ! sed -n '/^DEFAULT_ARGS = {/,/^}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' "$INP
   exit 1
 fi
 
-echo "Extracting default parameters from kurtosis.yml..."
-# shellcheck disable=SC2016
-if ! sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' "$KURTOSIS_YML_PATH" | yq --yaml-output >.kurtosis.yml; then
-  echo "Error: Failed to extract parameters from kurtosis.yml."
-  exit 1
-fi
-
 echo "Extracting default parameters from params.yml..."
 if ! yq --yaml-output .args "$PARAMS_YML_PATH" >.params.yml; then
   echo "Error: Failed to extract parameters from params.yml."
@@ -68,5 +61,3 @@ compare_with_source_of_truth() {
 
 echo
 compare_with_source_of_truth .input_parser.star
-echo
-compare_with_source_of_truth .kurtosis.yml
