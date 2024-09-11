@@ -20,8 +20,8 @@ def run(plan, args):
                 "metrics": PortSpec(METRICS_PORT, application_protocol="http"),
             },
             files={"/root": config_artifact},
+            cmd = ["/root/erpc-server"],
         ),
-        cmd = ["/root/erpc-server"],
     )
 
 
