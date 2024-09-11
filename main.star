@@ -105,19 +105,19 @@ def run(
         else:
             plan.print("Skipping the deployment of cdk-erigon sequencer")
 
-        # Deploy cdk-erigon node.
-        if deploy_cdk_erigon_node:
-            plan.print("Deploying cdk-erigon node")
-            cdk_erigon_package.run_rpc(plan, args)
-        else:
-            plan.print("Skipping the deployment of cdk-erigon node")
-
         # Deploy zkevm-pool-manager service.
         if deploy_cdk_erigon_node:
             plan.print("Deploying zkevm-pool-manager service")
             zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
         else:
             plan.print("Skipping the deployment of zkevm-pool-manager service")
+
+        # Deploy cdk-erigon node.
+        if deploy_cdk_erigon_node:
+            plan.print("Deploying cdk-erigon node")
+            cdk_erigon_package.run_rpc(plan, args)
+        else:
+            plan.print("Skipping the deployment of cdk-erigon node")
 
         plan.print("Deploying cdk central/trusted environment")
         central_environment_args = dict(args)

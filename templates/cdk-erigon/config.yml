@@ -69,4 +69,5 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 txpool.disable: true
 zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+zkevm.pool-manager-url: {{.pool_manager_url}}
 # end {{end}}
