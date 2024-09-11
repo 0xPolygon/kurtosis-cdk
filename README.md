@@ -152,6 +152,7 @@ This section features documentation specifically designed for advanced users, ou
 - How to [deploy the stack to an external L1](docs/deploy-using-sepolia.org) such as Sepolia.
 - How to [edit the zkevm contracts](docs/edit-contracts.md).
 - How to [perform an environment migration](docs/environment-migration.org) with clean copies of the databases.
+- How to [iterate and debug quickly](docs/fast-iteration-cycle.md) with Kurtosis.
 - How to use zkevm contracts [fork 12](docs/fork12.md).
 - How to [integrate a third-party data availability committee](docs/integrate-da.md) (DAC).
 - How to [migrate from fork 7 to fork 9](docs/migrate/forkid-7-to-9.md).
