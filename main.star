@@ -34,7 +34,7 @@ def run(
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
-    args = args | {"deploy_agglayer": deploy_agglayer}
+    args = args | {"deploy_agglayer": deploy_agglayer} # hacky but works fine for now.
     plan.print("Deploying CDK environment with parameters: " + str(args))
 
     if deploy_cdk_erigon_node:
