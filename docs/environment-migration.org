@@ -512,6 +512,6 @@ failed to send tx to the interop: -32602 Invalid params
 
 
 #+begin_src bash
-kurtosis service stop cdk-v1 zkevm-agglayer
-kurtosis service start cdk-v1 zkevm-agglayer
+kurtosis service stop cdk-v1 agglayer
+kurtosis service start cdk-v1 agglayer
 #+end_src

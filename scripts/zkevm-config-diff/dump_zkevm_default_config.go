@@ -20,7 +20,7 @@ type Module string
 
 const (
 	ZkevmNode           Module = "zkevm-node"
-	ZkevmAggLayer       Module = "zkevm-agglayer"
+	ZkevmAggLayer       Module = "agglayer"
 	CdkDataAvailability Module = "cdk-data-availability"
 	ZkevmBridgeService  Module = "zkevm-bridge-service"
 )
@@ -41,7 +41,7 @@ func main() {
 	}
 
 	if err := dumpDefaultConfig(ZkevmAggLayer, directory); err != nil {
-		slog.Error("Unable to dump zkevm-agglayer default config", "err", err)
+		slog.Error("Unable to dump agglayer default config", "err", err)
 	}
 
 	if err := dumpDefaultConfig(CdkDataAvailability, directory); err != nil {

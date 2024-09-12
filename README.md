@@ -107,7 +107,7 @@ polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosi
 Pretty often, you will want to check the output from the service. Here is how you can grab some logs:
 
 ```bash
-kurtosis service logs cdk-v1 zkevm-agglayer --follow
+kurtosis service logs cdk-v1 agglayer --follow
 ```
 
 In other cases, if you see an error, you might want to get a shell in the service to be able to poke around.

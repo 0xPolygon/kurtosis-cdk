@@ -93,8 +93,8 @@ dump_kurtosis_cdk_configs() {
   echo "Dumping kurtosis-cdk zkevm-node config"
   kurtosis service exec "$ENCLAVE" zkevm-node-rpc-001 "cat /etc/zkevm/node-config.toml" | tail -n +2 >"$directory/zkevm-node-config.toml"
 
-  echo "Dumping kurtosis-cdk zkevm-agglayer config"
-  kurtosis service exec "$ENCLAVE" zkevm-agglayer "cat /etc/zkevm/agglayer-config.toml" | tail -n +2 >"$directory/zkevm-agglayer-config.toml"
+  echo "Dumping kurtosis-cdk agglayer
+  kurtosis service exec "$ENCLAVE" agglayer "cat /etc/zkevm/agglayer-config.toml" | tail -n +2 >"$directory/agglayer-config.toml"
 
   echo "Dumping kurtosis-cdk cdk-data-availability config"
   kurtosis service exec "$ENCLAVE" zkevm-dac-001 "cat /etc/zkevm/dac-config.toml" | tail -n +2 >"$directory/cdk-data-availability-config.toml"
