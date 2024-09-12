@@ -14,41 +14,6 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  # Compare kurtosis-cdk configurations with the default ones and list any missing or unnecessary fields.
-  # See scripts/zkevm-config-diff/README.md.
-  compare-configs:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package
-        run: |
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Dump configs
-        working-directory: scripts/zkevm-config-diff
-        run: |
-          mkdir -p default-configs kurtosis-cdk-configs
-          ./zkevm_config.sh dump default ./default-configs
-          echo
-          ./zkevm_config.sh dump kurtosis-cdk ./kurtosis-cdk-configs
-
-      - name: Compare configs
-        working-directory: scripts/zkevm-config-diff
-        run: ./zkevm_config.sh compare configs ./default-configs ./kurtosis-cdk-configs
-
-      - name: Diff configs
-        working-directory: scripts/zkevm-config-diff
-        run: diff -r ./default-configs ./kurtosis-cdk-configs || true
-
   # Deploy the CDK environment without specifying any parameter file.
   configless:
     runs-on: ubuntu-latest
