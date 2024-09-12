@@ -15,6 +15,7 @@
 # production environments. DYOR
 # ------------------------------------------------------------------------------
 
+
 # ------------------------------------------------------------------------------
 # IsTrustedSequencer is used to configure if the node has as a trusted
 # node or not. This setting has implications beyond the sequencer. In
@@ -436,11 +437,11 @@ L2GasPriceSuggesterFactor = 1
 # ------------------------------------------------------------------------------
 Host = "0.0.0.0"
 
-Port = {{.zkevm_rpc_http_port}}
-
 # ------------------------------------------------------------------------------
 # Port is used to configure which port our RPC http server will listen on
 # ------------------------------------------------------------------------------
+Port = {{.zkevm_rpc_http_port}}
+
 # ------------------------------------------------------------------------------
 # ReadTimeout determines the maximal amount of time that a client can
 # spend sending us their request. After the configured amount of time
@@ -556,11 +557,11 @@ Enabled = true
 # ------------------------------------------------------------------------------
 Host = "0.0.0.0"
 
-Port = {{.zkevm_rpc_ws_port}}
-
 # ------------------------------------------------------------------------------
 # Port specifies the port that websocket server will listen on
 # ------------------------------------------------------------------------------
+Port = {{.zkevm_rpc_ws_port}}
+
 # ------------------------------------------------------------------------------
 # ReadLimit will determine the max number of bytes for a message
 # ------------------------------------------------------------------------------
@@ -975,12 +976,12 @@ EnableLog = true
 
 [Sequencer.StreamServer]
 
-Port = {{.zkevm_data_streamer_port}}
-
 # ------------------------------------------------------------------------------
 # Port will configure the port that the data streamer server will
 # listen on
 # ------------------------------------------------------------------------------
+Port = {{.zkevm_data_streamer_port}}
+
 # ------------------------------------------------------------------------------
 # Filename is a location on disk that stores the stream file. This
 # will need to be writable by the application
@@ -997,8 +998,6 @@ Filename = "/tmp/datastream.bin"
 # ------------------------------------------------------------------------------
 Version = 4
 
-ChainID = {{.zkevm_rollup_chain_id}}
-
 # ------------------------------------------------------------------------------
 # ChainID is used to set the system id of the datastreamer. Like the
 # version this also written to the header and can be used to determine
@@ -1008,6 +1007,8 @@ ChainID = {{.zkevm_rollup_chain_id}}
 # value from on chain
 #
 # ------------------------------------------------------------------------------
+ChainID = {{.zkevm_rollup_chain_id}}
+
 # ------------------------------------------------------------------------------
 # Enabled is used to turn the datastreamer on or off.
 # ------------------------------------------------------------------------------
@@ -1145,11 +1146,11 @@ Password = "{{.zkevm_l2_keystore_password}}"
 # ------------------------------------------------------------------------------
 Host = "0.0.0.0"
 
-Port = {{.zkevm_aggregator_port}}
-
 # ------------------------------------------------------------------------------
 # Port is the port that the aggregator service will be listening on
 # ------------------------------------------------------------------------------
+Port = {{.zkevm_aggregator_port}}
+
 # ------------------------------------------------------------------------------
 # RetryTime is the amount of time that the main loop will wait between
 # checking for proofs to aggregate or batches to prove.
@@ -1197,8 +1198,6 @@ TxProfitabilityMinReward = "1.1"
 # ------------------------------------------------------------------------------
 IntervalAfterWhichBatchConsolidateAnyway = "0s"
 
-ChainID = {{.zkevm_rollup_chain_id}}
-
 # ------------------------------------------------------------------------------
 # ChainID is the L2 ChainID and this is used as input to the prover
 #
@@ -1206,6 +1205,8 @@ ChainID = {{.zkevm_rollup_chain_id}}
 # value from on chain
 #
 # ------------------------------------------------------------------------------
+ChainID = {{.zkevm_rollup_chain_id}}
+
 # ------------------------------------------------------------------------------
 # ForkId is the fork id that we're currently using
 #
@@ -1243,10 +1244,9 @@ GasOffset = 150000
 # UpgradeEtrogBatchNumber is the batch number that we'll use to
 # trigger the etrog upgrade.
 # ------------------------------------------------------------------------------
-
+UpgradeEtrogBatchNumber = 0
 
 {{if .is_cdk_validium}}
-UpgradeEtrogBatchNumber = 0
 ## CDK Validium Specific Settings
 
 # ------------------------------------------------------------------------------
@@ -1272,19 +1272,18 @@ AggLayerTxTimeout = "600s"
 
 # ------------------------------------------------------------------------------
 # AggLayerURL is the RPC URL of the agglayer itself
+# In the case of attaching multiple CDKs, the AgglayerURL 
+# should always follow the first deployment_suffix "-001"
+# by default.
 # ------------------------------------------------------------------------------
-
-
-{{else}}
-
 AggLayerURL = "http://agglayer:{{.agglayer_port}}"
+{{else}}
 # ------------------------------------------------------------------------------
 # SenderAddress represents the address of the trusted aggregator
 # ------------------------------------------------------------------------------
-
+SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 {{end}}
 
-SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 # ------------------------------------------------------------------------------
 # PrivateKey is a object with the keystore and password that are used
 # for signing transactions. The keystore is a standard go-ethereum
@@ -1423,7 +1422,7 @@ MaxGRPCMessageSize = 100000000
 # URI indicates the hostname/ip and port of the hash db service of the
 # executor / prover
 # ------------------------------------------------------------------------------
-URI = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
+URI  = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
 
 # ==============================================================================
 #  __  __ _____ _____ ____  ___ ____ ____
@@ -1439,11 +1438,11 @@ URI = "zkevm-prover{{.deployment_suffix}}:{{.zkevm_hash_db_port}}"
 # ------------------------------------------------------------------------------
 Host = "0.0.0.0"
 
-Port = {{.prometheus_port}}
-
 # ------------------------------------------------------------------------------
 # Port is the port that will be used for listening metrics requests.
 # ------------------------------------------------------------------------------
+Port = {{.prometheus_port}}
+
 # ------------------------------------------------------------------------------
 # Enabled determines if the metrics will be exposed or not
 # ------------------------------------------------------------------------------
@@ -1454,12 +1453,12 @@ Enabled = true
 # ------------------------------------------------------------------------------
 ProfilingHost = "0.0.0.0"
 
-ProfilingPort = {{.zkevm_pprof_port}}
-
 # ------------------------------------------------------------------------------
 # ProfilingPort is the port that the go debug and pprof service will
 # listen on
 # ------------------------------------------------------------------------------
+ProfilingPort = {{.zkevm_pprof_port}}
+
 # ------------------------------------------------------------------------------
 # ProfilingEnabled determines if profiling is enabled
 # ------------------------------------------------------------------------------
