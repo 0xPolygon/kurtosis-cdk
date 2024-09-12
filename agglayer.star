@@ -18,15 +18,15 @@ def run(plan, args):
     )
 
     plan.add_service(
-        name="zkevm-agglayer",
+        name="agglayer",
         config=ServiceConfig(
-            image=args["zkevm_agglayer_image"],
+            image=args["agglayer_image"],
             ports={
                 "agglayer": PortSpec(
-                    args["zkevm_agglayer_port"], application_protocol="http"
+                    args["agglayer_port"], application_protocol="http"
                 ),
                 "prometheus": PortSpec(
-                    args["zkevm_prometheus_port"], application_protocol="http"
+                    args["prometheus_port"], application_protocol="http"
                 ),
             },
             files={
@@ -67,7 +67,7 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                    "zkevm_agglayer_port": args["zkevm_agglayer_port"],
+                    "agglayer_port": args["agglayer_port"],
                     "zkevm_prometheus_port": args["zkevm_prometheus_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
                 }

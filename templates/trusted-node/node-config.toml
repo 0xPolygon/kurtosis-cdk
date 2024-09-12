@@ -1273,7 +1273,7 @@ AggLayerTxTimeout = "600s"
 # ------------------------------------------------------------------------------
 # AggLayerURL is the RPC URL of the agglayer itself
 # ------------------------------------------------------------------------------
-AggLayerURL = "http://zkevm-agglayer:{{.zkevm_agglayer_port}}"
+AggLayerURL = "http://zkevm-agglayer:{{.agglayer_port}}"
 
 {{else}}
 

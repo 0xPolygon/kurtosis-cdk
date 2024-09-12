@@ -164,7 +164,7 @@ runs:
 
         cat params.yml
 
-        yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
+        yq -Y --in-place ".args.agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml

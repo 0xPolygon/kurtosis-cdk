@@ -198,8 +198,8 @@ index 5293da7..5e451b6 100644
 -  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
 +  zkevm_contracts_image: local/zkevm-contracts:v6.0.0-rc.1-fork.9
 
-   # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
-   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
+   # agglayer_image: 0xpolygon/agglayer:0.1.3
+   agglayer_image: ghcr.io/agglayer/agglayer-rs:main
 ```
 
 Optional: by default, your devnet disables fancy dashboards. If you want to view your devnet from a fancy dashboard such as Grafana then open the file `params.yml` and ensure that `args.additional_services` includes `"prometheus_grafana"`.

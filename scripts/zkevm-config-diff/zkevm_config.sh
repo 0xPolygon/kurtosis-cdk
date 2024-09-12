@@ -32,9 +32,9 @@ set_zkevm_components_versions() {
   echo "Using zkevm da version: $zkevm_da_version"
   go get "github.com/0xPolygon/cdk-data-availability@$zkevm_da_version"
 
-  zkevm_agglayer_version="v$(yq -r .args.zkevm_agglayer_image "$params_path" | cut -d':' -f 2)"
-  echo "Using zkevm agglayer version: $zkevm_agglayer_version"
-  go get "github.com/0xPolygon/agglayer@$zkevm_agglayer_version"
+  agglayer_version="v$(yq -r .args.agglayer_image "$params_path" | cut -d':' -f 2)"
+  echo "Using agglayer version: $agglayer_version"
+  go get "github.com/0xPolygon/agglayer@$agglayer_version"
 
   # TODO: Use a tagged version for the zkevm bridge service once a new release including this commit has been created:
   # https://github.com/0xPolygonHermez/zkevm-bridge-service/commit/48f8b52b09ae3b1fe1b854d03424d5fac1b4149b

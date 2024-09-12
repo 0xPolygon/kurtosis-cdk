@@ -80,7 +80,7 @@ GetBatchWaitInterval = "10s"
 	SenderAddress = "{{.zkevm_l2_agglayer_address}}"
 	SettlementBackend = "agglayer"
 	AggLayerTxTimeout = "600s"
-	AggLayerURL = "http://zkevm-agglayer:{{.zkevm_agglayer_port}}"
+	AggLayerURL = "http://zkevm-agglayer:{{.agglayer_port}}"
 	{{else}}
 	SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 	{{end}}
