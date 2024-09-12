@@ -1,6 +1,5 @@
 def create_agglayer_service_config(args, config_artifact, agglayer_keystore_artifact):
-    agglayer_name = "zkevm-agglayer" + args["deployment_suffix"]
-    agglayer_service_config = ServiceConfig(
+    return ServiceConfig(
         image=args["zkevm_agglayer_image"],
         ports={
             "agglayer": PortSpec(
@@ -23,4 +22,3 @@ def create_agglayer_service_config(args, config_artifact, agglayer_keystore_arti
         ],
         cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
     )
-    return {agglayer_name: agglayer_service_config}

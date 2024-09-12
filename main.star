@@ -24,11 +24,11 @@ TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
 def run(
     plan,
     deploy_l1=True,
-    deploy_agglayer=True,
     deploy_zkevm_contracts_on_l1=True,
     deploy_databases=True,
-    deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
+    deploy_cdk_bridge_infra=True,
+    deploy_agglayer=True,
     deploy_cdk_erigon_node=True,
     args={},
 ):

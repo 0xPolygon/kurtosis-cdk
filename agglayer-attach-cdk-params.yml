@@ -17,6 +17,9 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
+# Deploy agglayer.
+deploy_agglayer: false
+
 # Deploy cdk-erigon node.
 deploy_cdk_erigon_node: true
 
@@ -34,9 +37,6 @@ args:
   # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
   # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
   sequencer_type: erigon
-
-  # Deploy agglayer.
-  deploy_agglayer: false
 
   # The type of data availability to use.
   # Options:

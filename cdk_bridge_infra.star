@@ -10,7 +10,7 @@ def run(plan, args):
         args["deployment_suffix"], args["sequencer_type"]
     )
 
-    # Create the bridge service config.
+    # Start the bridge service.
     bridge_config_artifact = create_bridge_config_artifact(
         plan, args, contract_setup_addresses, db_configs
     )
@@ -19,11 +19,26 @@ def run(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimtxmanager.keystore",
     )
-    bridge_config = zkevm_bridge_package.create_bridge_service_config(
+    bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
         args, bridge_config_artifact, claimtx_keystore_artifact
     )
+    plan.add_service(
+        name="zkevm-bridge-service" + args["deployment_suffix"],
+        config=bridge_service_config,
+    )
 
-    # Create the agglayer service config.
+    # Start the bridge UI.
+    bridge_ui_config_artifact = create_bridge_ui_config_artifact(
+        plan, args, contract_setup_addresses
+    )
+    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+
+    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
+    if args["deploy_l1"]:
+        proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
+        zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
+
+    # Start the agglayer.
     if args["deploy_agglayer"]:
         agglayer_config_artifact = create_agglayer_config_artifact(
             plan, args, contract_setup_addresses, db_configs
@@ -33,33 +48,13 @@ def run(plan, args):
             service_name="contracts" + args["deployment_suffix"],
             src="/opt/zkevm/agglayer.keystore",
         )
-        agglayer_config = zkevm_agglayer_package.create_agglayer_service_config(
+        agglayer_service_config = zkevm_agglayer_package.create_agglayer_service_config(
             args, agglayer_config_artifact, agglayer_keystore_artifact
         )
-
-    # Start the bridge service and the agglayer.
-    if args["deploy_agglayer"]:
-        bridge_infra_services = plan.add_services(
-            configs=bridge_config | agglayer_config,
-            description="Starting bridge infra",
+        plan.add_service(
+            name="zkevm-agglayer" + args["deployment_suffix"],
+            config=agglayer_service_config,
         )
-    else:
-        bridge_infra_services = plan.add_services(
-            configs=bridge_config,
-            description="Starting bridge infra",
-        )
-
-    # Start the bridge UI.
-    bridge_ui_config_artifact = create_bridge_ui_config_artifact(
-        plan, args, contract_setup_addresses
-    )
-    if args["deploy_agglayer"]:
-        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
-
-    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
-    if args["deploy_l1"]:
-        proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
-        zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
 def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_configs):

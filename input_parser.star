@@ -4,7 +4,6 @@ DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "global_log_level": "info",
     "sequencer_type": "erigon",
-    "deploy_agglayer": True,
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
     "zkevm_contracts_image": "leovct/zkevm-contracts:feature-verified-number-e2ef9ca-fork.12",
