@@ -32,7 +32,7 @@ def run(plan, args):
             files={
                 "/etc/zkevm": Directory(
                     artifact_names=[
-                        config_artifact,
+                        agglayer_config_artifact,
                         agglayer_keystore_artifact,
                     ]
                 ),
