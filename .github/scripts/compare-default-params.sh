@@ -5,20 +5,12 @@
 # The script outputs the differences between the specified parameters in each file compared to `params.yml`.
 
 INPUT_PARSER_PATH="../../input_parser.star"
-KURTOSIS_YML_PATH="../../kurtosis.yml"
 PARAMS_YML_PATH="../../params.yml"
 
 # Extracting default parameters from the different files.
 echo "Extracting default parameters from input_parser.star..."
 if ! sed -n '/^DEFAULT_ARGS = {/,/^}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' "$INPUT_PARSER_PATH" | yq --yaml-output >.input_parser.star; then
   echo "Error: Failed to extract parameters from input_parser.star."
-  exit 1
-fi
-
-echo "Extracting default parameters from kurtosis.yml..."
-# shellcheck disable=SC2016
-if ! sed -n '/```yml/,/```/ { /```yml/d; /```/d; p;}' "$KURTOSIS_YML_PATH" | yq --yaml-output >.kurtosis.yml; then
-  echo "Error: Failed to extract parameters from kurtosis.yml."
   exit 1
 fi
 
@@ -68,5 +60,3 @@ compare_with_source_of_truth() {
 
 echo
 compare_with_source_of_truth .input_parser.star
-echo
-compare_with_source_of_truth .kurtosis.yml

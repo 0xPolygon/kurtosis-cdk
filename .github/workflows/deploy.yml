@@ -130,8 +130,9 @@ jobs:
       - name: Verify Blutgang RPC
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
 
-      - name: Verify permissionless zkevm-node rpc
-        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+      # zkevm-node doesn't work with fork12.
+      #- name: Verify permissionless zkevm-node rpc
+      #  run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
 
       - name: Verify that Prometheus collects Panoptichain metrics
         run: |
@@ -163,7 +164,7 @@ jobs:
         run: |
           yq -Y --in-place '.args.sequencer_type = "erigon"' params.yml
           yq -Y --in-place '.args.sequence_sender_aggregator_type = "cdk"' params.yml
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' params.yml
+          yq -Y --in-place '.args.additional_services = ["tx_spammer"]' params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
 
       - name: Inspect enclave
@@ -176,7 +177,7 @@ jobs:
 
       - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: |
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node", "tx_spammer"]' agglayer-attach-cdk-params.yml
+          yq -Y --in-place '.args.additional_services = ["tx_spammer"]' agglayer-attach-cdk-params.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml .
 
       - name: Inspect enclave
@@ -207,14 +208,14 @@ jobs:
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
 
-      - name: Monitor verified batches of the first L2 chain (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
+      # - name: Monitor verified batches of the first L2 chain (zkEVM Node Permissionless RPC)
+      #   working-directory: .github/scripts
+      #   run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
 
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 http-rpc)"
 
-      - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
+      # - name: Monitor verified batches of the second L2 chain (zkEVM Node Permissionless RPC)
+      #   working-directory: .github/scripts
+      #   run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-002 http-rpc)"
