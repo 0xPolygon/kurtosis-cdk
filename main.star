@@ -138,25 +138,8 @@ def run(
 
     # Deploy the agglayer.
     if deploy_agglayer:
-        agglayer_config_artifact = import_module(
-            agglayer_package
-        ).create_agglayer_config_artifact(
-            plan, args, contract_setup_addresses, db_configs
-        )
-        agglayer_keystore_artifact = plan.store_service_files(
-            name="agglayer-keystore",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/agglayer.keystore",
-        )
-        agglayer_service_config = import_module(
-            agglayer_package
-        ).create_agglayer_service_config(
-            args, agglayer_config_artifact, agglayer_keystore_artifact
-        )
-        plan.add_service(
-            name="zkevm-agglayer",
-            config=agglayer_service_config,
-        )
+        plan.print("Deploying the agglayer")
+        import_module(agglayer_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of the agglayer")
 

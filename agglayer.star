@@ -1,26 +1,47 @@
-def run(args, config_artifact, agglayer_keystore_artifact):
-    return ServiceConfig(
-        image=args["zkevm_agglayer_image"],
-        ports={
-            "agglayer": PortSpec(
-                args["zkevm_agglayer_port"], application_protocol="http"
-            ),
-            "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
-            ),
-        },
-        files={
-            "/etc/zkevm": Directory(
-                artifact_names=[
-                    config_artifact,
-                    agglayer_keystore_artifact,
-                ]
-            ),
-        },
-        entrypoint=[
-            "/usr/local/bin/agglayer",
-        ],
-        cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
+service_package = import_module("./lib/service.star")
+databases = import_module("./databases.star")
+
+
+def run(plan, args):
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
+    agglayer_config_artifact = create_agglayer_config_artifact(
+        plan, args, contract_setup_addresses, db_configs
+    )
+
+    agglayer_keystore_artifact = plan.store_service_files(
+        name="agglayer-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/agglayer.keystore",
+    )
+
+    plan.add_service(
+        name="zkevm-agglayer",
+        config=ServiceConfig(
+            image=args["zkevm_agglayer_image"],
+            ports={
+                "agglayer": PortSpec(
+                    args["zkevm_agglayer_port"], application_protocol="http"
+                ),
+                "prometheus": PortSpec(
+                    args["zkevm_prometheus_port"], application_protocol="http"
+                ),
+            },
+            files={
+                "/etc/zkevm": Directory(
+                    artifact_names=[
+                        config_artifact,
+                        agglayer_keystore_artifact,
+                    ]
+                ),
+            },
+            entrypoint=[
+                "/usr/local/bin/agglayer",
+            ],
+            cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
+        ),
     )
 
 
