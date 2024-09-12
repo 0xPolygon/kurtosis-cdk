@@ -38,39 +38,6 @@ def run(plan, args):
         zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
-def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_configs):
-    agglayer_config_template = read_file(
-        src="./templates/bridge-infra/agglayer-config.toml"
-    )
-    return plan.render_templates(
-        name="agglayer-config-artifact",
-        config={
-            "agglayer-config.toml": struct(
-                template=agglayer_config_template,
-                # TODO: Organize those args.
-                data={
-                    "deployment_suffix": args["deployment_suffix"],
-                    "global_log_level": args["global_log_level"],
-                    "l1_chain_id": args["l1_chain_id"],
-                    "l1_rpc_url": args["l1_rpc_url"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    "zkevm_l2_proofsigner_address": args[
-                        "zkevm_l2_proofsigner_address"
-                    ],
-                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
-                    # ports
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                    "zkevm_agglayer_port": args["zkevm_agglayer_port"],
-                    "zkevm_prometheus_port": args["zkevm_prometheus_port"],
-                    "l2_rpc_name": args["l2_rpc_name"],
-                }
-                | contract_setup_addresses
-                | db_configs,
-            )
-        },
-    )
-
-
 def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"

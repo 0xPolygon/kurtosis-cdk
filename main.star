@@ -6,7 +6,7 @@ deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
-zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
+agglayer_package = "./agglayer.star"
 
 # Additional services packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -138,7 +138,9 @@ def run(
 
     # Deploy the agglayer.
     if deploy_agglayer:
-        agglayer_config_artifact = create_agglayer_config_artifact(
+        agglayer_config_artifact = import_module(
+            agglayer_package
+        ).create_agglayer_config_artifact(
             plan, args, contract_setup_addresses, db_configs
         )
         agglayer_keystore_artifact = plan.store_service_files(
@@ -146,7 +148,9 @@ def run(
             service_name="contracts" + args["deployment_suffix"],
             src="/opt/zkevm/agglayer.keystore",
         )
-        agglayer_service_config = zkevm_agglayer_package.create_agglayer_service_config(
+        agglayer_service_config = import_module(
+            agglayer_package
+        ).create_agglayer_service_config(
             args, agglayer_config_artifact, agglayer_keystore_artifact
         )
         plan.add_service(
