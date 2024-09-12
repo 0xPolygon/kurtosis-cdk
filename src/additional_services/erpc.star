@@ -4,7 +4,7 @@ ERPC_IMAGE = "christophercampbell/erpc:0.0.1-SNAPSHOT"
 
 SERVICE_NAME = "erpc"
 RPC_PORT = 8080
-METRICS_PORT = 6060
+PROMETHEUS_PORT = 6060
 
 
 def run(plan, args):
@@ -15,7 +15,7 @@ def run(plan, args):
             image=ERPC_IMAGE,
             ports={
                 "rpc": PortSpec(RPC_PORT, application_protocol="rpc"),
-                "metrics": PortSpec(METRICS_PORT, application_protocol="http"),
+                "prometheus": PortSpec(PROMETHEUS_PORT, application_protocol="http"),
             },
             files={"/etc/erpc": config_artifact},
             cmd=["/root/erpc-server", "/etc/erpc/erpc.yaml"],
@@ -35,7 +35,7 @@ def get_erpc_config(plan, args):
                 template=config_template,
                 data={
                     "erpc_rpc_port": RPC_PORT,
-                    "erpc_metrics_port": METRICS_PORT,
+                    "erpc_metrics_port": PROMETHEUS_PORT,
                     "l2_chain_id": args["zkevm_rollup_chain_id"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     "l2_rpc_url": l2_rpc_urls.http,
