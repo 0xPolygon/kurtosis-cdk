@@ -1440,7 +1440,7 @@ Host = "0.0.0.0"
 # ------------------------------------------------------------------------------
 # Port is the port that will be used for listening metrics requests.
 # ------------------------------------------------------------------------------
-Port = {{.zkevm_prometheus_port}}
+Port = {{.prometheus_port}}
 
 # ------------------------------------------------------------------------------
 # Enabled determines if the metrics will be exposed or not

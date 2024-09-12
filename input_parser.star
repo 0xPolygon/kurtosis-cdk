@@ -23,7 +23,7 @@ DEFAULT_ARGS = {
     "zkevm_executor_port": 50071,
     "zkevm_aggregator_port": 50081,
     "zkevm_pprof_port": 6060,
-    "zkevm_prometheus_port": 9091,
+    "prometheus_port": 9091,
     "zkevm_data_streamer_port": 6900,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
