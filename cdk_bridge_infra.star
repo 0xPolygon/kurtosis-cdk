@@ -1,5 +1,4 @@
 service_package = import_module("./lib/service.star")
-zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 databases = import_module("./databases.star")
 
@@ -37,24 +36,6 @@ def run(plan, args):
     if args["deploy_l1"]:
         proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
         zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
-
-    # Start the agglayer.
-    if args["deploy_agglayer"]:
-        agglayer_config_artifact = create_agglayer_config_artifact(
-            plan, args, contract_setup_addresses, db_configs
-        )
-        agglayer_keystore_artifact = plan.store_service_files(
-            name="agglayer-keystore",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/agglayer.keystore",
-        )
-        agglayer_service_config = zkevm_agglayer_package.create_agglayer_service_config(
-            args, agglayer_config_artifact, agglayer_keystore_artifact
-        )
-        plan.add_service(
-            name="zkevm-agglayer" + args["deployment_suffix"],
-            config=agglayer_service_config,
-        )
 
 
 def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_configs):

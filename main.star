@@ -6,6 +6,7 @@ deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+zkevm_agglayer_package = import_module("./lib/zkevm_agglayer.star")
 
 # Additional services packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -60,15 +61,14 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    if deploy_agglayer:
-        if (
-            "zkevm_rollup_manager_address" in args
-            and "zkevm_rollup_manager_block_number" in args
-            and "zkevm_global_exit_root_l2_address" in args
-            and "polygon_data_committee_address" in args
-        ):
-            plan.print("Deploying helper service to retrieve rollup data")
-            deploy_helper_service(plan, args)
+    if (
+        "zkevm_rollup_manager_address" in args
+        and "zkevm_rollup_manager_block_number" in args
+        and "zkevm_global_exit_root_l2_address" in args
+        and "polygon_data_committee_address" in args
+    ):
+        plan.print("Deploying helper service to retrieve rollup data")
+        deploy_helper_service(plan, args)
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
@@ -133,6 +133,26 @@ def run(
         import_module(cdk_bridge_infra_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
+
+    # Deploy the agglayer.
+    if deploy_agglayer:
+        agglayer_config_artifact = create_agglayer_config_artifact(
+            plan, args, contract_setup_addresses, db_configs
+        )
+        agglayer_keystore_artifact = plan.store_service_files(
+            name="agglayer-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/agglayer.keystore",
+        )
+        agglayer_service_config = zkevm_agglayer_package.create_agglayer_service_config(
+            args, agglayer_config_artifact, agglayer_keystore_artifact
+        )
+        plan.add_service(
+            name="zkevm-agglayer" + args["deployment_suffix"],
+            config=agglayer_service_config,
+        )
+    else:
+        plan.print("Skipping the deployment of the agglayer")
 
     # Launching additional services.
     additional_services = args["additional_services"]
