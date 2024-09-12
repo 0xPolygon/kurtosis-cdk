@@ -1,12 +1,10 @@
 service_package = import_module("../../lib/service.star")
 
-DOCKER_IMAGE = "christophercampbell/erpc:0.0.1-SNAPSHOT"
+ERPC_IMAGE = "christophercampbell/erpc:0.0.1-SNAPSHOT"
 
 SERVICE_NAME = "erpc"
 RPC_PORT = 8080
 METRICS_PORT = 6060
-
-CHAIN_ID = 10101
 
 
 def run(plan, args):
@@ -14,7 +12,7 @@ def run(plan, args):
     plan.add_service(
         name=SERVICE_NAME + args["deployment_suffix"],
         config=ServiceConfig(
-            image=DOCKER_IMAGE,
+            image=ERPC_IMAGE,
             ports={
                 "rpc": PortSpec(RPC_PORT, application_protocol="rpc"),
                 "metrics": PortSpec(METRICS_PORT, application_protocol="http"),
@@ -38,7 +36,7 @@ def get_erpc_config(plan, args):
                 data={
                     "erpc_rpc_port": RPC_PORT,
                     "erpc_metrics_port": METRICS_PORT,
-                    "l2_chain_id": CHAIN_ID,
+                    "l2_chain_id": args["l2_chain_id"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     "l2_rpc_url": l2_rpc_urls.http,
                 },
