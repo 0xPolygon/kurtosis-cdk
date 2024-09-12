@@ -34,6 +34,8 @@ def run(
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
+    if deploy_agglayer:
+        args = args | {"deploy_agglayer": deploy_agglayer}
     plan.print("Deploying CDK environment with parameters: " + str(args))
 
     if deploy_cdk_erigon_node:
@@ -148,7 +150,7 @@ def run(
             args, agglayer_config_artifact, agglayer_keystore_artifact
         )
         plan.add_service(
-            name="zkevm-agglayer" + args["deployment_suffix"],
+            name="zkevm-agglayer",
             config=agglayer_service_config,
         )
     else:

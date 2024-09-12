@@ -24,7 +24,7 @@ set_zkevm_components_versions() {
 
   cdk_validium_node_version="v$(yq -r .args.zkevm_node_image "$params_path" | cut -d':' -f 2 | sed 's/-/+/g')"
   echo "Using cdk validium node version: $cdk_validium_node_version"
-  sed "s|github.com/0xPolygon/cdk-validium-node .*|github.com/0xPolygon/cdk-validium-node $cdk_validium_node_version|g" go.mod > go.mod.new
+  sed "s|github.com/0xPolygon/cdk-validium-node .*|github.com/0xPolygon/cdk-validium-node $cdk_validium_node_version|g" go.mod >go.mod.new
   mv go.mod.new go.mod
   go mod tidy
 
@@ -91,31 +91,31 @@ dump_kurtosis_cdk_configs() {
 
   # Dump kurtosis-cdk configs from the Kurtosis enclave.
   echo "Dumping kurtosis-cdk zkevm-node config"
-  kurtosis service exec "$ENCLAVE" zkevm-node-rpc-001 "cat /etc/zkevm/node-config.toml" | tail -n +2 > "$directory/zkevm-node-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-node-rpc-001 "cat /etc/zkevm/node-config.toml" | tail -n +2 >"$directory/zkevm-node-config.toml"
 
   echo "Dumping kurtosis-cdk zkevm-agglayer config"
-  kurtosis service exec "$ENCLAVE" zkevm-agglayer-001 "cat /etc/zkevm/agglayer-config.toml" | tail -n +2 > "$directory/zkevm-agglayer-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-agglayer "cat /etc/zkevm/agglayer-config.toml" | tail -n +2 >"$directory/zkevm-agglayer-config.toml"
 
   echo "Dumping kurtosis-cdk cdk-data-availability config"
-  kurtosis service exec "$ENCLAVE" zkevm-dac-001 "cat /etc/zkevm/dac-config.toml" | tail -n +2 > "$directory/cdk-data-availability-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-dac-001 "cat /etc/zkevm/dac-config.toml" | tail -n +2 >"$directory/cdk-data-availability-config.toml"
 
   echo "Dumping kurtosis-cdk zkevm-bridge-service config"
-  kurtosis service exec "$ENCLAVE" zkevm-bridge-service-001 "cat /etc/zkevm/bridge-config.toml" | tail -n +2 > "$directory/zkevm-bridge-service-config.toml"
+  kurtosis service exec "$ENCLAVE" zkevm-bridge-service-001 "cat /etc/zkevm/bridge-config.toml" | tail -n +2 >"$directory/zkevm-bridge-service-config.toml"
 
   echo "Dumping kurtosis-cdk event db init script"
-  kurtosis service exec "$ENCLAVE" event-db-001 "cat /docker-entrypoint-initdb.d/event-db-init.sql" | tail -n +2 > "$directory/event-db-init.sql"
+  kurtosis service exec "$ENCLAVE" event-db-001 "cat /docker-entrypoint-initdb.d/event-db-init.sql" | tail -n +2 >"$directory/event-db-init.sql"
 
   echo "Dumping kurtosis-cdk prover db init script"
-  kurtosis service exec "$ENCLAVE" prover-db-001 "cat /docker-entrypoint-initdb.d/prover-db-init.sql" | tail -n +2 > "$directory/prover-db-init.sql"
+  kurtosis service exec "$ENCLAVE" prover-db-001 "cat /docker-entrypoint-initdb.d/prover-db-init.sql" | tail -n +2 >"$directory/prover-db-init.sql"
 
   echo "Dumping kurtosis-cdk zkevm-prover config"
-  kurtosis service exec "$ENCLAVE" zkevm-prover-001 "cat /etc/zkevm/prover-config.json" | tail -n +2 > "$directory/zkevm-prover-config.json"
+  kurtosis service exec "$ENCLAVE" zkevm-prover-001 "cat /etc/zkevm/prover-config.json" | tail -n +2 >"$directory/zkevm-prover-config.json"
 
   echo "Dumping kurtosis-cdk zkevm-executor config"
-  kurtosis service exec "$ENCLAVE" zkevm-executor-pless-001 "cat /etc/zkevm/executor-config.json" | tail -n +2 > "$directory/zkevm-executor-config.json"
+  kurtosis service exec "$ENCLAVE" zkevm-executor-pless-001 "cat /etc/zkevm/executor-config.json" | tail -n +2 >"$directory/zkevm-executor-config.json"
 
   echo "Dumping kurtosis-cdk zkevm-bridge-ui config"
-  kurtosis service exec "$ENCLAVE" zkevm-bridge-ui-001 "cat /etc/zkevm/.env" | tail -n +2 | sort > "$directory/zkevm-bridge-ui.env"
+  kurtosis service exec "$ENCLAVE" zkevm-bridge-ui-001 "cat /etc/zkevm/.env" | tail -n +2 | sort >"$directory/zkevm-bridge-ui.env"
 
   # Normalize TOML files.
   for file in "$directory"/*.toml; do
@@ -126,7 +126,7 @@ dump_kurtosis_cdk_configs() {
 
 normalize_toml_file() {
   file="$1"
-  tomlq --toml-output --sort-keys 'walk(if type=="object" then with_entries(.key|=ascii_downcase) else . end)' "$file" > "$file.tmp"
+  tomlq --toml-output --sort-keys 'walk(if type=="object" then with_entries(.key|=ascii_downcase) else . end)' "$file" >"$file.tmp"
   mv "$file.tmp" "$file"
 }
 
@@ -149,16 +149,16 @@ get_config_keys() {
   extension="${config_file##*.}"
 
   case "$extension" in
-    toml)
-      keys="$(tomlq -r "$jq_query_get_leaf_keys" "$config_file")"
-      ;;
-    json)
-      keys="$(jq -r "$jq_query_get_leaf_keys" "$config_file")"
-      ;;
-    *)
-      echo "Unsupported file format: $extension"
-      exit 1
-      ;;
+  toml)
+    keys="$(tomlq -r "$jq_query_get_leaf_keys" "$config_file")"
+    ;;
+  json)
+    keys="$(jq -r "$jq_query_get_leaf_keys" "$config_file")"
+    ;;
+  *)
+    echo "Unsupported file format: $extension"
+    exit 1
+    ;;
   esac
 
   echo "$keys"
@@ -173,7 +173,7 @@ find_missing_keys_in_kurtosis_cdk_config_file() {
 
   filename="$(basename "$kurtosis_cdk_config_file" | cut -d'.' -f 1)"
   missing_keys=$(jq -n --argjson d "$default_config_keys" --argjson c "$kurtosis_cdk_config_keys" '$d - $c')
-  echo "$missing_keys" > "diff/$filename-missing-keys.json"
+  echo "$missing_keys" >"diff/$filename-missing-keys.json"
   if [ "$(echo "$missing_keys" | jq length)" -gt 0 ]; then
     if [ "$CI" = "true" ]; then
       echo "::warning::$kurtosis_cdk_config_file lacks some properties present in $default_config_file."
@@ -195,7 +195,7 @@ find_unnecessary_keys_in_kurtosis_cdk_config_file() {
 
   filename="$(basename "$kurtosis_cdk_config_file" | cut -d'.' -f 1)"
   unnecessary_keys=$(jq -n --argjson d "$default_config_keys" --argjson c "$kurtosis_cdk_config_keys" '$c - $d')
-  echo "$unnecessary_keys" > "diff/$filename-unnecessary-keys.json"
+  echo "$unnecessary_keys" >"diff/$filename-unnecessary-keys.json"
   if [ "$(echo "$unnecessary_keys" | jq length)" -gt 0 ]; then
     if [ "$CI" = "true" ]; then
       echo "::error::$kurtosis_cdk_config_file defines unnecessary properties that are not in $default_config_file."
@@ -222,7 +222,7 @@ diff_files() {
   file1="$1"
   file2="$2"
   filename="$(basename "$file2" | cut -d'.' -f 1)"
-  diff "$file1" "$file2" > "diff/$filename.diff"
+  diff "$file1" "$file2" >"diff/$filename.diff"
   if [ "$CI" != "true" ]; then
     echo "diff/$filename.diff"
   fi
@@ -248,15 +248,18 @@ compare_configs_keys() {
     fi
   done
 
-  echo; echo "Comparing $default_directory/event-db-init.sql and $kurtosis_cdk_directory/event-db-init.sql"
+  echo
+  echo "Comparing $default_directory/event-db-init.sql and $kurtosis_cdk_directory/event-db-init.sql"
   diff_files "$default_directory/event-db-init.sql" "$kurtosis_cdk_directory/event-db-init.sql"
   cat "diff/event-db-init.diff"
 
-  echo; echo "Comparing $default_directory/prover-db-init.sql and $kurtosis_cdk_directory/prover-db-init.sql"
+  echo
+  echo "Comparing $default_directory/prover-db-init.sql and $kurtosis_cdk_directory/prover-db-init.sql"
   diff_files "$default_directory/prover-db-init.sql" "$kurtosis_cdk_directory/prover-db-init.sql"
   cat "diff/prover-db-init.diff"
 
-  echo; echo "Comparing $default_directory/zkevm-bridge-ui.env and $kurtosis_cdk_directory/zkevm-bridge-ui.env"
+  echo
+  echo "Comparing $default_directory/zkevm-bridge-ui.env and $kurtosis_cdk_directory/zkevm-bridge-ui.env"
   diff_files "$default_directory/zkevm-bridge-ui.env" "$kurtosis_cdk_directory/zkevm-bridge-ui.env"
   cat "diff/zkevm-bridge-ui.diff"
 }
@@ -273,41 +276,41 @@ fi
 
 # Determine the action and target based on the arguments
 case $1 in
-  dump)
-    case $2 in
-      default)
-        set_zkevm_components_versions
-        echo
+dump)
+  case $2 in
+  default)
+    set_zkevm_components_versions
+    echo
 
-        directory="$3"
-        dump_default_zkevm_configs "$directory"
-        ;;
-      kurtosis-cdk)
-        directory="$3"
-        dump_kurtosis_cdk_configs "$directory"
-        ;;
-      *)
-        echo "Invalid target. Please choose 'default' or 'kurtosis-cdk'."
-        exit 1
-        ;;
-    esac
+    directory="$3"
+    dump_default_zkevm_configs "$directory"
     ;;
-  compare)
-    case $2 in
-      files)
-        file1="$3"
-        file2="$4"
-        compare_files_keys "$file1" "$file2"
-        ;;
-      configs)
-        directory1="$3"
-        directory2="$4"
-        compare_configs_keys "$directory1" "$directory2"
-        ;;
-    esac
+  kurtosis-cdk)
+    directory="$3"
+    dump_kurtosis_cdk_configs "$directory"
     ;;
   *)
-    echo "Invalid action. Please choose 'dump' or 'compare'."
+    echo "Invalid target. Please choose 'default' or 'kurtosis-cdk'."
     exit 1
     ;;
+  esac
+  ;;
+compare)
+  case $2 in
+  files)
+    file1="$3"
+    file2="$4"
+    compare_files_keys "$file1" "$file2"
+    ;;
+  configs)
+    directory1="$3"
+    directory2="$4"
+    compare_configs_keys "$directory1" "$directory2"
+    ;;
+  esac
+  ;;
+*)
+  echo "Invalid action. Please choose 'dump' or 'compare'."
+  exit 1
+  ;;
 esac

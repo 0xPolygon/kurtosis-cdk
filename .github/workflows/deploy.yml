@@ -198,8 +198,8 @@ jobs:
           agglayer_container_id="$(docker ps --filter "name=zkevm-agglayer" --format "{{.ID}}")"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
           # Restart the agglayer service.
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
-          kurtosis service start ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} zkevm-agglayer
+          kurtosis service start ${{ env.ENCLAVE_NAME }} zkevm-agglayer
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
