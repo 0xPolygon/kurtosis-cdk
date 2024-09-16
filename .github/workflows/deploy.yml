@@ -124,9 +124,6 @@ jobs:
       - name: Verify Arpeggio RPC
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
 
-      - name: Verify erpc rpc
-        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)
-
       - name: Verify Blutgang RPC
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
 

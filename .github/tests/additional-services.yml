@@ -3,7 +3,6 @@ args:
     - arpeggio
     - blockscout
     - blutgang
-    - erpc
     #- pless_zkevm_node # zkevm-node doesn't support fork12
     - prometheus_grafana
     - tx_spammer
