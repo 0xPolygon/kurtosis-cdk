@@ -47,7 +47,7 @@ This image contains all the npm dependencies and zkevm contracts compiled for a 
 Build the `zkevm-contracts` image.
 
 ```bash
-version="v8.0.0-rc.1-fork.12"
+version="v8.0.0-rc.3-fork.12"
 docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
@@ -57,8 +57,8 @@ docker build . \
 
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
-REPOSITORY              TAG     IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   local   54d894c6a5bd   10 minutes ago   2.3GB
+REPOSITORY               TAG                    IMAGE ID       CREATED          SIZE
+local/zkevm-contracts    v8.0.0-rc.3-fork.12    25217fcaa683   28 seconds ago   2.53GB
 ```
 
 From now on, the [leovct/zkevm-contracts](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) image tags will follow the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).
@@ -71,7 +71,7 @@ From now on, the [leovct/zkevm-contracts](https://hub.docker.com/repository/dock
 | 11-RC2 | [v7.0.0-rc.2-fork.10](https://github.com/0xPolygonHermez/zkevm-contracts/commits/v7.0.0-rc.2-fork.10) | [leovct/zkevm-contracts:v7.0.0-rc.2-fork.11](https://hub.docker.com/layers/leovct/zkevm-contracts/v7.0.0-rc.2-fork.11/images/sha256-8e7322525e4c0b6fd5141987d786bfd3f7fec3b0c1724843d99751df5f26f46e?context=explore) |
 | 12-RC1 | [v8.0.0-rc.1-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.1-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.1-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.1-fork.12/images/sha256-2197c0b502b93e77bee36a4b87e318a49c6b97bb74b0aca8a13767ef0e684607?context=repo) |
 | 12-RC2 | [v8.0.0-rc.2-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.2-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.2-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.2-fork.12/images/sha256-5d835411ff43efb1008eeede0d25db79f6cb563e86d76b33274bcaebc8f9f7d0?context=repo) |
-| 12-feature-verified-number-e2ef9ca | [feature/verifiers-number@e2ef9ca](https://github.com/0xPolygonHermez/zkevm-contracts/commit/e2ef9ca2defa11e2a66e00d509a5f29eb7339216) | [leovct/zkevm-contracts:feature-verified-number-e2ef9ca-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/feature-verified-number-e2ef9ca-fork.12/images/sha256-2c788bb097ea7bc2b3e3e0ac0d79e3d6a643311b8123420c208fd2789e33e739?context=repo) |
+| 12-RC3 | [v8.0.0-rc.3-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.3-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.3-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.3-fork.12/images/sha256-f3e9a34651403f246572823249b5f698b4e5d311478f87a84cbfa11c2d091705?context=repo) |
 
 The following tags are now deprecated:
 
