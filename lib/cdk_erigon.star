@@ -15,7 +15,7 @@ def start_node(
         wait=None,
     )
     ports["prometheus"] = PortSpec(
-        args["zkevm_prometheus_port"],
+        args["prometheus_port"],
         application_protocol="http",
         wait=None,
     )

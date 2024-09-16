@@ -43,7 +43,7 @@ def start_synchronizer(plan, args, config_artifact, genesis_artifact):
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
@@ -63,7 +63,7 @@ def create_sequencer_service_config(args, config_artifact, genesis_artifact):
             ),
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
@@ -82,7 +82,7 @@ def create_sequence_sender_service_config(
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(
@@ -114,7 +114,7 @@ def create_aggregator_service_config(
             ),
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(
@@ -142,7 +142,7 @@ def create_rpc_service_config(args, config_artifact, genesis_artifact):
             "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
@@ -165,7 +165,7 @@ def create_eth_tx_manager_service_config(
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(
@@ -188,7 +188,7 @@ def create_l2_gas_pricer_service_config(args, config_artifact, genesis_artifact)
         ports={
             "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
             "prometheus": PortSpec(
-                args["zkevm_prometheus_port"], application_protocol="http"
+                args["prometheus_port"], application_protocol="http"
             ),
         },
         config_files=Directory(artifact_names=[config_artifact, genesis_artifact]),
