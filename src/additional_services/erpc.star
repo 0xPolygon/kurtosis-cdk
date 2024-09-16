@@ -14,7 +14,7 @@ def run(plan, args):
         config=ServiceConfig(
             image=ERPC_IMAGE,
             ports={
-                "rpc": PortSpec(RPC_PORT, application_protocol="rpc"),
+                "rpc": PortSpec(RPC_PORT, application_protocol="http"),
                 "prometheus": PortSpec(PROMETHEUS_PORT, application_protocol="http"),
             },
             files={"/etc/erpc": config_artifact},
