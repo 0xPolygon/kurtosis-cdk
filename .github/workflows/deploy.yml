@@ -127,6 +127,9 @@ jobs:
       - name: Verify Blutgang RPC
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
 
+      - name: Verify erpc RPC
+        run: cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
+
       # zkevm-node doesn't work with fork12.
       #- name: Verify permissionless zkevm-node rpc
       #  run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
