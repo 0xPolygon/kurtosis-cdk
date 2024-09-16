@@ -50,6 +50,7 @@ args:
   # - arpeggio
   # - blockscout
   # - blutgang
+  # - erpc
   # - pless_zkevm_node
   # - prometheus_grafana
   # - tx_spammer

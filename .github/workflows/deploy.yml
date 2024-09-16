@@ -69,7 +69,7 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-      
+
       - name: Generate test combinations
         working-directory: .github/tests
         run: ./combine-ymls.sh
@@ -120,12 +120,15 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
+
       - name: Verify Arpeggio RPC
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
 
       - name: Verify Blutgang RPC
         run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+
+      - name: Verify erpc RPC
+        run: cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
 
       # zkevm-node doesn't work with fork12.
       #- name: Verify permissionless zkevm-node rpc
@@ -179,7 +182,7 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
+
       - name: List second CDK L2 chain databases
         run: |
           postgres2_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-002 postgres | cut -d':' -f3)

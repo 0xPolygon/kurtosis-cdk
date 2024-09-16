@@ -12,6 +12,7 @@ agglayer_package = "./agglayer.star"
 arpeggio_package = "./src/additional_services/arpeggio.star"
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
+erpc_package = "./src/additional_services/erpc.star"
 grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
@@ -168,6 +169,8 @@ def run(
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
         elif additional_service == "blutgang":
             deploy_additional_service(plan, "blutgang", blutgang_package, args)
+        elif additional_service == "erpc":
+            deploy_additional_service(plan, "erpc", erpc_package, args)
         elif additional_service == "prometheus_grafana":
             deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
