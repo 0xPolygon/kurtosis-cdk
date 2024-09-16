@@ -35,7 +35,7 @@ def run_rpc(plan, args):
     )
 
     pool_manager_service = plan.get_service(
-        name= "zkevm-pool-manager" + args["deployment_suffix"]
+        name="zkevm-pool-manager" + args["deployment_suffix"]
     )
     pool_manager_url = "{}:{}".format(
         pool_manager_service.ip_address,
