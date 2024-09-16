@@ -17,6 +17,9 @@ deploy_cdk_central_environment: true
 # Deploy cdk/bridge infrastructure.
 deploy_cdk_bridge_infra: true
 
+# Deploy agglayer.
+deploy_agglayer: true
+
 # Deploy cdk-erigon node.
 deploy_cdk_erigon_node: true
 
@@ -34,9 +37,6 @@ args:
   # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
   # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
   sequencer_type: erigon
-
-  # Deploy agglayer.
-  deploy_agglayer: true
 
   # The type of data availability to use.
   # Options:
@@ -67,7 +67,7 @@ args:
 
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.17
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
-  zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
+  agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0-RC12
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
@@ -80,14 +80,14 @@ args:
   zkevm_executor_port: 50071
   zkevm_aggregator_port: 50081
   zkevm_pprof_port: 6060
-  zkevm_prometheus_port: 9091
+  prometheus_port: 9091
   zkevm_data_streamer_port: 6900
   zkevm_rpc_http_port: 8123
   zkevm_rpc_ws_port: 8133
   zkevm_bridge_rpc_port: 8080
   zkevm_bridge_grpc_port: 9090
   zkevm_bridge_ui_port: 80
-  zkevm_agglayer_port: 4444
+  agglayer_port: 4444
   zkevm_dac_port: 8484
   zkevm_pool_manager_port: 8545
 

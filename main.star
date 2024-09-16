@@ -6,6 +6,7 @@ deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 input_parser = "./input_parser.star"
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+agglayer_package = "./agglayer.star"
 
 # Additional services packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -24,15 +25,16 @@ TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
 def run(
     plan,
     deploy_l1=True,
-    deploy_agglayer=True,
     deploy_zkevm_contracts_on_l1=True,
     deploy_databases=True,
-    deploy_cdk_bridge_infra=True,
     deploy_cdk_central_environment=True,
+    deploy_cdk_bridge_infra=True,
+    deploy_agglayer=True,
     deploy_cdk_erigon_node=True,
     args={},
 ):
     args = import_module(input_parser).parse_args(args)
+    args = args | {"deploy_agglayer": deploy_agglayer}  # hacky but works fine for now.
     plan.print("Deploying CDK environment with parameters: " + str(args))
 
     if deploy_cdk_erigon_node:
@@ -60,15 +62,14 @@ def run(
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
-    if deploy_agglayer:
-        if (
-            "zkevm_rollup_manager_address" in args
-            and "zkevm_rollup_manager_block_number" in args
-            and "zkevm_global_exit_root_l2_address" in args
-            and "polygon_data_committee_address" in args
-        ):
-            plan.print("Deploying helper service to retrieve rollup data")
-            deploy_helper_service(plan, args)
+    if (
+        "zkevm_rollup_manager_address" in args
+        and "zkevm_rollup_manager_block_number" in args
+        and "zkevm_global_exit_root_l2_address" in args
+        and "polygon_data_committee_address" in args
+    ):
+        plan.print("Deploying helper service to retrieve rollup data")
+        deploy_helper_service(plan, args)
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
@@ -133,6 +134,13 @@ def run(
         import_module(cdk_bridge_infra_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
+
+    # Deploy the agglayer.
+    if deploy_agglayer:
+        plan.print("Deploying the agglayer")
+        import_module(agglayer_package).run(plan, args)
+    else:
+        plan.print("Skipping the deployment of the agglayer")
 
     # Launching additional services.
     additional_services = args["additional_services"]

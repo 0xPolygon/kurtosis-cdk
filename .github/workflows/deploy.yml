@@ -195,11 +195,11 @@ jobs:
           proof_signer_2="$(yq --raw-output .args.zkevm_l2_sequencer_address ../agglayer-attach-cdk-params.yml)"
           tomlq -Y --toml-output --arg proofSigner2 "$proof_signer_2" --in-place '.ProofSigners += {"2": $proofSigner2}' agglayer-config.toml
           # Replace the agglayer config.
-          agglayer_container_id="$(docker ps --filter "name=zkevm-agglayer" --format "{{.ID}}")"
+          agglayer_container_id="$(docker ps --filter "name=agglayer" --format "{{.ID}}")"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
           # Restart the agglayer service.
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
-          kurtosis service start ${{ env.ENCLAVE_NAME }} zkevm-agglayer-001
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
+          kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
