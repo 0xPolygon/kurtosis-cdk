@@ -9,5 +9,4 @@ args:
   additional_services:
     - pless_zkevm_node
   l1_rpc_url: CHANGE_ME
-  # The file is located under src/additional_services
   genesis_file: ../../.github/tests/pless-zkevm-node/cardona-sepolia-testnet-genesis.json
