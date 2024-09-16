@@ -7,7 +7,7 @@
 
 [RPC]
 Host = "0.0.0.0"
-Port = {{.zkevm_agglayer_port}}
+Port = {{.agglayer_port}}
 ReadTimeout = "60s"
 WriteTimeout = "60s"
 MaxRequestsPerIPAndSecond = 5000
@@ -34,4 +34,4 @@ NodeURL = "{{.l1_rpc_url}}"
 RollupManagerContract = "{{.zkevm_rollup_manager_address}}"
 
 [Telemetry]
-PrometheusAddr = "0.0.0.0:{{.zkevm_prometheus_port}}"
+PrometheusAddr = "0.0.0.0:{{.prometheus_port}}"

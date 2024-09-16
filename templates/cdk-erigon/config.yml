@@ -13,7 +13,7 @@ pprof.addr: "0.0.0.0"
 pprof.port: "{{.zkevm_pprof_port}}"
 
 metrics: true
-metrics.port: "{{.zkevm_prometheus_port}}"
+metrics.port: "{{.prometheus_port}}"
 metrics.addr: "0.0.0.0"
 
 private.api.addr: localhost:9092
