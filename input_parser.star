@@ -62,6 +62,7 @@ DEFAULT_ARGS = {
     "l1_seconds_per_slot": 1,
     "zkevm_rollup_chain_id": 10101,
     "zkevm_rollup_id": 1,
+    "zkevm_use_real_verifier": False,
     "erigon_strict_mode": True,
     "erigon_pre_eip155_transactions": True,
     "polygon_zkevm_explorer": "https://explorer.private/",

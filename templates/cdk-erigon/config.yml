@@ -42,7 +42,7 @@ zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_exe
 zkevm.executor-strict: false
 # end {{end}}
 
-zkevm.sequencer-batch-seal-time: 600s # DO NOT MERGE THIS LINE
+zkevm.sequencer-batch-seal-time: 12s
 zkevm.sequencer-block-seal-time: 6s
 
 zkevm.l1-chain-id: {{.l1_chain_id}}
