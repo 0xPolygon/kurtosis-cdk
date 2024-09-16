@@ -17,7 +17,7 @@ DEFAULT_ARGS = {
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC12",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta18",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta18.3",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.0-RC1",
     "zkevm_hash_db_port": 50061,
     "zkevm_executor_port": 50071,
