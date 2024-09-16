@@ -14,236 +14,9 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  # Deploy the CDK environment without specifying any parameter file.
-  configless:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false github.com/0xPolygon/kurtosis-cdk
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-  # Deploy the CDK environment with the gas token feature enabled.
-  gas-token:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package
-        run: |
-          yq -Y --in-place '.args.zkevm_use_gas_token_contract = true' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-  # Deploy the CDK environment in rollup data availability mode.
-  da-rollup:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package
-        run: |
-          yq -Y --in-place '.args.data_availability_mode = "rollup"' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-  # Deploy the CDK environment in cdk-validium data availability mode.
-  da-cdk-validium:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy Kurtosis CDK package
-        run: |
-          yq -Y --in-place '.args.data_availability_mode = "cdk-validium"' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-  # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
-  pre-deployed-contracts:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Disable all deployment steps
-        run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
-
-      - name: Deploy L1 and zkEVM contracts
-        run: |
-          yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml # reset
-
-      - name: Specify the rollup manager contract address and a few other parameters
-        run: |
-          zkevm_rollup_manager_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
-          yq -Y --in-place ".args.zkevm_rollup_manager_address = $zkevm_rollup_manager_address" params.yml
-
-          zkevm_rollup_manager_block_number=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .deploymentRollupManagerBlockNumber)
-          yq -Y --in-place ".args.zkevm_rollup_manager_block_number = $zkevm_rollup_manager_block_number" params.yml
-
-          zkevm_global_exit_root_l2_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonZkEVMGlobalExitRootL2Address)
-          yq -Y --in-place ".args.zkevm_global_exit_root_l2_address = $zkevm_global_exit_root_l2_address" params.yml
-
-          polygon_data_committee_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
-          yq -Y --in-place ".args.polygon_data_committee_address = $polygon_data_committee_address" params.yml
-
-          zkevm_admin_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .admin)
-          yq -Y --in-place ".args.zkevm_admin_address = $zkevm_admin_address" params.yml
-
-      - name: Deploy the rest of the components
-        run: |
-          yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-  # Deploy the CDK environment incrementally, stage by stage.
-  incremental:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Disable all deployment steps
-        run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
-
-      - name: Deploy L1
-        run: |
-          yq -Y --in-place '.deploy_l1 = true' params.yml
-          yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_l1 = false' params.yml # reset
-
-      - name: Deploy zkEVM contracts on L1
-        run: |
-          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
-
-      - name: Deploy zkEVM node and cdk peripheral databases
-        run: |
-          yq -Y --in-place '.deploy_databases = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_databases = false' params.yml # reset
-
-      - name: Deploy CDK central environment
-        run: |
-          yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
-
-      - name: Deploy CDK bridge infrastructure
-        run: |
-          yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
-
-      - name: Deploy zkEVM permissionless node
-        run: |
-          # Retrieve genesis file.
-          kurtosis files download ${{ env.ENCLAVE_NAME }} genesis /tmp
-          cp /tmp/genesis.json templates/permissionless-node/genesis.json
-
-          # Deploy permisionless node.
-          yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
-
-      - name: Deploy CDK erigon node
-        run: |
-          yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
-
-      - name: Deploy observability stack
-        run: |
-          yq -Y --in-place '.deploy_observability = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_observability = false' params.yml # reset
-
-      - name: Deploy Blockscout stack
-        run: |
-          yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
-
-      - name: Deploy ETH load balancer
-        run: |
-          yq -Y --in-place '.deploy_blutgang = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
-
-      - name: Apply workload
-        run: |
-          yq -Y --in-place '.apply_workload = true' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
-          yq -Y --in-place '.apply_workload = false' params.yml # reset
-
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
-
-  # Deploy a standalone zkevm permisionless node against Sepolia (Ethereum Testnet).
-  sepolia-pless-zkevm-node:
-    if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
+  # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
+  cardona-sepolia-testnet-pless-zkevm-node:
+    #if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -254,14 +27,8 @@ jobs:
 
       - name: Deploy the permisionless node
         run: |
-          # Disable all deployment steps
-          yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
-
-          # Configure zkevm permissionless node parameters
-          yq -Y --in-place '.args.additional_services = ["pless_zkevm_node"]' params.yml
-          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' params.yml
-          yq -Y --in-place '.args.genesis_file = "templates/permissionless-node/test-genesis.json"' params.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' ./.github/tests/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -269,3 +36,143 @@ jobs:
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)"
+
+  # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
+  # TODO: Fix this job.
+  # pre-deployed-contracts:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 20
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Install Kurtosis CDK tools
+  #       uses: ./.github/actions/setup-kurtosis-cdk
+
+  #     - name: Disable all deployment steps
+  #       run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
+
+  #     - name: Deploy L1 and zkEVM contracts
+  #       run: |
+  #         yq -Y --in-place '(.deploy_l1 = true) | (.deploy_zkevm_contracts_on_l1 = true)' params.yml
+  #         yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '(.deploy_l1 = false) | (.deploy_zkevm_contracts_on_l1 = false)' params.yml # reset
+
+  #     - name: Specify the rollup manager contract address and a few other parameters
+  #       run: |
+  #         zkevm_rollup_manager_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonRollupManagerAddress)
+  #         yq -Y --in-place ".args.zkevm_rollup_manager_address = $zkevm_rollup_manager_address" params.yml
+
+  #         zkevm_rollup_manager_block_number=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .deploymentRollupManagerBlockNumber)
+  #         yq -Y --in-place ".args.zkevm_rollup_manager_block_number = $zkevm_rollup_manager_block_number" params.yml
+
+  #         zkevm_global_exit_root_l2_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonZkEVMGlobalExitRootL2Address)
+  #         yq -Y --in-place ".args.zkevm_global_exit_root_l2_address = $zkevm_global_exit_root_l2_address" params.yml
+
+  #         polygon_data_committee_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .polygonDataCommitteeAddress)
+  #         yq -Y --in-place ".args.polygon_data_committee_address = $polygon_data_committee_address" params.yml
+
+  #         zkevm_admin_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq .admin)
+  #         yq -Y --in-place ".args.zkevm_admin_address = $zkevm_admin_address" params.yml
+
+  #     - name: Deploy the rest of the components
+  #       run: |
+  #         yq -Y --in-place '(.deploy_databases = true) | (.deploy_cdk_central_environment = true) | (.deploy_cdk_bridge_infra = true) | (.deploy_observability = true)' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+
+  #     - name: Inspect enclave
+  #       run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+  #     - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+  #       working-directory: .github/scripts
+  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+
+  # Deploy the CDK environment incrementally, stage by stage.
+  # TODO: Fix this job.
+  # incremental:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 20
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Install Kurtosis CDK tools
+  #       uses: ./.github/actions/setup-kurtosis-cdk
+
+  #     - name: Disable all deployment steps
+  #       run: yq -Y --in-place 'with_entries(if .value | type == "boolean" then .value = false else . end)' params.yml
+
+  #     - name: Deploy L1
+  #       run: |
+  #         yq -Y --in-place '.deploy_l1 = true' params.yml
+  #         yq -Y --in-place '.args.l1_seconds_per_slot = 1' params.yml # to speed up deployment
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_l1 = false' params.yml # reset
+
+  #     - name: Deploy zkEVM contracts on L1
+  #       run: |
+  #         yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_zkevm_contracts_on_l1 = false' params.yml # reset
+
+  #     - name: Deploy zkEVM node and cdk peripheral databases
+  #       run: |
+  #         yq -Y --in-place '.deploy_databases = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_databases = false' params.yml # reset
+
+  #     - name: Deploy CDK central environment
+  #       run: |
+  #         yq -Y --in-place '.deploy_cdk_central_environment = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_cdk_central_environment = false' params.yml # reset
+
+  #     - name: Deploy CDK bridge infrastructure
+  #       run: |
+  #         yq -Y --in-place '.deploy_cdk_bridge_infra = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_cdk_bridge_infra = false' params.yml # reset
+
+  #     - name: Deploy zkEVM permissionless node
+  #       run: |
+  #         # Retrieve genesis file.
+  #         kurtosis files download ${{ env.ENCLAVE_NAME }} genesis /tmp
+  #         cp /tmp/genesis.json templates/permissionless-node/genesis.json
+
+  #         # Deploy permisionless node.
+  #         yq -Y --in-place '.deploy_zkevm_permissionless_node = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_zkevm_permissionless_node = false' params.yml # reset
+
+  #     - name: Deploy CDK erigon node
+  #       run: |
+  #         yq -Y --in-place '.deploy_cdk_erigon_node = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml # reset
+
+  #     - name: Deploy observability stack
+  #       run: |
+  #         yq -Y --in-place '.deploy_observability = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_observability = false' params.yml # reset
+
+  #     - name: Deploy Blockscout stack
+  #       run: |
+  #         yq -Y --in-place '.deploy_l2_blockscout = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_l2_blockscout = false' params.yml # reset
+
+  #     - name: Deploy ETH load balancer
+  #       run: |
+  #         yq -Y --in-place '.deploy_blutgang = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.deploy_blutgang = false' params.yml # reset
+
+  #     - name: Apply workload
+  #       run: |
+  #         yq -Y --in-place '.apply_workload = true' params.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=params.yml .
+  #         yq -Y --in-place '.apply_workload = false' params.yml # reset
+
+  #     - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+  #       working-directory: .github/scripts
+  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
