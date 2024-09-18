@@ -96,7 +96,6 @@ GetBatchWaitInterval = "10s"
 	[Aggregator.SequencerPrivateKey]
 		Path = "/etc/cdk/sequencer.keystore"
 		Password = "{{.zkevm_l2_keystore_password}}"
-	
 	[Aggregator.DB]
 		Name = "{{.aggregator_db.name}}"
 		User = "{{.aggregator_db.user}}"
@@ -138,14 +137,17 @@ GetBatchWaitInterval = "10s"
 			L1ChainID = {{.l1_chain_id}}
 			HTTPHeaders = []
 	[Aggregator.Synchronizer]
-		[Aggregator.Synchronizer.DB]
-			Name = "{{.aggregator_syncer_db.name}}"
-			User = "{{.aggregator_syncer_db.user}}"
-			Password = "{{.aggregator_syncer_db.password}}"
-			Host = "{{.aggregator_syncer_db.hostname}}"
-			Port = "{{.aggregator_syncer_db.port}}"
-			EnableLog = false
-			MaxConns = 10
+                 [Aggregator.Synchronizer.SQLDB]
+			DriverName = "sqlite3"
+			DataSourceName = "file:/tmp/aggregator_sync_db.sqlite"
+		# [Aggregator.Synchronizer.DB]
+		# 	Name = "{{.aggregator_syncer_db.name}}"
+		# 	User = "{{.aggregator_syncer_db.user}}"
+		# 	Password = "{{.aggregator_syncer_db.password}}"
+		# 	Host = "{{.aggregator_syncer_db.hostname}}"
+		# 	Port = "{{.aggregator_syncer_db.port}}"
+		# 	EnableLog = false
+		# 	MaxConns = 10
 		[Aggregator.Synchronizer.Synchronizer]
 			SyncInterval = "10s"
 			SyncChunkSize = 1000
