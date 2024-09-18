@@ -103,7 +103,11 @@ document.getElementById('connectButton').addEventListener('click', async () => {
         let txData = ba.apply(ba, depositArgs).encodeABI();
         console.log(txData);
 
-        await addChain(curNet);
+        try {
+            await addChain(curNet);
+        } catch (e) {
+            console.warn(e);
+        }
         await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{"chainId": curNet.chainIdHex}] });
 
         let bridgeValue = "0x0";
@@ -147,6 +151,7 @@ async function addChain(net) {
         "params": [
             {
                 "chainId": net.chainIdHex,
+                "blockExplorerUrls": null,
                 "chainName": `TEST Network - ${net.chainId} - ${net.rollupId}`,
                 "rpcUrls": [
                     net.rpcUrl
@@ -237,7 +242,12 @@ async function attemptClaimTx(defaultBridgeService, bridgeAddress, deposit) {
         return;
     }
 
-    await addChain(net);
+    try {
+        await addChain(net);
+    } catch (e) {
+        console.warn(e);
+    }
+
     await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{"chainId": net.chainIdHex}] });
 
     let txData = net.bridge.methods.claimAsset(merkleProof, rollupMerkleProof, globalIndex, mainExitRoot, rollupExitRoot, origNet, origAddr, destNet, destAddr, amount, metadata).encodeABI();

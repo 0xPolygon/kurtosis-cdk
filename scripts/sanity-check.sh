@@ -7,10 +7,16 @@
 # - Batch verification gap
 
 # Local
-# l1_rpc_url=$(kurtosis port print erigon07 el-1-geth-lighthouse rpc)
-# l2_rpc_url=$(kurtosis port print erigon07 sequencer001 sequencer8123)
+# l1_rpc_url=$(kurtosis port print cdk-v1-01 el-1-geth-lighthouse rpc)
+# l2_rpc_url=$(kurtosis port print cdk-v1-01 cdk-erigon-sequencer-001 rpc)
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
+
+# Xavi
+l1_rpc_url=$(kurtosis port print erigon-18-4 el-1-geth-lighthouse rpc)
+l2_rpc_url=$(kurtosis port print erigon-18-4 sequencer001 sequencer8123)
+rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+rollup_id=1
 
 # BALI
 # l1_rpc_url="https://rpc2.sepolia.org"
@@ -19,10 +25,10 @@
 # rollup_id=1
 
 # CARDONA
-l1_rpc_url="https://rpc2.sepolia.org"
-l2_rpc_url="https://rpc.cardona.zkevm-rpc.com"
-rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-rollup_id=1
+# l1_rpc_url="https://rpc2.sepolia.org"
+# l2_rpc_url="https://rpc.cardona.zkevm-rpc.com"
+# rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+# rollup_id=1
 
 sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
 sig_get_sequenced_batches='getRollupSequencedBatches(uint32,uint64)(bytes32,uint64,uint64)'
