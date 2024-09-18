@@ -1,6 +1,6 @@
 service_package = import_module("../../lib/service.star")
 
-ERPC_IMAGE = "ghcr.io/erpc/erpc:0.0.23"
+ERPC_IMAGE = "ghcr.io/erpc/erpc:0.0.24"
 
 SERVICE_NAME = "erpc"
 RPC_PORT = 8080
