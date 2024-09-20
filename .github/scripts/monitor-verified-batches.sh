@@ -83,7 +83,7 @@ while true; do
     --rpc-url "$rpc_url" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     --gas-limit 100000 \
-    --create 0x600160015B810190630000000456
+    --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
 
   echo "Waiting a few seconds before the next iteration..."
   echo
