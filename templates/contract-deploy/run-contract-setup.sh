@@ -14,7 +14,6 @@ echo_ts() {
 }
 
 wait_for_rpc_to_be_available() {
-    rpc_url="$1"
     counter=0
     max_retries=20
     until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "{{.zkevm_l2_sequencer_address}}" &> /dev/null; do
@@ -152,7 +151,7 @@ cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
-popd
+popd || exit 1
 
 echo_ts "Creating combined.json"
 pushd /opt/zkevm/ || exit 1
@@ -191,7 +190,7 @@ jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddr
 jq --slurpfile c combined.json '.bridgeGenBlockNumber = $c[0].createRollupBlockNumber' combined.json > c.json; mv c.json combined.json
 
 echo_ts "Final combined.json is ready:"
-cp combined.json combined{{.deployment_suffix}}.json
+cp combined.json "combined{{.deployment_suffix}}.json"
 cat combined.json
 
 # This is a jq script to transform the CDK-style genesis file into an allocs file for erigon
@@ -207,17 +206,13 @@ jq_script='
 }) | add'
 
 # Use jq to transform the input JSON into the desired format
-output_json=$(jq "$jq_script" /opt/zkevm/genesis.json)
-
-# Handle jq errors
-if [[ $? -ne 0 ]]; then
+if ! output_json=$(jq "$jq_script" /opt/zkevm/genesis.json); then
     echo_ts "Error processing JSON with jq"
     exit 1
 fi
 
 # Write the output JSON to a file
-echo "$output_json" | jq . > dynamic-kurtosis-allocs.json
-if [[ $? -ne 0 ]]; then
+if ! echo "$output_json" | jq . > dynamic-kurtosis-allocs.json; then
     echo_ts "Error writing to file dynamic-kurtosis-allocs.json"
     exit 1
 fi
