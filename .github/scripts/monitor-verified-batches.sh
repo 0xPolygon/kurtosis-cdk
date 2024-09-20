@@ -59,9 +59,12 @@ end_time=$((start_time + timeout))
 # Main loop to monitor batch verification.
 while true; do
 
+  # shellcheck disable=SC2016
   if kurtosis enclave inspect '${{ env.ENCLAVE_NAME }}' | grep STOPPED ; then
     echo "It looks like there is a stopped service in the enclave. Something must have halted"
+    # shellcheck disable=SC2016
     kurtosis enclave inspect '${{ env.ENCLAVE_NAME }}'
+    # shellcheck disable=SC2016
     kurtosis enclave inspect '${{ env.ENCLAVE_NAME }}' --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' | while read -r container; do echo "printing logs for $container"; docker logs --tail 50 "$container"; done
     exit 1
   fi
