@@ -55,6 +55,7 @@ zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 zkevm.rpc-ratelimit: 250
 zkevm.disable-virtual-counters: false
 zkevm.allow-pre-eip155-transactions: {{.erigon_pre_eip155_transactions}}
+zkevm.limbo: true
 
 nodiscover: true
 maxpeers: 0
