@@ -5,6 +5,5 @@ args:
     - blutgang
     - erpc
     - prometheus_grafana
-    - tx_spammer
     #- pless_zkevm_node # zkevm-node doesn't support fork12
 
