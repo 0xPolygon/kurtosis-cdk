@@ -148,7 +148,6 @@ args:
   # The rollupID of the CDK.
   zkevm_rollup_id: 1
 
-
   # By default a mock verifier is deployed. Change to true to deploye a real verifier which will require a real prover
   zkevm_use_real_verifier: false
 
