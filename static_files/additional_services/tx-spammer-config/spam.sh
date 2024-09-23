@@ -16,7 +16,7 @@ while true; do
     --private-key "{{.private_key}}" \
     --legacy \
     --verbosity 700 \
-    --mode r \
+    --mode t,2 \
     --requests "$requests" \
     --concurrency "$concurrency" \
     --rate-limit "$rate_limit"
