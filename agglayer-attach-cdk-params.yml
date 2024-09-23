@@ -50,6 +50,7 @@ args:
   # - arpeggio
   # - blockscout
   # - blutgang
+  # - erpc
   # - pless_zkevm_node
   # - prometheus_grafana
   # - tx_spammer
@@ -60,19 +61,19 @@ args:
   # https://github.com/0xPolygonHermez/zkevm-contracts/pull/323
   zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-rc.3-fork.12
   #zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-rc.2-fork.12
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC10-fork.12
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3-RC1
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
 
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.17
-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.1.1
+  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
   agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0-RC12
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC12
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.0.0-beta18.3
+  cdk_erigon_node_image: jerrycgh/cdk-erigon:c69caf5bf62b2ad9c907184ad257ed2aef5c4bfc
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0-RC1
 
   # Port configuration.
@@ -148,21 +149,14 @@ args:
   # This should increment by 1 with each additional CDKs being created using the rollup manager contract.
   zkevm_rollup_id: 2
 
-  # The rollup type ID.
-  zkevm_rollup_type_id: "1"
+  # By default a mock verifier is deployed. Change to true to deploye a real verifier which will require a real prover
+  zkevm_use_real_verifier: false
 
   # If erigon is being used as the sequencer,
   # This flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
   # This flag will allow pre EIP155 transactions.
   erigon_pre_eip155_transactions: true
-
-  # The address of the rollup manager contract deployer on L1.
-  zkevm_rollup_manager_deployer: "0xE34aaF64b29273B7D567FCFc40544c014EEe9970"
-  zkevm_rollup_manager_deployer_private_key: "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
-  rollup_manager_address: "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-  # The address of the L2 gas token.
-  zkevm_gas_token_address: "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
 
   # The address of the rollup manager contract on L1.
   # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.
