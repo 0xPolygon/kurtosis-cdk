@@ -22,5 +22,5 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install --no-cache-dir yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup --version nightly-f625d0fa7c51e65b4bf1e8f7931cd1c6e2e285e9 \
+  && /root/.foundry/bin/foundryup \
   && cp /root/.foundry/bin/* /usr/local/bin
