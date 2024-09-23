@@ -269,6 +269,26 @@ cleanup of the enclave before trying to run again.
 kurtosis clean --all
 #+end_src
 
+** 429 Too Many Requests
+
+After following the above instructions, you might see an error like this:
+
+#+begin_example
+error getting last block num from eth client: 429 Too Many Requests
+#+end_example
+
+First, check the state of the cdk-node service
+
+#+begin_example
+kurtosis enclave inspect <enclave_name>
+#+end_example
+
+If the cdk-node service has stopped, simply restart the service.
+
+#+begin_example
+kurtosis service stop <enclave_name> <cdk-node-001>
+kurtosis service start <enclave_name> <cdk-node-001>
+#+end_example
 
 ** Replay-Protected Transactions
 
@@ -291,7 +311,7 @@ changes. E.g. in [[https://geth.ethereum.org/docs/fundamentals/command-line-opti
 
 If you're not running your own node, you'll need to use an RPC
 provider that allows unprotected transactions. In the example for this
-guide, I've used [[https://www.alchemy.com/][Alchmey]].
+guide, I've used [[https://www.alchemy.com/][Alchemy]].
 
 ** Cannot find module './deploy_output.json'
 

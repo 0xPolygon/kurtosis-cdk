@@ -30,7 +30,7 @@ WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
 {{if eq .zkevm_rollup_fork_id "12"}}
 MaxBatchesForL1 = 300
-BlockFinality="SafeBlock" # TODO: should be finalized but it breaks :)
+BlockFinality="FinalizedBlock"
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 GetBatchWaitInterval = "10s"
 {{end}}
@@ -159,7 +159,7 @@ SyncBlockChunkSize = 10
 BlockFinality = "LatestBlock"
 URLRPCL1 = "{{.l1_rpc_url}}"
 WaitForNewBlocksPeriod = "1s"
-InitialBlock = 0 # TODO: should be block were rollup manager was deployed
+InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 {{end}}
 
 [NetworkConfig.L1]
