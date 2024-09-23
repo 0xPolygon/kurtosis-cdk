@@ -10,9 +10,7 @@ def run(plan, args):
         config=ServiceConfig(
             image=TX_SPAMMER_IMG,
             files={
-                "/opt/scripts": Directory(
-                    artifact_names=[tx_spammer_config_artifacts]
-                ),
+                "/opt/scripts": Directory(artifact_names=[tx_spammer_config_artifacts]),
             },
             entrypoint=["bash", "-c"],
             cmd=["chmod +x /opt/scripts/*.sh && /opt/scripts/spam.sh"],
