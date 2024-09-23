@@ -58,6 +58,13 @@ end_time=$((start_time + timeout))
 
 # Main loop to monitor batch verification.
 while true; do
+
+  if kurtosis enclave inspect "$ENCLAVE_NAME" | grep STOPPED ; then
+    echo "It looks like there is a stopped service in the enclave. Something must have halted"
+    kurtosis enclave inspect "$ENCLAVE_NAME"
+    kurtosis enclave inspect "$ENCLAVE_NAME" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' | while read -r container; do echo "printing logs for $container"; docker logs --tail 50 "$container"; done
+    exit 1
+  fi
   # Query the number of verified batches from the RPC URL.
   batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_batchNumber | sed 's/"//g')")"
   virtual_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_virtualBatchNumber | sed 's/"//g')")"
@@ -83,7 +90,7 @@ while true; do
     --rpc-url "$rpc_url" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     --gas-limit 100000 \
-    --create 0x600160015B810190630000000456
+    --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
 
   echo "Waiting a few seconds before the next iteration..."
   echo

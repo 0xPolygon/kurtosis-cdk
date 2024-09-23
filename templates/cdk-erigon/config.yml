@@ -42,10 +42,8 @@ zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_exe
 zkevm.executor-strict: false
 # end {{end}}
 
-zkevm.sequencer-batch-seal-time: 12s # 12s
-zkevm.sequencer-block-seal-time: 6s # 6s
-
-zkevm.pool-manager-url: "http://zkevm-pool-manager{{.deployment_suffix}}:{{.zkevm_pool_manager_port}}"
+zkevm.sequencer-batch-seal-time: 12s
+zkevm.sequencer-block-seal-time: 6s
 
 zkevm.l1-chain-id: {{.l1_chain_id}}
 zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
@@ -57,6 +55,7 @@ zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 zkevm.rpc-ratelimit: 250
 zkevm.disable-virtual-counters: false
 zkevm.allow-pre-eip155-transactions: {{.erigon_pre_eip155_transactions}}
+zkevm.limbo: true
 
 nodiscover: true
 maxpeers: 0
@@ -69,4 +68,5 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 txpool.disable: true
 zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+zkevm.pool-manager-url: {{.pool_manager_url}}
 # end {{end}}

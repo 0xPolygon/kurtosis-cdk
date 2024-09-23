@@ -9,13 +9,13 @@ PARAMS_YML_PATH="../../params.yml"
 
 # Extracting default parameters from the different files.
 echo "Extracting default parameters from input_parser.star..."
-if ! sed -n '/^DEFAULT_ARGS = {/,/^}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' "$INPUT_PARSER_PATH" | yq --yaml-output >.input_parser.star; then
+if ! sed -n '/^DEFAULT_ARGS = {/,/^}/ { s/DEFAULT_ARGS = //; s/}/}/; p; }' "$INPUT_PARSER_PATH" | yq -S --yaml-output >.input_parser.star; then
   echo "Error: Failed to extract parameters from input_parser.star."
   exit 1
 fi
 
 echo "Extracting default parameters from params.yml..."
-if ! yq --yaml-output .args "$PARAMS_YML_PATH" >.params.yml; then
+if ! yq -S --yaml-output .args "$PARAMS_YML_PATH" >.params.yml; then
   echo "Error: Failed to extract parameters from params.yml."
   exit 1
 fi
