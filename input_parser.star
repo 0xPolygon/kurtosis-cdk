@@ -6,7 +6,7 @@ DEFAULT_ARGS = {
     "sequencer_type": "erigon",
     "data_availability_mode": "cdk-validium",
     "additional_services": [],
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.3-fork.12",
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3-RC1",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
