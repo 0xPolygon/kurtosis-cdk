@@ -9,15 +9,6 @@ requests=50000
 concurrency=5
 rate_limit=50
 
-# Deploy an ERC20 token.
-echo "Deploying an ERC20 token..."
-cast send \
-  --rpc-url "{{.rpc_url}}" \
-  --private-key "{{.private_key}}" \
-  --legacy \
-  --create \
-  "$(cat /opt/bindings/tokens/ERC20.bin)"
-
 while true; do
   echo "Sending a few transactions to the RPC..."
   polycli loadtest \
@@ -25,7 +16,7 @@ while true; do
     --private-key "{{.private_key}}" \
     --legacy \
     --verbosity 700 \
-    --mode r \
+    --mode t,2 \
     --requests "$requests" \
     --concurrency "$concurrency" \
     --rate-limit "$rate_limit"
