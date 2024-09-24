@@ -102,6 +102,7 @@ providers:
 # endpoint. You can keep all observers enabled, it shouldn't cause any problems.
 # See ./observer/observer.go for the observer mapping.
 observers:
+  - "account_balances"
   - "base_fee_per_gas"
   - "block"
   - "block_interval"
@@ -136,6 +137,7 @@ observers:
   - "state_sync"
   - "stolen_block"
   - "system"
+  - "time_to_mine"
   - "transaction_cost"
   - "transaction_count"
   - "transaction_gas_fee_cap"
@@ -144,6 +146,7 @@ observers:
   - "transaction_gas_tip_cap"
   - "transaction_pool"
   - "transaction_value"
+  - "trusted_batch"
   - "uncles"
   - "validator_wallet_balance"
   - "zkevm_batches"
