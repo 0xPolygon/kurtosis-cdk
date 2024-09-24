@@ -1,6 +1,6 @@
 service_package = import_module("../../lib/service.star")
 
-PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.58"
+PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.59"
 
 
 def run(plan, args):
