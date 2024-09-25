@@ -155,6 +155,7 @@ GetBatchWaitInterval = "10s"
 [L1InfoTreeSync]
 DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
+RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
 SyncBlockChunkSize = 10
 BlockFinality = "LatestBlock"
 URLRPCL1 = "{{.l1_rpc_url}}"
