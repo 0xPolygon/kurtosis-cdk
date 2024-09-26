@@ -816,14 +816,6 @@ http.trace: false
 # Default: false
 ws: true
 
-# The APIs offered by the WS RPC server.
-# Default: ""
-ws.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
-
-# Enable compression over WS.
-# Default: false
-ws.compression: false
-
 
 # ==============================================================================
 #      _   _   _ _____ _   _   ____  ____   ____ 
