@@ -6,27 +6,17 @@
 #  |_____\___/ \____|
                    
 # --------------------------------------------------------------------------------------------------
-# Format logs with JSON.
-# TODO: What's the diff between log.json and log.console.json?
-# Default: false
-log.json: false
-
 # Format console logs with JSON.
 # Default: false
 log.console.json: false
 
-# Format file logs with JSON
-# Default: false
-log.dir.json: false
-
-# Set the log level for the application.
-# TODO: What's the diff between verbosity and log.console.verbosity?
-# Default: info
-verbosity: {{.global_log_level}}
-
 # Set the log level for console logs
 # Default: info
 log.console.verbosity: {{.global_log_level}}
+
+# Format file logs with JSON
+# Default: false
+log.dir.json: false
 
 # Path to store user and errors logs to disk.
 # Default: ""
