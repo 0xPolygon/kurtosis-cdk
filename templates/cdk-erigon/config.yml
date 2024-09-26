@@ -735,7 +735,6 @@ graphql: false
 
 # Limit the amount of goroutines to process a batch request.
 # A batch still can have unlimited amount of request.
-# TODO: explain this setting.
 rpc.batch.concurrency: 2
 
 # Erigon has enabled JSON streaming for some heavy endpoints (like trace_*).
