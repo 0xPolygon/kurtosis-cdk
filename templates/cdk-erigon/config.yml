@@ -86,7 +86,7 @@ chain: dynamic-kurtosis
 # --------------------------------------------------------------------------------------------------
 # Rebuild the state tree after this many block behind.
 # Default: 10_000
-zkevm.rebuild-tree-after": 10_000
+zkevm.rebuild-tree-after: 10_000
 
 # Increment the state tree but never rebuild it.
 # Default: false
