@@ -773,11 +773,6 @@ http.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
 # Default: false
 http.trace: false
 
-# The path prefix on which the HTTP JSON RPC is served.
-# Use `/` to serve on all paths.
-# Default: ""
-http.rpcprefix: ""
-
 
 # ==============================================================================
 #  __        ______    ____  ____   ____ 
@@ -805,11 +800,6 @@ ws.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
 # The origins from which to accept websockets requests.
 # Default: ""
 ws.origins: ""
-
-# The path prefix on which the WS JSON RPC is served.
-# Use `/` to serve on all paths.
-# Default: ""
-ws.rpcprefix: ""
 
 # Enable compression over WS.
 # Default: false
