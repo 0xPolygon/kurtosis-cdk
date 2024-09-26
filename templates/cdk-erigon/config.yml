@@ -377,6 +377,26 @@ torrent.conns.perfile: 10
 
 
 # ==============================================================================
+#   ____  ____   ____ 
+#  |  _ \|  _ \ / ___|
+#  | |_) | |_) | |    
+#  |  _ <|  __/| |___ 
+#  |_| \_\_|    \____|
+#                    
+# ==============================================================================
+# Disable the IPC RPC server.
+# Default: false
+ipcdisable: false
+
+# The filename for IPC socket/pipe within the datadir (explicit paths escape it).
+# ipcpath: 
+
+# Enable the graphql endpoint.
+# Default: false
+graphql: false
+
+
+# ==============================================================================
 #   _   _ _____ _____ ____    ____  ____   ____ 
 #  | | | |_   _|_   _|  _ \  |  _ \|  _ \ / ___|
 #  | |_| | | |   | | | |_) | | |_) | |_) | |    
@@ -458,6 +478,30 @@ ws.rpcprefix: ""
 # Enable compression over WS.
 # Default: false
 ws.compression: false
+
+
+# ==============================================================================
+#      _   _   _ _____ _   _   ____  ____   ____ 
+#     / \ | | | |_   _| | | | |  _ \|  _ \ / ___|
+#    / _ \| | | | | | | |_| | | |_) | |_) | |    
+#   / ___ \ |_| | | | |  _  | |  _ <|  __/| |___ 
+#  /_/   \_\___/  |_| |_| |_| |_| \_\_|    \____|
+#                                                                                            
+# ------------------------------------------------------------------------------
+# The listening interface of the engine API.
+# Default: localhost
+#authrpc.addr: "0.0.0.0"
+
+# The listening port of the engine API.
+#authrpc.port: 8551
+
+# The path to the token that ensures safe connection between CL and EL.
+# Default: ""
+# authrpc.jwtsecret: ""
+
+# A comma separated list of virtual hostnames from which to accept Engine API requests (server enforced).
+# Accepts '*' wildcard.
+#authrpc.vhosts: "*"
 
 
 # ==============================================================================
