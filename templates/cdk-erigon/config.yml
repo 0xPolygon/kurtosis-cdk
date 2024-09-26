@@ -237,11 +237,23 @@ zkevm.pool-manager-url: {{.pool_manager_url}}
 #  |_____| |_| |_| |_|_| |_/_/   \_\____/|_| |_|
 #                                              
 # ------------------------------------------------------------------------------
-# TODO: ethash.cachesinmem
-# TODO: ethash.cacheslockmmap
-# TODO: ethash.dagdir
-# TODO: ethash.dagslockmmap
-# TODO: snapshots
+# The number of recent ethash caches to keep in memory (16MB each).
+# Default: 2
+ethash.cachesinmem: 2
+
+# Lock memory maps of recent ethash caches.
+# Default: false
+ethash.cacheslockmmap: false
+
+# The directory to store the ethash mining DAGs.
+ethash.dagdir: /tmp/erigon-ethash
+
+# Lock memory maps for recent ethash mining DAGs.
+ethash.dagslockmmap: false
+
+# Use snapshots for mainnet, goerli, gnosis chain and chiado.
+# Do not use snapshots in all the other cases.
+snapshots: false
 
 # Enable an external consensus engine.
 # By default, Erigon runs its own consensus client called Caplin.
