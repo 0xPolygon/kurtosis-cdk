@@ -298,6 +298,67 @@ txpool.commit.every: 15s
 
 
 # ------------------------------------------------------------------------------
+#   __  __ ___ _   _ _____ ____  
+#  |  \/  |_ _| \ | | ____|  _ \ 
+#  | |\/| || ||  \| |  _| | |_) |
+#  | |  | || || |\  | |___|  _ < 
+#  |_|  |_|___|_| \_|_____|_| \_\
+#                               
+# ------------------------------------------------------------------------------
+# Enable mining.
+# Default: false
+mine: false
+
+# Disable PoS proposer.
+# Default: false
+proposer.disable: false
+
+# A comma separated HTTP URL list to notify of new work packages.
+# Default: ""
+miner.notify: ""
+
+# The target gas limit for mined blocks.
+# Default: 30_000_000
+miner.gaslimit: 30_000_000
+
+# The minimum gas price for mining a transaction.
+# Default: 1_000_000_000
+miner.gasprice: 1_000_000_000 # 1e9
+
+# The public address for block mining rewards.
+# Default: 0
+miner.etherbase: 0
+
+# The private key to sign blocks with.
+# Default: ""
+miner.sigfile: ""
+
+# The block extra data set by the miner.
+# Default: client version
+miner.extradata: ""
+
+# The time interval to recreate the block being mined.
+# Default: 3s
+miner.recommit: 3s
+
+# Disable remote sealing verification.
+# Default: false
+miner.noverify: false
+
+# Record information useful for VM and contract debugging.
+# Default: false
+vmdebug: false
+
+# Allow insecure account unlocking when account-related RPCs are exposed by HTTP.
+# Default: false
+allow-insecure-unlock: false
+
+# TODO: rpc.gascap
+# TODO: rpc.txfeecap
+# TODO: ethstats
+# TODO: fakepow
+
+# ------------------------------------------------------------------------------
 #   _   _ _____ _______        _____  ____  _  __
 #  | \ | | ____|_   _\ \      / / _ \|  _ \| |/ /
 #  |  \| |  _|   | |  \ \ /\ / / | | | |_) | ' / 
@@ -377,12 +438,12 @@ torrent.conns.perfile: 10
 
 
 # ==============================================================================
-#   _   _ _____ _____ ____  
-#  | | | |_   _|_   _|  _ \ 
-#  | |_| | | |   | | | |_) |
-#  |  _  | | |   | | |  __/ 
-#  |_| |_| |_|   |_| |_|    
-#
+#   _   _ _____ _____ ____    ____  ____   ____ 
+#  | | | |_   _|_   _|  _ \  |  _ \|  _ \ / ___|
+#  | |_| | | |   | | | |_) | | |_) | |_) | |    
+#  |  _  | | |   | | |  __/  |  _ <|  __/| |___ 
+#  |_| |_| |_|   |_| |_|     |_| \_\_|    \____|
+#                                              
 # ------------------------------------------------------------------------------
 # Enable the HTTP RPC server.
 # Default: true
@@ -424,12 +485,12 @@ http.rpcprefix: ""
 
 
 # ==============================================================================
-#  __        ______  
-#  \ \      / / ___| 
-#   \ \ /\ / /\___ \ 
-#    \ V  V /  ___) |
-#     \_/\_/  |____/ 
-#                   
+#  __        ______    ____  ____   ____ 
+#  \ \      / / ___|  |  _ \|  _ \ / ___|
+#   \ \ /\ / /\___ \  | |_) | |_) | |    
+#    \ V  V /  ___) | |  _ <|  __/| |___ 
+#     \_/\_/  |____/  |_| \_\_|    \____|
+#                                       
 # ------------------------------------------------------------------------------
 # Enable the WS RPC server.
 # Default: false
