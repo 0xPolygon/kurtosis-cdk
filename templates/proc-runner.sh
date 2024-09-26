@@ -14,18 +14,14 @@ command_pid="$!"
 
 echo "PID $$ has started child process $command_pid" >&2
 
-# Define a signal handler for SIGRTMIN+1 (a real-time signal).
+# Define a signal handler for SIGTRAP
 # When this signal is received, the script will:
 # 1. Gracefully terminate the child process by sending the SIGTERM signal.
 # 2. Start a dummy process (in this case, `tail -f /dev/null`) to keep the container running.
 # This is useful in containerized environments where stopping the main process would otherwise cause the container to exit.
 #
-# Example: To trigger this behavior, run `kill -35 <PID>` where `<PID>` is the process ID of this script.
-#
-# We're using `35` as the signal rather than `RTMIN+1` because it seems like Bourne shell treats 35 as `RT35` rather than `RTMIN+1`
-#
-# shellcheck disable=SC2172
-trap 'echo "Sending TERM to child process $command_pid"; kill -TERM $command_pid; echo "Starting dummy process"; tail -f /dev/null' 35
+# Example: To trigger this behavior, run `kill -s TRAP <PID>` or `kill -5 <PID>` where `<PID>` is the process ID of this script.
+trap 'echo "Sending TERM to child process $command_pid"; kill -TERM $command_pid; echo "Starting dummy process"; tail -f /dev/null' TRAP
 
 # The wait command pauses the script and waits for all background
 # processes to complete.  Here it waits for the child process to
