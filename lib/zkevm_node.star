@@ -136,7 +136,7 @@ def create_rpc_service_config(args, config_artifact, genesis_artifact):
     rpc_service_config = _create_node_component_service_config(
         image=data_availability_package.get_node_image(args),
         ports={
-            "http-rpc": PortSpec(
+            "rpc": PortSpec(
                 args["zkevm_rpc_http_port"], application_protocol="http"
             ),
             "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),

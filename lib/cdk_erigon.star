@@ -19,32 +19,20 @@ def start_node(
         application_protocol="http",
         wait=None,
     )
+    ports["rpc"] = PortSpec(
+        args["zkevm_rpc_http_port"],
+        application_protocol="http",
+    )
+
+    ports["ws-rpc"] = PortSpec(
+        args["zkevm_rpc_http_port"],
+        application_protocol="ws",
+    )
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
-        # TODO these port names seem weird... http-rpc / rpc? I don't
-        # get it. There seem to be a bunch of weird dependencies on
-        # both of these existing. It seems likt they should be called
-        # the same thing and the only difference is if this a
-        # sequencer or an rpc.. the port itself shouldn't be named
-        # differently and there certainly shouldn't be dependencies on
-        # those names
-        ports["rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="http",
-        )
     else:
         name = args["l2_rpc_name"] + args["deployment_suffix"]
-        ports["http-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"],
-            application_protocol="http",
-        )
-        # Erigon upgrades the http traffic to ws when appropriate (I think?),
-        # so we use the http port for this config, but there may be another way
-        # to configure cdk-erigon such that it uses a different port for WS
-        ports["ws-rpc"] = PortSpec(
-            args["zkevm_rpc_http_port"], application_protocol="ws"
-        )
 
     if is_sequencer:
         ports["data-streamer"] = PortSpec(
