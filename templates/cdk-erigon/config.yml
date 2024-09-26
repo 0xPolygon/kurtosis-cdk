@@ -1027,18 +1027,49 @@ allow-insecure-unlock: false
 # Default: ""
 # fakepow:
 
-# TODO: db.read.concurrency, db.pagesize, db.size.limit
-# TODO: trace.compat, trace.maxtraces
-# TODO: tls, tls.cert, tls.key, tls.cacert
-# TODO: exec, preload
-# TODO: state.cache
-# TODO: jspath
-# TODO: gpo.blocks, gpo.percentile, gpo.maxprice
-# TODO: experimental.history.v3, experimental.transactions.v3
-# TODO: clique.checkpoint, clique.snapshots, clique.signatures, clique.datadir
-# TODO: snap.keepblocks, snap.stop, 
-# TODO: healthcheck (grpc)
-# TODO: bor.x
-# TODO: config
-# TODO: lightclient.x
-# TODO: sentinel.x
+
+# --------------------------------------------------------------------------------------------------
+#   ____  ____  
+#  |  _ \| __ ) 
+#  | | | |  _ \ 
+#  | |_| | |_) |
+#  |____/|____/ 
+#              
+# --------------------------------------------------------------------------------------------------
+# Specify the maximum allowable size for the database.
+# Default: 8TB
+db.size.limit: 8TB
+
+# Control the maximum number of concurrent read operations allowed on the database.
+# Default: matches the number of CPU cores available (GOMAXPROCS).
+# db.read.concurrency: 
+
+# Define the size of each page for the MDBX database upon creation.
+# It must be a power of 2 and within the range of 256 bytes to 64KB.
+# Default: based on the operating system's page size.
+# db.pagesize
+
+
+# --------------------------------------------------------------------------------------------------
+#   _____ ___  ____   ___  
+#  |_   _/ _ \|  _ \ / _ \ 
+#    | || | | | | | | | | |
+#    | || |_| | |_| | |_| |
+#    |_| \___/|____/ \___/ 
+#
+# --------------------------------------------------------------------------------------------------    
+# TODO: Document these parameters...   
+# - trace.x
+# - tls.x
+# - exec + preload
+# - state
+# -jspath
+# - gpo.x
+# - experimental.x
+# - clique.x
+# - snap.x
+# - healthcheck (grpc)
+# - bor.x
+# - config
+# - lightclient.x
+# - sentinel.x
