@@ -51,6 +51,10 @@ def start_node(
             args["zkevm_data_streamer_port"], application_protocol="datastream"
         )
 
+    proc_runner_file_artifact = plan.upload_files(
+        src="../templates/proc-runner.sh",
+        # leaving the name out for now. This might cause some idempotency issues, but we're not currently relying on that for now
+    )
     plan.add_service(
         name=name,
         config=ServiceConfig(
@@ -72,12 +76,11 @@ def start_node(
                         cdk_erigon_node_chain_allocs_artifact,
                     ]
                 ),
+                "/usr/local/share/proc-runner": proc_runner_file_artifact,
             },
-            entrypoint=["sh", "-c"],
-            # Sleep for 10 seconds in order to wait for datastream server getting ready
-            # TODO: find a better way instead of waiting
+            entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
             cmd=[
-                "sleep 10 && cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml & tail -f /dev/null"
+                "cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"
             ],
             env_vars=envs,
         ),
