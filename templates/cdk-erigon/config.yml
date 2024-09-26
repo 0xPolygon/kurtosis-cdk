@@ -48,10 +48,22 @@ log.dir.verbosity: "{{.global_log_level}}"
 # The data directory for the databases.
 datadir: ./data/dynamic-kurtosis-sequencer
 
-# TODO: datadir.ancient
-# TODO: datadir.minfreedisk
-# TODO: networkid
-# TODO: dev.period
+# The data directory for ancient chain segments.
+# Default: inside chaindata
+# datadir.ancient:
+
+# The minimum free disk space in MB, once reached triggers auto shut down.
+# Set to 0 to disable this chec.
+# Default: --cache.gc converted to MB
+# datadir.minfreedisk:
+
+# The network identifier.
+# For testnets, use --chain <testnet-name> instead.
+networkid: 1 # ethereum
+
+# The block period to use in developer mode
+# Set to 0 to mine only if transactions are pending.
+# dev.period:
 
 # The name of the testnet to join.
 # To use a custom chain that is different from the default chains (zkevm cardona and zkevm mainnet),
@@ -60,9 +72,15 @@ datadir: ./data/dynamic-kurtosis-sequencer
 # https://github.com/0xPolygonHermez/cdk-erigon?tab=readme-ov-file#dynamic-chain-configuration
 chain: dynamic-kurtosis
 
-# TODO: identity
-# TODO: whitelist
-# TODO: override.shanghaiTime
+# Custom node name.
+# Default ""
+# identity:
+
+# A comma separated block number-to-hash mappings to enforce (<number>=<hash>).
+# whitelist:
+
+# Manually specify Shanghai fork time, overriding the bundled setting.
+# override.shanghaiTime:
 
 
 # ------------------------------------------------------------------------------
