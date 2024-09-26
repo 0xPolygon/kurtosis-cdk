@@ -816,9 +816,6 @@ http.trace: false
 # Default: false
 ws: true
 
-# The listening interface of the WS RPC server.
-ws.addr: 0.0.0.0
-
 # The APIs offered by the WS RPC server.
 # Default: ""
 ws.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
