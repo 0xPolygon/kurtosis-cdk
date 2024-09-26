@@ -188,6 +188,7 @@ zkevm.pool-manager-url: {{.pool_manager_url}}
 # Set the maximum number of RPC requests allowed per second.
 # This helps prevent server overload and ensures fair resource allocation among clients.
 # A value of 0 disables rate limiting, while higher values enforce stricter limits.
+# It looks like this flag is not used!
 # Default: 0
 zkevm.rpc-ratelimit: 250
 
