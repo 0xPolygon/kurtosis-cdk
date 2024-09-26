@@ -94,7 +94,94 @@ zkevm.increment-tree-always: false
 # Default: false
 zkevm.smt-regenerate-in-memory: false
 
-# TODO
+# A size of the memdb used on witness generation.
+# Batch generation may fail for historical data if insufficient unwind depth.
+# Default: 2GB
+zkevm.witness-memdb-size: 2GB
+
+# Enable limbo processing on batches that failed verification.
+# This settings allows the network to recover and to continue operating whilst exposing the details
+# of batches that failed verification.
+# Default: false
+zkevm.limbo: true
+
+# Set the effective gas price in percentage for ETH transfers.
+# Default: 1
+zkevm.effective-gas-price-eth-transfer: 1
+
+# Set the effective gas price in percentage for ERC20 transfers.
+# Default: 1
+zkevm.effective-gas-price-erc20-transfer: 1
+
+# Set the effective gas price in percentage for contract invocation.
+# Default: 1
+zkevm.effective-gas-price-contract-invocation: 1
+
+# Set the effective gas price in percentage for contract deployment.
+# Default: 1
+zkevm.effective-gas-price-contract-deployment: 1
+
+# Set the maximum gas price.
+# Default: 0
+zkevm.default-gas-price: 0
+
+# Apply factor to the L1 gas price to calculaet the L2 gas price.
+# Default: 1
+zkevm.gas-price-factor: 1
+
+# Enable or disable full witness
+# TODO: Explain
+# Default: true
+zkevm.witness-full: true
+
+# Limit the number of blocks to sync.
+# This will halt batches and execution to this number while keeping the node active.
+# Default: 0
+# TODO: Explain what is the effect of a zero value.
+zkevm.sync-limit: 0
+
+# rpc {{if not .is_sequencer}}
+# The URL of the pool manager.
+# If set,  eth_sendRawTransaction will be redirected there.
+# Default: ""
+zkevm.pool-manager-url: {{.pool_manager_url}}
+# {{end}}
+
+# Reject smart contract deployments.
+# Default: false
+zkevm.reject-smart-contract-deployments: false
+
+# Disable the virtual counters.
+# This has an effect on sequencer node and when external executor is not enabled.
+# TODO: Explain
+# Default: false
+zkevm.disable-virtual-counters: false
+
+# The URL of the data availability service.
+# Default: ""
+# TODO: Find out why we don't set it?
+zkevm.da-url: ""
+
+# The multiplier to reduce the SMT depth by, when calculating virtual counters.
+# Default: 0.6
+zkevm.virtual-counters-smt-reduction: 0.6
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           ____  ____   ____ 
+#  |__  / |/ / ____\ \   / /  \/  |         |  _ \|  _ \ / ___|
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | |_) | |_) | |    
+#   / /_| . \| |___  \ V / | |  | | |_____| |  _ <|  __/| |___ 
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_| \_\_|    \____|
+#
+# --------------------------------------------------------------------------------------------------                                                             
+# The RPC rate limit in requests per second.
+# TODO: Find out if this parameter is used.
+# Default: 0
+zkevm.rpc-ratelimit: 250
+
+# The maximum number of concurrent requests to the executor for getBatchWitness.
+# Default: 1
+zkevm.rpc-get-batch-witness-concurrency-limit: 1
 
 
 # --------------------------------------------------------------------------------------------------
@@ -105,6 +192,16 @@ zkevm.smt-regenerate-in-memory: false
 #  /____|_|\_\_____|  \_/  |_|  |_|         |____/_/   \_\_/_/   \_\____/ |_| |_| \_\_____/_/   \_\_|  |_|
 #                                                                                                                                   
 # --------------------------------------------------------------------------------------------------
+# {{if .is_sequencer}}
+# The listening interface of the datastreamer.
+# Default: ""
+zkevm.data-stream-host: 0.0.0.0
+
+# The listening port of the datastreamer.
+# Default: 0
+zkevm.data-stream-port: {{.zkevm_data_stream_port}}
+# {{end}}
+
 # The stream version indicator.
 # Options:
 # - 1: PreBigEndian
@@ -120,6 +217,17 @@ zkevm.datastream-version: 2
 # Default: 500ms
 zkevm.datastream-new-block-timeout: 500ms
 
+# The write timeout when sending data to a datastream client.
+# Default: 20s
+zkevm.data-stream-writeTimeout: 20s
+
+# The inactivity check interval when interacting with a datastream server.
+# Default: 5m
+zkevm.data-stream-inactivity-check-interval: 5m
+
+# The inactivity timeout when interacting with a datastream server.
+# Default: 10m
+zkevm.data-stream-inactivity-timeout: 10m
 
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           ____  _____ ___  _   _ _____ _   _  ____ _____ ____  
@@ -164,6 +272,13 @@ zkevm.sequencer-resequence-strict: true
 # Default: true
 zkevm.sequencer-resequence-reuse-l1-info-index: true
 
+# Allow the sequencer to proceed transactions with zero gas price.
+# Default: false
+zkevm.allow-free-transactions: false
+
+# Allow the sequencer to proceed pre-EIP155 transactions
+# Default: false
+zkevm.allow-pre-eip155-transactions: true
 
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           _______  _______ ____ _   _ _____ ___  ____  
@@ -187,6 +302,13 @@ zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_exe
 # Default: 60s
 zkevm.executor-request-timeout: 60s
 
+# The maximum number of concurrent requests sent to the executor.
+# Default: #
+zkevm.executor-max-concurrent-requests: 1
+
+# Output the payload of the executor, serialised requests stored to disk by batch number.
+# Default: ""
+zkevm.executor-payload-output: ""
 
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __              _    ____  ____  ____  _____ ____ ____  _____ ____  
@@ -313,25 +435,6 @@ zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 zkevm.l2-datastreamer-timeout: 0s
 
 
-# strict mode {{if .erigon_strict_mode}}
-zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}
-# default mode {{else}}
-# end {{end}}
-
-zkevm.rpc-ratelimit: 250
-zkevm.disable-virtual-counters: false
-zkevm.allow-pre-eip155-transactions: {{.erigon_pre_eip155_transactions}}
-zkevm.limbo: true
-
-# sequencer {{if .is_sequencer}}
-zkevm.data-stream-host: 0.0.0.0
-zkevm.data-stream-port: {{.zkevm_data_stream_port}}
-# rpc {{else}}
-zkevm.pool-manager-url: {{.pool_manager_url}}
-# end {{end}}
-
-
-
 # --------------------------------------------------------------------------------------------------
 #   _____ _____ _   _ _   _    _    ____  _   _ 
 #  | ____|_   _| | | | | | |  / \  / ___|| | | |
@@ -443,9 +546,70 @@ txpool.commit.every: 15s
 # Default: 100
 maxpeers: 0
 
+# The maximum number of pending TCP connections (peers) to become connected peers.
+# Default: 1000
+maxpendpeers: 0
+
+# The listening port of the network.
+# Default: 30303
+port: 30303
+
+# The version of eth p2p protocol supported.
+# Default: [67, 68]
+p2p.protocol: [67, 68]
+
+# The allowed ports to pick for different eth p2p protocol versions.
+# As follows <port-a>,<port-b>,..,<port-i>.
+# Default: [30303, 30304, 30305, 30306, 30307]
+p2p.allowed-ports: [30303, 30304, 30305, 30306, 30307]
+
+# A comma separated sentry addresses.
+# Format: <host>:<port>,<host>:<port>
+# Default: ""
+sentry.api.addr: ""
+
+# Log detailed peer info when a peer connects or disconnects.
+# Enable to integrate with observer.
+sentry.log-peer-info: false
+
+# Drop useless peers, aka peers that return empty body or header responses.
+# Default: false
+sentry.drop-useless-peers: false
+
+# The downloaded address.
+# Format: <host>:<port>
+# Default: ""
+downloader.api.addr: ""
+
+# A comma separated enode URLs for P2P discovery bootstrap.
+# Default: ""
+bootnodes: ""
+
+# A comma separated enode URLs to connect to.
+# Default: ""
+staticpeers: ""
+
+# A comma separated enode URLs which are always allowed to connect, even above the peer limit.
+# Default: ""
+trustedpeers: ""
+
+# The P2P node key as hex (for testing)
+# nodekey:
+
+# The NAT port mapping mechanism.
+# nat: 
+
 # Disables the peer discovery mechanism (manual peer addition).
 # Default: false
 nodiscover: true
+
+# Enable the experimental RLPx V5 (Topic Discovery) mechanism.
+# Default: false
+v5disc: false
+
+# Restrict network communication to the given IP networks (CIDR masks).
+# Default: false
+netrestrict: false
 
 
 # ==============================================================================
@@ -499,13 +663,15 @@ torrent.download.slots: 3
 
 # The maximum number of peers.
 # It is said to not be used at the moment!
-torrent.maxpeers: 100
+# Default: 100
+torrent.maxpeers: 0
 
 # A comma separated enode URLs to connect to.
 # Default: ""
 torrent.staticpeers: ""
 
 # The number of connections per file.
+# Default: 10
 torrent.conns.perfile: 10
 
 
@@ -528,15 +694,42 @@ ipcdisable: false
 # Default: false
 graphql: false
 
+# Sets a cap on transaction fee (in ether) that can be sent via the RPC APIs.
+# Set to 0 to remove the cap.
+# Default: 0
+rpc.txfeecap: 0 # no cap
+
+# Limit the amount of goroutines to process a batch request.
+# A batch still can have unlimited amount of request.
+# TODO: explain this setting.
+rpc.batch.concurrency: 2
+
+# Erigon has enabled JSON streaming for some heavy endpoints (like trace_*).
+# It greatly reduces the amount of RAM (in some cases, from 30GB to 30MB) but it produces invalid
+# JSON format if an error happened in the middle of the streaming.
+# Default: false
+rpc.streaming.disable: false
+
+# The maximum number of requests in a batch.
+# Default: 100
+rpc.batch.limit: 100
+
+# The maximum number of bytes returned from eth_call or similar invocation.
+# Default: 100_000
+rpc.returndata.limit: 100_000
+
+# Specify a granular (method-by-method) API allow list.
+# Default: ""
+rpc.accessList: ""
+
 # Sets a cap on gas that can be used in eth_call/estimateGas.
 # Set to 0 to remove the cap.
 # Deault: 50_000_000
 rpc.gascap: 50_000_000
 
-# Sets a cap on transaction fee (in ether) that can be sent via the RPC APIs.
-# Set to 0 to remove the cap.
-# Default: 0
-rpc.txfeecap: 0 # no cap
+# Allow for unprotected (non EIP155 signed) transactions to be submitted via RPC.
+# Default: false
+rpc.allow-unprotected-txs: false
 
 
 # ==============================================================================
@@ -693,6 +886,34 @@ pprof.cpuprofile: /tmp/cdk-erigon.cpuprofile
 
 
 # --------------------------------------------------------------------------------------------------
+#   ____  _____ ____  _   _  ____ 
+#  |  _ \| ____| __ )| | | |/ ___|
+#  | | | |  _| |  _ \| | | | |  _ 
+#  | |_| | |___| |_) | |_| | |_| |
+#  |____/|_____|____/ \___/ \____|
+#
+# --------------------------------------------------------------------------------------------------            
+# Enable debug timers.
+# Default: false
+debug.timers: false
+
+# Disable syncing.
+# Default: false
+debug.no-sync: false
+
+# Limit the number of blocks to sync.
+# Default: 0
+debug.limit: 0
+
+# The number of blocks to process each run of the stage loop.
+# debug.step:
+
+# Start incrementing by debug.step after this block.
+# debug.step-after:
+
+
+
+# --------------------------------------------------------------------------------------------------
 #   __  __ ___ _   _ _____ ____  
 #  |  \/  |_ _| \ | | ____|  _ \ 
 #  | |\/| || ||  \| |  _| | |_) |
@@ -755,3 +976,19 @@ allow-insecure-unlock: false
 # Disable PoW verification.
 # Default: ""
 # fakepow:
+
+# TODO: db.read.concurrency, db.pagesize, db.size.limit
+# TODO: trace.compat, trace.maxtraces
+# TODO: tls, tls.cert, tls.key, tls.cacert
+# TODO: exec, preload
+# TODO: state.cache
+# TODO: jspath
+# TODO: gpo.blocks, gpo.percentile, gpo.maxprice
+# TODO: experimental.history.v3, experimental.transactions.v3
+# TODO: clique.checkpoint, clique.snapshots, clique.signatures, clique.datadir
+# TODO: snap.keepblocks, snap.stop, 
+# TODO: healthcheck (grpc)
+# TODO: bor.x
+# TODO: config
+# TODO: lightclient.x
+# TODO: sentinel.x
