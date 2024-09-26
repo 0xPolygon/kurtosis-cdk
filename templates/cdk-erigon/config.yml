@@ -22,19 +22,19 @@ log.dir.json: false
 # Set the log level for the application.
 # TODO: What's the diff between verbosity and log.console.verbosity?
 # Default: info
-verbosity: "{{.global_log_level}}"
+verbosity: {{.global_log_level}}
 
 # Set the log level for console logs
 # Default: info
-log.console.verbosity: "{{.global_log_level}}"
+log.console.verbosity: {{.global_log_level}}
 
 # Path to store user and errors logs to disk.
 # Default: ""
-log.dir.path: "/tmp/cdk-erigon.log"
+log.dir.path: /tmp/cdk-erigon.log
 
 # Set the log verbosity for logs stored to disk.
 # Default: info
-log.dir.verbosity: "{{.global_log_level}}"
+log.dir.verbosity: {{.global_log_level}}
 
 
 # ------------------------------------------------------------------------------
@@ -151,12 +151,12 @@ zkevm.l1-cache-port: 6969
 zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
 
 # The block range used to filter verifications and sequences.
-# Default: 20000
-zkevm.l1-block-range: 20000
+# Default: 20_000
+zkevm.l1-block-range: 20_000
 
 # The delay between queries for verifications and sequences, in milliseconds.
-# Default: 6000
-zkevm.l1-query-delay: 6000
+# Default: 6_000
+zkevm.l1-query-delay: 6_000
 
 # The type of the highest block in the L1 chain.
 # TODO: Explain what this means exactly.
@@ -166,11 +166,11 @@ zkevm.l1-highest-block-type: finalized
 
 # The MATIC contract address on L1.
 # Default: 0x0
-zkevm.l1-matic-contract-address: 0x0
+zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
 
 # The first block to start syncing from on L1.
 # Default: 0
-zkevm.l1-first-block: 0
+zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
 
 # The given block must be finalized before sequencer L1 sync continues.
 # Default: 0
@@ -189,8 +189,23 @@ zkevm.l1-contract-address-check: true
 #   / /_| . \| |___  \ V / | |  | | |_____| | |___ / __/ 
 #  /____|_|\_\_____|  \_/  |_|  |_|         |_____|_____|
 #
-# ------------------------------------------------------------------------------                                                       
+# ------------------------------------------------------------------------------         
+# The L2 chain identifier.
+# Default: 0                                              
+zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 
+{{if not .is_sequencer}}
+# The upstream L2 node RPC endpoint.
+# Default: ""
+zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
+
+# The L2 datastreamer endpoint.
+zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+{{end}}
+
+# The time to wait for data to arrive from the stream before reporting an error.
+# Set to 0s to remove the check.
+zkevm.l2-datastreamer-timeout: 0s
 
 # fork12 {{if eq .zkevm_rollup_fork_id "12"}}
 zkevm.datastream-version: 3
@@ -209,9 +224,6 @@ zkevm.executor-strict: false
 zkevm.sequencer-batch-seal-time: 12s
 zkevm.sequencer-block-seal-time: 6s
 
-zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
-zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
-zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 
 zkevm.rpc-ratelimit: 250
 zkevm.disable-virtual-counters: false
@@ -219,11 +231,9 @@ zkevm.allow-pre-eip155-transactions: {{.erigon_pre_eip155_transactions}}
 zkevm.limbo: true
 
 # sequencer {{if .is_sequencer}}
-zkevm.data-stream-host: "0.0.0.0"
+zkevm.data-stream-host: 0.0.0.0
 zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # rpc {{else}}
-zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
-zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 zkevm.pool-manager-url: {{.pool_manager_url}}
 # end {{end}}
 
@@ -272,7 +282,7 @@ externalcl: true
 # ------------------------------------------------------------------------------
 # Disable the internal transaction pool and block producer.
 # Default: false
-txpool.disable: "{{not .is_sequencer}}"
+txpool.disable: {{not .is_sequencer}}
 
 # A comma separated accounts to treat as locals (no flush, priority inclusion).
 # Default: ""
@@ -449,7 +459,7 @@ rpc.txfeecap: 0 # no cap
 http: true
 
 # The listening interface of the HTTP RPC server.
-http.addr: "0.0.0.0"
+http.addr: 0.0.0.0
 
 # The listening port of the HTTP RPC server.
 # Default: 8545
@@ -496,11 +506,11 @@ http.rpcprefix: ""
 ws: true
 
 # The listening interface of the WS RPC server.
-ws.addr: "0.0.0.0"
+ws.addr: 0.0.0.0
 
 # The listening port of the WS RPC server.
 # Default: 8546
-ws.port: "{{.zkevm_rpc_ws_port}}"
+ws.port: {{.zkevm_rpc_ws_port}}
 
 # The APIs offered by the WS RPC server.
 # Default: ""
@@ -530,7 +540,7 @@ ws.compression: false
 # ------------------------------------------------------------------------------
 # The listening interface of the engine API.
 # Default: localhost
-#authrpc.addr: "0.0.0.0"
+#authrpc.addr: 0.0.0.0
 
 # The listening port of the engine API.
 #authrpc.port: 8551
@@ -558,11 +568,11 @@ metrics: true
 
 # The listening interface of the metrics server.
 # Default: 127.0.0.1
-metrics.addr: "0.0.0.0"
+metrics.addr: 0.0.0.0
 
 # The listening address of the metrics server.
 # Default: 6060
-metrics.port: "{{.prometheus_port}}"
+metrics.port: 9090
 
 
 # ==============================================================================
@@ -579,14 +589,14 @@ pprof: true
 
 # The listening interface of the pprof server.
 # Default: 127.0.0.1
-pprof.addr: "0.0.0.0"
+pprof.addr: 0.0.0.0
 
 # The listening port of the pprof server.
 # Default: 6060
-pprof.port: "{{.zkevm_pprof_port}}"
+pprof.port: 6060
 
 # Write CPU profile to the given file
-pprof.cpuprofile: "/tmp/cdk-erigon.cpuprofile"
+pprof.cpuprofile: /tmp/cdk-erigon.cpuprofile
 
 
 # ------------------------------------------------------------------------------
