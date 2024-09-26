@@ -38,7 +38,7 @@ jobs:
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)
+        run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
   list-ymls:
     runs-on: ubuntu-latest
@@ -95,13 +95,13 @@ jobs:
             exit 1
           fi
           echo "RPC name: $rpc_name"
-          ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name http-rpc)
+          ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+            ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
           else
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
@@ -132,7 +132,7 @@ jobs:
 
       # zkevm-node doesn't work with fork12.
       #- name: Verify permissionless zkevm-node rpc
-      #  run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 http-rpc)
+      #  run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
 
       - name: Verify that Prometheus collects Panoptichain metrics
         run: |
@@ -184,8 +184,8 @@ jobs:
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 http-rpc)"
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 http-rpc)"
+        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
