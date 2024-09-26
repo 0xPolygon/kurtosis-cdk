@@ -635,7 +635,20 @@ vmdebug: false
 # Default: false
 allow-insecure-unlock: false
 
-# TODO: rpc.gascap
-# TODO: rpc.txfeecap
-# TODO: ethstats
-# TODO: fakepow
+# Sets a cap on gas that can be used in eth_call/estimateGas.
+# Set to 0 to remove the cap.
+# Deault: 50_000_000
+rpc.gascap: 50_000_000
+
+# Sets a cap on transaction fee (in ether) that can be sent via the RPC APIs.
+# Set to 0 to remove the cap.
+# Default: 0
+rpc.txfeecap: 0 # no cap
+
+# Reporting URL of a ethstats service (nodename:secret@host:port).
+# Default: ""
+# ethstats:
+
+# Disable PoW verification.
+# Default: ""
+# fakepow:
