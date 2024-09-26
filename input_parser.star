@@ -64,7 +64,6 @@ DEFAULT_ARGS = {
     "zkevm_rollup_id": 1,
     "zkevm_use_real_verifier": False,
     "erigon_strict_mode": True,
-    "erigon_pre_eip155_transactions": True,
     "polygon_zkevm_explorer": "https://explorer.private/",
     "l1_explorer_url": "https://sepolia.etherscan.io/",
     "zkevm_use_gas_token_contract": False,
