@@ -20,7 +20,7 @@ prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.3"
 
 
 def run(

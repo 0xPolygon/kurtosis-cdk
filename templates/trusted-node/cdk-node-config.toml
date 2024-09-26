@@ -139,7 +139,7 @@ GetBatchWaitInterval = "10s"
         [Aggregator.Synchronizer]
                  [Aggregator.Synchronizer.SQLDB]
                         DriverName = "sqlite3"
-                        DataSourceName = "file:/tmp/aggregator_sync_db.sqlite"
+                        DataSource = "file:/data/aggregator_sync_db.sqlite"
                 [Aggregator.Synchronizer.Synchronizer]
                         SyncInterval = "10s"
                         SyncChunkSize = 1000
