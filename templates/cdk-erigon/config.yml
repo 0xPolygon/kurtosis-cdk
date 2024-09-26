@@ -507,20 +507,6 @@ zkevm.l2-datastreamer-timeout: 0s
 #  |_____| |_| |_| |_|_| |_/_/   \_\____/|_| |_|
 #                                              
 # --------------------------------------------------------------------------------------------------
-# The number of recent ethash caches to keep in memory (16MB each).
-# Default: 2
-ethash.cachesinmem: 2
-
-# Lock memory maps of recent ethash caches.
-# Default: false
-ethash.cacheslockmmap: false
-
-# The directory to store the ethash mining DAGs.
-ethash.dagdir: /tmp/erigon-ethash
-
-# Lock memory maps for recent ethash mining DAGs.
-ethash.dagslockmmap: false
-
 # Use snapshots for mainnet, goerli, gnosis chain and chiado.
 # Do not use snapshots in all the other cases.
 snapshots: false
@@ -546,7 +532,7 @@ txpool.disable: {{not .is_sequencer}}
 
 # A comma separated accounts to treat as locals (no flush, priority inclusion).
 # Default: ""
-txpool.locals: ""
+# txpool.locals: ""
 
 # Disables price exemptions for locally submitted transactions.
 # Default: false
@@ -610,10 +596,6 @@ txpool.commit.every: 15s
 # Default: 100
 maxpeers: 0
 
-# The maximum number of pending TCP connections (peers) to become connected peers.
-# Default: 1000
-maxpendpeers: 0
-
 # The listening port of the network.
 # Default: 30303
 port: 30303
@@ -672,8 +654,8 @@ nodiscover: true
 v5disc: false
 
 # Restrict network communication to the given IP networks (CIDR masks).
-# Default: false
-netrestrict: false
+# Default: ""
+netrestrict: ""
 
 
 # ==============================================================================
@@ -747,21 +729,9 @@ torrent.conns.perfile: 10
 #  |_| \_\_|    \____|
 #                    
 # ==============================================================================
-# Disable the IPC RPC server.
-# Default: false
-ipcdisable: false
-
-# The filename for IPC socket/pipe within the datadir (explicit paths escape it).
-# ipcpath: 
-
 # Enable the graphql endpoint.
 # Default: false
 graphql: false
-
-# Sets a cap on transaction fee (in ether) that can be sent via the RPC APIs.
-# Set to 0 to remove the cap.
-# Default: 0
-rpc.txfeecap: 0 # no cap
 
 # Limit the amount of goroutines to process a batch request.
 # A batch still can have unlimited amount of request.
@@ -790,10 +760,6 @@ rpc.accessList: ""
 # Set to 0 to remove the cap.
 # Deault: 50_000_000
 rpc.gascap: 50_000_000
-
-# Allow for unprotected (non EIP155 signed) transactions to be submitted via RPC.
-# Default: false
-rpc.allow-unprotected-txs: false
 
 
 # ==============================================================================
@@ -958,72 +924,6 @@ debug.limit: 0
 # debug.step-after:
 
 
-
-# --------------------------------------------------------------------------------------------------
-#   __  __ ___ _   _ _____ ____  
-#  |  \/  |_ _| \ | | ____|  _ \ 
-#  | |\/| || ||  \| |  _| | |_) |
-#  | |  | || || |\  | |___|  _ < 
-#  |_|  |_|___|_| \_|_____|_| \_\
-#                               
-# --------------------------------------------------------------------------------------------------
-# Enable mining.
-# Default: false
-mine: false
-
-# Disable PoS proposer.
-# Default: false
-proposer.disable: false
-
-# A comma separated HTTP URL list to notify of new work packages.
-# Default: ""
-miner.notify: ""
-
-# The target gas limit for mined blocks.
-# Default: 30_000_000
-miner.gaslimit: 30_000_000
-
-# The minimum gas price for mining a transaction.
-# Default: 1_000_000_000
-miner.gasprice: 1_000_000_000 # 1e9
-
-# The public address for block mining rewards.
-# Default: 0
-miner.etherbase: 0
-
-# The private key to sign blocks with.
-# Default: ""
-miner.sigfile: ""
-
-# The block extra data set by the miner.
-# Default: client version
-miner.extradata: ""
-
-# The time interval to recreate the block being mined.
-# Default: 3s
-miner.recommit: 3s
-
-# Disable remote sealing verification.
-# Default: false
-miner.noverify: false
-
-# Record information useful for VM and contract debugging.
-# Default: false
-vmdebug: false
-
-# Allow insecure account unlocking when account-related RPCs are exposed by HTTP.
-# Default: false
-allow-insecure-unlock: false
-
-# Reporting URL of a ethstats service (nodename:secret@host:port).
-# Default: ""
-# ethstats:
-
-# Disable PoW verification.
-# Default: ""
-# fakepow:
-
-
 # --------------------------------------------------------------------------------------------------
 #   ____  ____  
 #  |  _ \| __ ) 
@@ -1054,7 +954,8 @@ db.size.limit: 8TB
 #    |_| \___/|____/ \___/ 
 #
 # --------------------------------------------------------------------------------------------------    
-# TODO: Document these parameters...   
+# TODO: Document these parameters...
+# - miner.x
 # - trace.x
 # - tls.x
 # - exec + preload
