@@ -1,32 +1,165 @@
-datadir: ./data/dynamic-kurtosis-sequencer
-chain: dynamic-kurtosis
+# ------------------------------------------------------------------------------
+#   _     ___   ____ 
+#  | |   / _ \ / ___|
+#  | |  | | | | |  _ 
+#  | |__| |_| | |_| |
+#  |_____\___/ \____|
+                   
+# ------------------------------------------------------------------------------
+# Format logs with JSON.
+# TODO: What's the diff between log.json and log.console.json?
+# Default: false
+log.json: false
 
-http.addr: "0.0.0.0"
-http.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
-http.corsdomain: "*"
-http.port: {{.zkevm_rpc_http_port}}
-http.vhosts: "*"
-http: true
+# Format console logs with JSON.
+# Default: false
+log.console.json: false
 
-pprof: true
-pprof.addr: "0.0.0.0"
-pprof.port: "{{.zkevm_pprof_port}}"
+# Format file logs with JSON
+# Default: false
+log.dir.json: false
 
-metrics: true
-metrics.port: "{{.prometheus_port}}"
-metrics.addr: "0.0.0.0"
+# Set the log level for the application.
+# TODO: What's the diff between verbosity and log.console.verbosity?
+# Default: info
+verbosity: "{{.global_log_level}}"
 
-private.api.addr: localhost:9092
-torrent.port: 42070
-ws: true
-externalcl: true
+# Set the log level for console logs
+# Default: info
 log.console.verbosity: "{{.global_log_level}}"
 
-zkevm.address-admin: "{{.zkevm_admin_address}}"
-zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
-zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+# Set the log verbosity for logs stored to disk.
+# Default: info
+log.dir.verbosity: "{{.global_log_level}}"
+
+
+# ------------------------------------------------------------------------------
+#    ____ _____ _   _ _____ ____      _    _     
+#   / ___| ____| \ | | ____|  _ \    / \  | |    
+#  | |  _|  _| |  \| |  _| | |_) |  / _ \ | |    
+#  | |_| | |___| |\  | |___|  _ <  / ___ \| |___ 
+#   \____|_____|_| \_|_____|_| \_\/_/   \_\_____|
+                                               
+# ------------------------------------------------------------------------------
+# The data directory for the databases.
+datadir: ./data/dynamic-kurtosis-sequencer
+
+# The name of the testnet to join.
+# To use a custom chain that is different from the default chains (zkevm cardona and zkevm mainnet),
+# you need to add the prefix "dynamic-" in front of the chain name.
+# Same thing for the dynamic configuration files.
+# https://github.com/0xPolygonHermez/cdk-erigon?tab=readme-ov-file#dynamic-chain-configuration
+chain: dynamic-kurtosis
+
+
+# ------------------------------------------------------------------------------
+#   ______  _________     ____  __              _    ____  ____  ____  _____ ____ ____  _____ ____  
+#  |__  / |/ / ____\ \   / /  \/  |            / \  |  _ \|  _ \|  _ \| ____/ ___/ ___|| ____/ ___| 
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____    / _ \ | | | | | | | |_) |  _| \___ \___ \|  _| \___ \ 
+#   / /_| . \| |___  \ V / | |  | | |_____|  / ___ \| |_| | |_| |  _ <| |___ ___) |__) | |___ ___) |
+#  /____|_|\_\_____|  \_/  |_|  |_|         /_/   \_\____/|____/|_| \_\_____|____/____/|_____|____/ 
+#                                                                                                  
+# ------------------------------------------------------------------------------                                                                                   
+# The address of the sequencer EOA.
+# Default: ""
 zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
+
+# The address of the admin EOA (contract deployer).
+# Default: ""
+zkevm.address-admin: "{{.zkevm_admin_address}}"
+
+# The address of the PolygonRollupManager contract.
+# Default: ""
+zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+
+# The address of the Rollup contract.
+# Default: ""
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
+
+# The address of the PolygonZkEVMGlobalExitRoot contract.
+# Default: ""
+zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
+
+
+# ------------------------------------------------------------------------------
+#   ______  _________     ____  __           _     _ 
+#  |__  / |/ / ____\ \   / /  \/  |         | |   / |
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | |   | |
+#   / /_| . \| |___  \ V / | |  | | |_____| | |___| |
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_____|_|
+                                                   
+# ------------------------------------------------------------------------------
+# Designed for recovery of the network from the L1 batch data, slower mode of operation than the datastream.
+# If set the datastream will not be used.
+# Default: 0
+zkevm.l1-sync-start-block: 0
+
+# Designed mainly for debugging, this will stop the L1 sync going on for too long when you only want
+# to pull a handful of batches from the L1 during recovery.
+# Default: 0
+zkevm.l1-sync-stop-batch: 0
+
+# The L1 chain identifier.
+# Default: 0 (Ethereum)
+zkevm.l1-chain-id: {{.l1_chain_id}}
+
+# The L1 RPC URL.
+# Default: ""
+zkevm.l1-rpc-url: {{.l1_rpc_url}}
+
+# Enable the L1 cache.
+# Default: false
+zkevm.l1-cache-enabled: false
+
+# The port used for the L1 cache.
+# Default: 6969
+zkevm.l1-cache-port: 6969
+
+# The rollup identifier.
+# Default: 1 (zkEVM mainnet)
+zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
+
+# The block range used to filter verifications and sequences.
+# Default: 20000
+zkevm.l1-block-range: 20000
+
+# The delay between queries for verifications and sequences, in milliseconds.
+# Default: 6000
+zkevm.l1-query-delay: 6000
+
+# The type of the highest block in the L1 chain.
+# TODO: Explain what this means exactly.
+# Options: "latest", "safe", or "finalized".
+# Default: finalized
+zkevm.l1-highest-block-type: finalized
+
+# The MATIC contract address on L1.
+# Default: 0x0
+zkevm.l1-matic-contract-address: 0x0
+
+# The first block to start syncing from on L1.
+# Default: 0
+zkevm.l1-first-block: 0
+
+# The given block must be finalized before sequencer L1 sync continues.
+# Default: 0
+zkevm.l1-finalized-block-requirement: 0
+
+# Check contract addresses on L1.
+# TODO: Explain what this does.
+# Default: true
+zkevm.l1-contract-address-check: true
+
+
+# ------------------------------------------------------------------------------
+#   ______  _________     ____  __           _     ____  
+#  |__  / |/ / ____\ \   / /  \/  |         | |   |___ \ 
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | |     __) |
+#   / /_| . \| |___  \ V / | |  | | |_____| | |___ / __/ 
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_____|_____|
+#
+# ------------------------------------------------------------------------------                                                       
+
 
 # fork12 {{if eq .zkevm_rollup_fork_id "12"}}
 zkevm.datastream-version: 3
@@ -45,20 +178,14 @@ zkevm.executor-strict: false
 zkevm.sequencer-batch-seal-time: 12s
 zkevm.sequencer-block-seal-time: 6s
 
-zkevm.l1-chain-id: {{.l1_chain_id}}
 zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
 zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
-zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
-zkevm.l1-rpc-url: {{.l1_rpc_url}}
 zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
 
 zkevm.rpc-ratelimit: 250
 zkevm.disable-virtual-counters: false
 zkevm.allow-pre-eip155-transactions: {{.erigon_pre_eip155_transactions}}
 zkevm.limbo: true
-
-nodiscover: true
-maxpeers: 0
 
 # sequencer {{if .is_sequencer}}
 txpool.disable: false
@@ -70,3 +197,227 @@ zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 zkevm.pool-manager-url: {{.pool_manager_url}}
 # end {{end}}
+
+
+
+# ------------------------------------------------------------------------------
+#   _____ _____ _   _ _   _    _    ____  _   _ 
+#  | ____|_   _| | | | | | |  / \  / ___|| | | |
+#  |  _|   | | | |_| | |_| | / _ \ \___ \| |_| |
+#  | |___  | | |  _  |  _  |/ ___ \ ___) |  _  |
+#  |_____| |_| |_| |_|_| |_/_/   \_\____/|_| |_|
+#                                              
+# ------------------------------------------------------------------------------
+# Enable an external consensus engine.
+# By default, Erigon runs its own consensus client called Caplin.
+# https://erigon.gitbook.io/erigon/advanced-usage/consensus-layer
+# Default: false
+externalcl: true
+
+
+# ------------------------------------------------------------------------------
+#   _   _ _____ _______        _____  ____  _  __
+#  | \ | | ____|_   _\ \      / / _ \|  _ \| |/ /
+#  |  \| |  _|   | |  \ \ /\ / / | | | |_) | ' / 
+#  | |\  | |___  | |   \ V  V /| |_| |  _ <| . \ 
+#  |_| \_|_____| |_|    \_/\_/  \___/|_| \_\_|\_\
+#                                               
+# ------------------------------------------------------------------------------
+# The maximum number of network peers
+# The network will be disabled if set to 0.
+# Default: 100
+maxpeers: 0
+
+# Disables the peer discovery mechanism (manual peer addition).
+# Default: false
+nodiscover: true
+
+
+# ==============================================================================
+#   ____  ____  _____     ___  _____ _____ 
+#  |  _ \|  _ \|_ _\ \   / / \|_   _| ____|
+#  | |_) | |_) || | \ \ / / _ \ | | |  _|  
+#  |  __/|  _ < | |  \ V / ___ \| | | |___ 
+#  |_|   |_| \_\___|  \_/_/   \_\_| |_____|
+#                                                     
+# ------------------------------------------------------------------------------
+# The address of Erigon's internal GRPC API.
+# Default: 127.0.0.1:9090
+private.api.addr: localhost:9092
+
+# The amount of requests the server can handle simultaneously.
+# Requests over this limit will wait.
+# Default: 31872
+private.api.ratelimit: 31872
+
+
+# ==============================================================================
+#   _____ ___  ____  ____  _____ _   _ _____ 
+#  |_   _/ _ \|  _ \|  _ \| ____| \ | |_   _|
+#    | || | | | |_) | |_) |  _| |  \| | | |  
+#    | || |_| |  _ <|  _ <| |___| |\  | | |  
+#    |_| \___/|_| \_\_| \_\_____|_| \_| |_|  
+#                                                   
+# ------------------------------------------------------------------------------
+# The listening port of the BitTorrent server.
+# Default: 42069
+torrent.port: 42070
+
+# The verbosity of the torrent
+# Default: 2 where 2 means warn
+torrent.verbosity: 2
+
+# The download rate of the torrent in bytes per second.
+# Default: 16mb
+torrent.download.rate: 16mb
+
+# The upload rate of the torrent in bytes per second.
+# Default: 4mb
+torrent.upload.rate: 4mb
+
+# The amount of files to download in parallel using the torrent.
+# If the network has enough senders, 1 to 3 slots are enough.
+# Otherwise, try to increase the number of slots to 5 to 7.
+# Using a too big value will slow down everything though.
+# Default: 3
+torrent.download.slots: 3
+
+# The maximum number of peers.
+# It is said to not be used at the moment!
+torrent.maxpeers: 100
+
+# A comma separated enode URLs to connect to.
+# Default: ""
+torrent.staticpeers: ""
+
+# The number of connections per file.
+torrent.conns.perfile: 10
+
+
+# ==============================================================================
+#   _   _ _____ _____ ____  
+#  | | | |_   _|_   _|  _ \ 
+#  | |_| | | |   | | | |_) |
+#  |  _  | | |   | | |  __/ 
+#  |_| |_| |_|   |_| |_|    
+#
+# ------------------------------------------------------------------------------
+# Enable the HTTP RPC server.
+# Default: true
+http: true
+
+# The listening interface of the HTTP RPC server.
+http.addr: "0.0.0.0"
+
+# The listening port of the HTTP RPC server.
+# Default: 8545
+http.port: {{.zkevm_rpc_http_port}}
+
+# Enable compression over HTTP.
+# Default: false
+http.compression: false
+
+# A comma separated list of domains from which to accept cross origin requests (browser enforced).
+# It accepts '*' as a wildcard.
+# Default: "*"
+http.corsdomain: "*"
+
+# A comma separated list of virtual hostnames from which to accept requests (server enforced).
+# It accepts '*' as a wildcard.
+# Default: "localhost"
+http.vhosts: "*"
+
+# The APIs offered by the HTTP RPC server.
+# Default: "eth,erigon,engine"
+http.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
+
+# Trace HTTP requests with INFO level.
+# Default: false
+http.trace: false
+
+# The path prefix on which the HTTP JSON RPC is served.
+# Use `/` to serve on all paths.
+# Default: ""
+http.rpcprefix: ""
+
+
+# ==============================================================================
+#  __        ______  
+#  \ \      / / ___| 
+#   \ \ /\ / /\___ \ 
+#    \ V  V /  ___) |
+#     \_/\_/  |____/ 
+#                   
+# ------------------------------------------------------------------------------
+# Enable the WS RPC server.
+# Default: false
+ws: true
+
+# The listening interface of the WS RPC server.
+ws.addr: "0.0.0.0"
+
+# The listening port of the WS RPC server.
+# Default: 8546
+ws.port: "{{.zkevm_rpc_ws_port}}"
+
+# The APIs offered by the WS RPC server.
+# Default: ""
+ws.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
+
+# The origins from which to accept websockets requests.
+# Default: ""
+ws.origins: ""
+
+# The path prefix on which the WS JSON RPC is served.
+# Use `/` to serve on all paths.
+# Default: ""
+ws.rpcprefix: ""
+
+# Enable compression over WS.
+# Default: false
+ws.compression: false
+
+
+# ==============================================================================
+#   __  __ _____ _____ ____  ___ ____ ____  
+#  |  \/  | ____|_   _|  _ \|_ _/ ___/ ___| 
+#  | |\/| |  _|   | | | |_) || | |   \___ \ 
+#  | |  | | |___  | | |  _ < | | |___ ___) |
+#  |_|  |_|_____| |_| |_| \_\___\____|____/ 
+#                                            
+# ------------------------------------------------------------------------------
+# Enable the metrics HTTP server.
+# Default: false
+metrics: true
+
+# The listening interface of the metrics server.
+# Default: 127.0.0.1
+metrics.addr: "0.0.0.0"
+
+# The listening address of the metrics server.
+# Default: 6060
+metrics.port: "{{.prometheus_port}}"
+
+
+# ==============================================================================
+#   ____  ____  ____   ___  _____ 
+#  |  _ \|  _ \|  _ \ / _ \|  ___|
+#  | |_) | |_) | |_) | | | | |_   
+#  |  __/|  __/|  _ <| |_| |  _|  
+#  |_|   |_|   |_| \_\\___/|_|    
+#                                          
+# ------------------------------------------------------------------------------
+# Enable the pprof HTTP server.
+# Default: false
+pprof: true
+
+# The listening interface of the pprof server.
+# Default: 127.0.0.1
+pprof.addr: "0.0.0.0"
+
+# The listening port of the pprof server.
+# Default: 6060
+pprof.port: "{{.zkevm_pprof_port}}"
+
+# Write CPU profile to the given file
+pprof.cpuprofile: "/tmp/cdk-erigon.cpuprofile"
