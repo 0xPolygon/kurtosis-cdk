@@ -894,9 +894,10 @@ pprof.cpuprofile: /tmp/cdk-erigon.cpuprofile
 #  |____/|_____|____/ \___/ \____|
 #
 # --------------------------------------------------------------------------------------------------            
-# Enable debug timers.
+# Enable debug timers. This adds useful timings into the logs which can help narrow down performance
+# issues.
 # Default: false
-debug.timers: false
+debug.timers: true
 
 # Disable syncing.
 # Default: false
