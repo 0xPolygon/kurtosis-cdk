@@ -13,7 +13,7 @@ DEFAULT_ARGS = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.1.1",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",
     "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.5.0",
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC12",
