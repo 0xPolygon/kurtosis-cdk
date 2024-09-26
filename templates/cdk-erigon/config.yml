@@ -861,10 +861,6 @@ ws.port: {{.zkevm_rpc_ws_port}}
 # Default: ""
 ws.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
 
-# The origins from which to accept websockets requests.
-# Default: ""
-ws.origins: ""
-
 # Enable compression over WS.
 # Default: false
 ws.compression: false
