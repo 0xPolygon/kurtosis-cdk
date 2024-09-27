@@ -65,7 +65,7 @@ def get_l2_rpc_urls(plan, args):
     return struct(
         http="http://{}:{}".format(
             l2_rpc_service.ip_address,
-            l2_rpc_service.ports["http-rpc"].number,
+            l2_rpc_service.ports["rpc"].number,
         ),
         ws=ws,
     )
