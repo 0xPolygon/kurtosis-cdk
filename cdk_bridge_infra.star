@@ -107,7 +107,7 @@ def create_reverse_proxy_config_artifact(plan, args):
                     "l1rpc_ip": l1rpc_service.ip_address,
                     "l1rpc_port": l1rpc_service.ports["rpc"].number,
                     "l2rpc_ip": l2rpc_service.ip_address,
-                    "l2rpc_port": l2rpc_service.ports["http-rpc"].number,
+                    "l2rpc_port": l2rpc_service.ports["rpc"].number,
                     "bridgeservice_ip": bridge_service.ip_address,
                     "bridgeservice_port": bridge_service.ports["rpc"].number,
                     "bridgeui_ip": bridgeui_service.ip_address,

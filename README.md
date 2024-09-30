@@ -74,7 +74,7 @@ kurtosis enclave inspect cdk-v1
 That output, while quite useful, might also be a little overwhelming. Let's store the RPC URL in an environment variable. Note that you may need to adjust the various commands slightly if you deployed the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. You should target the `zkevm-node-rpc-001` service instead of `cdk-erigon-node-001`.
 
 ```bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 http-rpc)"
+export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 rpc)"
 ```
 
 That is the same environment variable that `cast` uses, so you should now be able to run this command. Note that the steps below will assume you have the [Foundry toolchain](https://book.getfoundry.sh/getting-started/installation) installed.

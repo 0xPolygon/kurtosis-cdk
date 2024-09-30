@@ -32,7 +32,7 @@ def get_tx_spammer_config(plan, args):
         args["l2_rpc_name"] + args["deployment_suffix"]
     )
     zkevm_rpc_url = "http://{}:{}".format(
-        zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["http-rpc"].number
+        zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["rpc"].number
     )
 
     zkevm_bridge_service = plan.get_service(

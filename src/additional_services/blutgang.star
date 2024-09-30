@@ -58,7 +58,7 @@ def get_blutgang_config(plan, args):
         )
         zkevm_rpc_pless_http_url = "http://{}:{}".format(
             zkevm_rpc_pless_service.ip_address,
-            zkevm_rpc_pless_service.ports["http-rpc"].number,
+            zkevm_rpc_pless_service.ports["rpc"].number,
         )
         zkevm_rpc_pless_ws_url = "ws://{}:{}".format(
             zkevm_rpc_pless_service.ip_address,
