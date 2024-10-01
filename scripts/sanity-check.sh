@@ -292,6 +292,11 @@ compare_json_partial_match \
   "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
   "l1_contract" "$l1_virtualized_batch_info"
 
+echo -e "\nComparing last virtualized batch from L2 RPC and L1 contracts..."
+compare_json_partial_match \
+  "l2_rpc" "$l2_rpc_virtualized_batch_info" \
+  "l1_contract" "$l1_virtualized_batch_info"
+
 echo '
 ####################################################################################################
 #  __     _______ ____  ___ _____ ___ _____ ____    ____    _  _____ ____ _   _
@@ -326,4 +331,9 @@ echo "$l1_verified_batch_info" | jq '.'
 echo -e "\nComparing last verified batch from L2 sequencer and L1 contracts..."
 compare_json_partial_match \
   "l2_sequencer" "$l2_sequencer_verified_batch_info" \
+  "l1_contract" "$l1_verified_batch_info"
+
+echo -e "\nComparing last verified batch from L2 RPC and L1 contracts..."
+compare_json_partial_match \
+  "l2_rpc" "$l2_rpc_verified_batch_info" \
   "l1_contract" "$l1_verified_batch_info"
