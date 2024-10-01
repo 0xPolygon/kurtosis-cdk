@@ -51,6 +51,14 @@ rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
 rollup_id=1 # rollup
 #rollup_id=2 # validium
 
+# Log config
+echo "Running sanity check script with config:"
+echo -e "- L1 RPC URL:\t\t\t$l1_rpc_url"
+echo -e "- L2 Sequencer URL:\t\t$l2_sequencer_url"
+echo -e "- L2 RPC URL:\t\t\t$l2_rpc_url"
+echo -e "- Rollup Manager Address:\t$rollup_manager_addr"
+echo -e "- Rollup ID:\t\t\t$rollup_id"
+
 ####################################################################################################
 #   _____ _   _ _   _  ____ _____ ___ ___  _   _ ____
 #  |  ___| | | | \ | |/ ___|_   _|_ _/ _ \| \ | / ___|
