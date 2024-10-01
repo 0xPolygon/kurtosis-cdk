@@ -181,9 +181,9 @@ zkevm.pool-manager-url: {{.pool_manager_url}}
 # Set the maximum number of RPC requests allowed per second.
 # This helps prevent server overload and ensures fair resource allocation among clients.
 # A value of 0 disables rate limiting, while higher values enforce stricter limits.
-# NOTE: The flag is not used in the code!
+# NOTE: The flag must be specified but it is not used in the code!
 # Default: 0
-# zkevm.rpc-ratelimit: 250
+zkevm.rpc-ratelimit: 250
 
 # Define the maximum number of concurrent requests allowed to the executor for getBatchWitness operations.
 # This setting helps manage system resources and prevent overloading the executor.
