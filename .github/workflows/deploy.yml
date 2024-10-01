@@ -52,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_without_args_${{ github.run_id }}
-          path: ./kurtosis-cdk/dump
+          path: ../dump
 
   list-ymls:
     runs-on: ubuntu-latest
@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_with_args_${{ matrix.file_name }}_${{ github.run_id }}
-          path: ./kurtosis-cdk/dump
+          path: ../dump
 
   additional_services:
     runs-on: ubuntu-latest
@@ -185,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
-          path: ./kurtosis-cdk/dump
+          path: ../dump
 
   attach_cdks:
     runs-on: ubuntu-latest
@@ -235,4 +235,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_attach_ckds_${{ github.run_id }}
-          path: ./kurtosis-cdk/dump
+          path: ../dump
