@@ -41,11 +41,11 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
       
       - name: Dump enclave logs
-        if: always()
+        if: failure()
         run: kurtosis dump ./dump
 
       - name: Upload logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_without_args_${{ github.run_id }}
@@ -118,11 +118,11 @@ jobs:
           fi
       
       - name: Dump enclave logs
-        if: always()
+        if: failure()
         run: kurtosis dump ./dump
 
       - name: Upload logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_with_args_${{ matrix.file_name }}_${{ github.run_id }}
@@ -174,11 +174,11 @@ jobs:
           fi
         
       - name: Dump enclave logs
-        if: always()
+        if: failure()
         run: kurtosis dump ./dump
 
       - name: Upload logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
@@ -224,11 +224,11 @@ jobs:
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
 
       - name: Dump enclave logs
-        if: always()
+        if: failure()
         run: kurtosis dump ./dump
 
       - name: Upload logs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: dump_attach_ckds_${{ github.run_id }}
