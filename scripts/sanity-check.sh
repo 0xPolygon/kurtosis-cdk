@@ -22,15 +22,16 @@
 
 # LOCAL KURTOSIS-CDK
 # enclave="cdk"
-# l1_rpc_url=$(kurtosis port print $enclave el-1-geth-lighthouse rpc)
-# l2_sequencer_url=$(kurtosis port print $enclave cdk-erigon-sequencer-001 rpc)
-# l2_rpc_url=$(kurtosis port print $enclave cdk-erigon-node-001 rpc)
+# l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+# l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
+# l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
-# l1_rpc_url=$(kurtosis port print erigon-18-4 el-1-geth-lighthouse rpc)
-# l2_sequencer_url=$(kurtosis port print erigon-18-4 sequencer001 sequencer8123)
+# enclave="erigon-18-4"
+# l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+# l2_sequencer_url="$(kurtosis port print "$enclave" sequencer001 sequencer8123)"
 # TODO: l2_rpc_url
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
@@ -70,12 +71,15 @@ function fetch_l1_batch_info() {
   local batch_number="$1"
 
   local sig_get_sequenced_batches='getRollupSequencedBatches(uint32,uint64)(bytes32,uint64,uint64)'
-  local batch_data=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_sequenced_batches" "$rollup_id" "$batch_number")
+  local batch_data
+  batch_data=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_sequenced_batches" "$rollup_id" "$batch_number")
 
   local sig_get_stateroot='getRollupBatchNumToStateRoot(uint32,uint64)(bytes32)'
-  local batch_state_root=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_stateroot" "$rollup_id" "$batch_number")
+  local batch_state_root
+  batch_state_root=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_stateroot" "$rollup_id" "$batch_number")
 
-  local timestamp=$(printf '0x%x\n' $(echo "$batch_data" | jq -r '.[1]'))
+  local timestamp
+  timestamp="$(printf '0x%x\n' "$(echo "$batch_data" | jq -r '.[1]')")"
 
   jq --null-input \
     --argjson batch_data "$batch_data" \
@@ -105,13 +109,16 @@ function _compare_json() {
   local partial_check="${5:-false}"
 
   # Get all keys from both JSON objects.
-  local keys=$(echo "$json1 $json2" | jq -r 'keys[]' | sort -u)
+  local keys
+  keys=$(echo "$json1 $json2" | jq -r 'keys[]' | sort -u)
 
   # Function to compare fields.
   compare_field() {
     local field="$1"
-    local value1=$(echo "$json1" | jq -r ".$field // \"<missing>\"")
-    local value2=$(echo "$json2" | jq -r ".$field // \"<missing>\"")
+    local value1
+    value1=$(echo "$json1" | jq -r ".$field // \"<missing>\"")
+    local value2
+    value2=$(echo "$json2" | jq -r ".$field // \"<missing>\"")
 
     if [[ "$partial_check" == true ]] && { [[ "$value1" == "<missing>" ]] || [[ "$value2" == "<missing>" ]]; }; then
       return
@@ -142,6 +149,7 @@ function _compare_json() {
 }
 
 # Fetch rollup data.
+# shellcheck disable=SC2028
 echo '
 ####################################################################################################
 #   ____   ___  _     _    _   _ ____    ____    _  _____  _
@@ -157,18 +165,9 @@ echo '
 sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
 rollup_data_json=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
 
-rollup_contract=$(echo "$rollup_data_json" | jq -r '.[0]')
-chain_id=$(echo "$rollup_data_json" | jq -r '.[1]')
-verifier=$(echo "$rollup_data_json" | jq -r '.[2]')
-fork_id=$(echo "$rollup_data_json" | jq -r '.[3]')
-last_local_exit_root=$(echo "$rollup_data_json" | jq -r '.[4]')
 last_virtualized_batch=$(echo "$rollup_data_json" | jq -r '.[5]')
 last_verified_batch=$(echo "$rollup_data_json" | jq -r '.[6]')
-last_pending_state=$(echo "$rollup_data_json" | jq -r '.[7]')
-last_pending_state_consolidated=$(echo "$rollup_data_json" | jq -r '.[8]')
-last_verified_batch_before_upgrade=$(echo "$rollup_data_json" | jq -r '.[9]')
 rollup_type_id=$(echo "$rollup_data_json" | jq -r '.[10]')
-rollup_compatibility_id=$(echo "$rollup_data_json" | jq -r '.[11]')
 
 jq -n --argjson rollup_data "$rollup_data_json" \
   '{
@@ -191,12 +190,13 @@ sig_rollup_type_map='rollupTypeMap(uint32)(address,address,uint64,uint8,bool,byt
 rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_type_map" "$rollup_type_id")
 
 consensus_implementation_addr=$(echo "$rollup_type_map" | jq -r '.[0]')
-consensus_type=""
+consensus_type="" 
 da_protocol_addr=""
 result=$(cast call --json --rpc-url "$l1_rpc_url" "$consensus_implementation_addr" "dataAvailabilityProtocol()(address)" "" 2>&1)
+# shellcheck disable=SC2181
 if [ $? -eq 0 ]; then
   consensus_type="validium"
-  da_protocol_addr=$(echo $result | jq -r '.[0]')
+  da_protocol_addr="$(echo "$result" | jq -r '.[0]')"
 else
   consensus_type="rollup"
 fi
@@ -215,6 +215,7 @@ jq -n \
     genesis: $rollup_type_map[5]
   } | if $da_protocol_addr != "" then . + {daProtocol: $da_protocol_addr} else . end'
 
+# shellcheck disable=SC2028
 echo '
 ####################################################################################################
 #   _____ ____  _   _ ____ _____ _____ ____    ____    _  _____ ____ _   _
@@ -227,13 +228,13 @@ echo '
 '
 
 echo "Fetching latest batch number from L2 sequencer and L2 RPC..."
-sequencer_latest_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')
-rpc_latest_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')
-echo "- SEQUENCER: $(($sequencer_latest_batch_number))"
-echo "- RPC: $(($rpc_latest_batch_number))"
+sequencer_latest_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')"
+rpc_latest_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')"
+echo "- SEQUENCER: $((sequencer_latest_batch_number))"
+echo "- RPC: $((rpc_latest_batch_number))"
 echo
 
-if [[ "$(($sequencer_latest_batch_number))" -eq "$(($rpc_latest_batch_number))" ]]; then
+if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]; then
   echo -e "\033[32m✅ Batch numbers match.\033[0m"
 else
   echo -e "\033[31m❌ Batch number mismatch:\033[0m"
@@ -242,12 +243,12 @@ else
 fi
 
 echo -e "\nFetching last trusted batch from L2 sequencer..."
-sequencer_trusted_batch_info=$(fetch_l2_batch_info "$l2_sequencer_url" "$sequencer_latest_batch_number")
-echo "Batch: $(($sequencer_latest_batch_number))"
+sequencer_trusted_batch_info="$(fetch_l2_batch_info "$l2_sequencer_url" "$sequencer_latest_batch_number")"
+echo "Batch: $((sequencer_latest_batch_number))"
 echo "$sequencer_trusted_batch_info" | jq '.'
 
 echo -e "\nFetching last trusted batch from L2 RPC..."
-rpc_trusted_batch_info=$(fetch_l2_batch_info "$l2_rpc_url" "$rpc_latest_batch_number")
+rpc_trusted_batch_info="$(fetch_l2_batch_info "$l2_rpc_url" "$rpc_latest_batch_number")"
 echo "Batch: $((rpc_latest_batch_number))"
 echo "$rpc_trusted_batch_info" | jq '.'
 
@@ -256,6 +257,7 @@ compare_json_full_match \
   "l2_sequencer" "$sequencer_trusted_batch_info" \
   "l2_rpc" "$rpc_trusted_batch_info"
 
+# shellcheck disable=SC2028
 echo '
 ####################################################################################################
 #  __     _____ ____ _____ _   _   _    _     ___ __________ ____    ____    _  _____ ____ _   _
@@ -268,23 +270,23 @@ echo '
 '
 
 echo "Fetching last virtualized batch from L2 sequencer..."
-l2_sequencer_virtualized_batch_info=$(fetch_l2_batch_info "$l2_sequencer_url" $(printf "0x%x" "$last_virtualized_batch"))
-echo "Batch: $(($last_virtualized_batch))"
+l2_sequencer_virtualized_batch_info="$(fetch_l2_batch_info "$l2_sequencer_url" "$(printf "0x%x" "$last_virtualized_batch")")"
+echo "Batch: $((last_virtualized_batch))"
 echo "$l2_sequencer_virtualized_batch_info" | jq '.'
 
 echo -e "\nFetching last virtualized batch from L2 RPC..."
-l2_rpc_virtualized_batch_info=$(fetch_l2_batch_info "$l2_rpc_url" $(printf "0x%x" "$last_virtualized_batch"))
-echo "Batch: $(($last_virtualized_batch))"
+l2_rpc_virtualized_batch_info="$(fetch_l2_batch_info "$l2_rpc_url" "$(printf "0x%x" "$last_virtualized_batch")")"
+echo "Batch: $((last_virtualized_batch))"
 echo "$l2_rpc_virtualized_batch_info" | jq '.'
 
 echo -e "\nComparing last virtualized batch from L2 sequencer and L2 RPC..."
 compare_json_full_match \
-  "l2_sequencer" "$sequencer_virtualized_batch_info" \
-  "l2_rpc" "$rpc_virtualized_batch_info"
+  "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
+  "l2_rpc" "$l2_rpc_virtualized_batch_info"
 
 echo -e "\nFetching last virtualized batch from L1 RollupManager contract..."
-l1_virtualized_batch_info=$(fetch_l1_batch_info $last_virtualized_batch)
-echo "Batch: $(($last_virtualized_batch))"
+l1_virtualized_batch_info="$(fetch_l1_batch_info "$last_virtualized_batch")"
+echo "Batch: $((last_virtualized_batch))"
 echo "$l1_virtualized_batch_info" | jq '.'
 
 echo -e "\nComparing last virtualized batch from L2 sequencer and L1 contracts..."
@@ -297,6 +299,7 @@ compare_json_partial_match \
   "l2_rpc" "$l2_rpc_virtualized_batch_info" \
   "l1_contract" "$l1_virtualized_batch_info"
 
+# shellcheck disable=SC2028
 echo '
 ####################################################################################################
 #  __     _______ ____  ___ _____ ___ _____ ____    ____    _  _____ ____ _   _
@@ -309,13 +312,13 @@ echo '
 '
 
 echo "Fetching last verified batch from L2 sequencer..."
-l2_sequencer_verified_batch_info=$(fetch_l2_batch_info "$l2_sequencer_url" $(printf "0x%x" "$last_verified_batch"))
-echo "Batch: $(($last_verified_batch))"
+l2_sequencer_verified_batch_info="$(fetch_l2_batch_info "$l2_sequencer_url" "$(printf "0x%x" "$last_verified_batch")")"
+echo "Batch: $((last_verified_batch))"
 echo "$l2_sequencer_verified_batch_info" | jq '.'
 
 echo -e "\nFetching last last_verified_batch batch from L2 RPC..."
-l2_rpc_verified_batch_info=$(fetch_l2_batch_info "$l2_rpc_url" $(printf "0x%x" "$last_verified_batch"))
-echo "Batch: $(($last_verified_batch))"
+l2_rpc_verified_batch_info="$(fetch_l2_batch_info "$l2_rpc_url" "$(printf "0x%x" "$last_verified_batch")")"
+echo "Batch: $((last_verified_batch))"
 echo "$l2_rpc_verified_batch_info" | jq '.'
 
 echo -e "\nComparing last verified batch from L2 sequencer and L2 RPC..."
@@ -324,8 +327,8 @@ compare_json_full_match \
   "l2_rpc" "$l2_rpc_verified_batch_info"
 
 echo -e "\nFetching last verified batch from L1 RollupManager contract..."
-l1_verified_batch_info=$(fetch_l1_batch_info $last_verified_batch)
-echo "Batch: $(($last_verified_batch))"
+l1_verified_batch_info="$(fetch_l1_batch_info "$last_verified_batch")"
+echo "Batch: $((last_verified_batch))"
 echo "$l1_verified_batch_info" | jq '.'
 
 echo -e "\nComparing last verified batch from L2 sequencer and L1 contracts..."
@@ -338,6 +341,7 @@ compare_json_partial_match \
   "l2_rpc" "$l2_rpc_verified_batch_info" \
   "l1_contract" "$l1_verified_batch_info"
 
+# shellcheck disable=SC2028
 echo '
 ####################################################################################################
 #    ____    _    ____  
@@ -349,25 +353,25 @@ echo '
 ####################################################################################################
 '
 
-sequencer_latest_trusted_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')
-sequencer_latest_virtualized_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_virtualBatchNumber | jq -r '.')
-sequencer_latest_verified_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_verifiedBatchNumber | jq -r '.')
-sequencer_virtualized_to_trusted_gap=$(($(($sequencer_latest_trusted_batch_number)) - $(($sequencer_latest_virtualized_batch_number))))
-sequencer_verified_to_trusted_gap=$(($(($sequencer_latest_trusted_batch_number)) - $(($sequencer_latest_verified_batch_number))))
+sequencer_latest_trusted_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')"
+sequencer_latest_virtualized_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_virtualBatchNumber | jq -r '.')"
+sequencer_latest_verified_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_verifiedBatchNumber | jq -r '.')"
+sequencer_virtualized_to_trusted_gap="$(($((sequencer_latest_trusted_batch_number)) - $((sequencer_latest_virtualized_batch_number))))"
+sequencer_verified_to_trusted_gap="$(($((sequencer_latest_trusted_batch_number)) - $((sequencer_latest_verified_batch_number))))"
 echo "L2 Sequencer"
-echo -e "- Trusted:\t$(($sequencer_latest_trusted_batch_number))"
-echo -e "- Virtual:\t$(($sequencer_latest_virtualized_batch_number)) ($sequencer_virtualized_to_trusted_gap)"
-echo -e "- Verified:\t$(($sequencer_latest_verified_batch_number)) ($sequencer_verified_to_trusted_gap)"
+echo -e "- Trusted:\t$((sequencer_latest_trusted_batch_number))"
+echo -e "- Virtual:\t$((sequencer_latest_virtualized_batch_number)) ($sequencer_virtualized_to_trusted_gap)"
+echo -e "- Verified:\t$((sequencer_latest_verified_batch_number)) ($sequencer_verified_to_trusted_gap)"
 
-rpc_latest_trusted_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')
-rpc_latest_virtualized_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_virtualBatchNumber | jq -r '.')
-rpc_latest_verified_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_verifiedBatchNumber | jq -r '.')
-rpc_virtualized_to_trusted_gap=$(($(($rpc_latest_trusted_batch_number)) - $(($rpc_latest_virtualized_batch_number))))
-rpc_verified_to_trusted_gap=$(($(($rpc_latest_trusted_batch_number)) - $(($rpc_latest_verified_batch_number))))
+rpc_latest_trusted_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')"
+rpc_latest_virtualized_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_virtualBatchNumber | jq -r '.')"
+rpc_latest_verified_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_verifiedBatchNumber | jq -r '.')"
+rpc_virtualized_to_trusted_gap="$(($((rpc_latest_trusted_batch_number)) - $((rpc_latest_virtualized_batch_number))))"
+rpc_verified_to_trusted_gap="$(($((rpc_latest_trusted_batch_number)) - $((rpc_latest_verified_batch_number))))"
 echo -e "\nL2 RPC"
-echo -e "- Trusted:\t$(($rpc_latest_trusted_batch_number))"
-echo -e "- Virtual:\t$(($rpc_latest_virtualized_batch_number)) ($rpc_virtualized_to_trusted_gap)"
-echo -e "- Verified:\t$(($rpc_latest_verified_batch_number)) ($rpc_verified_to_trusted_gap)"
+echo -e "- Trusted:\t$((rpc_latest_trusted_batch_number))"
+echo -e "- Virtual:\t$((rpc_latest_virtualized_batch_number)) ($rpc_virtualized_to_trusted_gap)"
+echo -e "- Verified:\t$((rpc_latest_verified_batch_number)) ($rpc_verified_to_trusted_gap)"
 
 echo -e "\nL1 RollupManager Contract"
 echo -e "- Virtual:\t$last_virtualized_batch"
