@@ -153,7 +153,7 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
                         [Aggregator.Synchronizer.Etherman.Validium]
                                 Enabled = {{.is_cdk_validium}}
 
-{{if eq .zkevm_rollup_fork_id "12"}}
+
 [L1InfoTreeSync]
 DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
@@ -163,7 +163,6 @@ BlockFinality = "LatestBlock"
 URLRPCL1 = "{{.l1_rpc_url}}"
 WaitForNewBlocksPeriod = "1s"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
-{{end}}
 
 [NetworkConfig.L1]
 {{if eq .zkevm_rollup_fork_id "12"}}
