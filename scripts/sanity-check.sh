@@ -21,30 +21,33 @@
 ####################################################################################################
 
 # LOCAL KURTOSIS-CDK
-enclave="cdk"
-l1_rpc_url=$(kurtosis port print $enclave el-1-geth-lighthouse rpc)
-l2_sequencer_url=$(kurtosis port print $enclave cdk-erigon-sequencer-001 rpc)
-l2_rpc_url=$(kurtosis port print $enclave cdk-erigon-node-001 rpc)
-rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-rollup_id=1
+# enclave="cdk"
+# l1_rpc_url=$(kurtosis port print $enclave el-1-geth-lighthouse rpc)
+# l2_sequencer_url=$(kurtosis port print $enclave cdk-erigon-sequencer-001 rpc)
+# l2_rpc_url=$(kurtosis port print $enclave cdk-erigon-node-001 rpc)
+# rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+# rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
 # l1_rpc_url=$(kurtosis port print erigon-18-4 el-1-geth-lighthouse rpc)
 # l2_sequencer_url=$(kurtosis port print erigon-18-4 sequencer001 sequencer8123)
+# TODO: l2_rpc_url
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
 
 # BALI
 # l1_rpc_url="https://rpc2.sepolia.org"
 # l2_sequencer_url="https://rpc.internal.zkevm-rpc.com"
+# TODO: l2_rpc_url
 # rollup_manager_addr="0xe2ef6215adc132df6913c8dd16487abf118d1764"
 # rollup_id=1
 
 # CARDONA
-# l1_rpc_url="https://rpc2.sepolia.org"
-# l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
-# rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-# rollup_id=1
+l1_rpc_url="https://rpc2.sepolia.org"
+l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
+l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
+rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+rollup_id=1
 
 ####################################################################################################
 #   _____ _   _ _   _  ____ _____ ___ ___  _   _ ____
@@ -260,7 +263,7 @@ compare_json_full_match \
   "l2_sequencer" "$sequencer_virtualized_batch_info" \
   "l2_rpc" "$rpc_virtualized_batch_info"
 
-echo -e "\nFetching last virtualized batch on L1 RollupManager contract..."
+echo -e "\nFetching last virtualized batch from L1 RollupManager contract..."
 l1_virtualized_batch_info=$(fetch_l1_batch_info $last_virtualized_batch)
 echo "Batch: $(($last_virtualized_batch))"
 echo "$l1_virtualized_batch_info" | jq '.'
@@ -296,7 +299,7 @@ compare_json_full_match \
   "l2_sequencer" "$l2_sequencer_verified_batch_info" \
   "l2_rpc" "$l2_rpc_verified_batch_info"
 
-echo -e "\nFetching last verified batch on L1 RollupManager contract..."
+echo -e "\nFetching last verified batch from L1 RollupManager contract..."
 l1_verified_batch_info=$(fetch_l1_batch_info $last_verified_batch)
 echo "Batch: $(($last_verified_batch))"
 echo "$l1_verified_batch_info" | jq '.'
