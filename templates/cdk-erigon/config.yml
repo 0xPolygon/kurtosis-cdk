@@ -182,6 +182,7 @@ zkevm.pool-manager-url: {{.pool_manager_url}}
 # This helps prevent server overload and ensures fair resource allocation among clients.
 # A value of 0 disables rate limiting, while higher values enforce stricter limits.
 # NOTE: The flag must be specified but it is not used in the code!
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1254
 # Default: 0
 zkevm.rpc-ratelimit: 250
 
@@ -370,11 +371,15 @@ zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 
 # Specify the address of the PolygonRollupManager smart contract.
 # This contract manages the overall rollup process and coordinates different rollups.
+# NOTE: This flag should be renamed `zkevm.address-rollup-manager`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
 zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 
 # Specify the address of the Rollup smart contract, specific to a rollup (or validium) chain.
 # Essential for submitting batches and managing the state of the rollup.
+# NOTE: This flag should be renamed `zkevm.address-rollup`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
 
@@ -422,6 +427,8 @@ zkevm.l1-cache-enabled: false
 zkevm.l1-cache-port: 6969
 
 # The rollup identifier.
+# NOTE: This flag should be renamed `zkevm.rollup-id`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: 1 (zkEVM mainnet)
 zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
 
