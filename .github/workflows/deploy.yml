@@ -39,6 +39,17 @@ jobs:
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
+      
+      - name: Dump enclave logs
+        if: always()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_run_without_args_${{ github.run_id }}
+          path: ./kurtosis-cdk/dump
 
   list-ymls:
     runs-on: ubuntu-latest
@@ -105,6 +116,17 @@ jobs:
           else
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
+      
+      - name: Dump enclave logs
+        if: always()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_run_with_args_${{ matrix.file_name }}_${{ github.run_id }}
+          path: ./kurtosis-cdk/dump
 
   additional_services:
     runs-on: ubuntu-latest
@@ -150,6 +172,17 @@ jobs:
             echo "❌ Prometheus does not collect panoptichain metrics..."
             exit 1
           fi
+        
+      - name: Dump enclave logs
+        if: always()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_additional_services_${{ github.run_id }}
+          path: ./kurtosis-cdk/dump
 
   attach_cdks:
     runs-on: ubuntu-latest
@@ -189,3 +222,14 @@ jobs:
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+
+      - name: Dump enclave logs
+        if: always()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_attach_ckds_${{ github.run_id }}
+          path: ./kurtosis-cdk/dump
