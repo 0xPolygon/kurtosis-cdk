@@ -169,7 +169,7 @@ echo '
 ####################################################################################################
 '
 
-# Get rollup data.
+echo "Fetching rollup data..."
 sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
 rollup_data_json=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
 
@@ -193,12 +193,12 @@ jq -n --argjson rollup_data "$rollup_data_json" \
   rollupCompatibilityId: $rollup_data[11]
 }'
 
-# Get rollup type data and consensus type.
+echo -e "\nFetching rollup type data..."
 sig_rollup_type_map='rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32)'
 rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_type_map" "$rollup_type_id")
 
 consensus_implementation_addr=$(echo "$rollup_type_map" | jq -r '.[0]')
-consensus_type="" 
+consensus_type=""
 da_protocol_addr=""
 result=$(cast call --json --rpc-url "$l1_rpc_url" "$consensus_implementation_addr" "dataAvailabilityProtocol()(address)" "" 2>&1)
 # shellcheck disable=SC2181
@@ -352,12 +352,12 @@ compare_json_partial_match \
 # shellcheck disable=SC2028
 echo '
 ####################################################################################################
-#    ____    _    ____  
-#   / ___|  / \  |  _ \ 
+#    ____    _    ____
+#   / ___|  / \  |  _ \
 #  | |  _  / _ \ | |_) |
-#  | |_| |/ ___ \|  __/ 
-#   \____/_/   \_\_|                          
-#                                                                                                                                
+#  | |_| |/ ___ \|  __/
+#   \____/_/   \_\_|
+#
 ####################################################################################################
 '
 
