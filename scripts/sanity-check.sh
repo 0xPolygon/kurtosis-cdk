@@ -1,50 +1,163 @@
 #!/bin/bash
 
-# Sanity checks to do
+# The goals of this script is to test and validate the operational status of the CDK environment.
+
+# TODO: Sanity checks to add:
 # - Log check
-# - All contianers running
+# - All containers running
 # - Matching values from rpc and sequencer
 # - Matching values from rpc and data stream
 # - Is this a validium or a rollup
 # - Dac Committe Members
 # - Batch verification gap
 
-# Local
-l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
-l2_rpc_url=$(kurtosis port print cdk-v1 cdk-erigon-sequencer-001 rpc)
+####################################################################################################
+#    ____ ___  _   _ _____ ___ ____
+#   / ___/ _ \| \ | |  ___|_ _/ ___|
+#  | |  | | | |  \| | |_   | | |  _
+#  | |__| |_| | |\  |  _|  | | |_| |
+#   \____\___/|_| \_|_|   |___\____|
+#
+####################################################################################################
+
+# LOCAL KURTOSIS-CDK
+enclave="cdk"
+l1_rpc_url=$(kurtosis port print $enclave el-1-geth-lighthouse rpc)
+l2_sequencer_url=$(kurtosis port print $enclave cdk-erigon-sequencer-001 rpc)
+l2_rpc_url=$(kurtosis port print $enclave cdk-erigon-node-001 rpc)
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_id=1
 
-# Xavi
+# LOCAL KURTOSIS-CDK-ERIGON (XAVI)
 # l1_rpc_url=$(kurtosis port print erigon-18-4 el-1-geth-lighthouse rpc)
-# l2_rpc_url=$(kurtosis port print erigon-18-4 sequencer001 sequencer8123)
+# l2_sequencer_url=$(kurtosis port print erigon-18-4 sequencer001 sequencer8123)
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
 
 # BALI
 # l1_rpc_url="https://rpc2.sepolia.org"
-# l2_rpc_url="https://rpc.internal.zkevm-rpc.com"
+# l2_sequencer_url="https://rpc.internal.zkevm-rpc.com"
 # rollup_manager_addr="0xe2ef6215adc132df6913c8dd16487abf118d1764"
 # rollup_id=1
 
 # CARDONA
 # l1_rpc_url="https://rpc2.sepolia.org"
-# l2_rpc_url="https://rpc.cardona.zkevm-rpc.com"
+# l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
 # rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
 # rollup_id=1
 
-sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
-sig_get_sequenced_batches='getRollupSequencedBatches(uint32,uint64)(bytes32,uint64,uint64)'
-sig_get_stateroot='getRollupBatchNumToStateRoot(uint32,uint64)(bytes32)'
+####################################################################################################
+#   _____ _   _ _   _  ____ _____ ___ ___  _   _ ____
+#  |  ___| | | | \ | |/ ___|_   _|_ _/ _ \| \ | / ___|
+#  | |_  | | | |  \| | |     | |  | | | | |  \| \___ \
+#  |  _| | |_| | |\  | |___  | |  | | |_| | |\  |___) |
+#  |_|    \___/|_| \_|\____| |_| |___\___/|_| \_|____/
+#
+####################################################################################################
 
-rollup_data_json=$(cast call -j --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
+function fetch_l2_batch_info() {
+  local rpc_url="$1"
+  local batch_number="$2"
+  cast rpc --rpc-url "$rpc_url" zkevm_getBatchByNumber "$batch_number" |
+    jq '.transactions = (.transactions | length) | .blocks = (.blocks | length) | del(.batchL2Data)'
+}
+
+function fetch_l1_batch_info() {
+  local batch_number="$1"
+
+  local sig_get_sequenced_batches='getRollupSequencedBatches(uint32,uint64)(bytes32,uint64,uint64)'
+  local batch_data=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_sequenced_batches" "$rollup_id" "$batch_number")
+
+  local sig_get_stateroot='getRollupBatchNumToStateRoot(uint32,uint64)(bytes32)'
+  local batch_state_root=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_stateroot" "$rollup_id" "$batch_number")
+
+  local timestamp=$(printf '0x%x\n' $(echo "$batch_data" | jq -r '.[1]'))
+
+  jq --null-input \
+    --argjson batch_data "$batch_data" \
+    --argjson batch_state_root "$batch_state_root" \
+    --arg timestamp "$timestamp" \
+    '{
+      accInputHash: $batch_data[0],
+      timestamp: $timestamp,
+      previousLastBatchSequenced: $batch_data[2],
+      stateRoot: $batch_state_root[0]
+    }'
+}
+
+function compare_json_full_match() {
+  _compare_json "$1" "$2" "$3" "$4" false
+}
+
+function compare_json_partial_match() {
+  _compare_json "$1" "$2" "$3" "$4" true
+}
+
+function _compare_json() {
+  local name1="$1"
+  local json1="$2"
+  local name2="$3"
+  local json2="$4"
+  local partial_check="${5:-false}"
+
+  # Get all keys from both JSON objects.
+  local keys=$(echo "$json1 $json2" | jq -r 'keys[]' | sort -u)
+
+  # Function to compare fields.
+  compare_field() {
+    local field="$1"
+    local value1=$(echo "$json1" | jq -r ".$field // \"<missing>\"")
+    local value2=$(echo "$json2" | jq -r ".$field // \"<missing>\"")
+
+    if [ "$partial_check" = true ] && { [ "$value1" = "<missing>" ] || [ "$value2" = "<missing>" ]; }; then
+      return
+    fi
+
+    if [ "$value1" != "$value2" ]; then
+      different=true
+      echo -e "\033[31m❌ $field mismatch:\033[0m"
+      echo -e "- $name1:\t$value1"
+      echo -e "- $name2:\t$value2"
+      echo
+    fi
+  }
+
+  # Compare all fields.
+  local different=false
+  for key in $keys; do
+    compare_field "$key"
+  done
+
+  if [ "$different" = false ]; then
+    echo -e "\033[32m✅ The JSON objects are the same.\033[0m"
+    return 0
+  else
+    echo -e "\033[31m❌ The JSON objects are not the same.\033[0m"
+    return 1
+  fi
+}
+
+# Fetch rollup data.
+echo '
+####################################################################################################
+#   ____   ___  _     _    _   _ ____    ____    _  _____  _
+#  |  _ \ / _ \| |   | |  | | | |  _ \  |  _ \  / \|_   _|/ \
+#  | |_) | | | | |   | |  | | | | |_) | | | | |/ _ \ | | / _ \
+#  |  _ <| |_| | |___| |__| |_| |  __/  | |_| / ___ \| |/ ___ \
+#  |_| \_\\___/|_____|_____\___/|_|     |____/_/   \_\_/_/   \_\
+#
+####################################################################################################
+'
+
+sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
+rollup_data_json=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
 
 rollup_contract=$(echo "$rollup_data_json" | jq -r '.[0]')
 chain_id=$(echo "$rollup_data_json" | jq -r '.[1]')
 verifier=$(echo "$rollup_data_json" | jq -r '.[2]')
 fork_id=$(echo "$rollup_data_json" | jq -r '.[3]')
 last_local_exit_root=$(echo "$rollup_data_json" | jq -r '.[4]')
-last_batch_sequenced=$(echo "$rollup_data_json" | jq -r '.[5]')
+last_virtualized_batch=$(echo "$rollup_data_json" | jq -r '.[5]')
 last_verified_batch=$(echo "$rollup_data_json" | jq -r '.[6]')
 last_pending_state=$(echo "$rollup_data_json" | jq -r '.[7]')
 last_pending_state_consolidated=$(echo "$rollup_data_json" | jq -r '.[8]')
@@ -52,57 +165,131 @@ last_verified_batch_before_upgrade=$(echo "$rollup_data_json" | jq -r '.[9]')
 rollup_type_id=$(echo "$rollup_data_json" | jq -r '.[10]')
 rollup_compatibility_id=$(echo "$rollup_data_json" | jq -r '.[11]')
 
-latest_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')
+jq -n --argjson rollup_data "$rollup_data_json" \
+  '{
+  rollupContract: $rollup_data[0],
+  chainId: $rollup_data[1],
+  verifierAddress: $rollup_data[2],
+  forkId: $rollup_data[3],
+  lastLocalExitRoot: $rollup_data[4],
+  lastSequencedBatch: $rollup_data[5],
+  lastVerifiedBatch: $rollup_data[6],
+  lastPendingState: $rollup_data[7],
+  lastPendingStateConsolidated: $rollup_data[8],
+  lastVerifiedBatchBeforeUpgrade: $rollup_data[9],
+  rollupTypeId: $rollup_data[10],
+  rollupCompatibilityId: $rollup_data[11]
+}'
 
-echo "Rollup Contract:                     $rollup_contract"
-echo "Chain ID:                            $chain_id"
-echo "Verifier Address:                    $verifier"
-echo "Fork ID:                             $fork_id"
-echo "Last LER:                            $last_local_exit_root"
-echo "Last Sequenced Batch:                $last_batch_sequenced"
-echo "Last Verified Batch:                 $last_verified_batch"
-echo "Last Pending State:                  $last_pending_state"
-echo "Last Pending State Consolidated:     $last_pending_state_consolidated"
-echo "Last Verified Batch Before Upgrade:  $last_verified_batch_before_upgrade"
-echo "Rollup Type ID:                      $rollup_type_id"
-echo "Rollup Compatibility ID:             $rollup_compatibility_id"
+echo '
+####################################################################################################
+#   _____ ____  _   _ ____ _____ _____ ____    ____    _  _____ ____ _   _
+#  |_   _|  _ \| | | / ___|_   _| ____|  _ \  | __ )  / \|_   _/ ___| | | |
+#    | | | |_) | | | \___ \ | | |  _| | | | | |  _ \ / _ \ | || |   | |_| |
+#    | | |  _ <| |_| |___) || | | |___| |_| | | |_) / ___ \| || |___|  _  |
+#    |_| |_| \_\\___/|____/ |_| |_____|____/  |____/_/   \_\_| \____|_| |_|
+#
+####################################################################################################
+'
 
-simple_batch_info=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_getBatchByNumber "$latest_batch_number" | jq '.')
-simple_simple_batch=$(echo "$simple_batch_info" | jq '.transactions = (.transactions | length) | .blocks = (.blocks | length) | del(.batchL2Data)')
-echo "$simple_simple_batch" | jq '.'
+echo "Fetching latest batch number from L2 sequencer and L2 RPC..."
+sequencer_latest_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')
+rpc_latest_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')
+echo "- SEQUENCER: $(($sequencer_latest_batch_number))"
+echo "- RPC: $(($rpc_latest_batch_number))"
+echo
 
-virtual_batch_info=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_getBatchByNumber "$(printf "0x%x" "$last_batch_sequenced")" | jq '.')
-simple_virtual_batch=$(echo "$virtual_batch_info" | jq '.transactions = (.transactions | length) | .blocks = (.blocks | length) | del(.batchL2Data)')
-echo "$simple_virtual_batch" | jq '.'
+if [ "$(($sequencer_latest_batch_number))" -eq "$(($rpc_latest_batch_number))" ]; then
+  echo -e "\033[32m✅ Batch numbers match.\033[0m"
+else
+  echo -e "\033[31m❌ Batch number mismatch:\033[0m"
+  echo "- l2_sequencer: $sequencer_latest_batch_number"
+  echo "- l2_rpc:       $rpc_latest_batch_number"
+fi
 
-verified_batch_info=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_getBatchByNumber "$(printf "0x%x" "$last_verified_batch")" | jq '.')
-simple_verifed_batch=$(echo "$verified_batch_info" | jq '.transactions = (.transactions | length) | .blocks = (.blocks | length) | del(.batchL2Data)')
-echo "$simple_verifed_batch" | jq '.'
+echo -e "\nFetching last trusted batch from L2 sequencer..."
+sequencer_trusted_batch_info=$(fetch_l2_batch_info "$l2_sequencer_url" "$sequencer_latest_batch_number")
+echo "Batch: $(($sequencer_latest_batch_number))"
+echo "$sequencer_trusted_batch_info" | jq '.'
 
-sequenced_batch_data_json=$(cast call -j --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_sequenced_batches" "$rollup_id" "$last_batch_sequenced")
-sequenced_batch_sr_json=$(cast call -j --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_stateroot" "$rollup_id" "$last_batch_sequenced")
+echo -e "\nFetching last trusted batch from L2 RPC..."
+rpc_trusted_batch_info=$(fetch_l2_batch_info "$l2_rpc_url" "$rpc_latest_batch_number")
+echo "Batch: $((rpc_latest_batch_number))"
+echo "$rpc_trusted_batch_info" | jq '.'
 
-seq_acc_input_hash=$(echo "$sequenced_batch_data_json" | jq -r '.[0]')
-sequenced_timestamp=$(echo "$sequenced_batch_data_json" | jq -r '.[1]')
-seq_previous_last_batch_sequenced=$(echo "$sequenced_batch_data_json" | jq -r '.[2]')
-seq_state_root=$(echo "$sequenced_batch_sr_json" | jq -r '.[0]')
+echo -e "\nComparing last trusted batch from L2 sequencer and L2 RPC..."
+compare_json_full_match \
+  "l2_sequencer" "$sequencer_trusted_batch_info" \
+  "l2_rpc" "$rpc_trusted_batch_info"
 
-echo "Batch $last_batch_sequenced accInputHash:               $seq_acc_input_hash"
-echo "Batch $last_batch_sequenced sequencedTimestamp:         $sequenced_timestamp"
-echo "Batch $last_batch_sequenced previousLastBatchSequenced: $seq_previous_last_batch_sequenced"
-echo "Batch $last_batch_sequenced stateRoot:                  $seq_state_root"
+echo '
+####################################################################################################
+#  __     _____ ____ _____ _   _   _    _     ___ __________ ____    ____    _  _____ ____ _   _
+#  \ \   / /_ _|  _ \_   _| | | | / \  | |   |_ _|__  / ____|  _ \  | __ )  / \|_   _/ ___| | | |
+#   \ \ / / | || |_) || | | | | |/ _ \ | |    | |  / /|  _| | | | | |  _ \ / _ \ | || |   | |_| |
+#    \ V /  | ||  _ < | | | |_| / ___ \| |___ | | / /_| |___| |_| | | |_) / ___ \| || |___|  _  |
+#     \_/  |___|_| \_\|_|  \___/_/   \_\_____|___/____|_____|____/  |____/_/   \_\_| \____|_| |_|
+#
+####################################################################################################
+'
 
-verified_batch_data_json=$(cast call -j --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_sequenced_batches" "$rollup_id" "$last_verified_batch")
-verified_batch_sr_json=$(cast call -j --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_get_stateroot" "$rollup_id" "$last_verified_batch")
+echo "Fetching last virtualized batch from L2 sequencer..."
+l2_sequencer_virtualized_batch_info=$(fetch_l2_batch_info "$l2_sequencer_url" $(printf "0x%x" "$last_virtualized_batch"))
+echo "Batch: $(($last_virtualized_batch))"
+echo "$l2_sequencer_virtualized_batch_info" | jq '.'
 
-verified_acc_input_hash=$(echo "$verified_batch_data_json" | jq -r '.[0]')
-verified_timestamp=$(echo "$verified_batch_data_json" | jq -r '.[1]')
-verif_previous_last_batch_sequenced=$(echo "$verified_batch_data_json" | jq -r '.[2]')
-verif_state_root=$(echo "$verified_batch_sr_json" | jq -r '.[0]')
+echo -e "\nFetching last virtualized batch from L2 RPC..."
+l2_rpc_virtualized_batch_info=$(fetch_l2_batch_info "$l2_rpc_url" $(printf "0x%x" "$last_virtualized_batch"))
+echo "Batch: $(($last_virtualized_batch))"
+echo "$l2_rpc_virtualized_batch_info" | jq '.'
 
-echo "Batch $last_verified_batch accInputHash:               $verified_acc_input_hash"
-echo "Batch $last_verified_batch sequencedTimestamp:         $verified_timestamp"
-echo "Batch $last_verified_batch previousLastBatchSequenced: $verif_previous_last_batch_sequenced"
-echo "Batch $last_verified_batch stateRoot:                  $verif_state_root"
+echo -e "\nComparing last virtualized batch from L2 sequencer and L2 RPC..."
+compare_json_full_match \
+  "l2_sequencer" "$sequencer_virtualized_batch_info" \
+  "l2_rpc" "$rpc_virtualized_batch_info"
 
+echo -e "\nFetching last virtualized batch on L1 RollupManager contract..."
+l1_virtualized_batch_info=$(fetch_l1_batch_info $last_virtualized_batch)
+echo "Batch: $(($last_virtualized_batch))"
+echo "$l1_virtualized_batch_info" | jq '.'
 
+echo -e "\nComparing last virtualized batch from L2 sequencer and L1 contracts..."
+compare_json_partial_match \
+  "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
+  "l1_contract" "$l1_virtualized_batch_info"
+
+echo '
+####################################################################################################
+#  __     _______ ____  ___ _____ ___ _____ ____    ____    _  _____ ____ _   _
+#  \ \   / / ____|  _ \|_ _|  ___|_ _| ____|  _ \  | __ )  / \|_   _/ ___| | | |
+#   \ \ / /|  _| | |_) || || |_   | ||  _| | | | | |  _ \ / _ \ | || |   | |_| |
+#    \ V / | |___|  _ < | ||  _|  | || |___| |_| | | |_) / ___ \| || |___|  _  |
+#     \_/  |_____|_| \_\___|_|   |___|_____|____/  |____/_/   \_\_| \____|_| |_|
+#
+####################################################################################################
+'
+
+echo "Fetching last verified batch from L2 sequencer..."
+l2_sequencer_verified_batch_info=$(fetch_l2_batch_info "$l2_sequencer_url" $(printf "0x%x" "$last_verified_batch"))
+echo "Batch: $(($last_verified_batch))"
+echo "$l2_sequencer_verified_batch_info" | jq '.'
+
+echo -e "\nFetching last last_verified_batch batch from L2 RPC..."
+l2_rpc_verified_batch_info=$(fetch_l2_batch_info "$l2_rpc_url" $(printf "0x%x" "$last_verified_batch"))
+echo "Batch: $(($last_verified_batch))"
+echo "$l2_rpc_verified_batch_info" | jq '.'
+
+echo -e "\nComparing last verified batch from L2 sequencer and L2 RPC..."
+compare_json_full_match \
+  "l2_sequencer" "$l2_sequencer_verified_batch_info" \
+  "l2_rpc" "$l2_rpc_verified_batch_info"
+
+echo -e "\nFetching last verified batch on L1 RollupManager contract..."
+l1_verified_batch_info=$(fetch_l1_batch_info $last_verified_batch)
+echo "Batch: $(($last_verified_batch))"
+echo "$l1_verified_batch_info" | jq '.'
+
+echo -e "\nComparing last verified batch from L2 sequencer and L1 contracts..."
+compare_json_partial_match \
+  "l2_sequencer" "$l2_sequencer_verified_batch_info" \
+  "l1_contract" "$l1_verified_batch_info"
