@@ -56,12 +56,15 @@ args:
   # - tx_spammer
   additional_services: []
 
-  # Docker images and repositories used to spin up services.
-  # This is a transitional image that includes a fix on top of version v8.0.0-rc.2-fork.12.
-  # https://github.com/0xPolygonHermez/zkevm-contracts/pull/323
+  # FORK 12 IMAGES
   zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-rc.4-fork.12
-  #zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-rc.2-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:4cf9ba7
+
+  # FORK 11 IMAGES
+  # zkevm_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11
+  # zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.2-fork.11
+  # cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.2.22
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3-RC1
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
@@ -69,11 +72,10 @@ args:
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.1.1
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
   agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
   zkevm_sequence_sender_image: hermeznetwork/zkevm-sequence-sender:v0.2.0-RC12
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:4cf9ba7
   zkevm_pool_manager_image: hermeznetwork/zkevm-pool-manager:v0.1.0
 
   # Port configuration.
@@ -154,8 +156,6 @@ args:
   # If erigon is being used as the sequencer,
   # This flag will enable a stateless executor to verify the execution of the batches.
   erigon_strict_mode: true
-  # This flag will allow pre EIP155 transactions.
-  erigon_pre_eip155_transactions: true
 
   # The address of the rollup manager contract on L1.
   # If specified, the rollup data will be retrieved from this contract instead of using the contracts service.

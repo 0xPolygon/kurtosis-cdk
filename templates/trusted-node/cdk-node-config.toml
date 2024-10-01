@@ -34,6 +34,8 @@ BlockFinality="FinalizedBlock"
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 GetBatchWaitInterval = "10s"
 {{end}}
+# FIXME - this shouldn't depend on a direct connection to the sequencer, but it seems to be failing if there are disconnects between the DS and RPC
+SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
         [SequenceSender.StreamClient]
                 Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
         [SequenceSender.EthTxManager]
