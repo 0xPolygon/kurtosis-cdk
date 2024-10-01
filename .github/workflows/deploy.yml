@@ -40,6 +40,9 @@ jobs:
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
       
+      - name: Make the CI fail on purpose
+        run: exit 1
+
       - name: Dump enclave logs
         if: failure()
         run: kurtosis dump ./dump
