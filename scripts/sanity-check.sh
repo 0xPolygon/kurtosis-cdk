@@ -7,7 +7,7 @@
 # - All containers running
 # - ✅ Matching values from rpc and sequencer
 # - Matching values from rpc and data stream
-# - ✨ Is this a validium or a rollup
+# - ✅ Is this a validium or a rollup
 # - Dac Committe Members
 # - Batch verification gap
 
@@ -47,6 +47,8 @@ l1_rpc_url="https://rpc2.sepolia.org"
 l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
 l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
 rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+polygon_zkevm_etrog_addr="0x21cB76952f70E289Db812B00bEBFBD6F3b465267"
+polygon_validium_etrgo_addr="0x8896Bc2E0140da2eE0451E2f6030E9D78b5A799c"
 rollup_id=1
 
 ####################################################################################################
@@ -112,11 +114,11 @@ function _compare_json() {
     local value1=$(echo "$json1" | jq -r ".$field // \"<missing>\"")
     local value2=$(echo "$json2" | jq -r ".$field // \"<missing>\"")
 
-    if [ "$partial_check" = true ] && { [ "$value1" = "<missing>" ] || [ "$value2" = "<missing>" ]; }; then
+    if [[ "$partial_check" == true ]] && { [[ "$value1" == "<missing>" ]] || [[ "$value2" == "<missing>" ]]; }; then
       return
     fi
 
-    if [ "$value1" != "$value2" ]; then
+    if [[ "$value1" != "$value2" ]]; then
       different=true
       echo -e "\033[31m❌ $field mismatch:\033[0m"
       echo -e "- $name1:\t$value1"
@@ -131,7 +133,7 @@ function _compare_json() {
     compare_field "$key"
   done
 
-  if [ "$different" = false ]; then
+  if [[ "$different" == false ]]; then
     echo -e "\033[32m✅ The JSON objects are the same.\033[0m"
     return 0
   else
@@ -186,9 +188,23 @@ jq -n --argjson rollup_data "$rollup_data_json" \
 
 sig_rollup_type_map='rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32)'
 rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_type_map" "$rollup_type_id")
-jq -n --argjson rollup_type_map "$rollup_type_map" \
+
+consensus_implementation_addr=$(echo "$rollup_type_map" | jq -r '.[0]')
+consensus_type=""
+if [[ "$consensus_implementation_addr" -eq "$polygon_zkevm_etrog_addr" ]]; then
+  consensus_type="rollup"
+elif [[ "$consensus_implementation_addr" -eq "$polygon_validium_etrog_addr" ]]; then
+  consensus_type="validium"
+else
+  consensus_type="unknown"
+fi
+
+jq -n \
+  --argjson rollup_type_map "$rollup_type_map" \
+  --arg consensus_type "$consensus_type" \
   '{
   consensusImplementation: $rollup_type_map[0],
+  consensusType: $consensus_type,
   verifier: $rollup_type_map[1],
   forkID: $rollup_type_map[2],
   rollupCompatibilityID: $rollup_type_map[3],
@@ -214,7 +230,7 @@ echo "- SEQUENCER: $(($sequencer_latest_batch_number))"
 echo "- RPC: $(($rpc_latest_batch_number))"
 echo
 
-if [ "$(($sequencer_latest_batch_number))" -eq "$(($rpc_latest_batch_number))" ]; then
+if [[ "$(($sequencer_latest_batch_number))" -eq "$(($rpc_latest_batch_number))" ]]; then
   echo -e "\033[32m✅ Batch numbers match.\033[0m"
 else
   echo -e "\033[31m❌ Batch number mismatch:\033[0m"
