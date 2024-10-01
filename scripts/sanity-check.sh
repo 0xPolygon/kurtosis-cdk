@@ -9,7 +9,7 @@
 # - Matching values from rpc and data stream
 # - ✅ Is this a validium or a rollup
 # - Dac Committe Members
-# - Batch verification gap
+# - ✅ Batch verification gap
 
 ####################################################################################################
 #    ____ ___  _   _ _____ ___ ____
@@ -337,3 +337,38 @@ echo -e "\nComparing last verified batch from L2 RPC and L1 contracts..."
 compare_json_partial_match \
   "l2_rpc" "$l2_rpc_verified_batch_info" \
   "l1_contract" "$l1_verified_batch_info"
+
+echo '
+####################################################################################################
+#    ____    _    ____  
+#   / ___|  / \  |  _ \ 
+#  | |  _  / _ \ | |_) |
+#  | |_| |/ ___ \|  __/ 
+#   \____/_/   \_\_|                          
+#                                                                                                                                
+####################################################################################################
+'
+
+sequencer_latest_trusted_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')
+sequencer_latest_virtualized_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_virtualBatchNumber | jq -r '.')
+sequencer_latest_verified_batch_number=$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_verifiedBatchNumber | jq -r '.')
+sequencer_virtualized_to_trusted_gap=$(($(($sequencer_latest_trusted_batch_number)) - $(($sequencer_latest_virtualized_batch_number))))
+sequencer_verified_to_trusted_gap=$(($(($sequencer_latest_trusted_batch_number)) - $(($sequencer_latest_verified_batch_number))))
+echo "L2 Sequencer"
+echo -e "- Trusted:\t$(($sequencer_latest_trusted_batch_number))"
+echo -e "- Virtual:\t$(($sequencer_latest_virtualized_batch_number)) ($sequencer_virtualized_to_trusted_gap)"
+echo -e "- Verified:\t$(($sequencer_latest_verified_batch_number)) ($sequencer_verified_to_trusted_gap)"
+
+rpc_latest_trusted_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')
+rpc_latest_virtualized_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_virtualBatchNumber | jq -r '.')
+rpc_latest_verified_batch_number=$(cast rpc --rpc-url "$l2_rpc_url" zkevm_verifiedBatchNumber | jq -r '.')
+rpc_virtualized_to_trusted_gap=$(($(($rpc_latest_trusted_batch_number)) - $(($rpc_latest_virtualized_batch_number))))
+rpc_verified_to_trusted_gap=$(($(($rpc_latest_trusted_batch_number)) - $(($rpc_latest_verified_batch_number))))
+echo -e "\nL2 RPC"
+echo -e "- Trusted:\t$(($rpc_latest_trusted_batch_number))"
+echo -e "- Virtual:\t$(($rpc_latest_virtualized_batch_number)) ($rpc_virtualized_to_trusted_gap)"
+echo -e "- Verified:\t$(($rpc_latest_verified_batch_number)) ($rpc_verified_to_trusted_gap)"
+
+echo -e "\nL1 RollupManager Contract"
+echo -e "- Virtual:\t$last_virtualized_batch"
+echo -e "- Verified:\t$last_verified_batch"
