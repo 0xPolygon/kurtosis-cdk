@@ -5,9 +5,9 @@
 # TODO: Sanity checks to add:
 # - Log check
 # - All containers running
-# - Matching values from rpc and sequencer
+# - ✅ Matching values from rpc and sequencer
 # - Matching values from rpc and data stream
-# - Is this a validium or a rollup
+# - ✨ Is this a validium or a rollup
 # - Dac Committe Members
 # - Batch verification gap
 
@@ -179,6 +179,18 @@ jq -n --argjson rollup_data "$rollup_data_json" \
   lastVerifiedBatchBeforeUpgrade: $rollup_data[9],
   rollupTypeId: $rollup_data[10],
   rollupCompatibilityId: $rollup_data[11]
+}'
+
+sig_rollup_type_map='rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32)'
+rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_type_map" "$rollup_type_id")
+jq -n --argjson rollup_type_map "$rollup_type_map" \
+  '{
+  consensusImplementation: $rollup_type_map[0],
+  verifier: $rollup_type_map[1],
+  forkID: $rollup_type_map[2],
+  rollupCompatibilityID: $rollup_type_map[3],
+  obsolete: $rollup_type_map[4],
+  genesis: $rollup_type_map[5]
 }'
 
 echo '
