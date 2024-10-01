@@ -47,9 +47,8 @@ l1_rpc_url="https://rpc2.sepolia.org"
 l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
 l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
 rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-polygon_zkevm_etrog_addr="0x21cB76952f70E289Db812B00bEBFBD6F3b465267"
-polygon_validium_etrgo_addr="0x8896Bc2E0140da2eE0451E2f6030E9D78b5A799c"
-rollup_id=1
+rollup_id=1 # rollup
+#rollup_id=2 # validium
 
 ####################################################################################################
 #   _____ _   _ _   _  ____ _____ ___ ___  _   _ ____
@@ -154,6 +153,7 @@ echo '
 ####################################################################################################
 '
 
+# Get rollup data.
 sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
 rollup_data_json=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
 
@@ -186,31 +186,34 @@ jq -n --argjson rollup_data "$rollup_data_json" \
   rollupCompatibilityId: $rollup_data[11]
 }'
 
+# Get rollup type data and consensus type.
 sig_rollup_type_map='rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32)'
 rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_type_map" "$rollup_type_id")
 
 consensus_implementation_addr=$(echo "$rollup_type_map" | jq -r '.[0]')
 consensus_type=""
-if [[ "$consensus_implementation_addr" -eq "$polygon_zkevm_etrog_addr" ]]; then
-  consensus_type="rollup"
-elif [[ "$consensus_implementation_addr" -eq "$polygon_validium_etrog_addr" ]]; then
+da_protocol_addr=""
+result=$(cast call --json --rpc-url "$l1_rpc_url" "$consensus_implementation_addr" "dataAvailabilityProtocol()(address)" "" 2>&1)
+if [ $? -eq 0 ]; then
   consensus_type="validium"
+  da_protocol_addr=$(echo $result | jq -r '.[0]')
 else
-  consensus_type="unknown"
+  consensus_type="rollup"
 fi
 
 jq -n \
   --argjson rollup_type_map "$rollup_type_map" \
   --arg consensus_type "$consensus_type" \
+  --arg da_protocol_addr "$da_protocol_addr" \
   '{
-  consensusImplementation: $rollup_type_map[0],
-  consensusType: $consensus_type,
-  verifier: $rollup_type_map[1],
-  forkID: $rollup_type_map[2],
-  rollupCompatibilityID: $rollup_type_map[3],
-  obsolete: $rollup_type_map[4],
-  genesis: $rollup_type_map[5]
-}'
+    consensusImplementation: $rollup_type_map[0],
+    consensusType: $consensus_type,
+    verifier: $rollup_type_map[1],
+    forkID: $rollup_type_map[2],
+    rollupCompatibilityID: $rollup_type_map[3],
+    obsolete: $rollup_type_map[4],
+    genesis: $rollup_type_map[5]
+  } | if $da_protocol_addr != "" then . + {daProtocol: $da_protocol_addr} else . end'
 
 echo '
 ####################################################################################################
