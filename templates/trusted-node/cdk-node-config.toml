@@ -151,7 +151,7 @@ DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
 RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
 SyncBlockChunkSize = 10
-BlockFinality = "LatestBlock"
+BlockFinality = "FinalizedBlock"
 URLRPCL1 = "{{.l1_rpc_url}}"
 WaitForNewBlocksPeriod = "1s"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
@@ -166,3 +166,18 @@ PolAddr = "{{.pol_token_address}}"
 ZkEVMAddr = "{{.zkevm_rollup_address}}"
 RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
 GlobalExitRootManagerAddr = "{{.zkevm_global_exit_root_address}}"
+
+# YOU NEED [ReorgDetectorL1], [L1InfoTreeSync] and [BridgeL2Sync] config as well
+
+[ReorgDetectorL2]
+DBPath = "/tmp/reorgdetectorL2"
+
+[AggSender]
+DBPath = "/tmp/aggsender"
+CertificateSendInterval = "30s"
+URLRPCL2 = "{{.l2_rpc_url}}"
+AggLayerURL = "http://agglayer:{{.agglayer_port}}"
+        [AggSender.SequencerPrivateKey]
+                Path = "/etc/cdk/sequencer.keystore"
+                Password = "{{.zkevm_l2_keystore_password}}"
+
