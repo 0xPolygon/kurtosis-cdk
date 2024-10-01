@@ -31,13 +31,9 @@ MaxPendingTx = 1
 {{if eq .zkevm_rollup_fork_id "12"}}
 MaxBatchesForL1 = 300
 BlockFinality="FinalizedBlock"
+{{end}}
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 GetBatchWaitInterval = "10s"
-{{end}}
-# FIXME - this shouldn't depend on a direct connection to the sequencer, but it seems to be failing if there are disconnects between the DS and RPC
-SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-        [SequenceSender.StreamClient]
-                Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
         [SequenceSender.EthTxManager]
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
@@ -63,7 +59,6 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
                         HTTPHeaders = []
 
 [Aggregator]
-        FinalProofSanityCheckEnabled = false
         Host = "0.0.0.0"
         Port = "{{.zkevm_aggregator_port}}"
         RetryTime = "30s"
@@ -87,13 +82,10 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
         {{else}}
         SenderAddress = "{{.zkevm_l2_aggregator_address}}"
         {{end}}
-
-        {{if eq .zkevm_rollup_fork_id "12"}}
         UseL1BatchData = true
         UseFullWitness = false
         MaxWitnessRetrievalWorkers = 2
         SyncModeOnlyEnabled = false
-        {{end}}
 
         [Aggregator.SequencerPrivateKey]
                 Path = "/etc/cdk/sequencer.keystore"
