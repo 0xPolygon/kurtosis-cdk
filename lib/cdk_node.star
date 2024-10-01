@@ -3,6 +3,7 @@ data_availability_package = import_module("./data_availability.star")
 NODE_COMPONENTS = struct(
     sequence_sender="sequence-sender",
     aggregator="aggregator",
+    aggsender="aggsender",
 )
 
 
@@ -44,7 +45,9 @@ def create_cdk_node_service_config(
             + "-components="
             + NODE_COMPONENTS.sequence_sender
             + ","
-            + NODE_COMPONENTS.aggregator,
+            + NODE_COMPONENTS.aggregator
+            + ","
+            + NODE_COMPONENTS.aggsender
         ],
     )
 

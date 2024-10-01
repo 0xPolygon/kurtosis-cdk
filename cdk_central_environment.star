@@ -87,12 +87,16 @@ def run(plan, args):
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args
         )
+        l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
         node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
             config={
                 "cdk-node-config.toml": struct(
                     template=node_config_template,
-                    data=args
+                    data={
+                        "l2_rpc_url": l2_rpc_urls.http,
+                    }
+                    | args
                     | {
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
