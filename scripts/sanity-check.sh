@@ -173,6 +173,7 @@ echo "Fetching rollup data..."
 sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
 rollup_data_json=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
 
+rollup_contract=$(echo "$rollup_data_json" | jq -r '.[0]')
 last_virtualized_batch=$(echo "$rollup_data_json" | jq -r '.[5]')
 last_verified_batch=$(echo "$rollup_data_json" | jq -r '.[6]')
 rollup_type_id=$(echo "$rollup_data_json" | jq -r '.[10]')
@@ -197,25 +198,10 @@ echo -e "\nFetching rollup type data..."
 sig_rollup_type_map='rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32)'
 rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr" "$sig_rollup_type_map" "$rollup_type_id")
 
-consensus_implementation_addr=$(echo "$rollup_type_map" | jq -r '.[0]')
-consensus_type=""
-da_protocol_addr=""
-result=$(cast call --json --rpc-url "$l1_rpc_url" "$consensus_implementation_addr" "dataAvailabilityProtocol()(address)" 2>&1)
-# shellcheck disable=SC2181
-if [ $? -eq 0 ]; then
-  consensus_type="validium"
-  da_protocol_addr="$(echo "$result" | jq -r '.[0]')"
-else
-  consensus_type="rollup"
-fi
-
 jq -n \
   --argjson rollup_type_map "$rollup_type_map" \
-  --arg consensus_type "$consensus_type" \
-  --arg da_protocol_addr "$da_protocol_addr" \
   '{
     consensusImplementation: $rollup_type_map[0],
-    consensusType: $consensus_type,
     verifier: $rollup_type_map[1],
     forkID: $rollup_type_map[2],
     rollupCompatibilityID: $rollup_type_map[3],
@@ -223,12 +209,48 @@ jq -n \
     genesis: $rollup_type_map[5]
   }'
 
+consensus_type=""
+da_protocol_addr=""
+result=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_contract" "dataAvailabilityProtocol()(address)" 2>&1)
+# shellcheck disable=SC2181
+if [ $? -eq 0 ]; then
+  consensus_type="validium"
+  da_protocol_addr="$(echo "$result" | jq -r '.[0]')"
+else
+  consensus_type="rollup"
+fi
+echo -e "\nConsensus type: $consensus_type"
+
 if [[ "$consensus_type" == "validium" ]]; then
-  echo -e "\nFetching DAC members"
+  echo '
+####################################################################################################
+#   ____    _    ____
+#  |  _ \  / \  / ___|
+#  | | | |/ _ \| |
+#  | |_| / ___ \ |___
+#  |____/_/   \_\____|
+#
+####################################################################################################
+'
+
+  echo "Fetching DAC data..."
   echo "DA protocol address: $da_protocol_addr"
-  # TODO: The following call will always fail because $da_protocol_addr is always set to 0x0.
-  members=$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "members()((string,address)[])")
+
+  # TODO
+  requiredAmountOfSignatures="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "requiredAmountOfSignatures()(uint256)" | jq -r '.[0]')"
+  members="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "getAmountOfMembers()(uint256)" | jq -r '.[0]')"
+  echo "Required amount of signatures: $requiredAmountOfSignatures"
   echo "Members: $members"
+  echo
+
+  for ((i = 0; i < "$members"; i++)); do
+    member_info="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "members(uint256)(string,address)" "$i")"
+    url=$(echo "$member_info" | jq -r '.[0]')
+    address=$(echo "$member_info" | jq -r '.[1]')
+    echo "[Member $i]"
+    echo "- URL: $url"
+    echo "- Address: $address"
+  done
 fi
 
 # shellcheck disable=SC2028
@@ -360,11 +382,11 @@ compare_json_partial_match \
 # shellcheck disable=SC2028
 echo '
 ####################################################################################################
-#    ____    _    ____
-#   / ___|  / \  |  _ \
-#  | |  _  / _ \ | |_) |
-#  | |_| |/ ___ \|  __/
-#   \____/_/   \_\_|
+#   ____    _  _____ ____ _   _    ____    _    ____
+#  | __ )  / \|_   _/ ___| | | |  / ___|  / \  |  _ \
+#  |  _ \ / _ \ | || |   | |_| | | |  _  / _ \ | |_) |
+#  | |_) / ___ \| || |___|  _  | | |_| |/ ___ \|  __/
+#  |____/_/   \_\_| \____|_| |_|  \____/_/   \_\_|
 #
 ####################################################################################################
 '
