@@ -236,10 +236,15 @@ if [[ "$consensus_type" == "validium" ]]; then
   echo "Fetching DAC data..."
   echo "DA protocol address: $da_protocol_addr"
 
-  # TODO
+  sequencerAllowedToBypassDAC="$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_contract" "isSequenceWithDataAvailabilityAllowed()(bool)" | jq -r '.[0]')"
   requiredAmountOfSignatures="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "requiredAmountOfSignatures()(uint256)" | jq -r '.[0]')"
   committeeHash="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "committeeHash()(bytes32)" | jq -r '.[0]')"
   members="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "getAmountOfMembers()(uint256)" | jq -r '.[0]')"
+  if [[ "$sequencerAllowedToBypassDAC" == "true" ]]; then
+    echo "The sequencer is allowed to bypass the DAC and post the data directly to L1"
+  else
+    echo "The sequencer is required to send the data to the DAC"
+  fi
   echo "Required amount of signatures: $requiredAmountOfSignatures"
   echo "Committee hash: $committeeHash"
   echo "Members: $members"
