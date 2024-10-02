@@ -21,18 +21,18 @@
 ####################################################################################################
 
 # LOCAL KURTOSIS-CDK
-# enclave="cdk"
-# l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
-# l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
-# l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
-# rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-# rollup_id=1
+enclave="cdk"
+l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
+l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
+rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
 # enclave="erigon-18-4"
 # l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 # l2_sequencer_url="$(kurtosis port print "$enclave" sequencer001 sequencer8123)"
-# TODO: l2_rpc_url
+# l2_rpc_url="$(kurtosis port print "$enclave" rpc001 rpc8123)"
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
 
@@ -44,12 +44,12 @@
 # rollup_id=1
 
 # CARDONA
-l1_rpc_url="https://rpc2.sepolia.org"
-l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
-l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
-rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-rollup_id=1 # rollup
-#rollup_id=2 # validium
+# l1_rpc_url="https://rpc2.sepolia.org"
+# l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
+# l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
+# rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+# rollup_id=1 # rollup
+# # rollup_id=2 # validium
 
 # Log config
 echo "Running sanity check script with config:"
@@ -200,7 +200,7 @@ rollup_type_map=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_manager_addr
 consensus_implementation_addr=$(echo "$rollup_type_map" | jq -r '.[0]')
 consensus_type=""
 da_protocol_addr=""
-result=$(cast call --json --rpc-url "$l1_rpc_url" "$consensus_implementation_addr" "dataAvailabilityProtocol()(address)" "" 2>&1)
+result=$(cast call --json --rpc-url "$l1_rpc_url" "$consensus_implementation_addr" "dataAvailabilityProtocol()(address)" 2>&1)
 # shellcheck disable=SC2181
 if [ $? -eq 0 ]; then
   consensus_type="validium"
@@ -221,7 +221,15 @@ jq -n \
     rollupCompatibilityID: $rollup_type_map[3],
     obsolete: $rollup_type_map[4],
     genesis: $rollup_type_map[5]
-  } | if $da_protocol_addr != "" then . + {daProtocol: $da_protocol_addr} else . end'
+  }'
+
+if [[ "$consensus_type" -eq "validium" ]]; then
+  echo -e "\nFetching DAC members"
+  echo "DA protocol address: $da_protocol_addr"
+  # TODO: The following call will always fail because $da_protocol_addr is always set to 0x0.
+  members=$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "members()((string,address)[])")
+  echo "Members: $members"
+fi
 
 # shellcheck disable=SC2028
 echo '
