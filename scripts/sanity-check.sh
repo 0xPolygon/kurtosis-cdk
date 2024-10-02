@@ -223,7 +223,7 @@ jq -n \
     genesis: $rollup_type_map[5]
   }'
 
-if [[ "$consensus_type" -eq "validium" ]]; then
+if [[ "$consensus_type" == "validium" ]]; then
   echo -e "\nFetching DAC members"
   echo "DA protocol address: $da_protocol_addr"
   # TODO: The following call will always fail because $da_protocol_addr is always set to 0x0.
