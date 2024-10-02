@@ -238,8 +238,10 @@ if [[ "$consensus_type" == "validium" ]]; then
 
   # TODO
   requiredAmountOfSignatures="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "requiredAmountOfSignatures()(uint256)" | jq -r '.[0]')"
+  committeeHash="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "committeeHash()(bytes32)" | jq -r '.[0]')"
   members="$(cast call --json --rpc-url "$l1_rpc_url" "$da_protocol_addr" "getAmountOfMembers()(uint256)" | jq -r '.[0]')"
   echo "Required amount of signatures: $requiredAmountOfSignatures"
+  echo "Committee hash: $committeeHash"
   echo "Members: $members"
   echo
 
