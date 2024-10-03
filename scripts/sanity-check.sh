@@ -6,9 +6,9 @@
 # - Log check
 # - All containers running
 # - ✅ Matching values from rpc and sequencer
-# - Matching values from rpc and data stream
+# - ✅ Matching values from rpc and data stream
 # - ✅ Is this a validium or a rollup
-# - Dac Committe Members
+# - ✅ Dac Committe Members
 # - ✅ Batch verification gap
 
 ####################################################################################################
@@ -21,17 +21,19 @@
 ####################################################################################################
 
 # LOCAL KURTOSIS-CDK
-enclave="cdk"
-l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
-l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
-l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
-rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-rollup_id=1
+# enclave="cdk"
+# l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+# l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
+# l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
+# l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
+# rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+# rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
 # enclave="erigon-18-4"
 # l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 # l2_sequencer_url="$(kurtosis port print "$enclave" sequencer001 sequencer8123)"
+# l2_datastreamer_url="$(kurtosis port print "$enclave" sequencer001 sequencer6900)"
 # l2_rpc_url="$(kurtosis port print "$enclave" rpc001 rpc8123)"
 # rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 # rollup_id=1
@@ -39,25 +41,33 @@ rollup_id=1
 # BALI
 # l1_rpc_url="https://rpc2.sepolia.org"
 # l2_sequencer_url="https://rpc.internal.zkevm-rpc.com"
+# TODO: l2_datastreamer_url
 # TODO: l2_rpc_url
 # rollup_manager_addr="0xe2ef6215adc132df6913c8dd16487abf118d1764"
 # rollup_id=1
 
 # CARDONA
-# l1_rpc_url="https://rpc2.sepolia.org"
-# l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
-# l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
-# rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-# rollup_id=1 # rollup
-# # rollup_id=2 # validium
+l1_rpc_url="https://rpc2.sepolia.org"
+l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
+l2_datastreamer_url="datastream.cardona.zkevm-rpc.com:6900"
+l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
+rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+rollup_id=1 # rollup
+# rollup_id=2 # validium
 
 # Log config
 echo "Running sanity check script with config:"
 echo -e "- L1 RPC URL:\t\t\t$l1_rpc_url"
 echo -e "- L2 Sequencer URL:\t\t$l2_sequencer_url"
+echo -e "- L2 Datastreamer URL:\t\t$l2_datastreamer_url"
 echo -e "- L2 RPC URL:\t\t\t$l2_rpc_url"
 echo -e "- Rollup Manager Address:\t$rollup_manager_addr"
 echo -e "- Rollup ID:\t\t\t$rollup_id"
+
+# Update datastreamer config.
+tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" '.Online.URI = $l2_datastreamer_url' scripts/datastreamer.toml
+echo -e "- Datastreamer config:"
+tomlq . scripts/datastreamer.toml
 
 ####################################################################################################
 #   _____ _   _ _   _  ____ _____ ___ ___  _   _ ____
@@ -68,11 +78,23 @@ echo -e "- Rollup ID:\t\t\t$rollup_id"
 #
 ####################################################################################################
 
-function fetch_l2_batch_info() {
+function fetch_l2_batch_info_from_rpc() {
   local rpc_url="$1"
   local batch_number="$2"
   cast rpc --rpc-url "$rpc_url" zkevm_getBatchByNumber "$batch_number" |
     jq '.transactions = (.transactions | length) | .blocks = (.blocks | length) | del(.batchL2Data)'
+}
+
+function fetch_l2_batch_info_from_datastream() {
+  local batch_number="$1"
+  local result
+  result="$(zkevm-datastreamer decode-batch --cfg scripts/datastreamer.toml --batch "$batch_number" --json | jq -s '. | last')"
+  jq -n \
+    --argjson result "$result" \
+    '{
+      localExitRoot: $result["Local Exit Root"],
+      stateRoot: $result["State Root"]
+    }'
 }
 
 function fetch_l1_batch_info() {
@@ -134,7 +156,7 @@ function _compare_json() {
 
     if [[ "$value1" != "$value2" ]]; then
       different=true
-      echo -e "\033[31m❌ $field mismatch:\033[0m"
+      echo -e "❌ $field mismatch:"
       echo -e "- $name1:\t$value1"
       echo -e "- $name2:\t$value2"
       echo
@@ -148,10 +170,10 @@ function _compare_json() {
   done
 
   if [[ "$different" == false ]]; then
-    echo -e "\033[32m✅ The JSON objects are the same.\033[0m"
+    echo -e "✅ The JSON objects are the same."
     return 0
   else
-    echo -e "\033[31m❌ The JSON objects are not the same.\033[0m"
+    echo -e "❌ The JSON objects are not the same."
     return 1
   fi
 }
@@ -280,35 +302,38 @@ echo '
 ####################################################################################################
 '
 
-echo "Fetching latest batch number from L2 sequencer and L2 RPC..."
+# Fetch batch data.
+echo "Fetching last batch numbers L2 sequencer and L2 RPC..."
 sequencer_latest_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')"
 rpc_latest_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')"
 echo "- SEQUENCER: $((sequencer_latest_batch_number))"
 echo "- RPC: $((rpc_latest_batch_number))"
 echo
 
-if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]; then
-  echo -e "\033[32m✅ Batch numbers match.\033[0m"
-else
-  echo -e "\033[31m❌ Batch number mismatch:\033[0m"
-  echo "- l2_sequencer: $sequencer_latest_batch_number"
-  echo "- l2_rpc:       $rpc_latest_batch_number"
-fi
-
-echo -e "\nFetching last trusted batch from L2 sequencer..."
-sequencer_trusted_batch_info="$(fetch_l2_batch_info "$l2_sequencer_url" "$sequencer_latest_batch_number")"
+echo -e "\nFetching L2 sequencer..."
+sequencer_trusted_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$sequencer_latest_batch_number")"
 echo "Batch: $((sequencer_latest_batch_number))"
 echo "$sequencer_trusted_batch_info" | jq '.'
 
-echo -e "\nFetching last trusted batch from L2 RPC..."
-rpc_trusted_batch_info="$(fetch_l2_batch_info "$l2_rpc_url" "$rpc_latest_batch_number")"
+echo -e "\nFetching L2 RPC..."
+rpc_trusted_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$rpc_latest_batch_number")"
 echo "Batch: $((rpc_latest_batch_number))"
 echo "$rpc_trusted_batch_info" | jq '.'
 
-echo -e "\nComparing last trusted batch from L2 sequencer and L2 RPC..."
-compare_json_full_match \
-  "l2_sequencer" "$sequencer_trusted_batch_info" \
-  "l2_rpc" "$rpc_trusted_batch_info"
+# Compare batch data (only if they match).
+
+if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]; then
+  echo -e "\n✅ Batch numbers match."
+
+  echo -e "\nComparing L2 sequencer and L2 RPC..."
+  compare_json_full_match \
+    "l2_sequencer" "$sequencer_trusted_batch_info" \
+    "l2_rpc" "$rpc_trusted_batch_info"  
+else
+  echo -e "\n❌ Batch number mismatch:"
+  echo "- l2_sequencer: $sequencer_latest_batch_number"
+  echo "- l2_rpc:       $rpc_latest_batch_number"
+fi
 
 # shellcheck disable=SC2028
 echo '
@@ -322,32 +347,42 @@ echo '
 ####################################################################################################
 '
 
-echo "Fetching last virtualized batch from L2 sequencer..."
-l2_sequencer_virtualized_batch_info="$(fetch_l2_batch_info "$l2_sequencer_url" "$(printf "0x%x" "$last_virtualized_batch")")"
 echo "Batch: $((last_virtualized_batch))"
-echo "$l2_sequencer_virtualized_batch_info" | jq '.'
 
-echo -e "\nFetching last virtualized batch from L2 RPC..."
-l2_rpc_virtualized_batch_info="$(fetch_l2_batch_info "$l2_rpc_url" "$(printf "0x%x" "$last_virtualized_batch")")"
-echo "Batch: $((last_virtualized_batch))"
+# Fetch batcn data.
+echo -e "\nFetching L2 RPC..."
+l2_rpc_virtualized_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$(printf "0x%x" "$last_virtualized_batch")")"
 echo "$l2_rpc_virtualized_batch_info" | jq '.'
 
-echo -e "\nComparing last virtualized batch from L2 sequencer and L2 RPC..."
+echo "Fetching L2 sequencer..."
+l2_sequencer_virtualized_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$(printf "0x%x" "$last_virtualized_batch")")"
+echo "$l2_sequencer_virtualized_batch_info" | jq '.'
+
+echo -e "\nFetching L2 datastreamer..."
+l2_datastreamer_virtualized_batch_info="$(fetch_l2_batch_info_from_datastream "$((last_virtualized_batch))")"
+echo "$l2_datastreamer_virtualized_batch_info" | jq '.'
+
+echo -e "\nFetching L1 RollupManager contract..."
+l1_virtualized_batch_info="$(fetch_l1_batch_info "$last_virtualized_batch")"
+echo "$l1_virtualized_batch_info" | jq '.'
+
+# Compare batch data.
+echo -e "\nComparing L2 sequencer and L2 RPC..."
 compare_json_full_match \
   "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
   "l2_rpc" "$l2_rpc_virtualized_batch_info"
 
-echo -e "\nFetching last virtualized batch from L1 RollupManager contract..."
-l1_virtualized_batch_info="$(fetch_l1_batch_info "$last_virtualized_batch")"
-echo "Batch: $((last_virtualized_batch))"
-echo "$l1_virtualized_batch_info" | jq '.'
+echo -e "\nComparing L2 datastreamer and L2 rpc..."
+compare_json_partial_match \
+  "l2_datastreamer" "$l2_datastreamer_virtualized_batch_info" \
+  "l2_rpc" "$l2_rpc_virtualized_batch_info"
 
-echo -e "\nComparing last virtualized batch from L2 sequencer and L1 contracts..."
+echo -e "\nComparing L2 sequencer and L1 contracts..."
 compare_json_partial_match \
   "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
   "l1_contract" "$l1_virtualized_batch_info"
 
-echo -e "\nComparing last virtualized batch from L2 RPC and L1 contracts..."
+echo -e "\nComparing L2 RPC and L1 contracts..."
 compare_json_partial_match \
   "l2_rpc" "$l2_rpc_virtualized_batch_info" \
   "l1_contract" "$l1_virtualized_batch_info"
@@ -364,32 +399,42 @@ echo '
 ####################################################################################################
 '
 
-echo "Fetching last verified batch from L2 sequencer..."
-l2_sequencer_verified_batch_info="$(fetch_l2_batch_info "$l2_sequencer_url" "$(printf "0x%x" "$last_verified_batch")")"
 echo "Batch: $((last_verified_batch))"
-echo "$l2_sequencer_verified_batch_info" | jq '.'
 
-echo -e "\nFetching last last_verified_batch batch from L2 RPC..."
-l2_rpc_verified_batch_info="$(fetch_l2_batch_info "$l2_rpc_url" "$(printf "0x%x" "$last_verified_batch")")"
-echo "Batch: $((last_verified_batch))"
+# Fetch batch data.
+echo -e "\nFetching L2 RPC..."
+l2_rpc_verified_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$(printf "0x%x" "$last_verified_batch")")"
 echo "$l2_rpc_verified_batch_info" | jq '.'
 
-echo -e "\nComparing last verified batch from L2 sequencer and L2 RPC..."
+echo "Fetching L2 sequencer..."
+l2_sequencer_verified_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$(printf "0x%x" "$last_verified_batch")")"
+echo "$l2_sequencer_verified_batch_info" | jq '.'
+
+echo -e "\nFetching L2 datastreamer..."
+l2_datastreamer_verified_batch_info="$(fetch_l2_batch_info_from_datastream "$((last_verified_batch))")"
+echo "$l2_datastreamer_verified_batch_info" | jq '.'
+
+echo -e "\nFetching L1 RollupManager contract..."
+l1_verified_batch_info="$(fetch_l1_batch_info "$last_verified_batch")"
+echo "$l1_verified_batch_info" | jq '.'
+
+# Compare batch data.
+echo -e "\nComparing L2 sequencer and L2 RPC..."
 compare_json_full_match \
   "l2_sequencer" "$l2_sequencer_verified_batch_info" \
   "l2_rpc" "$l2_rpc_verified_batch_info"
 
-echo -e "\nFetching last verified batch from L1 RollupManager contract..."
-l1_verified_batch_info="$(fetch_l1_batch_info "$last_verified_batch")"
-echo "Batch: $((last_verified_batch))"
-echo "$l1_verified_batch_info" | jq '.'
+echo -e "\nComparing L2 datastreamer and L2 rpc..."
+compare_json_partial_match \
+  "l2_datastreamer" "$l2_datastreamer_verified_batch_info" \
+  "l2_rpc" "$l2_rpc_verified_batch_info"
 
-echo -e "\nComparing last verified batch from L2 sequencer and L1 contracts..."
+echo -e "\nComparing L2 sequencer and L1 contracts..."
 compare_json_partial_match \
   "l2_sequencer" "$l2_sequencer_verified_batch_info" \
   "l1_contract" "$l1_verified_batch_info"
 
-echo -e "\nComparing last verified batch from L2 RPC and L1 contracts..."
+echo -e "\nComparing L2 RPC and L1 contracts..."
 compare_json_partial_match \
   "l2_rpc" "$l2_rpc_verified_batch_info" \
   "l1_contract" "$l1_verified_batch_info"
