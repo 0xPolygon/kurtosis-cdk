@@ -41,9 +41,6 @@ pushd /tmp/kurtosis-cdk/docker
 
 This image contains all the npm dependencies and zkevm contracts compiled for a specific fork id.
 
-<details>
-<summary>Click to expand</summary>
-
 Build the `zkevm-contracts` image.
 
 ```bash
@@ -66,7 +63,6 @@ From now on, the [leovct/zkevm-contracts](https://hub.docker.com/repository/dock
 | Fork ID | zkEVM Contracts Tag / Commit | Image |
 | ------- | ---------------------------- | ----- |
 | 9-RC1 | [v6.0.0-rc.1-fork.9](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v6.0.0-rc.1-fork.9) | [leovct/zkevm-contracts:v6.0.0-rc.1-fork.9](https://hub.docker.com/layers/leovct/zkevm-contracts/v6.0.0-rc.1-fork.9/images/sha256-6a2e2dde8b15506d18285a203026d1c4f9c64d671e223ff08affacc93fd565fa?context=explore) |
-| 11-a5eacc6e | [a5eacc6e](https://github.com/0xPolygonHermez/zkevm-contracts/tree/a5eacc6e51d7456c12efcabdfc1c37457f2219b2) | [leovct/zkevm-contracts:a5eacc6e-fork.11](https://hub.docker.com/layers/leovct/zkevm-contracts/a5eacc6e-fork.11/images/sha256-42d9cb9d2349f245096f15c918001f5e5314623842b02e3af229f8995185ef68?context=repo) |
 | 11-RC1 | [v7.0.0-rc.1-fork.10](https://github.com/0xPolygonHermez/zkevm-contracts/commits/v7.0.0-rc.1-fork.10) | [leovct/zkevm-contracts:v7.0.0-rc.1-fork.11](https://hub.docker.com/layers/leovct/zkevm-contracts/v7.0.0-rc.1-fork.11/images/sha256-c29a7bf6c6e03419e3846257d66e4606c2e3b23852b94af409853e67e75b2f36?context=explore) |
 | 11-RC2 | [v7.0.0-rc.2-fork.10](https://github.com/0xPolygonHermez/zkevm-contracts/commits/v7.0.0-rc.2-fork.10) | [leovct/zkevm-contracts:v7.0.0-rc.2-fork.11](https://hub.docker.com/layers/leovct/zkevm-contracts/v7.0.0-rc.2-fork.11/images/sha256-8e7322525e4c0b6fd5141987d786bfd3f7fec3b0c1724843d99751df5f26f46e?context=explore) |
 | 12-RC1 | [v8.0.0-rc.1-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.1-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.1-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.1-fork.12/images/sha256-2197c0b502b93e77bee36a4b87e318a49c6b97bb74b0aca8a13767ef0e684607?context=repo) |
@@ -88,14 +84,9 @@ The following tags are now deprecated:
 | fork11  | `a5eacc6e51d7456c12efcabdfc1c37457f2219b2` |
 | fork12  | `v8.0.0-rc.1-fork.12`                      |
 
-</details>
-
 ### ZkEVM Bridge UI
 
 This image contains an enhanced version of the zkEVM bridge UI with relative URL support enabled.
-
-<details>
-<summary>Click to expand</summary>
 
 Build the `zkevm-bridge-ui` image.
 
@@ -112,14 +103,9 @@ REPOSITORY              TAG     IMAGE ID       CREATED          SIZE
 local/zkevm-bridge-ui   local   040905e1cabe   28 seconds ago   377MB
 ```
 
-</details>
-
 ### Toolbox
 
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
-
-<details>
-<summary>Click to expand</summary>
 
 Build the `toolbox` image.
 
@@ -135,5 +121,3 @@ $ docker images --filter "reference=local/toolbox"
 REPOSITORY       TAG    IMAGE ID       CREATED         SIZE
 local/toolbox   local   3f85f026aaf9   2 seconds ago   490MB
 ```
-
-</details>
