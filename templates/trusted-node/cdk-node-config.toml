@@ -56,7 +56,7 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
                 ForcedGas = 0
                 GasPriceMarginFactor = 1
                 MaxGasPriceLimit = 0
-                PersistenceFilename = "/data/ethtxmanager.json"
+                StoragePath = "/data/ethtxmanager.db"
                 [SequenceSender.EthTxManager.Etherman]
                         URL = "{{.l1_rpc_url}}"
                         L1ChainID = {{.l1_chain_id}}
@@ -130,7 +130,7 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
                 ForcedGas = 0
                 GasPriceMarginFactor = 1
                 MaxGasPriceLimit = 0
-                PersistenceFilename = ""
+                StoragePath = ""
                 ReadPendingL1Txs = false
                 SafeStatusL1NumberOfBlocks = 0
                 FinalizedStatusL1NumberOfBlocks = 0
