@@ -120,12 +120,19 @@ jobs:
       - name: Dump enclave logs
         if: failure()
         run: kurtosis dump ./dump
+      
+      - name: Generate archive name
+        run: |
+          file_name=$(basename "${{ matrix.file_name }}" ".yml")
+          archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
+          echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
+          echo "Generated archive name: ${archive_name}"
 
       - name: Upload logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: dump_run_with_args_${{ matrix.file_name }}_${{ github.run_id }}
+          name: ${{ env.ARCHIVE_NAME }}
           path: ./dump
 
   additional_services:
