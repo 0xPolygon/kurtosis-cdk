@@ -65,7 +65,8 @@ echo -e "- Rollup Manager Address:\t$rollup_manager_addr"
 echo -e "- Rollup ID:\t\t\t$rollup_id"
 
 # Update datastreamer config.
-tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" ".Online.URI = $l2_datastreamer_url" scripts/datastreamer.toml
+# shellcheck disable=SC2016
+tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" '.Online.URI = $l2_datastreamer_url' scripts/datastreamer.toml
 echo -e "- Datastreamer config:"
 tomlq . scripts/datastreamer.toml
 
@@ -308,14 +309,13 @@ sequencer_latest_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_ba
 rpc_latest_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')"
 echo "- SEQUENCER: $((sequencer_latest_batch_number))"
 echo "- RPC: $((rpc_latest_batch_number))"
-echo
 
-echo -e "\nFetching L2 sequencer..."
+echo -e "\nFetching data from L2 sequencer..."
 sequencer_trusted_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$sequencer_latest_batch_number")"
 echo "Batch: $((sequencer_latest_batch_number))"
 echo "$sequencer_trusted_batch_info" | jq '.'
 
-echo -e "\nFetching L2 RPC..."
+echo -e "\nFetching data from L2 RPC..."
 rpc_trusted_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$rpc_latest_batch_number")"
 echo "Batch: $((rpc_latest_batch_number))"
 echo "$rpc_trusted_batch_info" | jq '.'
@@ -350,19 +350,19 @@ echo '
 echo "Batch: $((last_virtualized_batch))"
 
 # Fetch batcn data.
-echo -e "\nFetching L2 RPC..."
+echo -e "\nFetching data from L2 RPC..."
 l2_rpc_virtualized_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$(printf "0x%x" "$last_virtualized_batch")")"
 echo "$l2_rpc_virtualized_batch_info" | jq '.'
 
-echo "Fetching L2 sequencer..."
+echo -e "\nFetching data from L2 sequencer..."
 l2_sequencer_virtualized_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$(printf "0x%x" "$last_virtualized_batch")")"
 echo "$l2_sequencer_virtualized_batch_info" | jq '.'
 
-echo -e "\nFetching L2 datastreamer..."
+echo -e "\nFetching data from L2 datastreamer..."
 l2_datastreamer_virtualized_batch_info="$(fetch_l2_batch_info_from_datastream "$((last_virtualized_batch))")"
 echo "$l2_datastreamer_virtualized_batch_info" | jq '.'
 
-echo -e "\nFetching L1 RollupManager contract..."
+echo -e "\nFetching data from L1 RollupManager contract..."
 l1_virtualized_batch_info="$(fetch_l1_batch_info "$last_virtualized_batch")"
 echo "$l1_virtualized_batch_info" | jq '.'
 
@@ -402,19 +402,19 @@ echo '
 echo "Batch: $((last_verified_batch))"
 
 # Fetch batch data.
-echo -e "\nFetching L2 RPC..."
+echo -e "\nFetching data from L2 RPC..."
 l2_rpc_verified_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$(printf "0x%x" "$last_verified_batch")")"
 echo "$l2_rpc_verified_batch_info" | jq '.'
 
-echo "Fetching L2 sequencer..."
+echo -e "\nFetching data from L2 sequencer..."
 l2_sequencer_verified_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$(printf "0x%x" "$last_verified_batch")")"
 echo "$l2_sequencer_verified_batch_info" | jq '.'
 
-echo -e "\nFetching L2 datastreamer..."
+echo -e "\nFetching data from L2 datastreamer..."
 l2_datastreamer_verified_batch_info="$(fetch_l2_batch_info_from_datastream "$((last_verified_batch))")"
 echo "$l2_datastreamer_verified_batch_info" | jq '.'
 
-echo -e "\nFetching L1 RollupManager contract..."
+echo -e "\nFetching data from L1 RollupManager contract..."
 l1_verified_batch_info="$(fetch_l1_batch_info "$last_verified_batch")"
 echo "$l1_verified_batch_info" | jq '.'
 
