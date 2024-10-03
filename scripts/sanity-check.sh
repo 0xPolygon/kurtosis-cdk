@@ -303,13 +303,22 @@ echo '
 ####################################################################################################
 '
 
-# Fetch batch data.
+# Fetch batch numbers.
 echo "Fetching last batch numbers L2 sequencer and L2 RPC..."
 sequencer_latest_batch_number="$(cast rpc --rpc-url "$l2_sequencer_url" zkevm_batchNumber | jq -r '.')"
 rpc_latest_batch_number="$(cast rpc --rpc-url "$l2_rpc_url" zkevm_batchNumber | jq -r '.')"
 echo "- SEQUENCER: $((sequencer_latest_batch_number))"
 echo "- RPC: $((rpc_latest_batch_number))"
 
+if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]; then
+  echo -e "\n✅ Batch numbers match."
+else
+  echo -e "\n❌ Batch number mismatch:"
+  echo "- l2_sequencer: $sequencer_latest_batch_number"
+  echo "- l2_rpc:       $rpc_latest_batch_number"
+fi
+
+# Fetch batch data.
 echo -e "\nFetching data from L2 sequencer..."
 sequencer_trusted_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_sequencer_url" "$sequencer_latest_batch_number")"
 echo "Batch: $((sequencer_latest_batch_number))"
@@ -321,18 +330,11 @@ echo "Batch: $((rpc_latest_batch_number))"
 echo "$rpc_trusted_batch_info" | jq '.'
 
 # Compare batch data (only if they match).
-
 if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]; then
-  echo -e "\n✅ Batch numbers match."
-
   echo -e "\nComparing L2 sequencer and L2 RPC..."
   compare_json_full_match \
     "l2_sequencer" "$sequencer_trusted_batch_info" \
     "l2_rpc" "$rpc_trusted_batch_info"  
-else
-  echo -e "\n❌ Batch number mismatch:"
-  echo "- l2_sequencer: $sequencer_latest_batch_number"
-  echo "- l2_rpc:       $rpc_latest_batch_number"
 fi
 
 # shellcheck disable=SC2028
@@ -349,7 +351,7 @@ echo '
 
 echo "Batch: $((last_virtualized_batch))"
 
-# Fetch batcn data.
+# Fetch batch data.
 echo -e "\nFetching data from L2 RPC..."
 l2_rpc_virtualized_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$(printf "0x%x" "$last_virtualized_batch")")"
 echo "$l2_rpc_virtualized_batch_info" | jq '.'
