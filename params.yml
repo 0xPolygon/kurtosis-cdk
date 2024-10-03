@@ -66,7 +66,7 @@ args:
   # yq .args .github/tests/forks/fork11.yml
   # zkevm_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11
   # zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.2-fork.11
-  # cdk_erigon_node_image: hermeznetwork/cdk-erigon:v1.2.22
+  # cdk_erigon_node_image: hermeznetwork/cdk-erigon:0948e33
 
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3-RC1
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
