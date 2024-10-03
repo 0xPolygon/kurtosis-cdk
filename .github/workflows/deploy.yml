@@ -122,6 +122,7 @@ jobs:
         run: kurtosis dump ./dump
       
       - name: Generate archive name
+        if: failure()
         run: |
           file_name=$(basename "${{ matrix.file_name }}" ".yml")
           archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
