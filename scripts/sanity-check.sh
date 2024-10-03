@@ -65,7 +65,7 @@ echo -e "- Rollup Manager Address:\t$rollup_manager_addr"
 echo -e "- Rollup ID:\t\t\t$rollup_id"
 
 # Update datastreamer config.
-tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" '.Online.URI = $l2_datastreamer_url' scripts/datastreamer.toml
+tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" ".Online.URI = $l2_datastreamer_url" scripts/datastreamer.toml
 echo -e "- Datastreamer config:"
 tomlq . scripts/datastreamer.toml
 
