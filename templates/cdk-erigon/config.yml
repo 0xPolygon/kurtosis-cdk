@@ -126,12 +126,12 @@ zkevm.effective-gas-price-contract-deployment: 1
 # Specify the maximum gas price allowed for transactions.
 # A value of 0 indicates that there is no upper limit on gas prices.
 # Default: 0
-zkevm.default-gas-price: 0
+zkevm.default-gas-price: 10000000
 
 # Apply a factor to convert L1 gas prices into L2 gas prices.
 # A value of 1 means no adjustment; values greater than 1 increase L2 costs proportionally.
 # Default: 1
-zkevm.gas-price-factor: 1
+zkevm.gas-price-factor: 0.015
 
 ## Synchronization and Execution
 # Limits the number of blocks that can be synchronized.
