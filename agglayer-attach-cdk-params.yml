@@ -66,7 +66,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3-RC1
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
 
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.1.2
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.2.0
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
   agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.5.0

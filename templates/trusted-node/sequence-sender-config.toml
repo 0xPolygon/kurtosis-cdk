@@ -27,7 +27,7 @@ MaxPendingTx = 1
 		ForcedGas = 0
 		GasPriceMarginFactor = 1
 		MaxGasPriceLimit = 0
-		PersistenceFilename = "/app/data/ethtxmanager.json"
+		StoragePath = "/app/data/ethtxmanager.db"
 			[SequenceSender.EthTxManager.Etherman]
 				URL = "{{.l1_rpc_url}}"
 				MultiGasProvider = false
