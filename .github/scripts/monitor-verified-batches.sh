@@ -55,6 +55,7 @@ echo
 # Calculate the end time based on the current time and the specified timeout.
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
+gas_price_factor=1
 
 # Main loop to monitor batch verification.
 while true; do
@@ -86,22 +87,23 @@ while true; do
   fi
 
   gas_price=$(cast gas-price --rpc-url "$rpc_url")
+  gas_price=$(bc -l <<< "$gas_price * $gas_price_factor" | sed 's/\..*//')
+
   echo "Sending a transaction to increase the batch number..."
-  while true; do
-    cast send \
-      --legacy \
-      --gas-price "$gas_price" \
-      --rpc-url "$rpc_url" \
-      --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-      --gas-limit 100000 \
-      --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
-    ret_code=$?
-    if [[ $ret_code -eq 0 ]]; then
-        break
-    fi
-    gas_price=$(bc <<< "$gas_price * 3 / 2")
-    echo "Pushing up the gas price to $gas_price"
-  done
+  cast send \
+    --legacy \
+    --timeout 30 \
+    --gas-price "$gas_price" \
+    --rpc-url "$rpc_url" \
+    --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
+    --gas-limit 100000 \
+    --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
+  ret_code=$?
+  if [[ $ret_code -eq 0 ]]; then
+      gas_price_factor=1
+  else
+      gas_price_factor=$(bc -l <<< "$gas_price_factor * 1.5")
+  fi
 
   echo "Waiting a few seconds before the next iteration..."
   echo
