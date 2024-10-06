@@ -74,7 +74,7 @@ args:
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.2.1
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
   # agglayer_image: nulyjkdhthz/agglayer-rs:pr-318
-  agglayer_image: ghcr.io/agglayer/agglayer-rs:main
+  agglayer_image: ghcr.io/agglayer/agglayer-rs:pr-96
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
