@@ -4,8 +4,8 @@
 # `kurtosis.yml` and `params.yml` where `params.yml` is the source of truth for default parameters.
 # The script outputs the differences between the specified parameters in each file compared to `params.yml`.
 
-INPUT_PARSER_PATH="../../input_parser.star"
-PARAMS_YML_PATH="../../params.yml"
+INPUT_PARSER_PATH="input_parser.star"
+PARAMS_YML_PATH="params.yml"
 
 # Extracting default parameters from the different files.
 echo "Extracting default parameters from input_parser.star..."
