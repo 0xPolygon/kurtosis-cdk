@@ -11,9 +11,7 @@ def run(plan, args):
                 {
                     "el_type": "geth",
                     "cl_type": "lighthouse",
-                    "el_extra_params": [
-                        "--gcmode archive"
-                    ]
+                    "el_extra_params": ["--gcmode archive"],
                 }
             ],
             "network_params": {
