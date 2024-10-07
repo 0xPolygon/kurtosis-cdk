@@ -1,7 +1,9 @@
 args:
   additional_services:
+    # TODO Find out why the arpeggio service doesn't work properly
+    # For reference: https://github.com/0xPolygon/kurtosis-cdk/pull/302
     #- arpeggio
-    #- blockscout # TODO: Find out why the blockcout backend doesn't start: https://github.com/xavier-romero/kurtosis-blockscout/issues/7
+    - blockscout
     - blutgang
     - erpc
     - prometheus_grafana
