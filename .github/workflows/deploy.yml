@@ -150,6 +150,9 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Wait 60s to allow services to start indexing
+        run: sleep 60
 
       - name: Verify Arpeggio RPC
         run: |
