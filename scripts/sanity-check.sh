@@ -4,7 +4,7 @@
 
 # TODO: Sanity checks to add:
 # - Log check
-# - All containers running
+# - ✅ All containers running
 # - ✅ Matching values from rpc and sequencer
 # - ✅ Matching values from rpc and data stream
 # - ✅ Is this a validium or a rollup
@@ -21,13 +21,13 @@
 ####################################################################################################
 
 # LOCAL KURTOSIS-CDK
-# enclave="cdk"
-# l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
-# l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
-# l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
-# l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
-# rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-# rollup_id=1
+enclave="cdk"
+l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
+l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
+l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
+rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
 # enclave="erigon-18-4"
@@ -47,12 +47,12 @@
 # rollup_id=1
 
 # CARDONA
-l1_rpc_url="https://rpc2.sepolia.org"
-l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
-l2_datastreamer_url="datastream.cardona.zkevm-rpc.com:6900"
-l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
-rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-rollup_id=1 # rollup
+# l1_rpc_url="https://rpc2.sepolia.org"
+# l2_sequencer_url="https://rpc.cardona.zkevm-rpc.com"
+# l2_datastreamer_url="datastream.cardona.zkevm-rpc.com:6900"
+# l2_rpc_url="https://etherscan.cardona.zkevm-rpc.com"
+# rollup_manager_addr="0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+# rollup_id=1 # rollup
 # rollup_id=2 # validium
 
 # Log config
@@ -176,6 +176,29 @@ function _compare_json() {
     return 1
   fi
 }
+
+# Check if there are any stopped services.
+if [[ "$enclave" != "" ]]; then
+  echo "
+####################################################################################################
+#   _  ___   _ ____ _____ ___  ____ ___ ____  
+#  | |/ / | | |  _ \_   _/ _ \/ ___|_ _/ ___| 
+#  | ' /| | | | |_) || || | | \___ \| |\___ \ 
+#  | . \| |_| |  _ < | || |_| |___) | | ___) |
+#  |_|\_\\___/|_| \_\|_| \___/|____/___|____/ 
+#                                            
+####################################################################################################
+"
+
+  if kurtosis enclave inspect "$enclave" | grep STOPPED ; then
+    echo "🚨 It looks like there is a stopped service in the enclave... Something must have halted!"
+    kurtosis enclave inspect "$enclave"
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+    exit 1
+  else
+    echo "✅ All services are running."
+  fi
+fi
 
 # Fetch rollup data.
 # shellcheck disable=SC2028
@@ -332,7 +355,7 @@ if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]
   echo -e "\nComparing L2 sequencer and L2 RPC..."
   compare_json_full_match \
     "l2_sequencer" "$sequencer_trusted_batch_info" \
-    "l2_rpc" "$rpc_trusted_batch_info"  
+    "l2_rpc" "$rpc_trusted_batch_info"
 fi
 
 # shellcheck disable=SC2028
