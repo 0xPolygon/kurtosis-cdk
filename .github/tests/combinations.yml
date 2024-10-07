@@ -5,7 +5,6 @@ combinations:
       - rollup
     components:
       - legacy-zkevm-stack
-      # new-zkevm-stack # not implemented yet in kurtosis-cdk
       - new-cdk-stack
 
   - fork: 11
@@ -13,8 +12,6 @@ combinations:
       - cdk-validium
       - rollup
     components:
-      #- legacy-zkevm-stack # zkevm-node doesn't support fork11 yet.
-      # new-zkevm-stack # not implemented yet in kurtosis-cdk
       - new-cdk-stack
 
   - fork: 12
@@ -22,7 +19,5 @@ combinations:
       - cdk-validium
       - rollup
     components:
-      #- legacy-zkevm-stack # zkevm-node doesn't support fork12 yet.
-      # new-zkevm-stack # not implemented yet in kurtosis-cdk.
-      - new-cdk-stack
+     - new-cdk-stack
 
