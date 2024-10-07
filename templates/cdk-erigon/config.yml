@@ -290,17 +290,17 @@ zkevm.sequencer-halt-on-batch-number: 0
 # Enhances system consistency but may increase processing overhead.
 # Recommended for maintaining network synchronization.
 # Default: false
-zkevm.sequencer-resequence: false
+# zkevm.sequencer-resequence: false
 
 # If enabled, ensures that any rolled-back batches are resequenced exactly as they were originally.
 # Provides stronger consistency guarantees but may reduce flexibility in certain scenarios.
 # Default: true
-zkevm.sequencer-resequence-strict: true
+# zkevm.sequencer-resequence-strict: true
 
 # When enabled, reuses the Layer 1 information index during the resequencing process.
 # Can improve efficiency in resequencing but may not be suitable for all network configurations.
 # Default: true
-zkevm.sequencer-resequence-reuse-l1-info-index: true
+# zkevm.sequencer-resequence-reuse-l1-info-index: true
 
 # If set to true, permits the processing of transactions with no gas price (free transactions).
 # Can be beneficial for certain applications but may increase the risk of network spam.
@@ -460,7 +460,7 @@ zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
 # If non-zero, requires a specific L1 block to be finalized before the sequencer continues to sync.
 # Enhances security but may introduce delays in processing.
 # Default: 0
-zkevm.l1-finalized-block-requirement: 0
+# zkevm.l1-finalized-block-requirement: 0
 
 # When enabled, verify that contract addresses on L1 match expected values.
 # Helps prevent interactions with incorrect or malicious contracts.
