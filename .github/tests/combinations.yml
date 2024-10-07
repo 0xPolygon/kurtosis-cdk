@@ -5,6 +5,7 @@ combinations:
       - rollup
     components:
       - legacy-zkevm-stack
+      - new-cdk-stack
 
   - fork: 11
     da-modes:
