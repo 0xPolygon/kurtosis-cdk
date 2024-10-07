@@ -38,9 +38,10 @@ def create_cdk_node_service_config(
         # Sleep for 20 seconds in order to wait for datastream server getting ready
         # TODO: find a better way instead of waiting
         cmd=[
-            "sleep 20 && cdk node "
+            "sleep 20 && cdk "
             + "--config=/etc/cdk/cdk-node-config.toml "
             + "--chain=/etc/cdk/genesis.json "
+            + "node "
             + "--components="
             + NODE_COMPONENTS.sequence_sender
             + ","
