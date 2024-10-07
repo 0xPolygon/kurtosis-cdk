@@ -1,8 +1,6 @@
 args:
   additional_services:
-    # TODO Find out why the arpeggio service doesn't work properly
-    # For reference: https://github.com/0xPolygon/kurtosis-cdk/pull/302
-    #- arpeggio
+    - arpeggio
     - blockscout
     - blutgang
     - erpc
