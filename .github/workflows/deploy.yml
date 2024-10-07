@@ -142,10 +142,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: TEST
-        if: ${{ contains(fromYaml(readFile('./.github/tests/additional-services.yml')).args.additional_services, 'blutgang') }}
-        run: echo "Blutgang is deployed!!! Testing..."
-
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
