@@ -40,6 +40,17 @@ jobs:
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
+      - name: Dump enclave logs
+        if: failure()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_run_without_args_${{ github.run_id }}
+          path: ./dump
+
   list-ymls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -106,6 +117,25 @@ jobs:
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
 
+      - name: Dump enclave logs
+        if: failure()
+        run: kurtosis dump ./dump
+      
+      - name: Generate archive name
+        if: failure()
+        run: |
+          file_name=$(basename "${{ matrix.file_name }}" ".yml")
+          archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
+          echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
+          echo "Generated archive name: ${archive_name}"
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: ./dump
+
   additional_services:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -122,34 +152,73 @@ jobs:
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Verify Arpeggio RPC
-        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
+        run: |
+          result=$(yq '.args.additional_services | contains(["arpeggio"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
+          else
+            echo "Arpeggio is not deployed."
+          fi
 
       - name: Verify Blutgang RPC
-        run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+        run: |
+          result=$(yq '.args.additional_services | contains(["blutgang"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+          else
+            echo "Blutgang is not deployed."
+          fi
 
       - name: Verify erpc RPC
-        run: cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
+        run: |
+          result=$(yq '.args.additional_services | contains(["erpc"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
+          else
+            echo "ERPC is not deployed."
+          fi
 
-      # zkevm-node doesn't work with fork12.
-      #- name: Verify permissionless zkevm-node rpc
-      #  run: cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+      - name: Verify permissionless zkevm-node rpc
+        run: |
+          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+          else
+            echo "Permissionless zkevm-node is not deployed."
+          fi
 
       - name: Verify that Prometheus collects Panoptichain metrics
         run: |
-          echo "Wait for one minute while Prometheus gathers metrics..."
-          sleep 60
+          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            echo "Wait for one minute while Prometheus gathers metrics..."
+            sleep 60
 
-          echo "Retrieve Panoptichain metrics from Prometheus..."
-          panoptichain_metric="panoptichain_system_uptime"
-          prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
-          prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
-          echo $prometheus_query | jq
-          if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
-            echo "✅ Prometheus collects panoptichain metrics!"
+            echo "Retrieve Panoptichain metrics from Prometheus..."
+            panoptichain_metric="panoptichain_system_uptime"
+            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+            echo $prometheus_query | jq
+            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+              echo "✅ Prometheus collects panoptichain metrics!"
+            else
+              echo "❌ Prometheus does not collect panoptichain metrics..."
+              exit 1
+            fi
           else
-            echo "❌ Prometheus does not collect panoptichain metrics..."
-            exit 1
+            echo "Prometheus is not deployed."
           fi
+
+      - name: Dump enclave logs
+        if: failure()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_additional_services_${{ github.run_id }}
+          path: ./dump
 
   attach_cdks:
     runs-on: ubuntu-latest
@@ -189,3 +258,14 @@ jobs:
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+
+      - name: Dump enclave logs
+        if: failure()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_attach_ckds_${{ github.run_id }}
+          path: ./dump

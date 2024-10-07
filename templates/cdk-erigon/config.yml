@@ -13,7 +13,8 @@
 # Default: false
 log.console.json: false
 
-# Set the log level for console logs
+# Set the log verbosity for console logs.
+# Options: crit, error, warn, info, debug, trace
 # Default: info
 log.console.verbosity: {{.global_log_level}}
 
@@ -21,13 +22,14 @@ log.console.verbosity: {{.global_log_level}}
 # Default: false
 log.dir.json: false
 
+# Set the log verbosity for logs stored to disk.
+# Options: crit, error, warn, info, debug, trace
+# Default: info
+log.dir.verbosity: {{.global_log_level}}
+
 # Path to store user and errors logs to disk.
 # Default: ""
 log.dir.path: /tmp/cdk-erigon.log
-
-# Set the log verbosity for logs stored to disk.
-# Default: info
-log.dir.verbosity: {{.global_log_level}}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -40,15 +42,6 @@ log.dir.verbosity: {{.global_log_level}}
 # --------------------------------------------------------------------------------------------------
 # The data directory for the databases.
 datadir: ./data/dynamic-kurtosis-sequencer
-
-# The data directory for ancient chain segments.
-# Default: inside chaindata
-# datadir.ancient:
-
-# The minimum free disk space in MB, once reached triggers auto shut down.
-# Set to 0 to disable this chec.
-# Default: --cache.gc converted to MB
-# datadir.minfreedisk:
 
 # The network identifier.
 # For testnets, use --chain <testnet-name> instead.
@@ -133,12 +126,12 @@ zkevm.effective-gas-price-contract-deployment: 1
 # Specify the maximum gas price allowed for transactions.
 # A value of 0 indicates that there is no upper limit on gas prices.
 # Default: 0
-zkevm.default-gas-price: 0
+zkevm.default-gas-price: 10000000
 
 # Apply a factor to convert L1 gas prices into L2 gas prices.
 # A value of 1 means no adjustment; values greater than 1 increase L2 costs proportionally.
 # Default: 1
-zkevm.gas-price-factor: 1
+zkevm.gas-price-factor: 0.015
 
 ## Synchronization and Execution
 # Limits the number of blocks that can be synchronized.
@@ -188,7 +181,8 @@ zkevm.pool-manager-url: {{.pool_manager_url}}
 # Set the maximum number of RPC requests allowed per second.
 # This helps prevent server overload and ensures fair resource allocation among clients.
 # A value of 0 disables rate limiting, while higher values enforce stricter limits.
-# It looks like this flag is not used!
+# NOTE: The flag must be specified but it is not used in the code!
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1254
 # Default: 0
 zkevm.rpc-ratelimit: 250
 
@@ -296,17 +290,17 @@ zkevm.sequencer-halt-on-batch-number: 0
 # Enhances system consistency but may increase processing overhead.
 # Recommended for maintaining network synchronization.
 # Default: false
-zkevm.sequencer-resequence: false
+# zkevm.sequencer-resequence: false
 
 # If enabled, ensures that any rolled-back batches are resequenced exactly as they were originally.
 # Provides stronger consistency guarantees but may reduce flexibility in certain scenarios.
 # Default: true
-zkevm.sequencer-resequence-strict: true
+# zkevm.sequencer-resequence-strict: true
 
 # When enabled, reuses the Layer 1 information index during the resequencing process.
 # Can improve efficiency in resequencing but may not be suitable for all network configurations.
 # Default: true
-zkevm.sequencer-resequence-reuse-l1-info-index: true
+# zkevm.sequencer-resequence-reuse-l1-info-index: true
 
 # If set to true, permits the processing of transactions with no gas price (free transactions).
 # Can be beneficial for certain applications but may increase the risk of network spam.
@@ -348,7 +342,7 @@ zkevm.executor-request-timeout: 60s
 # Limit the number of simultaneous requests that can be sent to the executor.
 # Higher values may improve throughput but could overload the executor.
 # Adjust based on your executor's capacity and system resources.
-# Default: #
+# Default: 1
 zkevm.executor-max-concurrent-requests: 1
 
 # If set, specifies a directory where serialized executor requests will be stored.
@@ -377,11 +371,15 @@ zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 
 # Specify the address of the PolygonRollupManager smart contract.
 # This contract manages the overall rollup process and coordinates different rollups.
+# NOTE: This flag should be renamed `zkevm.address-rollup-manager`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
 zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 
 # Specify the address of the Rollup smart contract, specific to a rollup (or validium) chain.
 # Essential for submitting batches and managing the state of the rollup.
+# NOTE: This flag should be renamed `zkevm.address-rollup`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
 zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
 
@@ -429,6 +427,8 @@ zkevm.l1-cache-enabled: false
 zkevm.l1-cache-port: 6969
 
 # The rollup identifier.
+# NOTE: This flag should be renamed `zkevm.rollup-id`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: 1 (zkEVM mainnet)
 zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
 
@@ -460,7 +460,7 @@ zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
 # If non-zero, requires a specific L1 block to be finalized before the sequencer continues to sync.
 # Enhances security but may introduce delays in processing.
 # Default: 0
-zkevm.l1-finalized-block-requirement: 0
+# zkevm.l1-finalized-block-requirement: 0
 
 # When enabled, verify that contract addresses on L1 match expected values.
 # Helps prevent interactions with incorrect or malicious contracts.
@@ -536,8 +536,9 @@ txpool.disable: {{not .is_sequencer}}
 # txpool.locals: ""
 
 # Disables price exemptions for locally submitted transactions.
+# NOTE: The flag is not used in the code!
 # Default: false
-txpool.nolocals: false
+# txpool.nolocals: false
 
 # The minimum gas price (fee cap) limit to enforce for acceptance into the pool.
 # Default: 1
@@ -560,24 +561,27 @@ txpool.globalslots: 10_000
 txpool.globalbasefeeslots: 30_000
 
 # The maximum number of non-executable transaction slots permitted per account.
+# NOTE: The flag is not used in the code!
 # Default: 64
-txpool.accountqueue: 64
+# txpool.accountqueue: 64
 
 # The maximum number of non-executable transaction slots for all accounts.
 # Default: 30_000
 txpool.globalqueue: 30_000
 
 # The maximum amount of time non-executable transaction are queued.
+# NOTE: The flag is not used in the code!
 # Default: 3h
-txpool.lifetime: 3h
+# txpool.lifetime: 3h
 
 # A comma separared list of addresses, whoes transactions will traced in transaction pool with debug printing.
 # Default: ""
 txpool.trace.senders: ""
 
 # How often transactions should be committed to the storage.
+# NOTE: The flag is not used in the code!
 # Default: 15s
-txpool.commit.every: 15s
+# txpool.commit.every: 15s
 
 # The address of the transaction pool API.
 # Default: use the value of --private.api.addr
@@ -827,10 +831,10 @@ ws: true
 # --------------------------------------------------------------------------------------------------
 # The listening interface of the engine API.
 # Default: localhost
-#authrpc.addr: 0.0.0.0
+# authrpc.addr: 0.0.0.0
 
 # The listening port of the engine API.
-#authrpc.port: 8551
+# authrpc.port: 8551
 
 # The path to the token that ensures safe connection between CL and EL.
 # Default: ""
@@ -838,7 +842,7 @@ ws: true
 
 # A comma separated list of virtual hostnames from which to accept Engine API requests (server enforced).
 # Accepts '*' wildcard.
-#authrpc.vhosts: "*"
+# authrpc.vhosts: "*"
 
 
 # ==============================================================================

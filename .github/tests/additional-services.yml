@@ -1,7 +1,7 @@
 args:
   additional_services:
-    - arpeggio
-    - blockscout
+    #- arpeggio
+    #- blockscout # TODO: Find out why the blockcout backend doesn't start: https://github.com/xavier-romero/kurtosis-blockscout/issues/7
     - blutgang
     - erpc
     - prometheus_grafana
