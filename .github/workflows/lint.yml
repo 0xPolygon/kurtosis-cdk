@@ -62,5 +62,4 @@ jobs:
         run: pip3 install yq
 
       - name: Compare default parameters
-        working-directory: .github/scripts
-        run: ./compare-default-params.sh
+        run: .github/scripts/compare-default-params.sh
