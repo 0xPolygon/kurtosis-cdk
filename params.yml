@@ -101,7 +101,7 @@ args:
 
   # Addresses and private keys of the different components.
   # They have been generated using the following command:
-  # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+  # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 10 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,claimsponsor",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
   zkevm_l2_sequencer_address: "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
   zkevm_l2_sequencer_private_key: "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181"
 
@@ -128,6 +128,9 @@ args:
 
   zkevm_l2_proofsigner_address: "0x7569cc70950726784c8D3bB256F48e43259Cb445"
   zkevm_l2_proofsigner_private_key: "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51"
+
+  zkevm_l2_claimsponsor_address: "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046"
+  zkevm_l2_claimsponsor_private_key: "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59"
 
   # Keystore password.
   zkevm_l2_keystore_password: pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m

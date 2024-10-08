@@ -37,7 +37,7 @@ def create_cdk_node_service_config(
             "sleep 20 && cdk-node run "
             + "-cfg=/etc/cdk/cdk-node-config.toml "
             + "-custom-network-file=/etc/cdk/genesis.json "
-            + "-components="
+            + "-components=rpc,"
             + NODE_COMPONENTS.aggsender
         ]
 
@@ -51,6 +51,7 @@ def create_cdk_node_service_config(
                     genesis_artifact,
                     keystore_artifact.aggregator,
                     keystore_artifact.sequencer,
+                    keystore_artifact.claimsponsor,
                 ],
             ),
             "/data": Directory(
