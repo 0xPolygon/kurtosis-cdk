@@ -4,7 +4,7 @@ DEFAULT_ARGS = {
     "deployment_suffix": "-001",
     "global_log_level": "info",
     "sequencer_type": "erigon",
-    "data_availability_mode": "cdk-validium",
+    "consensus_contract_type": "cdk-validium",
     "additional_services": [],
     "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12",

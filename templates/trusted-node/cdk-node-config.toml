@@ -166,3 +166,19 @@ PolAddr = "{{.pol_token_address}}"
 ZkEVMAddr = "{{.zkevm_rollup_address}}"
 RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
 GlobalExitRootManagerAddr = "{{.zkevm_global_exit_root_address}}"
+
+
+
+[AggSender]
+DBPath = "/tmp/aggsender"
+CertificateSendInterval = "30s"
+URLRPCL2 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+AggLayerURL = "http://agglayer:{{.agglayer_port}}"
+        [AggSender.SequencerPrivateKey]
+                Path = "/etc/cdk/sequencer.keystore"
+                Password = "{{.zkevm_l2_keystore_password}}"
+
+[ReorgDetectorL1]
+DBPath = "/tmp/reorgdetectorl1"
+[ReorgDetectorL2]
+DBPath = "/tmp/reorgdetectorl2"

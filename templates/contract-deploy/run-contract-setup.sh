@@ -223,6 +223,11 @@ batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
 jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
 mv tmp_output.json dynamic-kurtosis-conf.json
 
+if [[ ! -s dynamic-kurtosis-conf.json ]]; then
+    echo_ts "The dynamic-kurtosis-conf.json file is empty. If this isn't a pessimistic setup, something might be wrong."
+    jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
+fi
+
 # Configure contracts.
 
 if [[ $is_first_rollup -eq 1 ]]; then
