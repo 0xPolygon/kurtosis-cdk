@@ -1,9 +1,11 @@
 args:
   additional_services:
     - arpeggio
-    - blockscout
+    # We don't deploy blockscout in CI anymore because it requires too much memory to run.
+    # - blockscout
     - blutgang
     - erpc
     - prometheus_grafana
     - tx_spammer
-    #- pless_zkevm_node # zkevm-node doesn't support fork12
+    # zkevm-node doesn't support fork 12 for now.
+    # - pless_zkevm_node
