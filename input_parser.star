@@ -10,7 +10,7 @@ DEFAULT_ARGS = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3-RC1",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0-beta1",
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0-beta2",
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",
     "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",
