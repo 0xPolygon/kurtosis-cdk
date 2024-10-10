@@ -1,14 +1,17 @@
+constants = import_module("./src/package_io/constants.star")
+input_parser = import_module("./input_parser.star")
+
+# Main service packages.
+agglayer_package = "./agglayer.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-cdk_erigon_package = import_module("./cdk_erigon.star")
+cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
-input_parser = "./input_parser.star"
-zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
-agglayer_package = "./agglayer.star"
+zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 
-# Additional services packages.
+# Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
@@ -20,43 +23,26 @@ prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.3"
-
-
-def run(
-    plan,
-    deploy_l1=True,
-    deploy_zkevm_contracts_on_l1=True,
-    deploy_databases=True,
-    deploy_cdk_central_environment=True,
-    deploy_cdk_bridge_infra=True,
-    deploy_agglayer=True,
-    deploy_cdk_erigon_node=True,
-    args={},
-):
-    args = import_module(input_parser).parse_args(args)
-    args = args | {"deploy_agglayer": deploy_agglayer}  # hacky but works fine for now.
-    plan.print("Deploying CDK environment with parameters: " + str(args))
-
-    if deploy_cdk_erigon_node:
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
-    if args["sequencer_type"] == "erigon":
-        args["sequencer_name"] = "cdk-erigon-sequencer"
-    else:
-        args["sequencer_name"] = "zkevm-node-sequencer"
+def run(plan, args={}):
+    # Parse args.
+    deployment_stages = input_parser.get_deployment_stages(args)
+    args = input_parser.get_args(args)
+    plan.print(
+        "Deploying CDK stack with the following configuration:\n- deployment_stages: "
+        + str(deployment_stages)
+        + "\n- args: "
+        + str(args)
+    )
 
     # Deploy a local L1.
-    if deploy_l1:
+    if deployment_stages.get("deploy_l1", False):
         plan.print("Deploying a local L1")
         import_module(ethereum_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 
     # Deploy zkevm contracts on L1.
-    if deploy_zkevm_contracts_on_l1:
+    if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
         import_module(deploy_zkevm_contracts_package).run(plan, args)
     else:
@@ -75,7 +61,7 @@ def run(
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
     # Deploy databases.
-    if deploy_databases:
+    if deployment_stages.get("deploy_databases", False):
         plan.print("Deploying databases")
         import_module(databases_package).run(
             plan,
@@ -87,7 +73,7 @@ def run(
 
     # Get the genesis file.
     genesis_artifact = ""
-    if deploy_cdk_central_environment:
+    if deployment_stages.get("deploy_cdk_central_environment", False):
         plan.print("Getting genesis file...")
         genesis_artifact = plan.store_service_files(
             name="genesis",
@@ -96,26 +82,26 @@ def run(
         )
 
     # Deploy cdk central/trusted environment.
-    if deploy_cdk_central_environment:
+    if deployment_stages.get("deploy_cdk_central_environment", False):
         # Deploy cdk-erigon sequencer node.
         # TODO this is a little weird if the erigon sequencer is deployed before the exector?
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
-            cdk_erigon_package.run_sequencer(plan, args)
+            import_module(cdk_erigon_package).run_sequencer(plan, args)
         else:
             plan.print("Skipping the deployment of cdk-erigon sequencer")
 
         # Deploy zkevm-pool-manager service.
-        if deploy_cdk_erigon_node:
+        if deployment_stages.get("deploy_cdk_erigon_node", False):
             plan.print("Deploying zkevm-pool-manager service")
-            zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
+            import_module(zkevm_pool_manager_package).run_zkevm_pool_manager(plan, args)
         else:
             plan.print("Skipping the deployment of zkevm-pool-manager service")
 
         # Deploy cdk-erigon node.
-        if deploy_cdk_erigon_node:
+        if deployment_stages.get("deploy_cdk_erigon_node", False):
             plan.print("Deploying cdk-erigon node")
-            cdk_erigon_package.run_rpc(plan, args)
+            import_module(cdk_erigon_package).run_rpc(plan, args)
         else:
             plan.print("Skipping the deployment of cdk-erigon node")
 
@@ -129,15 +115,16 @@ def run(
         plan.print("Skipping the deployment of cdk central/trusted environment")
 
     # Deploy cdk/bridge infrastructure.
-    if deploy_cdk_bridge_infra:
+    if deployment_stages.get("deploy_cdk_bridge_infra", False):
         plan.print("Deploying cdk/bridge infrastructure")
-        args["deploy_l1"] = deploy_l1
-        import_module(cdk_bridge_infra_package).run(plan, args)
+        import_module(cdk_bridge_infra_package).run(
+            plan, args | {"use_local_l1": deployment_stages.get("deploy_l1", False)}
+        )
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
     # Deploy the agglayer.
-    if deploy_agglayer:
+    if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
         import_module(agglayer_package).run(plan, args)
     else:
@@ -202,7 +189,7 @@ def deploy_helper_service(plan, args):
     plan.add_service(
         name=helper_service_name,
         config=ServiceConfig(
-            image=TX_SPAMMER_IMG,
+            image=constants.TX_SPAMMER_IMG,
             files={"/opt/zkevm": get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],

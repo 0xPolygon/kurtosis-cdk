@@ -1,6 +1,5 @@
+constants = import_module("./src/package_io/constants.star")
 service_package = import_module("../../lib/service.star")
-
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
 
 
 def run(plan, args):
@@ -8,7 +7,7 @@ def run(plan, args):
     plan.add_service(
         name="tx-spammer" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=TX_SPAMMER_IMG,
+            image=constants.TX_SPAMMER_IMG,
             files={
                 "/opt/scripts": Directory(artifact_names=[tx_spammer_config_artifacts]),
             },
