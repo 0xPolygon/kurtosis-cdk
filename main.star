@@ -25,6 +25,7 @@ tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 def run(plan, args={}):
     # Parse args.
+    plan.print("DEBUG: " + str(args))
     deployment_stages = input_parser.get_deployment_stages(args)
     args = input_parser.get_args(args)
     plan.print(
