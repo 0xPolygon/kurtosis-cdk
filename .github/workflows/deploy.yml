@@ -30,6 +30,16 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Check if there is any stopped service
+        run: |
+          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
+            echo "It looks like there is a stopped service in the enclave. Something must have halted"
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+            exit 1
+          fi
 
       - name: List databases
         run: |
@@ -90,6 +100,16 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Check if there is any stopped service
+        run: |
+          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
+            echo "It looks like there is a stopped service in the enclave. Something must have halted"
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+            exit 1
+          fi
 
       - name: Monitor verified batches (Central RPC)
         run: |
@@ -150,6 +170,16 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Check if there is any stopped service
+        run: |
+          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
+            echo "It looks like there is a stopped service in the enclave. Something must have halted"
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+            exit 1
+          fi
 
       - name: Verify Arpeggio RPC
         run: |
@@ -248,6 +278,19 @@ jobs:
           # Restart the agglayer service.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
           kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
+      
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Check if there is any stopped service
+        run: |
+          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
+            echo "It looks like there is a stopped service in the enclave. Something must have halted"
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+            exit 1
+          fi
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
