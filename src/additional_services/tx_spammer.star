@@ -1,4 +1,4 @@
-constants = import_module("./src/package_io/constants.star")
+constants = import_module("../../src/package_io/constants.star")
 service_package = import_module("../../lib/service.star")
 
 
