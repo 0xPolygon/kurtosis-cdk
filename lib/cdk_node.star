@@ -39,9 +39,8 @@ def create_cdk_node_service_config(
         # TODO: find a better way instead of waiting
         cmd=[
             "sleep 20 && cdk "
-            + "--config=/etc/cdk/cdk-node-config.toml "
-            + "--chain=/etc/cdk/genesis.json "
             + "node "
+            + "--config=/etc/cdk/cdk-node-config.toml "
             + "--components="
             + NODE_COMPONENTS.sequence_sender
             + ","
