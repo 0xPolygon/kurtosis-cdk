@@ -219,7 +219,7 @@ def get_deployment_stages(args):
 
 def get_args(args):
     # Merge the args with the defaults and remove deployment stages in defined.
-    args = DEFAULT_ARGS | args
+    args = DEFAULT_ARGS | args.get("args", {})
     if "deployment_stages" in args:
         args.pop("deployment_stages")
 
