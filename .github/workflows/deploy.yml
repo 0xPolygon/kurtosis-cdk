@@ -263,7 +263,7 @@ jobs:
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
 
       - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml--show-enclave-inspect=false .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml --show-enclave-inspect=false .
 
       - name: Update the agglayer config
         run: |
