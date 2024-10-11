@@ -11,4 +11,9 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
+SEQUENCER_NAME = struct(
+    CDK_ERIGON="erigon-sequencer",
+    ZKEVM="zkevm-node-sequencer",
+)
+
 TX_SPAMMER_IMG = "leovct/toolbox:0.0.4"

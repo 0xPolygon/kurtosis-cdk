@@ -27,17 +27,9 @@ def get_tx_spammer_config(plan, args):
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
 
-    # TODO: Target the rpc service instead of the sequencer once the bug as been resolved.
-    # https://github.com/0xPolygon/kurtosis-cdk/issues/307
-    # l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
-    # l2_rpc_url = "http://{}:{}".format(
-    #     l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
-    # )
-    l2_sequencer_service = plan.get_service(
-        args["sequencer_name"] + args["deployment_suffix"]
-    )
+    l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
     l2_rpc_url = "http://{}:{}".format(
-        l2_sequencer_service.ip_address, l2_sequencer_service.ports["rpc"].number
+        l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
     )
 
     zkevm_bridge_service = plan.get_service(

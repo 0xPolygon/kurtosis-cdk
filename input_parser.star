@@ -306,10 +306,11 @@ def get_fork_id(zkevm_contracts_image):
 
 
 def get_sequencer_name(sequencer_type):
-    if sequencer_type not in (
-        constants.SEQUENCER_TYPE.CDK_ERIGON,
-        constants.SEQUENCER_TYPE.ZKEVM,
-    ):
+    if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
+        return constants.SEQUENCER_NAME.CDK_ERIGON
+    elif sequencer_type == constants.SEQUENCER_TYPE.ZKEVM:
+        return constants.SEQUENCER_NAME.ZKEVM
+    else:
         fail(
             "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
                 sequencer_type,
@@ -317,7 +318,6 @@ def get_sequencer_name(sequencer_type):
                 constants.SEQUENCER_TYPE.ZKEVM,
             )
         )
-    return sequencer_type + "-sequencer"
 
 
 def get_l2_rpc_name(deploy_cdk_erigon_node):
