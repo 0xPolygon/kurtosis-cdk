@@ -12,7 +12,7 @@ SEQUENCER_TYPE = struct(
 )
 
 SEQUENCER_NAME = struct(
-    CDK_ERIGON="erigon-sequencer",
+    CDK_ERIGON="cdk-erigon-sequencer",
     ZKEVM="zkevm-node-sequencer",
 )
 
