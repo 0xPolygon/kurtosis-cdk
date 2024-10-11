@@ -30,16 +30,6 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
-      - name: Check if there is any stopped service
-        run: |
-          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
-            echo "It looks like there is a stopped service in the enclave. Something must have halted"
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
-            exit 1
-          fi
 
       - name: List databases
         run: |
@@ -100,16 +90,6 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
-      - name: Check if there is any stopped service
-        run: |
-          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
-            echo "It looks like there is a stopped service in the enclave. Something must have halted"
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
-            exit 1
-          fi
 
       - name: Monitor verified batches (Central RPC)
         run: |
@@ -170,16 +150,6 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
-      - name: Check if there is any stopped service
-        run: |
-          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
-            echo "It looks like there is a stopped service in the enclave. Something must have halted"
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
-            exit 1
-          fi
 
       - name: Verify Arpeggio RPC
         run: |
@@ -237,6 +207,16 @@ jobs:
             fi
           else
             echo "Prometheus is not deployed."
+          fi
+      
+      - name: Check if there are any stopped services
+        run: |
+          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
+            echo "It looks like there is a stopped service in the enclave. Something must have halted"
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+            exit 1
           fi
 
       - name: Dump enclave logs
