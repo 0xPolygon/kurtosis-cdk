@@ -6,6 +6,7 @@
 # Function to display usage information.
 usage() {
   echo "Usage: $0 --rpc-url <URL> --target <TARGET> --timeout <TIMEOUT>"
+  echo "  --enclave: The name of the Kurtosis enclave."
   echo "  --rpc-url: The RPC URL to query."
   echo "  --target:  The target number of verified batches."
   echo "  --timeout: The script timeout in seconds."
@@ -13,6 +14,7 @@ usage() {
 }
 
 # Initialize variables.
+enclave=""
 rpc_url=""
 target="10"
 timeout="900" # 15 minutes.
@@ -21,6 +23,10 @@ timeout="900" # 15 minutes.
 while [[ $# -gt 0 ]]; do
   key="$1"
   case $key in
+  --enclave)
+    enclave="$2"
+    shift 2
+    ;;
   --rpc-url)
     rpc_url="$2"
     shift 2
@@ -40,13 +46,19 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if the required argument is provided.
+if [ -z "$enclave" ]; then
+  echo "Error: enclave name is required."
+  usage
+fi
+
 if [ -z "$rpc_url" ]; then
-  echo "Error: RPC URL is required."
+  echo "Error: rpc url is required."
   usage
 fi
 
 # Print script parameters for debug purposes.
 echo "Running script with values:"
+echo "- Enclave: $enclave"
 echo "- RPC URL: $rpc_url"
 echo "- Target: $target"
 echo "- Timeout: $timeout"
@@ -60,10 +72,14 @@ gas_price_factor=1
 # Main loop to monitor batch verification.
 while true; do
   # Check if there are any stopped services.
-  if kurtosis enclave inspect "$ENCLAVE_NAME" | grep STOPPED ; then
-    echo "It looks like there is a stopped service in the enclave. Something must have halted"
-    kurtosis enclave inspect "$ENCLAVE_NAME"
-    kurtosis enclave inspect "$ENCLAVE_NAME" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+  stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
+  if [[ -n "$stopped_services" ]]; then
+    echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
+    echo "$stopped_services"
+    echo
+
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
     exit 1
   fi
 

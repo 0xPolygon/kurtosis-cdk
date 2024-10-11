@@ -38,7 +38,9 @@ jobs:
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
+        run: ./monitor-verified-batches.sh \
+          --enclave ${{ env.ENCLAVE_NAME }} \
+          --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
       - name: Dump enclave logs
         if: failure()
@@ -211,9 +213,12 @@ jobs:
       
       - name: Check if there are any stopped services
         run: |
-          if kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED ; then
-            echo "It looks like there is a stopped service in the enclave. Something must have halted"
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+          stopped_services="$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED)"
+          if [[ -n "$stopped_services" ]]; then
+            echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
+            echo "$stopped_services"
+            echo
+
             kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
               | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
             exit 1
@@ -274,11 +279,15 @@ jobs:
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+        run: ./monitor-verified-batches.sh \
+          --enclave ${{ env.ENCLAVE_NAME }} \
+          --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+        run: ./monitor-verified-batches.sh \
+          --enclave ${{ env.ENCLAVE_NAME }} \
+          --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
 
       - name: Dump enclave logs
         if: failure()
