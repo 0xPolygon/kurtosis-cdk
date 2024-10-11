@@ -119,13 +119,17 @@ jobs:
             exit 1
           fi
           echo "RPC name: $rpc_name"
-          ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
+          ./.github/scripts/monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+            ./.github/scripts/monitor-verified-batches.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
           else
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
