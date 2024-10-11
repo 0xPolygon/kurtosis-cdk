@@ -168,6 +168,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
       - name: Verify Arpeggio RPC
         run: |
@@ -225,19 +232,6 @@ jobs:
             fi
           else
             echo "Prometheus is not deployed."
-          fi
-      
-      - name: Check if there are any stopped services
-        run: |
-          stopped_services="$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | grep STOPPED)"
-          if [[ -n "$stopped_services" ]]; then
-            echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
-            echo "$stopped_services"
-            echo
-
-            kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-              | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
-            exit 1
           fi
 
       - name: Dump enclave logs
