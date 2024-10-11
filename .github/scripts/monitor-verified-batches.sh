@@ -5,7 +5,7 @@
 
 # Function to display usage information.
 usage() {
-  echo "Usage: $0 --rpc-url <URL> --target <TARGET> --timeout <TIMEOUT>"
+  echo "Usage: $0 --enclave <ENCLAVE> --rpc-url <URL> --target <TARGET> --timeout <TIMEOUT>"
   echo "  --enclave: The name of the Kurtosis enclave."
   echo "  --rpc-url: The RPC URL to query."
   echo "  --target:  The target number of verified batches."
@@ -40,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     shift 2
     ;;
   *)
+    echo "Error: unknown argument: $key"
     usage
     ;;
   esac
