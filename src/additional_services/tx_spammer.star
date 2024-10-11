@@ -33,7 +33,9 @@ def get_tx_spammer_config(plan, args):
     # l2_rpc_url = "http://{}:{}".format(
     #     l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
     # )
-    l2_sequencer_service = plan.get_service(args["l2_sequencer_name"] + args["deployment_suffix"])
+    l2_sequencer_service = plan.get_service(
+        args["l2_sequencer_name"] + args["deployment_suffix"]
+    )
     l2_rpc_url = "http://{}:{}".format(
         l2_sequencer_service.ip_address, l2_sequencer_service.ports["rpc"].number
     )
