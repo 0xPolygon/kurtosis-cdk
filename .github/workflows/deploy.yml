@@ -75,7 +75,7 @@ jobs:
 
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
-        run: echo "matrix=$(ls -R params.yml ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
