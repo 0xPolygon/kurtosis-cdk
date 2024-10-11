@@ -28,7 +28,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:0948e33",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.2.1",
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0-beta4",
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",
