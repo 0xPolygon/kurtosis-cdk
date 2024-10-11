@@ -227,7 +227,7 @@ def parse_args(plan, args):
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
-    sequencer_name = get_l2_sequencer_name(sequencer_type)
+    sequencer_name = get_sequencer_name(sequencer_type)
 
     plan.print(
         "DEBUG: " + str(deployment_stages.get("deploy_cdk_erigon_node", False))
@@ -305,7 +305,7 @@ def get_fork_id(zkevm_contracts_image):
     return fork_id
 
 
-def get_l2_sequencer_name(sequencer_type):
+def get_sequencer_name(sequencer_type):
     if sequencer_type not in (
         constants.SEQUENCER_TYPE.CDK_ERIGON,
         constants.SEQUENCER_TYPE.ZKEVM,
