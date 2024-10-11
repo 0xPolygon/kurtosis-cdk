@@ -212,39 +212,47 @@ DEFAULT_ARGS = (
 SUPPORTED_FORK_IDS = [9, 11, 12]
 
 
-def get_deployment_stages(args):
-    deployment_stages = args.get("deployment_stages", {})
-    return DEFAULT_DEPLOYMENT_STAGES | deployment_stages
-
-
-def get_args(args):
-    # Merge the args with the defaults and remove deployment stages in defined.
+def parse_args(plan, args):
+    # Merge the provided args with defaults.
+    deployment_stages = DEFAULT_DEPLOYMENT_STAGES | args.get("deployment_stages", {})
     args = DEFAULT_ARGS | args.get("args", {})
+
+    # Validation step.
+    global_log_level = args.get("global_log_level", "")
+    validate_global_log_level(global_log_level)
+
+    # Determine fork id from the zkevm contracts image tag.
+    zkevm_contracts_image = args.get("zkevm_contracts_image", "")
+    fork_id = get_fork_id(zkevm_contracts_image)
+
+    # Determine sequencer and l2 rpc names.
+    sequencer_type = args.get("sequencer_type", "")
+    sequencer_name = get_l2_sequencer_name(sequencer_type)
+
+    plan.print(
+        "DEBUG: " + str(deployment_stages.get("deploy_cdk_erigon_node", False))
+    )  # DEBUG
+    deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
+    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
+
+    # Remove deployment stages from the args struct.
+    # This prevents updating already deployed services when updating the deployment stages.
     if "deployment_stages" in args:
         args.pop("deployment_stages")
 
-    # Update rpc and sequencer names.
-    deployment_stages = get_deployment_stages(args)
-    if deployment_stages.get("deploy_cdk_erigon_node", False):
-        args["l2_rpc_name"] = "cdk-erigon-node"
-    else:
-        args["l2_rpc_name"] = "zkevm-node-rpc"
-
-    if args["sequencer_type"] == "erigon":
-        args["sequencer_name"] = "cdk-erigon-sequencer"
-    else:
-        args["sequencer_name"] = "zkevm-node-sequencer"
-
-    # Validation step.
-    validate_global_log_level(args["global_log_level"])
-    fork_id = get_fork_id(args["zkevm_contracts_image"])
-
-    return args | {
+    args = args | {
+        "l2_rpc_name": l2_rpc_name,
+        "sequencer_name": sequencer_name,
         "zkevm_rollup_fork_id": fork_id,
         "deploy_agglayer": deployment_stages.get(
             "deploy_agglayer", False
         ),  # hacky but works fine for now.
     }
+
+    # Sort dictionaries for debug purposes.
+    sorted_deployment_stages = sort_dict_by_values(deployment_stages)
+    sorted_args = sort_dict_by_values(args)
+    return (sorted_deployment_stages, sorted_args)
 
 
 def validate_global_log_level(global_log_level):
@@ -295,3 +303,30 @@ def get_fork_id(zkevm_contracts_image):
     if fork_id not in SUPPORTED_FORK_IDS:
         fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
     return fork_id
+
+
+def get_l2_sequencer_name(sequencer_type):
+    if sequencer_type not in (
+        constants.SEQUENCER_TYPE.CDK_ERIGON,
+        constants.SEQUENCER_TYPE.ZKEVM,
+    ):
+        fail(
+            "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
+                sequencer_type,
+                constants.SEQUENCER_TYPE.CDK_ERIGON,
+                constants.SEQUENCER_TYPE.ZKEVM,
+            )
+        )
+    return sequencer_type + "-sequencer"
+
+
+def get_l2_rpc_name(deploy_cdk_erigon_node):
+    if deploy_cdk_erigon_node:
+        return "cdk-erigon-node"
+    else:
+        return "zkevm-node-rpc"
+
+
+def sort_dict_by_values(d):
+    sorted_items = sorted(d.items(), key=lambda x: x[0])
+    return {k: v for k, v in sorted_items}

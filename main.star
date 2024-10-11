@@ -25,15 +25,9 @@ tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 def run(plan, args={}):
     # Parse args.
-    plan.print("DEBUG: " + str(args))
-    deployment_stages = input_parser.get_deployment_stages(args)
-    args = input_parser.get_args(args)
-    plan.print(
-        "Deploying CDK stack with the following configuration:\n- deployment_stages: "
-        + str(deployment_stages)
-        + "\n- args: "
-        + str(args)
-    )
+    (deployment_stages, args) = input_parser.parse_args(plan, args)
+    plan.print("Deploying the following components: " + str(deployment_stages))
+    plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
