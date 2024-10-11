@@ -6,4 +6,4 @@ GLOBAL_LOG_LEVEL = struct(
     trace="trace",
 )
 
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.3"
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.4"
