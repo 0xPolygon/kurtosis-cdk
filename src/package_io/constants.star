@@ -7,7 +7,7 @@ GLOBAL_LOG_LEVEL = struct(
 )
 
 SEQUENCER_TYPE = struct(
-    CDK_ERIGON="cdk-erigon",
+    CDK_ERIGON="erigon",
     ZKEVM="zkevm",
 )
 
