@@ -53,7 +53,29 @@ jobs:
           name: dump_run_without_args_${{ github.run_id }}
           path: ./dump
 
+  validate-test-combinations:
+    name: Check test combinations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate test combinations
+        working-directory: .github/tests
+        run: ./combine-ymls.sh
+
+      - name: Check if test combinations are up to date
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Test combinations files are not up to date. Please run \`make gen\`."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Test combinations are up to date."
+          fi
+
   list-ymls:
+    needs: validate-test-combinations
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
