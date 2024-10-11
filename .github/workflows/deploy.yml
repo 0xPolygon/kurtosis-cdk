@@ -38,9 +38,10 @@ jobs:
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh \
-          --enclave ${{ env.ENCLAVE_NAME }} \
-          --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
       - name: Dump enclave logs
         if: failure()
@@ -294,15 +295,17 @@ jobs:
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh \
-          --enclave ${{ env.ENCLAVE_NAME }} \
-          --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh \
-          --enclave ${{ env.ENCLAVE_NAME }} \
-          --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
 
       - name: Dump enclave logs
         if: failure()
