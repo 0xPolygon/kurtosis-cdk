@@ -27,11 +27,9 @@ def get_tx_spammer_config(plan, args):
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
 
-    zkevm_rpc_service = plan.get_service(
-        args["l2_rpc_name"] + args["deployment_suffix"]
-    )
-    zkevm_rpc_url = "http://{}:{}".format(
-        zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["rpc"].number
+    l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
+    l2_rpc_url = "http://{}:{}".format(
+        l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
     )
 
     zkevm_bridge_service = plan.get_service(
@@ -47,7 +45,7 @@ def get_tx_spammer_config(plan, args):
             "spam.sh": struct(
                 template=spam_script_template,
                 data={
-                    "rpc_url": zkevm_rpc_url,
+                    "rpc_url": l2_rpc_url,
                     "private_key": args["zkevm_l2_admin_private_key"],
                 },
             ),
@@ -57,7 +55,7 @@ def get_tx_spammer_config(plan, args):
                     "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
                     "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
                     "l1_rpc_url": args["l1_rpc_url"],
-                    "l2_rpc_url": zkevm_rpc_url,
+                    "l2_rpc_url": l2_rpc_url,
                     "zkevm_bridge_api_url": zkevm_bridge_api_url,
                 }
                 | contract_setup_addresses,
