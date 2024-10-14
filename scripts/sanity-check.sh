@@ -206,11 +206,14 @@ if [[ "$enclave" != "" ]]; then
 #                                            
 ####################################################################################################
 "
+  stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
+  if [[ -n "$stopped_services" ]]; then
+    echo "🚨 It looks like there is at least one stopped service in the enclave... Something must have halted..."
+    echo "$stopped_services"
+    echo
 
-  if kurtosis enclave inspect "$enclave" | grep STOPPED ; then
-    echo "🚨 It looks like there is a stopped service in the enclave... Something must have halted!"
-    kurtosis enclave inspect "$enclave"
-    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
     exit 1
   else
     echo "✅ All services are running."
