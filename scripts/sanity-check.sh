@@ -214,7 +214,10 @@ if [[ "$enclave" != "" ]]; then
     echo
 
     kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+      | while read -r container; do
+        echo "Printing logs for $container"
+        docker logs --tail 50 "$container"
+      done
     exit 1
   else
     echo "✅ All services are running."
@@ -222,8 +225,15 @@ if [[ "$enclave" != "" ]]; then
 
   # Check for warnings or errors in services logs.
   echo "Analyzing services logs..."
-  kurtosis enclave inspect "$enclave" --full-uuids | grep RUNNING | awk '{print $2 "--" $1}' \
-    | while read -r container; do echo; echo "Printing suspicious logs for $container"; docker logs "$container" 2>&1 | grep -i "warn\|error"; done
+  kurtosis enclave inspect "$enclave" --full-uuids | grep RUNNING | grep -vE '(cl|el|vc)-' | tail -n +2 | awk '{print $2 "--" $1}' \
+    | while read -r container; do
+      logs=$(docker logs "$container" 2>&1 | grep -Eiw 'error|warn' | grep -vE 'dist/assets/error.34317b12.svg|Checking error channel; ignore this trace')
+      if [ -n "$logs" ]; then
+        echo "Printing suspicious logs for $container"
+        echo "$logs"
+        echo
+      fi
+    done
 fi
 
 # Fetch rollup data.
