@@ -11,6 +11,15 @@
 # - ✅ Dac Committe Members
 # - ✅ Batch verification gap
 
+check_variable() {
+  local var_name="$1"
+  local var_value="${!var_name}"
+  if [ -z "$var_value" ]; then
+    echo "Error: $var_name is not defined"
+    exit 1
+  fi
+}
+
 ####################################################################################################
 #    ____ ___  _   _ _____ ___ ____
 #   / ___/ _ \| \ | |  ___|_ _/ ___|
@@ -55,7 +64,15 @@ rollup_id=1
 # rollup_id=1 # rollup
 # rollup_id=2 # validium
 
-# Log config
+# Check if all required variables are defined.
+check_variable "l1_rpc_url"
+check_variable "l2_sequencer_url"
+check_variable "l2_datastreamer_url"
+check_variable "l2_rpc_url"
+check_variable "rollup_manager_addr"
+check_variable "rollup_id"
+
+# Log config.
 echo "Running sanity check script with config:"
 echo -e "- L1 RPC URL:\t\t\t$l1_rpc_url"
 echo -e "- L2 Sequencer URL:\t\t$l2_sequencer_url"
