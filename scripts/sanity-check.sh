@@ -3,7 +3,7 @@
 # The goals of this script is to test and validate the operational status of the CDK environment.
 
 # TODO: Sanity checks to add:
-# - Log check
+# - ✅ Log check (warning + error)
 # - ✅ All containers running
 # - ✅ Matching values from rpc and sequencer
 # - ✅ Matching values from rpc and data stream
