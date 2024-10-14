@@ -206,6 +206,7 @@ if [[ "$enclave" != "" ]]; then
 #                                            
 ####################################################################################################
 "
+  # Check for stopped services.
   stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
   if [[ -n "$stopped_services" ]]; then
     echo "🚨 It looks like there is at least one stopped service in the enclave... Something must have halted..."
@@ -218,6 +219,11 @@ if [[ "$enclave" != "" ]]; then
   else
     echo "✅ All services are running."
   fi
+
+  # Check for warnings or errors in services logs.
+  echo "Analyzing services logs..."
+  kurtosis enclave inspect "$enclave" --full-uuids | grep RUNNING | awk '{print $2 "--" $1}' \
+    | while read -r container; do echo; echo "Printing suspicious logs for $container"; docker logs "$container" 2>&1 | grep -i "warn\|error"; done
 fi
 
 # Fetch rollup data.
