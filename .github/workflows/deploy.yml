@@ -65,17 +65,6 @@ jobs:
       - name: Generate test combinations
         working-directory: .github/tests
         run: ./combine-ymls.sh
-      
-      # - name: Check if test combinations are up to date
-      #   run: |
-      #     if [[ -n $(git status --porcelain) ]]; then
-      #       echo "❌ Error: Test combinations files are not up to date. Please run \`./combine-ymls.sh\` in the \`.github/tests/\` directory."
-      #       git status --porcelain
-      #       git diff
-      #       exit 1
-      #     else
-      #       echo "✅ Test combinations are up to date."
-      #     fi
 
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
