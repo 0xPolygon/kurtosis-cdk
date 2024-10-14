@@ -12,6 +12,7 @@ def run(plan, args):
                     "el_type": "geth",
                     "cl_type": "lighthouse",
                     "el_extra_params": ["--gcmode archive"],
+                    "count": args["l1_participants_count"],
                 }
             ],
             "network_params": {
@@ -26,6 +27,9 @@ def run(plan, args):
                 # approximately 192 seconds to get to finalized epoch vs 1536 seconds with "mainnet"
                 # preset (default).
                 "seconds_per_slot": args["l1_seconds_per_slot"],
+                "eth1_follow_distance": args["l1_eth1_follow_distance"],
+                "min_validator_withdrawability_delay": args["l1_min_validator_withdrawability_delay"],
+                "shard_committee_period":args["l1_shard_committee_period"],
             },
             "additional_services": args["l1_additional_services"],
         },

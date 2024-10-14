@@ -54,7 +54,7 @@ args:
   # - pless_zkevm_node
   # - prometheus_grafana
   # - tx_spammer
-  additional_services: []
+  additional_services: [assertoor]
 
   # FORK 12 IMAGES
   # yq .args .github/tests/forks/fork12.yml
@@ -133,8 +133,9 @@ args:
   ## L1 configuration.
   l1_chain_id: 271828
   l1_preallocated_mnemonic: code code code code code code code code code code code quality
-  l1_funding_amount: 100ether
+  l1_funding_amount: 10000ether
   l1_rpc_url: http://el-1-geth-lighthouse:8545
+  l1_conensus_rpc_url: http://cl-1-lighthouse-geth:4000
   l1_ws_url: ws://el-1-geth-lighthouse:8546
   # https://github.com/ethpandaops/ethereum-package/tree/main?tab=readme-ov-file#configuration
   l1_additional_services: [
@@ -144,6 +145,10 @@ args:
   ]
   l1_preset: minimal
   l1_seconds_per_slot: 1
+  l1_participants_count: 2
+  l1_eth1_follow_distance: 1
+  l1_min_validator_withdrawability_delay: 1
+  l1_shard_committee_period: 4
 
   ## Rollup configuration.
 
