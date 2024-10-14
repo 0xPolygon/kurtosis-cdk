@@ -15,10 +15,28 @@ Specifically, this package will deploy:
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Supported Configurations](#supported-configurations)
 - [Advanced Use Cases](#advanced-use-cases)
 - [Contact](#contact)
 - [License](#license)
 - [Contribution](#contribution)
+
+## Supported Configurations
+
+The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack. The table provided illustrates the different combinations of sequencers and sequence sender/aggregator components that can be used, along with their current support status in Kurtosis.
+
+> The team is actively working on enabling the use cases that are currently not possible.
+
+| Stack | Sequencer | Sequence Sender / Aggregator | Supported by Kurtosis? |
+| ----- | --------- | ---------------------------- | ---------------------- |
+| New CDK stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [cdk-node](https://github.com/0xPolygon/cdk) | ✅ |
+| New sequencer with new zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) - Check the [kurtosis-cdk-erigon](https://github.com/xavier-romero/kurtosis-cdk-erigon) package |
+| New sequencer with legacy zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | ❌ (WIP) |
+| Legacy sequencer with new cdk stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [cdk-node](https://github.com/0xPolygon/cdk) | ❌ (WIP) |
+| Legacy sequencer with new zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) |
+| Legacy zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | ✅ |
+
+To understand how to configure Kurtosis for these use cases, refer to the [documentation](.github/tests/README.md) and review the test files located in the `.github/tests/` directory.
 
 ## Getting Started
 
@@ -35,31 +53,17 @@ If you intend to interact with and debug the stack, you may also want to conside
 
 ### Deploy
 
-Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally. The default deployment includes zkevm-contracts ([fork 9](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v6.0.0-rc.1-fork.9)), [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. This process typically takes around eight to ten minutes.
+Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally. This process typically takes around eight to ten minutes.
+
+The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at 
+[input_parser.star](./input_parser.star).
 
 ```bash
 kurtosis clean --all
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk .
 ```
 
 ![CDK Erigon Architecture Diagram](./docs/architecture-diagram/cdk-erigon-architecture-diagram.png)
-
-It is also possible to deploy the CDK stack using the legacy zkevm-node sequencer and/or the new zkevm or the legacy zkevm-node sequencer sender and aggregator by modyfing the configuration file `params.yml`.
-
-For example, the CDK stack can be alternatively deployed using zkevm-contracts ([fork 9](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v6.0.0-rc.1-fork.9)), with the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) serving as the sequencer, sequence sender and aggregator.
-
-```bash
-yq -Y --in-place '.deploy_cdk_erigon_node = false' params.yml
-yq -Y --in-place '.args.sequencer_type = "zkevm"' params.yml
-kurtosis run --enclave cdk-v1 --args-file params.yml .
-```
-
-<details>
-<summary>Click to view the architecture diagram of the legacy CDK stack</summary>
-
-![zkEVM Node Architecture Diagram](./docs/architecture-diagram/zkevm-node-architecture-diagram.png)
-
-</details>
 
 ### Interact
 
@@ -68,13 +72,15 @@ Let's do a simple L2 RPC test call.
 First, you will need to figure out which port Kurtosis is using for the RPC. You can get a general feel for the entire network layout by running the following command:
 
 ```bash
-kurtosis enclave inspect cdk-v1
+kurtosis enclave inspect cdk
 ```
 
-That output, while quite useful, might also be a little overwhelming. Let's store the RPC URL in an environment variable. Note that you may need to adjust the various commands slightly if you deployed the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. You should target the `zkevm-node-rpc-001` service instead of `cdk-erigon-node-001`.
+That output, while quite useful, might also be a little overwhelming. Let's store the RPC URL in an environment variable.
+
+> You may need to adjust the various commands slightly if you deployed the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. You should target the `zkevm-node-rpc-001` service instead of `cdk-erigon-node-001`.
 
 ```bash
-export ETH_RPC_URL="$(kurtosis port print cdk-v1 cdk-erigon-node-001 rpc)"
+export ETH_RPC_URL="$(kurtosis port print cdk cdk-erigon-node-001 rpc)"
 ```
 
 That is the same environment variable that `cast` uses, so you should now be able to run this command. Note that the steps below will assume you have the [Foundry toolchain](https://book.getfoundry.sh/getting-started/installation) installed.
@@ -107,13 +113,13 @@ polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosi
 Pretty often, you will want to check the output from the service. Here is how you can grab some logs:
 
 ```bash
-kurtosis service logs cdk-v1 agglayer --follow
+kurtosis service logs cdk agglayer --follow
 ```
 
 In other cases, if you see an error, you might want to get a shell in the service to be able to poke around.
 
 ```bash
-kurtosis service shell cdk-v1 contracts-001
+kurtosis service shell cdk contracts-001
 jq . /opt/zkevm/combined.json
 ```
 
@@ -130,7 +136,7 @@ If the number of verified batches is increasing, then it means the system works 
 To access the `zkevm-bridge` user interface, open this URL in your web browser.
 
 ```bash
-open "$(kurtosis port print cdk-v1 zkevm-bridge-proxy-001 web-ui)"
+open "$(kurtosis port print cdk zkevm-bridge-proxy-001 web-ui)"
 ```
 
 When everything is done, you might want to clean up with this command which stops the local devnet and deletes it.
