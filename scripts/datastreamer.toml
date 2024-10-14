@@ -1,8 +1,0 @@
-[Online]
-URI = "datastream.cardona.zkevm-rpc.com:6900"
-StreamType = 1
-
-[Log]
-Environment = "development"
-Level = "error"
-Outputs = ["stdout"]
