@@ -157,6 +157,10 @@ echo_ts "Creating combined.json"
 pushd /opt/zkevm/ || exit 1
 
 cp genesis.json genesis.original.json
+curl -s https://raw.githubusercontent.com/ethereum/execution-apis/4140e528360fea53c34a766d86a000c6c039100e/tests/genesis.json > exec-api-genesis.json
+jq '.alloc | [to_entries[] | .value + {"address": ("0x" + .key)} | .bytecode = .code | if .code == null then (del(.code) | del(.bytecode)) else . end]' exec-api-genesis.json > exec-api-allocs.json
+jq --slurpfile g exec-api-allocs.json '.genesis += $g[]' genesis.json > g.json; mv g.json genesis.json
+
 jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
 jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c.json; mv c.json combined.json
 
