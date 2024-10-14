@@ -18,6 +18,7 @@ Here is an example:
 $ ./combine-ymls.sh
 Creating combinations...
 - combinations/fork11-new-cdk-stack-cdk-validium.yml
+- combinations/fork11-legacy-zkevm-stack-rollup.yml
 - combinations/fork11-new-cdk-stack-rollup.yml
 - combinations/fork12-new-cdk-stack-cdk-validium.yml
 - combinations/fork12-new-cdk-stack-rollup.yml
