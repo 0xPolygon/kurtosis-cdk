@@ -4,6 +4,7 @@ NODE_COMPONENTS = struct(
     sequence_sender="sequence-sender",
     aggregator="aggregator",
     aggsender="aggsender",
+    rpc="rpc",
 )
 
 
@@ -48,6 +49,8 @@ def create_cdk_node_service_config(
             + NODE_COMPONENTS.aggregator
             + ","
             + NODE_COMPONENTS.aggsender
+            + ","
+            + NODE_COMPONENTS.rpc
         ],
     )
 

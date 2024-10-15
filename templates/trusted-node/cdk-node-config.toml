@@ -177,8 +177,21 @@ GlobalExitRootManagerAddr = "{{.zkevm_global_exit_root_address}}"
 
 # YOU NEED [ReorgDetectorL1], [L1InfoTreeSync] and [BridgeL2Sync] config as well
 
+[ReorgDetectorL1]
+DBPath = "/tmp/reorgdetectorl1"
+
 [ReorgDetectorL2]
 DBPath = "/tmp/reorgdetectorL2"
+
+[BridgeL2Sync]
+DBPath = "/tmp/bridgel2sync"
+BlockFinality = "LatestBlock"
+InitialBlockNum = 0
+BridgeAddr = "{{.zkevm_bridge_address}}"
+SyncBlockChunkSize = 100
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+WaitForNewBlocksPeriod = "3s"
 
 [AggSender]
 DBPath = "/tmp/aggsender"
