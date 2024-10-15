@@ -219,7 +219,7 @@ GasOffset = 0
         GetReceiptMaxTime = "250ms"
         GetReceiptWaitInterval = "1s"
         PrivateKeys = [
-                {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_claimsponsor_private_key}}"}
+                {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
         ]
         ForcedGas = 0
         GasPriceMarginFactor = 1
