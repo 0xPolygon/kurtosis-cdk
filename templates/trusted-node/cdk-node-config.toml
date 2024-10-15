@@ -198,9 +198,9 @@ DBPath = "/tmp/aggsender"
 CertificateSendInterval = "30s"
 URLRPCL2 = "{{.l2_rpc_url}}"
 AggLayerURL = "http://agglayer:{{.agglayer_port}}"
-        [AggSender.SequencerPrivateKey]
-                Path = "/etc/cdk/sequencer.keystore"
-                Password = "{{.zkevm_l2_keystore_password}}"
+[AggSender.SequencerPrivateKey]
+        Path = "/etc/cdk/sequencer.keystore"
+        Password = "{{.zkevm_l2_keystore_password}}"
 
 [ClaimSponsor]
 DBPath = "/tmp/claimsponsor"
