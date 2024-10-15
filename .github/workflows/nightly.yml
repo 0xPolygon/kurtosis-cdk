@@ -41,7 +41,10 @@ jobs:
 
       - name: Monitor verified batches (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)"
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   # TODO: Fix this job.
