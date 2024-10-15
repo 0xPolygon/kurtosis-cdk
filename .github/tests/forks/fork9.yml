@@ -5,7 +5,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.7
 
   # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:0948e33
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.0.0-beta26
   # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags?name=v0.7
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags?name=0.7
