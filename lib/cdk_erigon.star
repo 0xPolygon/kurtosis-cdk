@@ -8,26 +8,12 @@ def start_node(
     is_sequencer,
 ):
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
-    ports = {}
-    ports["pprof"] = PortSpec(
-        args["zkevm_pprof_port"],
-        application_protocol="http",
-        wait=None,
-    )
-    ports["prometheus"] = PortSpec(
-        args["prometheus_port"],
-        application_protocol="http",
-        wait=None,
-    )
-    ports["rpc"] = PortSpec(
-        args["zkevm_rpc_http_port"],
-        application_protocol="http",
-    )
-
-    ports["ws-rpc"] = PortSpec(
-        args["zkevm_rpc_http_port"],
-        application_protocol="ws",
-    )
+    ports = {
+        "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
+        "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
+        "prometheus": PortSpec(args["prometheus_port"], application_protocol="http"),
+        "pprof": PortSpec(args["zkevm_pprof_port"], application_protocol="http"),
+    }
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
