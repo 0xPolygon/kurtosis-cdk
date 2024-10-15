@@ -170,6 +170,10 @@ zkevm.da-url: ""
 zkevm.pool-manager-url: {{.pool_manager_url}}
 # {{end}}
 
+# TODO: Should be provided only in case we are running the Pessimistic proofs consensus
+# The file that contains the initial (injected) batch data for pessimistic proofs consensus.
+# zkevm.pessimistic-proofs.config: ""
+
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           ____  ____   ____
 #  |__  / |/ / ____\ \   / /  \/  |         |  _ \|  _ \ / ___|
