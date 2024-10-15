@@ -27,7 +27,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.0.0-beta26",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:ab3013d",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0-beta4",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
