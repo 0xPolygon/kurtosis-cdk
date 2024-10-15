@@ -27,7 +27,7 @@ def get_erpc_config(plan, args):
     config_template = read_file(
         src="../../static_files/additional_services/erpc-config/erpc.yaml"
     )
-    l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     return plan.render_templates(
         name=SERVICE_NAME + "-config",
         config={
@@ -38,7 +38,7 @@ def get_erpc_config(plan, args):
                     "erpc_metrics_port": PROMETHEUS_PORT,
                     "l2_chain_id": args["zkevm_rollup_chain_id"],
                     "l2_rpc_name": args["l2_rpc_name"],
-                    "l2_rpc_url": l2_rpc_urls.http,
+                    "l2_rpc_url": l2_rpc_url.http,
                 },
             )
         },

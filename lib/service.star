@@ -49,7 +49,7 @@ def get_exec_recipe_result(result):
 
 
 # Return the HTTP and WS URLs of the L2 RPC service.
-def get_l2_rpc_urls(plan, args):
+def get_l2_rpc_url(plan, args):
     l2_rpc_service = plan.get_service(
         name=args["l2_rpc_name"] + args["deployment_suffix"]
     )
