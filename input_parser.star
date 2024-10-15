@@ -26,19 +26,19 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:0948e33",
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0-beta4",
-    "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",
-    "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",
-    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",
-    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",
-    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3-RC1",
-    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.1",
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12",
-    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.0-RC12",
+    "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:ab3013d",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0-beta4",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
+    "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
+    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
+    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.1",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
+    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC13-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
+    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
 }
 
 DEFAULT_PORTS = {
