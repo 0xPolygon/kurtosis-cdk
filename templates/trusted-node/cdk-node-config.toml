@@ -130,7 +130,7 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
                 ForcedGas = 0
                 GasPriceMarginFactor = 1
                 MaxGasPriceLimit = 0
-                PersistenceFilename = ""
+                StoragePath = ""
                 ReadPendingL1Txs = false
                 SafeStatusL1NumberOfBlocks = 0
                 FinalizedStatusL1NumberOfBlocks = 0
@@ -214,22 +214,22 @@ WaitTxToBeMinedPeriod = "3s"
 WaitOnEmptyQueue = "3s"
 GasOffset = 0
 [ClaimSponsor.EthTxManager]
-    FrequencyToMonitorTxs = "1s"
-    WaitTxToBeMined = "2s"
-    GetReceiptMaxTime = "250ms"
-    GetReceiptWaitInterval = "1s"
-    PrivateKeys = [
-        {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-    ]
-    ForcedGas = 0
-    GasPriceMarginFactor = 1
-    MaxGasPriceLimit = 0
-    StoragePath = "/tmp/ethtxmanager-claimsponsor.db"
-    ReadPendingL1Txs = false
-    SafeStatusL1NumberOfBlocks = 5
-    FinalizedStatusL1NumberOfBlocks = 10
-    [ClaimSponsor.EthTxManager.Etherman]
-        URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-        MultiGasProvider = false
-        L1ChainID = 1337
-        HTTPHeaders = []
+        FrequencyToMonitorTxs = "1s"
+        WaitTxToBeMined = "2s"
+        GetReceiptMaxTime = "250ms"
+        GetReceiptWaitInterval = "1s"
+        PrivateKeys = [
+                {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+        ]
+        ForcedGas = 0
+        GasPriceMarginFactor = 1
+        MaxGasPriceLimit = 0
+        StoragePath = "/tmp/ethtxmanager-claimsponsor.db"
+        ReadPendingL1Txs = false
+        SafeStatusL1NumberOfBlocks = 5
+        FinalizedStatusL1NumberOfBlocks = 10
+        [ClaimSponsor.EthTxManager.Etherman]
+                URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+                MultiGasProvider = false
+                L1ChainID = 1337
+                HTTPHeaders = []
