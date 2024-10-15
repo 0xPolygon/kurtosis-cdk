@@ -56,7 +56,7 @@ SanityCheckRPCURL = "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_r
                 ForcedGas = 0
                 GasPriceMarginFactor = 1
                 MaxGasPriceLimit = 0
-                PersistenceFilename = "/data/ethtxmanager.json"
+                StoragePath = "/data/ethtxmanager.json"
                 [SequenceSender.EthTxManager.Etherman]
                         URL = "{{.l1_rpc_url}}"
                         L1ChainID = {{.l1_chain_id}}
@@ -202,3 +202,34 @@ AggLayerURL = "http://agglayer:{{.agglayer_port}}"
                 Path = "/etc/cdk/sequencer.keystore"
                 Password = "{{.zkevm_l2_keystore_password}}"
 
+[ClaimSponsor]
+DBPath = "/tmp/claimsponsor"
+Enabled = true
+SenderAddr = "{{.zkevm_l2_claimtxmanager_address}}"
+BridgeAddrL2 = "{{.zkevm_bridge_address}}"
+MaxGas = 200000
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+WaitTxToBeMinedPeriod = "3s"
+WaitOnEmptyQueue = "3s"
+GasOffset = 0
+[ClaimSponsor.EthTxManager]
+    FrequencyToMonitorTxs = "1s"
+    WaitTxToBeMined = "2s"
+    GetReceiptMaxTime = "250ms"
+    GetReceiptWaitInterval = "1s"
+    PrivateKeys = [
+        {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+    ]
+    ForcedGas = 0
+    GasPriceMarginFactor = 1
+    MaxGasPriceLimit = 0
+    StoragePath = "/tmp/ethtxmanager-claimsponsor.db"
+    ReadPendingL1Txs = false
+    SafeStatusL1NumberOfBlocks = 5
+    FinalizedStatusL1NumberOfBlocks = 10
+    [ClaimSponsor.EthTxManager.Etherman]
+        URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+        MultiGasProvider = false
+        L1ChainID = 1337
+        HTTPHeaders = []
