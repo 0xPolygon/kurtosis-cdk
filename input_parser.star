@@ -23,6 +23,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy cdk-erigon node.
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
+    # Deploy contracts on L2 (as well as fund accounts).
+    "deploy_l2_contracts": True,
 }
 
 DEFAULT_IMAGES = {
@@ -33,7 +35,7 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "local/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.1",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -61,6 +63,7 @@ DEFAULT_PORTS = {
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
 # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 11 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,time_to_mine_sender,time_to_mine_receiver",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
 DEFAULT_ACCOUNTS = {
     # Admin
     "zkevm_l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
@@ -142,6 +145,14 @@ DEFAULT_L1_ARGS = {
     "l1_funding_amount": "100ether",
 }
 
+DEFAULT_L2_ARGS = {
+    # The number of accounts to fund on L2. The accounts will be derived from:
+    # polycli wallet inspect --mnemonic 'code code code code code code code code code code code quality'
+    "l2_accounts_to_fund": 10,
+    # The amount of ETH sent to each of the prefunded l2 accounts.
+    "l2_funding_amount": "100ether",
+}
+
 DEFAULT_ROLLUP_ARGS = {
     # The keystore password.
     "zkevm_l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
@@ -195,7 +206,9 @@ DEFAULT_ARGS = (
         # - pless_zkevm_node
         # - prometheus_grafana
         # - tx_spammer
-        "additional_services": [],
+        "additional_services": [
+            "prometheus_grafana",
+        ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
@@ -206,6 +219,7 @@ DEFAULT_ARGS = (
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
+    | DEFAULT_L2_ARGS
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
