@@ -1,4 +1,4 @@
-FROM alpine:3.19 AS builder
+FROM alpine:3.20 AS builder
 
 # STEP 1: Clone zkevm-bridge-ui repository.
 ARG ZKEVM_BRIDGE_UI_TAG
