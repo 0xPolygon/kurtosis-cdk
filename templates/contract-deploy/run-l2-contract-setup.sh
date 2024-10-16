@@ -8,7 +8,8 @@ fi
 echo_ts() {
     local green="\e[32m"
     local end_color="\e[0m"
-    local timestamp=$(date +"[%Y-%m-%d %H:%M:%S]")
+    local timestamp
+    timestamp=$(date + "[%Y-%m-%d %H:%M:%S]")
 
     echo -e "$green$timestamp$end_color $1" >&2
 }
@@ -44,8 +45,8 @@ echo_ts "L2 RPC is now available"
 echo_ts "Funding accounts on l2"
 accounts=$(
     polycli wallet inspect \
-        --mnemonic 'code code code code code code code code code code code quality' \
-        --addresses {{.l2_accounts_to_fund}}
+        --mnemonic "code code code code code code code code code code code quality" \
+        --addresses "{{.l2_accounts_to_fund}}"
 )
 echo "$accounts" | jq -r '.Addresses[].ETHAddress' | while read -r address; do
     echo_ts "Funding $address"
