@@ -1,11 +1,19 @@
 #!/bin/bash
 set -e
 
-# The private key used to send transactions.
-private_key="{{.zkevm_l2_admin_private_key}}"
+# The amount of value to transfer from the admin to the spammer
+spammer_value="10ether"
+
+cast wallet new -j | jq '.[0]' | tee .bridge.wallet.json
+
+eth_address="$(jq -r '.address' .bridge.wallet.json)"
+private_key="$(jq -r '.private_key' .bridge.wallet.json)"
+
+cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" --value "$spammer_value" "$eth_address"
+cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l2_rpc_url}}" --value "$spammer_value" "$eth_address"
 
 # The address of the recipient.
-destination_address="{{.zkevm_l2_admin_address}}"
+destination_address="$eth_address"
 
 # The destination networks.
 ethereum_network="0"
