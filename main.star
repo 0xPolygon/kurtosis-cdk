@@ -80,7 +80,7 @@ def run(plan, args={}):
     # Deploy cdk central/trusted environment.
     if deployment_stages.get("deploy_cdk_central_environment", False):
         # Deploy cdk-erigon sequencer node.
-        # TODO this is a little weird if the erigon sequencer is deployed before the exector?
+        # TODO this is a little weird if the erigon sequencer is deployed before the executor?
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
             import_module(cdk_erigon_package).run_sequencer(plan, args)
