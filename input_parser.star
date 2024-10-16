@@ -205,9 +205,7 @@ DEFAULT_ARGS = (
         # - pless_zkevm_node
         # - prometheus_grafana
         # - tx_spammer
-        "additional_services": [
-            "prometheus_grafana",
-        ],
+        "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
