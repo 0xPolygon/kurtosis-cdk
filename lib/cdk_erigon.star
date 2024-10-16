@@ -25,9 +25,19 @@ def start_node(
     )
 
     ports["ws-rpc"] = PortSpec(
-        args["zkevm_rpc_http_port"],
+        args["zkevm_rpc_ws_port"],
         application_protocol="ws",
     )
+
+    plan.print("public port information")
+
+    public_ports = {}
+    if is_sequencer:
+        public_ports["rpc"] = PortSpec(number=8223,application_protocol="http")
+        public_ports["ws-rpc"] = PortSpec(number=8233,application_protocol="http")
+    else:
+        public_ports["rpc"] = PortSpec(number=8225,application_protocol="http")
+        public_ports["ws-rpc"] = PortSpec(number=8235,application_protocol="http")
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
@@ -43,33 +53,36 @@ def start_node(
         src="../templates/proc-runner.sh",
         # leaving the name out for now. This might cause some idempotency issues, but we're not currently relying on that for now
     )
+    config = ServiceConfig(
+        image=args["cdk_erigon_node_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/cdk-erigon": Directory(
+                artifact_names=[
+                    cdk_erigon_node_config_artifact,
+                    cdk_erigon_node_chain_spec_artifact,
+                    cdk_erigon_node_chain_config_artifact,
+                    cdk_erigon_node_chain_allocs_artifact,
+                ],
+            ),
+            "/home/erigon/dynamic-configs/": Directory(
+                artifact_names=[
+                    cdk_erigon_node_chain_spec_artifact,
+                    cdk_erigon_node_chain_config_artifact,
+                    cdk_erigon_node_chain_allocs_artifact,
+                ]
+            ),
+            "/usr/local/share/proc-runner": proc_runner_file_artifact,
+        },
+        entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
+        cmd=[
+            "cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"
+        ],
+        env_vars=envs,
+    )
+
     plan.add_service(
         name=name,
-        config=ServiceConfig(
-            image=args["cdk_erigon_node_image"],
-            ports=ports,
-            files={
-                "/etc/cdk-erigon": Directory(
-                    artifact_names=[
-                        cdk_erigon_node_config_artifact,
-                        cdk_erigon_node_chain_spec_artifact,
-                        cdk_erigon_node_chain_config_artifact,
-                        cdk_erigon_node_chain_allocs_artifact,
-                    ],
-                ),
-                "/home/erigon/dynamic-configs/": Directory(
-                    artifact_names=[
-                        cdk_erigon_node_chain_spec_artifact,
-                        cdk_erigon_node_chain_config_artifact,
-                        cdk_erigon_node_chain_allocs_artifact,
-                    ]
-                ),
-                "/usr/local/share/proc-runner": proc_runner_file_artifact,
-            },
-            entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
-            cmd=[
-                "cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"
-            ],
-            env_vars=envs,
-        ),
+        config=config,
     )
