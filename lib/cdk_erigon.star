@@ -58,7 +58,7 @@ def start_node(
             },
             entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
             cmd=[
-                "cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"
+                "cdk-erigon --config /etc/cdk-erigon/config.yaml"
             ],
             env_vars=envs,
         ),
