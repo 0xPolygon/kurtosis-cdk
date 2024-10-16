@@ -15,7 +15,9 @@ cast wallet new -j | jq '.[0]' | tee .spam.wallet.json
 eth_address="$(jq -r '.address' .spam.wallet.json)"
 private_key="$(jq -r '.private_key' .spam.wallet.json)"
 
-cast send --legacy --private-key "{{.private_key}}" --rpc-url "{{.rpc_url}}" --value "$spammer_value" "$eth_address"
+until cast send --legacy --private-key "{{.private_key}}" --rpc-url "{{.rpc_url}}" --value "$spammer_value" "$eth_address"; do
+    echo "Attempting to fund a test account for the tx spammer"
+done
 
 while true; do
   echo "Sending a few transactions to the RPC..."
