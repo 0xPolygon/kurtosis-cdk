@@ -10,8 +10,8 @@
 # - Batch verification gap
 
 # Local
-l1_rpc_url=$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)
-l2_rpc_url=$(kurtosis port print cdk-v1 cdk-erigon-sequencer-001 rpc)
+l1_rpc_url=$(kurtosis port print cdk el-1-geth-lighthouse rpc)
+l2_rpc_url=$(kurtosis port print cdk cdk-erigon-sequencer-001 rpc)
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_id=1
 
