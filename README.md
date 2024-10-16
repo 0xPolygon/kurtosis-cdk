@@ -55,13 +55,20 @@ If you intend to interact with and debug the stack, you may also want to conside
 
 Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally. This process typically takes around eight to ten minutes.
 
+```bash
+kurtosis run --enclave cdk2 github.com/0xPolygon/kurtosis-cdk
+```
+
 The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at 
 [input_parser.star](./input_parser.star).
 
+To make customizations to the CDK environment, clone this repo, make any desired configuration changes, and then run:
+
 ```bash
+# Delete all stop and clean all currently running enclaves
 kurtosis clean --all
 
-# Run this command from the root of this repo
+# Run this command from the root of the repository to start the network
 kurtosis run --enclave cdk .
 ```
 
