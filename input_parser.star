@@ -126,7 +126,7 @@ DEFAULT_L1_ARGS = {
     #   - blutgang
     #   - forky
     #   - apache
-    #  - tracoor
+    #   - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
     "l1_additional_services": [],
     # Preset for the network.
