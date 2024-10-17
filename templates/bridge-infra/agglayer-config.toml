@@ -1,37 +1,61 @@
-[FullNodeRPCs]
+prover-entrypoint = "{{.agglayer_prover_entrypoint}}"
+
+[full-node-rpcs]
 # TODO switch this to permissionless
 1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
-[ProofSigners]
+[proof-signers]
 1 = "{{.zkevm_l2_sequencer_address}}"
 
-[RPC]
-Host = "0.0.0.0"
-Port = {{.agglayer_port}}
-ReadTimeout = "60s"
-WriteTimeout = "60s"
-MaxRequestsPerIPAndSecond = 5000
+[rpc]
+port = {{.agglayer_port}}
+host = "0.0.0.0"
+request-timeout = 180
 
-[Log]
-Environment = "production" # "production" or "development"
-Level = "{{.global_log_level}}"
-Outputs = ["stderr"]
+[outbound.rpc.settle]
+max-retries = 3
+retry-interval = 7
+confirmations = 1
+settlement-timeout = 1200
 
-[EthTxManager]
-FrequencyToMonitorTxs = "1s"
-WaitTxToBeMined = "2m"
-ForcedGas = 0
-GasPriceMarginFactor = 1
-MaxGasPriceLimit = 0
-PrivateKeys = [
-	{Path = "/etc/zkevm/agglayer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+[log]
+level = "{{.global_log_level}}"
+outputs = ["stderr"]
+format = "pretty"
+
+[auth.local]
+private-keys = [
+    { path = "/etc/zkevm/agglayer.keystore", password = "{{.zkevm_l2_keystore_password}}" },
 ]
-KMSKeyName = "" # Disable for local
 
-[L1]
-ChainID = {{.l1_chain_id}}
-NodeURL = "{{.l1_rpc_url}}"
-RollupManagerContract = "{{.zkevm_rollup_manager_address}}"
+[l1]
+chain-id = {{.l1_chain_id}}
+node-url = "{{.l1_rpc_url}}"
+rollup-manager-contract = "{{.zkevm_rollup_manager_address}}"
+rpc-timeout = 45
 
-[Telemetry]
-PrometheusAddr = "0.0.0.0:{{.prometheus_port}}"
+
+[l2]
+rpc-timeout = 45
+
+[telemetry]
+prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
+
+[rate-limiting]
+send-tx = "unlimited"
+
+[rate-limiting.network]
+
+[epoch.time-clock]
+epoch-duration = 5
+
+[shutdown]
+runtime-timeout = 5
+
+[certificate-orchestrator]
+input-backpressure-buffer-size = 1000
+
+[certificate-orchestrator.prover.sp1-local]
+
+[storage]
+db-path = "/etc/zkevm/storage"
