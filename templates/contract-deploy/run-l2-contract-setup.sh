@@ -33,6 +33,17 @@ wait_for_rpc_to_be_available() {
     done
 }
 
+fund_account_on_l2() {
+    local address="$1"
+    echo_ts "Funding $address"
+    cast send \
+        --legacy \
+        --rpc-url "{{.l2_rpc_url}}" \
+        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --value "{{.l2_funding_amount}}" \
+        "$address"
+}
+
 if [[ -e "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock" ]]; then
     echo_ts "This script has already been executed"
     exit 1
@@ -42,6 +53,9 @@ echo_ts "Waiting for the L2 RPC to be available"
 wait_for_rpc_to_be_available
 echo_ts "L2 RPC is now available"
 
+echo_ts "Funding bridge autoclaimer account on l2"
+fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
+
 echo_ts "Funding accounts on l2"
 accounts=$(
     polycli wallet inspect \
@@ -49,13 +63,7 @@ accounts=$(
         --addresses "{{.l2_accounts_to_fund}}"
 )
 echo "$accounts" | jq -r '.Addresses[].ETHAddress' | while read -r address; do
-    echo_ts "Funding $address"
-    cast send \
-        --legacy \
-        --rpc-url "{{.l2_rpc_url}}" \
-        --private-key "{{.zkevm_l2_admin_private_key}}" \
-        --value "{{.l2_funding_amount}}" \
-        "$address"
+    fund_account_on_l2 "$address"
 done
 
 # The contract setup is done!
