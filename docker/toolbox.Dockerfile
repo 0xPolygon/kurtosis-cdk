@@ -2,14 +2,14 @@ FROM golang:1.21 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
-  && BUILD_DIR=. make build
+  && make build
 
 
 FROM ubuntu:24.04
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 
-COPY --from=polycli-builder /opt/polygon-cli/polycli /usr/bin/polycli
+COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL3013): Pin versions in pip.

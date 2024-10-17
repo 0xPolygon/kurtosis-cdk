@@ -2,7 +2,7 @@ FROM golang:1.21 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
-  && BUILD_DIR=. make build
+  && make build
 
 
 FROM node:22-bookworm
@@ -19,7 +19,7 @@ RUN git clone  https://github.com/0xPolygonHermez/zkevm-contracts . \
   && npx hardhat compile
 
 # STEP 2: Install tools.
-COPY --from=polycli-builder /opt/polygon-cli/polycli /usr/bin/polycli
+COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 WORKDIR /opt
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL3013): Pin versions in pip.
