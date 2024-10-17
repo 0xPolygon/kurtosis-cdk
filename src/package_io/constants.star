@@ -16,4 +16,4 @@ SEQUENCER_NAME = struct(
     ZKEVM="zkevm-node-sequencer",
 )
 
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.4"
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.5"

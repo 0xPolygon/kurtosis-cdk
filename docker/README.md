@@ -84,7 +84,7 @@ This image contains all the npm dependencies and zkevm contracts compiled for a 
 Build the `zkevm-contracts` image.
 
 ```bash
-version="v9.0.0-rc.2-pp"
+version="v9.0.0-rc.2-pp-fork.12"
 docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
@@ -96,8 +96,8 @@ Check the size of the image.
 
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
-REPOSITORY              TAG              IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   v9.0.0-rc.2-pp   bdf8225cfa77   7 minutes ago    2.54GB
+REPOSITORY              TAG                      IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   v9.0.0-rc.2-pp-fork.12   bdf8225cfa77   7 minutes ago    2.54GB
 ```
 
 (Optional) Push image to the Docker Hub.
