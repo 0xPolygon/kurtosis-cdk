@@ -82,7 +82,11 @@ def run_rpc(plan, args):
     cdk_erigon_node_chain_allocs_artifact = plan.get_files_artifact(
         name="cdk-erigon-node-chain-allocs",
     )
+    cdk_erigon_node_first_batch_artifact = plan.get_files_artifact(
+        name="cdk-erigon-node-first-batch",
+    )
 
+    # FIXME - this pattern is a little silly. I'd like to refactor and just have an erigon config directory, and also DRY
     cdk_erigon_package.start_node(
         plan,
         args,
@@ -90,6 +94,7 @@ def run_rpc(plan, args):
         cdk_erigon_node_chain_spec_artifact,
         cdk_erigon_node_chain_config_artifact,
         cdk_erigon_node_chain_allocs_artifact,
+        cdk_erigon_node_first_batch_artifact,
         False,
     )
 
@@ -133,6 +138,9 @@ def run_sequencer(plan, args):
     cdk_erigon_node_chain_allocs_artifact = plan.get_files_artifact(
         name="cdk-erigon-node-chain-allocs",
     )
+    cdk_erigon_node_first_batch_artifact = plan.get_files_artifact(
+        name="cdk-erigon-node-first-batch",
+    )
 
     cdk_erigon_package.start_node(
         plan,
@@ -141,5 +149,6 @@ def run_sequencer(plan, args):
         cdk_erigon_node_chain_spec_artifact,
         cdk_erigon_node_chain_config_artifact,
         cdk_erigon_node_chain_allocs_artifact,
+        cdk_erigon_node_first_batch_artifact,
         True,
     )
