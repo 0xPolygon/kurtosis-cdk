@@ -2,10 +2,10 @@ FROM golang:1.21 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
-  && CGO_ENABLED=0 go build -o polycli main.go
+  && go build -o polycli main.go
 
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 
