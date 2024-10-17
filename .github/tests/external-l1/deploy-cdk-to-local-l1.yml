@@ -3,5 +3,3 @@ deployment_stages:
 
 args:
   l1_chain_id: 271828
-  l1_rpc_url: CHANGE_ME
-  l1_ws_url: CHANGE_ME
