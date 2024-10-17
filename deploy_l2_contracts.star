@@ -37,7 +37,7 @@ def run(plan, args):
     plan.add_service(
         name=contracts_service_name,
         config=ServiceConfig(
-            image=args["zkevm_contracts_image"],
+            image=args["l2_contracts_image"],
             files={
                 "/opt/zkevm": Directory(persistent_key="zkevm-l2-artifacts"),
                 "/opt/contract-deploy/": Directory(artifact_names=artifacts),
