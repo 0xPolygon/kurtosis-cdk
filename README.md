@@ -55,11 +55,20 @@ If you intend to interact with and debug the stack, you may also want to conside
 
 Once that is good and installed on your system, you can run the following command to deploy the complete CDK stack locally. This process typically takes around eight to ten minutes.
 
+```bash
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk
+```
+
 The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at 
 [input_parser.star](./input_parser.star).
 
+To make customizations to the CDK environment, clone this repo, make any desired configuration changes, and then run:
+
 ```bash
+# Delete all stop and clean all currently running enclaves
 kurtosis clean --all
+
+# Run this command from the root of the repository to start the network
 kurtosis run --enclave cdk .
 ```
 
@@ -98,16 +107,16 @@ cast balance --ether 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
 Okay, let’s send some transactions...
 
 ```bash
-export PK="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
-cast send --legacy --private-key "$PK" --value 0.01ether 0x0000000000000000000000000000000000000000
+private_key="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
+cast send --legacy --private-key "$private_key" --value 0.01ether 0x0000000000000000000000000000000000000000
 ```
 
 Okay, let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/maticnetwork/polygon-cli) installed.
 
 ```bash
-polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 50000 --rate-limit 50 --concurrency 5 --mode t
-polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
-polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 3  --mode uniswapv3
+polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$private_key" --verbosity 700 --requests 50000 --rate-limit 50 --concurrency 5 --mode t
+polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$private_key" --verbosity 700 --requests 500 --rate-limit 10 --mode 2
+polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$private_key" --verbosity 700 --requests 500 --rate-limit 3  --mode uniswapv3
 ```
 
 Pretty often, you will want to check the output from the service. Here is how you can grab some logs:
