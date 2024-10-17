@@ -18,7 +18,7 @@ kurtosis service stop cdk cdk-erigon-node-001
 kurtosis service stop cdk cdk-node-001 
 ```
 
-Change the sequencer's `config.yaml` file using root permission.
+Change the sequencer's `config.yaml` file using root permission. Under normal circumstances, `kurtosis exec` would've been used for consistency, but the sequencer's image disables root permission, so `docker exec` with the `-u root` has been used to get permission to make config file changes.
 
 ```
 docker exec -it -u root $(docker ps -aqf "name=cdk-erigon-sequencer-001") sh -c "sed -i 's/zkevm.l1-sync-start-block: 0/zkevm.l1-sync-start-block: 1/' /etc/cdk-erigon/config.yaml"
