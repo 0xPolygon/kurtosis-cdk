@@ -26,7 +26,7 @@ WORKDIR /opt
 # WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
 # hadolint ignore=DL3008,DL3013,DL4006
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends jq pipx \
+  && apt-get install --yes --no-install-recommends curl git jq pipx \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pipx ensurepath \
