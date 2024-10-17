@@ -8,8 +8,8 @@ order to deploy to [[https://sepolia.etherscan.io/][Sepolia]].
 ** Disable Local L1
 
 The first thing we should do is make sure that Kurtosis doesn't bother
-doing the L1 deployment. We're going to use ~sed~ to do carry this
-out, but you can also modify the ~input_parser.star~ file directly.
+doing the L1 deployment. We're going to use ~sed~ to carry this out,
+but you can also modify the ~input_parser.star~ file directly.
 
 #+begin_src bash
 sed -i 's/"deploy_l1": True/"deploy_l1": False/' input_parser.star
@@ -135,11 +135,17 @@ send funds to this account*.
 There are a few other values we need to configure for L1.
 
 #+begin_src bash
+# We need to update the chain id to Sepolia
 sed -i 's/"l1_chain_id": .*,/"l1_chain_id": 11155111,/' input_parser.star
+
+# We need to reduce the amount of funds we'll allocate on Sepolia since we probalby don't have infinite money
 sed -i 's/"l1_funding_amount": ".*"/"l1_funding_amount": "5ether"/' input_parser.star
+
+# The L1 RPC and WS urls need to change to be valid Sepolia endpoints
 sed -i 's#"l1_rpc_url": ".*"#"l1_rpc_url": "https://YOUR-SEPOLIA-RPC.invalid"#' input_parser.star
 sed -i 's#"l1_ws_url": ".*"#"l1_ws_url": "wss://YOUR-SEPOLIA-RPC.invalid"#' input_parser.star
 
+# We need to alter the finality time for erigon otherwise we'll need to wait for the contract deployment to finalize
 sed -i 's/zkevm.l1-highest-block-type: finalized/zkevm.l1-highest-block-type: latest/' templates/cdk-erigon/config.yml
 #+end_src
 
