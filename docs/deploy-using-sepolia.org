@@ -8,31 +8,33 @@ order to deploy to [[https://sepolia.etherscan.io/][Sepolia]].
 ** Disable Local L1
 
 The first thing we should do is make sure that Kurtosis doesn't bother
-doing the L1 deployment. We're going to use [[https://github.com/kislyuk/yq][yq]] to do carry this out.
+doing the L1 deployment. We're going to use ~sed~ to do carry this
+out, but you can also modify the ~input_parser.star~ file directly.
 
 #+begin_src bash
-yq -Y --in-place '.deploy_l1 = false' params.yml
+sed -i 's/"deploy_l1": True/"deploy_l1": False/' input_parser.star
 #+end_src
 
-This will stop Kurtosis from using spinning up the L1 [[https://github.com/kurtosis-tech/ethereum-package][Ethereum package]]. Since we're using Sepolia, there will be no need.
+This will stop Kurtosis from using spinning up the L1 [[https://github.com/kurtosis-tech/ethereum-package][Ethereum
+package]]. Since we're using Sepolia, there will be no need.
 
 ** Changing Deployment Salt
 
-If this isn't the first time deploying the CDK contracts to Sepolia with a specific address, the [[https://github.com/0xPolygon/kurtosis-cdk/blob/main/templates/contract-deploy/deploy_parameters.json#L12][salt]] must be changed.
-
-** Increase Timeout for CDK Node
-
-The timeout for deploying the [[https://github.com/0xPolygon/kurtosis-cdk/blob/main/lib/cdk_node.star#L21][CDK Node]] must be increased since we are deploying to Sepolia which will take longer to verify batches than a local L1. 
+The deployment of the of the L1 contracts is deterministic. If this
+isn't the first time deploying the CDK contracts to Sepolia with a
+specific address, the [[https://github.com/0xPolygon/kurtosis-cdk/blob/main/templates/contract-deploy/deploy_parameters.json#L12][salt]] must be changed in order to avoid a
+deployment failure. You can modify the ~salt~ field in the
+~deploy_parameters.json~ file manually to get a new salt. You could
+also run a script like the one below to rotate the salt randomly.
 
 #+begin_src bash
--                args["zkevm_aggregator_port"], application_protocol="grpc"
-+                args["zkevm_aggregator_port"], application_protocol="grpc", wait = "60m"
+sed -i 's/"salt": "0x.*",/"salt": "0x'$(xxd -p < /dev/random  | tr -d "\n" | head -c 64)'",/' templates/contract-deploy/deploy_parameters.json
 #+end_src
 
 ** Application Key Rotation
 
 By default, the CDK package has some hard coded keys. This is fine for
-local testing, but if you run on sepolia, you're likely to get your
+local testing, but if you run on Sepolia, you're likely to get your
 funds stolen even if it's inadvertent. First, let's create a new
 mnemonic seed phrase to derive our application keys.
 
@@ -44,58 +46,56 @@ cast wallet new-mnemonic
 #+begin_example
 Successfully generated a new mnemonic.
 Phrase:
-multiply smoke dash galaxy priority speak sell decade diamond crew charge because
+film crazy inform bind stomach weather cruel hold quarter stage country purpose
 
 Accounts:
 - Account 0:
-Address:     0x3C3Ade761F53bdf4F3f40B46D0AbDA286C2aCDcC
-Private key: 0x8a4758bf2a9c144e4421327f6155f52e31c12ed4684e6c852b91a7d7f7e6c75f
+Address:     0x5996602860Da5b232429A007Ffc29Fe334993143
+Private key: 0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f8759aa194b94e
 #+end_example
 
 Great! Now we have a new seed phrase to use. Now, we'll take that seed
-phrase and write generate the settings for ~params.yml~.
-
+phrase and write generate the settings for ~input_parser.star~.
 
 #+begin_src bash :exports both verbatim :results output example
-seed="multiply smoke dash galaxy priority speak sell decade diamond crew charge because"
+seed="film crazy inform bind stomach weather cruel hold quarter stage country purpose"
 polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
     jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | \
-    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 #+end_src
 
 #+RESULTS:
 #+begin_example
-zkevm_l2_sequencer_address: "0x47eAFc647e0EE13F920fdF03F1DB012173452F96" 
-zkevm_l2_sequencer_private_key: "a79cd51949914b6fa6a49f65669c7b9b81ff231a4320b49b3ce3218ed1cdb656" 
+"zkevm_l2_sequencer_address": "0x5996602860Da5b232429A007Ffc29Fe334993143",
+"zkevm_l2_sequencer_private_key": "0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f8759aa194b94e",
 
-zkevm_l2_aggregator_address: "0x2F24237B5a1635eb708e1945ff299c08f2728399"
-zkevm_l2_aggregator_private_key: "77057cbeefd49d81edb539850f23dcf62001e7150c0078364820efb13153df52"
+"zkevm_l2_aggregator_address": "0x25697f040f8EE9145452b115F36aEd35a12d32AD",
+"zkevm_l2_aggregator_private_key": "0xedab8a45bea025ec96808a63368ad2c8099b85944965c26256f987ff9ad712f4",
 
-zkevm_l2_claimtxmanager_address: "0x07c394df412978586fD9A66bf08E3F955cf00db9"
-zkevm_l2_claimtxmanager_private_key: "7ff66927e40127a400ba36e68a43385d47561c4c4b7fcda1533e39724868ff60"
+"zkevm_l2_claimtxmanager_address": "0xc8273E02E94598F39e8Ec8867902D4807917A165",
+"zkevm_l2_claimtxmanager_private_key": "0x216a4646ea3dd753f799b7eb7d7f8fe57b96c01c1fcd5eec496d888f5a7677cd",
 
-zkevm_l2_timelock_address: "0x46f943D43b60e03f87e1F1959C0D313D5cBBD1C2"
-zkevm_l2_timelock_private_key: "a5b838802b4367047ee63f8857b122092fbc277932919d50f7e56c3a20093941"
+"zkevm_l2_timelock_address": "0x187aA720B98E064cCaCd1533be1B664D7F93F032",
+"zkevm_l2_timelock_private_key": "0xa0e35402da2dcebb8a33b89806d043bb5785a6a04aa5d9cf47f0950d88668c65",
 
-zkevm_l2_admin_address: "0x886380dC1C51A2482b58f48617E74e80aECf0742"
-zkevm_l2_admin_private_key: "768c8a9d126ce9d2c80313736c66da90d4e911ee6cbdf7dc0749ae1be3a72d96"
+"zkevm_l2_admin_address": "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf",
+"zkevm_l2_admin_private_key": "0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f",
 
-zkevm_l2_loadtest_address: "0x81457240ff5b49CaF176885ED07e3E7BFbE9Fb81"
-zkevm_l2_loadtest_private_key: "0xd7df6d64c569ffdfe7c56e6b34e7a2bdc7b7583db74512a9ffe26fe07faaa5de"
+"zkevm_l2_loadtest_address": "0x1D9842c503A98cF53AE44808572d15B8C40B2967",
+"zkevm_l2_loadtest_private_key": "0x23db51713f401984ea6331ccce3a9b3b98996838ccec43d4de828c3b501e07de",
 
-zkevm_l2_agglayer_address: "0x8C1b9edeB66082fFbB75Ac0D2fdcC391AA002997"
-zkevm_l2_agglayer_private_key: "047b918007c2e6614f9575bd14aaa44dd7d8a1315791ebb5888fb04c3f64440c"
+"zkevm_l2_agglayer_address": "0x61773f7fca22cF7fb960DEDC6aEd0FE795018837",
+"zkevm_l2_agglayer_private_key": "0xf44263cc5699fe3889f892834885111164eb1bea1c9f16322c5577165c578ae4",
 
-zkevm_l2_dac_address: "0x392Ecbb8cF99D402BD2A788D871161CC06974652"
-zkevm_l2_dac_private_key: "99b3d65616a126798563d9e0dfd692d43540b9cfca4c6bdf3c3df2c263c98a3c"
+"zkevm_l2_dac_address": "0x9150404Cc4d66673b1598dA00a9AC6ce1df53582",
+"zkevm_l2_dac_private_key": "0xc1345e1b9680c8623df4f74d4b4f7bc8d9a5bebfebde34786e2146d30b1c68c0",
 
-zkevm_l2_proofsigner_address: "0xDE5E0Ca08F7A1CDc9651Df0865dcf47A1337830E"
-zkevm_l2_proofsigner_private_key: "b5ee3080a448b95f64efb459ff3e9783f28daa1de0c4e5d07a52b48e47d92885"
-
+"zkevm_l2_proofsigner_address": "0xad36D8a17e14B2420229b77664AB905C813AD573",
+"zkevm_l2_proofsigner_private_key": "0x7e60d7b0924128bd629b5942ad7d5610c71794e9a00eb0e2c7b0bb5ba633bf94",
 #+end_example
 
 We're going to take these generated values and place them into the
-[[../params.yml]] file. Each one of these settings should already exist
+[[../input_parser.star]] file. Each one of these settings should already exist
 and you're simply replacing the keys that are already in this file.
 
 ** L1 Configuration
@@ -111,12 +111,12 @@ cast wallet new-mnemonic
 #+RESULTS:
 #+begin_example
 Phrase:
-proof slam law choose steak beach fee cousin rate soup bunker undo
+wash shoe curve captain invest aunt farm quality bomb aunt sunny arm
 
 Accounts:
 - Account 0:
-Address:     0x2eEfbBbbb4344CAa1180593EBCDFC20a60f54bae
-Private key: 0xff4eacda829d92184a5f385097daf968fd0730e48a7ed4ab321f79e5154d5096
+Address:     0xd1c71c8ca3e031aEABB685ACDDA98e4Ca3A96fCC
+Private key: 0xfbbcf7c3d0240ce02a9e3bde93f2c060db716acdf81d1d5bd4dd0a8b7f96ac63
 #+end_example
 
 
@@ -124,21 +124,23 @@ We'll take that mnemonic and configure ~l1_preallocated_mnemonic~ with
 this value.
 
 #+begin_src bash
-yq -Y --in-place '.args.l1_preallocated_mnemonic = "proof slam law choose steak beach fee cousin rate soup bunker undo"' params.yml
+sed -i 's/"l1_preallocated_mnemonic": ".*"/"l1_preallocated_mnemonic": "wash shoe curve captain invest aunt farm quality bomb aunt sunny arm"/' input_parser.star
 #+end_src
 
 This account is used for two things. It sends funds to the accounts
 that need funds on L1 (e.g. sequencer, aggregator, admin).  This
-account also does the contract deployment. Accordingly, we'll need to
-send funds to this account.
+account also does the contract deployment. Accordingly, *we'll need to
+send funds to this account*.
 
 There are a few other values we need to configure for L1.
 
 #+begin_src bash
-yq -Y --in-place '.args.l1_chain_id = 11155111' params.yml
-yq -Y --in-place '.args.l1_funding_amount = "5ether"' params.yml
-yq -Y --in-place '.args.l1_rpc_url = "https://YOUR-SEPOLIA-RPC.invalid"' params.yml
-yq -Y --in-place '.args.l1_ws_url = "wss://YOUR-SEPOLIA-RPC.invalid"' params.yml
+sed -i 's/"l1_chain_id": .*,/"l1_chain_id": 11155111,/' input_parser.star
+sed -i 's/"l1_funding_amount": ".*"/"l1_funding_amount": "5ether"/' input_parser.star
+sed -i 's#"l1_rpc_url": ".*"#"l1_rpc_url": "https://YOUR-SEPOLIA-RPC.invalid"#' input_parser.star
+sed -i 's#"l1_ws_url": ".*"#"l1_ws_url": "wss://YOUR-SEPOLIA-RPC.invalid"#' input_parser.star
+
+sed -i 's/zkevm.l1-highest-block-type: finalized/zkevm.l1-highest-block-type: latest/' templates/cdk-erigon/config.yml
 #+end_src
 
 ** Running the Network
@@ -146,118 +148,117 @@ yq -Y --in-place '.args.l1_ws_url = "wss://YOUR-SEPOLIA-RPC.invalid"' params.yml
 All of the configuration should be set. Let's run things:
 
 #+begin_src bash
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+kurtosis run --enclave cdk .
 #+end_src
 
-While the deployment process is ongoing, you may notice that the Kurtosis deployment is stuck at
+This process will take longer than the typical startup time mostly
+because the block interval on Sepolia is longer than the default block
+interval for our fake L1. As of Oct 16, 2024, this process takes
+around 9 minutes to finish.
+
+
+To make sure that the network is functional, you can run the script
+below to send a test transaction and to ensure that your network is
+progressing as expected.
+
 #+begin_src bash
-Starting the cdk node components
+rpc_url=$(kurtosis port print cdk cdk-erigon-node-001 rpc)
+zkevm_l2_admin_private_key="0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f"
+
+cast rpc --rpc-url $rpc_url zkevm_batchNumber
+cast rpc --rpc-url $rpc_url zkevm_virtualBatchNumber
+cast rpc --rpc-url $rpc_url zkevm_verifiedBatchNumber
+
+cast send --legacy --rpc-url $rpc_url --private-key $zkevm_l2_admin_private_key --value 1 0x0000000000000000000000000000000000000000
 #+end_src
 
-This is because now that the L1 is Sepolia, it takes longer to verify the batches. In the process, when looking at the CDK Node's container you should see it exited.
-#+begin_src bash
-docker ps -a | grep ghcr.io/0xpolygon/cdk
-#+end_src
-
-We need to monitor the logs of the Erigon Sequencer to make sure the first batch has been verified on L1 before restarting the exited CDK Node container.
-#+begin_src bash
-kurtosis service logs cdk-v1 cdk-erigon-sequencer-001 -f
-#+end_src
-
-While waiting for the batches to verify on Sepolia, you should see the below logs.
-#+begin_src bash
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:22:20.487] [5/13 Execution] Starting sequencing stage 
-[cdk-erigon-sequencer-001] [WARN] [08-29|02:22:20.487] [5/13 Execution] ForkId is 0. Waiting for L1 to finalise a block... 
-#+end_src
-
-You should expect to see the below logs once the batches have been verified on Sepolia.
-#+begin_src bash
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:11:56.349] [5/13 Execution] Starting sequencing stage 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:11:56.363] [5/13 Execution] Starting batch 361... 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:11:56.363] [5/13 Execution] Starting block 911 (forkid 9)... 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:11:56.363] [5/13 Execution] Waiting for txs from the pool... 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:12:02.376] [5/13 Execution] Increment trie hashes started previousRootHeight=910 calculatingRootHeight=911
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:12:02.377] [5/13 Execution] Regeneration trie hashes finished. Commiting batch 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:12:02.377] [5/13 Execution] Increment ended 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:12:02.377] [5/13 Execution] Finish block 911 with 0 transactions... 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:12:02.380] [5/13 Execution] Starting block 912 (forkid 9)... 
-[cdk-erigon-sequencer-001] [INFO] [08-29|02:12:02.380] [5/13 Execution] Waiting for txs from the pool... 
-#+end_src
-
-Now the CDK Node container can be restarted
-#+begin_src bash
-docker start <CDK_Node_Container_ID>
-#+end_src
-
-You should see the Kurtosis deployment continuing and finishing shortly after.
-
-To make sure that the network is functional, you can query the below commands, and after approximately 20 minutes, you should see the virtualBatchNumber and verifiedBatchNumber incrementing.
-#+begin_src bash
-cast rpc zkevm_batchNumber 
-cast rpc zkevm_virtualBatchNumber 
-cast rpc zkevm_verifiedBatchNumber 
-#+end_src
-
-Once this completes, you'll probably want to see your deployed
+At this point, you'll probably want to see your deployed
 contracts an on-chain activity.
 
 #+begin_src bash :exports both verbatim :results output code
-kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json'
+kurtosis service exec cdk8 contracts-001 'cat /opt/zkevm/combined.json'
 #+end_src
 
 #+RESULTS:
 #+begin_src json
 {
-  "polygonRollupManagerAddress": "0xcaf5779919bD483d03ef4b7a9590a963b987F0B6",
-  "polygonZkEVMBridgeAddress": "0x2A7Abc10A8c826d687e228880812DaBcc6ebD213",
-  "polygonZkEVMGlobalExitRootAddress": "0xE288A20FE8F51A75cf835477393618aBbCb9D187",
-  "polTokenAddress": "0x5C51B0CdD92a012b647fccfc6b36DE34B2C4fb12",
-  "zkEVMDeployerContract": "0x406C4282c165A25c4dDf95CE74c566017beD8Daf",
-  "deployerAddress": "0x886380dC1C51A2482b58f48617E74e80aECf0742",
-  "timelockContractAddress": "0xd8B6F8b113c7F6716459A9818f7d8DDf483a5537",
-  "deploymentRollupManagerBlockNumber": 6590703,
-  "upgradeToULxLyBlockNumber": 6590703,
-  "admin": "0x886380dC1C51A2482b58f48617E74e80aECf0742",
-  "trustedAggregator": "0x2F24237B5a1635eb708e1945ff299c08f2728399",
-  "proxyAdminAddress": "0xeBd2DA2a8e18FB11DA5D6F4C59583E9bA6D57121",
-  "salt": "0xabcde00000000000000000000000000000000000000000000000000000000015",
-  "polygonDataCommitteeAddress": "0x897d08b9bCd510eeAaDDbCd35Fc20fd52D0C0ECD",
+  "polygonRollupManagerAddress": "0x698e0dDF844E13E736F21B48DAee689914ec22aC",
+  "polygonZkEVMBridgeAddress": "0x5478fF04B5281BbbD5eF05355eE5f9f17b889107",
+  "polygonZkEVMGlobalExitRootAddress": "0xBb64fb56767CD387468Ef77a49b3279a2E8b5A6b",
+  "polTokenAddress": "0xFbd8035eE3142298Ac9c1a9d5963673AB68f66c2",
+  "zkEVMDeployerContract": "0xb8764a7108A549769A8E19DAa701b458e67121b5",
+  "deployerAddress": "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf",
+  "timelockContractAddress": "0x9530996Ac0ba5E40144b61220dc18132042353B6",
+  "deploymentRollupManagerBlockNumber": 6889321,
+  "upgradeToULxLyBlockNumber": 6889321,
+  "admin": "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf",
+  "trustedAggregator": "0x25697f040f8EE9145452b115F36aEd35a12d32AD",
+  "proxyAdminAddress": "0x9b4C4cB4102a765cc9e11B2C731f4E1093bB30FD",
+  "salt": "0xea9f524f1063505560c463bc43d3d15cadd983e597df916cc85761f2e21af318",
+  "polygonDataCommitteeAddress": "0x2e7C948035e285C152De898Be3ed4453c589c58d",
   "firstBatchData": {
-    "transactions": "0xf9010380808401c9c380942a7abc10a8c826d687e228880812dabcc6ebd21380b8e4f811bff7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a40d5f56745a118d0906a34e69aec8c0db1cb8fa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ca1ab1e0000000000000000000000000000000000000000000000000000000005ca1ab1e1bff",
+    "transactions": "0xf9010380808401c9c380945478ff04b5281bbbd5ef05355ee5f9f17b88910780b8e4f811bff7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a40d5f56745a118d0906a34e69aec8c0db1cb8fa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ca1ab1e0000000000000000000000000000000000000000000000000000000005ca1ab1e1bff",
     "globalExitRoot": "0xad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5",
-    "timestamp": 1724892384,
-    "sequencer": "0x47eAFc647e0EE13F920fdF03F1DB012173452F96"
+    "timestamp": 1729125384,
+    "sequencer": "0x5996602860Da5b232429A007Ffc29Fe334993143"
   },
-  "genesis": "0xc8200f2886f4aa6622ce018e354041c036f321cfc70af63f7da9ff389032051b",
-  "createRollupBlockNumber": 6590707,
-  "rollupAddress": "0x9Ed8D0046723111F7212331D07Ba02c344a9d955",
-  "verifierAddress": "0x3D574d0c4B4d39eEB2B2cb8B16c983723e957Fb6",
+  "genesis": "0x1946542f5963d26e510c888d0ddea53f9ffc0b886197a7d90b4ec43a32a6a4ee",
+  "createRollupBlockNumber": 6889325,
+  "rollupAddress": "0x31635db1133Bdc8204918ce47161eE84dE58ccB2",
+  "verifierAddress": "0x08a05412De2049C72588fb031D3E90088D317E7e",
   "consensusContract": "PolygonValidiumEtrog",
-  "polygonZkEVML2BridgeAddress": "0x2A7Abc10A8c826d687e228880812DaBcc6ebD213",
+  "polygonZkEVML2BridgeAddress": "0x5478fF04B5281BbbD5eF05355eE5f9f17b889107",
   "polygonZkEVMGlobalExitRootL2Address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
-  "bridgeGenBlockNumber": 6590707
+  "bridgeGenBlockNumber": 6889325
 }
-
 #+end_src
 
 These are all of the generated details from the network. We can see
 some of the contracts in Etherscan / Blockscout now:
 
-- Sequenced batches should show up here https://sepolia.etherscan.io/address/0x9Ed8D0046723111F7212331D07Ba02c344a9d955
-- Verified batches should show up here https://sepolia.etherscan.io/address/0xcaf5779919bD483d03ef4b7a9590a963b987F0B6
+- Sequenced batches should show up here https://sepolia.etherscan.io/address/0x31635db1133Bdc8204918ce47161eE84dE58ccB2
+- Verified batches should show up here https://sepolia.etherscan.io/address/0x698e0dDF844E13E736F21B48DAee689914ec22aC
 
-* Separate Contract Deployment
+** Recollecting your ETH
 
-If we followed the steps above, we would have local test environment
-that using Sepolia as the L1 chain, but the environment itself would
-not be persistent and there wouldn't be a straight forward way to use
-a separate contract deployment.
+If you end up needing to run this process multiple times, you'll
+likely want to do two things to reset. First, you'll want to rotate
+the salt. To do that, you can re-run the command from earlier in the
+document. Second, you'll probably want to recollect your Sepolia ETH
+back to the deployer account so it can be redistributed.
 
 #+begin_src bash
-kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq '.' > templates/contract-deploy/combined.json
-kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/genesis.json' | tail -n +2 | jq '.' > templates/contract-deploy/genesis.json
-#+end_src
+#!/bin/bash
 
+keys=("0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f8759aa194b94e"
+"0xedab8a45bea025ec96808a63368ad2c8099b85944965c26256f987ff9ad712f4"
+"0x216a4646ea3dd753f799b7eb7d7f8fe57b96c01c1fcd5eec496d888f5a7677cd"
+"0xa0e35402da2dcebb8a33b89806d043bb5785a6a04aa5d9cf47f0950d88668c65"
+"0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f"
+"0x23db51713f401984ea6331ccce3a9b3b98996838ccec43d4de828c3b501e07de"
+"0xf44263cc5699fe3889f892834885111164eb1bea1c9f16322c5577165c578ae4"
+"0xc1345e1b9680c8623df4f74d4b4f7bc8d9a5bebfebde34786e2146d30b1c68c0"
+"0x7e60d7b0924128bd629b5942ad7d5610c71794e9a00eb0e2c7b0bb5ba633bf94")
+
+# sepolia
+rpc_url="https://rpc.sepolia.org"
+
+return_address="0xd1c71c8ca3e031aEABB685ACDDA98e4Ca3A96fCC"
+
+for prv_key in "${keys[@]}"; do
+    addr=$(cast wallet address --private-key $prv_key)
+    tot_wei=$(cast balance --rpc-url $rpc_url $addr)
+    is_enough=$(bc <<< "$tot_wei > 1000000000000000")
+    if [[ $is_enough -eq 0 ]]; then
+        echo "$addr is empty - $tot_wei wei"
+    else
+        echo "$addr has value - $tot_wei wei"
+        gas_price=$(cast gas-price --rpc-url $rpc_url)
+        gas_price=$(bc <<< "$gas_price * 2")
+        cast send --legacy --value $(bc <<< "$tot_wei - $gas_price * 21000") --gas-price $gas_price --rpc-url $rpc_url --private-key $prv_key $return_address
+    fi
+done
+#+end_src
 
 * Troubleshooting
 
@@ -313,57 +314,3 @@ If you're not running your own node, you'll need to use an RPC
 provider that allows unprotected transactions. In the example for this
 guide, I've used [[https://www.alchemy.com/][Alchemy]].
 
-** Cannot find module './deploy_output.json'
-
-If you've been running into issues or potentially run ~kurtosis run~
-multiple times, it's possible that you run into an issue like this:
-
-#+begin_example
-Proxy admin was already deployed to: 0xCde3964eB272b209706141029e0782A7576Af5cD
-Error: Proxy admin was deployed, but the owner is not the deployer, deployer address: 0x17C8c765f260e146673f90B11C7fbBC76AE6E35A, proxyAdmin: 0x38d59F21cdd8B837E1EC6d4b03472b6FEEdF736a
-    at main (/opt/zkevm-contracts/deployment/v2/3_deployContracts.ts:190:15)
-    at processTicksAndRejections (node:internal/process/task_queues:95:5)
-[2024-06-11 20:28:54] Step 5: Creating rollup
-
-> @0xpolygonhermez/zkevm-contracts@3.0.0 npx
-> hardhat run deployment/v2/4_createRollup.ts --network localhost
-
-Error: Cannot find module './deploy_output.json'
-Require stack:
-- /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
-    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)
-    at Function.Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (/opt/zkevm-contracts/node_modules/@cspotcode/source-map-support/source-map-support.js:811:30)
-    at Function.Module._load (node:internal/modules/cjs/loader:986:27)
-    at Module.require (node:internal/modules/cjs/loader:1233:19)
-    at require (node:internal/modules/helpers:179:18)
-    at Object.<anonymous> (/opt/zkevm-contracts/deployment/v2/4_createRollup.ts:17:22)
-    at Module._compile (node:internal/modules/cjs/loader:1358:14)
-    at Module.m._compile (/opt/zkevm-contracts/node_modules/ts-node/src/index.ts:1618:23)
-    at Module._extensions..js (node:internal/modules/cjs/loader:1416:10)
-    at Object.require.extensions.<computed> [as .ts] (/opt/zkevm-contracts/node_modules/ts-node/src/index.ts:1621:12) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [ '/opt/zkevm-contracts/deployment/v2/4_createRollup.ts' ]
-}
-#+end_example
-
-This can happen if the same address is used to deploy the contracts
-multiple times with the same salt. In order to do a clean up there are
-a few things you should do.
-
-First, you should make sure you've cleaned up your local environment
-properly:
-
-#+begin_src bash
-kurtosis clean --all
-#+end_src
-
-Once you've cleaned up your environment, you should either rotate your
-~l1_preallocated_mnemonic~ to a new address in order to avoid the
-conflict or you can update the ~salt~ value in the
-[[../templates/contract-deploy/deploy_parameters.json][deploy_parameters.json]] file. Each run of the contract deployment needs
-to be a new combination of ~l1_preallocated_mnemonic~ and
-~salt~. Swapping the salt is probably the easiest way to do another
-deployment.
-
-We don't encounter this issue in local testing because we reset the
-entire L1 chain between tests / contract deployments.
