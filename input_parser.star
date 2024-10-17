@@ -147,7 +147,7 @@ DEFAULT_L1_ARGS = {
 
 DEFAULT_L2_ARGS = {
     # The number of accounts to fund on L2. The accounts will be derived from:
-    # polycli wallet inspect --mnemonic 'code code code code code code code code code code code quality'
+    # polycli wallet inspect --mnemonic '{{.l1_preallocated_mnemonic}}'
     "l2_accounts_to_fund": 10,
     # The amount of ETH sent to each of the prefunded l2 accounts.
     "l2_funding_amount": "100ether",

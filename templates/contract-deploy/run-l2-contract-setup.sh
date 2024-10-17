@@ -45,7 +45,7 @@ echo_ts "L2 RPC is now available"
 echo_ts "Funding accounts on l2"
 accounts=$(
     polycli wallet inspect \
-        --mnemonic "code code code code code code code code code code code quality" \
+        --mnemonic "{{.l1_preallocated_mnemonic}}" \
         --addresses "{{.l2_accounts_to_fund}}"
 )
 echo "$accounts" | jq -r '.Addresses[].ETHAddress' | while read -r address; do
