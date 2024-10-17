@@ -306,10 +306,10 @@ jobs:
       - name: Configure the L1 RPC URL
         run: |
           # Set the L1 RPC URL.
-          l1_rpc_url="$(kurtosis port print l1 el-1-geth-lighthouse rpc)"
+          l1_rpc_url="http://$(kurtosis port print l1 el-1-geth-lighthouse rpc)"
           yq -Y --in-place --arg url "$l1_rpc_url" '.args.l1_rpc_url = $url' ./.github/tests/external-l1/deploy-cdk-to-local-l1.yml
 
-          l1_ws_url="$(kurtosis port print l1 el-1-geth-lighthouse ws)"
+          l1_ws_url="http://$(kurtosis port print l1 el-1-geth-lighthouse ws)"
           yq -Y --in-place --arg url "$l1_ws_url" '.args.l1_ws_url = $url' ./.github/tests/external-l1/deploy-cdk-to-local-l1.yml
 
       - name: Deploy the CDK stack to the L1 chain
