@@ -2,7 +2,7 @@ FROM golang:1.21 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
-  && go build -o polycli main.go
+  && make build
 
 
 FROM node:22-bookworm
