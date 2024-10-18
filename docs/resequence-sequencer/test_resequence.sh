@@ -32,7 +32,7 @@ wait_for_l1_batch() {
     start_time=$(date +%s)
 
     latest_batch=$(get_latest_l2_batch)
-    if [[ $? -ne 0 ]]; then
+    if [[ $latest_batch -ne 0 ]]; then
         echo "Error: Failed to get latest batch number" >&2
         return 1
     fi
@@ -73,9 +73,9 @@ wait_for_l1_batch() {
 stop_cdk_erigon_sequencer() {
     echo "Stopping cdk-erigon"
     # kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGTRAP $(pgrep "proc-runner.sh")" || true
-    kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGTRAP "proc-runner.sh"" || true
+    kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGTRAP \"proc-runner.sh\"" || true
     sleep 1
-    kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGINT "cdk-erigon"" || true
+    kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGINT \"cdk-erigon\"" || true
     sleep 30
 }
 
@@ -85,6 +85,7 @@ set -e
 stop_cdk_erigon_sequencer
 
 echo "Copying and modifying config"
+# shellcheck disable=SC2016 # double quotes result in syntax error, single quotes needed.
 kurtosis service exec cdk  cdk-erigon-sequencer-001 'cp \-r /etc/cdk-erigon/ /tmp/ && sed -i '\''s/zkevm\.executor-strict: true/zkevm.executor-strict: false/;s/zkevm\.executor-urls: zkevm-stateless-executor-001:50071/zkevm.executor-urls: ","/;$a zkevm.disable-virtual-counters: true'\'' /tmp/cdk-erigon/config.yaml'
 
 echo "Starting cdk-erigon with modified config"
