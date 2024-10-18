@@ -1,0 +1,43 @@
+deployment_stages:
+  # Disable local L1.
+  deploy_l1: false
+
+args:
+  ## L1 Config
+  l1_chain_id: 11155111
+  # TODO: Create another mnemonic seed phrase for running the contract deployment on L1.
+  l1_preallocated_mnemonic: CHANGE_ME
+  # TODO: Adjust the amount of ETH you want to spend on this deployment.
+  l1_funding_amount: 5ether
+  # TODO: Configure the L1 RPC URLs to be valid Sepolia endpoints.
+  l1_rpc_url: CHANGE_ME
+  l1_ws_url: CHANGE_ME
+
+  ## L2 Config
+  # TODO: Create a new mnemonic seed phrase to derive L2 application keys.
+  zkevm_l2_sequencer_address: CHANGE_ME
+  zkevm_l2_sequencer_private_key: CHANGE_ME
+
+  zkevm_l2_aggregator_address: CHANGE_ME
+  zkevm_l2_aggregator_private_key: CHANGE_ME
+
+  zkevm_l2_claimtxmanager_address: CHANGE_ME
+  zkevm_l2_claimtxmanager_private_key: CHANGE_ME
+
+  zkevm_l2_timelock_address: CHANGE_ME
+  zkevm_l2_timelock_private_key: CHANGE_ME
+
+  zkevm_l2_admin_address: CHANGE_ME
+  zkevm_l2_admin_private_key: CHANGE_ME
+
+  zkevm_l2_loadtest_address: CHANGE_ME
+  zkevm_l2_loadtest_private_key: CHANGE_ME
+
+  zkevm_l2_agglayer_address: CHANGE_ME
+  zkevm_l2_agglayer_private_key: CHANGE_ME
+
+  zkevm_l2_dac_address: CHANGE_ME
+  zkevm_l2_dac_private_key: CHANGE_ME
+
+  zkevm_l2_proofsigner_address: CHANGE_ME
+  zkevm_l2_proofsigner_private_key: CHANGE_ME
