@@ -1,5 +1,0 @@
-deployment_stages:
-  deploy_l1: false
-
-args:
-  l1_chain_id: 271828
