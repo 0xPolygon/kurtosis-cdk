@@ -223,7 +223,7 @@ batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
 jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
 mv tmp_output.json dynamic-kurtosis-conf.json
 
-# zkevm.pessimistic-proofs.config
+# zkevm.initial-batch.config
 jq '.firstBatchData' combined.json > first-batch-config.json
 
 if [[ ! -s dynamic-kurtosis-conf.json ]]; then

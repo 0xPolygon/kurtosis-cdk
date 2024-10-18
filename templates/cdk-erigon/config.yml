@@ -172,7 +172,7 @@ zkevm.pool-manager-url: {{.pool_manager_url}}
 
 # TODO: Should be provided only in case we are running the Pessimistic proofs consensus
 # The file that contains the initial (injected) batch data for pessimistic proofs consensus.
-zkevm.pessimistic-proofs.config: /etc/cdk-erigon/first-batch-config.json
+zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
 
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           ____  ____   ____
