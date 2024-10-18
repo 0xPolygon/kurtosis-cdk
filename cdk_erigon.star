@@ -54,6 +54,7 @@ def run_rpc(plan, args):
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
                     "is_sequencer": False,
                     "pool_manager_url": pool_manager_url,
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | args
                 | contract_setup_addresses,
@@ -110,6 +111,7 @@ def run_sequencer(plan, args):
                 data={
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                     "is_sequencer": True,
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | args
                 | contract_setup_addresses,
