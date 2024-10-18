@@ -162,7 +162,7 @@ This section features documentation specifically designed for advanced users, ou
 
 - How to deploy [additional services](docs/additional-services.md) alongside the CDK stack, such as transaction spammer, monitoring tools, permissionless nodes etc.
 - How to [attach multiple CDK chains to the AggLayer](docs/attach-multiple-cdks.md).
-- How to use CDK policies ([doc1](docs/cdk-policies/doc1.md) and [doc2](docs/cdk-policies/doc2.md)).
+- How to use CDK [ACL](docs/acl-allowlists-blocklists.md).
 - How to use the different [data availability modes](docs/data-availability-modes.md).
 - How to [deploy the stack to an external L1](docs/deploy-using-sepolia.org) such as Sepolia.
 - How to [edit the zkevm contracts](docs/edit-contracts.md).
