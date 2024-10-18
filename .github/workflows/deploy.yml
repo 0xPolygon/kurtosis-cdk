@@ -304,7 +304,8 @@ jobs:
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
       
       - name: Deploy to local L1 chain
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
+        run: |
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
       
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
