@@ -168,7 +168,7 @@ progressing as expected.
 
 #+begin_src bash
 rpc_url=$(kurtosis port print cdk cdk-erigon-node-001 rpc)
-zkevm_l2_admin_private_key="0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f" # You might have to change this value!
+zkevm_l2_admin_private_key="$(yq '.args.zkevm_l2_admin_private_key' .github/tests/external-l1/deploy-cdk-to-sepolia.yml)" # You might have to change this value!
 
 cast rpc --rpc-url $rpc_url zkevm_batchNumber
 cast rpc --rpc-url $rpc_url zkevm_virtualBatchNumber
