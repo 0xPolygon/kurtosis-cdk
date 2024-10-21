@@ -143,7 +143,7 @@ jobs:
           name: ${{ env.ARCHIVE_NAME }}
           path: ./dump
 
-  additional_services:
+  additional-services:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -267,7 +267,7 @@ jobs:
           name: dump_attach_ckds_${{ github.run_id }}
           path: ./dump
 
-  attach_cdks:
+  attach-second-cdk:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -324,7 +324,7 @@ jobs:
           name: dump_attach_ckds_${{ github.run_id }}
           path: ./dump
   
-  deploy_to_external_l1:
+  deploy-to-external-l1:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
