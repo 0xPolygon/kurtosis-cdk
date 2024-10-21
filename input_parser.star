@@ -27,8 +27,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "cdk_erigon_node_image": "stefanethernal/cdk-erigon:a3270040", # https://github.com/0xPolygonHermez/cdk-erigon/pull/1312/commits/a3270040901b8351d4b88d3e12fd8ab79b901c96
-    "cdk_node_image": "jestpol/cdk:20241017", # https://github.com/0xPolygon/cdk/pull/22/commits/88d4f7cc585d838ee438fd4bda01dbc43dc6cba1
+    "cdk_erigon_node_image": "stefanethernal/cdk-erigon:a3270040",  # https://github.com/0xPolygonHermez/cdk-erigon/pull/1312/commits/a3270040901b8351d4b88d3e12fd8ab79b901c96
+    "cdk_node_image": "jestpol/cdk:20241017",  # https://github.com/0xPolygon/cdk/pull/22/commits/88d4f7cc585d838ee438fd4bda01dbc43dc6cba1
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
