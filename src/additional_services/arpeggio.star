@@ -26,7 +26,7 @@ def get_arpeggio_config(plan, args):
     arpeggio_config_template = read_file(
         src="../../static_files/additional_services/arpeggio-config/config.yml"
     )
-    l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     return plan.render_templates(
         name="arpeggio-config",
         config={
@@ -34,8 +34,8 @@ def get_arpeggio_config(plan, args):
                 template=arpeggio_config_template,
                 data={
                     "l2_rpc_name": args["l2_rpc_name"],
-                    "l2_rpc_url": l2_rpc_urls.http,
-                    "l2_ws_url": l2_rpc_urls.ws,
+                    "l2_rpc_url": l2_rpc_url.http,
+                    "l2_ws_url": l2_rpc_url.ws,
                 },
             )
         },
