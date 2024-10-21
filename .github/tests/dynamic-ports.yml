@@ -1,0 +1,3 @@
+args:
+  static_ports:
+    agglayer_start_port: 50000
