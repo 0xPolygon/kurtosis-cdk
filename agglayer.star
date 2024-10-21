@@ -1,10 +1,11 @@
+databases_package = import_module("./databases.star")
 service_package = import_module("./lib/service.star")
-databases = import_module("./databases.star")
+ports_package = import_module("./src/package_io/ports.star")
 
 
 def run(plan, args):
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    db_configs = databases.get_db_configs(
+    db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
     agglayer_config_artifact = create_agglayer_config_artifact(
@@ -17,18 +18,13 @@ def run(plan, args):
         src="/opt/zkevm/agglayer.keystore",
     )
 
+    (ports, public_ports) = get_agglayer_ports(args)
     plan.add_service(
         name="agglayer",
         config=ServiceConfig(
             image=args["agglayer_image"],
-            ports={
-                "agglayer": PortSpec(
-                    args["agglayer_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["prometheus_port"], application_protocol="http"
-                ),
-            },
+            ports=ports,
+            public_ports=public_ports,
             files={
                 "/etc/zkevm": Directory(
                     artifact_names=[
@@ -76,3 +72,12 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
             )
         },
     )
+
+
+def get_agglayer_ports(args):
+    ports = {
+        "agglayer": PortSpec(args["agglayer_port"], application_protocol="http"),
+        "prometheus": PortSpec(args["prometheus_port"], application_protocol="http"),
+    }
+    public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
+    return (ports, public_ports)

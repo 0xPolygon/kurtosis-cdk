@@ -58,6 +58,12 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
 }
 
+DEFAULT_PUBLIC_PORTS = {
+    "static_ports": {
+        "agglayer_start_port": 50000,
+    }
+}
+
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
 # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
@@ -202,6 +208,7 @@ DEFAULT_ARGS = (
     }
     | DEFAULT_IMAGES
     | DEFAULT_PORTS
+    | DEFAULT_PUBLIC_PORTS
     | DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
