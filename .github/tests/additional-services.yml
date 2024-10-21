@@ -3,7 +3,7 @@ args:
     - arpeggio
     # - blockscout # blockscout experiences Out of Memory (OOM) termination when deployed inside github runners.
     - blutgang
-    - erpc
+    # - erpc # erpc images are not available anymore (https://github.com/erpc/erpc/issues/75).
     - prometheus_grafana
     - tx_spammer
     # - pless_zkevm_node # zkevm-node doesn't support fork12.
