@@ -6,12 +6,14 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 
 ### ZkEVM Contracts
 
-> 🚨 From now on, the [leovct/zkevm-contracts](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) image tags will follow the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).  
+> 🚨 From now on, the [leovct/zkevm-contracts](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) image tags will follow the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).
+
+> **🚨 All images must be suffixed with `-fork.<id>` to work properly with Kurtosis CDK!**
 
 | Fork ID | zkEVM Contracts Tag / Commit | Image |
 | ------- | ---------------------------- | ----- |
-| 12-PP-RC2 | [v9.0.0-rc.2-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.2-pp) | [leovct/zkevm-contracts:v9.0.0-rc.2-pp](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.2-pp/images/sha256-9cf68f7583029aa0b46463fe39c06310427c7afe55ba3301e2d57133ffbbf5f9?context=repo) |
-| 12-PP-RC1 | [v9.0.0-rc.1-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.1-pp) | [leovct/zkevm-contracts:v9.0.0-rc.1-pp](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.1-pp/images/sha256-73fe48df04cb3cb631c2f5cd852c878b668ca49a477fe98278f2e0128d45b976?context=repo) |
+| 12-PP-RC2 | [v9.0.0-rc.2-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.2-pp) | [leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.2-pp-fork.12/images/sha256-9cf68f7583029aa0b46463fe39c06310427c7afe55ba3301e2d57133ffbbf5f9?context=repo) |
+| 12-PP-RC1 | [v9.0.0-rc.1-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.1-pp) | [leovct/zkevm-contracts:v9.0.0-rc.1-pp-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.1-pp-fork.12/images/sha256-73fe48df04cb3cb631c2f5cd852c878b668ca49a477fe98278f2e0128d45b976?context=repo) |
 | 12-RC4 | [v8.0.0-rc.4-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.4-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.4-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.4-fork.12/images/sha256-544b2db63c608b851aa1fd9c4d4e28c63f4253e295a487c4140a6392799f336e?context=repo) |
 | 12-RC3 | [v8.0.0-rc.3-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.3-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.3-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.3-fork.12/images/sha256-f3e9a34651403f246572823249b5f698b4e5d311478f87a84cbfa11c2d091705?context=repo) |
 | 12-RC2 | [v8.0.0-rc.2-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.2-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.2-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.2-fork.12/images/sha256-5d835411ff43efb1008eeede0d25db79f6cb563e86d76b33274bcaebc8f9f7d0?context=repo) |
@@ -82,7 +84,7 @@ This image contains all the npm dependencies and zkevm contracts compiled for a 
 Build the `zkevm-contracts` image.
 
 ```bash
-version="v9.0.0-rc.2-pp"
+version="v9.0.0-rc.2-pp-fork.12"
 docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
@@ -94,8 +96,8 @@ Check the size of the image.
 
 ```bash
 $ docker images --filter "reference=local/zkevm-contracts"
-REPOSITORY              TAG              IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   v9.0.0-rc.2-pp   bdf8225cfa77   7 minutes ago    2.54GB
+REPOSITORY              TAG                      IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   v9.0.0-rc.2-pp-fork.12   bdf8225cfa77   7 minutes ago    2.54GB
 ```
 
 (Optional) Push image to the Docker Hub.

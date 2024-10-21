@@ -3,10 +3,10 @@ args:
   zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-rc.4-fork.12
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v8
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC12-fork.12
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC13-fork.12
 
   # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:0948e33
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:ab3013d
 
   additional_services:
     - tx_spammer

@@ -41,14 +41,14 @@ def get_blutgang_config(plan, args):
         zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
     )
 
-    l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
 
     blutgang_data = {
         "blutgang_rpc_port": RPC_PORT_NUMBER,
         "blutgang_admin_port": ADMIN_PORT_NUMBER,
         "l2_sequencer_url": zkevm_sequencer_http_url,
-        "l2_rpc_url": l2_rpc_urls.http,
-        "l2_ws_url": l2_rpc_urls.ws,
+        "l2_rpc_url": l2_rpc_url.http,
+        "l2_ws_url": l2_rpc_url.ws,
         "pless_zkevm_node_rpc": False,
     }
 
