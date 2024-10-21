@@ -16,7 +16,6 @@ env:
 jobs:
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
   cardona-sepolia-testnet-pless-zkevm-node:
-    #if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
