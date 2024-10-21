@@ -59,9 +59,8 @@ DEFAULT_PORTS = {
 }
 
 DEFAULT_PUBLIC_PORTS = {
-    "static_ports": {
-        "agglayer_start_port": 50000,
-    }
+    # By default, we rely on dynamic ports set by Kurtosis.
+    "static_ports": {}
 }
 
 # Addresses and private keys of the different components.
