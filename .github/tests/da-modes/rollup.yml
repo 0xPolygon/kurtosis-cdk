@@ -1,2 +1,2 @@
 args:
-  data_availability_mode: rollup
+  consensus_contract_type: rollup

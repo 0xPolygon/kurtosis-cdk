@@ -54,6 +54,7 @@ def run_rpc(plan, args):
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
                     "is_sequencer": False,
                     "pool_manager_url": pool_manager_url,
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | args
                 | contract_setup_addresses,
@@ -82,7 +83,11 @@ def run_rpc(plan, args):
     cdk_erigon_node_chain_allocs_artifact = plan.get_files_artifact(
         name="cdk-erigon-node-chain-allocs",
     )
+    cdk_erigon_node_first_batch_artifact = plan.get_files_artifact(
+        name="cdk-erigon-node-first-batch",
+    )
 
+    # FIXME - this pattern is a little silly. I'd like to refactor and just have an erigon config directory, and also DRY
     cdk_erigon_package.start_node(
         plan,
         args,
@@ -90,6 +95,7 @@ def run_rpc(plan, args):
         cdk_erigon_node_chain_spec_artifact,
         cdk_erigon_node_chain_config_artifact,
         cdk_erigon_node_chain_allocs_artifact,
+        cdk_erigon_node_first_batch_artifact,
         False,
     )
 
@@ -105,6 +111,7 @@ def run_sequencer(plan, args):
                 data={
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                     "is_sequencer": True,
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | args
                 | contract_setup_addresses,
@@ -133,6 +140,9 @@ def run_sequencer(plan, args):
     cdk_erigon_node_chain_allocs_artifact = plan.get_files_artifact(
         name="cdk-erigon-node-chain-allocs",
     )
+    cdk_erigon_node_first_batch_artifact = plan.get_files_artifact(
+        name="cdk-erigon-node-first-batch",
+    )
 
     cdk_erigon_package.start_node(
         plan,
@@ -141,5 +151,6 @@ def run_sequencer(plan, args):
         cdk_erigon_node_chain_spec_artifact,
         cdk_erigon_node_chain_config_artifact,
         cdk_erigon_node_chain_allocs_artifact,
+        cdk_erigon_node_first_batch_artifact,
         True,
     )

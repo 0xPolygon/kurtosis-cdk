@@ -5,6 +5,7 @@ def start_node(
     cdk_erigon_node_chain_spec_artifact,
     cdk_erigon_node_chain_config_artifact,
     cdk_erigon_node_chain_allocs_artifact,
+    cdk_erigon_node_first_batch_artifact,
     is_sequencer,
 ):
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
@@ -16,7 +17,9 @@ def start_node(
             args["prometheus_port"], application_protocol="http", wait=None
         ),
         "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
-        "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
+        "ws-rpc": PortSpec(
+            args["zkevm_rpc_ws_port"], application_protocol="ws", wait=None
+        ),
     }
 
     if is_sequencer:
@@ -45,6 +48,7 @@ def start_node(
                         cdk_erigon_node_chain_spec_artifact,
                         cdk_erigon_node_chain_config_artifact,
                         cdk_erigon_node_chain_allocs_artifact,
+                        cdk_erigon_node_first_batch_artifact,
                     ],
                 ),
                 "/home/erigon/dynamic-configs/": Directory(

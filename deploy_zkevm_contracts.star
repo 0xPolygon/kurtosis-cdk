@@ -126,6 +126,11 @@ def run(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dynamic-kurtosis-allocs.json",
     )
+    cdk_erigon_node_first_batch_artifact = plan.store_service_files(
+        name="cdk-erigon-node-first-batch",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/first-batch-config.json",
+    )
 
     # Force update GER.
     plan.exec(
