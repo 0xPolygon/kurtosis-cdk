@@ -1,4 +1,4 @@
-FROM golang:1.21 AS polycli-builder
+FROM golang:1.22 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
@@ -17,7 +17,7 @@ COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (SC1091): (Sourced) file not included in mock.
 # hadolint ignore=DL3008,DL3013,DL4006,SC1091
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends curl git jq pipx \
+  && apt-get install --yes --no-install-recommends curl git jq pipx nodejs \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pipx ensurepath \
