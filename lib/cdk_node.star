@@ -23,7 +23,7 @@ def create_cdk_node_service_config(
 
     service_command = [
         "sleep 20 && cdk-node run "
-        + "--config=/etc/cdk/cdk-node-config.toml "
+        + "--cfg=/etc/cdk/cdk-node-config.toml "
         + "--custom-network-file=/etc/cdk/genesis.json "
         + "--components="
         + NODE_COMPONENTS.sequence_sender
@@ -35,7 +35,7 @@ def create_cdk_node_service_config(
         cdk_ports = dict()
         service_command = [
             "sleep 20 && cdk-node run "
-            + "--config=/etc/cdk/cdk-node-config.toml "
+            + "--cfg=/etc/cdk/cdk-node-config.toml "
             + "--custom-network-file=/etc/cdk/genesis.json "
             + "--components=rpc,"
             + NODE_COMPONENTS.aggsender

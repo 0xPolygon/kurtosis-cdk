@@ -17,7 +17,9 @@ def start_node(
             args["prometheus_port"], application_protocol="http", wait=None
         ),
         "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
-        "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
+        "ws-rpc": PortSpec(
+            args["zkevm_rpc_ws_port"], application_protocol="ws", wait=None
+        ),
     }
 
     if is_sequencer:
