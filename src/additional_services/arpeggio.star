@@ -9,7 +9,7 @@ WS_PROXY_PORT = 8546
 
 def run(plan, args):
     arpeggio_config_artifact = get_arpeggio_config(plan, args)
-    (ports, public_ports) = get_zkevm_pool_manager_ports(args)
+    (ports, public_ports) = get_arpeggio_ports(args)
     plan.add_service(
         name="arpeggio" + args["deployment_suffix"],
         config=ServiceConfig(
