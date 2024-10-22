@@ -10,7 +10,6 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.repository == '0xPolygon/kurtosis-cdk' # Prevent this job to run on forks.
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,4 +19,9 @@ jobs:
       - uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.SONAR_TOKEN}}
+        env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
