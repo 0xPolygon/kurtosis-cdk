@@ -26,7 +26,11 @@ def run(plan, args):
             config={
                 artifact_cfg["name"]: struct(
                     template=template,
-                    data=args | {"l2_rpc_url": l2_rpc_url},
+                    data=args
+                    | {
+                        "l2_rpc_url": l2_rpc_url,
+                        "deterministic_deployment_proxy_branch": "master",
+                    },
                 )
             },
         )
