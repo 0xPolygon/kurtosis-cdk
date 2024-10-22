@@ -17,11 +17,9 @@ jobs:
           fetch-depth: 0
 
       - uses: sonarsource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.SONAR_TOKEN}}
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
