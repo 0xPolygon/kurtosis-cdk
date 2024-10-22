@@ -4,7 +4,7 @@ ethereum_package = import_module(
 
 
 def run(plan, args):
-    static_port_config = args.get("static_ports")
+    port_publisher = generate_port_publisher_config(args)
     ethereum_package.run(
         plan,
         {
@@ -24,32 +24,23 @@ def run(plan, args):
                 "seconds_per_slot": args["l1_seconds_per_slot"],
             },
             "additional_services": args["l1_additional_services"],
-            # static ports
-            "port_publisher": {
-                "el": {
-                    "enabled": True,
-                    "public_port_start": static_port_config.get(
-                        "l1_el_start_port", None
-                    ),
-                },
-                "cl": {
-                    "enabled": True,
-                    "public_port_start": static_port_config.get(
-                        "l1_cl_start_port", None
-                    ),
-                },
-                "vc": {
-                    "enabled": True,
-                    "public_port_start": static_port_config.get(
-                        "l1_vc_start_port", None
-                    ),
-                },
-                "additional_services": {
-                    "enabled": True,
-                    "public_port_start": static_port_config.get(
-                        "l1_additional_services_start_port", None
-                    ),
-                },
-            },
+            "port_publisher": port_publisher,
         },
     )
+
+
+# Generate ethereum package static ports configuration.
+def generate_port_publisher_config(args):
+    static_port_config = args.get("static_ports")
+    port_mappings = {
+        "el": "l1_el_start_port",
+        "cl": "l1_cl_start_port",
+        "vc": "l1_vc_start_port",
+        "additional_services": "l1_additional_services_start_port",
+    }
+
+    return {
+        key: {"enabled": True, "public_port_start": static_port_config.get(value)}
+        for key, value in port_mappings.items()
+        if static_port_config.get(value) is not None
+    }
