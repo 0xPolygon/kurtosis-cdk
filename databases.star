@@ -1,3 +1,5 @@
+ports_package = import_module("./src/package_io/ports.star")
+
 # We support both local and remote Postgres databases within our Kurtosis-CDK package
 # When 'USE_REMOTE_POSTGRES' is False, service automatically creates all CDK databases locally
 # When 'USE_REMOTE_POSTGRES' is True, service is created just as a helper for param injection across pods
@@ -162,11 +164,11 @@ def create_postgres_service(plan, db_configs, suffix):
         },
     )
 
+    (ports, public_ports) = ports_package.get_database_ports(args)
     postgres_service_cfg = ServiceConfig(
         image=POSTGRES_IMAGE,
-        ports={
-            "postgres": PortSpec(POSTGRES_PORT, application_protocol="postgresql"),
-        },
+        ports=ports,
+        public_ports=public_ports,
         env_vars={
             "POSTGRES_DB": POSTGRES_MASTER_DB,
             "POSTGRES_USER": POSTGRES_MASTER_USER,
@@ -181,3 +183,11 @@ def create_postgres_service(plan, db_configs, suffix):
         config=postgres_service_cfg,
         description="Starting Postgres Service",
     )
+
+
+def get_database_ports(args):
+    ports = {
+        "postgres": PortSpec(POSTGRES_PORT, application_protocol="postgresql"),
+    }
+    public_ports = ports_package.get_public_ports(ports, "database_start_port", args)
+    return (ports, public_ports)
