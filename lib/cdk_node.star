@@ -17,11 +17,8 @@ def create_cdk_node_service_config(
     (ports, public_ports) = get_cdk_node_ports(args)
     cdk_node_service_config = ServiceConfig(
         image=args["cdk_node_image"],
-        ports={
-            "aggregator": PortSpec(
-                args["zkevm_aggregator_port"], application_protocol="grpc"
-            ),
-        },
+        ports=ports,
+        public_ports=public_ports,
         files={
             "/etc/cdk": Directory(
                 artifact_names=[
