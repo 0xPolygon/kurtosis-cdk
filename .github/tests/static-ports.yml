@@ -6,3 +6,11 @@ args:
     zkevm_bridge_ui_start_port: 53000
     reverse_proxy_start_port: 54000
     database_start_port: 55000
+    zkevm_pool_manager_start_port: 56000
+    zkevm_dac_start_port: 57000
+    
+    # additional services
+    arpeggio_start_port: 58010
+    blutgang_start_port: 58020
+    erpc_start_port: 58030
+    panoptichain_start_port: 58040

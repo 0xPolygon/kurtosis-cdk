@@ -9,14 +9,13 @@ PROMETHEUS_PORT = 6060
 
 def run(plan, args):
     config_artifact = get_erpc_config(plan, args)
+    (ports, public_ports) = get_erpc_ports(args)
     plan.add_service(
         name=SERVICE_NAME + args["deployment_suffix"],
         config=ServiceConfig(
             image=ERPC_IMAGE,
-            ports={
-                "rpc": PortSpec(RPC_PORT, application_protocol="http"),
-                "prometheus": PortSpec(PROMETHEUS_PORT, application_protocol="http"),
-            },
+            ports=ports,
+            public_ports=public_ports,
             files={"/etc/erpc": config_artifact},
             cmd=["/root/erpc-server", "/etc/erpc/erpc.yaml"],
         ),
@@ -43,3 +42,12 @@ def get_erpc_config(plan, args):
             )
         },
     )
+
+
+def get_erpc_ports(args):
+    ports = {
+        "rpc": PortSpec(RPC_PORT, application_protocol="http"),
+        "prometheus": PortSpec(PROMETHEUS_PORT, application_protocol="http"),
+    }
+    public_ports = ports_package.get_public_ports(ports, "erpc_start_port", args)
+    return (ports, public_ports)
