@@ -125,7 +125,7 @@ DEFAULT_L1_ARGS = {
     #   - apache
     #  - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
-    "l1_additional_services": [],
+    "l1_additional_services": ["assertoor"],
     # Preset for the network.
     # Default: "mainnet"
     # Options:
@@ -140,6 +140,10 @@ DEFAULT_L1_ARGS = {
     "l1_seconds_per_slot": 1,
     # The amount of ETH sent to the admin, sequence, aggregator and sequencer addresses.
     "l1_funding_amount": "100ether",
+    "l1_participants_count": 2,
+    "l1_eth1_follow_distance": 1,
+    "l1_min_validator_withdrawability_delay": 1,
+    "l1_shard_committee_period": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {
