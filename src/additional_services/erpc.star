@@ -1,3 +1,4 @@
+ports_package = import_module("../package_io/ports.star")
 service_package = import_module("../../lib/service.star")
 
 ERPC_IMAGE = "ghcr.io/erpc/erpc:0.0.24"
