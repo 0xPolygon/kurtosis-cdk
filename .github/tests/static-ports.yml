@@ -2,3 +2,6 @@ args:
   static_ports:
     agglayer_start_port: 50000
     cdk_node_start_port: 51000
+    zkevm_bridge_service_start_port: 52000
+    zkevm_bridge_ui_start_port: 53000
+    reverse_proxy_start_port: 54000
