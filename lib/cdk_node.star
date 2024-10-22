@@ -55,5 +55,5 @@ def get_cdk_node_ports(args):
             args["zkevm_aggregator_port"], application_protocol="grpc"
         ),
     }
-    public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
+    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
     return (ports, public_ports)
