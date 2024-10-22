@@ -1,5 +1,6 @@
 ports_package = import_module("../src/package_io/ports.star")
 
+
 def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifact):
     (ports, public_ports) = get_cdk_node_ports(args)
     return ServiceConfig(
