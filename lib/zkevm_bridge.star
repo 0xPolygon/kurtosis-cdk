@@ -1,6 +1,5 @@
 def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifact):
-    bridge_service_name = "zkevm-bridge-service" + args["deployment_suffix"]
-    bridge_service_config = ServiceConfig(
+    return ServiceConfig(
         image=args["zkevm_bridge_service_image"],
         ports={
             "rpc": PortSpec(args["zkevm_bridge_rpc_port"], application_protocol="http"),
@@ -18,7 +17,6 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
         ],
         cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
     )
-    return {bridge_service_name: bridge_service_config}
 
 
 def start_bridge_ui(plan, args, config_artifact):

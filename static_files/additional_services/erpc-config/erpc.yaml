@@ -1,0 +1,63 @@
+logLevel: info
+database:
+  evmJsonRpcCache:
+    driver: memory
+server:
+  httpHostV4: 0.0.0.0
+  httpPort: {{.erpc_rpc_port}}
+metrics:
+  enabled: true
+  hostV4: 0.0.0.0
+  port: {{.erpc_metrics_port}}
+projects:
+  - id: main
+    networks:
+      - architecture: evm
+        evm:
+          chainId: {{.l2_chain_id}}
+        failsafe:
+          timeout:
+            duration: 30s
+          retry:
+            maxCount: 3
+            delay: 500ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 500ms
+          hedge:
+            delay: 3000ms
+            maxCount: 2
+    upstreams:
+      - id: "{{.l2_rpc_name}}"
+        type: evm
+        endpoint: "{{.l2_rpc_url}}"
+        rateLimitBudget: default-budget
+        evm:
+          chainId: {{.l2_chain_id}}
+        failsafe:
+          timeout:
+            duration: 15s
+          retry:
+            maxCount: 2
+            delay: 1000ms
+            backoffMaxDelay: 10s
+            backoffFactor: 0.3
+            jitter: 500ms
+
+rateLimiters:
+  budgets:
+    - id: default-budget
+      rules:
+        - method: '*'
+          maxCount: 10000
+          period: 1s
+    - id: global-blast
+      rules:
+        - method: '*'
+          maxCount: 1000
+          period: 1s
+    - id: global-quicknode
+      rules:
+        - method: '*'
+          maxCount: 300
+          period: 1s

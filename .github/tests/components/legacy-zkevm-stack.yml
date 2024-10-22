@@ -1,0 +1,8 @@
+# legacy zkevm stack:
+# - zkevm-node sequencer
+# - zkevm-node sequence-sender and aggregator
+deployment_stages:
+  deploy_cdk_erigon_node: false
+
+args:
+  sequencer_type: zkevm

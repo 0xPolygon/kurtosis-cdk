@@ -1,4 +1,4 @@
-## Attach Multiple CDKs to the Agglayer
+# Attach Multiple CDKs to the Agglayer
 
 By default, the Agglayer service will be deployed with the above deployment instructions. To create a devnet with multiple rollups attached to the agglayer:
 
@@ -11,13 +11,14 @@ After running the above additional deployment command, the `agglayer-config.toml
 
 ```bash
 # Shell into the Agglayer service
-kurtosis service shell cdk-v1 zkevm-agglayer-001
+kurtosis service shell cdk-v1 agglayer
 
 # Edit the agglayer-config.toml file
 vim /etc/zkevm/agglayer-config.toml
 ```
 
 The `agglayer-config.toml` file should be changed as follows:
+
 ```bash
 [FullNodeRPCs]
 # RPC of the first rollup node
@@ -33,7 +34,8 @@ The `agglayer-config.toml` file should be changed as follows:
 ```
 
 Then restart the Agglayer service
+
 ```bash
-kurtosis service stop cdk-v1 zkevm-agglayer-001
-kurtosis service start cdk-v1 zkevm-agglayer-001
+kurtosis service stop cdk-v1 agglayer
+kurtosis service start cdk-v1 agglayer
 ```

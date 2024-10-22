@@ -164,7 +164,7 @@ runs:
 
         cat params.yml
 
-        yq -Y --in-place ".args.zkevm_agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
+        yq -Y --in-place ".args.agglayer_image = \"$agglayer_docker_hub:$agglayer_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_bridge_service_image = \"$bridge_service_docker_hub:$bridge_service_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_bridge_ui_image = \"$bridge_ui_docker_hub:$bridge_ui_tag\"" params.yml
         yq -Y --in-place ".args.zkevm_da_image = \"$dac_docker_hub:$dac_tag\"" params.yml
@@ -183,7 +183,7 @@ runs:
     - name: Perform load test
       shell: bash
       run: |
-        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
+        export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 rpc)"
         export PK="$(yq .args.zkevm_l2_admin_private_key params.yml)"
         polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 5 --mode t
         polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$PK" --verbosity 700 --requests 500 --rate-limit 10 --mode t

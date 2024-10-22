@@ -1,6 +1,5 @@
+constants = import_module("../../src/package_io/constants.star")
 service_package = import_module("../../lib/service.star")
-
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.2"
 
 
 def run(plan, args):
@@ -8,15 +7,12 @@ def run(plan, args):
     plan.add_service(
         name="tx-spammer" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=TX_SPAMMER_IMG,
+            image=constants.TX_SPAMMER_IMG,
             files={
-                "/usr/local/bin": Directory(
-                    artifact_names=[tx_spammer_config_artifacts]
-                ),
+                "/opt/scripts": Directory(artifact_names=[tx_spammer_config_artifacts]),
             },
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /usr/local/bin/*.sh && spam.sh"],
-            user=User(uid=0, gid=0),  # Run the container as root user.
+            cmd=["chmod +x /opt/scripts/*.sh && /opt/scripts/spam.sh"],
         ),
     )
 
@@ -31,11 +27,9 @@ def get_tx_spammer_config(plan, args):
 
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
 
-    zkevm_rpc_service = plan.get_service(
-        args["l2_rpc_name"] + args["deployment_suffix"]
-    )
-    zkevm_rpc_url = "http://{}:{}".format(
-        zkevm_rpc_service.ip_address, zkevm_rpc_service.ports["http-rpc"].number
+    l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
+    l2_rpc_url = "http://{}:{}".format(
+        l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
     )
 
     zkevm_bridge_service = plan.get_service(
@@ -51,7 +45,7 @@ def get_tx_spammer_config(plan, args):
             "spam.sh": struct(
                 template=spam_script_template,
                 data={
-                    "rpc_url": zkevm_rpc_url,
+                    "rpc_url": l2_rpc_url,
                     "private_key": args["zkevm_l2_admin_private_key"],
                 },
             ),
@@ -61,7 +55,7 @@ def get_tx_spammer_config(plan, args):
                     "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
                     "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
                     "l1_rpc_url": args["l1_rpc_url"],
-                    "l2_rpc_url": zkevm_rpc_url,
+                    "l2_rpc_url": l2_rpc_url,
                     "zkevm_bridge_api_url": zkevm_bridge_api_url,
                 }
                 | contract_setup_addresses,

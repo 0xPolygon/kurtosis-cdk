@@ -1,0 +1,9 @@
+args:
+  additional_services:
+    - arpeggio
+    # - blockscout # blockscout experiences Out of Memory (OOM) termination when deployed inside github runners.
+    - blutgang
+    - erpc
+    - prometheus_grafana
+    - tx_spammer
+    # - pless_zkevm_node # zkevm-node doesn't support fork12.

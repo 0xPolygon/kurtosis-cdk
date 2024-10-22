@@ -2,14 +2,14 @@ FROM golang:1.21 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
-  && CGO_ENABLED=0 go build -o polycli main.go
+  && make build
 
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 
-COPY --from=polycli-builder /opt/polygon-cli/polycli /usr/bin/polycli
+COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL3013): Pin versions in pip.
@@ -17,10 +17,11 @@ COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (SC1091): (Sourced) file not included in mock.
 # hadolint ignore=DL3008,DL3013,DL4006,SC1091
 RUN apt-get update \
-  && apt-get install --no-install-recommends --yes curl git jq python3-pip \
+  && apt-get install --yes --no-install-recommends curl git jq pipx \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
-  && pip3 install --no-cache-dir yq \
+  && pipx ensurepath \
+  && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup --version nightly-f625d0fa7c51e65b4bf1e8f7931cd1c6e2e285e9 \
+  && /root/.foundry/bin/foundryup \
   && cp /root/.foundry/bin/* /usr/local/bin

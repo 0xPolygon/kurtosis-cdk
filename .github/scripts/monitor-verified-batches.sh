@@ -5,7 +5,8 @@
 
 # Function to display usage information.
 usage() {
-  echo "Usage: $0 --rpc-url <URL> --target <TARGET> --timeout <TIMEOUT>"
+  echo "Usage: $0 --enclave <ENCLAVE> --rpc-url <URL> --target <TARGET> --timeout <TIMEOUT>"
+  echo "  --enclave: The name of the Kurtosis enclave."
   echo "  --rpc-url: The RPC URL to query."
   echo "  --target:  The target number of verified batches."
   echo "  --timeout: The script timeout in seconds."
@@ -13,6 +14,7 @@ usage() {
 }
 
 # Initialize variables.
+enclave=""
 rpc_url=""
 target="10"
 timeout="900" # 15 minutes.
@@ -21,6 +23,10 @@ timeout="900" # 15 minutes.
 while [[ $# -gt 0 ]]; do
   key="$1"
   case $key in
+  --enclave)
+    enclave="$2"
+    shift 2
+    ;;
   --rpc-url)
     rpc_url="$2"
     shift 2
@@ -34,19 +40,26 @@ while [[ $# -gt 0 ]]; do
     shift 2
     ;;
   *)
+    echo "Error: unknown argument: $key"
     usage
     ;;
   esac
 done
 
 # Check if the required argument is provided.
+if [ -z "$enclave" ]; then
+  echo "Error: enclave name is required."
+  usage
+fi
+
 if [ -z "$rpc_url" ]; then
-  echo "Error: RPC URL is required."
+  echo "Error: rpc url is required."
   usage
 fi
 
 # Print script parameters for debug purposes.
 echo "Running script with values:"
+echo "- Enclave: $enclave"
 echo "- RPC URL: $rpc_url"
 echo "- Target: $target"
 echo "- Timeout: $timeout"
@@ -55,9 +68,22 @@ echo
 # Calculate the end time based on the current time and the specified timeout.
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
+gas_price_factor=1
 
 # Main loop to monitor batch verification.
 while true; do
+  # Check if there are any stopped services.
+  stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
+  if [[ -n "$stopped_services" ]]; then
+    echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
+    echo "$stopped_services"
+    echo
+
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
+      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+    exit 1
+  fi
+
   # Query the number of verified batches from the RPC URL.
   batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_batchNumber | sed 's/"//g')")"
   virtual_batch_number="$(cast to-dec "$(cast rpc --rpc-url "$rpc_url" zkevm_virtualBatchNumber | sed 's/"//g')")"
@@ -77,13 +103,24 @@ while true; do
     exit 1
   fi
 
+  gas_price=$(cast gas-price --rpc-url "$rpc_url")
+  gas_price=$(bc -l <<< "$gas_price * $gas_price_factor" | sed 's/\..*//')
+
   echo "Sending a transaction to increase the batch number..."
   cast send \
     --legacy \
+    --timeout 30 \
+    --gas-price "$gas_price" \
     --rpc-url "$rpc_url" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     --gas-limit 100000 \
-    --create 0x600160015B810190630000000456
+    --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
+  ret_code=$?
+  if [[ $ret_code -eq 0 ]]; then
+      gas_price_factor=1
+  else
+      gas_price_factor=$(bc -l <<< "$gas_price_factor * 1.5")
+  fi
 
   echo "Waiting a few seconds before the next iteration..."
   echo

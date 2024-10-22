@@ -17,6 +17,10 @@ ARTIFACTS = [
         "name": "create-keystores.sh",
         "file": "./templates/contract-deploy/create-keystores.sh",
     },
+    {
+        "name": "update-ger.sh",
+        "file": "./templates/contract-deploy/update-ger.sh",
+    },
 ]
 
 
@@ -65,13 +69,10 @@ def run(plan, args):
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
-    zkevm_contracts_image = "{}:fork{}".format(
-        args["zkevm_contracts_image"], args["zkevm_rollup_fork_id"]
-    )
     plan.add_service(
         name=contracts_service_name,
         config=ServiceConfig(
-            image=zkevm_contracts_image,
+            image=args["zkevm_contracts_image"],
             files={
                 "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
                 "/opt/contract-deploy/": Directory(artifact_names=artifacts),
@@ -124,4 +125,17 @@ def run(plan, args):
         name="cdk-erigon-node-chain-allocs",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dynamic-kurtosis-allocs.json",
+    )
+
+    # Force update GER.
+    plan.exec(
+        description="Update the GER so the L1 Info Tree Index is greater than 0",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format("/opt/contract-deploy/update-ger.sh"),
+            ]
+        ),
     )

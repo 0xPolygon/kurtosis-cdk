@@ -51,16 +51,3 @@ jobs:
 
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
-
-  compare-default-parameters:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install yq
-        run: pip3 install yq
-
-      - name: Compare default parameters
-        working-directory: .github/scripts
-        run: ./compare-default-params.sh

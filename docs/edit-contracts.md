@@ -70,10 +70,10 @@ Exit the attached shell when you're done examining the `contracts-001` container
 exit
 ```
 
-Let's observe that proofs are passing verification as expected. Use your preferred method to view the logs for the container `zkevm-agglayer-001`. For example, you could use the Docker Desktop graphical interface, or you could follow in a terminal via
+Let's observe that proofs are passing verification as expected. Use your preferred method to view the logs for the container `agglayer`. For example, you could use the Docker Desktop graphical interface, or you could follow in a terminal via
 
 ```bash
-kurtosis service logs cdk-v1 zkevm-agglayer-001 --follow
+kurtosis service logs cdk-v1 agglayer --follow
 ```
 
 You should see logs like
@@ -161,7 +161,7 @@ Next let's rebuild our edited docker image `zkevm-contracts`. Open a terminal in
 ```bash
 cd docker
 docker build . \
- --tag local/zkevm-contracts:fork9 \
+ --tag local/zkevm-contracts:v6.0.0-rc.1-fork.9 \
  --build-arg ZKEVM_CONTRACTS_BRANCH=v6.0.0-rc.1-fork.9 \
  --build-arg POLYCLI_VERSION=main \
  --file zkevm-contracts.Dockerfile
@@ -176,8 +176,8 @@ docker images --filter "reference=local/zkevm-contracts"
 should produce output like
 
 ```
-REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   fork9     fbd050369e61   22 minutes ago   2.37GB
+REPOSITORY              TAG                    IMAGE ID       CREATED          SIZE
+local/zkevm-contracts   v6.0.0-rc.1-fork.9     fbd050369e61   22 minutes ago   2.37GB
 ```
 
 # Spin up a devnet with your new docker image
@@ -195,11 +195,11 @@ index 5293da7..5e451b6 100644
    zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
    # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
 
--  zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
-+  zkevm_contracts_image: local/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
+-  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
++  zkevm_contracts_image: local/zkevm-contracts:v6.0.0-rc.1-fork.9
 
-   # zkevm_agglayer_image: 0xpolygon/agglayer:0.1.3
-   zkevm_agglayer_image: ghcr.io/agglayer/agglayer-rs:main
+   # agglayer_image: 0xpolygon/agglayer:0.1.3
+   agglayer_image: ghcr.io/agglayer/agglayer-rs:main
 ```
 
 Optional: by default, your devnet disables fancy dashboards. If you want to view your devnet from a fancy dashboard such as Grafana then open the file `params.yml` and ensure that `args.additional_services` includes `"prometheus_grafana"`.
@@ -224,7 +224,7 @@ cat zkevm-contracts/contracts/mocks/VerifierRollupHelperMock.sol
 
 You should see your edits in the live code: `return false` instead of `return true`.
 
-Observe that proofs are failing verification as expected in the logs for docker container `zkevm-agglayer-001`. You should see logs like
+Observe that proofs are failing verification as expected in the logs for docker container `agglayer`. You should see logs like
 
 ```
 2024-08-19 15:44:21   2024-08-19T19:44:21.884754Z ERROR agglayer_node::rpc: Failed to dry-run the verify_batches_trusted_aggregator for transaction 0x161e…4e01: Contract call reverted with data: 0x09bde339, tx_hash: "0x161e…4e01"
