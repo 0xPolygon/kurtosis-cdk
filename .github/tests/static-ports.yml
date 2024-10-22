@@ -3,8 +3,7 @@ args:
     l1_el_start_port: 59010
     l1_cl_start_port: 59020
     l1_vc_start_port: 59030
-    l1_remote_signer_start_port: 59040
-    l1_additional_services_start_port: 59050
+    l1_additional_services_start_port: 59040
 
     agglayer_start_port: 50000
     cdk_node_start_port: 51000
