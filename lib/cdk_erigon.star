@@ -38,6 +38,7 @@ def start_node(
         config=ServiceConfig(
             image=args["cdk_erigon_node_image"],
             ports=ports,
+            public_ports=public_ports,
             files={
                 "/etc/cdk-erigon": Directory(
                     artifact_names=[
