@@ -40,7 +40,10 @@ def generate_port_publisher_config(args):
     }
 
     return {
-        key: {"enabled": True, "public_port_start": static_port_config.get(value)}
+        key: {
+            "enabled": True,
+            "public_port_start": static_port_config.get(value),
+        }
         for key, value in port_mappings.items()
         if static_port_config.get(value) is not None
     }
