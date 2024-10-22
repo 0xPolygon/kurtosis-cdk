@@ -2,7 +2,7 @@ ports_package = import_module("../src/package_io/ports.star")
 
 
 def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifact):
-    (ports, public_ports) = get_cdk_node_ports(args)
+    (ports, public_ports) = get_bridge_service_ports(args)
     return ServiceConfig(
         image=args["zkevm_bridge_service_image"],
         ports=ports,
@@ -31,7 +31,7 @@ def get_bridge_service_ports(args):
 
 
 def start_bridge_ui(plan, args, config_artifact):
-    (ports, public_ports) = get_cdk_node_ports(args)
+    (ports, public_ports) = get_bridge_ui_ports(args)
     plan.add_service(
         name="zkevm-bridge-ui" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -61,7 +61,7 @@ def get_bridge_ui_ports(args):
 
 
 def start_reverse_proxy(plan, args, config_artifact):
-    (ports, public_ports) = get_cdk_node_ports(args)
+    (ports, public_ports) = get_revert_proxy_ports(args)
     plan.add_service(
         name="zkevm-bridge-proxy" + args["deployment_suffix"],
         config=ServiceConfig(

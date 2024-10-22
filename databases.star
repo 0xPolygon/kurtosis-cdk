@@ -93,9 +93,10 @@ CDK_ERIGON_DBS = {
 DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS
 
 
-def run(plan, suffix, sequencer_type):
-    db_configs = get_db_configs(suffix, sequencer_type)
-    create_postgres_service(plan, db_configs, suffix)
+def run(plan, args):
+    sequencer_type = args["sequencer_type"]
+    db_configs = get_db_configs(args["deployment_suffix"], sequencer_type)
+    create_postgres_service(plan, db_configs, args)
 
 
 def get_db_configs(suffix, sequencer_type):
@@ -148,10 +149,10 @@ def _pless_suffix(suffix):
     return "-pless" + suffix
 
 
-def create_postgres_service(plan, db_configs, suffix):
+def create_postgres_service(plan, db_configs, args):
     init_script_tpl = read_file(src="./templates/databases/init.sql")
     init_script = plan.render_templates(
-        name="init.sql" + suffix,
+        name="init.sql" + args["deployment_suffix"],
         config={
             "init.sql": struct(
                 template=init_script_tpl,
@@ -164,7 +165,7 @@ def create_postgres_service(plan, db_configs, suffix):
         },
     )
 
-    (ports, public_ports) = ports_package.get_database_ports(args)
+    (ports, public_ports) = get_database_ports(args)
     postgres_service_cfg = ServiceConfig(
         image=POSTGRES_IMAGE,
         ports=ports,
@@ -179,7 +180,7 @@ def create_postgres_service(plan, db_configs, suffix):
     )
 
     plan.add_service(
-        name=_service_name(suffix),
+        name=_service_name(args["deployment_suffix"]),
         config=postgres_service_cfg,
         description="Starting Postgres Service",
     )

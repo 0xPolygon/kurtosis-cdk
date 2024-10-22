@@ -58,11 +58,7 @@ def run(plan, args={}):
     # Deploy databases.
     if deployment_stages.get("deploy_databases", False):
         plan.print("Deploying databases")
-        import_module(databases_package).run(
-            plan,
-            suffix=args["deployment_suffix"],
-            sequencer_type=args["sequencer_type"],
-        )
+        import_module(databases_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of databases")
 
