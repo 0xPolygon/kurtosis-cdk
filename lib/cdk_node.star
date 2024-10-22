@@ -1,4 +1,5 @@
 data_availability_package = import_module("./data_availability.star")
+ports_package = import_module("../src/package_io/ports.star")
 
 NODE_COMPONENTS = struct(
     sequence_sender="sequence-sender",
@@ -13,7 +14,7 @@ def create_cdk_node_service_config(
     keystore_artifact,
 ):
     cdk_node_name = "cdk-node" + args["deployment_suffix"]
-
+    (ports, public_ports) = get_cdk_node_ports(args)
     cdk_node_service_config = ServiceConfig(
         image=args["cdk_node_image"],
         ports={
@@ -49,3 +50,13 @@ def create_cdk_node_service_config(
     )
 
     return {cdk_node_name: cdk_node_service_config}
+
+
+def get_cdk_node_ports(args):
+    ports = {
+        "aggregator": PortSpec(
+            args["zkevm_aggregator_port"], application_protocol="grpc"
+        ),
+    }
+    public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
+    return (ports, public_ports)

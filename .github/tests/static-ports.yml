@@ -1,3 +1,4 @@
 args:
   static_ports:
     agglayer_start_port: 50000
+    cdk_node_start_port: 51000
