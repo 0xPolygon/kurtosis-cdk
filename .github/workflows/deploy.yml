@@ -38,7 +38,10 @@ jobs:
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
       - name: Dump enclave logs
         if: failure()
@@ -65,7 +68,7 @@ jobs:
 
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
-        run: echo "matrix=$(ls -R params.yml ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
@@ -106,13 +109,17 @@ jobs:
             exit 1
           fi
           echo "RPC name: $rpc_name"
-          ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
+          ./.github/scripts/monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+            ./.github/scripts/monitor-verified-batches.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
           else
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
@@ -150,6 +157,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
       - name: Verify Arpeggio RPC
         run: |
@@ -230,12 +244,10 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
 
       - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml --show-enclave-inspect=false .
 
       - name: Update the agglayer config
         run: |
@@ -250,14 +262,60 @@ jobs:
           # Restart the agglayer service.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
           kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
+      
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+
+      - name: Dump enclave logs
+        if: failure()
+        run: kurtosis dump ./dump
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_attach_ckds_${{ github.run_id }}
+          path: ./dump
+  
+  deploy_to_external_l1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+      
+      - name: Deploy L1 chain
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
+      
+      - name: Deploy to local L1 chain
+        run: |
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
+      
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor verified batches
+        working-directory: .github/scripts
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
       - name: Dump enclave logs
         if: failure()
