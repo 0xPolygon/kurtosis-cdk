@@ -244,7 +244,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/dynamic-ports.yml --show-enclave-inspect=false .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/static-ports.yml --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
