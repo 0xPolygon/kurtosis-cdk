@@ -4,6 +4,17 @@ ethereum_package = import_module(
 
 
 def run(plan, args):
+    static_port_config = args.get("static_ports")
+    l1_el_start_port = static_port_config.get("l1_el_start_port", None)
+    l1_cl_start_port = static_port_config.get("l1_cl_start_port", None)
+    l1_vc_start_port = static_port_config.get("l1_vc_start_port", None)
+    l1_remote_signer_start_port = static_port_config.get(
+        "l1_remote_signer_start_port", None
+    )
+    l1_additional_services_start_port = static_port_config.get(
+        "l1_additional_services_start_port", None
+    )
+
     ethereum_package.run(
         plan,
         {
@@ -23,5 +34,28 @@ def run(plan, args):
                 "seconds_per_slot": args["l1_seconds_per_slot"],
             },
             "additional_services": args["l1_additional_services"],
+            # static ports
+            "port_publisher": {
+                "el": {
+                    "enabled": True,
+                    "public_port_start": l1_el_start_port,
+                },
+                "cl": {
+                    "enabled": True,
+                    "public_port_start": l1_cl_start_port,
+                },
+                "vc": {
+                    "enabled": True,
+                    "public_port_start": l1_vc_start_port,
+                },
+                "remote_signer": {
+                    "enabled": True,
+                    "public_port_start": l1_remote_signer_start_port,
+                },
+                "additional_services": {
+                    "enabled": True,
+                    "public_port_start": l1_additional_services_start_port,
+                },
+            },
         },
     )

@@ -1,5 +1,11 @@
 args:
   static_ports:
+    l1_el_start_port: 59010
+    l1_cl_start_port: 59020
+    l1_vc_start_port: 59030
+    l1_remote_signer_start_port: 59040
+    l1_additional_services_start_port: 59050
+
     agglayer_start_port: 50000
     cdk_node_start_port: 51000
     zkevm_bridge_service_start_port: 52000
@@ -8,9 +14,10 @@ args:
     database_start_port: 55000
     zkevm_pool_manager_start_port: 56000
     zkevm_dac_start_port: 57000
-    
+
     # additional services
     arpeggio_start_port: 58010
     blutgang_start_port: 58020
     erpc_start_port: 58030
     panoptichain_start_port: 58040
+
