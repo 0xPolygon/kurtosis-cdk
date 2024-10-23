@@ -1,22 +1,24 @@
 args:
   static_ports:
-    l1_el_start_port: 59010
-    l1_cl_start_port: 59020
-    l1_vc_start_port: 59030
-    l1_additional_services_start_port: 59040
+    # L1 static ports (50000-50999).
+    l1_el_start_port: 50000
+    l1_cl_start_port: 50100
+    l1_vc_start_port: 50200
+    l1_additional_services_start_port: 50300
 
-    agglayer_start_port: 50000
-    cdk_node_start_port: 51000
-    zkevm_bridge_service_start_port: 52000
-    zkevm_bridge_ui_start_port: 53000
-    reverse_proxy_start_port: 54000
-    database_start_port: 55000
-    zkevm_pool_manager_start_port: 56000
-    zkevm_dac_start_port: 57000
+    # L2/CDK static ports (51000-51999).
+    agglayer_start_port: 51000
+    cdk_node_start_port: 51100
+    zkevm_bridge_service_start_port: 51210
+    zkevm_bridge_ui_start_port: 51220
+    reverse_proxy_start_port: 51230
+    database_start_port: 51300
+    zkevm_pool_manager_start_port: 51400
+    zkevm_dac_start_port: 51500
 
-    # additional services
-    arpeggio_start_port: 58010
-    blutgang_start_port: 58020
-    erpc_start_port: 58030
-    panoptichain_start_port: 58040
+    # L2 additional services (52000-52999).
+    arpeggio_start_port: 52000
+    blutgang_start_port: 52100
+    erpc_start_port: 52200
+    panoptichain_start_port: 52300
 
