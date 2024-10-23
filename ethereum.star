@@ -29,7 +29,7 @@ def run(plan, args):
     )
 
 
-# Generate ethereum package static ports configuration.
+# Generate ethereum package public ports configuration.
 def generate_port_publisher_config(args):
     port_mappings = {
         "el": "l1_el_start_port",
@@ -39,9 +39,9 @@ def generate_port_publisher_config(args):
     }
 
     port_publisher_config = {}
-    static_port_config = args.get("public_ports", {})
+    public_port_config = args.get("public_ports", {})
     for key, value in port_mappings.items():
-        public_port_start = static_port_config.get(value, None)
+        public_port_start = public_port_config.get(value, None)
         if public_port_start:
             port_publisher_config[key] = {
                 "enabled": True,

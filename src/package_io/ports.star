@@ -1,9 +1,9 @@
 def get_public_ports(port_config, start_port_name, args):
-    static_port_config = args.get("public_ports", {})
-    if not static_port_config:
+    public_port_config = args.get("public_ports", {})
+    if not public_port_config:
         return {}
 
-    start_port = static_port_config.get(start_port_name, None)
+    start_port = public_port_config.get(start_port_name, None)
     if not start_port:
         return {}
 

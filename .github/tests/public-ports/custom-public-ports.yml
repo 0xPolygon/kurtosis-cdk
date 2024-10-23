@@ -1,12 +1,12 @@
 args:
   public_ports:
-    # L1 static ports (60000-60999).
+    # L1 public ports (60000-60999).
     l1_el_start_port: 60000
     l1_cl_start_port: 60100
     l1_vc_start_port: 60200
     l1_additional_services_start_port: 60300
 
-    # L2/CDK static ports (61000-61999).
+    # L2/CDK public ports (61000-61999).
     agglayer_start_port: 61000
     cdk_node_start_port: 61100
     zkevm_bridge_service_start_port: 61210
