@@ -74,12 +74,12 @@ cd /opt/deterministic-deployment-proxy
 npm ci
 npm run build
 
-signer_address="0x$(cat output/deployment.json | jq --raw-output '.signerAddress')"
-gas_price=$(cat output/deployment.json | jq --raw-output '.gasPrice')
-gas_limit=$(cat output/deployment.json | jq --raw-output '.gasLimit')
+signer_address="0x$(jq -r '.signerAddress' output/deployment.json)"
+gas_price=$(jq -r '.gasPrice' output/deployment.json)
+gas_limit=$(jq -r '.gasLimit' output/deployment.json)
 gas_cost=$((gas_price * gas_limit))
-transaction="0x$(cat output/deployment.json | jq --raw-output '.transaction')"
-deployer_address="0x$(cat output/deployment.json | jq --raw-output '.address')"
+transaction="0x$(jq -r '.transaction' output/deployment.json)"
+deployer_address="0x$(jq -r '.address' output/deployment.json)"
 l1_private_key=$(
     polycli wallet inspect \
         --mnemonic "{{.l1_preallocated_mnemonic}}" \
