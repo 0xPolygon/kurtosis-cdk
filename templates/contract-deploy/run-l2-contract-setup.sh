@@ -70,7 +70,7 @@ echo_ts "Building deterministic deployment proxy"
 git clone https://github.com/Arachnid/deterministic-deployment-proxy.git \
     /opt/deterministic-deployment-proxy \
     --branch "{{.deterministic_deployment_proxy_branch}}"
-cd /opt/deterministic-deployment-proxy
+cd /opt/deterministic-deployment-proxy || exit 1
 npm ci
 npm run build
 
