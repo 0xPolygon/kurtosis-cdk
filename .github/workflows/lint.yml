@@ -57,6 +57,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install yq
+        run: |
+          pip3 install yq
+          yq --version
+
       - name: Generate test combinations
         working-directory: .github/tests
         run: ./combine-ymls.sh
