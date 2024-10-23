@@ -14,7 +14,7 @@ env:
   KURTOSIS_VERSION: 0.90.1
 
 jobs:
-  check:
+  lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -52,8 +52,7 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
 
-  gen:
-    name: Check test combinations
+  check-test-combinations:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
