@@ -61,9 +61,7 @@ jobs:
       - name: Generate test combinations
         working-directory: .github/tests
         run: ./combine-ymls.sh
-
-      - name: Try to update test combinations
-        run: make gen
+      
       - name: Check if test combinations are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
