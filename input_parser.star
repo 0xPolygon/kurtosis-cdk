@@ -61,33 +61,31 @@ DEFAULT_PORTS = {
 # By default, we rely on dynamic ports set by Kurtosis.
 DEFAULT_PUBLIC_PORTS = {
     "public_ports": {
-        {
-            # L1 public ports (50000-50999).
-            "l1_public_ports": {
-                "l1_el_start_port": 50000,
-                "l1_cl_start_port": 50100,
-                "l1_vc_start_port": 50200,
-                "l1_additional_services_start_port": 50300,
-            },
-            # L2/CDK public ports (51000-51999).
-            "l2_cdk_public_ports": {
-                "agglayer_start_port": 51000,
-                "cdk_node_start_port": 51100,
-                "zkevm_bridge_service_start_port": 51210,
-                "zkevm_bridge_ui_start_port": 51220,
-                "reverse_proxy_start_port": 51230,
-                "database_start_port": 51300,
-                "zkevm_pool_manager_start_port": 51400,
-                "zkevm_dac_start_port": 51500,
-            },
-            # L2 additional services (52000-52999).
-            "l2_additional_services": {
-                "arpeggio_start_port": 52000,
-                "blutgang_start_port": 52100,
-                "erpc_start_port": 52200,
-                "panoptichain_start_port": 52300,
-            },
-        }
+        # L1 public ports (50000-50999).
+        "l1_public_ports": {
+            "l1_el_start_port": 50000,
+            "l1_cl_start_port": 50100,
+            "l1_vc_start_port": 50200,
+            "l1_additional_services_start_port": 50300,
+        },
+        # L2/CDK public ports (51000-51999).
+        "l2_cdk_public_ports": {
+            "agglayer_start_port": 51000,
+            "cdk_node_start_port": 51100,
+            "zkevm_bridge_service_start_port": 51210,
+            "zkevm_bridge_ui_start_port": 51220,
+            "reverse_proxy_start_port": 51230,
+            "database_start_port": 51300,
+            "zkevm_pool_manager_start_port": 51400,
+            "zkevm_dac_start_port": 51500,
+        },
+        # L2 additional services (52000-52999).
+        "l2_additional_services": {
+            "arpeggio_start_port": 52000,
+            "blutgang_start_port": 52100,
+            "erpc_start_port": 52200,
+            "panoptichain_start_port": 52300,
+        },
     }
 }
 
