@@ -6,4 +6,3 @@ deployment_stages:
 
 args:
   sequencer_type: zkevm
-  xxx: a
