@@ -38,8 +38,9 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false github.com/0xPolygon/kurtosis-cdk@${{ env.BRANCH_NAME }}
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false github.com/${{ env.REPO_NAME }}@${{ env.BRANCH_NAME }}
         env:
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }} # Should be 0xPolygon/kurtosis-cdk on local PRs and <user>/<fork> on fork PRs.
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
       - name: Inspect enclave
