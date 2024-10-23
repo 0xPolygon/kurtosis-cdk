@@ -14,7 +14,7 @@ env:
   KURTOSIS_VERSION: 0.90.1
 
 jobs:
-  check:
+  lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -51,3 +51,28 @@ jobs:
 
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
+
+  check-test-combinations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Generate test combinations
+        working-directory: .github/tests
+        run: ./combine-ymls.sh
+      
+      - name: Check if test combinations are up to date
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Test combinations are not up to date. Please run \`./combine-ymls.sh\`."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Test combinations are up to date."
+          fi
