@@ -9,17 +9,10 @@ ARTIFACTS = [
 
 
 def run(plan, args):
-    artifact_paths = list(ARTIFACTS)
-
-    l2_rpc_service = plan.get_service(
-        name="cdk-erigon-sequencer" + args["deployment_suffix"]
-    )
-    l2_rpc_url = "http://{}:{}".format(
-        l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
-    )
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
 
     artifacts = []
-    for artifact_cfg in artifact_paths:
+    for artifact_cfg in list(ARTIFACTS):
         template = read_file(src=artifact_cfg["file"])
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
