@@ -62,7 +62,7 @@ accounts=$(
         --mnemonic "{{.l1_preallocated_mnemonic}}" \
         --addresses "{{.l2_accounts_to_fund}}"
 )
-echo "$accounts" | jq -r '.Addresses[].ETHAddress' | while read -r address; do
+echo "$accounts" | jq -r ".Addresses[].ETHAddress" | while read -r address; do
     fund_account_on_l2 "$address"
 done
 
@@ -79,10 +79,21 @@ gas_price=$(cat output/deployment.json | jq --raw-output '.gasPrice')
 gas_limit=$(cat output/deployment.json | jq --raw-output '.gasLimit')
 gas_cost=$((gas_price * gas_limit))
 transaction="0x$(cat output/deployment.json | jq --raw-output '.transaction')"
-bytecode=$(cat output/bytecode.txt)
 deployer_address="0x$(cat output/deployment.json | jq --raw-output '.address')"
-contract_method_signature="0xc3cafc6f"
-expected="0x000000000000000000000000000000000000000000000000000000000000002a"
+l1_private_key=$(
+    polycli wallet inspect \
+        --mnemonic "{{.l1_preallocated_mnemonic}}" \
+        --addresses 1 \
+        | jq -r ".Addresses[].HexPrivateKey"
+)
+
+echo_ts "Deploying deterministic deployment proxy on l1"
+cast send \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --private-key "$l1_private_key" \
+    --value "$gas_cost" \
+    "$signer_address"
+cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
 
 echo_ts "Deploying deterministic deployment proxy on l2"
 cast send \
@@ -93,56 +104,37 @@ cast send \
     "$signer_address"
 cast publish --rpc-url "{{.l2_rpc_url}}" "$transaction"
 
-echo_ts "Deploying deterministic deployment proxy on l1"
+contract_method_signature="banana()(uint8)"
+expected="42"
+salt="0x0000000000000000000000000000000000000000000000000000000000000000"
+# contract: pragma solidity 0.5.8; contract Apple {function banana() external pure returns (uint8) {return 42;}}
+bytecode="6080604052348015600f57600080fd5b5060848061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063c3cafc6f14602d575b600080fd5b6033604f565b604051808260ff1660ff16815260200191505060405180910390f35b6000602a90509056fea165627a7a72305820ab7651cb86b8c1487590004c2444f26ae30077a6b96c6bc62dda37f1328539250029"
+contract_address=$(cast create2 --salt $salt --init-code $bytecode)
+
+echo_ts "Testing deterministic deployment proxy on l1"
 cast send \
+    --legacy \
     --rpc-url "{{.l1_rpc_url}}" \
-    --mnemonic "{{.l1_preallocated_mnemonic}}" \
-    --value "$gas_cost" \
-    "$signer_address"
-cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
+    --private-key "$l1_private_key" \
+    "$deployer_address" \
+    "$salt$bytecode"
+l1_actual=$(cast call --rpc-url "{{.l1_rpc_url}}" "$contract_address" "$contract_method_signature")
+if [ "$expected" != "$l1_actual" ]; then
+    echo_ts "Failed to deploy deterministic deployment proxy on l1 (expected: $expected, actual $l1_actual)"
+    exit 1
+fi
 
 echo_ts "Testing deterministic deployment proxy on l2"
 cast send \
     --legacy \
     --rpc-url "{{.l2_rpc_url}}" \
     --private-key "{{.zkevm_l2_admin_private_key}}" \
-    --create "0x0000000000000000000000000000000000000000000000000000000000000000$bytecode" \
-    "$deployer_address"
-l2_contract_address=$(
-    cast call \
-        --rpc-url "{{.l2_rpc_url}}" \
-        --private-key "{{.zkevm_l2_admin_private_key}}" \
-        "$deployer_address" \
-        "0x0000000000000000000000000000000000000000000000000000000000000000$bytecode"
-)
-l2_actual=$(cast call --rpc-url "{{.l2_rpc_url}}" "$l2_contract_address" "$contract_method_signature")
+    "$deployer_address" \
+    "$salt$bytecode"
+l2_actual=$(cast call --rpc-url "{{.l2_rpc_url}}" "$contract_address" "$contract_method_signature")
 if [ "$expected" != "$l2_actual" ]; then
-  echo "Failed to deploy deterministic deployment proxy on l2"
-  exit 1
-fi
-
-echo_ts "Testing deterministic deployment proxy on l1"
-cast send \
-    --rpc-url "{{.l1_rpc_url}}" \
-    --mnemonic "{{.l1_preallocated_mnemonic}}" \
-    --create "0x0000000000000000000000000000000000000000000000000000000000000000$bytecode" \
-    "$deployer_address"
-l1_contract_address=$(
-    cast call \
-        --rpc-url "{{.l1_rpc_url}}" \
-        --mnemonic "{{.l1_preallocated_mnemonic}}" \
-        "$deployer_address" \
-        "0x0000000000000000000000000000000000000000000000000000000000000000$bytecode"
-)
-l1_actual=$(cast call --rpc-url "{{.l1_rpc_url}}" "$l1_contract_address" "$contract_method_signature")
-if [ "$expected" != "$l1_actual" ]; then
-  echo "Failed to deploy deterministic deployment proxy on l1"
-  exit 1
-fi
-
-if [ "$l1_contract_address" != "$l2_contract_address" ]; then
-  echo "Mismatch contract addresses deployed by deterministic deployment proxy"
-  exit 1
+    echo_ts "Failed to deploy deterministic deployment proxy on l2 (expected: $expected, actual $l2_actual)"
+    exit 1
 fi
 
 # The contract setup is done!
