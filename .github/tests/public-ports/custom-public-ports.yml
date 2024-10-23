@@ -21,4 +21,3 @@ args:
     blutgang_start_port: 52100
     erpc_start_port: 52200
     panoptichain_start_port: 52300
-

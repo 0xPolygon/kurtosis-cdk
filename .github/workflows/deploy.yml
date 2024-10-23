@@ -68,7 +68,7 @@ jobs:
 
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
-        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/public-ports/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
@@ -232,39 +232,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
-          path: ./dump
-
-  static-ports:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/static-ports.yml --show-enclave-inspect=false .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor verified batches
-        working-directory: .github/scripts
-        run: |
-          ./monitor-verified-batches.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
-
-      - name: Dump enclave logs
-        if: failure()
-        run: kurtosis dump ./dump
-
-      - name: Upload logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dump_attach_ckds_${{ github.run_id }}
           path: ./dump
 
   attach-second-cdk:
