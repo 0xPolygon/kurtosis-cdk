@@ -11,8 +11,9 @@ ARTIFACTS = [
 def run(plan, args):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
 
+    artifact_paths = list(ARTIFACTS)
     artifacts = []
-    for artifact_cfg in list(ARTIFACTS):
+    for artifact_cfg in artifact_paths:
         template = read_file(src=artifact_cfg["file"])
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
