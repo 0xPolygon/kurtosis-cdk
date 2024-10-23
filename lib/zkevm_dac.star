@@ -25,5 +25,5 @@ def get_dac_ports(args):
     ports = {
         "dac": PortSpec(args["zkevm_dac_port"], application_protocol="http"),
     }
-    public_ports = ports_package.get_public_ports(ports, "dac_start_port", args)
+    public_ports = ports_package.get_public_ports(ports, "zkevm_dac_start_port", args)
     return (ports, public_ports)
