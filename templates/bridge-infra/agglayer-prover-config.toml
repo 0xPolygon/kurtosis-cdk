@@ -3,14 +3,14 @@ max-concurrency-limit = 100
 max-request-duration = 300
 max-buffered-queries = 100
 
-[Log]
-Environment = "production"      # "production" or "development"
-Level = "{{.global_log_level}}"
-Outputs = ["stderr"]
-Format = "json"
+[log]
+environment = "production"      # "production" or "development"
+level = "{{.global_log_level}}"
+outputs = ["stderr"]
+format = "json"
 
-[Telemetry]
-PrometheusAddr = "0.0.0.0:{{.prometheus_port}}"
+[telemetry]
+prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
 [cpu-prover]
 max-concurrency-limit = 100
