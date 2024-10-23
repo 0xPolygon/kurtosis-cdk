@@ -1,5 +1,5 @@
 args:
-  static_ports:
+  public_ports:
     # L1 static ports (60000-60999).
     l1_el_start_port: 60000
     l1_cl_start_port: 60100

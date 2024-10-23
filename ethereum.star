@@ -39,7 +39,7 @@ def generate_port_publisher_config(args):
     }
 
     port_publisher_config = {}
-    static_port_config = args.get("static_ports", {})
+    static_port_config = args.get("public_ports", {})
     for key, value in port_mappings.items():
         public_port_start = static_port_config.get(value, None)
         if public_port_start:

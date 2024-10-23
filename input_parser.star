@@ -269,7 +269,7 @@ def parse_args(plan, args):
     # By default, we rely on dynamic ports set by Kurtosis.
     if args.get("use_default_public_ports", False):
         plan.print("Using default public ports.")
-        args = DEFAULT_PUBLIC_PORTS | args
+        args = args | DEFAULT_PUBLIC_PORTS
     else:
         public_ports = args.get("public_ports", {})
         if public_ports:
