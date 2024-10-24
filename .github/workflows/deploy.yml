@@ -305,7 +305,7 @@ jobs:
           # Update the config by adding the rpc and proof signer of the second chain.
           tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
           # Replace the agglayer config.
-          agglayer_container_id="$(docker ps -a --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
+          agglayer_container_id="$(docker ps --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
           # Restart the agglayer service.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
