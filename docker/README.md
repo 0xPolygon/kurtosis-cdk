@@ -12,6 +12,7 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 
 | Fork ID | zkEVM Contracts Tag / Commit | Image |
 | ------- | ---------------------------- | ----- |
+| 13-RC1 | [v8.1.0-rc.1-fork.13](https://github.com/0xPolygonHermez/zkevm-contracts/tree/v8.1.0-rc.1-fork.13) | x |
 | 12-PP-RC2 | [v9.0.0-rc.2-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.2-pp) | [leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.2-pp-fork.12/images/sha256-9cf68f7583029aa0b46463fe39c06310427c7afe55ba3301e2d57133ffbbf5f9?context=repo) |
 | 12-PP-RC1 | [v9.0.0-rc.1-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.1-pp) | [leovct/zkevm-contracts:v9.0.0-rc.1-pp-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.1-pp-fork.12/images/sha256-73fe48df04cb3cb631c2f5cd852c878b668ca49a477fe98278f2e0128d45b976?context=repo) |
 | 12-RC4 | [v8.0.0-rc.4-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.4-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.4-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.4-fork.12/images/sha256-544b2db63c608b851aa1fd9c4d4e28c63f4253e295a487c4140a6392799f336e?context=repo) |
