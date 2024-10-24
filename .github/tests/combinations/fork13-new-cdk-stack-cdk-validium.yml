@@ -1,0 +1,8 @@
+args:
+  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC1-fork.13
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.2.0-RC1
+  additional_services:
+    - tx_spammer
+  data_availability_mode: cdk-validium
+  sequencer_type: erigon

@@ -625,7 +625,7 @@ sentry.log-peer-info: false
 
 # Drop useless peers, aka peers that return empty body or header responses.
 # Default: false
-sentry.drop-useless-peers: false
+# sentry.drop-useless-peers: false
 
 # The downloaded address.
 # Format: <host>:<port>
