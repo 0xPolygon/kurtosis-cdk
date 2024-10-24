@@ -26,7 +26,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+     #"agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "agglayer_image": "ghcr.io/agglayer/agglayer:fix-fixing-epoch-starting",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:20241022001310-28b39e1",  # https://github.com/0xPolygonHermez/cdk-erigon/commit/28b39e1e534c97deb82364c34f4f757c782977e1
     "cdk_node_image": "jestpol/cdk:20241017",  # https://github.com/0xPolygon/cdk/pull/22/commits/88d4f7cc585d838ee438fd4bda01dbc43dc6cba1
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -43,6 +44,9 @@ DEFAULT_IMAGES = {
 
 DEFAULT_PORTS = {
     "agglayer_port": 4444,
+    "agglayer_prover_port": 4445,
+    "agglayer_metrics_port": 9092,
+    "agglayer_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
@@ -187,7 +191,7 @@ DEFAULT_ARGS = (
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessmistic consensus
         # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
-        "consensus_contract_type": "cdk-validium",
+        "consensus_contract_type": "pessimistic",
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
