@@ -89,6 +89,9 @@ DEFAULT_ACCOUNTS = {
     # proofsigner
     "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
     "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
+    # l1testing
+    "l1_deposit_account": "0xC196E8d1D15e15e5703f5Dba9F2b5d6ec35b5bbf",
+    "l1_deposit_account_private_key": "7ffefe81df12e9aeebba4f3671ece167c72aa0fe519a4e66e4c6f7630617b8c3",
 }
 
 DEFAULT_L1_ARGS = {
@@ -134,16 +137,22 @@ DEFAULT_L1_ARGS = {
     # "minimal" preset will spin up a network with minimal preset. This is useful for rapid testing and development.
     # 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults
     # Please note that minimal preset requires alternative client images.
-    "l1_preset": "minimal",
+    "l1_preset": "mainnet",
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 1,
-    # The amount of ETH sent to the admin, sequence, aggregator and sequencer addresses.
-    "l1_funding_amount": "100ether",
-    "l1_participants_count": 2,
+    # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
+    "l1_funding_amount": "1000000ether",
+    # Default: 2
+    "l1_participants_count": 1,
+    # Default: 2048
     "l1_eth1_follow_distance": 1,
+    # Default: 256
     "l1_min_validator_withdrawability_delay": 1,
+    # Default: 256
     "l1_shard_committee_period": 1,
+    # Default: 12
+    "l1_genesis_delay": 12,
 }
 
 DEFAULT_ROLLUP_ARGS = {
