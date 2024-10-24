@@ -58,6 +58,31 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
 }
 
+# By default, we rely on dynamic ports set by Kurtosis.
+DEFAULT_PUBLIC_PORTS = {
+    "public_ports": {
+        # L1 public ports (50000-50999).
+        "l1_el_start_port": 50000,
+        "l1_cl_start_port": 50100,
+        "l1_vc_start_port": 50200,
+        "l1_additional_services_start_port": 50300,
+        # L2/CDK public ports (51000-51999).
+        "agglayer_start_port": 51000,
+        "cdk_node_start_port": 51100,
+        "zkevm_bridge_service_start_port": 51210,
+        "zkevm_bridge_ui_start_port": 51220,
+        "reverse_proxy_start_port": 51230,
+        "database_start_port": 51300,
+        "zkevm_pool_manager_start_port": 51400,
+        "zkevm_dac_start_port": 51500,
+        # L2 additional services (52000-52999).
+        "arpeggio_start_port": 52000,
+        "blutgang_start_port": 52100,
+        "erpc_start_port": 52200,
+        "panoptichain_start_port": 52300,
+    }
+}
+
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
 # polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
@@ -159,6 +184,8 @@ DEFAULT_ROLLUP_ARGS = {
     "erigon_strict_mode": True,
     # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
     "zkevm_use_gas_token_contract": False,
+    # Use the default public ports.
+    "use_default_public_ports": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -229,11 +256,19 @@ def parse_args(plan, args):
     sequencer_type = args.get("sequencer_type", "")
     sequencer_name = get_sequencer_name(sequencer_type)
 
-    plan.print(
-        "DEBUG: " + str(deployment_stages.get("deploy_cdk_erigon_node", False))
-    )  # DEBUG
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
+
+    # Determine public ports.
+    # By default, we rely on dynamic ports set by Kurtosis.
+    if args.get("use_default_public_ports", False):
+        plan.print("Using default public ports.")
+        args = args | DEFAULT_PUBLIC_PORTS
+    else:
+        public_ports = args.get("public_ports", {})
+        if public_ports:
+            plan.print("Using custom public ports.")
+            args = args | {"public_ports": public_ports}
 
     # Remove deployment stages from the args struct.
     # This prevents updating already deployed services when updating the deployment stages.

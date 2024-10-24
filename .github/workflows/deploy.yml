@@ -80,7 +80,7 @@ jobs:
 
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
-        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/public-ports/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
@@ -167,7 +167,7 @@ jobs:
           name: ${{ env.ARCHIVE_NAME }}
           path: ./dump
 
-  additional_services:
+  additional-services:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -270,7 +270,7 @@ jobs:
           name: dump_additional_services_${{ github.run_id }}
           path: ./dump
 
-  attach_cdks:
+  attach-second-cdk:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -339,7 +339,7 @@ jobs:
           name: dump_attach_ckds_${{ github.run_id }}
           path: ./dump
   
-  deploy_to_external_l1:
+  deploy-to-external-l1:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
