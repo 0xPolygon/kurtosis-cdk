@@ -12,6 +12,7 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 
 | Fork ID | zkEVM Contracts Tag / Commit | Image |
 | ------- | ---------------------------- | ----- |
+| 13-RC1 | [v8.1.0-rc.1-fork.13](https://github.com/0xPolygonHermez/zkevm-contracts/tree/v8.1.0-rc.1-fork.13) | x |
 | 12-PP-RC2 | [v9.0.0-rc.2-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.2-pp) | [leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.2-pp-fork.12/images/sha256-9cf68f7583029aa0b46463fe39c06310427c7afe55ba3301e2d57133ffbbf5f9?context=repo) |
 | 12-PP-RC1 | [v9.0.0-rc.1-pp](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v9.0.0-rc.1-pp) | [leovct/zkevm-contracts:v9.0.0-rc.1-pp-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v9.0.0-rc.1-pp-fork.12/images/sha256-73fe48df04cb3cb631c2f5cd852c878b668ca49a477fe98278f2e0128d45b976?context=repo) |
 | 12-RC4 | [v8.0.0-rc.4-fork.12](https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/v8.0.0-rc.4-fork.12) | [leovct/zkevm-contracts:v8.0.0-rc.4-fork.12](https://hub.docker.com/layers/leovct/zkevm-contracts/v8.0.0-rc.4-fork.12/images/sha256-544b2db63c608b851aa1fd9c4d4e28c63f4253e295a487c4140a6392799f336e?context=repo) |
@@ -41,6 +42,7 @@ The following images are deprecated:
 | zkEVM Bridge UI Tag / Commit | Image |
 | ---------------------------- | ----- |
 | [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) | [leovct/zkevm-bridge-ui:multi-network](https://hub.docker.com/layers/leovct/zkevm-bridge-ui/multi-network/images/sha256-14b10a03862ce62d68d6e82a18416fb3f6d9ec5a24f96caf36ca0eb6d8a1b68e?context=repo) |
+| [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) + [patch files](./zkevm-bridge-ui/) | [leovct/zkevm-bridge-ui:multi-network-2](https://hub.docker.com/layers/leovct/zkevm-bridge-ui/multi-network-2/images/sha256-958c78ea9f7fd5f4104cd10014ee9b5f359e9695dbdc3fff2f5b041913bf44e2?context=explore) |
 
 ## Custom Docker Images
 

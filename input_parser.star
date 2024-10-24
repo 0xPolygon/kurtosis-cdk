@@ -26,15 +26,14 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-     #"agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "agglayer_image": "ghcr.io/agglayer/agglayer:fix-fixing-epoch-starting",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:20241022001310-28b39e1",  # https://github.com/0xPolygonHermez/cdk-erigon/commit/28b39e1e534c97deb82364c34f4f757c782977e1
-    "cdk_node_image": "jestpol/cdk:20241017",  # https://github.com/0xPolygon/cdk/pull/22/commits/88d4f7cc585d838ee438fd4bda01dbc43dc6cba1
+    "agglayer_image": "ghcr.io/agglayer/agglayer:feature-storage-adding-epoch-packing",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "nulyjkdhthz/zkevm-contracts:v9.0.0-rc.3-pp-fork.12",
+    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network-2",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.1",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
