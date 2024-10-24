@@ -22,7 +22,7 @@ def run(plan, args):
                     template=template,
                     data=args
                     | {
-                        "l2_rpc_url": l2_rpc_url,
+                        "l2_rpc_url": l2_rpc_url.http,
                         "deterministic_deployment_proxy_branch": "master",
                     },
                 )
