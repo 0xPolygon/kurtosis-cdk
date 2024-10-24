@@ -7,6 +7,7 @@ ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE = "/config"
 VALIDATOR_RANGES_MOUNT_DIRPATH_ON_SERVICE = "/validator-ranges"
 VALIDATOR_RANGES_ARTIFACT_NAME = "validator-ranges"
 
+
 def run(plan, args):
     assertoor_config_artifact = get_assertoor_config(plan, args)
     plan.add_service(
