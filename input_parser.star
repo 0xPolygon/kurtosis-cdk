@@ -28,7 +28,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "agglayer_image": "ghcr.io/agglayer/agglayer:feature-storage-adding-epoch-packing",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -46,6 +46,9 @@ DEFAULT_IMAGES = {
 
 DEFAULT_PORTS = {
     "agglayer_port": 4444,
+    "agglayer_prover_port": 4445,
+    "agglayer_metrics_port": 9092,
+    "agglayer_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
