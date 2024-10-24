@@ -41,6 +41,7 @@ The following images are deprecated:
 | zkEVM Bridge UI Tag / Commit | Image |
 | ---------------------------- | ----- |
 | [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) | [leovct/zkevm-bridge-ui:multi-network](https://hub.docker.com/layers/leovct/zkevm-bridge-ui/multi-network/images/sha256-14b10a03862ce62d68d6e82a18416fb3f6d9ec5a24f96caf36ca0eb6d8a1b68e?context=repo) |
+| [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) + [patch files](./zkevm-bridge-ui/) | [leovct/zkevm-bridge-ui:multi-network-2](https://hub.docker.com/layers/leovct/zkevm-bridge-ui/multi-network-2/images/sha256-958c78ea9f7fd5f4104cd10014ee9b5f359e9695dbdc3fff2f5b041913bf44e2?context=explore) |
 
 ## Custom Docker Images
 
