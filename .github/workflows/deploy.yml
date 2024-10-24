@@ -303,7 +303,7 @@ jobs:
           kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
           cd agglayer-config-artifact
           # Update the config by adding the rpc and proof signer of the second chain.
-          tomlq -Y --toml-output --in-place '.FullNodeRPCs += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
+          tomlq -Y --toml-output --in-place '.full-node-rpcs += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
           # Replace the agglayer config.
           agglayer_container_id="$(docker ps -a --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
