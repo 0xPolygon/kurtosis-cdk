@@ -95,7 +95,7 @@ providers:
       label: "L2"
       contracts:
         global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
-        zkevm_bridge_address: "{{.zkevm_bridge_address}}"
+        zkevm_bridge_address: "{{.zkevm_bridge_l2_address}}"
 
 # Observers control what metrics will be recorded. Remove the observer from the
 # list to not track them, causing the metrics to be omitted from the metrics
