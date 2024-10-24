@@ -8,12 +8,11 @@ order to deploy to [[https://sepolia.etherscan.io/][Sepolia]].
 ** Disable Local L1
 
 The first thing we should do is make sure that Kurtosis doesn't bother
-doing the L1 deployment. We're going to use ~sed~ to carry this out,
-but you can also modify the ~input_parser.star~ file directly.
-
-#+begin_src bash
-sed -i 's/"deploy_l1": True/"deploy_l1": False/' input_parser.star
-#+end_src
+doing the L1 deployment. In order to achive this, you need to set
+~deployment_stages.deploy_l1~ to ~false~. You can use the handy
+configuration file we provide, [[../.github/tests/external-l1/deploy-cdk-to-sepolia.yml]],
+with all the necessary configuration for deploying to Sepolia. Or
+you can also modify the ~input_parser.star~ file directly.
 
 This will stop Kurtosis from using spinning up the L1 [[https://github.com/kurtosis-tech/ethereum-package][Ethereum
 package]]. Since we're using Sepolia, there will be no need.
@@ -35,8 +34,9 @@ sed -i 's/"salt": "0x.*",/"salt": "0x'$(xxd -p < /dev/random  | tr -d "\n" | hea
 
 By default, the CDK package has some hard coded keys. This is fine for
 local testing, but if you run on Sepolia, you're likely to get your
-funds stolen even if it's inadvertent. First, let's create a new
-mnemonic seed phrase to derive our application keys.
+funds stolen even if it's inadvertent!
+
+First, let's create a new mnemonic seed phrase to derive our application keys.
 
 #+begin_src bash :exports both verbatim :results output example
 cast wallet new-mnemonic
@@ -55,47 +55,47 @@ Private key: 0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f8759aa194b94e
 #+end_example
 
 Great! Now we have a new seed phrase to use. Now, we'll take that seed
-phrase and write generate the settings for ~input_parser.star~.
+phrase and derive application keys.
 
 #+begin_src bash :exports both verbatim :results output example
 seed="film crazy inform bind stomach weather cruel hold quarter stage country purpose"
 polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
     jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | \
-    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
 #+end_src
 
 #+RESULTS:
 #+begin_example
-"zkevm_l2_sequencer_address": "0x5996602860Da5b232429A007Ffc29Fe334993143",
-"zkevm_l2_sequencer_private_key": "0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f8759aa194b94e",
+zkevm_l2_sequencer_address: "0x5996602860Da5b232429A007Ffc29Fe334993143"
+zkevm_l2_sequencer_private_key: "0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f8759aa194b94e"
 
-"zkevm_l2_aggregator_address": "0x25697f040f8EE9145452b115F36aEd35a12d32AD",
-"zkevm_l2_aggregator_private_key": "0xedab8a45bea025ec96808a63368ad2c8099b85944965c26256f987ff9ad712f4",
+zkevm_l2_aggregator_address: "0x25697f040f8EE9145452b115F36aEd35a12d32AD"
+zkevm_l2_aggregator_private_key: "0xedab8a45bea025ec96808a63368ad2c8099b85944965c26256f987ff9ad712f4"
 
-"zkevm_l2_claimtxmanager_address": "0xc8273E02E94598F39e8Ec8867902D4807917A165",
-"zkevm_l2_claimtxmanager_private_key": "0x216a4646ea3dd753f799b7eb7d7f8fe57b96c01c1fcd5eec496d888f5a7677cd",
+zkevm_l2_claimtxmanager_address: "0xc8273E02E94598F39e8Ec8867902D4807917A165"
+zkevm_l2_claimtxmanager_private_key: "0x216a4646ea3dd753f799b7eb7d7f8fe57b96c01c1fcd5eec496d888f5a7677cd"
 
-"zkevm_l2_timelock_address": "0x187aA720B98E064cCaCd1533be1B664D7F93F032",
-"zkevm_l2_timelock_private_key": "0xa0e35402da2dcebb8a33b89806d043bb5785a6a04aa5d9cf47f0950d88668c65",
+zkevm_l2_timelock_address: "0x187aA720B98E064cCaCd1533be1B664D7F93F032"
+zkevm_l2_timelock_private_key: "0xa0e35402da2dcebb8a33b89806d043bb5785a6a04aa5d9cf47f0950d88668c65"
 
-"zkevm_l2_admin_address": "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf",
-"zkevm_l2_admin_private_key": "0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f",
+zkevm_l2_admin_address: "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf"
+zkevm_l2_admin_private_key: "0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f"
 
-"zkevm_l2_loadtest_address": "0x1D9842c503A98cF53AE44808572d15B8C40B2967",
-"zkevm_l2_loadtest_private_key": "0x23db51713f401984ea6331ccce3a9b3b98996838ccec43d4de828c3b501e07de",
+zkevm_l2_loadtest_address: "0x1D9842c503A98cF53AE44808572d15B8C40B2967"
+zkevm_l2_loadtest_private_key: "0x23db51713f401984ea6331ccce3a9b3b98996838ccec43d4de828c3b501e07de"
 
-"zkevm_l2_agglayer_address": "0x61773f7fca22cF7fb960DEDC6aEd0FE795018837",
-"zkevm_l2_agglayer_private_key": "0xf44263cc5699fe3889f892834885111164eb1bea1c9f16322c5577165c578ae4",
+zkevm_l2_agglayer_address: "0x61773f7fca22cF7fb960DEDC6aEd0FE795018837"
+zkevm_l2_agglayer_private_key: "0xf44263cc5699fe3889f892834885111164eb1bea1c9f16322c5577165c578ae4"
 
-"zkevm_l2_dac_address": "0x9150404Cc4d66673b1598dA00a9AC6ce1df53582",
-"zkevm_l2_dac_private_key": "0xc1345e1b9680c8623df4f74d4b4f7bc8d9a5bebfebde34786e2146d30b1c68c0",
+zkevm_l2_dac_address: "0x9150404Cc4d66673b1598dA00a9AC6ce1df53582"
+zkevm_l2_dac_private_key: "0xc1345e1b9680c8623df4f74d4b4f7bc8d9a5bebfebde34786e2146d30b1c68c0"
 
-"zkevm_l2_proofsigner_address": "0xad36D8a17e14B2420229b77664AB905C813AD573",
-"zkevm_l2_proofsigner_private_key": "0x7e60d7b0924128bd629b5942ad7d5610c71794e9a00eb0e2c7b0bb5ba633bf94",
+zkevm_l2_proofsigner_address: "0xad36D8a17e14B2420229b77664AB905C813AD573"
+zkevm_l2_proofsigner_private_key: "0x7e60d7b0924128bd629b5942ad7d5610c71794e9a00eb0e2c7b0bb5ba633bf94"
 #+end_example
 
 We're going to take these generated values and place them into the
-[[../input_parser.star]] file. Each one of these settings should already exist
+[[../.github/tests/external-l1/deploy-cdk-to-sepolia.yml]] file. Each one of these settings should already exist
 and you're simply replacing the keys that are already in this file.
 
 ** L1 Configuration
@@ -124,7 +124,8 @@ We'll take that mnemonic and configure ~l1_preallocated_mnemonic~ with
 this value.
 
 #+begin_src bash
-sed -i 's/"l1_preallocated_mnemonic": ".*"/"l1_preallocated_mnemonic": "wash shoe curve captain invest aunt farm quality bomb aunt sunny arm"/' input_parser.star
+mnemonic="wash shoe curve captain invest aunt farm quality bomb aunt sunny arm"
+yq -Y --in-place --arg m "$mnemonic" '.args.l1_preallocated_mnemonic = $m' .github/tests/external-l1/deploy-cdk-to-sepolia.yml
 #+end_src
 
 This account is used for two things. It sends funds to the accounts
@@ -132,20 +133,18 @@ that need funds on L1 (e.g. sequencer, aggregator, admin).  This
 account also does the contract deployment. Accordingly, *we'll need to
 send funds to this account*.
 
+We have already configured the L1 chain identifier to match Sepolia's chain
+identifier in the configuration file: ~l1_chain_id: 11155111~ and the
+amount of funds allocated to this deployment: ~l1_funding_amount: 5ether~.
+
 There are a few other values we need to configure for L1.
 
 #+begin_src bash
-# We need to update the chain id to Sepolia
-sed -i 's/"l1_chain_id": .*,/"l1_chain_id": 11155111,/' input_parser.star
+# The L1 HTTP RPC and WS urls need to change to be valid Sepolia endpoints.
+yq -Y --in-place '.args.l1_rpc_url = "https://YOUR-SEPOLIA-RPC"' .github/tests/external-l1/deploy-cdk-to-sepolia.yml
+yq -Y --in-place '.args.l1_ws_url = "wss://YOUR-SEPOLIA-RPC"' .github/tests/external-l1/deploy-cdk-to-sepolia.yml
 
-# We need to reduce the amount of funds we'll allocate on Sepolia since we probalby don't have infinite money
-sed -i 's/"l1_funding_amount": ".*"/"l1_funding_amount": "5ether"/' input_parser.star
-
-# The L1 RPC and WS urls need to change to be valid Sepolia endpoints
-sed -i 's#"l1_rpc_url": ".*"#"l1_rpc_url": "https://YOUR-SEPOLIA-RPC.invalid"#' input_parser.star
-sed -i 's#"l1_ws_url": ".*"#"l1_ws_url": "wss://YOUR-SEPOLIA-RPC.invalid"#' input_parser.star
-
-# We need to alter the finality time for erigon otherwise we'll need to wait for the contract deployment to finalize
+# We need to alter the finality time for erigon otherwise we'll need to wait for the contract deployment to finalize.
 sed -i 's/zkevm.l1-highest-block-type: finalized/zkevm.l1-highest-block-type: latest/' templates/cdk-erigon/config.yml
 #+end_src
 
@@ -169,7 +168,7 @@ progressing as expected.
 
 #+begin_src bash
 rpc_url=$(kurtosis port print cdk cdk-erigon-node-001 rpc)
-zkevm_l2_admin_private_key="0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f"
+zkevm_l2_admin_private_key="$(yq '.args.zkevm_l2_admin_private_key' .github/tests/external-l1/deploy-cdk-to-sepolia.yml)" # You might have to change this value!
 
 cast rpc --rpc-url $rpc_url zkevm_batchNumber
 cast rpc --rpc-url $rpc_url zkevm_virtualBatchNumber
