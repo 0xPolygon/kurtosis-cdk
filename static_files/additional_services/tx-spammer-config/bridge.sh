@@ -27,16 +27,17 @@ zkevm_l2_network="1"
 
 # Functions for deploying an ERC20 contract on LX.
 deploy_erc20_contract_on_l1() {
-  deploy_erc20_contract "$ethereum_network" "{{.l1_rpc_url}}"
+  deploy_erc20_contract "$ethereum_network" "{{.l1_rpc_url}}" "{{.zkevm_bridge_address}}"
 }
 
 deploy_erc20_contract_on_l2() {
-  deploy_erc20_contract "$zkevm_l2_network" "{{.l2_rpc_url}}"
+  deploy_erc20_contract "$zkevm_l2_network" "{{.l2_rpc_url}}" "{{.zkevm_bridge_l2_address}}"
 }
 
 deploy_erc20_contract() {
   network="$1"
   rpc_url="$2"
+  bridge_address="$3"
 
   echo "Deploying an ERC20 contract on network $network..."
   cast send \
@@ -56,7 +57,7 @@ deploy_erc20_contract() {
     --rpc-url "$rpc_url" \
     --legacy \
     "$erc20_address" \
-    "approve(address,uint256)" "{{.zkevm_bridge_address}}" 100
+    "approve(address,uint256)" "$bridge_address" 100
 }
 
 # Function for checking ERC20 balance on LX.
@@ -76,14 +77,14 @@ get_erc20_balance_on_lx() {
 bridge_assets_from_l1_to_l2() {
   erc20_address="$(jq -r '.contractAddress' /opt/erc20-network-${ethereum_network}-deployment-receipt.json)"
   get_erc20_balance_on_lx "$ethereum_network" "{{.l1_rpc_url}}" "$erc20_address"
-  bridge_assets_from_lx_to_ly "$ethereum_network" "$zkevm_l2_network" "{{.l1_rpc_url}}" "$erc20_address"
+  bridge_assets_from_lx_to_ly "$ethereum_network" "$zkevm_l2_network" "{{.l1_rpc_url}}" "$erc20_address" "{{.zkevm_bridge_address}}"
   get_erc20_balance_on_lx "$ethereum_network" "{{.l1_rpc_url}}" "$erc20_address"
 }
 
 bridge_assets_from_l2_to_l1() {
   erc20_address="$(jq -r '.contractAddress' /opt/erc20-network-${zkevm_l2_network}-deployment-receipt.json)"
   get_erc20_balance_on_lx "$zkevm_l2_network" "{{.l2_rpc_url}}" "$erc20_address"
-  bridge_assets_from_lx_to_ly "$zkevm_l2_network" "$ethereum_network" "{{.l2_rpc_url}}" "$erc20_address"
+  bridge_assets_from_lx_to_ly "$zkevm_l2_network" "$ethereum_network" "{{.l2_rpc_url}}" "$erc20_address" "{{.zkevm_bridge_l2_address}}"
   get_erc20_balance_on_lx "$zkevm_l2_network" "{{.l2_rpc_url}}" "$erc20_address"
 }
 
@@ -92,20 +93,21 @@ bridge_assets_from_lx_to_ly() {
   ly_network="$2"
   rpc_url="$3"
   erc20_contract_address="$4"
+  bridge_address="$5"
 
   echo "Bridging 10 ERC20 tokens from network $lx_network to network $ly_network..."
   cast send \
     --private-key "$private_key" \
     --rpc-url "$rpc_url" \
     --legacy \
-    "{{.zkevm_bridge_address}}" \
+    "$bridge_address" \
     "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
     "$ly_network" "$destination_address" 10 "$erc20_contract_address" true "0x"
 
   echo; echo "Checking the amount of last updated deposit count to the GER..."
   cast call \
     --rpc-url "$rpc_url" \
-    "{{.zkevm_bridge_address}}" \
+    "$bridge_address" \
     "lastUpdatedDepositCount()"
 }
 
@@ -113,20 +115,21 @@ bridge_assets_from_lx_to_ly() {
 claim_assets_on_l1() {
   erc20_address="$(jq -r '.contractAddress' /opt/erc20-network-${zkevm_l2_network}-deployment-receipt.json)"
   get_erc20_balance_on_lx "$ethereum_network" "{{.l1_rpc_url}}" "$erc20_address"
-  claim_assets "$ethereum_network" "{{.l1_rpc_url}}"
+  claim_assets "$ethereum_network" "{{.l1_rpc_url}}" "{{.zkevm_bridge_address}}"
   get_erc20_balance_on_lx "$ethereum_network" "{{.l1_rpc_url}}" "$erc20_address"
 }
 
 claim_assets_on_l2() {
   erc20_address="$(jq -r '.contractAddress' /opt/erc20-network-${ethereum_network}-deployment-receipt.json)"
   get_erc20_balance_on_lx "$zkevm_l2_network" "{{.l2_rpc_url}}" "$erc20_address"
-  claim_assets "$zkevm_l2_network" "{{.l2_rpc_url}}"
+  claim_assets "$zkevm_l2_network" "{{.l2_rpc_url}}" "{{.zkevm_bridge_l2_address}}"
   get_erc20_balance_on_lx "$zkevm_l2_network" "{{.l2_rpc_url}}" "$erc20_address"
 }
 
 claim_assets() {
   network="$1"
   rpc_url="$2"
+  bridge_address="$3"
 
   # The signature for claiming assets.
   claim_sig="claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)"
@@ -165,7 +168,7 @@ claim_assets() {
     echo; echo "Performing an eth call to make sure the bridge claim tx will work..."
     cast call \
       --rpc-url "$rpc_url" \
-      "{{.zkevm_bridge_address}}" \
+      "$bridge_address" \
       "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
 
     echo; echo "Publishing the bridge claim tx..."
@@ -173,7 +176,7 @@ claim_assets() {
       --private-key "$private_key" \
       --rpc-url "$rpc_url" \
       --legacy \
-      "{{.zkevm_bridge_address}}" \
+      "$bridge_address" \
       "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
   done
 }
