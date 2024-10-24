@@ -190,7 +190,7 @@ DEFAULT_ARGS = (
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessmistic consensus
         # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
-        "consensus_contract_type": "pessimistic",
+        "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
