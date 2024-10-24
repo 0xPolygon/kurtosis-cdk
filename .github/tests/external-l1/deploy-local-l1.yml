@@ -6,3 +6,4 @@ deployment_stages:
   deploy_cdk_bridge_infra: false
   deploy_agglayer: false
   deploy_cdk_erigon_node: false
+  deploy_l2_contracts: false
