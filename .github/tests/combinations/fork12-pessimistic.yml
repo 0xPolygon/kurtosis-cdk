@@ -12,3 +12,4 @@ args:
     - tx_spammer
   consensus_contract_type: pessimistic
   sequencer_type: erigon
+  erigon_strict_mode: false

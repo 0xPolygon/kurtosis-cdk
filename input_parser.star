@@ -160,7 +160,7 @@ DEFAULT_ROLLUP_ARGS = {
     "zkevm_use_real_verifier": False,
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
-    "erigon_strict_mode": False,
+    "erigon_strict_mode": True,
     # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
     "zkevm_use_gas_token_contract": False,
 }
