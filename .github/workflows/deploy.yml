@@ -57,7 +57,7 @@ jobs:
 
       - name: Dump enclave logs
         if: failure()
-        run: kurtosis dump ./dump
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload logs
         if: failure()
@@ -150,8 +150,8 @@ jobs:
 
       - name: Dump enclave logs
         if: failure()
-        run: kurtosis dump ./dump
-      
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
       - name: Generate archive name
         if: failure()
         run: |
@@ -193,7 +193,7 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-      
+
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
@@ -261,7 +261,7 @@ jobs:
 
       - name: Dump enclave logs
         if: failure()
-        run: kurtosis dump ./dump
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload logs
         if: failure()
@@ -292,10 +292,10 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
 
       - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml --show-enclave-inspect=false .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
 
       - name: Update the agglayer config
         run: |
@@ -303,14 +303,14 @@ jobs:
           kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
           cd agglayer-config-artifact
           # Update the config by adding the rpc and proof signer of the second chain.
-          tomlq -Y --toml-output --in-place '.FullNodeRPCs += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
+          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
           # Replace the agglayer config.
-          agglayer_container_id="$(docker ps --filter "name=agglayer" --format "{{.ID}}")"
+          agglayer_container_id="$(docker ps --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
           # Restart the agglayer service.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
           kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
-      
+
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
@@ -330,7 +330,7 @@ jobs:
 
       - name: Dump enclave logs
         if: failure()
-        run: kurtosis dump ./dump
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload logs
         if: failure()
@@ -338,7 +338,7 @@ jobs:
         with:
           name: dump_attach_ckds_${{ github.run_id }}
           path: ./dump
-  
+
   deploy_to_external_l1:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -359,14 +359,14 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-      
+
       - name: Deploy L1 chain
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
-      
+
       - name: Deploy to local L1 chain
         run: |
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
-      
+
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
@@ -379,7 +379,7 @@ jobs:
 
       - name: Dump enclave logs
         if: failure()
-        run: kurtosis dump ./dump
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload logs
         if: failure()
