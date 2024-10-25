@@ -11,7 +11,7 @@ contract address.
 There are two ways to go about deploying contracts:
 
 1. Manually in your local environment. This requires you to have [`foundry/cast`](https://github.com/foundry-rs/foundry) installed.
-2. Using the [`run-l2-contract-setup.sh`](templates/contract-deploy/run-l2-contract-setup.sh) script. This ensures that the contracts will be deployed with every `kurtosis run`.
+2. Using the [`run-l2-contract-setup.sh`](/templates/contract-deploy/run-l2-contract-setup.sh) script. This ensures that the contracts will be deployed with every `kurtosis run`.
 
 ## Deploying Contracts Locally
 
@@ -57,8 +57,8 @@ cast send \
 
 ### Deploy Contracts on L2
 
-This is similar to L1 the major differences is the pre-funded account on L2 is the
-`zkevm_l2_admin_private_key`.
+This is similar to L1, just that the major difference is the pre-funded account
+on L2 is the `zkevm_l2_admin_private_key`.
 
 ```bash
 cast send \
