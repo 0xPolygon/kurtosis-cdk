@@ -27,14 +27,14 @@ The package is flexible and supports various configurations for deploying and te
 
 > The team is actively working on enabling the use cases that are currently not possible.
 
-| Stack | Sequencer | Sequence Sender / Aggregator | Supported by Kurtosis? |
-| ----- | --------- | ---------------------------- | ---------------------- |
-| New CDK stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [cdk-node](https://github.com/0xPolygon/cdk) | ✅ |
-| New sequencer with new zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) - Check the [kurtosis-cdk-erigon](https://github.com/xavier-romero/kurtosis-cdk-erigon) package |
-| New sequencer with legacy zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | ❌ (WIP) |
-| Legacy sequencer with new cdk stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [cdk-node](https://github.com/0xPolygon/cdk) | ❌ (WIP) |
-| Legacy sequencer with new zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) |
-| Legacy zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | ✅ |
+| Stack                                 | Sequencer                                                   | Sequence Sender / Aggregator                                                                                                                                | Supported by Kurtosis?                                                                                   |
+| ------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| New CDK stack                         | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [cdk-node](https://github.com/0xPolygon/cdk)                                                                                                                | ✅                                                                                                       |
+| New sequencer with new zkevm stack    | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) - Check the [kurtosis-cdk-erigon](https://github.com/xavier-romero/kurtosis-cdk-erigon) package |
+| New sequencer with legacy zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node)                                                                                                 | ❌ (WIP)                                                                                                 |
+| Legacy sequencer with new cdk stack   | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [cdk-node](https://github.com/0xPolygon/cdk)                                                                                                                | ❌ (WIP)                                                                                                 |
+| Legacy sequencer with new zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP)                                                                                                 |
+| Legacy zkevm stack                    | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node)                                                                                                 | ✅                                                                                                       |
 
 To understand how to configure Kurtosis for these use cases, refer to the [documentation](.github/tests/README.md) and review the test files located in the `.github/tests/` directory.
 
@@ -43,6 +43,8 @@ To understand how to configure Kurtosis for these use cases, refer to the [docum
 ### Prerequisites
 
 To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) (>= [v4.27.0](https://docs.docker.com/desktop/release-notes/#4270) for Mac users) and [Kurtosis](https://docs.kurtosis.com/install/).
+
+- If you notice some services, such as the `zkevm-stateless-executor` or `zkevm-prover`, consistently having the status of `STOPPED`, try increasing the Docker memory allocation.
 
 If you intend to interact with and debug the stack, you may also want to consider a few additional optional tools such as:
 
@@ -59,7 +61,7 @@ Once that is good and installed on your system, you can run the following comman
 kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk
 ```
 
-The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at 
+The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at
 [input_parser.star](./input_parser.star).
 
 To make customizations to the CDK environment, clone this repo, make any desired configuration changes, and then run:

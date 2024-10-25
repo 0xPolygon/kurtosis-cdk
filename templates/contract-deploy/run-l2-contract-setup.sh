@@ -66,20 +66,10 @@ echo "$accounts" | jq -r ".Addresses[].ETHAddress" | while read -r address; do
     fund_account_on_l2 "$address"
 done
 
-echo_ts "Building deterministic deployment proxy"
-git clone https://github.com/Arachnid/deterministic-deployment-proxy.git \
-    /opt/deterministic-deployment-proxy \
-    --branch "{{.deterministic_deployment_proxy_branch}}"
-cd /opt/deterministic-deployment-proxy || exit 1
-npm ci
-npm run build
-
-signer_address="0x$(jq -r '.signerAddress' output/deployment.json)"
-gas_price=$(jq -r '.gasPrice' output/deployment.json)
-gas_limit=$(jq -r '.gasLimit' output/deployment.json)
-gas_cost=$((gas_price * gas_limit))
-transaction="0x$(jq -r '.transaction' output/deployment.json)"
-deployer_address="0x$(jq -r '.address' output/deployment.json)"
+signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
+gas_cost="0.01ether"
+transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
+deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
 l1_private_key=$(
     polycli wallet inspect \
         --mnemonic "{{.l1_preallocated_mnemonic}}" \
@@ -132,7 +122,7 @@ cast send \
     "$deployer_address" \
     "$salt$bytecode"
 l2_actual=$(cast call --rpc-url "{{.l2_rpc_url}}" "$contract_address" "$contract_method_signature")
-if [ "$expected" != "$l2_actual" ]; then
+if [[ "$expected" != "$l2_actual" ]]; then
     echo_ts "Failed to deploy deterministic deployment proxy on l2 (expected: $expected, actual $l2_actual)"
     exit 1
 fi
