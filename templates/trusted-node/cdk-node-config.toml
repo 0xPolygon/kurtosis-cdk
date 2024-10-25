@@ -4,7 +4,7 @@ ForkUpgradeNewForkId = 0
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
 
-{{if ge zkevm_rollup_fork_id 12}}
+{{if ge .zkevm_rollup_fork_id 12}}
 ContractVersions = "banana"
 {{else}}
 ContractVersions = "elderberry"
@@ -28,7 +28,7 @@ SequencesTxFileName = "/data/sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
-{{if ge zkevm_rollup_fork_id 12}}
+{{if ge .zkevm_rollup_fork_id 12}}
 MaxBatchesForL1 = 300
 BlockFinality="FinalizedBlock"
 {{end}}
@@ -38,7 +38,7 @@ GetBatchWaitInterval = "10s"
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
                 ConsolidationL1ConfirmationBlocks = 5
-                {{if ge zkevm_rollup_fork_id 12}}
+                {{if ge .zkevm_rollup_fork_id 12}}
                 FinalizedStatusL1NumberOfBlocks = 10
                 WaitReceiptMaxTime = "250ms"
                 WaitReceiptCheckInterval = "8s"
@@ -108,7 +108,7 @@ GetBatchWaitInterval = "10s"
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
 
-                {{if ge zkevm_rollup_fork_id 12}}
+                {{if ge .zkevm_rollup_fork_id 12}}
                 WaitReceiptMaxTime = "250ms"
                 WaitReceiptCheckInterval = "1s"
                 {{else}}
@@ -157,7 +157,7 @@ WaitForNewBlocksPeriod = "1s"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 
 [NetworkConfig.L1]
-{{if ge zkevm_rollup_fork_id 12}}
+{{if ge .zkevm_rollup_fork_id 12}}
 L1ChainID = "{{.l1_chain_id}}"
 {{else}}
 ChainID = "{{.l1_chain_id}}"
