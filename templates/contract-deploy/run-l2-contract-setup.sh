@@ -119,7 +119,7 @@ cast send \
     "$deployer_address" \
     "$salt$bytecode"
 l1_actual=$(cast call --rpc-url "{{.l1_rpc_url}}" "$contract_address" "$contract_method_signature")
-if [ "$expected" != "$l1_actual" ]; then
+if [[ "$expected" != "$l1_actual" ]]; then
     echo_ts "Failed to deploy deterministic deployment proxy on l1 (expected: $expected, actual $l1_actual)"
     exit 1
 fi
