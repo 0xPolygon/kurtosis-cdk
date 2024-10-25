@@ -5,9 +5,9 @@ def run(plan, args):
 
     # When funding accounts and deploying the contracts on l2, the
     # zkevm-contracts service is reused to reduce startup time. Since the l2
-    # doesn't exist at the time the service is added to kurtosis, the l2_rpc_url
-    # can't be templated. Therefore, we export he l2_rpc_url as an environment
-    # variable before running the script.
+    # doesn't exist at the time the service is added to kurtosis, the 
+    # `l2_rpc_url` can't be templated. Therefore, the `l2_rpc_url` is exported
+    # as an environment variable before running the `run-l2-contract-setup.sh`.
 
     plan.exec(
         description="Deploying contracts on L2",
