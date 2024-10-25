@@ -20,7 +20,7 @@ wait_for_rpc_to_be_available() {
     local retry_interval=5
 
     until cast send --legacy \
-                    --rpc-url "{{.l2_rpc_url}}" \
+                    --rpc-url "$l2_rpc_url" \
                     --private-key "{{.zkevm_l2_admin_private_key}}" \
                     --value 0 "{{.zkevm_l2_sequencer_address}}" &> /dev/null; do
         ((counter++))
@@ -38,13 +38,13 @@ fund_account_on_l2() {
     echo_ts "Funding $address"
     cast send \
         --legacy \
-        --rpc-url "{{.l2_rpc_url}}" \
+        --rpc-url "$l2_rpc_url" \
         --private-key "{{.zkevm_l2_admin_private_key}}" \
         --value "{{.l2_funding_amount}}" \
         "$address"
 }
 
-if [[ -e "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock" ]]; then
+if [[ -e "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
     echo_ts "This script has already been executed"
     exit 1
 fi
@@ -87,15 +87,15 @@ fi
 echo_ts "Deploying deterministic deployment proxy on l2"
 cast send \
     --legacy \
-    --rpc-url "{{.l2_rpc_url}}" \
+    --rpc-url "$l2_rpc_url" \
     --private-key "{{.zkevm_l2_admin_private_key}}" \
     --value "$gas_cost" \
     "$signer_address"
-cast publish --rpc-url "{{.l2_rpc_url}}" "$transaction"
-if [[ $(cast code --rpc-url "{{.l2_rpc_url}}" $deployer_address) == "0x" ]]; then
+cast publish --rpc-url "$l2_rpc_url" "$transaction"
+if [[ $(cast code --rpc-url "$l2_rpc_url" $deployer_address) == "0x" ]]; then
     echo_ts "No code at expected l2 address: $deployer_address"
     exit 1;
 fi
 
 # The contract setup is done!
-touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
+touch "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock"
