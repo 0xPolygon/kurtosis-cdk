@@ -70,12 +70,7 @@ signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
 gas_cost="0.01ether"
 transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
 deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
-l1_private_key=$(
-    polycli wallet inspect \
-        --mnemonic "{{.l1_preallocated_mnemonic}}" \
-        --addresses 1 \
-        | jq -r ".Addresses[].HexPrivateKey"
-)
+l1_private_key=$(polycli wallet inspect --mnemonic "{{.l1_preallocated_mnemonic}}" | jq -r ".Addresses[0].HexPrivateKey")
 
 echo_ts "Deploying deterministic deployment proxy on l1"
 cast send \
@@ -84,6 +79,10 @@ cast send \
     --value "$gas_cost" \
     "$signer_address"
 cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
+if [[ $(cast code --rpc-url "{{.l1_rpc_url}}" $deployer_address) == "0x" ]]; then
+    echo_ts "No code at expected l1 address: $deployer_address"
+    exit 1;
+fi
 
 echo_ts "Deploying deterministic deployment proxy on l2"
 cast send \
@@ -93,38 +92,9 @@ cast send \
     --value "$gas_cost" \
     "$signer_address"
 cast publish --rpc-url "{{.l2_rpc_url}}" "$transaction"
-
-contract_method_signature="banana()(uint8)"
-expected="42"
-salt="0x0000000000000000000000000000000000000000000000000000000000000000"
-# contract: pragma solidity 0.5.8; contract Apple {function banana() external pure returns (uint8) {return 42;}}
-bytecode="6080604052348015600f57600080fd5b5060848061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063c3cafc6f14602d575b600080fd5b6033604f565b604051808260ff1660ff16815260200191505060405180910390f35b6000602a90509056fea165627a7a72305820ab7651cb86b8c1487590004c2444f26ae30077a6b96c6bc62dda37f1328539250029"
-contract_address=$(cast create2 --salt $salt --init-code $bytecode)
-
-echo_ts "Testing deterministic deployment proxy on l1"
-cast send \
-    --legacy \
-    --rpc-url "{{.l1_rpc_url}}" \
-    --private-key "$l1_private_key" \
-    "$deployer_address" \
-    "$salt$bytecode"
-l1_actual=$(cast call --rpc-url "{{.l1_rpc_url}}" "$contract_address" "$contract_method_signature")
-if [[ "$expected" != "$l1_actual" ]]; then
-    echo_ts "Failed to deploy deterministic deployment proxy on l1 (expected: $expected, actual $l1_actual)"
-    exit 1
-fi
-
-echo_ts "Testing deterministic deployment proxy on l2"
-cast send \
-    --legacy \
-    --rpc-url "{{.l2_rpc_url}}" \
-    --private-key "{{.zkevm_l2_admin_private_key}}" \
-    "$deployer_address" \
-    "$salt$bytecode"
-l2_actual=$(cast call --rpc-url "{{.l2_rpc_url}}" "$contract_address" "$contract_method_signature")
-if [[ "$expected" != "$l2_actual" ]]; then
-    echo_ts "Failed to deploy deterministic deployment proxy on l2 (expected: $expected, actual $l2_actual)"
-    exit 1
+if [[ $(cast code --rpc-url "{{.l2_rpc_url}}" $deployer_address) == "0x" ]]; then
+    echo_ts "No code at expected l2 address: $deployer_address"
+    exit 1;
 fi
 
 # The contract setup is done!

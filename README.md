@@ -180,6 +180,7 @@ This section features documentation specifically designed for advanced users, ou
 - How to [run a debugger](docs/running-a-debugger/running-a-debugger.org).
 - How to work with the [timelock](docs/timelock.org).
 - How to [trigger a reorg](docs/trigger-a-reorg/trigger-a-reorg.md).
+- How to [deploy contracts with the deterministic deployment proxy](docs/deterministic-deployment-proxy.md).
 
 ## Contact
 
