@@ -49,6 +49,11 @@ if [[ -e "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
     exit 1
 fi
 
+if [[ -z "$l2_rpc_url" ]]; then
+    echo "Error: l2_rpc_url is not set. Exiting."
+    exit 1
+fi
+
 echo_ts "Waiting for the L2 RPC to be available"
 wait_for_rpc_to_be_available
 echo_ts "L2 RPC is now available"
