@@ -4,5 +4,5 @@ args:
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.2.0-RC3
   additional_services:
     - tx_spammer
-  data_availability_mode: rollup
+  consensus_contract_type: rollup
   sequencer_type: erigon
