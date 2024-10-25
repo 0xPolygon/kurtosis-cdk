@@ -3,6 +3,12 @@ service_package = import_module("./lib/service.star")
 def run(plan, args):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
 
+    # When funding accounts and deploying the contracts on l2, the
+    # zkevm-contracts service is reused to reduce startup time. Since the l2
+    # doesn't exist at the time the service is added to kurtosis, the l2_rpc_url
+    # can't be templated. Therefore, we export he l2_rpc_url as an environment
+    # variable before running the script.
+
     plan.exec(
         description="Deploying contracts on L2",
         service_name="contracts" + args["deployment_suffix"],
