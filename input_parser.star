@@ -60,7 +60,7 @@ DEFAULT_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 10 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -89,9 +89,9 @@ DEFAULT_ACCOUNTS = {
     # proofsigner
     "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
     "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
-    # l1testing
-    "l1_deposit_account": "0xC196E8d1D15e15e5703f5Dba9F2b5d6ec35b5bbf",
-    "l1_deposit_account_private_key": "7ffefe81df12e9aeebba4f3671ece167c72aa0fe519a4e66e4c6f7630617b8c3",
+    # l1testing address from the same mnemonic as abvoe - renamed variable for clarity.
+    "l1_deposit_account": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
+    "l1_deposit_account_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
 }
 
 DEFAULT_L1_ARGS = {
@@ -128,7 +128,7 @@ DEFAULT_L1_ARGS = {
     #   - apache
     #  - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
-    "l1_additional_services": ["assertoor"],
+    "l1_additional_services": [],
     # Preset for the network.
     # Default: "mainnet"
     # Options:
@@ -137,14 +137,14 @@ DEFAULT_L1_ARGS = {
     # "minimal" preset will spin up a network with minimal preset. This is useful for rapid testing and development.
     # 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults
     # Please note that minimal preset requires alternative client images.
-    "l1_preset": "mainnet",
+    "l1_preset": "minimal",
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 1,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
-    "l1_participants_count": 1,
+    "l1_participants_count": 2,
     # Default: 2048
     "l1_eth1_follow_distance": 1,
     # Default: 256
@@ -152,7 +152,7 @@ DEFAULT_L1_ARGS = {
     # Default: 256
     "l1_shard_committee_period": 1,
     # Default: 12
-    "l1_genesis_delay": 12,
+    "l1_genesis_delay": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {

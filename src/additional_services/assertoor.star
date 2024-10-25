@@ -1,6 +1,6 @@
 HTTP_PORT_NUMBER = 8080
 
-ASSERTOOR_IMAGE = "ethpandaops/assertoor:latest"
+ASSERTOOR_IMAGE = "ethpandaops/assertoor:v0.0.11"
 
 ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE = "/config"
 
@@ -16,7 +16,7 @@ def run(plan, args):
             image=ASSERTOOR_IMAGE,
             ports={
                 "http": PortSpec(
-                    number=8080,
+                    number=HTTP_PORT_NUMBER,
                     transport_protocol="TCP",
                     application_protocol="http",
                 )
