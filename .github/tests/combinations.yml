@@ -21,3 +21,10 @@ combinations:
     components:
      - new-cdk-stack
 
+  - fork: 13
+    da-modes:
+      - cdk-validium
+      - rollup
+    components:
+     - new-cdk-stack
+

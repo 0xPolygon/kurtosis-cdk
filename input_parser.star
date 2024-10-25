@@ -30,7 +30,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:feature-storage-adding-epoch-packing",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.1-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "l2_contracts_image": "leovct/toolbox:0.0.6",  # https://hub.docker.com/r/leovct/toolbox/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
@@ -224,7 +224,7 @@ DEFAULT_ARGS = (
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [9, 11, 12]
+SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
 
 def parse_args(plan, args):
