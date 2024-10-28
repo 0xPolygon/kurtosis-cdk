@@ -5,7 +5,7 @@ ARG ZKEVM_BRIDGE_UI_TAG
 WORKDIR /opt/zkevm-bridge-ui
 # WARNING (DL3018): Pin versions in apk add.
 # hadolint ignore=DL3018
-RUN apk add --no-cache git patch nodejs npm \
+RUN apk add --no-cache git nodejs npm patch \
   && rm -rf /var/cache/apk/* \
   && git clone --branch ${ZKEVM_BRIDGE_UI_TAG} https://github.com/0xPolygonHermez/zkevm-bridge-ui .
 
