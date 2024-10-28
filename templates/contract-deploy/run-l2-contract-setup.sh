@@ -63,7 +63,7 @@ fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
 
 echo_ts "Funding accounts on l2"
 for (( i = 0; i < "{{.l2_accounts_to_fund}}"; i++ )); do
-    address=$(cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}" --mnemonic-index $i)
+    address=$(cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}" --mnemonic-index "$i")
     fund_account_on_l2 "$address"
 done
 
