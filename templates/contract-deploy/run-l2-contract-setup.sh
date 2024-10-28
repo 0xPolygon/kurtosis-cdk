@@ -62,15 +62,15 @@ echo_ts "Funding bridge autoclaimer account on l2"
 fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
 
 echo_ts "Funding accounts on l2"
-accounts=$(
-    polycli wallet inspect \
-        --mnemonic "{{.l1_preallocated_mnemonic}}" \
-        --addresses "{{.l2_accounts_to_fund}}"
-)
-echo "$accounts" | jq -r ".Addresses[].ETHAddress" | while read -r address; do
+for (( i = 0; i < "{{.l2_accounts_to_fund}}"; i++ )); do
+    address=$(cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}" --mnemonic-index $i)
     fund_account_on_l2 "$address"
 done
 
+# This deploys the deterministic deployment proxy found here:
+# https://github.com/Arachnid/deterministic-deployment-proxy. You can find the
+# signer_address, transaction, and deploy_address by building the repo or just
+# looking at the values in the README.
 signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
 gas_cost="0.01ether"
 transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
