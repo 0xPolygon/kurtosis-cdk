@@ -13,7 +13,7 @@ def run(plan, args):
                     "cl_type": "lighthouse",
                     "el_extra_params": ["--gcmode archive"],
                     "cl_extra_params": [
-                        # Disable optimistic finalized sync.This will force Lighthouse to
+                        # Disable optimistic finalized sync. This will force Lighthouse to
                         # verify every execution block hash with the execution client during
                         # finalized sync. By default block hashes will be checked in Lighthouse
                         # and only passed to the EL if initial verification fails.
