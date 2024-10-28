@@ -3,12 +3,7 @@ ForkUpgradeNewForkId = 0
 
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
-
-{{if or (eq .zkevm_rollup_fork_id "12") (eq .zkevm_rollup_fork_id "13")}}
-ContractVersions = "banana"
-{{else}}
-ContractVersions = "elderberry"
-{{end}}
+ContractVersions = "{{.zkevm_rollup_fork_name}}"
 
 [Etherman]
 URL = "{{.l1_rpc_url}}"
@@ -28,7 +23,7 @@ SequencesTxFileName = "/data/sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
-{{if or (eq .zkevm_rollup_fork_id "12") (eq .zkevm_rollup_fork_id "13")}}
+{{if eq .zkevm_rollup_fork_name "banana"}}
 MaxBatchesForL1 = 300
 BlockFinality="FinalizedBlock"
 {{end}}
@@ -38,7 +33,7 @@ GetBatchWaitInterval = "10s"
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
                 ConsolidationL1ConfirmationBlocks = 5
-                {{if or (eq .zkevm_rollup_fork_id "12") (eq .zkevm_rollup_fork_id "13")}}
+                {{if eq .zkevm_rollup_fork_name "banana"}}
                 FinalizedStatusL1NumberOfBlocks = 10
                 WaitReceiptMaxTime = "250ms"
                 WaitReceiptCheckInterval = "8s"
@@ -73,6 +68,7 @@ GetBatchWaitInterval = "10s"
         GeneratingProofCleanupThreshold = "10m"
         GasOffset = 150000
         UpgradeEtrogBatchNumber = "{{.zkevm_rollup_manager_block_number}}"
+        RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
         WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
         {{if .is_cdk_validium}}
         SenderAddress = "{{.zkevm_l2_agglayer_address}}"
@@ -82,9 +78,7 @@ GetBatchWaitInterval = "10s"
         {{else}}
         SenderAddress = "{{.zkevm_l2_aggregator_address}}"
         {{end}}
-        UseL1BatchData = true
         UseFullWitness = false
-        MaxWitnessRetrievalWorkers = 2
         SyncModeOnlyEnabled = false
 
         [Aggregator.SequencerPrivateKey]
@@ -102,13 +96,11 @@ GetBatchWaitInterval = "10s"
                 Environment = "development" # "production" or "development"
                 Level = "{{.global_log_level}}"
                 Outputs = ["stderr"]
-        [Aggregator.StreamClient]
-                Server = "{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_data_streamer_port}}"
         [Aggregator.EthTxManager]
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
 
-                {{if or (eq .zkevm_rollup_fork_id "12") (eq .zkevm_rollup_fork_id "13")}}
+                {{if eq .zkevm_rollup_fork_name "banana"}}
                 WaitReceiptMaxTime = "250ms"
                 WaitReceiptCheckInterval = "1s"
                 {{else}}
@@ -225,7 +217,7 @@ MaxRetryAttemptsAfterError = -1
 WaitForNewBlocksPeriod = "3s"
 
 [NetworkConfig.L1]
-{{if or (eq .zkevm_rollup_fork_id "12") (eq .zkevm_rollup_fork_id "13")}}
+{{if eq .zkevm_rollup_fork_name "banana"}}
 L1ChainID = "{{.l1_chain_id}}"
 {{else}}
 ChainID = "{{.l1_chain_id}}"

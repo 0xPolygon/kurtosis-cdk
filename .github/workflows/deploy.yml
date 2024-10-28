@@ -55,12 +55,10 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
-      - name: Dump enclave logs
-        if: failure()
+      - name: Dump enclave
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_without_args_${{ github.run_id }}
@@ -148,20 +146,17 @@ jobs:
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
 
-      - name: Dump enclave logs
-        if: failure()
+      - name: Dump enclave
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Generate archive name
-        if: failure()
         run: |
           file_name=$(basename "${{ matrix.file_name }}" ".yml")
           archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
           echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
           echo "Generated archive name: ${archive_name}"
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARCHIVE_NAME }}
@@ -259,12 +254,10 @@ jobs:
             echo "Prometheus is not deployed."
           fi
 
-      - name: Dump enclave logs
-        if: failure()
+      - name: Dump enclave
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
@@ -328,12 +321,10 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
 
-      - name: Dump enclave logs
-        if: failure()
+      - name: Dump enclave
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
         uses: actions/upload-artifact@v4
         with:
           name: dump_attach_ckds_${{ github.run_id }}
@@ -377,13 +368,11 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
-      - name: Dump enclave logs
-        if: failure()
+      - name: Dump enclave
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
         uses: actions/upload-artifact@v4
         with:
-          name: dump_attach_ckds_${{ github.run_id }}
+          name: dump_deploy_to_external_l1_${{ github.run_id }}
           path: ./dump
