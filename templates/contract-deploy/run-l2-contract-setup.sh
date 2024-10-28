@@ -76,9 +76,12 @@ gas_cost="0.01ether"
 transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
 deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
 
-# TODO: Change this to `cast wallet private-key` once `cast` has been updated in
-# the `zkevm-contracts` images.
+# We set this conditionally because older versions of cast use
+# `derive-private-key` while newer version use `private-key`.
 l1_private_key=$(cast wallet derive-private-key "{{.l1_preallocated_mnemonic}}" | grep "Private key:" | awk '{print $3}')
+if [ -z "$l1_private_key" ]; then
+    l1_private_key=$(cast wallet private-key "{{.l1_preallocated_mnemonic}}")
+fi
 
 echo_ts "Deploying deterministic deployment proxy on l1"
 cast send \
