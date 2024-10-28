@@ -6,7 +6,7 @@ ports_package = import_module("./src/package_io/ports.star")
 def run(plan, args):
     # Create agglayer prover service.
     agglayer_prover_config_artifact = create_agglayer_prover_config_artifact(plan, args)
-    prover = plan.add_service(
+    agglayer_prover = plan.add_service(
         name="agglayer-prover",
         config=ServiceConfig(
             image=args["agglayer_image"],
@@ -32,9 +32,14 @@ def run(plan, args):
         ),
         description="AggLayer Prover",
     )
+    agglayer_prover_url = "http://{}:{}".format(
+        agglayer_prover.ip_address, agglayer_prover.ports["api"].number
+    )
 
     # Deploy agglayer service.
-    agglayer_config_artifact = create_agglayer_config_artifact(plan, args)
+    agglayer_config_artifact = create_agglayer_config_artifact(
+        plan, args, agglayer_prover_url
+    )
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -92,7 +97,7 @@ def create_agglayer_prover_config_artifact(plan, args):
     )
 
 
-def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_configs):
+def create_agglayer_config_artifact(plan, args, agglayer_prover_url):
     agglayer_config_template = read_file(
         src="./templates/bridge-infra/agglayer-config.toml"
     )
@@ -120,9 +125,7 @@ def create_agglayer_config_artifact(plan, args, contract_setup_addresses, db_con
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "agglayer_port": args["agglayer_port"],
-                    "agglayer_prover_entrypoint": "http://agglayer-prover:{}".format(
-                        args["agglayer_prover_port"]
-                    ),
+                    "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
                 }
