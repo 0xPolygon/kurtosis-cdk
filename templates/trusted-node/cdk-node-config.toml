@@ -4,7 +4,12 @@ ForkUpgradeNewForkId = 0
 [Common]
 IsValidiumMode = {{.is_cdk_validium}}
 
-{{if ge .zkevm_rollup_fork_id 12}}
+# Handling integer comparisons in Kurtosis templates.
+# Kurtosis casts integers as strings, preventing direct numerical comparisons.
+# For example, {{if eq .zkevm_rollup_fork_id 12}} would result in an error.
+# As a workaround, we compare against string representations of numbers.
+# The following condition checks if zkevm_rollup_fork_id matches either "12" or "13":
+{{if eq .zkevm_rollup_fork_id "12" "13"}}
 ContractVersions = "banana"
 {{else}}
 ContractVersions = "elderberry"
@@ -28,7 +33,7 @@ SequencesTxFileName = "/data/sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "15m"
 MaxPendingTx = 1
-{{if ge .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12" "13"}}
 MaxBatchesForL1 = 300
 BlockFinality="FinalizedBlock"
 {{end}}
@@ -38,7 +43,7 @@ GetBatchWaitInterval = "10s"
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
                 ConsolidationL1ConfirmationBlocks = 5
-                {{if ge .zkevm_rollup_fork_id 12}}
+                {{if eq .zkevm_rollup_fork_id "12" "13"}}
                 FinalizedStatusL1NumberOfBlocks = 10
                 WaitReceiptMaxTime = "250ms"
                 WaitReceiptCheckInterval = "8s"
@@ -108,7 +113,7 @@ GetBatchWaitInterval = "10s"
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "2m"
 
-                {{if ge .zkevm_rollup_fork_id 12}}
+                {{if eq .zkevm_rollup_fork_id "12" "13"}}
                 WaitReceiptMaxTime = "250ms"
                 WaitReceiptCheckInterval = "1s"
                 {{else}}
@@ -157,7 +162,7 @@ WaitForNewBlocksPeriod = "1s"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 
 [NetworkConfig.L1]
-{{if ge .zkevm_rollup_fork_id 12}}
+{{if eq .zkevm_rollup_fork_id "12" "13"}}
 L1ChainID = "{{.l1_chain_id}}"
 {{else}}
 ChainID = "{{.l1_chain_id}}"
