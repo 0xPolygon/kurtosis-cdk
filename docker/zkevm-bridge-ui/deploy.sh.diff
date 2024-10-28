@@ -1,13 +1,32 @@
 diff --git a/scripts/deploy.sh b/scripts/deploy.sh
-index 22e5b09..00da634 100644
+index 22e5b09..b751cbd 100644
 --- a/scripts/deploy.sh
 +++ b/scripts/deploy.sh
 @@ -21,6 +21,9 @@ echo "VITE_POLYGON_ZK_EVM_NETWORK_ID=$POLYGON_ZK_EVM_NETWORK_ID" >> $ENV_FILENAM
  # BRIDGE API env vars
  echo "VITE_BRIDGE_API_URL=$BRIDGE_API_URL" >> $ENV_FILENAME
-
+ 
 +# Support for relative URLS
 +echo "VITE_RESOLVE_RELATIVE_URLS=$RESOLVE_RELATIVE_URLS" >> $ENV_FILENAME
 +
  # FIAT EXCHANGE RATES API env vars
  echo "VITE_ENABLE_FIAT_EXCHANGE_RATES=$ENABLE_FIAT_EXCHANGE_RATES" >> $ENV_FILENAME
+ 
+@@ -91,17 +94,5 @@ fi
+ echo "Generated .env file:"
+ echo "$(cat /app/.env)"
+ 
+-# Build app
+-cd /app && npm run build
+-
+-# Copy nginx config
+-cp /app/deployment/nginx.conf /etc/nginx/conf.d/default.conf
+-
+-# Copy app dist
+-cp -r /app/dist/. /usr/share/nginx/html
+-
+-# Delete source code
+-rm -rf /app
+-
+ # Run nginx
+ nginx -g 'daemon off;'

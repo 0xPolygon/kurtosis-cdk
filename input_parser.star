@@ -26,13 +26,13 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer-rs:pr-96",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "agglayer_image": "ghcr.io/agglayer/agglayer:feature-storage-adding-epoch-packing",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.3.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
+    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network-2",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
@@ -43,6 +43,9 @@ DEFAULT_IMAGES = {
 
 DEFAULT_PORTS = {
     "agglayer_port": 4444,
+    "agglayer_prover_port": 4445,
+    "agglayer_metrics_port": 9092,
+    "agglayer_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
@@ -236,7 +239,7 @@ DEFAULT_ARGS = (
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [9, 11, 12]
+SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
 
 def parse_args(plan, args):
@@ -250,7 +253,7 @@ def parse_args(plan, args):
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
-    fork_id = get_fork_id(zkevm_contracts_image)
+    (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -279,6 +282,7 @@ def parse_args(plan, args):
         "l2_rpc_name": l2_rpc_name,
         "sequencer_name": sequencer_name,
         "zkevm_rollup_fork_id": fork_id,
+        "zkevm_rollup_fork_name": fork_name,
         "deploy_agglayer": deployment_stages.get(
             "deploy_agglayer", False
         ),  # hacky but works fine for now.
@@ -312,7 +316,7 @@ def validate_global_log_level(global_log_level):
 
 def get_fork_id(zkevm_contracts_image):
     """
-    Extract the fork identifier from a zkevm contracts image name.
+    Extract the fork identifier and fork name from a zkevm contracts image name.
 
     The zkevm contracts tags follow the convention:
     v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>
@@ -337,7 +341,12 @@ def get_fork_id(zkevm_contracts_image):
     fork_id = int(result[1])
     if fork_id not in SUPPORTED_FORK_IDS:
         fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
-    return fork_id
+
+    fork_name = "elderberry"
+    if fork_id >= 12:
+        fork_name = "banana"
+
+    return (fork_id, fork_name)
 
 
 def get_sequencer_name(sequencer_type):

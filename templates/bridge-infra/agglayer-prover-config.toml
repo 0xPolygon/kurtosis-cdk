@@ -1,0 +1,21 @@
+grpc-endpoint = "0.0.0.0:{{ .agglayer_prover_port }}"
+max-concurrency-limit = 100
+max-request-duration = 300
+max-buffered-queries = 100
+
+[log]
+environment = "production"      # "production" or "development"
+level = "{{.global_log_level}}"
+outputs = ["stderr"]
+format = "json"
+
+[telemetry]
+prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
+
+[cpu-prover]
+max-concurrency-limit = 100
+proving-timeout = 300
+
+[network-prover]
+enabled = false
+proving-timeout = 300

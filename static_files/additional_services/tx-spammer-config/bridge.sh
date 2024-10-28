@@ -9,11 +9,11 @@ cast wallet new -j | jq '.[0]' | tee .bridge.wallet.json
 eth_address="$(jq -r '.address' .bridge.wallet.json)"
 private_key="$(jq -r '.private_key' .bridge.wallet.json)"
 
-until cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" --value "$spammer_value" "$eth_address"; do
+until cast send --legacy --private-key "{{.private_key}}" --rpc-url "{{.l1_rpc_url}}" --value "$spammer_value" "$eth_address"; do
     echo "Attempting to fund a test account on layer 1"
 done
 
-until cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l2_rpc_url}}" --value "$spammer_value" "$eth_address"; do
+until cast send --legacy --private-key "{{.private_key}}" --rpc-url "{{.l2_rpc_url}}" --value "$spammer_value" "$eth_address"; do
     echo "Attempting to fund a test account on layer 2"
 done
 
