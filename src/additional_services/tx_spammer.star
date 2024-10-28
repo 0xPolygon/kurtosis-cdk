@@ -46,14 +46,13 @@ def get_tx_spammer_config(plan, args):
                 template=spam_script_template,
                 data={
                     "rpc_url": l2_rpc_url,
-                    "private_key": args["zkevm_l2_admin_private_key"],
+                    "private_key": args["zkevm_l2_loadtest_private_key"],
                 },
             ),
             "bridge.sh": struct(
                 template=bridge_script_template,
                 data={
-                    "zkevm_l2_admin_private_key": args["zkevm_l2_admin_private_key"],
-                    "zkevm_l2_admin_address": args["zkevm_l2_admin_address"],
+                    "private_key": args["zkevm_l2_loadtest_private_key"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l2_rpc_url": l2_rpc_url,
                     "zkevm_bridge_api_url": zkevm_bridge_api_url,
