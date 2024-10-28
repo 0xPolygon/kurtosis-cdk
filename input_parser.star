@@ -226,7 +226,7 @@ def parse_args(plan, args):
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
-    fork_id = get_fork_id(zkevm_contracts_image)
+    (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -247,6 +247,7 @@ def parse_args(plan, args):
         "l2_rpc_name": l2_rpc_name,
         "sequencer_name": sequencer_name,
         "zkevm_rollup_fork_id": fork_id,
+        "zkevm_rollup_fork_name": fork_name,
         "deploy_agglayer": deployment_stages.get(
             "deploy_agglayer", False
         ),  # hacky but works fine for now.
@@ -280,7 +281,7 @@ def validate_global_log_level(global_log_level):
 
 def get_fork_id(zkevm_contracts_image):
     """
-    Extract the fork identifier from a zkevm contracts image name.
+    Extract the fork identifier and fork name from a zkevm contracts image name.
 
     The zkevm contracts tags follow the convention:
     v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>
@@ -305,7 +306,12 @@ def get_fork_id(zkevm_contracts_image):
     fork_id = int(result[1])
     if fork_id not in SUPPORTED_FORK_IDS:
         fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
-    return fork_id
+
+    fork_name = "elderberry"
+    if fork_id >= 12:
+        fork_name = "banana"
+
+    return (fork_id, fork_name)
 
 
 def get_sequencer_name(sequencer_type):

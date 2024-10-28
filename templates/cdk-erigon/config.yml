@@ -217,7 +217,7 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # - 2: BigEndian (improved format)
 # - 3: Latest format with additional features
 # Default: 2
-# fork12 {{if eq .zkevm_rollup_fork_id "12"}}
+# fork12 or after {{if eq .zkevm_rollup_fork_name "banana"}}
 zkevm.datastream-version: 3
 # before fork12 {{else}}
 zkevm.datastream-version: 2
