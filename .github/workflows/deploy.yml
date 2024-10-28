@@ -374,5 +374,5 @@ jobs:
       - name: Upload enclave dump
         uses: actions/upload-artifact@v4
         with:
-          name: dump_attach_ckds_${{ github.run_id }}
+          name: dump_deploy_to_external_l1_${{ github.run_id }}
           path: ./dump
