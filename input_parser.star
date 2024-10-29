@@ -252,6 +252,7 @@ def parse_args(plan, args):
     if "assertoor" in args["l1_additional_services"]:
         plan.print("Assertoor is detected - changing l1_preset to mainnet")
         args["l1_preset"] = "mainnet"
+        args["l1_participant_count"] = 2
 
     args = args | {
         "l2_rpc_name": l2_rpc_name,
