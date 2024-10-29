@@ -10,6 +10,7 @@ databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
+deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 
 # Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -80,7 +81,7 @@ def run(plan, args={}):
     # Deploy cdk central/trusted environment.
     if deployment_stages.get("deploy_cdk_central_environment", False):
         # Deploy cdk-erigon sequencer node.
-        # TODO this is a little weird if the erigon sequencer is deployed before the exector?
+        # TODO this is a little weird if the erigon sequencer is deployed before the executor?
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
             import_module(cdk_erigon_package).run_sequencer(plan, args)
@@ -125,6 +126,13 @@ def run(plan, args={}):
         import_module(agglayer_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of the agglayer")
+
+    # Deploy contracts on L2.
+    if deployment_stages.get("deploy_l2_contracts", False):
+        plan.print("Deploying contracts on L2")
+        import_module(deploy_l2_contracts_package).run(plan, args)
+    else:
+        plan.print("Skipping the deployment of contracts on L2")
 
     # Launching additional services.
     additional_services = args["additional_services"]

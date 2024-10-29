@@ -23,6 +23,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy cdk-erigon node.
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
+    # Deploy contracts on L2 (as well as fund accounts).
+    "deploy_l2_contracts": True,
 }
 
 DEFAULT_IMAGES = {
@@ -129,7 +131,7 @@ DEFAULT_L1_ARGS = {
     #   - blutgang
     #   - forky
     #   - apache
-    #  - tracoor
+    #   - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
     "l1_additional_services": [],
     # Preset for the network.
@@ -148,6 +150,14 @@ DEFAULT_L1_ARGS = {
     "l1_funding_amount": "1000000ether",
     # Default: 2
     "l1_participants_count": 1,
+}
+
+DEFAULT_L2_ARGS = {
+    # The number of accounts to fund on L2. The accounts will be derived from:
+    # polycli wallet inspect --mnemonic '{{.l1_preallocated_mnemonic}}'
+    "l2_accounts_to_fund": 10,
+    # The amount of ETH sent to each of the prefunded l2 accounts.
+    "l2_funding_amount": "100ether",
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -214,6 +224,7 @@ DEFAULT_ARGS = (
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
+    | DEFAULT_L2_ARGS
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
