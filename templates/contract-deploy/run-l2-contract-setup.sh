@@ -38,10 +38,13 @@ fund_account_on_l2() {
     echo_ts "Funding $address"
     cast send \
         --legacy \
+        --async \
+        --nonce "$account_nonce" \
         --rpc-url "$l2_rpc_url" \
         --private-key "{{.zkevm_l2_admin_private_key}}" \
         --value "{{.l2_funding_amount}}" \
         "$address"
+    account_nonce="$((account_nonce + 1))"
 }
 
 if [[ -e "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
@@ -57,6 +60,9 @@ fi
 echo_ts "Waiting for the L2 RPC to be available"
 wait_for_rpc_to_be_available
 echo_ts "L2 RPC is now available"
+
+eth_address="$(cast wallet address --private-key "{{.zkevm_l2_admin_private_key}}")"
+account_nonce="$(cast nonce --rpc-url "$l2_rpc_url" "$eth_address")"
 
 echo_ts "Funding bridge autoclaimer account on l2"
 fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
@@ -79,7 +85,7 @@ deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
 # We set this conditionally because older versions of cast use
 # `derive-private-key` while newer version use `private-key`.
 l1_private_key=$(cast wallet derive-private-key "{{.l1_preallocated_mnemonic}}" | grep "Private key:" | awk '{print $3}')
-if [ -z "$l1_private_key" ]; then
+if [[ -z "$l1_private_key" ]]; then
     l1_private_key=$(cast wallet private-key "{{.l1_preallocated_mnemonic}}")
 fi
 
