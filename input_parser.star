@@ -94,7 +94,7 @@ DEFAULT_ACCOUNTS = {
     # proofsigner
     "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
     "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
-    # l1testing address from the same mnemonic as abvoe - renamed variable for clarity.
+    # l1testing
     "l1_deposit_account": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
     "l1_deposit_account_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
 }
