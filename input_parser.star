@@ -171,7 +171,7 @@ DEFAULT_ROLLUP_ARGS = {
     # By default a mock verifier is deployed.
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
-    "zkevm_use_real_verifier": False,
+    "zkevm_use_real_verifier": True,
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,

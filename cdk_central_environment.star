@@ -26,7 +26,12 @@ def run(plan, args):
             )
         },
     )
-    zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
+
+    # if we're using a real verifier, that means we'll need to run a
+    # real prover which means we shouldn't bother running the default
+    # mock prover in this environment
+    if not args["zkevm_use_real_verifier"]:
+        zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
 
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.
