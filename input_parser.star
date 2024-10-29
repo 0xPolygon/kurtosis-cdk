@@ -131,7 +131,7 @@ DEFAULT_L1_ARGS = {
     #   - apache
     #  - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
-    "l1_additional_services": [],
+    "l1_additional_services": ["assertoor"],
     # Preset for the network.
     # Default: "mainnet"
     # Options:
@@ -147,22 +147,7 @@ DEFAULT_L1_ARGS = {
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
-    "l1_participants_count": 2,
-    # ETH1_FOLLOW_DISTANCE, Default: 2048
-    # This is used to calculate the minimum depth of block on the Ethereum 1 chain that can be considered by the Eth2 chain: it applies to the Genesis process and the processing of deposits by validators. The Eth1 chain depth is estimated by multiplying this value by the target average Eth1 block time, SECONDS_PER_ETH1_BLOCK.
-    # The value of ETH1_FOLLOW_DISTANCE is not based on the expected depth of any reorgs of the Eth1 chain, which are rarely if ever more than 2-3 blocks deep. It is about providing time to respond to an incident on the Eth1 chain such as a consensus failure between clients.
-    # This parameter was increased from 1024 to 2048 blocks for the beacon chain mainnet, to allow devs more time to respond if there were any trouble on the Eth1 chain.
-    # The whole follow distance concept has been made redundant by the Merge and may be removed in a future upgrade, so that validators can make deposits and become active more-or-less instantly.
-    "l1_eth1_follow_distance": 1,
-    # MIN_VALIDATOR_WITHDRAWABILITY_DELAY, Default: 256
-    # A validator can stop participating once it has made it through the exit queue. However, its stake remains locked for the duration of MIN_VALIDATOR_WITHDRAWABILITY_DELAY. This is to allow some time for any slashable behaviour to be detected and reported so that the validator can still be penalised (in which case the validator's withdrawable time is pushed EPOCHS_PER_SLASHINGS_VECTOR into the future).
-    # Once the MIN_VALIDATOR_WITHDRAWABILITY_DELAY period has passed, the validator becomes eligible for a full withdrawal of its stake and rewards on the next withdrawals sweep, as long as it has ETH1_ADDRESS_WITHDRAWAL_PREFIX (0x01) withdrawal credentials set. In any case, being in a "withdrawable" state means that a validator has now fully exited from the protocol.
-    "l1_min_validator_withdrawability_delay": 1,
-    # SHARD_COMMITTEE_PERIOD, Default: 256
-    # This really anticipates the implementation of data shards, which is no longer planned, at least in its originally envisaged form. The idea is that it's bad for the stability of longer-lived committees if validators can appear and disappear very rapidly. Therefore, a validator cannot initiate a voluntary exit until SHARD_COMMITTEE_PERIOD epochs after it has been activated. However, it could still be ejected by slashing before this time.
-    "l1_shard_committee_period": 1,
-    # Default: 12
-    "l1_genesis_delay": 1,
+    "l1_participants_count": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -262,6 +247,11 @@ def parse_args(plan, args):
     # This prevents updating already deployed services when updating the deployment stages.
     if "deployment_stages" in args:
         args.pop("deployment_stages")
+
+    # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
+    if "assertoor" in args["l1_additional_services"]:
+        plan.print("Assertoor is detected - changing l1_preset to mainnet")
+        args["l1_preset"] = "mainnet"
 
     args = args | {
         "l2_rpc_name": l2_rpc_name,
