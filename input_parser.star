@@ -250,7 +250,9 @@ def parse_args(plan, args):
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
-        plan.print("Assertoor is detected - changing l1_preset to mainnet and l1_participant_count to 2")
+        plan.print(
+            "Assertoor is detected - changing l1_preset to mainnet and l1_participant_count to 2"
+        )
         args["l1_preset"] = "mainnet"
         args["l1_participant_count"] = 2
 
