@@ -17,6 +17,7 @@ Specifically, this package will deploy:
 - [Getting Started](#getting-started)
 - [Supported Configurations](#supported-configurations)
 - [Advanced Use Cases](#advanced-use-cases)
+- [FAQ](#faq)
 - [Contact](#contact)
 - [License](#license)
 - [Contribution](#contribution)
@@ -180,6 +181,32 @@ This section features documentation specifically designed for advanced users, ou
 - How to work with the [timelock](docs/timelock.org).
 - How to [trigger a reorg](docs/trigger-a-reorg/trigger-a-reorg.md).
 - How to [deploy contracts with the deterministic deployment proxy](docs/deterministic-deployment-proxy.md).
+
+## FAQ
+
+### Q: I'm trying to deploy the package and Kurtosis is complaining, what should I do?
+
+1. Make sure the issue is related to Kurtosis itself. If you made any changes to the package, most common issues are misconfigurations of services, file artefacts, ports, etc.
+
+2. Remove the Kurtosis enclaves.
+
+Note: By specifying the `--all` flag, Kurtosis will also remove running enclaves.
+
+```bash
+kurtosis clean --all
+```
+
+3. Restart the Kurtosis engine.
+
+```bash
+kurtosis engine restart
+```
+
+4. Restart the Docker daemon.
+
+### Q: How do I deploy the package to Kubernetes?
+
+TODO
 
 ## Contact
 
