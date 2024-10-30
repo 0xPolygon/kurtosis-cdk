@@ -21,6 +21,10 @@ ARTIFACTS = [
         "name": "update-ger.sh",
         "file": "./templates/contract-deploy/update-ger.sh",
     },
+    {
+        "name": "run-l2-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
+    },
 ]
 
 

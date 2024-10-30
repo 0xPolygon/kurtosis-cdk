@@ -23,6 +23,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy cdk-erigon node.
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
+    # Deploy contracts on L2 (as well as fund accounts).
+    "deploy_l2_contracts": True,
 }
 
 DEFAULT_IMAGES = {
@@ -88,7 +90,7 @@ DEFAULT_PUBLIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 10 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -117,6 +119,9 @@ DEFAULT_ACCOUNTS = {
     # proofsigner
     "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
     "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
+    # l1testing
+    "l1_deposit_account": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
+    "l1_deposit_account_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
 }
 
 DEFAULT_L1_ARGS = {
@@ -126,7 +131,7 @@ DEFAULT_L1_ARGS = {
     # a) be used to create keystores for all the types of validators that we have, and
     # b) be used to generate a CL genesis.ssz that has the children validator keys already
     # preregistered as validators
-    "l1_preallocated_mnemonic": "code code code code code code code code code code code quality",
+    "l1_preallocated_mnemonic": "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete",
     # The L1 HTTP RPC endpoint.
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     # The L1 WS RPC endpoint.
@@ -151,7 +156,7 @@ DEFAULT_L1_ARGS = {
     #   - blutgang
     #   - forky
     #   - apache
-    #  - tracoor
+    #   - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
     "l1_additional_services": [],
     # Preset for the network.
@@ -166,8 +171,18 @@ DEFAULT_L1_ARGS = {
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 1,
-    # The amount of ETH sent to the admin, sequence, aggregator and sequencer addresses.
-    "l1_funding_amount": "100ether",
+    # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
+    "l1_funding_amount": "1000000ether",
+    # Default: 2
+    "l1_participants_count": 1,
+}
+
+DEFAULT_L2_ARGS = {
+    # The number of accounts to fund on L2. The accounts will be derived from:
+    # polycli wallet inspect --mnemonic '{{.l1_preallocated_mnemonic}}'
+    "l2_accounts_to_fund": 10,
+    # The amount of ETH sent to each of the prefunded l2 accounts.
+    "l2_funding_amount": "100ether",
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -236,6 +251,7 @@ DEFAULT_ARGS = (
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
+    | DEFAULT_L2_ARGS
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
@@ -277,6 +293,14 @@ def parse_args(plan, args):
     # This prevents updating already deployed services when updating the deployment stages.
     if "deployment_stages" in args:
         args.pop("deployment_stages")
+
+    # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
+    if "assertoor" in args["l1_additional_services"]:
+        plan.print(
+            "Assertoor is detected - changing l1_preset to mainnet and l1_participant_count to 2"
+        )
+        args["l1_preset"] = "mainnet"
+        args["l1_participant_count"] = 2
 
     args = args | {
         "l2_rpc_name": l2_rpc_name,
