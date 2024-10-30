@@ -96,7 +96,7 @@ DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS
 def run(plan, args):
     sequencer_type = args["sequencer_type"]
     db_configs = get_db_configs(args["deployment_suffix"], sequencer_type)
-    create_postgres_service(plan, db_configs, args)
+    create_postgres_service(plan, db_configs, args, "database_start_port")
 
 
 def get_db_configs(suffix, sequencer_type):
@@ -127,7 +127,9 @@ def _service_name(suffix):
 
 def run_pless_zkevm(plan, suffix):
     db_configs = get_pless_zkevm_db_configs(suffix)
-    create_postgres_service(plan, db_configs, _pless_suffix(suffix))
+    create_postgres_service(
+        plan, db_configs, _pless_suffix(suffix), "pless_database_start_port"
+    )
 
 
 def get_pless_zkevm_db_configs(suffix):
@@ -149,7 +151,7 @@ def _pless_suffix(suffix):
     return "-pless" + suffix
 
 
-def create_postgres_service(plan, db_configs, args):
+def create_postgres_service(plan, db_configs, args, start_port_name):
     init_script_tpl = read_file(src="./templates/databases/init.sql")
     init_script = plan.render_templates(
         name="init.sql" + args["deployment_suffix"],
@@ -165,7 +167,7 @@ def create_postgres_service(plan, db_configs, args):
         },
     )
 
-    (ports, public_ports) = get_database_ports(args)
+    (ports, public_ports) = get_database_ports(args, start_port_name)
     postgres_service_cfg = ServiceConfig(
         image=POSTGRES_IMAGE,
         ports=ports,
@@ -186,9 +188,9 @@ def create_postgres_service(plan, db_configs, args):
     )
 
 
-def get_database_ports(args):
+def get_database_ports(args, start_port_name):
     ports = {
         "postgres": PortSpec(POSTGRES_PORT, application_protocol="postgresql"),
     }
-    public_ports = ports_package.get_public_ports(ports, "database_start_port", args)
+    public_ports = ports_package.get_public_ports(ports, start_port_name, args)
     return (ports, public_ports)

@@ -85,6 +85,7 @@ DEFAULT_PUBLIC_PORTS = {
         "reverse_proxy_start_port": 51220,
         ## Databases (51300-51399).
         "database_start_port": 51300,
+        "pless_database_start_port": 51310,
         ## Pool manager (51400-51499).
         "zkevm_pool_manager_start_port": 51400,
         ## DAC (51500-51599).
