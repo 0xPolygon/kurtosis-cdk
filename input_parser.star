@@ -67,18 +67,27 @@ DEFAULT_PORTS = {
 DEFAULT_PUBLIC_PORTS = {
     "public_ports": {
         # L1 public ports (50000-50999).
+        ## EL/CL/VC (50000-50099).
         "l1_el_start_port": 50000,
-        "l1_cl_start_port": 50100,
-        "l1_vc_start_port": 50200,
-        "l1_additional_services_start_port": 50300,
+        "l1_cl_start_port": 50010,
+        "l1_vc_start_port": 50020,
+        ## Additional services (50100-50199).
+        "l1_additional_services_start_port": 50100,
         # L2/CDK public ports (51000-51999).
+        ## Agglayer (51000-51099).
         "agglayer_start_port": 51000,
+        "agglayer_prover_start_port": 51010,
+        ## CDK node (51100-51199).
         "cdk_node_start_port": 51100,
-        "zkevm_bridge_service_start_port": 51210,
-        "zkevm_bridge_ui_start_port": 51220,
-        "reverse_proxy_start_port": 51230,
+        ## Bridge services (51200-51299).
+        "zkevm_bridge_service_start_port": 51200,
+        "zkevm_bridge_ui_start_port": 51210,
+        "reverse_proxy_start_port": 51220,
+        ## Databases (51300-51399).
         "database_start_port": 51300,
+        ## Pool manager (51400-51499).
         "zkevm_pool_manager_start_port": 51400,
+        ## DAC (51500-51599).
         "zkevm_dac_start_port": 51500,
         # L2 additional services (52000-52999).
         "arpeggio_start_port": 52000,

@@ -6,18 +6,13 @@ ports_package = import_module("./src/package_io/ports.star")
 def run(plan, args):
     # Create agglayer prover service.
     agglayer_prover_config_artifact = create_agglayer_prover_config_artifact(plan, args)
+    (ports, public_ports) = get_agglayer_prover_ports(args)
     agglayer_prover = plan.add_service(
         name="agglayer-prover",
         config=ServiceConfig(
             image=args["agglayer_image"],
-            ports={
-                "api": PortSpec(
-                    args["agglayer_prover_port"], application_protocol="grpc"
-                ),
-                "prometheus": PortSpec(
-                    args["agglayer_prover_metrics_port"], application_protocol="http"
-                ),
-            },
+            ports=ports,
+            public_ports=public_ports,
             files={
                 "/etc/zkevm": Directory(
                     artifact_names=[
@@ -46,18 +41,13 @@ def run(plan, args):
         src="/opt/zkevm/agglayer.keystore",
     )
 
+    (ports, public_ports) = get_agglayer_ports(args)
     plan.add_service(
         name="agglayer",
         config=ServiceConfig(
             image=args["agglayer_image"],
-            ports={
-                "agglayer": PortSpec(
-                    args["agglayer_port"], application_protocol="http"
-                ),
-                "prometheus": PortSpec(
-                    args["agglayer_metrics_port"], application_protocol="http"
-                ),
-            },
+            ports=ports,
+            public_ports=public_ports,
             files={
                 "/etc/zkevm": Directory(
                     artifact_names=[
@@ -134,3 +124,27 @@ def create_agglayer_config_artifact(plan, args, agglayer_prover_url):
             )
         },
     )
+
+
+def get_agglayer_prover_ports(args):
+    ports = {
+        "api": PortSpec(args["agglayer_prover_port"], application_protocol="grpc"),
+        "prometheus": PortSpec(
+            args["agglayer_prover_metrics_port"], application_protocol="http"
+        ),
+    }
+    public_ports = ports_package.get_public_ports(
+        ports, "agglayer_prover_start_port", args
+    )
+    return (ports, public_ports)
+
+
+def get_agglayer_ports(args):
+    ports = {
+        "agglayer": PortSpec(args["agglayer_port"], application_protocol="http"),
+        "prometheus": PortSpec(
+            args["agglayer_metrics_port"], application_protocol="http"
+        ),
+    }
+    public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
+    return (ports, public_ports)
