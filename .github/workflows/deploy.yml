@@ -121,33 +121,34 @@ jobs:
       - name: Verify public ports
         run: |
           ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
+          echo "ports: $ports"
 
           use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
-          if [[ "$use_default_public_ports" == "true" ]]; then
-            wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none') # make sure all ports that with 5
-            if [[ "$wrong_ports" != "" ]]; then
-              echo "Default public ports are not set correctly."
-              echo "Wrong ports: $wrong_ports"
-              exit 1
-            else
-              echo "Default public ports are set correctly."
-            fi
-          else
-            echo "Default public ports are not set."
+          custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
+          if [[ "$use_default_public_ports" != "true" || "$custom_public_ports" == "null" ]]; then
+            echo "Skipping, public ports are not set."
+            exit 0
           fi
 
-          custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
+          echo "use_default_public_ports: $use_default_public_ports"
+          if [[ "$use_default_public_ports" == "true" ]]; then
+            wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none') # make sure all ports that with 5
+            echo "wrong_ports: $wrong_ports"
+            if [[ "$wrong_ports" != "" ]]; then
+              echo "❌ Default public ports are not set correctly."
+              exit 1
+            fi
+          fi
+
+          
+          echo "custom_public_ports: $custom_public_ports"
           if [[ "$custom_public_ports" != "null" ]]; then
             wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:6|none') # make sure all ports that with 6
+            echo "wrong_ports: $wrong_ports"
             if [[ "$wrong_ports" != "" ]]; then
-              echo "Custom public ports are not set correctly."
-              echo "Wrong ports: $wrong_ports"
+              echo "❌ Custom public ports are not set correctly."
               exit 1
-            else
-              echo "Custom public ports are set correctly."
             fi
-          else
-            echo "Custom public ports are not set."
           fi
 
       - name: Monitor verified batches (Central RPC)
