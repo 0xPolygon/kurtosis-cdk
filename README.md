@@ -17,6 +17,7 @@ Specifically, this package will deploy:
 - [Getting Started](#getting-started)
 - [Supported Configurations](#supported-configurations)
 - [Advanced Use Cases](#advanced-use-cases)
+- [FAQ](#faq)
 - [Contact](#contact)
 - [License](#license)
 - [Contribution](#contribution)
@@ -180,6 +181,227 @@ This section features documentation specifically designed for advanced users, ou
 - How to work with the [timelock](docs/timelock.org).
 - How to [trigger a reorg](docs/trigger-a-reorg/trigger-a-reorg.md).
 - How to [deploy contracts with the deterministic deployment proxy](docs/deterministic-deployment-proxy.md).
+
+## FAQ
+
+### Q: What are the different ways to deploy this package?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+1. Deploy the package without cloning the repository.
+
+```bash
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk@main
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk@v0.2.15
+```
+
+2. Deploy the package with the default parameters.
+
+```bash
+kurtosis run --enclave cdk .
+```
+
+3. Deploy with the default parameters and specify on-the-fly custom arguments.
+
+```bash
+kurtosis run --enclave cdk . '{"deployment_stages": {"deploy_l1": false}}'
+```
+
+4. Deploy with a configuration file.
+
+Check the [tests](.github/tests/) folder for sample configuration files.
+
+```bash
+kurtosis run --enclave cdk --args-file params.yml .
+```
+
+5. Deploy with a configuration file and specify on-the-fly custom arguments.
+
+Note: In this specific case, on-the-fly custom arguments take precedence over defaults and config file arguments.
+
+```bash
+kurtosis run --enclave cdk --args-file params.yml . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
+```
+
+</details>
+
+### Q: How do I deploy the package to Kubernetes?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+By default your Kurtosis cluster should be `docker`. You can check this using the following command:
+
+```bash
+kurtosis cluster get
+```
+
+You can also list the available clusters.
+
+```bash
+kurtosis cluster ls
+```
+
+If you take a look at your Kurtosis configuration, it should be similar to this:
+
+```yaml
+config-version: 2
+should-send-metrics: true
+kurtosis-clusters:
+  docker:
+    type: "docker"
+```
+
+Let's say you've deployed a local [minikube](https://minikube.sigs.k8s.io/docs/) cluster. It would work the same for any type of Kubernetes cluster.
+
+Edit the Kurtosis configuration file.
+
+```bash
+vi "$(kurtosis config path)"
+```
+
+Under `kurtosis-clusters`, you should add another entry for your local Kubernetes cluster.
+
+```yaml
+kurtosis-clusters:
+  minikube: # give it the name you want
+    type: "kubernetes"
+    config:
+      kubernetes-cluster-name: "local-01" # should be the same as your cluster name
+      storage-class: "standard"
+      enclave-size-in-megabytes: 10
+```
+
+Then point Kurtosis to the local Kubernetes cluster.
+
+```bash
+kurtosis cluster set minikube
+```
+
+Deploy the package to Kubernetes.
+
+```bash
+kurtosis run --enclave cdk .
+```
+
+If you want to revert back to Docker, simply use:
+
+```bash
+kurtosis cluster set docker
+```
+
+</details>
+
+### Q: I'm trying to deploy the package and Kurtosis is complaining, what should I do?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+1. Make sure the issue is related to Kurtosis itself. If you made any changes to the package, most common issues are misconfigurations of services, file artefacts, ports, etc.
+
+2. Remove the Kurtosis enclaves.
+
+Note: By specifying the `--all` flag, Kurtosis will also remove running enclaves.
+
+```bash
+kurtosis clean --all
+```
+
+3. Restart the Kurtosis engine.
+
+```bash
+kurtosis engine restart
+```
+
+4. Restart the Docker daemon.
+
+</details>
+
+### Q: How do I debug in Kurtosis?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+Kurtosis is just a thin wrapper on top of Docker so you can use all the `docker`commands you want.
+
+On top of that, here are some useful commands.
+
+1. View the state of the enclave (services and endpoints).
+
+```bash
+kurtosis enclave inspect cdk
+```
+
+2. Follow the logs of a service.
+
+Note: If you want to see all the logs of a service, you can specify the `--all` flag.
+
+```bash
+kurtosis service logs cdk cdk-erigon-sequencer-001 --follow
+```
+
+3. Execute a command inside a service.
+
+```bash
+kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq
+```
+
+4. Get a shell inside a service.
+
+```bash
+kurtosis service shell cdk cdk-erigon-sequencer-001
+```
+
+5. Stop or start a service.
+
+```bash
+kurtosis service stop cdk cdk-erigon-sequencer-001
+kurtosis service start cdk cdk-erigon-sequencer-001
+```
+
+6. Get a specific endpoint.
+
+```bash
+kurtosis port print cdk cdk-erigon-node-001 http-rpc
+```
+
+7. Inspect a file artifact.
+
+```bash
+kurtosis files inspect cdk cdk-erigon-node-config-artifact-sequencer config.yaml
+```
+
+8. Download a file artifact.
+
+```bash
+kurtosis files download cdk cdk-erigon-node-config-artifact
+```
+
+</details>
+
+### Q: How to lint Starlark code?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+```bash
+kurtosis lint --format .
+```
+
+</details>
+
+### Q: How do I do x, y, z in Kurtosis?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+Head to the Kurtosis [documentation](https://docs.kurtosis.com/).
+
+You can also take a look at the [Starlark language specification](https://github.com/bazelbuild/starlark/blob/master/spec.md) to know if certain operations are supported.
+
+</details>
 
 ## Contact
 
