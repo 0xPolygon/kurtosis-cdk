@@ -93,6 +93,9 @@ DEFAULT_PUBLIC_PORTS = {
         "zkevm_prover_start_port": 51600,
         "zkevm_executor_start_port": 51610,
         "zkevm_stateless_executor_start_port": 51620,
+        ## CDK erigon (51700-51799).
+        "cdk_erigon_sequencer_start_port": 51700,
+        "cdk_erigon_rpc_start_port": 51710,
         # L2 additional services (52000-52999).
         "arpeggio_start_port": 52000,
         "blutgang_start_port": 52100,

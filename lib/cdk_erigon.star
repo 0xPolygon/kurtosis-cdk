@@ -59,7 +59,7 @@ def _start_service(plan, type, args, config_artifact, ports={}, env_vars={}):
             },
             entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
             cmd=["cdk-erigon --config /etc/cdk-erigon/config.yaml"],
-            env_vars=envs,
+            env_vars=env_vars,
         ),
     )
 
