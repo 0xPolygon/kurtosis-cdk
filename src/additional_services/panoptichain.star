@@ -22,7 +22,7 @@ def get_panoptichain_config(plan, args):
         src="../../static_files/additional_services/panoptichain-config/config.yml"
     )
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    l2_rpc_urls = service_package.get_l2_rpc_urls(plan, args)
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     return plan.render_templates(
         name="panoptichain-config",
         config={
@@ -30,7 +30,7 @@ def get_panoptichain_config(plan, args):
                 template=panoptichain_config_template,
                 data={
                     "l1_rpc_url": args["l1_rpc_url"],
-                    "l2_rpc_url": l2_rpc_urls.http,
+                    "l2_rpc_url": l2_rpc_url.http,
                     "l1_chain_id": args["l1_chain_id"],
                     "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],
                 }

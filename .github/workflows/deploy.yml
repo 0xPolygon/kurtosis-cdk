@@ -22,6 +22,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
@@ -38,14 +50,17 @@ jobs:
 
       - name: Monitor verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
-      - name: Dump enclave logs
-        if: failure()
-        run: kurtosis dump ./dump
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_without_args_${{ github.run_id }}
@@ -65,7 +80,7 @@ jobs:
 
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
-        run: echo "matrix=$(ls -R params.yml ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(ls -R ./.github/tests/combinations/*.yml | grep -v 'additional-services.yml' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
@@ -77,6 +92,18 @@ jobs:
         file_name: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
@@ -106,31 +133,35 @@ jobs:
             exit 1
           fi
           echo "RPC name: $rpc_name"
-          ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
+          ./.github/scripts/monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
       - name: Monitor verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./.github/scripts/monitor-verified-batches.sh --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+            ./.github/scripts/monitor-verified-batches.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
           else
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
 
-      - name: Dump enclave logs
-        if: failure()
-        run: kurtosis dump ./dump
-      
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
       - name: Generate archive name
-        if: failure()
+        if: ${{ !cancelled() }}
         run: |
           file_name=$(basename "${{ matrix.file_name }}" ".yml")
           archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
           echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
           echo "Generated archive name: ${archive_name}"
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARCHIVE_NAME }}
@@ -142,6 +173,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
@@ -150,6 +193,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)
 
       - name: Verify Arpeggio RPC
         run: |
@@ -209,12 +259,12 @@ jobs:
             echo "Prometheus is not deployed."
           fi
 
-      - name: Dump enclave logs
-        if: failure()
-        run: kurtosis dump ./dump
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
@@ -226,16 +276,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=params.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
 
       - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false --args-file=agglayer-attach-cdk-params.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
 
       - name: Update the agglayer config
         run: |
@@ -243,29 +303,87 @@ jobs:
           kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
           cd agglayer-config-artifact
           # Update the config by adding the rpc and proof signer of the second chain.
-          tomlq -Y --toml-output --in-place '.FullNodeRPCs += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
+          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"2": "http://cdk-erigon-node-002:8123"}' agglayer-config.toml
           # Replace the agglayer config.
-          agglayer_container_id="$(docker ps --filter "name=agglayer" --format "{{.ID}}")"
+          agglayer_container_id="$(docker ps --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
           # Restart the agglayer service.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
           kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
 
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
       - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
 
       - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
-        run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-002 rpc)"
 
-      - name: Dump enclave logs
-        if: failure()
-        run: kurtosis dump ./dump
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
-      - name: Upload logs
-        if: failure()
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: dump_attach_ckds_${{ github.run_id }}
+          path: ./dump
+
+  deploy_to_external_l1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy L1 chain
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
+
+      - name: Deploy to local L1 chain
+        run: |
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor verified batches
+        working-directory: .github/scripts
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_deploy_to_external_l1_${{ github.run_id }}
           path: ./dump

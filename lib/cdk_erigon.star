@@ -8,26 +8,16 @@ def start_node(
     is_sequencer,
 ):
     envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
-    ports = {}
-    ports["pprof"] = PortSpec(
-        args["zkevm_pprof_port"],
-        application_protocol="http",
-        wait=None,
-    )
-    ports["prometheus"] = PortSpec(
-        args["prometheus_port"],
-        application_protocol="http",
-        wait=None,
-    )
-    ports["rpc"] = PortSpec(
-        args["zkevm_rpc_http_port"],
-        application_protocol="http",
-    )
-
-    ports["ws-rpc"] = PortSpec(
-        args["zkevm_rpc_http_port"],
-        application_protocol="ws",
-    )
+    ports = {
+        "pprof": PortSpec(
+            args["zkevm_pprof_port"], application_protocol="http", wait=None
+        ),
+        "prometheus": PortSpec(
+            args["prometheus_port"], application_protocol="http", wait=None
+        ),
+        "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
+        "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
+    }
 
     if is_sequencer:
         name = args["sequencer_name"] + args["deployment_suffix"]
@@ -67,9 +57,7 @@ def start_node(
                 "/usr/local/share/proc-runner": proc_runner_file_artifact,
             },
             entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
-            cmd=[
-                "cdk-erigon --pprof=true --pprof.addr 0.0.0.0 --config /etc/cdk-erigon/config.yaml"
-            ],
+            cmd=["cdk-erigon --config /etc/cdk-erigon/config.yaml"],
             env_vars=envs,
         ),
     )
