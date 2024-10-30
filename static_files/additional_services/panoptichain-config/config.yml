@@ -131,6 +131,15 @@ providers:
       label: "L1"
       contracts:
         rollup_manager_address: "{{.zkevm_rollup_manager_address}}"
+      time_to_mine:
+        sender: "{{.l1_sender_address}}"
+        sender_private_key: "{{.l1_sender_private_key}}"
+        receiver: "{{.l1_receiver_address}}"
+        value: 10000000000000 # 0.00001 ether
+        gas_limit: 21000
+        gas_price_factor: 3
+      accounts:
+        - "{{.l1_sender_address}}"
 
     - name: "L2"
       url: "{{.l2_rpc_url}}"
@@ -138,6 +147,15 @@ providers:
       contracts:
         global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
         zkevm_bridge_address: "{{.zkevm_bridge_address}}"
+      time_to_mine:
+        sender: "{{.l2_sender_address}}"
+        sender_private_key: "{{.l2_sender_private_key}}"
+        receiver: "{{.l2_receiver_address}}"
+        value: 10000000000000 # 0.00001 ether
+        gas_limit: 21000
+        gas_price_factor: 3
+      accounts:
+        - "{{.l2_sender_address}}"
 
 # Observers control what metrics will be recorded. Remove the observer from the
 # list to not track them, causing the metrics to be omitted from the metrics
@@ -155,6 +173,7 @@ observers:
   - "deposit_counts"
   - "double_sign"
   - "empty_block"
+  - "exchange_rates"
   - "exit_roots"
   - "gas_limit"
   - "gas_used"
@@ -199,10 +218,10 @@ observers:
 # in the provider as the `name` field.
 networks:
   - name: "L1"
-    chain_id: {{.l1_chain_id}}
+    chain_id: "{{.l1_chain_id}}"
 
   - name: "L2"
-    chain_id: {{.zkevm_rollup_chain_id}}
+    chain_id: "{{.zkevm_rollup_chain_id}}"
 
 logs:
   # Pretty print logs. If running in production, you should probably set this to
