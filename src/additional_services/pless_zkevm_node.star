@@ -20,7 +20,9 @@ def run(plan, args, genesis_artifact):
             )
         },
     )
-    zkevm_prover_package.start_executor(plan, args, executor_config_artifact)
+    zkevm_prover_package.start_executor(
+        plan, args, executor_config_artifact, "zkevm_executor_start_port"
+    )
 
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.

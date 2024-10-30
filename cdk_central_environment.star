@@ -26,7 +26,9 @@ def run(plan, args):
             )
         },
     )
-    zkevm_prover_package.start_prover(plan, args, prover_config_artifact)
+    zkevm_prover_package.start_prover(
+        plan, args, prover_config_artifact, "zkevm_prover_start_port"
+    )
 
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.

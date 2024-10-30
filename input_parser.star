@@ -89,6 +89,10 @@ DEFAULT_PUBLIC_PORTS = {
         "zkevm_pool_manager_start_port": 51400,
         ## DAC (51500-51599).
         "zkevm_dac_start_port": 51500,
+        ## zkEVM Provers (51600-51699).
+        "zkevm_prover_start_port": 51600,
+        "zkevm_executor_start_port": 51610,
+        "zkevm_stateless_executor_start_port": 51620,
         # L2 additional services (52000-52999).
         "arpeggio_start_port": 52000,
         "blutgang_start_port": 52100,
