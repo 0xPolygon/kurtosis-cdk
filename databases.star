@@ -127,9 +127,7 @@ def _service_name(suffix):
 
 def run_pless_zkevm(plan, suffix):
     db_configs = get_pless_zkevm_db_configs(suffix)
-    create_postgres_service(
-        plan, db_configs, _pless_suffix(suffix), "pless_database_start_port"
-    )
+    create_postgres_service(plan, db_configs, args, "pless_database_start_port")
 
 
 def get_pless_zkevm_db_configs(suffix):
