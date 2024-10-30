@@ -4,13 +4,13 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
 def run_sequencer(plan, args):
-    cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
+    cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    cdk_erigon_node_config_artifact = plan.render_templates(
-        name="cdk-erigon-node-config-artifact-sequencer",
+    cdk_erigon_sequencer_config_artifact = plan.render_templates(
+        name="cdk-erigon-sequencer-config-artifact",
         config={
             "config.yaml": struct(
-                template=cdk_erigon_node_config_template,
+                template=cdk_erigon_config_template,
                 data={
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                     "is_sequencer": True,
@@ -21,14 +21,14 @@ def run_sequencer(plan, args):
         },
     )
 
-    cdk_erigon_node_chain_spec_template = read_file(
+    cdk_erigon_chain_spec_template = read_file(
         src="./templates/cdk-erigon/chainspec.json"
     )
-    cdk_erigon_node_chain_spec_artifact = plan.render_templates(
-        name="cdk-erigon-node-chain-spec-artifact-sequencer",
+    cdk_erigon_chain_spec_artifact = plan.render_templates(
+        name="cdk-erigon-sequencer-chain-spec-artifact",
         config={
             "dynamic-kurtosis-chainspec.json": struct(
-                template=cdk_erigon_node_chain_spec_template,
+                template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
                 },
@@ -36,18 +36,18 @@ def run_sequencer(plan, args):
         },
     )
 
-    cdk_erigon_node_chain_config_artifact = plan.get_files_artifact(
-        name="cdk-erigon-node-chain-config",
+    cdk_erigon_chain_config_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-config",
     )
-    cdk_erigon_node_chain_allocs_artifact = plan.get_files_artifact(
-        name="cdk-erigon-node-chain-allocs",
+    cdk_erigon_chain_allocs_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-allocs",
     )
 
     config_artifacts = struct(
-        config=cdk_erigon_node_config_artifact,
-        chain_spec=cdk_erigon_node_chain_spec_artifact,
-        chain_config=cdk_erigon_node_chain_config_artifact,
-        chain_allocs=cdk_erigon_node_chain_allocs_artifact,
+        config=cdk_erigon_sequencer_config_artifact,
+        chain_spec=cdk_erigon_chain_spec_artifact,
+        chain_config=cdk_erigon_chain_config_artifact,
+        chain_allocs=cdk_erigon_chain_allocs_artifact,
     )
     cdk_erigon_package.start_cdk_erigon_sequencer(
         plan, args, config_artifacts, "cdk_erigon_sequencer_start_port"
@@ -96,13 +96,13 @@ def run_rpc(plan, args):
         pool_manager_service.ip_address,
         pool_manager_service.ports["http"].number,
     )
-    cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
+    cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
-    cdk_erigon_node_config_artifact = plan.render_templates(
-        name="cdk-erigon-node-config-artifact",
+    cdk_erigon_rpc_config_artifact = plan.render_templates(
+        name="cdk-erigon-rpc-config-artifact",
         config={
             "config.yaml": struct(
-                template=cdk_erigon_node_config_template,
+                template=cdk_erigon_config_template,
                 data={
                     "zkevm_sequencer_url": zkevm_sequence_url,
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
@@ -115,14 +115,14 @@ def run_rpc(plan, args):
         },
     )
 
-    cdk_erigon_node_chain_spec_template = read_file(
+    cdk_erigon_chain_spec_template = read_file(
         src="./templates/cdk-erigon/chainspec.json"
     )
-    cdk_erigon_node_chain_spec_artifact = plan.render_templates(
-        name="cdk-erigon-node-chain-spec-artifact",
+    cdk_erigon_chain_spec_artifact = plan.render_templates(
+        name="cdk-erigon-rpc-chain-spec-artifact",
         config={
             "dynamic-kurtosis-chainspec.json": struct(
-                template=cdk_erigon_node_chain_spec_template,
+                template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
                 },
@@ -130,18 +130,18 @@ def run_rpc(plan, args):
         },
     )
 
-    cdk_erigon_node_chain_config_artifact = plan.get_files_artifact(
-        name="cdk-erigon-node-chain-config",
+    cdk_erigon_chain_config_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-config",
     )
-    cdk_erigon_node_chain_allocs_artifact = plan.get_files_artifact(
-        name="cdk-erigon-node-chain-allocs",
+    cdk_erigon_chain_allocs_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-allocs",
     )
 
     config_artifacts = struct(
-        config=cdk_erigon_node_config_artifact,
-        chain_spec=cdk_erigon_node_chain_spec_artifact,
-        chain_config=cdk_erigon_node_chain_config_artifact,
-        chain_allocs=cdk_erigon_node_chain_allocs_artifact,
+        config=cdk_erigon_rpc_config_artifact,
+        chain_spec=cdk_erigon_chain_spec_artifact,
+        chain_config=cdk_erigon_chain_config_artifact,
+        chain_allocs=cdk_erigon_chain_allocs_artifact,
     )
     cdk_erigon_package.start_cdk_erigon_rpc(
         plan, args, config_artifacts, "cdk_erigon_rpc_start_port"

@@ -63,7 +63,7 @@ on L2 is the `zkevm_l2_admin_private_key`.
 ```bash
 cast send \
     --legacy \
-    --rpc-url "$(kurtosis port print cdk cdk-erigon-node-001 rpc)" \
+    --rpc-url "$(kurtosis port print cdk cdk-erigon-rpc-001 rpc)" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     "0x4e59b44847b379578588920ca78fbf26c0b4956c" \
     "$salt$bytecode"
