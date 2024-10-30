@@ -38,19 +38,19 @@ proxy deployer address which should be `0x4e59b44847b379578588920ca78fbf26c0b495
 
 ### Deploy Contracts on L1
 
-The accounts using the `code code code code code code code code code code code quality`
+The accounts using the `giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete`
 mnemonic are pre-funded on L1, so you can use those accounts to for the contract
 deployments.
 
 ```bash
-polycli wallet inspect --mnemonic "code code code code code code code code code code code quality" | jq -r ".Addresses[0].HexPrivateKey"
+polycli wallet inspect --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete" | jq -r ".Addresses[0].HexPrivateKey"
 ```
 
 ```bash
 cast send \
     --legacy \
     --rpc-url "http://$(kurtosis port print cdk el-1-geth-lighthouse rpc)" \
-    --private-key "0x42b6e34dc21598a807dc19d7784c71b2a7a01f6480dc6f58258f78e539f1a1fa" \
+    --private-key "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31" \
     "0x4e59b44847b379578588920ca78fbf26c0b4956c" \
     "$salt$bytecode"
 ```
