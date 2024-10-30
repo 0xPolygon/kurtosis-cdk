@@ -124,7 +124,7 @@ jobs:
 
           use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
           if [[ "$use_default_public_ports" == "true" ]]; then
-            wrong_ports=$(echo "$ports" | grep -vE '([a-z]+)://127.0.0.1:5') # make sure all ports that with 5
+            wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5') # make sure all ports that with 5
             echo "Wrong ports: $wrong_ports"
             if [[ -n "$wrong_ports" ]]; then
               echo "Default public ports are not set correctly."
@@ -136,7 +136,7 @@ jobs:
 
           custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
           if [[ "$custom_public_ports" != "null" ]]; then
-            wrong_ports=$(echo "$ports" | grep -vE '([a-z]+)://127.0.0.1:6') # make sure all ports that with 6
+            wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:6') # make sure all ports that with 6
             echo "Wrong ports: $wrong_ports"
             if [[ -n "$wrong_ports" ]]; then
               echo "Custom public ports are not set correctly."
