@@ -4,6 +4,7 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
 def run_rpc(plan, args):
+    # Start the zkevm stateless executor if strict mode is enabled.
     if args["erigon_strict_mode"]:
         stateless_configs = {}
         stateless_configs["stateless_executor"] = True
@@ -44,7 +45,6 @@ def run_rpc(plan, args):
         pool_manager_service.ip_address,
         pool_manager_service.ports["http"].number,
     )
-
     cdk_erigon_node_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_node_config_artifact = plan.render_templates(
@@ -86,15 +86,13 @@ def run_rpc(plan, args):
         name="cdk-erigon-node-chain-allocs",
     )
 
-    cdk_erigon_package.start_node(
-        plan,
-        args,
-        cdk_erigon_node_config_artifact,
-        cdk_erigon_node_chain_spec_artifact,
-        cdk_erigon_node_chain_config_artifact,
-        cdk_erigon_node_chain_allocs_artifact,
-        False,
+    config_artifacts = struct(
+        config=cdk_erigon_node_config_artifact,
+        chain_spec=cdk_erigon_node_chain_spec_artifact,
+        chain_config=cdk_erigon_node_chain_config_artifact,
+        chain_allocs=cdk_erigon_node_chain_allocs_artifact,
     )
+    cdk_erigon_package.start_cdk_erigon_rpc(plan, args, config_artifacts)
 
 
 def run_sequencer(plan, args):
@@ -137,12 +135,10 @@ def run_sequencer(plan, args):
         name="cdk-erigon-node-chain-allocs",
     )
 
-    cdk_erigon_package.start_node(
-        plan,
-        args,
-        cdk_erigon_node_config_artifact,
-        cdk_erigon_node_chain_spec_artifact,
-        cdk_erigon_node_chain_config_artifact,
-        cdk_erigon_node_chain_allocs_artifact,
-        True,
+    config_artifacts = struct(
+        config=cdk_erigon_node_config_artifact,
+        chain_spec=cdk_erigon_node_chain_spec_artifact,
+        chain_config=cdk_erigon_node_chain_config_artifact,
+        chain_allocs=cdk_erigon_node_chain_allocs_artifact,
     )
+    cdk_erigon_package.start_cdk_erigon_rpc(plan, args, config_artifacts)

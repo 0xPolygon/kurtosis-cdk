@@ -1,13 +1,26 @@
-def start_node(
-    plan,
-    args,
-    cdk_erigon_node_config_artifact,
-    cdk_erigon_node_chain_spec_artifact,
-    cdk_erigon_node_chain_config_artifact,
-    cdk_erigon_node_chain_allocs_artifact,
-    is_sequencer,
-):
-    envs = {"CDK_ERIGON_SEQUENCER": "1" if is_sequencer else "0"}
+CDK_ERIGON_TYPE = struct(
+    sequencer="sequencer",
+    rpc="rpc",
+)
+
+
+def start_cdk_erigon_sequencer(plan, args, config_artifact):
+    ports = {
+        "data-streamer": PortSpec(
+            args["zkevm_data_streamer_port"], application_protocol="datastream"
+        )
+    }
+    env_vars = {"CDK_ERIGON_SEQUENCER": "1"}
+    _start_service(
+        plan, CDK_ERIGON_TYPE.sequencer, args, config_artifact, ports, env_vars
+    )
+
+
+def start_cdk_erigon_rpc(plan, args, config_artifact):
+    _start_service(plan, CDK_ERIGON_TYPE.rpc, args, config_artifact)
+
+
+def _start_service(plan, type, args, config_artifact, ports={}, env_vars={}):
     ports = {
         "pprof": PortSpec(
             args["zkevm_pprof_port"], application_protocol="http", wait=None
@@ -17,42 +30,30 @@ def start_node(
         ),
         "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
         "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
-    }
+    } | ports
 
-    if is_sequencer:
-        name = args["sequencer_name"] + args["deployment_suffix"]
-    else:
-        name = args["l2_rpc_name"] + args["deployment_suffix"]
-
-    if is_sequencer:
-        ports["data-streamer"] = PortSpec(
-            args["zkevm_data_streamer_port"], application_protocol="datastream"
-        )
-
+    # Leaving the name out for now.
+    # This might cause some idempotency issues, but we're not currently relying on that for now.‡
     proc_runner_file_artifact = plan.upload_files(
         src="../templates/proc-runner.sh",
-        # leaving the name out for now. This might cause some idempotency issues, but we're not currently relying on that for now
     )
+    cdk_erigon_chain_artifact_names = [
+        config_artifact.chain_spec,
+        config_artifact.chain_config,
+        config_artifact.chain_allocs,
+    ]
     plan.add_service(
-        name=name,
+        name="cdk-erigon-" + type + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["cdk_erigon_node_image"],
             ports=ports,
             files={
                 "/etc/cdk-erigon": Directory(
-                    artifact_names=[
-                        cdk_erigon_node_config_artifact,
-                        cdk_erigon_node_chain_spec_artifact,
-                        cdk_erigon_node_chain_config_artifact,
-                        cdk_erigon_node_chain_allocs_artifact,
-                    ],
+                    artifact_names=[config_artifact.config]
+                    + cdk_erigon_chain_artifact_names,
                 ),
                 "/home/erigon/dynamic-configs/": Directory(
-                    artifact_names=[
-                        cdk_erigon_node_chain_spec_artifact,
-                        cdk_erigon_node_chain_config_artifact,
-                        cdk_erigon_node_chain_allocs_artifact,
-                    ]
+                    artifact_names=cdk_erigon_chain_artifact_names,
                 ),
                 "/usr/local/share/proc-runner": proc_runner_file_artifact,
             },
@@ -61,3 +62,12 @@ def start_node(
             env_vars=envs,
         ),
     )
+
+
+# def get_cdk_erigon_ports(args, start_port_name):
+#     ports = {
+#         "hash-db": PortSpec(args["zkevm_hash_db_port"], application_protocol="grpc"),
+#         "executor": PortSpec(args["zkevm_executor_port"], application_protocol="grpc"),
+#     }
+#     public_ports = ports_package.get_public_ports(ports, start_port_name, args)
+#     return (ports, public_ports)
