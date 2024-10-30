@@ -125,7 +125,7 @@ jobs:
 
           use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
           custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
-          if [[ "$use_default_public_ports" != "true" || "$custom_public_ports" == "null" ]]; then
+          if [[ "$use_default_public_ports" != "true" && "$custom_public_ports" == "null" ]]; then
             echo "Skipping, public ports are not set."
             exit 0
           fi
