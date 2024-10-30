@@ -211,6 +211,8 @@ kurtosis run --enclave cdk . '{"deployment_stages": {"deploy_l1": false}}'
 
 4. Deploy with a configuration file.
 
+Check the [tests](.github/tests/) folder for sample configuration files.
+
 ```bash
 kurtosis run --enclave cdk --args-file params.yml .
 ```
