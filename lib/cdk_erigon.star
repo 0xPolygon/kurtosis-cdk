@@ -1,3 +1,5 @@
+ports_package = import_module("../src/package_io/ports.star")
+
 CDK_ERIGON_TYPE = struct(
     sequencer="sequencer",
     rpc="rpc",
