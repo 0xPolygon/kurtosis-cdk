@@ -49,7 +49,9 @@ def run_sequencer(plan, args):
         chain_config=cdk_erigon_node_chain_config_artifact,
         chain_allocs=cdk_erigon_node_chain_allocs_artifact,
     )
-    cdk_erigon_package.start_cdk_erigon_sequencer(plan, args, config_artifacts)
+    cdk_erigon_package.start_cdk_erigon_sequencer(
+        plan, args, config_artifacts, "cdk_erigon_sequencer_start_port"
+    )
 
 
 def run_rpc(plan, args):
@@ -141,4 +143,6 @@ def run_rpc(plan, args):
         chain_config=cdk_erigon_node_chain_config_artifact,
         chain_allocs=cdk_erigon_node_chain_allocs_artifact,
     )
-    cdk_erigon_package.start_cdk_erigon_rpc(plan, args, config_artifacts)
+    cdk_erigon_package.start_cdk_erigon_rpc(
+        plan, args, config_artifacts, "cdk_erigon_rpc_start_port"
+    )
