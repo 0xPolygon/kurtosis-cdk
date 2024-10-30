@@ -117,6 +117,34 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+      
+      - name: Verify public ports
+        run: |
+          ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
+
+          use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
+          if [[ -n "$use_default_public_ports" ]]; then
+            wrong_ports=$(echo "$ports" | grep -vE '([a-z]+)://127.0.0.1:5') # make sure all ports that with 5
+            echo "Wrong ports: $wrong_ports"
+            if [[ -n "$wrong_ports" ]]; then
+              echo "Default public ports are not set correctly."
+              exit 1
+            else
+              echo "Default public ports are set correctly."
+            fi
+          fi
+
+          custom_public_ports=$(yq --raw-output 'args.public_ports' ${{ matrix.file_name }})
+          if [[ -n "$custom_public_ports" ]]; then
+            wrong_ports=$(echo "$ports" | grep -vE '([a-z]+)://127.0.0.1:6') # make sure all ports that with 6
+            echo "Wrong ports: $wrong_ports"
+            if [[ -n "$wrong_ports" ]]; then
+              echo "Custom public ports are not set correctly."
+              exit 1
+            else
+              echo "Custom public ports are set correctly."
+            fi
+          fi
 
       - name: Monitor verified batches (Central RPC)
         run: |
