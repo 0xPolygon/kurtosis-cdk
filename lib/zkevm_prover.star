@@ -7,19 +7,19 @@ PROVER_TYPE = struct(
 )
 
 
-def start_prover(plan, args, config_artifact):
+def start_prover(plan, args, config_artifact, start_port_name):
     return _start_service(
         plan, PROVER_TYPE.prover, args, config_artifact, start_port_name
     )
 
 
-def start_executor(plan, args, config_artifact):
+def start_executor(plan, args, config_artifact, start_port_name):
     return _start_service(
         plan, PROVER_TYPE.executor, args, config_artifact, start_port_name
     )
 
 
-def start_stateless_executor(plan, args, config_artifact):
+def start_stateless_executor(plan, args, config_artifact, start_port_name):
     return _start_service(
         plan, PROVER_TYPE.stateless_executor, args, config_artifact, start_port_name
     )
