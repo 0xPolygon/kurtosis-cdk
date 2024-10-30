@@ -27,10 +27,7 @@ def get_panoptichain_config(plan, args):
     # Ensure that the `l2_accounts_to_fund` parameter is > 0 or else the l2 time
     # to mine provider will fail.
     panoptichain_data = {
-        "l1_rpc_url": args["l1_rpc_url"],
         "l2_rpc_url": l2_rpc_url.http,
-        "l1_chain_id": args["l1_chain_id"],
-        "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],
         # cast wallet private-key "{{.l1_preallocated_mnemonic}}"
         "l1_sender_address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
         "l2_sender_address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
@@ -47,7 +44,7 @@ def get_panoptichain_config(plan, args):
         config={
             "config.yml": struct(
                 template=panoptichain_config_template,
-                data=panoptichain_data | contract_setup_addresses,
+                data=panoptichain_data | args | contract_setup_addresses,
             )
         },
     )
