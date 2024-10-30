@@ -207,12 +207,12 @@ function _compare_json() {
 if [[ "$enclave" != "" ]]; then
   echo "
 ####################################################################################################
-#   _  ___   _ ____ _____ ___  ____ ___ ____  
-#  | |/ / | | |  _ \_   _/ _ \/ ___|_ _/ ___| 
-#  | ' /| | | | |_) || || | | \___ \| |\___ \ 
+#   _  ___   _ ____ _____ ___  ____ ___ ____
+#  | |/ / | | |  _ \_   _/ _ \/ ___|_ _/ ___|
+#  | ' /| | | | |_) || || | | \___ \| |\___ \
 #  | . \| |_| |  _ < | || |_| |___) | | ___) |
-#  |_|\_\\___/|_| \_\|_| \___/|____/___|____/ 
-#                                            
+#  |_|\_\\___/|_| \_\|_| \___/|____/___|____/
+#
 ####################################################################################################
 "
   stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
@@ -414,10 +414,6 @@ echo -e "\nFetching data from L2 datastreamer..."
 l2_datastreamer_virtualized_batch_info="$(fetch_l2_batch_info_from_datastream "$((last_virtualized_batch))")"
 echo "$l2_datastreamer_virtualized_batch_info" | jq '.'
 
-# echo -e "\nFetching data from L1 RollupManager contract..."
-# l1_virtualized_batch_info="$(fetch_l1_batch_info "$last_virtualized_batch")"
-# echo "$l1_virtualized_batch_info" | jq '.'
-
 # Compare batch data.
 echo -e "\nComparing L2 sequencer and L2 RPC..."
 compare_json_full_match \
@@ -428,16 +424,6 @@ echo -e "\nComparing L2 datastreamer and L2 rpc..."
 compare_json_partial_match \
   "l2_datastreamer" "$l2_datastreamer_virtualized_batch_info" \
   "l2_rpc" "$l2_rpc_virtualized_batch_info"
-
-# echo -e "\nComparing L2 sequencer and L1 contracts..."
-# compare_json_partial_match \
-#   "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
-#   "l1_contract" "$l1_virtualized_batch_info"
-
-# echo -e "\nComparing L2 RPC and L1 contracts..."
-# compare_json_partial_match \
-#   "l2_rpc" "$l2_rpc_virtualized_batch_info" \
-#   "l1_contract" "$l1_virtualized_batch_info"
 
 # shellcheck disable=SC2028
 echo '
