@@ -125,25 +125,29 @@ jobs:
           use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
           if [[ "$use_default_public_ports" == "true" ]]; then
             wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none') # make sure all ports that with 5
-            echo "Wrong ports: $wrong_ports"
-            if [[ -n "$wrong_ports" ]]; then
+            if [[ "$wrong_ports" != "" ]]; then
               echo "Default public ports are not set correctly."
+              echo "Wrong ports: $wrong_ports"
               exit 1
             else
               echo "Default public ports are set correctly."
             fi
+          else
+            echo "Default public ports are not set."
           fi
 
           custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
           if [[ "$custom_public_ports" != "null" ]]; then
             wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:6|none') # make sure all ports that with 6
-            echo "Wrong ports: $wrong_ports"
-            if [[ -n "$wrong_ports" ]]; then
+            if [[ "$wrong_ports" != "" ]]; then
               echo "Custom public ports are not set correctly."
+              echo "Wrong ports: $wrong_ports"
               exit 1
             else
               echo "Custom public ports are set correctly."
             fi
+          else
+            echo "Custom public ports are not set."
           fi
 
       - name: Monitor verified batches (Central RPC)
