@@ -47,7 +47,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -63,7 +64,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 9
+            "y": 1
           },
           "id": 10,
           "maxDataPoints": 25,
@@ -72,6 +73,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -79,10 +81,11 @@
               "fields": "",
               "values": false
             },
+            "showPercentChange": false,
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -104,7 +107,6 @@
             }
           ],
           "title": "Block Height",
-          "transformations": [],
           "type": "stat"
         },
         {
@@ -122,7 +124,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -138,7 +141,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 9
+            "y": 1
           },
           "id": 11,
           "maxDataPoints": 25,
@@ -147,6 +150,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -154,10 +158,11 @@
               "fields": "",
               "values": false
             },
+            "showPercentChange": false,
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -179,7 +184,6 @@
             }
           ],
           "title": "Total Blocks Observed",
-          "transformations": [],
           "type": "stat"
         },
         {
@@ -193,6 +197,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -206,6 +211,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -227,7 +233,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -242,7 +249,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 9
+            "y": 1
           },
           "id": 20,
           "maxDataPoints": 25,
@@ -318,7 +325,6 @@
             }
           ],
           "title": "Gas Used (million gas)",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -332,6 +338,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -345,6 +352,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -366,7 +374,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -381,7 +390,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 17
+            "y": 9
           },
           "id": 9,
           "maxDataPoints": 25,
@@ -419,7 +428,6 @@
             }
           ],
           "title": "Base Fee Per Gas (gwei)",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -433,6 +441,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -446,6 +455,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -468,7 +478,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -484,7 +495,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 17
+            "y": 9
           },
           "id": 15,
           "maxDataPoints": 25,
@@ -522,7 +533,6 @@
             }
           ],
           "title": "Block Gas Limit",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -536,6 +546,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -549,6 +560,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -570,7 +582,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -586,7 +599,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 17
+            "y": 9
           },
           "id": 14,
           "maxDataPoints": 25,
@@ -662,7 +675,6 @@
             }
           ],
           "title": "Block Interval",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -676,6 +688,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -689,6 +702,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -711,7 +725,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -726,7 +741,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 25
+            "y": 17
           },
           "id": 12,
           "maxDataPoints": 25,
@@ -764,7 +779,6 @@
             }
           ],
           "title": "Block Difficulty",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -778,6 +792,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -791,6 +806,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -813,7 +829,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -829,7 +846,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 25
+            "y": 17
           },
           "id": 13,
           "maxDataPoints": 25,
@@ -867,7 +884,6 @@
             }
           ],
           "title": "Block Size",
-          "transformations": [],
           "type": "timeseries"
         },
         {
@@ -881,6 +897,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -894,6 +911,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -916,7 +934,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -932,7 +951,7 @@
             "h": 8,
             "w": 6,
             "x": 12,
-            "y": 25
+            "y": 17
           },
           "id": 42,
           "maxDataPoints": 25,
@@ -970,7 +989,6 @@
             }
           ],
           "title": "Uncles",
-          "transformations": [],
           "type": "timeseries"
         }
       ],
@@ -3063,7 +3081,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3078,7 +3097,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 12
+            "y": 4
           },
           "id": 49,
           "options": {
@@ -3086,6 +3105,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3093,9 +3113,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3132,7 +3154,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3147,7 +3170,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 12
+            "y": 4
           },
           "id": 50,
           "options": {
@@ -3155,6 +3178,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3162,9 +3186,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3201,7 +3227,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3216,7 +3243,7 @@
             "h": 8,
             "w": 6,
             "x": 12,
-            "y": 12
+            "y": 4
           },
           "id": 51,
           "options": {
@@ -3224,6 +3251,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3231,9 +3259,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3270,7 +3300,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3286,7 +3317,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 20
+            "y": 12
           },
           "id": 52,
           "options": {
@@ -3294,6 +3325,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3301,9 +3333,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3340,7 +3374,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3356,7 +3391,7 @@
             "h": 8,
             "w": 6,
             "x": 6,
-            "y": 20
+            "y": 12
           },
           "id": 53,
           "options": {
@@ -3364,6 +3399,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3371,9 +3407,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3410,7 +3448,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3426,7 +3465,7 @@
             "h": 8,
             "w": 6,
             "x": 12,
-            "y": 20
+            "y": 12
           },
           "id": 54,
           "options": {
@@ -3434,6 +3473,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3441,9 +3481,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3494,7 +3536,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3517,6 +3560,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3524,9 +3568,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3563,7 +3609,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3586,6 +3633,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3593,9 +3641,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3632,7 +3682,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3655,6 +3706,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3662,9 +3714,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3701,7 +3755,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3724,6 +3779,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -3731,9 +3787,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3777,7 +3835,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3807,7 +3866,7 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3872,7 +3931,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3902,7 +3962,7 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -3974,7 +4034,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -3990,7 +4051,7 @@
             "h": 8,
             "w": 6,
             "x": 0,
-            "y": 6
+            "y": 22
           },
           "id": 73,
           "options": {
@@ -3998,6 +4059,7 @@
             "graphMode": "area",
             "justifyMode": "auto",
             "orientation": "auto",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "lastNotNull"
@@ -4005,9 +4067,11 @@
               "fields": "",
               "values": false
             },
-            "textMode": "auto"
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.12",
+          "pluginVersion": "11.1.4",
           "targets": [
             {
               "datasource": {
@@ -4040,6 +4104,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4053,6 +4118,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -4074,7 +4140,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -4088,9 +4155,9 @@
           },
           "gridPos": {
             "h": 8,
-            "w": 12,
+            "w": 6,
             "x": 6,
-            "y": 6
+            "y": 22
           },
           "id": 72,
           "maxDataPoints": 25,
@@ -4166,8 +4233,103 @@
             }
           ],
           "title": "Refresh State Time",
-          "transformations": [],
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 22
+          },
+          "id": 77,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "11.1.4",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "avg by(address, network) (panoptichain_rpc_account_balance{network=~\"$network\", provider=~\"$provider\"}) / 1000000000000000000",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A",
+              "useBackend": false
+            }
+          ],
+          "title": "Account Balances (ETH)",
+          "transformations": [
+            {
+              "id": "reduce",
+              "options": {
+                "reducers": [
+                  "lastNotNull"
+                ]
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": {
+                "fields": {},
+                "sort": [
+                  {
+                    "field": "Last *"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "table"
         }
       ],
       "title": "Panoptichain",
@@ -4243,6 +4405,6 @@
   "timezone": "",
   "title": "Panoptichain",
   "uid": "be64161b-2874-4af1-9fca-3d460ced24bb",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
