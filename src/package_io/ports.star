@@ -2,7 +2,7 @@ dict = import_module("./dict.star")
 
 
 def get_public_ports(port_config, start_port_name, args):
-    public_port_config = args.get("public_ports", {})
+    public_port_config = args.get("static_ports", {})
     if not public_port_config:
         return {}
 
