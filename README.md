@@ -302,6 +302,8 @@ kurtosis cluster set docker
 <details>
 <summary><b>Click to expand</b></summary>
 
+Occasionally, Kurtosis deployments may run indefinitely. Typically, deployments should complete within 10 to 15 minutes. If you experience longer deployment times or if it seems stuck, check the Docker engine's memory limit and set it to 16GB if possible. If this does not resolve the issue, please refer to the troubleshooting steps provided.
+
 1. Make sure the issue is related to Kurtosis itself. If you made any changes to the package, most common issues are misconfigurations of services, file artefacts, ports, etc.
 
 2. Remove the Kurtosis enclaves.
