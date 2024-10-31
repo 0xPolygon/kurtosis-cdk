@@ -123,39 +123,20 @@ jobs:
       
       - name: Verify static ports
         run: |
-          ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
+          if [[ ${{ matrix.file_name }} == "./.github/tests/static-ports/default-static-ports.yml" ]]; then
+            echo "Making sure public ports start by a 5 as defined by the static ports in the input_parser.star file."
 
-          # Skip early if the packages using dynamic ports.
-          use_dynamic_ports=$(yq --raw-output '.args.use_dynamic_public_ports' ${{ matrix.file_name }})
-          if [[ "$use_dynamic_public_ports" == "true"]]; then
-            echo "Skipping, public ports are not set."
-            exit 0
-          fi
-
-          # Check default public ports if specified.
-          if [[ "$use_default_public_ports" == "true" ]]; then
-            # Make sure all ports start with a 5.
+            ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
             if ! wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none'); then
-              echo "✅ Default public ports are set correctly."
+              echo "✅ Default static ports are set correctly."
               exit 0
             else
               echo "wrong_ports: $wrong_ports"
-              echo "❌ Default public ports are not set correctly."
+              echo "❌ Default static ports are not set correctly."
               exit 1
             fi
-          fi
-
-          # Check custom public ports if specified.   
-          if [[ "$custom_public_ports" != "null" ]]; then
-            # Make sure all ports start with a 6.
-            if ! wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:6|none'); then
-              echo "✅ Custom public ports are set correctly."
-              exit 0
-            else
-              echo "wrong_ports: $wrong_ports"
-              echo "❌ Custom public ports are not set correctly."
-              exit 1
-            fi
+          else
+            echo "Skipping."  
           fi
 
       - name: Monitor verified batches (Central RPC)
