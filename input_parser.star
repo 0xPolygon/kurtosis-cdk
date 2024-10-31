@@ -65,45 +65,43 @@ DEFAULT_PORTS = {
 }
 
 # By default, we rely on dynamic ports set by Kurtosis.
-# L1 public ports (50000-50999).
-DEFAULT_L1_PUBLIC_PORTS = {
-    "l1_el_start_port": 50000,
-    "l1_cl_start_port": 50010,
-    "l1_vc_start_port": 50020,
-    "l1_additional_services_start_port": 50100,
-}
-
-# By default, we rely on dynamic ports set by Kurtosis.
-# L2 public ports (51000-51999).
-DEFAULT_L2_PUBLIC_PORTS = {
-    # Agglayer (51000-51099).
-    "agglayer_start_port": 51000,
-    "agglayer_prover_start_port": 51010,
-    # CDK node (51100-51199).
-    "cdk_node_start_port": 51100,
-    # Bridge services (51200-51299).
-    "zkevm_bridge_service_start_port": 51200,
-    "zkevm_bridge_ui_start_port": 51210,
-    "reverse_proxy_start_port": 51220,
-    # Databases (51300-51399).
-    "database_start_port": 51300,
-    "pless_database_start_port": 51310,
-    # Pool manager (51400-51499).
-    "zkevm_pool_manager_start_port": 51400,
-    # DAC (51500-51599).
-    "zkevm_dac_start_port": 51500,
-    # ZkEVM Provers (51600-51699).
-    "zkevm_prover_start_port": 51600,
-    "zkevm_executor_start_port": 51610,
-    "zkevm_stateless_executor_start_port": 51620,
-    # CDK erigon (51700-51799).
-    "cdk_erigon_sequencer_start_port": 51700,
-    "cdk_erigon_rpc_start_port": 51710,
-    # L2 additional services (52000-52999).
-    "arpeggio_start_port": 52000,
-    "blutgang_start_port": 52010,
-    "erpc_start_port": 52020,
-    "panoptichain_start_port": 52030,
+DEFAULT_PUBLIC_PORTS = {
+    "public_ports": {
+        ## L1 public ports (50000-50999).
+        "l1_el_start_port": 50000,
+        "l1_cl_start_port": 50010,
+        "l1_vc_start_port": 50020,
+        "l1_additional_services_start_port": 50100,
+        ## L2 public ports (51000-51999).
+        # Agglayer (51000-51099).
+        "agglayer_start_port": 51000,
+        "agglayer_prover_start_port": 51010,
+        # CDK node (51100-51199).
+        "cdk_node_start_port": 51100,
+        # Bridge services (51200-51299).
+        "zkevm_bridge_service_start_port": 51200,
+        "zkevm_bridge_ui_start_port": 51210,
+        "reverse_proxy_start_port": 51220,
+        # Databases (51300-51399).
+        "database_start_port": 51300,
+        "pless_database_start_port": 51310,
+        # Pool manager (51400-51499).
+        "zkevm_pool_manager_start_port": 51400,
+        # DAC (51500-51599).
+        "zkevm_dac_start_port": 51500,
+        # ZkEVM Provers (51600-51699).
+        "zkevm_prover_start_port": 51600,
+        "zkevm_executor_start_port": 51610,
+        "zkevm_stateless_executor_start_port": 51620,
+        # CDK erigon (51700-51799).
+        "cdk_erigon_sequencer_start_port": 51700,
+        "cdk_erigon_rpc_start_port": 51710,
+        # L2 additional services (52000-52999).
+        "arpeggio_start_port": 52000,
+        "blutgang_start_port": 52010,
+        "erpc_start_port": 52020,
+        "panoptichain_start_port": 52030,
+    }
 }
 
 # Addresses and private keys of the different components.
@@ -300,9 +298,7 @@ def parse_args(plan, args):
     # By default, we rely on dynamic ports set by Kurtosis.
     if args.get("use_default_public_ports", False):
         plan.print("Using default public ports.")
-        args = args | {
-            "public_ports": DEFAULT_L1_PUBLIC_PORTS | DEFAULT_L2_PUBLIC_PORTS,
-        }
+        args = args | DEFAULT_PUBLIC_PORTS
     else:
         public_ports = args.get("public_ports", {})
         if public_ports:
