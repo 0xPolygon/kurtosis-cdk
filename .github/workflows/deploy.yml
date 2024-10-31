@@ -121,8 +121,8 @@ jobs:
       - name: Verify public ports
         run: |
           ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
-          echo "ports: $ports"
 
+          # Skip early if public or custom public ports are not defined.
           use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
           custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
           if [[ "$use_default_public_ports" != "true" && "$custom_public_ports" == "null" ]]; then
@@ -130,22 +130,27 @@ jobs:
             exit 0
           fi
 
-          echo "use_default_public_ports: $use_default_public_ports"
+          # Check default public ports if specified.
           if [[ "$use_default_public_ports" == "true" ]]; then
-            wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none') # make sure all ports that with 5
-            echo "wrong_ports: $wrong_ports"
-            if [[ "$wrong_ports" != "" ]]; then
+            # Make sure all ports start with a 5.
+            if ! wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none'); then
+              echo "✅ Default public ports are set correctly."
+              exit 0
+            else
+              echo "wrong_ports: $wrong_ports"
               echo "❌ Default public ports are not set correctly."
               exit 1
             fi
           fi
 
-          
-          echo "custom_public_ports: $custom_public_ports"
+          # Check custom public ports if specified.   
           if [[ "$custom_public_ports" != "null" ]]; then
-            wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:6|none') # make sure all ports that with 6
-            echo "wrong_ports: $wrong_ports"
-            if [[ "$wrong_ports" != "" ]]; then
+            # Make sure all ports start with a 6.
+            if ! wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:6|none'); then
+              echo "✅ Custom public ports are set correctly."
+              exit 0
+            else
+              echo "wrong_ports: $wrong_ports"
               echo "❌ Custom public ports are not set correctly."
               exit 1
             fi
