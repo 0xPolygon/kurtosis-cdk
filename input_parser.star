@@ -1,4 +1,5 @@
 constants = import_module("./src/package_io/constants.star")
+dict = import_module("./src/package_io/dict.star")
 
 # The deployment process is divided into various stages.
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
@@ -332,8 +333,8 @@ def parse_args(plan, args):
     }
 
     # Sort dictionaries for debug purposes.
-    sorted_deployment_stages = sort_dict_by_values(deployment_stages)
-    sorted_args = sort_dict_by_values(args)
+    sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)
+    sorted_args = dict.sort_dict_by_values(args)
     return (sorted_deployment_stages, sorted_args)
 
 
@@ -412,8 +413,3 @@ def get_l2_rpc_name(deploy_cdk_erigon_node):
         return "cdk-erigon-rpc"
     else:
         return "zkevm-node-rpc"
-
-
-def sort_dict_by_values(d):
-    sorted_items = sorted(d.items(), key=lambda x: x[0])
-    return {k: v for k, v in sorted_items}

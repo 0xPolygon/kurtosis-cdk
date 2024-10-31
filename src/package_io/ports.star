@@ -1,3 +1,6 @@
+dict = import_module("./dict.star")
+
+
 def get_public_ports(port_config, start_port_name, args):
     public_port_config = args.get("public_ports", {})
     if not public_port_config:
@@ -8,7 +11,8 @@ def get_public_ports(port_config, start_port_name, args):
         return {}
 
     public_ports = {}
-    for index, (key, port) in enumerate(port_config.items()):
+    sorted_port_config = dict.sort_dict_by_values(port_config)
+    for index, (key, port) in enumerate(sorted_port_config.items()):
         new_port = PortSpec(
             number=start_port + index,
             # Some ports don't define a transport protocol which makes this specific intruction fail.
