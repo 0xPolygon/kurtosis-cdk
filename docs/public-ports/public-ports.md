@@ -22,6 +22,9 @@ L1 services will be exposed on the range 50000-50999 and L2 services on the rang
 
 ```yml
 # cat ./.github/tests/public-ports/default-public-ports.yml
+# Use the default public ports defined by the package.
+# - L1 services will be exposed on the range 50000-50999.
+# - L2 services on the range 51000-51999.
 args:
   use_default_public_ports: true
 ```
@@ -48,6 +51,9 @@ Here is an example where all the services are assigned to public ports.
 
 ```yaml
 # cat ./.github/tests/public-ports/custom-public-ports.yml
+# Override all the default public ports with custom public ports.
+# - L1 services will be exposed on the range 60000-60999.
+# - L2 services on the range 61000-61999.
 args:
   public_ports:
     # L1 public ports (60000-60999).
@@ -104,3 +110,26 @@ kurtosis run --enclave cdk --args-file ./.github/tests/public-ports/custom-publi
 You would get the following result:
 
 ![Enclave with custom public ports defined](./custom-public-ports.png)
+
+Finally, here's another scenario in which only the public port of the cdk-erigon sequencer is specified.
+
+```yaml
+# cat ./.github/tests/public-ports/custom-public-ports.yml
+# Only expose the datastream port of the cdk-erigon sequencer to a public port.
+# All the other ports will be allocated dynamically using Kurtosis.
+args:
+  public_ports:
+    cdk_erigon_sequencer_start_port: 61700
+```
+
+Here is how to deploy the stack:
+
+```bash
+kurtosis run --enclave cdk --args-file ./.github/tests/public-ports/custom-public-ports-cdk-erigon-sequencer-ds.yml .
+```
+
+Here is the result:
+
+![Enclave with custom public ports defined (only for the cdk-erigon sequencer service)](./custom-public-ports-cdk-erigon-sequencer-ds.png)
+
+As you can see, most of the services are assigned dynamic ports except the cdk-erigon sequencer. For example, the cdk-erigon sequencer datastream port is exposed on port 61704.
