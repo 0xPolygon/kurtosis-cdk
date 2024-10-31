@@ -178,9 +178,9 @@ This section features documentation specifically designed for advanced users, ou
 - How to use a [native token](docs/native-token/native-token.md).
 - How to [play with the network](docs/network-ops.org) to introduce latencies.
 - How to [set up a permissionless zkevm node](docs/permissionless-zkevm-node.md).
-- How to [assign public ports](docs/public-ports/public-ports.md) to Kurtosis services.
 - How to [resequence batches with the cdk-erigon sequencer](docs/resequence-sequencer/resequence-sequencer.md).
 - How to [run a debugger](docs/running-a-debugger/running-a-debugger.org).
+- How to [assign static ports](docs/static-ports/static-ports.md) to Kurtosis services.
 - How to work with the [timelock](docs/timelock.org).
 - How to [trigger a reorg](docs/trigger-a-reorg/trigger-a-reorg.md).
 - How to [perform a trustless recovery the DAC and L1](docs/trustless-recovery-from-dac-l1.md).

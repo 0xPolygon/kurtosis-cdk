@@ -64,15 +64,14 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
 }
 
-# By default, we rely on dynamic ports set by Kurtosis.
-DEFAULT_PUBLIC_PORTS = {
-    "public_ports": {
-        ## L1 public ports (50000-50999).
+DEFAULT_STATIC_PORTS = {
+    "static_ports": {
+        ## L1 static ports (50000-50999).
         "l1_el_start_port": 50000,
         "l1_cl_start_port": 50010,
         "l1_vc_start_port": 50020,
         "l1_additional_services_start_port": 50100,
-        ## L2 public ports (51000-51999).
+        ## L2 static ports (51000-51999).
         # Agglayer (51000-51099).
         "agglayer_start_port": 51000,
         "agglayer_prover_start_port": 51010,
@@ -218,8 +217,16 @@ DEFAULT_ROLLUP_ARGS = {
     "erigon_strict_mode": True,
     # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
     "zkevm_use_gas_token_contract": False,
-    # Use the default public ports.
-    "use_default_public_ports": False,
+    # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
+    # You can either use the default static ports defined in this file or specify your custom static
+    # ports.
+    #
+    # By default, Kurtosis binds the ports of enclave services to ephemeral or dynamic ports on the
+    # host machine. To quote the Kurtosis documentation: "these ephemeral ports are called the
+    # "public ports" of the container because they allow the container to be accessed outside the
+    # Docker/Kubernetes cluster".
+    # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
+    "use_dynamic_ports": True,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -294,16 +301,10 @@ def parse_args(plan, args):
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
 
-    # Determine public ports.
-    # By default, we rely on dynamic ports set by Kurtosis.
-    if args.get("use_default_public_ports", False):
-        plan.print("Using default public ports.")
-        args = args | DEFAULT_PUBLIC_PORTS
-    else:
-        public_ports = args.get("public_ports", {})
-        if public_ports:
-            plan.print("Using custom public ports.")
-            args = args | {"public_ports": public_ports}
+    # Determine static ports, if specified.
+    if not args.get("use_dynamic_ports", True):
+        plan.print("Using static ports.")
+        args = DEFAULT_STATIC_PORTS | args
 
     # Remove deployment stages from the args struct.
     # This prevents updating already deployed services when updating the deployment stages.

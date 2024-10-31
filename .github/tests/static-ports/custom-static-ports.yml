@@ -1,8 +1,9 @@
-# Override all the default public ports with custom public ports.
+# All services will be exposed through static public ports, with custom ranges defined in this file.
 # - L1 services will be exposed on the range 60000-60999.
 # - L2 services on the range 61000-61999.
 args:
-  public_ports:
+  use_dynamic_ports: false
+  static_ports:
     # L1 public ports (60000-60999).
     l1_el_start_port: 60000
     l1_cl_start_port: 60010

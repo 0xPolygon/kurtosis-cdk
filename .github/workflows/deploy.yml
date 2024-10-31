@@ -81,7 +81,7 @@ jobs:
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
         run: |
-          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/public-ports/custom-public-ports.yml ./.github/tests/public-ports/default-public-ports.yml | grep -v 'additional-services.yml')
+          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/static-ports/custom-static-ports.yml ./.github/tests/static-ports/default-static-ports.yml | grep -v 'additional-services.yml')
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
@@ -121,14 +121,13 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
       
-      - name: Verify public ports
+      - name: Verify static ports
         run: |
           ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
 
-          # Skip early if public or custom public ports are not defined.
-          use_default_public_ports=$(yq --raw-output '.args.use_default_public_ports' ${{ matrix.file_name }})
-          custom_public_ports=$(yq --raw-output '.args.public_ports' ${{ matrix.file_name }})
-          if [[ "$use_default_public_ports" != "true" && "$custom_public_ports" == "null" ]]; then
+          # Skip early if the packages using dynamic ports.
+          use_dynamic_ports=$(yq --raw-output '.args.use_dynamic_public_ports' ${{ matrix.file_name }})
+          if [[ "$use_dynamic_public_ports" == "true"]]; then
             echo "Skipping, public ports are not set."
             exit 0
           fi
