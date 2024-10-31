@@ -162,11 +162,12 @@ For more information about the CDK stack, visit the [Polygon Knowledge Layer](ht
 
 This section features documentation specifically designed for advanced users, outlining complex operations and techniques.
 
+- How to use CDK [ACL](docs/acl-allowlists-blocklists.md).
 - How to deploy [additional services](docs/additional-services.md) alongside the CDK stack, such as transaction spammer, monitoring tools, permissionless nodes etc.
 - How to [attach multiple CDK chains to the AggLayer](docs/attach-multiple-cdks.md).
-- How to use CDK [ACL](docs/acl-allowlists-blocklists.md).
 - How to use the different [data availability modes](docs/data-availability-modes.md).
 - How to [deploy the stack to an external L1](docs/deploy-using-sepolia.org) such as Sepolia.
+- How to [deploy contracts with the deterministic deployment proxy](docs/deterministic-deployment-proxy.md).
 - How to [edit the zkevm contracts](docs/edit-contracts.md).
 - How to [perform an environment migration](docs/environment-migration.org) with clean copies of the databases.
 - How to [iterate and debug quickly](docs/fast-iteration-cycle.md) with Kurtosis.
@@ -177,10 +178,12 @@ This section features documentation specifically designed for advanced users, ou
 - How to use a [native token](docs/native-token/native-token.md).
 - How to [play with the network](docs/network-ops.org) to introduce latencies.
 - How to [set up a permissionless zkevm node](docs/permissionless-zkevm-node.md).
+- How to [assign public ports](docs/public-ports/public-ports.md) to Kurtosis services.
+- How to [resequence batches with the cdk-erigon sequencer](docs/resequence-sequencer/resequence-sequencer.md).
 - How to [run a debugger](docs/running-a-debugger/running-a-debugger.org).
 - How to work with the [timelock](docs/timelock.org).
 - How to [trigger a reorg](docs/trigger-a-reorg/trigger-a-reorg.md).
-- How to [deploy contracts with the deterministic deployment proxy](docs/deterministic-deployment-proxy.md).
+- How to [perform a trustless recovery the DAC and L1](docs/trustless-recovery-from-dac-l1.md).
 
 ## FAQ
 

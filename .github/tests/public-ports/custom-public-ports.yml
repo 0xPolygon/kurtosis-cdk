@@ -1,3 +1,6 @@
+# Override all the default public ports with custom public ports.
+# - L1 services will be exposed on the range 60000-60999.
+# - L2 services on the range 61000-61999.
 args:
   public_ports:
     # L1 public ports (60000-60999).
