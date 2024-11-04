@@ -15,7 +15,7 @@
   "londonBlock": {{if .enable_normalcy}}0{{else}}9999999999999999999999999999999999999999999999999{{end}},
   "arrowGlacierBlock": 9999999999999999999999999999999999999999999999999,
   "grayGlacierBlock": 9999999999999999999999999999999999999999999999999,
-  "terminalTotalDifficulty": {{if .enable_normalcy}}0{{else}}58750000000000000000000{{end}},
+  {{if not .enable_normalcy}}"terminalTotalDifficulty": 58750000000000000000000,{{end}}
   "terminalTotalDifficultyPassed": false,
   "shanghaiTime": {{if .enable_normalcy}}0{{else}}9999999999999999999999999999999999999999999999999{{end}},
   "cancunTime": {{if .enable_normalcy}}0{{else}}9999999999999999999999999999999999999999999999999{{end}},
