@@ -227,6 +227,7 @@ DEFAULT_ROLLUP_ARGS = {
     # Docker/Kubernetes cluster".
     # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
     "use_dynamic_ports": True,
+    "enable_normalcy": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {

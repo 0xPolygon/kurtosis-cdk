@@ -31,6 +31,7 @@ def run_sequencer(plan, args):
                 template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
+                    "enable_normalcy": args["enable_normalcy"],
                 },
             ),
         },
