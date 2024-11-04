@@ -228,11 +228,12 @@ RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
 GlobalExitRootManagerAddr = "{{.zkevm_global_exit_root_address}}"
 
 [AggSender]
-DBPath = "/tmp/aggsender"
+# DBPath = "/tmp/aggsender"
 AggLayerURL = "http://agglayer:{{.agglayer_port}}"
 CertificateSendInterval = "1m"
 URLRPCL2 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 CheckSettledInterval = "5s"
+StoragePath = "/tmp/aggsender.db"
 [AggSender.SequencerPrivateKey]
 Path = "/etc/cdk/sequencer.keystore"
 Password = "{{.zkevm_l2_keystore_password}}"
