@@ -1,89 +1,51 @@
-ForkUpgradeBatchNumber = 0
-ForkUpgradeNewForkId = 0
+PathRWData = "{{or .path_rw_data "/tmp/"}}"
+L1URL="{{.l1_rpc_url}}"
+L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+AggLayerURL="http://agglayer:{{.agglayer_port}}"
 
-[Common]
+ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
-ContractVersions = "{{.zkevm_rollup_fork_name}}"
+{{if eq .zkevm_rollup_fork_id "12"}}
+ContractVersions = "banana"
+{{else}}
+ContractVersions = "elderberry"
+{{end}}
 
-[Etherman]
-URL = "{{.l1_rpc_url}}"
+L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
+SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
+SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+
+AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
+AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"   
+polygonBridgeAddr = "{{.zkevm_bridge_address}}" 
+
+
+RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+
+# This values can be override directly from genesis.json
+rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+[L1Config]
+	chainId = "{{.l1_chain_id}}"
+	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+	polTokenAddress = "{{.pol_token_address}}"
+	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+	
+[L2Config]
+	GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
 
 [Log]
 Environment = "development" # "production" or "development"
 Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
-[SequenceSender]
-WaitPeriodSendSequence = "15s"
-LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
-MaxTxSizeForL1 = 131072
-L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
-PrivateKey = {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-SequencesTxFileName = "/data/sequencesender.json"
-GasOffset = 80000
-WaitPeriodPurgeTxFile = "15m"
-MaxPendingTx = 1
-{{if eq .zkevm_rollup_fork_name "banana"}}
-MaxBatchesForL1 = 300
-BlockFinality="FinalizedBlock"
-{{end}}
-RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-GetBatchWaitInterval = "10s"
-        [SequenceSender.EthTxManager]
-                FrequencyToMonitorTxs = "1s"
-                WaitTxToBeMined = "2m"
-                ConsolidationL1ConfirmationBlocks = 5
-                {{if eq .zkevm_rollup_fork_name "banana"}}
-                FinalizedStatusL1NumberOfBlocks = 10
-                WaitReceiptMaxTime = "250ms"
-                WaitReceiptCheckInterval = "8s"
-                {{else}}
-                FinalizationL1ConfirmationBlocks = 10
-                WaitReceiptToBeGenerated = "8s"
-                {{end}}
-                PrivateKeys = [
-                        {Path = "/etc/cdk/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
-                ]
-                ForcedGas = 0
-                GasPriceMarginFactor = 1
-                MaxGasPriceLimit = 0
-                StoragePath = "/data/ethtxmanager.db"
-                [SequenceSender.EthTxManager.Etherman]
-                        URL = "{{.l1_rpc_url}}"
-                        L1ChainID = {{.l1_chain_id}}
-                        HTTPHeaders = []
-
 [Aggregator]
-        Host = "0.0.0.0"
         Port = "{{.zkevm_aggregator_port}}"
-        RetryTime = "30s"
-        VerifyProofInterval = "30s"
-        ProofStatePollingInterval = "5s"
-        TxProfitabilityCheckerType = "acceptall"
-        TxProfitabilityMinReward = "1.1"
-        IntervalAfterWhichBatchConsolidateAnyway = "0s"
-        ChainID = "{{.zkevm_rollup_chain_id}}"
-        ForkId = {{.zkevm_rollup_fork_id}}
-        CleanupLockedProofsInterval = "2m0s"
-        GeneratingProofCleanupThreshold = "10m"
-        GasOffset = 150000
-        UpgradeEtrogBatchNumber = "{{.zkevm_rollup_manager_block_number}}"
-        RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-        WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-        {{if .is_cdk_validium}}
-        SenderAddress = "{{.zkevm_l2_agglayer_address}}"
-        SettlementBackend = "agglayer"
-        AggLayerTxTimeout = "600s"
-        AggLayerURL = "http://agglayer:{{.agglayer_port}}"
-        {{else}}
-        SenderAddress = "{{.zkevm_l2_aggregator_address}}"
-        {{end}}
-        UseFullWitness = false
-        SyncModeOnlyEnabled = false
 
-        [Aggregator.SequencerPrivateKey]
-                Path = "/etc/cdk/sequencer.keystore"
-                Password = "{{.zkevm_l2_keystore_password}}"
         [Aggregator.DB]
                 Name = "{{.aggregator_db.name}}"
                 User = "{{.aggregator_db.user}}"
@@ -92,147 +54,6 @@ GetBatchWaitInterval = "10s"
                 Port = "{{.aggregator_db.port}}"
                 EnableLog = false
                 MaxConns = 200
-        [Aggregator.Log]
-                Environment = "development" # "production" or "development"
-                Level = "{{.global_log_level}}"
-                Outputs = ["stderr"]
-        [Aggregator.EthTxManager]
-                FrequencyToMonitorTxs = "1s"
-                WaitTxToBeMined = "2m"
-
-                {{if eq .zkevm_rollup_fork_name "banana"}}
-                WaitReceiptMaxTime = "250ms"
-                WaitReceiptCheckInterval = "1s"
-                {{else}}
-                GetReceiptMaxTime = "250ms"
-                GetReceiptWaitInterval = "1s"
-                {{end}}
-
-                PrivateKeys = [
-                        {Path = "/etc/cdk/aggregator.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
-                ]
-                ForcedGas = 0
-                GasPriceMarginFactor = 1
-                MaxGasPriceLimit = 0
-                StoragePath = ""
-                ReadPendingL1Txs = false
-                SafeStatusL1NumberOfBlocks = 0
-                FinalizedStatusL1NumberOfBlocks = 0
-                [Aggregator.EthTxManager.Etherman]
-                        URL = "{{.l1_rpc_url}}"
-                        L1ChainID = {{.l1_chain_id}}
-                        HTTPHeaders = []
-        [Aggregator.Synchronizer]
-                 [Aggregator.Synchronizer.SQLDB]
-                        DriverName = "sqlite3"
-                        DataSource = "file:/data/aggregator_sync_db.sqlite"
-                [Aggregator.Synchronizer.Synchronizer]
-                        SyncInterval = "10s"
-                        SyncChunkSize = 1000
-                        GenesisBlockNumber =  "{{.zkevm_rollup_manager_block_number}}"
-                        SyncUpToBlock = "latest"
-                        BlockFinality = "latest"
-                        OverrideStorageCheck = false
-                [Aggregator.Synchronizer.Etherman]
-                        [Aggregator.Synchronizer.Etherman.Validium]
-                                Enabled = {{.is_cdk_validium}}
-
-
-[L1InfoTreeSync]
-DBPath = "/tmp/L1InfoTreeSync" # TODO: put a more realisitic path here
-GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
-RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
-SyncBlockChunkSize = 10
-BlockFinality = "LatestBlock"
-URLRPCL1 = "{{.l1_rpc_url}}"
-WaitForNewBlocksPeriod = "1s"
-InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
-
-
-[ClaimSponsor]
-DBPath = "/tmp/claimsponsor"
-Enabled = true
-SenderAddr = "{{.zkevm_l2_claimtxmanager_address}}"
-BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
-MaxGas = 200000
-RetryAfterErrorPeriod = "1s"
-MaxRetryAttemptsAfterError = -1
-WaitTxToBeMinedPeriod = "3s"
-WaitOnEmptyQueue = "3s"
-GasOffset = 0
-	[ClaimSponsor.EthTxManager]
-		FrequencyToMonitorTxs = "1s"
-		WaitTxToBeMined = "2s"
-		GetReceiptMaxTime = "250ms"
-		GetReceiptWaitInterval = "1s"
-		PrivateKeys = [
-                        {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-		]
-		ForcedGas = 0
-		GasPriceMarginFactor = 1
-		MaxGasPriceLimit = 0
-		StoragePath = "/tmp/ethtxmanager-claimsponsor.db"
-		ReadPendingL1Txs = false
-		SafeStatusL1NumberOfBlocks = 5
-		FinalizedStatusL1NumberOfBlocks = 10
-			[ClaimSponsor.EthTxManager.Etherman]
-				URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-				MultiGasProvider = false
-				L1ChainID = 1337
-				HTTPHeaders = []
-
-[ReorgDetectorL1]
-DBPath = "/tmp/reorgdetectorl1"
-[ReorgDetectorL2]
-DBPath = "/tmp/reorgdetectorl2"
-
-[BridgeL1Sync]
-DBPath = "/tmp/bridgel1sync"
-BlockFinality = "LatestBlock"
-InitialBlockNum = 0
-BridgeAddr = "{{.zkevm_bridge_address}}"
-SyncBlockChunkSize = 100
-RetryAfterErrorPeriod = "1s"
-MaxRetryAttemptsAfterError = -1
-WaitForNewBlocksPeriod = "3s"
-
-[LastGERSync]
-DBPath = "/tmp/lastgersync"
-BlockFinality = "LatestBlock"
-InitialBlockNum = 0
-GlobalExitRootL2Addr = "{{.zkevm_global_exit_root_l2_address}}"
-RetryAfterErrorPeriod = "1s"
-MaxRetryAttemptsAfterError = -1
-WaitForNewBlocksPeriod = "1s"
-DownloadBufferSize = 100
-
-[BridgeL2Sync]
-DBPath = "/tmp/bridgel2sync"
-BlockFinality = "LatestBlock"
-InitialBlockNum = 0
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
-SyncBlockChunkSize = 100
-RetryAfterErrorPeriod = "1s"
-MaxRetryAttemptsAfterError = -1
-WaitForNewBlocksPeriod = "3s"
-
-[NetworkConfig.L1]
-{{if eq .zkevm_rollup_fork_name "banana"}}
-L1ChainID = "{{.l1_chain_id}}"
-{{else}}
-ChainID = "{{.l1_chain_id}}"
-{{end}}
-PolAddr = "{{.pol_token_address}}"
-ZkEVMAddr = "{{.zkevm_rollup_address}}"
-RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
-GlobalExitRootManagerAddr = "{{.zkevm_global_exit_root_address}}"
-
+       
 [AggSender]
-DBPath = "/tmp/aggsender"
-AggLayerURL = "http://agglayer:{{.agglayer_port}}"
-CertificateSendInterval = "1m"
-URLRPCL2 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-CheckSettledInterval = "5s"
-[AggSender.SequencerPrivateKey]
-Path = "/etc/cdk/sequencer.keystore"
-Password = "{{.zkevm_l2_keystore_password}}"
+SequencerPrivateKey = {Path = "{{or .zkevm_l2_agglayer_keystore_file "/pk/sequencer.keystore"}}", Password = "{{.zkevm_l2_agglayer_keystore_password}}"}

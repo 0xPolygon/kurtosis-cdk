@@ -37,7 +37,8 @@ def create_cdk_node_service_config(
             "sleep 20 && cdk-node run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
             + "--custom-network-file=/etc/cdk/genesis.json "
-            + "--components=rpc,"
+            + "--save-config-path=/tmp/ "
+            + "--components="
             + NODE_COMPONENTS.aggsender
         ]
 
