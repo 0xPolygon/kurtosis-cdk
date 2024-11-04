@@ -6,7 +6,9 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC1-fork.13
 
   # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta1
+  cdk_erigon_node_image: nulyjkdhthz/cdk-erigon:434376b78c60ff5cfdf1c6efebe813690f8d73d5
+
+  cdk_node_image: nulyjkdhthz/cdk:9db5863336de6891f7a0a4bcbbc0d784aa0e03c7
 
   additional_services:
     - tx_spammer
