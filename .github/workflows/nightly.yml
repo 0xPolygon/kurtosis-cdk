@@ -104,7 +104,7 @@ jobs:
 
   #     - name: Monitor verified batches (CDK Erigon Permissionless RPC)
   #       working-directory: .github/scripts
-  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
   # Deploy the CDK environment incrementally, stage by stage.
   # TODO: Fix this job.
@@ -194,4 +194,4 @@ jobs:
 
   #     - name: Monitor verified batches (CDK Erigon Permissionless RPC)
   #       working-directory: .github/scripts
-  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-node-001 rpc)"
+  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"

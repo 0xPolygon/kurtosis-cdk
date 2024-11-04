@@ -1,4 +1,5 @@
 constants = import_module("./src/package_io/constants.star")
+dict = import_module("./src/package_io/dict.star")
 
 # The deployment process is divided into various stages.
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
@@ -61,6 +62,45 @@ DEFAULT_PORTS = {
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
+}
+
+DEFAULT_STATIC_PORTS = {
+    "static_ports": {
+        ## L1 static ports (50000-50999).
+        "l1_el_start_port": 50000,
+        "l1_cl_start_port": 50010,
+        "l1_vc_start_port": 50020,
+        "l1_additional_services_start_port": 50100,
+        ## L2 static ports (51000-51999).
+        # Agglayer (51000-51099).
+        "agglayer_start_port": 51000,
+        "agglayer_prover_start_port": 51010,
+        # CDK node (51100-51199).
+        "cdk_node_start_port": 51100,
+        # Bridge services (51200-51299).
+        "zkevm_bridge_service_start_port": 51200,
+        "zkevm_bridge_ui_start_port": 51210,
+        "reverse_proxy_start_port": 51220,
+        # Databases (51300-51399).
+        "database_start_port": 51300,
+        "pless_database_start_port": 51310,
+        # Pool manager (51400-51499).
+        "zkevm_pool_manager_start_port": 51400,
+        # DAC (51500-51599).
+        "zkevm_dac_start_port": 51500,
+        # ZkEVM Provers (51600-51699).
+        "zkevm_prover_start_port": 51600,
+        "zkevm_executor_start_port": 51610,
+        "zkevm_stateless_executor_start_port": 51620,
+        # CDK erigon (51700-51799).
+        "cdk_erigon_sequencer_start_port": 51700,
+        "cdk_erigon_rpc_start_port": 51710,
+        # L2 additional services (52000-52999).
+        "arpeggio_start_port": 52000,
+        "blutgang_start_port": 52010,
+        "erpc_start_port": 52020,
+        "panoptichain_start_port": 52030,
+    }
 }
 
 # Addresses and private keys of the different components.
@@ -177,6 +217,16 @@ DEFAULT_ROLLUP_ARGS = {
     "erigon_strict_mode": True,
     # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
     "zkevm_use_gas_token_contract": False,
+    # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
+    # You can either use the default static ports defined in this file or specify your custom static
+    # ports.
+    #
+    # By default, Kurtosis binds the ports of enclave services to ephemeral or dynamic ports on the
+    # host machine. To quote the Kurtosis documentation: "these ephemeral ports are called the
+    # "public ports" of the container because they allow the container to be accessed outside the
+    # Docker/Kubernetes cluster".
+    # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
+    "use_dynamic_ports": True,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -248,11 +298,13 @@ def parse_args(plan, args):
     sequencer_type = args.get("sequencer_type", "")
     sequencer_name = get_sequencer_name(sequencer_type)
 
-    plan.print(
-        "DEBUG: " + str(deployment_stages.get("deploy_cdk_erigon_node", False))
-    )  # DEBUG
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
+
+    # Determine static ports, if specified.
+    if not args.get("use_dynamic_ports", True):
+        plan.print("Using static ports.")
+        args = DEFAULT_STATIC_PORTS | args
 
     # Remove deployment stages from the args struct.
     # This prevents updating already deployed services when updating the deployment stages.
@@ -278,8 +330,8 @@ def parse_args(plan, args):
     }
 
     # Sort dictionaries for debug purposes.
-    sorted_deployment_stages = sort_dict_by_values(deployment_stages)
-    sorted_args = sort_dict_by_values(args)
+    sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)
+    sorted_args = dict.sort_dict_by_values(args)
     return (sorted_deployment_stages, sorted_args)
 
 
@@ -340,9 +392,9 @@ def get_fork_id(zkevm_contracts_image):
 
 def get_sequencer_name(sequencer_type):
     if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
-        return constants.SEQUENCER_NAME.CDK_ERIGON
+        return "cdk-erigon-sequencer"
     elif sequencer_type == constants.SEQUENCER_TYPE.ZKEVM:
-        return constants.SEQUENCER_NAME.ZKEVM
+        return "zkevm-node-sequencer"
     else:
         fail(
             "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
@@ -355,11 +407,6 @@ def get_sequencer_name(sequencer_type):
 
 def get_l2_rpc_name(deploy_cdk_erigon_node):
     if deploy_cdk_erigon_node:
-        return "cdk-erigon-node"
+        return "cdk-erigon-rpc"
     else:
         return "zkevm-node-rpc"
-
-
-def sort_dict_by_values(d):
-    sorted_items = sorted(d.items(), key=lambda x: x[0])
-    return {k: v for k, v in sorted_items}
