@@ -89,6 +89,7 @@ if [[ -z "$l1_private_key" ]]; then
     l1_private_key=$(cast wallet private-key "{{.l1_preallocated_mnemonic}}")
 fi
 
+# shellcheck disable=SC2078
 if [[ "{{.l1_deploy_deterministic_deployment_proxy}}" ]]; then
     echo_ts "Deploying deterministic deployment proxy on l1"
     cast send \
@@ -105,6 +106,7 @@ else
     echo_ts "Skipping deployment of deterministic deployment proxy on l1"
 fi
 
+# shellcheck disable=SC2078
 if [[ "{{.l2_deploy_deterministic_deployment_proxy}}" ]]; then
     echo_ts "Deploying deterministic deployment proxy on l2"
     cast send \
@@ -122,6 +124,7 @@ else
     echo_ts "Skipping deployment of deterministic deployment proxy on l2"
 fi
 
+# shellcheck disable=SC2078
 if [[ "{{.l1_deploy_lxly_bridge_and_call}}" || "{{.l2_deploy_lxly_bridge_and_call}}" ]]; then
     export ADDRESS_PROXY_ADMIN=0x242daE44F5d8fb54B198D03a94dA45B5a4413e21
     export ADDRESS_LXLY_BRIDGE=0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe
@@ -130,6 +133,7 @@ if [[ "{{.l1_deploy_lxly_bridge_and_call}}" || "{{.l2_deploy_lxly_bridge_and_cal
     cd /opt/lxly-bridge-and-call || exit 1
 fi
 
+# shellcheck disable=SC2078
 if [[ "{{.l1_deploy_lxly_bridge_and_call}}" ]]; then
     echo_ts "Deploying lxly bridge and call on l1"
     export DEPLOYER_PRIVATE_KEY="$l1_private_key"
@@ -138,6 +142,7 @@ else
     echo_ts "Skipping deployment of lxly bridge and call on l1"
 fi
 
+# shellcheck disable=SC2078
 if [[ "{{.l2_deploy_lxly_bridge_and_call}}" ]]; then
     echo_ts "Deploying lxly bridge and call on l2"
     export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
