@@ -149,7 +149,12 @@ zkevm.reject-smart-contract-deployments: false
 # Disables virtual counters, which are used by sequencer nodes when external execution is not enabled.
 # This can impact performance and transaction processing capabilities.
 # Default: false
-zkevm.disable-virtual-counters: {{if .enable_normalcy}}true{{else}}false{{end}}
+# {{if .enable_normalcy}}
+zkevm.disable-virtual-counters: true
+# {{else}}
+zkevm.disable-virtual-counters: false
+# {{end}}
+
 
 # Multiplier used to reduce the depth of SMT when calculating virtual counters.
 # A value less than 1 will decrease SMT depth, potentially improving performance but may affect accuracy.
