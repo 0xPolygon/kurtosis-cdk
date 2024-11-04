@@ -34,7 +34,7 @@ enclave="cdk"
 l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
 l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
-l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
+l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-rpc-001 rpc)"
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_id=1
 
@@ -221,8 +221,11 @@ if [[ "$enclave" != "" ]]; then
     echo "$stopped_services"
     echo
 
-    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' |
+      while read -r container; do
+        echo "Printing logs for $container"
+        docker logs --tail 50 "$container"
+      done
     exit 1
   else
     echo "✅ All services are running."

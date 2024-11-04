@@ -119,14 +119,14 @@ def run(plan, args):
     )
 
     # Store CDK configs.
-    cdk_erigon_node_chain_config_artifact = plan.store_service_files(
-        name="cdk-erigon-node-chain-config",
+    plan.store_service_files(
+        name="cdk-erigon-chain-config",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dynamic-kurtosis-conf.json",
     )
 
-    cdk_erigon_node_chain_allocs_artifact = plan.store_service_files(
-        name="cdk-erigon-node-chain-allocs",
+    plan.store_service_files(
+        name="cdk-erigon-chain-allocs",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dynamic-kurtosis-allocs.json",
     )

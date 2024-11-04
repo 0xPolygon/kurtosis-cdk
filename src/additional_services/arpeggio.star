@@ -1,3 +1,4 @@
+ports_package = import_module("../package_io/ports.star")
 service_package = import_module("../../lib/service.star")
 
 ARPEGGIO_IMAGE = "christophercampbell/arpeggio:v0.0.1"
@@ -8,15 +9,13 @@ WS_PROXY_PORT = 8546
 
 def run(plan, args):
     arpeggio_config_artifact = get_arpeggio_config(plan, args)
+    (ports, public_ports) = get_arpeggio_ports(args)
     plan.add_service(
         name="arpeggio" + args["deployment_suffix"],
         config=ServiceConfig(
             image=ARPEGGIO_IMAGE,
-            ports={
-                "rpc": PortSpec(RPC_PROXY_PORT, application_protocol="http"),
-                "ws": PortSpec(WS_PROXY_PORT, application_protocol="ws"),
-                # "prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
-            },
+            ports=ports,
+            public_ports=public_ports,
             files={"/etc/arpeggio": arpeggio_config_artifact},
         ),
     )
@@ -40,3 +39,13 @@ def get_arpeggio_config(plan, args):
             )
         },
     )
+
+
+def get_arpeggio_ports(args):
+    ports = {
+        "rpc": PortSpec(RPC_PROXY_PORT, application_protocol="http"),
+        "ws": PortSpec(WS_PROXY_PORT, application_protocol="ws"),
+        # "prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
+    }
+    public_ports = ports_package.get_public_ports(ports, "arpeggio_start_port", args)
+    return (ports, public_ports)

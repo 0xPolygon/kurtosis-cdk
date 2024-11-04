@@ -11,11 +11,11 @@ First, spin up a Kurtosis CDK devnet. To simulate L2 data loss, remove the `--da
 kurtosis service exec cdk cdk-erigon-sequencer-001 "rm -rf ~/data/dynamic-kurtosis-sequencer"
 ```
 
-Then immediately follow up by stopping the cdk-erigon-node-001 and cdk-node-001 services.
+Then immediately follow up by stopping the cdk-erigon-rpc-001 and cdk-node-001 services.
 
 ```
-kurtosis service stop cdk cdk-erigon-node-001 
-kurtosis service stop cdk cdk-node-001 
+kurtosis service stop cdk cdk-erigon-rpc-001
+kurtosis service stop cdk cdk-node-001
 ```
 
 Change the sequencer's `config.yaml` file using root permission. Under normal circumstances, `kurtosis exec` would've been used for consistency, but the sequencer's image disables root permission, so `docker exec` with the `-u root` has been used to get permission to make config file changes.
@@ -64,8 +64,8 @@ kurtosis service start cdk cdk-erigon-sequencer-001
 Then restart the other stopped CDK components
 
 ```
-kurtosis service start cdk cdk-erigon-node-001 
-kurtosis service start cdk cdk-node-001 
+kurtosis service start cdk cdk-erigon-rpc-001
+kurtosis service start cdk cdk-node-001
 ```
 
 Monitor the logs to make sure the network is functional again.
