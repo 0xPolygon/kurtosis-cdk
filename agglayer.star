@@ -33,6 +33,10 @@ def run(plan, args):
 
 
 def create_agglayer_prover_config(args, agglayer_prover_config_artifact):
+    prover_env_vars = {}
+    if args["agglayer_prover_sp1_key"] != "":
+        prover_env_vars["SP1_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
+
     return ServiceConfig(
         image=args["agglayer_image"],
         ports={
@@ -52,6 +56,7 @@ def create_agglayer_prover_config(args, agglayer_prover_config_artifact):
             "/usr/local/bin/agglayer",
         ],
         cmd=["prover", "--cfg", "/etc/zkevm/agglayer-prover-config.toml"],
+        env_vars = prover_env_vars,
     )
 
 

@@ -144,7 +144,8 @@ DEFAULT_L1_ARGS = {
     "l1_seconds_per_slot": 1,
     # The amount of ETH sent to the admin, sequence, aggregator and sequencer addresses.
     "l1_funding_amount": "100ether",
-    "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port"))
+    "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
+    "agglayer_prover_sp1_key": "",
 }
 
 DEFAULT_ROLLUP_ARGS = {

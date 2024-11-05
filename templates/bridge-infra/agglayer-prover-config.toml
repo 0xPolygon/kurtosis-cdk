@@ -13,9 +13,10 @@ format = "json"
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
 [cpu-prover]
+enabled = false
 max-concurrency-limit = 100
-proving-timeout = 300
+proving-timeout = 900
 
 [network-prover]
-enabled = false
-proving-timeout = 300
+enabled = true
+proving-timeout = 900
