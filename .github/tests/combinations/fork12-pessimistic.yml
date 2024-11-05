@@ -1,5 +1,5 @@
 args:
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.1
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta3
   cdk_node_image: nulyjkdhthz/cdk:77d12ddb0a4bb9263e36a19649ffa87a05002b5d
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
