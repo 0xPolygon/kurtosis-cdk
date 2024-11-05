@@ -5,7 +5,7 @@ max-buffered-queries = 100
 
 [log]
 environment = "production"      # "production" or "development"
-level = "{{.global_log_level}}"
+level = "debug"
 outputs = ["stderr"]
 format = "json"
 

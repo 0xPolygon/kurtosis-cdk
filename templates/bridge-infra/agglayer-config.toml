@@ -19,9 +19,9 @@ confirmations = 1
 settlement-timeout = 1200
 
 [log]
-level = "{{.global_log_level}}"
+level = "debug"
 outputs = ["stderr"]
-format = "pretty"
+format = "json"
 
 [auth.local]
 private-keys = [
