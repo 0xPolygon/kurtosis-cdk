@@ -239,6 +239,9 @@ DEFAULT_ROLLUP_ARGS = {
     # Docker/Kubernetes cluster".
     # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
     "use_dynamic_ports": True,
+    # Set this to true to disable all special logics in hermez and only enable bridge update in pre-block execution
+    # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
+    "enable_normalcy": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -312,6 +315,9 @@ def parse_args(plan, args):
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
+
+    if args["enable_normalcy"] and args["erigon_strict_mode"]:
+        fail("normalcy and strict mode cannot be enabled together")
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
