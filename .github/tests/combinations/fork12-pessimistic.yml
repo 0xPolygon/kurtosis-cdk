@@ -1,6 +1,7 @@
 args:
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta2
-  cdk_node_image: nulyjkdhthz/cdk:faa2a749675c528ee77c96e56700aceb426a372e
+  cdk_node_image: nulyjkdhthz/cdk:77d12ddb0a4bb9263e36a19649ffa87a05002b5d
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
@@ -11,4 +12,4 @@ args:
   consensus_contract_type: pessimistic
   sequencer_type: erigon
   erigon_strict_mode: false
-  zkevm_use_gas_token_contract: true
+  zkevm_use_gas_token_contract: false
