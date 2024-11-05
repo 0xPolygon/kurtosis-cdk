@@ -144,6 +144,7 @@ DEFAULT_L1_ARGS = {
     "l1_seconds_per_slot": 1,
     # The amount of ETH sent to the admin, sequence, aggregator and sequencer addresses.
     "l1_funding_amount": "100ether",
+    "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port"))
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -163,6 +164,8 @@ DEFAULT_ROLLUP_ARGS = {
     "erigon_strict_mode": True,
     # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
     "zkevm_use_gas_token_contract": False,
+    # Set path where save data on docker
+    "zkevm_path_rw_data": "/tmp/",
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {

@@ -1,7 +1,7 @@
-PathRWData = "{{or .path_rw_data "/tmp/"}}"
+PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-AggLayerURL="http://agglayer:{{.agglayer_port}}"
+AggLayerURL="{{.agglayer_url}}"
 
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
@@ -56,13 +56,7 @@ Outputs = ["stderr"]
                 MaxConns = 200
        
 [AggSender]
-# DBPath = "/tmp/aggsender"
-AggLayerURL = "http://agglayer:{{.agglayer_port}}"
 CertificateSendInterval = "1m"
-URLRPCL2 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 CheckSettledInterval = "5s"
-StoragePath = "/tmp/aggsender.db"
-[AggSender.SequencerPrivateKey]
-Path = "/etc/cdk/sequencer.keystore"
-Password = "{{.zkevm_l2_keystore_password}}"
-SequencerPrivateKey = {Path = "{{or .zkevm_l2_agglayer_keystore_file "/pk/sequencer.keystore"}}", Password = "{{.zkevm_l2_agglayer_keystore_password}}"}
+SaveCertificatesToFiles = true
+
