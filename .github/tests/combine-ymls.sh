@@ -1,6 +1,7 @@
 #!/bin/bash
 
 COMBINATIONS_FOLDER="combinations"
+MATRIX_VERSION_FILE="matrix.yml"
 
 # Extracts the base file name from a full path, removing the directory path and the .yml extension.
 # e.g. get_file_name "forks/fork10.yml" should return "fork10".
@@ -22,7 +23,7 @@ yml2md() {
     ' "$1"
 }
 
-> matrix.yml
+> "$MATRIX_VERSION_FILE"
 echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" > MATRIX.md
 
 # File combinations.
@@ -86,11 +87,11 @@ for fork in "${forks[@]}"; do
                             source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\(.args.zkevm_bridge_service_image | split(":")[1])",
                         },
                 }}
-                ' "$output_file" >> matrix.yml
+                ' "$output_file" >> "$MATRIX_VERSION_FILE"
             fi
         done
     done
 done
 echo "All combinations created!"
 
-yml2md matrix.yml >> MATRIX.MD
+yml2md "$MATRIX_VERSION_FILE" >> MATRIX.MD
