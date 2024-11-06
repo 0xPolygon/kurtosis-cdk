@@ -8,6 +8,20 @@ extract_base_name() {
     echo "$1" | sed 's|.*/||; s|\.yml$||'
 }
 
+# Convert a YML array into a Markdown table.
+yml2md() {
+    echo "FORK ID|CDK Erigon|ZkEVM Prover|ZkEVM Contracts|Data Availability|Bridge"
+    echo "---|---|---|---|---|---"
+    yq -r '
+        to_entries | 
+        sort_by(.key | tonumber) | reverse |
+        map("\(.key)|[\(.value.cdk_erigon)](https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\(.value.cdk_erigon))|\(.value.zkevm_prover)|\(.value.zkevm_contracts)|\(.value.data_availability)|\(.value.bridge_service)") |
+        join("\n")
+    ' "$1"
+}
+
+rm matrix.yml
+
 # File combinations.
 forks=(forks/*.yml)
 data_availability=(da-modes/*.yml)
@@ -42,7 +56,25 @@ for fork in "${forks[@]}"; do
             output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_da.yml"
             yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output > "$output_file"
             echo "- $output_file"
+
+            # TODO: Save config matrix in a table.
+            if [[ "$base_da" == "rollup" && "$base_comp" == "new-cdk-stack" ]]; then
+                fork_id=${base_fork#fork}
+                yq \
+                    --raw-output \
+                    --arg fork_id "$fork_id" \
+                    --yaml-output \
+                    '{$fork_id: {
+                        cdk_erigon: .args.cdk_erigon_node_image | split(":")[1],
+                        zkevm_prover: .args.zkevm_prover_image | split(":")[1],
+                        zkevm_contracts: .args.zkevm_contracts_image | split(":")[1],
+                        data_availability: .args.zkevm_da_image | split(":")[1],
+                        bridge_service: .args.zkevm_bridge_service_image | split(":")[1],
+                    }}' "$output_file" >> matrix.yml
+            fi
         done
     done
 done
 echo "All combinations created!"
+
+yml2md matrix.yml > MATRIX.MD
