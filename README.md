@@ -27,7 +27,7 @@ Specifically, this package will deploy:
 
 The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack.
 
-You can take a look at this [table](.github/tests/MATRIX.MD) to see which versions of the CDK are meant to work together, broken by fork identifier.
+You can take a look at this [table](CDK_VERSION_MATRIX.MD) to see which versions of the CDK are meant to work together, broken by fork identifier.
 
 The table provided illustrates the different combinations of sequencers and sequence sender/aggregator components that can be used, along with their current support status in Kurtosis.
 
