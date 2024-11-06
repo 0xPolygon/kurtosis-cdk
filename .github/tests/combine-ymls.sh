@@ -10,12 +10,14 @@ extract_base_name() {
 
 # Convert a YML array into a Markdown table.
 yml2md() {
-    echo "FORK ID|CDK Erigon|ZkEVM Prover|ZkEVM Contracts|Data Availability|Bridge"
+    echo "Fork ID|CDK Erigon|ZkEVM Prover|ZkEVM Contracts|Data Availability|Bridge"
     echo "---|---|---|---|---|---"
     yq -r '
         to_entries | 
         sort_by(.key | tonumber) | reverse |
-        map("\(.key)|[\(.value.cdk_erigon)](https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\(.value.cdk_erigon))|\(.value.zkevm_prover)|\(.value.zkevm_contracts)|\(.value.data_availability)|\(.value.bridge_service)") |
+        map(
+            "\(.key)|[\(.value.cdk_erigon.version)](\(.value.cdk_erigon.source))|[\(.value.zkevm_prover.version)](\(.value.zkevm_prover.source))|[\(.value.zkevm_contracts.version)](\(.value.zkevm_contracts.source))|[\(.value.data_availability.version)](\(.value.data_availability.source))|[\(.value.bridge_service.version)](\(.value.bridge_service.source))"
+        ) |
         join("\n")
     ' "$1"
 }
@@ -57,20 +59,33 @@ for fork in "${forks[@]}"; do
             yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output > "$output_file"
             echo "- $output_file"
 
-            # TODO: Save config matrix in a table.
-            if [[ "$base_da" == "rollup" && "$base_comp" == "new-cdk-stack" ]]; then
+            # Save version matrix for each fork.
+            if [[ "$base_da" == "cdk-validium" && "$base_comp" == "new-cdk-stack" ]]; then
                 fork_id=${base_fork#fork}
-                yq \
-                    --raw-output \
-                    --arg fork_id "$fork_id" \
-                    --yaml-output \
-                    '{$fork_id: {
-                        cdk_erigon: .args.cdk_erigon_node_image | split(":")[1],
-                        zkevm_prover: .args.zkevm_prover_image | split(":")[1],
-                        zkevm_contracts: .args.zkevm_contracts_image | split(":")[1],
-                        data_availability: .args.zkevm_da_image | split(":")[1],
-                        bridge_service: .args.zkevm_bridge_service_image | split(":")[1],
-                    }}' "$output_file" >> matrix.yml
+                yq --raw-output --arg fork_id "$fork_id" --yaml-output '{
+                    ($fork_id): {
+                        cdk_erigon: {
+                            version: .args.cdk_erigon_node_image | split(":")[1],
+                            source: "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\(.args.cdk_erigon_node_image | split(":")[1])",
+                        },
+                        zkevm_prover: {
+                            version: .args.zkevm_prover_image | split(":")[1],
+                            source: "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/\(.args.zkevm_prover_image | split(":")[1] | split("-fork")[0])",
+                        },
+                        zkevm_contracts: {
+                            version: .args.zkevm_contracts_image | split(":")[1],
+                            source: "https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/\(.args.zkevm_contracts_image | split(":")[1])",
+                        },
+                        data_availability: {
+                            version: .args.zkevm_da_image | split(":")[1],
+                            source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v\(.args.zkevm_da_image | split(":")[1])",
+                        },
+                        bridge_service: {
+                            version: .args.zkevm_bridge_service_image | split(":")[1],
+                            source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\(.args.zkevm_bridge_service_image | split(":")[1])",
+                        },
+                }}
+                ' "$output_file" >> matrix.yml
             fi
         done
     done
