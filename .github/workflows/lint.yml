@@ -52,7 +52,7 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
 
-  check-test-combinations:
+  check-test-combinations-and-cdk-version-matrix:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,14 +62,14 @@ jobs:
           pip3 install yq
           yq --version
 
-      - name: Generate test combinations
+      - name: Generate test combinations and cdk version matrix
         working-directory: .github/tests
         run: ./combine-ymls.sh
       
-      - name: Check if test combinations are up to date
+      - name: Check if test combinations and cdk version matrix are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Test combinations are not up to date. Please run \`./combine-ymls.sh\`."
+            echo "❌ Error: Test combinations and/or CDK version matrix are not up to date. Please run \`./combine-ymls.sh\`."
             git status --porcelain
             git diff
             exit 1

@@ -22,9 +22,14 @@ Specifically, this package will deploy:
 - [License](#license)
 - [Contribution](#contribution)
 
+
 ## Supported Configurations
 
-The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack. The table provided illustrates the different combinations of sequencers and sequence sender/aggregator components that can be used, along with their current support status in Kurtosis.
+The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack.
+
+You can take a look at this [table](CDK_VERSION_MATRIX.MD) to see which versions of the CDK are meant to work together, broken by fork identifier.
+
+The table provided illustrates the different combinations of sequencers and sequence sender/aggregator components that can be used, along with their current support status in Kurtosis.
 
 > The team is actively working on enabling the use cases that are currently not possible.
 
