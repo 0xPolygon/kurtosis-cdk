@@ -53,8 +53,8 @@ jobs:
         if: ${{ steps.check_image.outputs.exists == 'false' }}
         uses: docker/build-push-action@v6
         with:
-          context: kurtosis-cdk/docker
-          file: kurtosis-cdk/docker/zkevm-contracts.Dockerfile
+          context: docker
+          file: docker/zkevm-contracts.Dockerfile
           build-args: |
             ZKEVM_CONTRACTS_BRANCH=${{ github.event.inputs.zkevm_contracts_version }}
             POLYCLI_VERSION=${{ env.POLYCLI_VERSION }}
