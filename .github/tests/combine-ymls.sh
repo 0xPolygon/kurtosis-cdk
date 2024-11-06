@@ -24,8 +24,8 @@ yml2md() {
     ' "$1"
 }
 
-> "$MATRIX_VERSION_FILE"
-> "$MATRIX_VERSION_README"
+true > "$MATRIX_VERSION_FILE"
+true > "$MATRIX_VERSION_README"
 
 # File combinations.
 forks=(forks/*.yml)
@@ -65,6 +65,7 @@ for fork in "${forks[@]}"; do
             # Save version matrix for each fork.
             if [[ "$base_da" == "cdk-validium" && "$base_comp" == "new-cdk-stack" ]]; then
                 fork_id=${base_fork#fork}
+                # shellcheck disable=SC2016
                 yq --raw-output --arg fork_id "$fork_id" --yaml-output '{
                     ($fork_id): {
                         cdk_erigon: {
