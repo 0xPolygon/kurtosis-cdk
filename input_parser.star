@@ -25,7 +25,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": False,
+    "deploy_l2_contracts": True,
 }
 
 DEFAULT_IMAGES = {
@@ -293,7 +293,7 @@ DEFAULT_ARGS = (
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [9, 10, 11, 12, 13]
+SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
 
 def parse_args(plan, args):
