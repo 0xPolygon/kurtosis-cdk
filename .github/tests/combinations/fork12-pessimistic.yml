@@ -1,15 +1,16 @@
 args:
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.1
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.5
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta3
-  cdk_node_image: nulyjkdhthz/cdk:77d12ddb0a4bb9263e36a19649ffa87a05002b5d
+  cdk_node_image: nulyjkdhthz/cdk:6d775da5dad55990f534e0190a89613ae64f5ccf
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_contracts_image: nulyjkdhthz/zkevm-contracts:v9.0.0-rc.3-pp-fork.12
-  additional_services:
-    - tx_spammer
+  additional_services: []
   consensus_contract_type: pessimistic
   sequencer_type: erigon
   erigon_strict_mode: false
   zkevm_use_gas_token_contract: false
+  agglayer_prover_sp1_key: REDACTED
+
