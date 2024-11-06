@@ -72,7 +72,7 @@ pushd /tmp/kurtosis-cdk/docker
 
 This image contains all the npm dependencies and zkevm contracts compiled for a specific fork id.
 
-> Automate the build process using this CI [workflow](https://github.com/leovct/zkevm-contracts/actions/workflows/custom-docker-build.yaml). Images will be automatically [pushed](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) to the Docker Hub.
+> Automate the build process using this CI [workflow](https://github.com/0xPolygon/kurtosis-cdk/actions/workflows/docker-image-builder.yml). Images will be automatically [pushed](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) to the Docker Hub.
 
 Build the `zkevm-contracts` image.
 
