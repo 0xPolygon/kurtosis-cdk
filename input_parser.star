@@ -293,7 +293,7 @@ DEFAULT_ARGS = (
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [9, 11, 12, 13]
+SUPPORTED_FORK_IDS = [9, 10, 11, 12, 13]
 
 
 def parse_args(plan, args):
