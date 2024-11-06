@@ -22,6 +22,7 @@ yml2md() {
     ' "$1"
 }
 
+> matrix.yml
 echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" > MATRIX.md
 
 # File combinations.
