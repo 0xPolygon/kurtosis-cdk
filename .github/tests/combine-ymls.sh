@@ -22,7 +22,7 @@ yml2md() {
     ' "$1"
 }
 
-rm matrix.yml
+echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" > MATRIX.md
 
 # File combinations.
 forks=(forks/*.yml)
@@ -92,4 +92,4 @@ for fork in "${forks[@]}"; do
 done
 echo "All combinations created!"
 
-yml2md matrix.yml > MATRIX.MD
+yml2md matrix.yml >> MATRIX.MD
