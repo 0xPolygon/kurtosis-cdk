@@ -3,6 +3,6 @@ deployment_stages:
 
 args:
   zkevm_contracts_image: leovct/zkevm-contracts:2234f73-fork.13
-  l1_rpc_url: 172.17.0.1:8545
+  l1_rpc_url: http://172.17.0.1:8545
 
 # anvil --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete" --chain-id 271828 --balance 1000000000 --host 0.0.0.0
