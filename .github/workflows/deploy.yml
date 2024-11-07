@@ -64,7 +64,7 @@ jobs:
         run: |
           if [[ -n $(git status --porcelain ./templates) ]]; then
             echo "❌ Error: Pre-deployed contract artefacts are not up to date. Please update the files under templates/contract-deploy/pre-deployed-contracts/"
-            git status --porcelain
+            git status --porcelain ./templates
             git diff
             exit 1
           else
