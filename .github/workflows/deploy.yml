@@ -40,17 +40,36 @@ jobs:
       - name: Start anvil node
         run: |
           mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-          anvil --mnemonic "$mnemonic" --chain-id 271828 --balance 1000000000 --host 0.0.0.0 --state ./state &
+          anvil --mnemonic "$mnemonic" --chain-id 271828 --balance 1000000000 --host 0.0.0.0 --state ./state.json &
 
       - name: Deploy zkevm contracts to L1
         run: |
           docker_gateway_address="$(docker network inspect bridge --format='{{range .IPAM.Config}}{{.Gateway}}{{end}}')"
           yq -Y --in-place ".args.l1_rpc_url = \"http://$docker_gateway_address:8545\"" ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml
-          cat ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml # TODO: remove
+          echo "Args file:"
+          cat ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml .
-      
-      # TODO: Check if anvil state is up to date.
-      # TODO: Same for other deployment files!
+
+      - name: Copy contract files
+        run: |
+          folder="./templates/contract-deploy/pre-deployed-contracts"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/genesis.json" | tail -n +2 | jq > "$folder/genesis.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_output.json" | tail -n +2 | jq > "$folder/create_rollup_output.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq > "$folder/create_rollup_parameters.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_output.json" | tail -n +2 | jq > "$folder/deploy_output.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_parameters.json" | tail -n +2 | jq > "$folder/deploy_parameters.json"
+          jq . ./state/json > "$folder/anvil-state.json"
+
+      - name: Check if pre-deployed contract files are up to date
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Pre-deployed contract files are not up to date. Please update the files under `templates/contract-deploy/pre-deployed-contracts/`."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Pre-deployed contract files are up to date."
+          fi
 
   run-without-args:
     runs-on: ubuntu-latest
