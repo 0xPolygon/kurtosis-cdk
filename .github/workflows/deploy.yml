@@ -58,7 +58,7 @@ jobs:
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq > "$folder/create_rollup_parameters.json"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_output.json" | tail -n +2 | jq > "$folder/deploy_output.json"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_parameters.json" | tail -n +2 | jq > "$folder/deploy_parameters.json"
-          jq . ./state/json > "$folder/anvil-state.json"
+          jq . ./state.json > "$folder/anvil-state.json"
 
       - name: Check if pre-deployed contract files are up to date
         run: |
