@@ -1,0 +1,8 @@
+deployment_stages:
+  deploy_l1: false
+
+args:
+  zkevm_contracts_image: leovct/zkevm-contracts:2234f73-fork.13
+  l1_chain_id: "31337"
+  l1_preallocated_mnemonic: test test test test test test test test test test test junk
+  l1_rpc_url: 0.0.0.0:8545
