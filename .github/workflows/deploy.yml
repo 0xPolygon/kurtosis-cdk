@@ -16,7 +16,7 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  check-pre-deployed-contracts:
+  check-pre-deployed-contracts-artefacts:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -50,7 +50,7 @@ jobs:
           cat ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml .
 
-      - name: Copy contract files
+      - name: Copy deployment files
         run: |
           folder="./templates/contract-deploy/pre-deployed-contracts"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/genesis.json" | tail -n +2 | jq > "$folder/genesis.json"
@@ -60,15 +60,15 @@ jobs:
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_parameters.json" | tail -n +2 | jq > "$folder/deploy_parameters.json"
           jq . ./state.json > "$folder/anvil-state.json"
 
-      - name: Check if pre-deployed contract files are up to date
+      - name: Check if pre-deployed contract artefacts are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Pre-deployed contract files are not up to date. Please update the files under `templates/contract-deploy/pre-deployed-contracts/`."
+            echo "❌ Error: Pre-deployed contract artefacts are not up to date. Please update the files under templates/contract-deploy/pre-deployed-contracts/"
             git status --porcelain
             git diff
             exit 1
           else
-            echo "✅ Pre-deployed contract files are up to date."
+            echo "✅ Pre-deployed contract artefacts are up to date."
           fi
 
   run-without-args:
