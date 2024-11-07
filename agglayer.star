@@ -28,7 +28,7 @@ def run(plan, args):
             entrypoint=[
                 "/usr/local/bin/agglayer",
             ],
-            env_vars = prover_env_vars,
+            env_vars=prover_env_vars,
             cmd=["prover", "--cfg", "/etc/zkevm/agglayer-prover-config.toml"],
         ),
         description="AggLayer Prover",

@@ -27,7 +27,11 @@ def run(plan, args):
         },
     )
 
-    if not args["zkevm_use_real_verifier"] and not args["enable_normalcy"] and not args["consensus_contract_type"] == "pessimistic":
+    if (
+        not args["zkevm_use_real_verifier"]
+        and not args["enable_normalcy"]
+        and not args["consensus_contract_type"] == "pessimistic"
+    ):
         zkevm_prover_package.start_prover(
             plan, args, prover_config_artifact, "zkevm_prover_start_port"
         )
