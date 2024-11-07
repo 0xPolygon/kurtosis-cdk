@@ -4,7 +4,7 @@ FOUNDRY_IMAGE = (
 
 
 def run(plan, args):
-    state_file = read_file(src="./templates/contract-deploy/anvil-state.json")
+    state_file = read_file(src="./templates/contract-deploy/pre-deployed-contracts/anvil-state.json")
     state_artifact = plan.render_templates(
         name="anvil-state",
         config={"state.json": struct(template=state_file, data={})},
