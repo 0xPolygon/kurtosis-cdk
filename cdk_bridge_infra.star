@@ -34,7 +34,12 @@ def run(plan, args):
 
     # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
     if args["use_local_l1"]:
-        proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
+        l1_rpc_name = "el-1-geth-lighthouse"
+        if args.get("l1_pre_deployed_contracts", False):
+            l1_rpc_name = "anvil" + args["deployment_suffix"]
+        proxy_config_artifact = create_reverse_proxy_config_artifact(
+            plan, args, l1_rpc_name
+        )
         zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
@@ -82,13 +87,13 @@ def create_bridge_ui_config_artifact(plan, args, contract_setup_addresses):
     )
 
 
-def create_reverse_proxy_config_artifact(plan, args):
+def create_reverse_proxy_config_artifact(plan, args, l1_rpc_name):
     bridge_ui_proxy_config_template = read_file(
         src="./templates/bridge-infra/haproxy.cfg"
     )
 
-    l1rpc_service = plan.get_service("el-1-geth-lighthouse")
-    l2rpc_service = plan.get_service(
+    l1_rpc_service = plan.get_service(l1_rpc_name)
+    l2_rpc_service = plan.get_service(
         name=args["l2_rpc_name"] + args["deployment_suffix"]
     )
     bridge_service = plan.get_service(
@@ -104,10 +109,10 @@ def create_reverse_proxy_config_artifact(plan, args):
             "haproxy.cfg": struct(
                 template=bridge_ui_proxy_config_template,
                 data={
-                    "l1rpc_ip": l1rpc_service.ip_address,
-                    "l1rpc_port": l1rpc_service.ports["rpc"].number,
-                    "l2rpc_ip": l2rpc_service.ip_address,
-                    "l2rpc_port": l2rpc_service.ports["rpc"].number,
+                    "l1rpc_ip": l1_rpc_service.ip_address,
+                    "l1rpc_port": l1_rpc_service.ports["rpc"].number,
+                    "l2rpc_ip": l2_rpc_service.ip_address,
+                    "l2rpc_port": l2_rpc_service.ports["rpc"].number,
                     "bridgeservice_ip": bridge_service.ip_address,
                     "bridgeservice_port": bridge_service.ports["rpc"].number,
                     "bridgeui_ip": bridgeui_service.ip_address,
