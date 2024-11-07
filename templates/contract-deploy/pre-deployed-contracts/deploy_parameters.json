@@ -1,0 +1,21 @@
+{
+  "admin": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "deployerPvtKey": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
+  "emergencyCouncilAddress": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "initialZkEVMDeployerOwner": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "maxFeePerGas": "",
+  "maxPriorityFeePerGas": "",
+  "minDelayTimelock": 3600,
+  "multiplierGas": "",
+  "pendingStateTimeout": 604799,
+  "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "timelockAdminAddress": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "trustedSequencer": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
+  "trustedSequencerURL": "http://cdk-erigon-sequencer-001:8123",
+  "trustedAggregator": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+  "trustedAggregatorTimeout": 604799,
+  "forkID": 13,
+  "test": true,
+  "zkEVMDeployerAddress": "0xe5CF69183CFCF0571E733D59a1a53d4E6ceD6E85"
+}
