@@ -65,6 +65,16 @@ DEFAULT_PORTS = {
 }
 
 DEFAULT_STATIC_PORTS = {
+    # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
+    # You can either use the default static ports defined in this file or specify your custom static
+    # ports.
+    #
+    # By default, Kurtosis binds the ports of enclave services to ephemeral or dynamic ports on the
+    # host machine. To quote the Kurtosis documentation: "these ephemeral ports are called the
+    # "public ports" of the container because they allow the container to be accessed outside the
+    # Docker/Kubernetes cluster".
+    # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
+    "use_dynamic_ports": True,
     "static_ports": {
         ## L1 static ports (50000-50999).
         "l1_el_start_port": 50000,
@@ -100,7 +110,7 @@ DEFAULT_STATIC_PORTS = {
         "blutgang_start_port": 52010,
         "erpc_start_port": 52020,
         "panoptichain_start_port": 52030,
-    }
+    },
 }
 
 # Addresses and private keys of the different components.
@@ -193,6 +203,8 @@ DEFAULT_L1_ARGS = {
     "l1_funding_amount": "1000000ether",
     # Default: 2
     "l1_participants_count": 1,
+    # Wheter to use pre-deployed contracts or not.
+    "l1_pre_deployed_contracts": True,
     # Whether to deploy https://github.com/Arachnid/deterministic-deployment-proxy.
     # Not deploying this will may cause errors or short circuit other contract
     # deployments.
@@ -232,16 +244,6 @@ DEFAULT_ROLLUP_ARGS = {
     "erigon_strict_mode": True,
     # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
     "zkevm_use_gas_token_contract": False,
-    # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
-    # You can either use the default static ports defined in this file or specify your custom static
-    # ports.
-    #
-    # By default, Kurtosis binds the ports of enclave services to ephemeral or dynamic ports on the
-    # host machine. To quote the Kurtosis documentation: "these ephemeral ports are called the
-    # "public ports" of the container because they allow the container to be accessed outside the
-    # Docker/Kubernetes cluster".
-    # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
-    "use_dynamic_ports": True,
     # Set this to true to disable all special logics in hermez and only enable bridge update in pre-block execution
     # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
     "enable_normalcy": False,
