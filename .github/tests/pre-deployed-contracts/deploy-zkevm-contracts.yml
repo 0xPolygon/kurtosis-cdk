@@ -9,4 +9,5 @@ deployment_stages:
   deploy_l2_contracts: false
 
 args:
+  zkevm_contracts_image: leovct/zkevm-contracts:2234f73-fork.12
   l1_rpc_url: CHANGE_ME

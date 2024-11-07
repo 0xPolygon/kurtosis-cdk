@@ -32,7 +32,7 @@ jobs:
           if [[ $TAG == *pp ]]; then
             FULL_TAG="${TAG}-fork.12"
           elif [[ $TAG != *-fork.[0-9]* ]]; then
-            FULL_TAG="${TAG}-fork.13"
+            FULL_TAG="${TAG}-fork.12"
           else
             FULL_TAG=$TAG
           fi
