@@ -46,17 +46,6 @@ Environment = "development" # "production" or "development"
 Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
 
-[Aggregator]
-        Port = "{{.zkevm_aggregator_port}}"
-
-        [Aggregator.DB]
-                Name = "{{.aggregator_db.name}}"
-                User = "{{.aggregator_db.user}}"
-                Password = "{{.aggregator_db.password}}"
-                Host = "{{.aggregator_db.hostname}}"
-                Port = "{{.aggregator_db.port}}"
-                EnableLog = false
-                MaxConns = 200
 
 [AggSender]
 CertificateSendInterval = "1m"

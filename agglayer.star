@@ -78,7 +78,7 @@ def create_agglayer_prover_config_artifact(plan, args):
 
     is_cpu_prover_enabled = "false"
     is_network_prover_enabled = "true"
-    if args["agglayer_prover_sp1_key"] != "":
+    if args["agglayer_prover_sp1_key"] == "":
         is_cpu_prover_enabled = "true"
         is_network_prover_enabled = "false"
 
@@ -94,6 +94,8 @@ def create_agglayer_prover_config_artifact(plan, args):
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
                     "prometheus_port": args["agglayer_prover_metrics_port"],
+                    "is_cpu_prover_enabled": is_cpu_prover_enabled,
+                    "is_network_prover_enabled": is_network_prover_enabled,
                 },
             )
         },
