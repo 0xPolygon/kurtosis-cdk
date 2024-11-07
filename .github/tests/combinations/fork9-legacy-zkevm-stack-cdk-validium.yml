@@ -9,7 +9,7 @@ args:
   additional_services:
     - pless_zkevm_node
     - tx_spammer
-  data_availability_mode: cdk-validium
+  consensus_contract_type: cdk-validium
   sequencer_type: zkevm
 deployment_stages:
   deploy_cdk_erigon_node: false
