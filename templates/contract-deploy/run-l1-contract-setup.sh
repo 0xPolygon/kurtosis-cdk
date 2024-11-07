@@ -52,29 +52,27 @@ fund_account_on_l1() {
         "$address"
 }
 
-deploy_rollup_manager() {
-    # Deploy contracts.
-    echo_ts "Step 1: Preparing tesnet"
+deploy_zkevm_contracts() {
+    echo_ts "Step 0: Preparing tesnet"
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
 
-    echo_ts "Step 2: Creating genesis"
+    echo_ts "Step 1: Creating genesis"
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then
         echo_ts "The genesis file was not created after running createGenesis"
         exit 1
     fi
 
-    echo_ts "Step 3: Deploying PolygonZKEVMDeployer"
+    echo_ts "Step 2: Deploying PolygonZKEVMDeployer"
     npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost 2>&1 | tee 03_zkevm_deployer.out
 
-    echo_ts "Step 4: Deploying contracts"
+    echo_ts "Step 3: Deploying contracts"
     npx hardhat run deployment/v2/3_deployContracts.ts --network localhost 2>&1 | tee 04_deploy_contracts.out
     if [[ ! -e deployment/v2/deploy_output.json ]]; then
         echo_ts "The deploy_output.json file was not created after running deployContracts"
         exit 1
     fi
 }
-
 
 if [[ -e "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock" ]]; then
     echo_ts "This script has already been executed"
@@ -128,7 +126,7 @@ jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/
 is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc
 if [[ ! -e /opt/zkevm/combined.json ]]; then
     echo_ts "It looks like this is the first rollup so we'll deploy the LxLy and Rollup Manager"
-    deploy_rollup_manager
+    deploy_zkevm_contracts
     is_first_rollup=1
 else
     echo_ts "Skipping deployment of the Rollup Manager and LxLy"
@@ -136,7 +134,7 @@ else
     cp /opt/zkevm/deploy_output.json /opt/zkevm-contracts/deployment/v2/
 fi
 
-echo_ts "Step 5: Creating Rollup/Validium"
+echo_ts "Step 4: Creating Rollup/Validium"
 npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
 if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
     echo_ts "The create_rollup_output.json file was not created after running createRollup"
