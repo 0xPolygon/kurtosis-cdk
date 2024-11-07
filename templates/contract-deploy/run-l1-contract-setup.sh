@@ -190,10 +190,9 @@ deploy_rollup_contract
 # Now we can combine all of the files and put them into the general zkevm folder.
 echo_ts "Combining contract deploy files"
 mkdir -p /opt/zkevm
-cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
-cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
-cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
+cp /opt/zkevm-contracts/deployment/v2/create_rollup_{output,parameters}.json /opt/zkevm/
+cp /opt/zkevm-contracts/deployment/v2/deploy_{output,parameters}.json /opt/zkevm/
 popd || exit 1
 
 echo_ts "Creating combined.json"
