@@ -5,7 +5,7 @@
     "initialZkEVMDeployerOwner": "{{.zkevm_l2_admin_address}}",
     "maxFeePerGas": "",
     "maxPriorityFeePerGas": "",
-    "minDelayTimelock": 3600,
+    "minDelayTimelock": 60,
     "multiplierGas": "",
     "pendingStateTimeout": 604799,
     "polTokenAddress":"",
