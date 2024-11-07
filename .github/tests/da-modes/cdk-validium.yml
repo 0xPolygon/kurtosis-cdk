@@ -1,2 +1,2 @@
 args:
-  data_availability_mode: cdk-validium
+  consensus_contract_type: cdk-validium

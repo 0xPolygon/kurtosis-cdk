@@ -5,7 +5,8 @@ max-buffered-queries = 100
 
 [log]
 environment = "production"      # "production" or "development"
-level = "{{.global_log_level}}"
+# level = "{{.global_log_level}}"
+level = "debug"
 outputs = ["stderr"]
 format = "json"
 
@@ -13,9 +14,10 @@ format = "json"
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
 [cpu-prover]
+enabled = {{.is_cpu_prover_enabled}}
 max-concurrency-limit = 100
-proving-timeout = 300
+proving-timeout = 900
 
 [network-prover]
-enabled = false
-proving-timeout = 300
+enabled = {{.is_network_prover_enabled}}
+proving-timeout = 900

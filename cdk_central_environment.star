@@ -27,7 +27,7 @@ def run(plan, args):
         },
     )
 
-    if not args["zkevm_use_real_verifier"] and not args["enable_normalcy"]:
+    if not args["zkevm_use_real_verifier"] and not args["enable_normalcy"] and not args["consensus_contract_type"] == "pessimistic":
         zkevm_prover_package.start_prover(
             plan, args, prover_config_artifact, "zkevm_prover_start_port"
         )
@@ -151,11 +151,17 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dac.keystore",
     )
+    claimsponsor_keystore_artifact = plan.store_service_files(
+        name="claimsponsor-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/claimsponsor.keystore",
+    )
     return struct(
         sequencer=sequencer_keystore_artifact,
         aggregator=aggregator_keystore_artifact,
         proofsigner=proofsigner_keystore_artifact,
         dac=dac_keystore_artifact,
+        claimsponsor=claimsponsor_keystore_artifact,
     )
 
 

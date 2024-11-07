@@ -13,7 +13,7 @@ args:
     - pless_zkevm_node
   l1_rpc_url: CHANGE_ME
   genesis_file: ../../.github/tests/pless-zkevm-node/cardona-sepolia-testnet-genesis.json
-  data_availability_mode: rollup
+  consensus_contract_type: rollup
 
   # Cardona/Sepolia is using fork id 9.
   # https://sepolia.etherscan.io/address/0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff#readProxyContract#F25

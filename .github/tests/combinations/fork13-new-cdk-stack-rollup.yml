@@ -6,5 +6,5 @@ args:
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
   additional_services:
     - tx_spammer
-  data_availability_mode: rollup
+  consensus_contract_type: rollup
   sequencer_type: erigon

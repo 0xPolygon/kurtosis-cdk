@@ -175,6 +175,11 @@ zkevm.da-url: ""
 zkevm.pool-manager-url: {{.pool_manager_url}}
 # {{end}}
 
+# {{if eq .consensus_contract_type "pessimistic"}}
+# The file that contains the initial (injected) batch data for pessimistic proofs consensus.
+zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
+# {{end}}
+
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           ____  ____   ____
 #  |__  / |/ / ____\ \   / /  \/  |         |  _ \|  _ \ / ___|
