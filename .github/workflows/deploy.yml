@@ -47,7 +47,7 @@ jobs:
           docker_gateway_address="$(docker network inspect bridge --format='{{range .IPAM.Config}}{{.Gateway}}{{end}}')"
           yq -Y --in-place ".args.l1_rpc_url = \"http://$docker_gateway_address:8545\"" ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml
           cat ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml # TODO: remove
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml .
       
       # TODO: Check if anvil state is up to date.
       # TODO: Same for other deployment files!
