@@ -4,12 +4,17 @@ FOUNDRY_IMAGE = (
 
 
 def run(plan, args):
-    state_file = read_file(src="./templates/contract-deploy/pre-deployed-contracts/anvil-state.json")
     state_artifact = plan.render_templates(
         name="anvil-state",
-        config={"state.json": struct(template=state_file, data={})},
+        config={
+            "state.json": struct(
+                template=read_file(
+                    src="./templates/contract-deploy/pre-deployed-contracts/anvil-state.json"
+                ),
+                data={},
+            )
+        },
     )
-
     plan.add_service(
         name="anvil" + args["deployment_suffix"],
         config=ServiceConfig(
