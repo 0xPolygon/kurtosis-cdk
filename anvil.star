@@ -18,16 +18,18 @@ def run(plan, args):
                 "rpc": PortSpec(number=8545),
             },
             files={"/etc/anvil": state_artifact},
+            entrypoint=["anvil"],
             cmd=[
-                "anvil",
                 "--chain-id",
                 str(args["l1_chain_id"]),
                 "--mnemonic",
                 args["l1_preallocated_mnemonic"],
                 "--balance",
                 "1000000000",
+                "--host",
+                "0.0.0.0",
                 "--port",
                 "8545",
             ],
         ),
-)
+    )
