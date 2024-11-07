@@ -7,6 +7,7 @@ args:
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
   additional_services:
     - tx_spammer
+  deploy_l2_contracts: true
   consensus_contract_type: rollup
   sequencer_type: zkevm
 deployment_stages:
