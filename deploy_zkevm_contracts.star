@@ -88,20 +88,21 @@ def run(plan, args):
         ),
     )
 
-    # Deploy contracts.
-    plan.exec(
-        description="Deploying zkevm contracts on L1",
-        service_name=contracts_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/run-l1-contract-setup.sh"
-                ),
-            ]
-        ),
-    )
+    if not args.get("l1_pre_deployed_contracts", False):
+        # Deploy contracts.
+        plan.exec(
+            description="Deploying zkevm contracts on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-l1-contract-setup.sh"
+                    ),
+                ]
+            ),
+        )
 
     # Create keystores.
     plan.exec(

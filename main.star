@@ -31,9 +31,8 @@ def run(plan, args={}):
     plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
     # Deploy a local L1.
-    l1_pre_deployed_contracts = args.get("l1_pre_deployed_contracts", False)
     if deployment_stages.get("deploy_l1", False):
-        if l1_pre_deployed_contracts:
+        if args.get("l1_pre_deployed_contracts", False):
             plan.print("Deploying a local L1 with pre-deployed contracts using anvil")
             import_module("anvil.star").run(plan, args)
             args["l1_rpc_url"] = "http://anvil{}:8545".format(args["deployment_suffix"])
@@ -44,9 +43,7 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of a local L1")
 
     # Deploy zkevm contracts on L1.
-    if not l1_pre_deployed_contracts and deployment_stages.get(
-        "deploy_zkevm_contracts_on_l1", False
-    ):
+    if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
         import_module(deploy_zkevm_contracts_package).run(plan, args)
     else:
