@@ -12,7 +12,7 @@ LABEL description="Helper image to deploy zkevm contracts"
 # STEP 1: Download zkevm contracts dependencies and compile contracts.
 ARG ZKEVM_CONTRACTS_BRANCH
 WORKDIR /opt/zkevm-contracts
-RUN git clone --branch fix/anvil-deployment https://github.com/leovct/zkevm-contracts . \
+RUN git clone https://github.com/leovct/zkevm-contracts . \
   && git checkout ${ZKEVM_CONTRACTS_BRANCH} \
   && npm install --global npm@10.9.0 \
   && npm install \
