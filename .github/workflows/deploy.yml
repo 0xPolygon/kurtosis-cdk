@@ -40,7 +40,7 @@ jobs:
       - name: Start anvil node
         run: |
           mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-          anvil --mnemonic "$mnemonic" --chain-id 271828 --balance 1000000000 --host 0.0.0.0 --state ./state.json &
+          anvil --state ./state.json --mnemonic "$mnemonic" --chain-id 271828 --balance 1000000000 --host 0.0.0.0 &
 
       - name: Deploy zkevm contracts to L1
         run: |
@@ -49,6 +49,9 @@ jobs:
           echo "Args file:"
           cat ./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pre-deployed-contracts/deploy-zkevm-contracts.yml .
+
+      - name: Wait 30s for all transactions to be mined
+        run: sleep 30
 
       - name: Copy deployment files
         run: |
