@@ -53,11 +53,8 @@ jobs:
       - name: Copy deployment files
         run: |
           folder="./templates/contract-deploy/pre-deployed-contracts"
-          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/genesis.json" | tail -n +2 | jq > "$folder/genesis.json"
-          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_output.json" | tail -n +2 | jq > "$folder/create_rollup_output.json"
-          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq > "$folder/create_rollup_parameters.json"
-          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_output.json" | tail -n +2 | jq > "$folder/deploy_output.json"
-          kurtosis service exec cdk contracts-001 "cat /opt/zkevm-contracts/deployment/v2/deploy_parameters.json" | tail -n +2 | jq > "$folder/deploy_parameters.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm/genesis.json" | tail -n +2 | jq > "$folder/genesis.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq > "$folder/combined.json"
           jq . ./state.json > "$folder/anvil-state.json"
 
       - name: Check if pre-deployed contract artefacts are up to date
