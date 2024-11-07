@@ -10,8 +10,12 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
     {
-        "name": "run-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-contract-setup.sh",
+        "name": "run-l1-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l1-contract-setup.sh",
+    },
+    {
+        "name": "run-l2-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
     },
     {
         "name": "create-keystores.sh",
@@ -20,10 +24,6 @@ ARTIFACTS = [
     {
         "name": "update-ger.sh",
         "file": "./templates/contract-deploy/update-ger.sh",
-    },
-    {
-        "name": "run-l2-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
     },
 ]
 
@@ -97,7 +97,7 @@ def run(plan, args):
                 "/bin/sh",
                 "-c",
                 "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/run-contract-setup.sh"
+                    "/opt/contract-deploy/run-l1-contract-setup.sh"
                 ),
             ]
         ),
