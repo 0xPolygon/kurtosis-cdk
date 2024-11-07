@@ -19,6 +19,9 @@ RUN git clone --branch fix/anvil-deployment https://github.com/leovct/zkevm-cont
   && npx hardhat compile
 
 # STEP 2: Install tools.
+# Pin foundry version to 2024/10/23 to avoid the issue with cast send.
+# https://github.com/foundry-rs/foundry/issues/9276
+ARG FOUNDRY_VERSION=nightly-2044faec64f99a21f0e5f0094458a973612d0712
 COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 WORKDIR /opt
 # WARNING (DL3008): Pin versions in apt get install.
@@ -32,7 +35,7 @@ RUN apt-get update \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup \
+  && /root/.foundry/bin/foundryup --version ${FOUNDRY_VERSION} \
   && cp /root/.foundry/bin/* /usr/local/bin
 
 USER node
