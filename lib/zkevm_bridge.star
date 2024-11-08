@@ -48,7 +48,7 @@ def start_bridge_ui(plan, args, config_artifact):
             },
             entrypoint=["/bin/sh", "-c"],
             cmd=[
-                "cp /etc/zkevm/.env /usr/share/nginx/html.env && nginx -g 'daemon off;'"
+                "cp /etc/zkevm/.env /usr/share/nginx/html/.env && nginx -g 'daemon off;'"
             ],
         ),
     )
