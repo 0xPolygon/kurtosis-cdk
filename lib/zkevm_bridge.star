@@ -39,17 +39,10 @@ def start_bridge_ui(plan, args, config_artifact):
             ports=ports,
             public_ports=public_ports,
             files={
-                # It's not possible to mount a file artifact to a persistent directory without
-                # removing all the files in this directory. In the case of the bridge ui, copying
-                # the .env file artifact to /usr/share/nginx/html will remove the app build.
-                # That's why we need this work-around.
-                # https://github.com/kurtosis-tech/kurtosis/issues/2111
                 "/etc/zkevm": Directory(artifact_names=[config_artifact]),
             },
             entrypoint=["/bin/sh", "-c"],
-            cmd=[
-                "cp /etc/zkevm/.env /usr/share/nginx/html/.env && nginx -g 'daemon off;'"
-            ],
+            cmd=["set -a; source /etc/zkevm/.env; set +a; nginx -g 'daemon off;'"],
         ),
     )
 
