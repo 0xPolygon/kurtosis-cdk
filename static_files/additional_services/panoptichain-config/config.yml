@@ -149,7 +149,7 @@ providers:
         - "{{.zkevm_l2_agglayer_address}}"
         - "{{.zkevm_l2_dac_address}}"
         - "{{.zkevm_l2_proofsigner_address}}"
-        - "{{.l1_deposit_account}}"
+        - "{{.zkevm_l2_l1testing_address}}"
 
     - name: "L2"
       url: "{{.l2_rpc_url}}"
