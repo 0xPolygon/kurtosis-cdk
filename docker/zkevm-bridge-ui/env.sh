@@ -94,4 +94,4 @@ then
 fi
 
 echo "Generated .env file:"
-echo "$(cat /app/.env)"
+echo "$(cat $ENV_FILENAME)"
