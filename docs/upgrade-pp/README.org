@@ -79,7 +79,7 @@ polycli monitor --rpc-url $(kurtosis port print cdk cdk-erigon-rpc-001 rpc)
 polycli monitor --rpc-url $(kurtosis port print cdk zkevm-node-rpc-002 rpc)
 #+end_src
 
-[[/home/john/code/kurtosis-cdk/docs/upgrade-pp/README.org_20241107_183354_RUgJa3.png]]
+[[README.org_20241107_183354_RUgJa3.png]]
 
 * Rollup Manager Upgrade
 
@@ -231,7 +231,7 @@ process has worked. Generally, we should also make sure that none of
 the containers have stopped. There are going to be a lot of containers
 because we're running two separate devnets at this point.
 
-[[/home/john/code/kurtosis-cdk/docs/upgrade-pp/README.org_20241107_174356_V3QbFI.png]]
+[[README.org_20241107_174356_V3QbFI.png]]
 
 Okay, to wrap this up, let's try to attach one more rollup that's
 using pessimsitic consensus. We'll create a new params file that
@@ -335,7 +335,7 @@ polycli monitor --rpc-url $(kurtosis port print cdk cdk-erigon-rpc-003 rpc)
 #+end_src
 
 
-[[/home/john/code/kurtosis-cdk/docs/upgrade-pp/README.org_20241107_202120_6X33db.png]]
+[[README.org_20241107_202120_6X33db.png]]
 
 
 * Future Test Cases
