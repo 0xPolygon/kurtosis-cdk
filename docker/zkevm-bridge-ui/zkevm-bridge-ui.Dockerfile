@@ -10,12 +10,10 @@ RUN apt-get update \
   && git clone --branch ${ZKEVM_BRIDGE_UI_TAG} https://github.com/0xPolygonHermez/zkevm-bridge-ui .
 
 # STEP 2: Apply patches and build the app.
-COPY env.sh env.ts.diff ./
-RUN npm install \
-  && npm run build \
-  && patch -p1 -i env.ts.diff \
-  && ./env.sh \
-  && cp .env ./dist
+COPY env.ts.diff .
+RUN patch -p1 -i env.ts.diff \
+  && npm install \
+  && npm run build
 
 
 # STEP 3: Serve the app using nginx.

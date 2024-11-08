@@ -39,7 +39,7 @@ def start_bridge_ui(plan, args, config_artifact):
             ports=ports,
             public_ports=public_ports,
             files={
-                "/etc/zkevm": Directory(artifact_names=[config_artifact]),
+                "/usr/share/nginx/html": Directory(artifact_names=[config_artifact]),
             },
         ),
     )
