@@ -41,11 +41,6 @@ def start_bridge_ui(plan, args, config_artifact):
             files={
                 "/etc/zkevm": Directory(artifact_names=[config_artifact]),
             },
-            entrypoint=["/bin/sh", "-c"],
-            cmd=[
-                "set -a; source /etc/zkevm/.env; set +a; sh /app/scripts/deploy.sh run"
-            ],
-            # user=User(uid=0, gid=0),  # Run the container as root user.
         ),
     )
 
