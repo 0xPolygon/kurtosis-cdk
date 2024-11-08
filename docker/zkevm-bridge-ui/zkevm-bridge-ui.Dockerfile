@@ -10,9 +10,9 @@ RUN apk add --no-cache git nodejs npm patch \
   && git clone --branch ${ZKEVM_BRIDGE_UI_TAG} https://github.com/0xPolygonHermez/zkevm-bridge-ui .
 
 # STEP 2: Apply patches and build the app.
-COPY deploy.sh.diff env.ts.diff ./
-RUN patch -p1 -i deploy.sh.diff \
-  && patch -p1 -i env.ts.diff \
+COPY env.sh env.ts.diff ./
+RUN patch -p1 -i env.ts.diff \
+  && ./env.sh \
   && npm install \
   && npm run build
 
@@ -24,7 +24,4 @@ LABEL description="Enhanced zkevm-bridge-ui image with relative URLs support ena
 
 COPY --from=builder /opt/zkevm-bridge-ui/dist /usr/share/nginx/html
 COPY --from=builder /opt/zkevm-bridge-ui/deployment/nginx.conf /etc/nginx/conf.d/default.conf
-
-WORKDIR /app
-COPY --from=builder /opt/zkevm-bridge-ui/scripts ./scripts
-ENTRYPOINT ["/bin/sh", "/app/scripts/deploy.sh"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
