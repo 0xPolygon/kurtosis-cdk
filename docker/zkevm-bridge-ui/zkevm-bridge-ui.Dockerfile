@@ -11,10 +11,11 @@ RUN apt-get update \
 
 # STEP 2: Apply patches and build the app.
 COPY env.sh env.ts.diff ./
-RUN patch -p1 -i env.ts.diff \
+RUN npm install \
+  && npm run build \
+  && patch -p1 -i env.ts.diff \
   && ./env.sh \
-  && npm install \
-  && npm run build
+  && cp .env ./dist
 
 
 # STEP 3: Serve the app using nginx.
