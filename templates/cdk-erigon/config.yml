@@ -149,7 +149,12 @@ zkevm.reject-smart-contract-deployments: false
 # Disables virtual counters, which are used by sequencer nodes when external execution is not enabled.
 # This can impact performance and transaction processing capabilities.
 # Default: false
+# {{if .enable_normalcy}}
+zkevm.disable-virtual-counters: true
+# {{else}}
 zkevm.disable-virtual-counters: false
+# {{end}}
+
 
 # Multiplier used to reduce the depth of SMT when calculating virtual counters.
 # A value less than 1 will decrease SMT depth, potentially improving performance but may affect accuracy.
@@ -168,6 +173,11 @@ zkevm.da-url: ""
 # If specified, all eth_sendRawTransaction calls will be redirected to this service for processing.
 # Default: ""
 zkevm.pool-manager-url: {{.pool_manager_url}}
+# {{end}}
+
+# {{if eq .consensus_contract_type "pessimistic"}}
+# The file that contains the initial (injected) batch data for pessimistic proofs consensus.
+zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
 # {{end}}
 
 # --------------------------------------------------------------------------------------------------

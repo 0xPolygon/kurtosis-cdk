@@ -25,17 +25,17 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": True,
+    "deploy_l2_contracts": False,
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:feature-storage-adding-epoch-packing",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.5",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta5",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network-2",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
+    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
@@ -105,7 +105,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 10 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 11 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -135,8 +135,11 @@ DEFAULT_ACCOUNTS = {
     "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
     "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
     # l1testing
-    "l1_deposit_account": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
-    "l1_deposit_account_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
+    "zkevm_l2_l1testing_address": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
+    "zkevm_l2_l1testing_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
+    # claimsponsor
+    "zkevm_l2_claimsponsor_address": "0x0b68058E5b2592b1f472AdFe106305295A332A7C",
+    "zkevm_l2_claimsponsor_private_key": "0x6d1d3ef5765cf34176d42276edd7a479ed5dc8dbf35182dfdb12e8aafe0a4919",
 }
 
 DEFAULT_L1_ARGS = {
@@ -190,6 +193,12 @@ DEFAULT_L1_ARGS = {
     "l1_funding_amount": "1000000ether",
     # Default: 2
     "l1_participants_count": 1,
+    # Whether to deploy https://github.com/Arachnid/deterministic-deployment-proxy.
+    # Not deploying this will may cause errors or short circuit other contract
+    # deployments.
+    "l1_deploy_deterministic_deployment_proxy": True,
+    # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
+    "l1_deploy_lxly_bridge_and_call": True,
 }
 
 DEFAULT_L2_ARGS = {
@@ -198,6 +207,12 @@ DEFAULT_L2_ARGS = {
     "l2_accounts_to_fund": 10,
     # The amount of ETH sent to each of the prefunded l2 accounts.
     "l2_funding_amount": "100ether",
+    # Whether to deploy https://github.com/Arachnid/deterministic-deployment-proxy.
+    # Not deploying this will may cause errors or short circuit other contract
+    # deployments.
+    "l2_deploy_deterministic_deployment_proxy": True,
+    # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
+    "l2_deploy_lxly_bridge_and_call": True,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -227,6 +242,16 @@ DEFAULT_ROLLUP_ARGS = {
     # Docker/Kubernetes cluster".
     # https://docs.kurtosis.com/advanced-concepts/public-and-private-ips-and-ports/
     "use_dynamic_ports": True,
+    # Set this to true to disable all special logics in hermez and only enable bridge update in pre-block execution
+    # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
+    "enable_normalcy": False,
+    # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
+    "agglayer_prover_sp1_key": "",
+    # The URL where the agglayer can be reached
+    "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
+    # This is a path where the cdk-node will write data
+    # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
+    "zkevm_path_rw_data": "/tmp/",
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -248,12 +273,12 @@ DEFAULT_ARGS = (
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
         # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
         "sequencer_type": "erigon",
-        # The type of data availability to use.
+        # The type of consensus contract to use.
         # Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
-        # In the future, we would like to support external DA protocols such as Avail, Celestia and Near.
-        "data_availability_mode": "cdk-validium",
+        # - 'pessimistic': deploy with pessmistic consensus
+        "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
@@ -300,6 +325,9 @@ def parse_args(plan, args):
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
+
+    if args["enable_normalcy"] and args["erigon_strict_mode"]:
+        fail("normalcy and strict mode cannot be enabled together")
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):

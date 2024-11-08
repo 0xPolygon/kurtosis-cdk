@@ -14,6 +14,7 @@ def run_sequencer(plan, args):
                 data={
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                     "is_sequencer": True,
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | args
                 | contract_setup_addresses,
@@ -31,6 +32,7 @@ def run_sequencer(plan, args):
                 template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
+                    "enable_normalcy": args["enable_normalcy"],
                 },
             ),
         },
@@ -42,12 +44,16 @@ def run_sequencer(plan, args):
     cdk_erigon_chain_allocs_artifact = plan.get_files_artifact(
         name="cdk-erigon-chain-allocs",
     )
+    cdk_erigon_chain_first_batch_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-first-batch",
+    )
 
     config_artifacts = struct(
         config=cdk_erigon_sequencer_config_artifact,
         chain_spec=cdk_erigon_chain_spec_artifact,
         chain_config=cdk_erigon_chain_config_artifact,
         chain_allocs=cdk_erigon_chain_allocs_artifact,
+        chain_first_batch=cdk_erigon_chain_first_batch_artifact,
     )
     cdk_erigon_package.start_cdk_erigon_sequencer(
         plan, args, config_artifacts, "cdk_erigon_sequencer_start_port"
@@ -108,6 +114,7 @@ def run_rpc(plan, args):
                     "zkevm_datastreamer_url": zkevm_datastreamer_url,
                     "is_sequencer": False,
                     "pool_manager_url": pool_manager_url,
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | args
                 | contract_setup_addresses,
@@ -125,6 +132,7 @@ def run_rpc(plan, args):
                 template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
+                    "enable_normalcy": args["enable_normalcy"],
                 },
             ),
         },
@@ -136,12 +144,16 @@ def run_rpc(plan, args):
     cdk_erigon_chain_allocs_artifact = plan.get_files_artifact(
         name="cdk-erigon-chain-allocs",
     )
+    cdk_erigon_chain_first_batch_artifact = plan.get_files_artifact(
+        name="cdk-erigon-chain-first-batch",
+    )
 
     config_artifacts = struct(
         config=cdk_erigon_rpc_config_artifact,
         chain_spec=cdk_erigon_chain_spec_artifact,
         chain_config=cdk_erigon_chain_config_artifact,
         chain_allocs=cdk_erigon_chain_allocs_artifact,
+        chain_first_batch=cdk_erigon_chain_first_batch_artifact,
     )
     cdk_erigon_package.start_cdk_erigon_rpc(
         plan, args, config_artifacts, "cdk_erigon_rpc_start_port"

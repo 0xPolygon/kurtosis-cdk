@@ -99,7 +99,7 @@ fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
 fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
 fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
 fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
-fund_account_on_l1 "l1testing" "{{.l1_deposit_account}}"
+fund_account_on_l1 "l1testing" "{{.zkevm_l2_l1testing_address}}"
 
 echo_ts "Setting up local zkevm-contracts repo for deployment"
 pushd /opt/zkevm-contracts || exit 1
@@ -223,6 +223,14 @@ jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/
 batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
 jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
 mv tmp_output.json dynamic-kurtosis-conf.json
+
+# zkevm.initial-batch.config
+jq '.firstBatchData' combined.json > first-batch-config.json
+
+if [[ ! -s dynamic-kurtosis-conf.json ]]; then
+    echo_ts "Error creating the dynamic kurtosis config"
+    exit 1
+fi
 
 # Configure contracts.
 

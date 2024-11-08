@@ -1,11 +1,6 @@
 data_availability_package = import_module("./data_availability.star")
 ports_package = import_module("../src/package_io/ports.star")
 
-NODE_COMPONENTS = struct(
-    sequence_sender="sequence-sender",
-    aggregator="aggregator",
-)
-
 
 def create_cdk_node_service_config(
     args,
@@ -15,6 +10,7 @@ def create_cdk_node_service_config(
 ):
     cdk_node_name = "cdk-node" + args["deployment_suffix"]
     (ports, public_ports) = get_cdk_node_ports(args)
+    service_command = get_cdk_node_cmd(args)
     cdk_node_service_config = ServiceConfig(
         image=args["cdk_node_image"],
         ports=ports,
@@ -26,6 +22,7 @@ def create_cdk_node_service_config(
                     genesis_artifact,
                     keystore_artifact.aggregator,
                     keystore_artifact.sequencer,
+                    keystore_artifact.claimsponsor,
                 ],
             ),
             "/data": Directory(
@@ -33,23 +30,18 @@ def create_cdk_node_service_config(
             ),
         },
         entrypoint=["sh", "-c"],
-        # Sleep for 20 seconds in order to wait for datastream server getting ready
-        # TODO: find a better way instead of waiting
-        cmd=[
-            "sleep 20 && cdk "
-            + "node "
-            + "--config=/etc/cdk/cdk-node-config.toml "
-            + "--components="
-            + NODE_COMPONENTS.sequence_sender
-            + ","
-            + NODE_COMPONENTS.aggregator,
-        ],
+        cmd=service_command,
     )
 
     return {cdk_node_name: cdk_node_service_config}
 
 
 def get_cdk_node_ports(args):
+    # We won't have an aggregator if we're in PP mode
+    if args["consensus_contract_type"] == "pessimistic":
+        return (dict(), dict())
+
+    # FEP requires the aggregator
     ports = {
         "aggregator": PortSpec(
             args["zkevm_aggregator_port"], application_protocol="grpc"
@@ -57,3 +49,22 @@ def get_cdk_node_ports(args):
     }
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
     return (ports, public_ports)
+
+
+def get_cdk_node_cmd(args):
+    service_command = [
+        "sleep 20 && cdk-node run "
+        + "--cfg=/etc/cdk/cdk-node-config.toml "
+        + "--custom-network-file=/etc/cdk/genesis.json "
+        + "--components=sequence-sender,aggregator"
+    ]
+
+    if args["consensus_contract_type"] == "pessimistic":
+        service_command = [
+            "sleep 20 && cdk-node run "
+            + "--cfg=/etc/cdk/cdk-node-config.toml "
+            + "--custom-network-file=/etc/cdk/genesis.json "
+            + "--save-config-path=/tmp/ "
+            + "--components=aggsender"
+        ]
+    return service_command

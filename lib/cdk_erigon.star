@@ -40,6 +40,7 @@ def _start_service(
         config_artifact.chain_spec,
         config_artifact.chain_config,
         config_artifact.chain_allocs,
+        config_artifact.chain_first_batch,
     ]
     (ports, public_ports) = get_cdk_erigon_ports(
         args, additional_ports, start_port_name

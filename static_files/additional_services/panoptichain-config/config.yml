@@ -149,14 +149,14 @@ providers:
         - "{{.zkevm_l2_agglayer_address}}"
         - "{{.zkevm_l2_dac_address}}"
         - "{{.zkevm_l2_proofsigner_address}}"
-        - "{{.l1_deposit_account}}"
+        - "{{.zkevm_l2_l1testing_address}}"
 
     - name: "L2"
       url: "{{.l2_rpc_url}}"
       label: "L2"
       contracts:
         global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
-        zkevm_bridge_address: "{{.zkevm_bridge_address}}"
+        zkevm_bridge_address: "{{.zkevm_bridge_l2_address}}"
       time_to_mine:
         sender: "{{.l2_sender_address}}"
         sender_private_key: "{{.l2_sender_private_key}}"

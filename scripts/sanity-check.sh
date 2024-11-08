@@ -29,8 +29,14 @@ check_variable() {
 #
 ####################################################################################################
 
-# LOCAL KURTOSIS-CDK
+# ENCLAVE
 enclave="cdk"
+
+if [[ "$enclave" != "" ]] && ! kurtosis enclave inspect "$enclave"; then
+  exit 1
+fi
+
+# LOCAL KURTOSIS-CDK
 l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
 l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
@@ -39,7 +45,6 @@ rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
-# enclave="erigon-18-4"
 # l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 # l2_sequencer_url="$(kurtosis port print "$enclave" sequencer001 sequencer8123)"
 # l2_datastreamer_url="$(kurtosis port print "$enclave" sequencer001 sequencer6900)"
