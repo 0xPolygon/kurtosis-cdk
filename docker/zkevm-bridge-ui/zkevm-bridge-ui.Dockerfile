@@ -1,12 +1,12 @@
-FROM alpine:3.20 AS builder
+FROM node:22-bookworm AS builder
 
 # STEP 1: Clone zkevm-bridge-ui repository.
 ARG ZKEVM_BRIDGE_UI_TAG
 WORKDIR /opt/zkevm-bridge-ui
 # WARNING (DL3018): Pin versions in apk add.
 # hadolint ignore=DL3018
-RUN apk add --no-cache git nodejs npm patch \
-  && rm -rf /var/cache/apk/* \
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends git patch \
   && git clone --branch ${ZKEVM_BRIDGE_UI_TAG} https://github.com/0xPolygonHermez/zkevm-bridge-ui .
 
 # STEP 2: Apply patches and build the app.
