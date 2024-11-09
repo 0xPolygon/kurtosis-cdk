@@ -506,8 +506,8 @@ zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 # Maximum time to wait for data from the datastreamer before reporting an error.
 # Balances between allowing for network delays and detecting genuine connection issues.
 # Set to 0s to disable the timeout check (not recommended for production use).
-# Default: 0s
-zkevm.l2-datastreamer-timeout: 0s
+# Default: 3s
+zkevm.l2-datastreamer-timeout: 3s
 
 
 # --------------------------------------------------------------------------------------------------
