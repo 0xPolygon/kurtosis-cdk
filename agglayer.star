@@ -9,6 +9,8 @@ def run(plan, args):
     (ports, public_ports) = get_agglayer_prover_ports(args)
 
     prover_env_vars = {}
+
+    prover_env_vars["RUST_BACKTRACE"] = "1"
     if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
         prover_env_vars["SP1_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
 
