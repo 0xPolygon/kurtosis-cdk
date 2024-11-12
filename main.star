@@ -67,7 +67,7 @@ def run(plan, args={}):
     # Get the genesis file.
     genesis_artifact = ""
     if deployment_stages.get("deploy_cdk_central_environment", False):
-        plan.print("Getting genesis file...")
+        plan.print("Getting genesis file")
         genesis_artifact = plan.store_service_files(
             name="genesis",
             service_name="contracts" + args["deployment_suffix"],
