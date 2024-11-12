@@ -265,6 +265,10 @@ DEFAULT_ARGS = (
         # Suffix appended to service names.
         # Note: It should be a string.
         "deployment_suffix": "-001",
+        # Verbosity of the `kurtosis run` output.
+        # Valid values are "error", "warn", "info", "debug", and "trace".
+        # By default, the verbosity is set to "info". It won't log the value of the args.
+        "verbosity": "info",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
         "global_log_level": "info",
@@ -312,8 +316,11 @@ def parse_args(plan, args):
     args = DEFAULT_ARGS | args.get("args", {})
 
     # Validation step.
+    verbosity = args.get("verbosity", "")
+    validate_log_level("verbosity", verbosity)
+
     global_log_level = args.get("global_log_level", "")
-    validate_global_log_level(global_log_level)
+    validate_log_level("global log level", global_log_level)
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
@@ -363,22 +370,23 @@ def parse_args(plan, args):
     return (sorted_deployment_stages, sorted_args)
 
 
-def validate_global_log_level(global_log_level):
-    if global_log_level not in (
-        constants.GLOBAL_LOG_LEVEL.error,
-        constants.GLOBAL_LOG_LEVEL.warn,
-        constants.GLOBAL_LOG_LEVEL.info,
-        constants.GLOBAL_LOG_LEVEL.debug,
-        constants.GLOBAL_LOG_LEVEL.trace,
+def validate_log_level(name, log_level):
+    if log_level not in (
+        constants.LOG_LEVEL.error,
+        constants.LOG_LEVEL.warn,
+        constants.LOG_LEVEL.info,
+        constants.LOG_LEVEL.debug,
+        constants.LOG_LEVEL.trace,
     ):
         fail(
-            "Unsupported global log level: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
-                global_log_level,
-                constants.GLOBAL_LOG_LEVEL.error,
-                constants.GLOBAL_LOG_LEVEL.warn,
-                constants.GLOBAL_LOG_LEVEL.info,
-                constants.GLOBAL_LOG_LEVEL.debug,
-                constants.GLOBAL_LOG_LEVEL.trace,
+            "Unsupported {}: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
+                name,
+                log_level,
+                constants.LOG_LEVEL.error,
+                constants.LOG_LEVEL.warn,
+                constants.LOG_LEVEL.info,
+                constants.LOG_LEVEL.debug,
+                constants.LOG_LEVEL.trace,
             )
         )
 
