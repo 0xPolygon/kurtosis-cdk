@@ -29,6 +29,7 @@ def run(plan, args={}):
     # Parse args.
     (deployment_stages, args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
+    verbosity = args.get("verbosity", "")
     if verbosity == constants.LOG_LEVEL.debug or verbosity == constants.LOG_LEVEL.trace:
         plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
