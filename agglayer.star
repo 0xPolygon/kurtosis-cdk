@@ -9,7 +9,7 @@ def run(plan, args):
     (ports, public_ports) = get_agglayer_prover_ports(args)
 
     prover_env_vars = {}
-    if args["agglayer_prover_sp1_key"] != "":
+    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
         prover_env_vars["SP1_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
 
     agglayer_prover = plan.add_service(
@@ -76,11 +76,12 @@ def create_agglayer_prover_config_artifact(plan, args):
         src="./templates/bridge-infra/agglayer-prover-config.toml"
     )
 
-    is_cpu_prover_enabled = "false"
-    is_network_prover_enabled = "true"
-    if args["agglayer_prover_sp1_key"] == "":
-        is_cpu_prover_enabled = "true"
-        is_network_prover_enabled = "false"
+    is_cpu_prover_enabled = "true"
+    is_network_prover_enabled = "false"
+    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
+        is_cpu_prover_enabled = "false"
+        is_network_prover_enabled = "true"
+
 
     return plan.render_templates(
         name="agglayer-prover-config-artifact",
