@@ -82,7 +82,6 @@ def create_agglayer_prover_config_artifact(plan, args):
         is_cpu_prover_enabled = "false"
         is_network_prover_enabled = "true"
 
-
     return plan.render_templates(
         name="agglayer-prover-config-artifact",
         config={

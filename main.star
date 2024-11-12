@@ -122,7 +122,6 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-
     # Deploy contracts on L2.
     if deployment_stages.get("deploy_l2_contracts", False):
         plan.print("Deploying contracts on L2")
