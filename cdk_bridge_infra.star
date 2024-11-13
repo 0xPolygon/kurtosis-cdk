@@ -38,7 +38,7 @@ def run(plan, args):
         l1_type = args.get("l1_type", "")
         if l1_type == constants.L1_TYPE.ETHEREUM_PKG:
             l1_rpc_name = "el-1-geth-lighthouse"
-        else if l1_type == constants.L1_TYPE.ANVIL:
+        elif l1_type == constants.L1_TYPE.ANVIL:
             l1_rpc_name = "anvil" + args["deployment_suffix"]
 
         proxy_config_artifact = create_reverse_proxy_config_artifact(
