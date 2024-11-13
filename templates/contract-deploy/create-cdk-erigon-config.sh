@@ -62,7 +62,7 @@ jq . /opt/zkevm/dynamic-kurtosis-conf.json
 
 # 3. Create cdk-erigon first batch config.
 # zkevm.initial-batch.config
-jq '.firstBatchData' combined.json > first-batch-config.json
+jq '.firstBatchData' /opt/zkevm/combined.json > first-batch-config.json
 
 if [[ ! -s /opt/zkevm/first-batch-config.json ]]; then
     echo_ts "Error creating the first batch config"
