@@ -239,45 +239,7 @@ jq --slurpfile c combined.json '.bridgeGenBlockNumber = $c[0].createRollupBlockN
 
 echo_ts "Final combined.json is ready:"
 cp combined.json "combined{{.deployment_suffix}}.json"
-cat combined.json
-
-# This is a jq script to transform the CDK-style genesis file into an allocs file for erigon
-jq_script='
-.genesis | map({
-  (.address): {
-    contractName: (if .contractName == "" then null else .contractName end),
-    balance: (if .balance == "" then null else .balance end),
-    nonce: (if .nonce == "" then null else .nonce end),
-    code: (if .bytecode == "" then null else .bytecode end),
-    storage: (if .storage == null or .storage == {} then null else (.storage | to_entries | sort_by(.key) | from_entries) end)
-  }
-}) | add'
-
-# Use jq to transform the input JSON into the desired format
-if ! output_json=$(jq "$jq_script" /opt/zkevm/genesis.json); then
-    echo_ts "Error processing JSON with jq"
-    exit 1
-fi
-
-# Write the output JSON to a file
-if ! echo "$output_json" | jq . > dynamic-kurtosis-allocs.json; then
-    echo_ts "Error writing to file dynamic-kurtosis-allocs.json"
-    exit 1
-fi
-
-echo_ts "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
-jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
-batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
-jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
-mv tmp_output.json dynamic-kurtosis-conf.json
-
-# zkevm.initial-batch.config
-jq '.firstBatchData' combined.json > first-batch-config.json
-
-if [[ ! -s dynamic-kurtosis-conf.json ]]; then
-    echo_ts "Error creating the dynamic kurtosis config"
-    exit 1
-fi
+jq . combined.json
 
 # --------------------------------------------------------------------------------------------------
 #    ____ ___  _   _ _____ ____      _    ____ _____    ____ ___  _   _ _____ ___ ____ _   _ ____      _  _____ ___ ___  _   _ 
