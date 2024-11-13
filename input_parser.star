@@ -331,7 +331,7 @@ def parse_args(plan, args):
     validate_log_level("global log level", global_log_level)
 
     l1_type = args.get("l1_type", "")
-    validate_l1_type(validate_l1_type)
+    validate_l1_type(l1_type)
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
