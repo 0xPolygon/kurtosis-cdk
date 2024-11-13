@@ -116,7 +116,7 @@ fi
 
 if [[ -e "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock" ]]; then
     echo_ts "Skipping. This script has already been executed."
-    exit 1
+    exit 0
 fi
 
 # If we had a genesis, and combined that were created outside of
@@ -125,7 +125,7 @@ fi
 if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
     echo_ts "Skipping. We have a genesis and combined output file from a previous deployment."
     cp /opt/contract-deploy/* /opt/zkevm/
-    exit 1
+    exit 0
 fi
 
 echo_ts "Waiting for the L1 RPC to be available..."
