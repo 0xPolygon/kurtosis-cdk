@@ -28,7 +28,9 @@ def run(plan, args={}):
     # Parse args.
     (deployment_stages, args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
-    plan.print("Deploying CDK stack with the following configuration: " + str(args))
+    verbosity = args.get("verbosity", "")
+    if verbosity == constants.LOG_LEVEL.debug or verbosity == constants.LOG_LEVEL.trace:
+        plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
@@ -71,7 +73,7 @@ def run(plan, args={}):
     # Get the genesis file.
     genesis_artifact = ""
     if deployment_stages.get("deploy_cdk_central_environment", False):
-        plan.print("Getting genesis file...")
+        plan.print("Getting genesis file")
         genesis_artifact = plan.store_service_files(
             name="genesis",
             service_name="contracts" + args["deployment_suffix"],

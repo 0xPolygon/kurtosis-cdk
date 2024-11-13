@@ -31,15 +31,15 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.5",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta5",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta8",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network-2",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
+    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
-    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.1",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
+    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
 }
@@ -267,6 +267,10 @@ DEFAULT_ARGS = (
         # Suffix appended to service names.
         # Note: It should be a string.
         "deployment_suffix": "-001",
+        # Verbosity of the `kurtosis run` output.
+        # Valid values are "error", "warn", "info", "debug", and "trace".
+        # By default, the verbosity is set to "info". It won't log the value of the args.
+        "verbosity": "info",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
         "global_log_level": "info",
@@ -314,8 +318,11 @@ def parse_args(plan, args):
     args = DEFAULT_ARGS | args.get("args", {})
 
     # Validation step.
+    verbosity = args.get("verbosity", "")
+    validate_log_level("verbosity", verbosity)
+
     global_log_level = args.get("global_log_level", "")
-    validate_global_log_level(global_log_level)
+    validate_log_level("global log level", global_log_level)
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
@@ -365,22 +372,23 @@ def parse_args(plan, args):
     return (sorted_deployment_stages, sorted_args)
 
 
-def validate_global_log_level(global_log_level):
-    if global_log_level not in (
-        constants.GLOBAL_LOG_LEVEL.error,
-        constants.GLOBAL_LOG_LEVEL.warn,
-        constants.GLOBAL_LOG_LEVEL.info,
-        constants.GLOBAL_LOG_LEVEL.debug,
-        constants.GLOBAL_LOG_LEVEL.trace,
+def validate_log_level(name, log_level):
+    if log_level not in (
+        constants.LOG_LEVEL.error,
+        constants.LOG_LEVEL.warn,
+        constants.LOG_LEVEL.info,
+        constants.LOG_LEVEL.debug,
+        constants.LOG_LEVEL.trace,
     ):
         fail(
-            "Unsupported global log level: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
-                global_log_level,
-                constants.GLOBAL_LOG_LEVEL.error,
-                constants.GLOBAL_LOG_LEVEL.warn,
-                constants.GLOBAL_LOG_LEVEL.info,
-                constants.GLOBAL_LOG_LEVEL.debug,
-                constants.GLOBAL_LOG_LEVEL.trace,
+            "Unsupported {}: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
+                name,
+                log_level,
+                constants.LOG_LEVEL.error,
+                constants.LOG_LEVEL.warn,
+                constants.LOG_LEVEL.info,
+                constants.LOG_LEVEL.debug,
+                constants.LOG_LEVEL.trace,
             )
         )
 

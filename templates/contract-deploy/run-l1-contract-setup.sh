@@ -140,6 +140,12 @@ echo_ts "The L1 RPC is now available!"
 #   \____\___/|_| \_| |_| |_| \_\/_/   \_\____| |_|   |____/|_____|_|   |_____\___/ |_| |_|  |_|_____|_| \_| |_|  
 #
 # --------------------------------------------------------------------------------------------------
+echo_ts "Funding important accounts on l1"
+fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
+fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
+fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
+fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
+fund_account_on_l1 "l1testing" "{{.zkevm_l2_l1testing_address}}"
 
 echo_ts "Funding important addresses on L1..."
 fund_address_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
