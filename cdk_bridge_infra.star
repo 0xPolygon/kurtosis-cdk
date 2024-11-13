@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 service_package = import_module("./lib/service.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 databases = import_module("./databases.star")
@@ -34,9 +35,12 @@ def run(plan, args):
 
     # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
     if args["use_local_l1"]:
-        l1_rpc_name = "el-1-geth-lighthouse"
-        if args.get("l1_pre_deployed_contracts", False):
+        l1_type = args.get("l1_type", "")
+        if l1_type == constants.L1_TYPE.ETHEREUM_PKG:
+            l1_rpc_name = "el-1-geth-lighthouse"
+        else if l1_type == constants.L1_TYPE.ANVIL:
             l1_rpc_name = "anvil" + args["deployment_suffix"]
+
         proxy_config_artifact = create_reverse_proxy_config_artifact(
             plan, args, l1_rpc_name
         )

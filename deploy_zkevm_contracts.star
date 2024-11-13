@@ -36,10 +36,10 @@ def run(plan, args):
     artifact_paths = list(ARTIFACTS)
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
-    if (
-        "use_previously_deployed_contracts" in args
-        and args["use_previously_deployed_contracts"]
-    ):
+    use_previously_deployed_contracts = args.get(
+        "use_previously_deployed_contracts", False
+    )
+    if use_previously_deployed_contracts:
         artifact_paths.append(
             {
                 "name": "genesis.json",
@@ -92,7 +92,7 @@ def run(plan, args):
         ),
     )
 
-    if not args.get("l1_pre_deployed_contracts", False):
+    if not use_previously_deployed_contracts:
         # Deploy contracts.
         plan.exec(
             description="Deploying zkevm contracts on L1",

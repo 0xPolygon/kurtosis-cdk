@@ -153,6 +153,12 @@ DEFAULT_ACCOUNTS = {
 }
 
 DEFAULT_L1_ARGS = {
+    # The type of L1 to deploy.
+    # Default: "ethereum-pkg".
+    # Options:
+    #   - "ethereum-pkg": deploy a full L1 environment with an execution client and a consensus client using geth and lighthouse.
+    #   - "anvil": deploy a small L1 environment with just an anvil node as the execution client.
+    "l1_type": "ethereum-pkg",
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # This mnemonic will:
@@ -204,7 +210,7 @@ DEFAULT_L1_ARGS = {
     # Default: 2
     "l1_participants_count": 1,
     # Wheter to use pre-deployed contracts or not.
-    "l1_pre_deployed_contracts": False,
+    "use_previously_deployed_contracts": False,
     # Whether to deploy https://github.com/Arachnid/deterministic-deployment-proxy.
     # Not deploying this will may cause errors or short circuit other contract
     # deployments.
@@ -324,6 +330,9 @@ def parse_args(plan, args):
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
 
+    l1_type = args.get("l1_type", "")
+    validate_l1_type(validate_l1_type)
+
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
     (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
@@ -389,6 +398,20 @@ def validate_log_level(name, log_level):
                 constants.LOG_LEVEL.info,
                 constants.LOG_LEVEL.debug,
                 constants.LOG_LEVEL.trace,
+            )
+        )
+
+
+def validate_l1_type(l1_type):
+    if l1_type not in (
+        constants.L1_TYPE.ETHEREUM_PKG,
+        constants.L1_TYPE.ANVIL,
+    ):
+        fail(
+            "Unsupported l1 type: '{}', please use '{}' or '{}'".format(
+                l1_type,
+                constants.L1_TYPE.ETHEREUM_PKG,
+                constants.L1_TYPE.ANVIL,
             )
         )
 

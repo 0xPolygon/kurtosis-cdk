@@ -6,6 +6,11 @@ LOG_LEVEL = struct(
     trace="trace",
 )
 
+L1_TYPE = struct(
+    ETHEREUM_PKG="ethereum-pkg",
+    ANVIL="anvil",
+)
+
 SEQUENCER_TYPE = struct(
     CDK_ERIGON="erigon",
     ZKEVM="zkevm",

@@ -34,13 +34,14 @@ def run(plan, args={}):
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
-        if args.get("l1_pre_deployed_contracts", False):
-            plan.print("Deploying a local L1 with pre-deployed contracts using anvil")
-            import_module("anvil.star").run(plan, args)
-            args["l1_rpc_url"] = "http://anvil{}:8545".format(args["deployment_suffix"])
-        else:
+        l1_type = args.get("l1_type", "")
+        if l1_type == constants.L1_TYPE.ETHEREUM_PKG:
             plan.print("Deploying a local L1 using the ethereum-package")
             import_module("ethereum.star").run(plan, args)
+        else if l1_type == constants.L1_TYPE.ANVIL:
+            plan.print("Deploying a local L1 with pre-deployed contracts using anvil")
+            import_module("anvil.star").run(plan, args)
+            args["l1_rpc_url"] = "http://anvil{}:8545".format(args["deployment_suffix"])            
     else:
         plan.print("Skipping the deployment of a local L1")
 
