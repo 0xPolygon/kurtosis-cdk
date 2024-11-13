@@ -18,8 +18,8 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
     },
     {
-        name: "create-cdk-erigon-config.sh",
-        file: "./templates/contract-deploy/create-cdk-erigon-config.sh",
+        "name": "create-cdk-erigon-config.sh",
+        "file": "./templates/contract-deploy/create-cdk-erigon-config.sh",
     },
     {
         "name": "create-keystores.sh",
