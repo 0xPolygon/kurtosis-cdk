@@ -30,7 +30,6 @@ Kurtosis CDK's zkevm bridge UI images are [hosted](https://hub.docker.com/reposi
 
 | zkEVM Bridge UI Tag / Commit | Image |
 | ---------------------------- | ----- |
-| [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) + [patch files](./zkevm-bridge-ui/) | `leovct/zkevm-bridge-ui:multi-network-2` |
 | [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) | `leovct/zkevm-bridge-ui:multi-network` |
 
 ## Custom Docker Images
