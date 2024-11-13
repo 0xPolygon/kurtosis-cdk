@@ -34,8 +34,7 @@ if ! echo "$output_json" | jq . > /opt/zkevm/dynamic-kurtosis-allocs.json; then
     echo_ts "Error creating the dynamic kurtosis allocs config"
     exit 1
 fi
-echo_ts "dynamic-kurtosis-allocs.json:"
-jq . /opt/zkevm/dynamic-kurtosis-allocs.json
+echo_ts "- dynamic-kurtosis-allocs.json generated"
 
 
 # 2. Create cdk-erigon config file.
@@ -56,8 +55,7 @@ if [[ ! -s /opt/zkevm/dynamic-kurtosis-conf.json ]]; then
     exit 1
 fi
 
-echo_ts "dynamic-kurtosis-conf.json:"
-jq . /opt/zkevm/dynamic-kurtosis-conf.json
+echo_ts "- dynamic-kurtosis-conf.json generated"
 
 
 # 3. Create cdk-erigon first batch config.
@@ -69,5 +67,4 @@ if [[ ! -s /opt/zkevm/first-batch-config.json ]]; then
     exit 1
 fi
 
-echo_ts "first-batch-config.json:"
-jq . /opt/zkevm/first-batch-config.json
+echo_ts "- first-batch-config.json generated"
