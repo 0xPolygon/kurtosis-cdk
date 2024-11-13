@@ -55,7 +55,7 @@ jobs:
 
       - name: Copy deployment files
         run: |
-          folder="./templates/contract-deploy/pre-deployed-contracts"
+          folder="./templates/contract-deploy"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm/genesis.json" | tail -n +2 | jq > "$folder/genesis.json"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq > "$folder/combined.json"
           jq . ./state.json > "$folder/anvil-state.json"
@@ -63,7 +63,7 @@ jobs:
       - name: Check if pre-deployed contract artefacts are up to date
         run: |
           if [[ -n $(git status --porcelain ./templates) ]]; then
-            echo "❌ Error: Pre-deployed contract artefacts are not up to date. Please update the files under templates/contract-deploy/pre-deployed-contracts/"
+            echo "❌ Error: Pre-deployed contract artefacts are not up to date. Please update the files under templates/contract-deploy/"
             git status --porcelain ./templates
             git diff
             exit 1

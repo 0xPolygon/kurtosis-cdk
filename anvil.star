@@ -9,7 +9,7 @@ def run(plan, args):
         config={
             "state.json": struct(
                 template=read_file(
-                    src="./templates/contract-deploy/pre-deployed-contracts/anvil-state.json"
+                    src="./templates/contract-deploy/anvil-state.json"
                 ),
                 data={},
             )
