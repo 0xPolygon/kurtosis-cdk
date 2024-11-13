@@ -42,8 +42,8 @@ jq . /opt/zkevm/dynamic-kurtosis-allocs.json
 echo_ts "Creating dynamic-kurtosis-conf.json..."
 jq \
     --null-input \
-    --argjson genesis /opt/zkevm/genesis.json \
-    --argjson combined /opt/zkevm/combined.json \
+    --slurpfile genesis /opt/zkevm/genesis.json \
+    --slurpfile combined /opt/zkevm/combined.json \
     '{
         root: $genesis[0].root,
         timestamp: ($combined[0].firstBatchData.timestamp | tonumber),
