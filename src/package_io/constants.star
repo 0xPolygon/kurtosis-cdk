@@ -1,4 +1,4 @@
-GLOBAL_LOG_LEVEL = struct(
+LOG_LEVEL = struct(
     error="error",
     warn="warn",
     info="info",
