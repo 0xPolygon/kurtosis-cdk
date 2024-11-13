@@ -122,18 +122,18 @@ def run(plan, args):
     # Store CDK configs.
     plan.store_service_files(
         name="cdk-erigon-chain-config",
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm/dynamic-kurtosis-conf.json",
     )
 
     plan.store_service_files(
         name="cdk-erigon-chain-allocs",
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm/dynamic-kurtosis-allocs.json",
     )
     plan.store_service_files(
         name="cdk-erigon-chain-first-batch",
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=contracts_service_name,
         src="/opt/zkevm/first-batch-config.json",
     )
 
