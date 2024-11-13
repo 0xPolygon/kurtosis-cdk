@@ -9,10 +9,9 @@ echo_ts() {
     echo -e "$green$timestamp$end_color $1" >&2
 }
 
+echo_ts "Creating cdk-erigon configuration files..."
 
 # 1. Create cdk-erigon allocs file.
-echo_ts "Creating dynamic-kurtosis-allocs.json..."
-
 # Use jq to transform the genesis file into an allocs file for cdk-erigon.
 jq_script='
 .genesis | map({
@@ -38,7 +37,6 @@ echo_ts "- dynamic-kurtosis-allocs.json generated"
 
 
 # 2. Create cdk-erigon config file.
-echo_ts "Creating dynamic-kurtosis-conf.json..."
 jq \
     --null-input \
     --slurpfile genesis /opt/zkevm/genesis.json \
