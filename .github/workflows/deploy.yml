@@ -58,6 +58,9 @@ jobs:
           folder="./templates/contract-deploy/pre-deployed-contracts"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm/genesis.json" | tail -n +2 | jq > "$folder/genesis.json"
           kurtosis service exec cdk contracts-001 "cat /opt/zkevm/combined.json" | tail -n +2 | jq > "$folder/combined.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm/dynamic-kurtosis-conf.json" | tail -n +2 | jq > "$folder/dynamic-kurtosis-conf.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm/dynamic-kurtosis-allocs.json" | tail -n +2 | jq > "$folder/dynamic-kurtosis-allocs.json"
+          kurtosis service exec cdk contracts-001 "cat /opt/zkevm/first-batch-config.json" | tail -n +2 | jq > "$folder/first-batch-config.json"
           jq . ./state.json > "$folder/anvil-state.json"
 
       - name: Check if pre-deployed contract artefacts are up to date
