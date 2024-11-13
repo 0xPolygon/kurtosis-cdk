@@ -18,6 +18,10 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
     },
     {
+        name: "create-cdk-erigon-config.sh",
+        file: "./templates/contract-deploy/create-cdk-erigon-config.sh",
+    },
+    {
         "name": "create-keystores.sh",
         "file": "./templates/contract-deploy/create-keystores.sh",
     },
@@ -119,17 +123,30 @@ def run(plan, args):
         ),
     )
 
-    # Store CDK configs.
-    plan.store_service_files(
-        name="cdk-erigon-chain-config",
+    # Generate and store cdk-erigon configs.
+    # Create keystores.
+    plan.exec(
+        description="Creating cdk-erigon configuration files",
         service_name=contracts_service_name,
-        src="/opt/zkevm/dynamic-kurtosis-conf.json",
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
+                    "/opt/contract-deploy/create-cdk-erigon-config.sh"
+                ),
+            ]
+        ),
     )
-
     plan.store_service_files(
         name="cdk-erigon-chain-allocs",
         service_name=contracts_service_name,
         src="/opt/zkevm/dynamic-kurtosis-allocs.json",
+    )
+    plan.store_service_files(
+        name="cdk-erigon-chain-config",
+        service_name=contracts_service_name,
+        src="/opt/zkevm/dynamic-kurtosis-conf.json",
     )
     plan.store_service_files(
         name="cdk-erigon-chain-first-batch",
