@@ -305,6 +305,22 @@ cast send \
     "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 # {{end}}
 
+# Force update the global exit root.
+echo_ts "Force updating the global exit root"
+bridge_sig="bridgeAsset(uint32 destinationNetwork, address destinationAddress, uint256 amount, address token, bool forceUpdateGlobalExitRoot, bytes permitData)"
+destination_net="7" # random value (better to not use 1 as it could interfere with the network being deployed)
+destination_addr="0x0000000000000000000000000000000000000000"
+amount=0
+token="0x0000000000000000000000000000000000000000"
+update_ger=true
+permit_data="0x"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polygonZkEVMBridgeAddress' combined.json)" \
+    "$bridge_sig" \
+    "$destination_net" "$destination_addr" "$amount" "$token" "$update_ger" "$permit_data"
+
 # If we've configured the l1 network with the minimal preset, we should probably wait for the first
 # finalized block. This isn't strictly specific to minimal preset, but if we don't have "minimal"
 # configured, it's going to take like 25 minutes for the first finalized block.
