@@ -1,0 +1,3 @@
+args: 
+  l1_type: anvil
+  use_previously_deployed_contracts: true
