@@ -81,6 +81,13 @@ def run(plan, args={}):
             src="/opt/zkevm/genesis.json",
         )
 
+    # Deploy the agglayer.
+    if deployment_stages.get("deploy_agglayer", False):
+        plan.print("Deploying the agglayer")
+        import_module(agglayer_package).run(plan, args)
+    else:
+        plan.print("Skipping the deployment of the agglayer")
+
     # Deploy cdk central/trusted environment.
     if deployment_stages.get("deploy_cdk_central_environment", False):
         # Deploy cdk-erigon sequencer node.
@@ -121,13 +128,6 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
-
-    # Deploy the agglayer.
-    if deployment_stages.get("deploy_agglayer", False):
-        plan.print("Deploying the agglayer")
-        import_module(agglayer_package).run(plan, args)
-    else:
-        plan.print("Skipping the deployment of the agglayer")
 
     # Deploy contracts on L2.
     if deployment_stages.get("deploy_l2_contracts", False):
