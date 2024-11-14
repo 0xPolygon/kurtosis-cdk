@@ -339,7 +339,7 @@ while [[ "$finalized_block" -lt "$last_block" ]]; do
     finalized_block="$(cast bn --rpc-url "{{.l1_rpc_url}}")"
     sleep 2
 done
-# {{{end}}}
+# {{{end}}
 
 # The contract setup is done!
 touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
