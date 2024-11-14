@@ -41,8 +41,6 @@ def run(plan, args={}):
         elif l1_type == constants.L1_TYPE.ANVIL:
             plan.print("Deploying a local L1 with pre-deployed contracts using anvil")
             import_module("anvil.star").run(plan, args)
-            args["l1_rpc_url"] = "http://anvil{}:8545".format(args["deployment_suffix"])
-            args["l1_ws_url"] = "ws://anvil{}:8545".format(args["deployment_suffix"])
     else:
         plan.print("Skipping the deployment of a local L1")
 

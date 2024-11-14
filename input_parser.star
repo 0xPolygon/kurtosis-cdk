@@ -332,6 +332,9 @@ def parse_args(plan, args):
 
     l1_type = args.get("l1_type", "")
     validate_l1_type(l1_type)
+    if l1_type == constants.L1_TYPE.ANVIL:
+        args["l1_rpc_url"] = "http://anvil{}:8545".format(args["deployment_suffix"])
+        args["l1_ws_url"] = "ws://anvil{}:8545".format(args["deployment_suffix"])
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
