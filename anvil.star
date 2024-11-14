@@ -33,6 +33,8 @@ def run(plan, args):
                 "0.0.0.0",
                 "--port",
                 "8545",
+                "--state",
+                "/etc/anvil",
             ],
         ),
     )
