@@ -33,7 +33,7 @@ def run(plan, args):
             env_vars=prover_env_vars,
             cmd=["prover", "--cfg", "/etc/zkevm/agglayer-prover-config.toml"],
         ),
-        description="AggLayer Prover",
+        description="Starting the agglayer prover",
     )
     agglayer_prover_url = "http://{}:{}".format(
         agglayer_prover.ip_address, agglayer_prover.ports["api"].number
@@ -69,7 +69,7 @@ def run(plan, args):
             ],
             cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
         ),
-        description="AggLayer",
+        description="Starting the agglayer node",
     )
 
 
