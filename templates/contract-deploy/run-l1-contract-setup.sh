@@ -329,7 +329,7 @@ if [[ $l1_preset == "minimal" ]]; then
     wait_for_finalized_block
 fi
 
-# {{if eq .l1_type anvil}}
+# {{if eq .l1_type "anvil"}}
 # If we use a local anvil node, we need to make the last block of the contract deploy is finalized.
 last_block="$(cast bn --rpc-url "{{.l1_rpc_url}}")"
 finalized_block=0
