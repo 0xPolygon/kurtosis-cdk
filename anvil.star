@@ -29,6 +29,10 @@ def run(plan, args):
                 args["l1_preallocated_mnemonic"],
                 "--balance",
                 "1000000000",
+                # To speed up the finalization of blocks, you can use the --slots-in-an-epoch flag
+                # with a value of 1 for example. This will lead to the block at height N-2 being
+                # finalized, where N is the latest block.
+                "--slots-in-an-epoch",
                 "--host",
                 "0.0.0.0",
                 "--port",
