@@ -33,6 +33,7 @@ def run(plan, args):
                 # with a value of 1 for example. This will lead to the block at height N-2 being
                 # finalized, where N is the latest block.
                 "--slots-in-an-epoch",
+                "1",
                 "--host",
                 "0.0.0.0",
                 "--port",
