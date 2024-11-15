@@ -67,3 +67,7 @@ Outputs = ["stderr"]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
 
+[L1InfoTreeSync]
+# The initial block number from which to start syncing.
+# Default: 0
+InitialBlock = {{.zkevm_rollup_manager_block_number}}
