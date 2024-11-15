@@ -48,6 +48,19 @@ def run(plan, args):
                 "file": "./templates/contract-deploy/combined.json",
             }
         )
+        artifact_paths.append(
+            {
+                "name": "dynamic-" + args["chain_name"] + "-conf.json",
+                "file": "./templates/contract-deploy/dynamic-" + args["chain_name"] + "-conf.json",
+            }
+        )
+        artifact_paths.append(
+            {
+                "name": "dynamic-" + args["chain_name"] + "-allocs.json",
+                "file": "./templates/contract-deploy/dynamic-" + args["chain_name"] + "-allocs.json",
+            }
+        )
+
 
     artifacts = []
     for artifact_cfg in artifact_paths:
@@ -122,13 +135,13 @@ def run(plan, args):
     plan.store_service_files(
         name="cdk-erigon-chain-config",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-kurtosis-conf.json",
+        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
     )
 
     plan.store_service_files(
         name="cdk-erigon-chain-allocs",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-kurtosis-allocs.json",
+        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
     )
     plan.store_service_files(
         name="cdk-erigon-chain-first-batch",

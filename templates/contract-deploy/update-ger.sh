@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# TODO we should understand if this is still need and if so we
+# shouldn't run it if the network has already been deployed
+
 # Setup some vars for use later on
 # The private key used to send transactions
 private_key="{{.zkevm_l2_admin_private_key}}"

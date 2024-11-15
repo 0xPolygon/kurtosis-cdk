@@ -31,17 +31,36 @@ def start_cdk_erigon_rpc(plan, args, config_artifact, start_port_name):
 def _start_service(
     plan, type, args, config_artifact, start_port_name, additional_ports={}, env_vars={}
 ):
-    # Leaving the name out for now.
-    # This might cause some idempotency issues, but we're not currently relying on that for now.‡
-    proc_runner_file_artifact = plan.upload_files(
-        src="../templates/proc-runner.sh",
-    )
     cdk_erigon_chain_artifact_names = [
         config_artifact.chain_spec,
         config_artifact.chain_config,
         config_artifact.chain_allocs,
         config_artifact.chain_first_batch,
     ]
+    plan_files={
+        "/etc/cdk-erigon": Directory(
+            artifact_names=[config_artifact.config]
+            + cdk_erigon_chain_artifact_names,
+        ),
+        "/home/erigon/dynamic-configs/": Directory(
+            artifact_names=cdk_erigon_chain_artifact_names,
+        ),
+    }
+
+    # Leaving the name out for now. This might cause some idempotency
+    # issues, but we're not currently relying on that for now.‡
+    proc_runner_file_artifact = plan.upload_files(
+        src="../templates/proc-runner.sh",
+    )
+    plan_files["/usr/local/share/proc-runner"] = proc_runner_file_artifact
+
+    if args["erigon_datadir_archive"] != None:
+        existing_datadir_artifact = plan.upload_files(
+            src=args["erigon_datadir_archive"],
+        )
+        plan_files["/home/erigon/data/dynamic-" + args["chain_name"] + "-sequencer"] = existing_datadir_artifact
+
+
     (ports, public_ports) = get_cdk_erigon_ports(
         args, additional_ports, start_port_name
     )
@@ -50,17 +69,9 @@ def _start_service(
         config=ServiceConfig(
             image=args["cdk_erigon_node_image"],
             ports=ports,
+            user=User(uid=0, gid=0),
             public_ports=public_ports,
-            files={
-                "/etc/cdk-erigon": Directory(
-                    artifact_names=[config_artifact.config]
-                    + cdk_erigon_chain_artifact_names,
-                ),
-                "/home/erigon/dynamic-configs/": Directory(
-                    artifact_names=cdk_erigon_chain_artifact_names,
-                ),
-                "/usr/local/share/proc-runner": proc_runner_file_artifact,
-            },
+            files=plan_files,
             entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
             cmd=["cdk-erigon --config /etc/cdk-erigon/config.yaml"],
             env_vars=env_vars,
