@@ -332,10 +332,14 @@ fi
 # If we use a local anvil node, we need to make the last block of the contract deploy is finalized.
 last_block="$(cast bn --rpc-url "{{.l1_rpc_url}}")"
 finalized_block=0
-while [[ "$finalized_block" -lt "$last_block" ]]; do
-    echo "Mining new block..."
+while (( "$finalized_block" < "$last_block" )); do
+    echo "Mining an empty block..."
     cast rpc --rpc-url "{{.l1_rpc_url}}" evm_mine
-    finalized_block="$(cast bn --rpc-url "{{.l1_rpc_url}}")"
+    
+    finalized_block="$(cast bn --rpc-url "{{.l1_rpc_url}}" finalized)"
+    echo "Current finalized block: $finalized_block"
+    
+    echo "Waiting two seconds..."
     sleep 2
 done
 
