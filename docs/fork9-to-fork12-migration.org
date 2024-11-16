@@ -574,29 +574,31 @@ cp -r /tmp/tmp.XKAVPPJ6VF/data templates/contract-deploy/erigon-data
 kurtosis run --enclave cdk2 --args-file sepolia-erigon-test.yml .
 #+end_src
 
-Now that the network is up and running, most likely the sequencer is
-going to be a bit messed up...
+At this point the sequencer is running and after pointing the cdk node
+to the sequencer. We've seen a batch get sequenced and finalized on L2:
 
-* Questions
+- https://sepolia.etherscan.io/tx/0x63ddc2886d088c66bb51d22b8d7699b6da5d5f13edaeed5c57b34e5389084717
 
-- There is no guidance around the creation of the erigon specific
-  genesis files. Are we going to do that for the partners or should we
-  document that as well?
-- The instructions for syncing erigon seem like they would need to be
-  done after the network is halted? If we generate the datastream file
-  ahead of time and sync erigon when the legacy sequencer is still
-  running, won't the erigon data be missing batches?
-- Since the legacy sequence supports generating a data file and also
-  running the data streamer service, is there a reason we wouldn't
-  want to use that file or directly connect Erigon to the data stream
-- It would be helpful to know which logs to look for in certain
-  circumstances. E.g. when the instructions say "Wait for it to sync
-  to the tip." it's not obvious what that means. Erigon is showing
-  ~Waiting for at least one new block in datastream
-  datastreamBlock=3049 last processed block=3049~, does that mean it's
-  at the tip? And since the file is offline, what does it even mean to
-  reach the tip since the file is behind.
-- Now that I've reached the end, I see that the instructions say to
-  sync again, so I guess that would allow us to reach the tip properly.
-- The exact details of how we should add a new rollup type and do the
-  rollup upgrade aren't obvious. I guess we'll need to document that
+* TODO Re-run this with the latest beta
+* TODO Understand missing acc input hash errors
+* TODO Resolve issue with RPC node not syncing
+* TODO Resolve this error
+
+#+begin_example
+2024-11-16T15:30:51.885Z	ERROR	aggregator/aggregator.go:1215	Failed to get witness for batch 8253, err: error from witness for batch 8253: &{-32000 block number is in the future latest=7789 requested=13753 <nil>}	{"pid": 9, "version": "v0.4.0-beta8", "module": "aggregator"}
+github.com/0xPolygon/cdk/aggregator.(*Aggregator).getAndLockBatchToProve
+	/go/src/github.com/0xPolygon/cdk/aggregator/aggregator.go:1215
+github.com/0xPolygon/cdk/aggregator.(*Aggregator).tryGenerateBatchProof
+	/go/src/github.com/0xPolygon/cdk/aggregator/aggregator.go:1278
+github.com/0xPolygon/cdk/aggregator.(*Aggregator).Channel
+	/go/src/github.com/0xPolygon/cdk/aggregator/aggregator.go:453
+github.com/0xPolygon/cdk/aggregator/prover._AggregatorService_Channel_Handler
+	/go/src/github.com/0xPolygon/cdk/aggregator/prover/aggregator_grpc.pb.go:109
+google.golang.org/grpc.(*Server).processStreamingRPC
+	/go/pkg/mod/google.golang.org/grpc@v1.64.0/server.go:1673
+google.golang.org/grpc.(*Server).handleStream
+	/go/pkg/mod/google.golang.org/grpc@v1.64.0/server.go:1794
+google.golang.org/grpc.(*Server).serveStreams.func2.1
+	/go/pkg/mod/google.golang.org/grpc@v1.64.0/server.go:1029
+#+end_example
+
