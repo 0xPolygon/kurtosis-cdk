@@ -54,10 +54,11 @@ def get_cdk_node_ports(args):
     # FEP requires the aggregator
     ports = {
         "aggregator": PortSpec(
-            args["zkevm_aggregator_port"], application_protocol="grpc", wait=aggregator_wait
+            args["zkevm_aggregator_port"],
+            application_protocol="grpc",
+            wait=aggregator_wait,
         ),
     }
-
 
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
     return (ports, public_ports)

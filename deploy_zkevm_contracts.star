@@ -51,16 +51,19 @@ def run(plan, args):
         artifact_paths.append(
             {
                 "name": "dynamic-" + args["chain_name"] + "-conf.json",
-                "file": "./templates/contract-deploy/dynamic-" + args["chain_name"] + "-conf.json",
+                "file": "./templates/contract-deploy/dynamic-"
+                + args["chain_name"]
+                + "-conf.json",
             }
         )
         artifact_paths.append(
             {
                 "name": "dynamic-" + args["chain_name"] + "-allocs.json",
-                "file": "./templates/contract-deploy/dynamic-" + args["chain_name"] + "-allocs.json",
+                "file": "./templates/contract-deploy/dynamic-"
+                + args["chain_name"]
+                + "-allocs.json",
             }
         )
-
 
     artifacts = []
     for artifact_cfg in artifact_paths:

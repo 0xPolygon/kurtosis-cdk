@@ -220,7 +220,7 @@ DEFAULT_L2_ARGS = {
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l2_deploy_lxly_bridge_and_call": True,
     # This is used by erigon for naming the config files
-    "chain_name": kurtosis,
+    "chain_name": "kurtosis",
 }
 
 DEFAULT_ROLLUP_ARGS = {

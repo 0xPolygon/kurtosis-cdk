@@ -134,7 +134,6 @@ def run(plan, args):
         )
 
 
-
 def get_keystores_artifacts(plan, args):
     sequencer_keystore_artifact = plan.store_service_files(
         name="sequencer-keystore",

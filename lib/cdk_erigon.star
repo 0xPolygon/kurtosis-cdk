@@ -37,10 +37,9 @@ def _start_service(
         config_artifact.chain_allocs,
         config_artifact.chain_first_batch,
     ]
-    plan_files={
+    plan_files = {
         "/etc/cdk-erigon": Directory(
-            artifact_names=[config_artifact.config]
-            + cdk_erigon_chain_artifact_names,
+            artifact_names=[config_artifact.config] + cdk_erigon_chain_artifact_names,
         ),
         "/home/erigon/dynamic-configs/": Directory(
             artifact_names=cdk_erigon_chain_artifact_names,
@@ -58,8 +57,9 @@ def _start_service(
         existing_datadir_artifact = plan.upload_files(
             src=args["erigon_datadir_archive"],
         )
-        plan_files["/home/erigon/data/dynamic-" + args["chain_name"] + "-sequencer"] = existing_datadir_artifact
-
+        plan_files[
+            "/home/erigon/data/dynamic-" + args["chain_name"] + "-sequencer"
+        ] = existing_datadir_artifact
 
     (ports, public_ports) = get_cdk_erigon_ports(
         args, additional_ports, start_port_name

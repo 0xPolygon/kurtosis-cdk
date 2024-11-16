@@ -28,7 +28,9 @@ def run_sequencer(plan, args):
     cdk_erigon_chain_spec_artifact = plan.render_templates(
         name="cdk-erigon-sequencer-chain-spec-artifact",
         config={
-            "dynamic-" +args["chain_name"]+ "-chainspec.json": struct(
+            "dynamic-"
+            + args["chain_name"]
+            + "-chainspec.json": struct(
                 template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
@@ -129,7 +131,9 @@ def run_rpc(plan, args):
     cdk_erigon_chain_spec_artifact = plan.render_templates(
         name="cdk-erigon-rpc-chain-spec-artifact",
         config={
-            "dynamic-"+args["chain_name"]+"-chainspec.json": struct(
+            "dynamic-"
+            + args["chain_name"]
+            + "-chainspec.json": struct(
                 template=cdk_erigon_chain_spec_template,
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
