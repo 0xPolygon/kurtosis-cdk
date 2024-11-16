@@ -134,6 +134,7 @@ def run_rpc(plan, args):
                 data={
                     "chain_id": args["zkevm_rollup_chain_id"],
                     "enable_normalcy": args["enable_normalcy"],
+                    "chain_name": args["chain_name"],
                 },
             ),
         },
