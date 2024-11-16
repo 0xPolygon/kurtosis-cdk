@@ -41,12 +41,24 @@ def get_cdk_node_ports(args):
     if args["consensus_contract_type"] == "pessimistic":
         return (dict(), dict())
 
+    # In the case where we have pre deployed contract, the cdk node
+    # can go through a syncing process that takes a long time and
+    # might exceed the start up time
+    aggregator_wait = "2m"
+    if (
+        "use_previously_deployed_contracts" in args
+        and args["use_previously_deployed_contracts"]
+    ):
+        aggregator_wait = None
+
     # FEP requires the aggregator
     ports = {
         "aggregator": PortSpec(
-            args["zkevm_aggregator_port"], application_protocol="grpc"
+            args["zkevm_aggregator_port"], application_protocol="grpc", wait=aggregator_wait
         ),
     }
+
+
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
     return (ports, public_ports)
 

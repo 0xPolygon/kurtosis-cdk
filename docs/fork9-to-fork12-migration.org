@@ -569,15 +569,6 @@ cp /tmp/tmp.XKAVPPJ6VF/genesis.json templates/contract-deploy/genesis.json
 cp /tmp/tmp.XKAVPPJ6VF/combined.json templates/contract-deploy/combined.json
 cp /tmp/tmp.XKAVPPJ6VF/conf/* templates/contract-deploy/
 cp -r /tmp/tmp.XKAVPPJ6VF/data templates/contract-deploy/erigon-data
-# cp -r /tmp/tmp.XKAVPPJ6VF/datafile/datastream.* templates/contract-deploy/erigon-data/
-
-# chmod a+rw templates/contract-deploy/erigon-data
-# chown -R 1000:1000 templates/contract-deploy/erigon-data
-
-
-# kurtosis assumes the name if the network is "kurtosis" so we need to do some renameing
-# find . -type f -name 'dynamic-migrationexample*' | while read conf_file; do new_file=$(echo $conf_file | sed 's/migrationexample/kurtosis/'); mv $conf_file $new_file; done
-# sed -i 's/migrationexample/kurtosis/' ./templates/contract-deploy/dynamic-kurtosis-chainspec.json
 
 # try to spin up the new network
 kurtosis run --enclave cdk2 --args-file sepolia-erigon-test.yml .
