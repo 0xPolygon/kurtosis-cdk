@@ -41,7 +41,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 	
 [L2Config]
-	GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
+	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
 [Log]
 Environment = "development" # "production" or "development"
