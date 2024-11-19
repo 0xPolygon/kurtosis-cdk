@@ -98,7 +98,7 @@ echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
-echo_ts "Funding important accounts on l1"
+echo_ts "Funding important accounts on L1"
 fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
 fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
 fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
@@ -107,26 +107,31 @@ fund_account_on_l1 "l1testing" "{{.zkevm_l2_l1testing_address}}"
 
 echo_ts "Setting up local zkevm-contracts repo for deployment"
 pushd /opt/zkevm-contracts || exit 1
-# setup a foundry toml in case we do a gas token or dac deployment
-printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
-
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
 # Deploy gas token
 # TODO in the future this should be configurable. I.e. we should be able to specify a token address that has already been deployed
-# {{if .zkevm_use_gas_token_contract}}
+# {{if .gas_token_enabled}}
+# {{if eq .gas_token_address ""}}
+echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
+# {{else}}
+printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 echo_ts "Deploying gas token to L1"
 forge create \
     --json \
     --rpc-url "{{.l1_rpc_url}}" \
     --mnemonic "{{.l1_preallocated_mnemonic}}" \
     contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
-
-# In this case, we'll configure the create rollup parameters to have a gas token
-jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+    > gasToken-erc20.json
+# {{end}}
+jq \
+    --slurpfile c gasToken-erc20.json \
+    '.gasTokenAddress = $c[0].deployedTo' \
+    /opt/contract-deploy/create_rollup_parameters.json \
+    > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # {{end}}
 
 is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc

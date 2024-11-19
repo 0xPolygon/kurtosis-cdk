@@ -81,7 +81,12 @@ jobs:
       - id: set-matrix
         # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
         run: |
-          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/static-ports/custom-static-ports.yml ./.github/tests/static-ports/default-static-ports.yml | grep -v 'additional-services.yml')
+          files=$(ls -R \
+            ./.github/tests/combinations/*.yml \
+            ./.github/tests/gas-token/auto.yml \
+            ./.github/tests/static-ports/custom-static-ports.yml \
+            ./.github/tests/static-ports/default-static-ports.yml \
+            | grep -v 'additional-services.yml')
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
