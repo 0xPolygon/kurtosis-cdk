@@ -115,10 +115,8 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 # TODO in the future this should be configurable. I.e. we should be able to specify a token address that has already been deployed
 # {{if .gas_token_enabled}}
 # {{if eq .gas_token_address ""}}
-echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
-# {{else}}
-printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 echo_ts "Deploying gas token to L1"
+printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 forge create \
     --json \
     --rpc-url "{{.l1_rpc_url}}" \
@@ -126,6 +124,8 @@ forge create \
     contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
     --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
     > gasToken-erc20.json
+# {{else}}
+echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
 # {{end}}
 jq \
     --slurpfile c gasToken-erc20.json \
