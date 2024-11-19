@@ -1,5 +1,5 @@
 {
-  "ChainName": "dynamic-kurtosis",
+  "ChainName": "dynamic-{{.chain_name}}",
   "chainId": {{.chain_id}},
   "consensus": "ethash",
   "homesteadBlock": 0,

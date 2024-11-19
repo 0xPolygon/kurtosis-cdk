@@ -83,10 +83,14 @@ fi
 
 # If we had a genesis, and combined that were created outside of
 # kurtosis entirely, we'll use those and exit. This is like a
-# permissionless use case
+# permissionless use case or a use case where we're starting from
+# recovered network
 if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
     echo_ts "We have a genesis and combined output file from a previous deployment"
     cp /opt/contract-deploy/* /opt/zkevm/
+    pushd /opt/zkevm || exit 1
+    jq '.firstBatchData' combined.json > first-batch-config.json
+    popd || exit 1
     exit
 fi
 
@@ -213,21 +217,21 @@ if ! output_json=$(jq "$jq_script" /opt/zkevm/genesis.json); then
 fi
 
 # Write the output JSON to a file
-if ! echo "$output_json" | jq . > dynamic-kurtosis-allocs.json; then
-    echo_ts "Error writing to file dynamic-kurtosis-allocs.json"
+if ! echo "$output_json" | jq . > "dynamic-{{.chain_name}}-allocs.json"; then
+    echo_ts "Error writing to file dynamic-{{.chain_name}}-allocs.json"
     exit 1
 fi
 
-echo_ts "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
-jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
+echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
+jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
 batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
-jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
-mv tmp_output.json dynamic-kurtosis-conf.json
+jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "dynamic-{{.chain_name}}-conf.json" > tmp_output.json
+mv tmp_output.json "dynamic-{{.chain_name}}-conf.json"
 
 # zkevm.initial-batch.config
 jq '.firstBatchData' combined.json > first-batch-config.json
 
-if [[ ! -s dynamic-kurtosis-conf.json ]]; then
+if [[ ! -s "dynamic-{{.chain_name}}-conf.json" ]]; then
     echo_ts "Error creating the dynamic kurtosis config"
     exit 1
 fi

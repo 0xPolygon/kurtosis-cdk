@@ -41,7 +41,7 @@ log.dir.path: /tmp/cdk-erigon.log
 
 # --------------------------------------------------------------------------------------------------
 # The data directory for the databases.
-datadir: ./data/dynamic-kurtosis-sequencer
+datadir: ./data/dynamic-{{.chain_name}}-sequencer
 
 # The network identifier.
 # For testnets, use --chain <testnet-name> instead.
@@ -56,7 +56,7 @@ networkid: 1 # ethereum
 # you need to add the prefix "dynamic-" in front of the chain name.
 # Same thing for the dynamic configuration files.
 # https://github.com/0xPolygonHermez/cdk-erigon?tab=readme-ov-file#dynamic-chain-configuration
-chain: dynamic-kurtosis
+chain: dynamic-{{.chain_name}}
 
 # Custom node name.
 # Default: ""

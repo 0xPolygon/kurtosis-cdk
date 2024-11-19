@@ -13,8 +13,8 @@ SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
 AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
 AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"   
-polygonBridgeAddr = "{{.zkevm_bridge_address}}" 
+SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"
+polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
@@ -25,14 +25,14 @@ rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 [L1Config]
-	chainId = "{{.l1_chain_id}}"
-	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
-	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
-	polTokenAddress = "{{.pol_token_address}}"
-	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-	
+        chainId = "{{.l1_chain_id}}"
+        polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+        polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+        polTokenAddress = "{{.pol_token_address}}"
+        polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+
 [L2Config]
-	GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
+        GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
 
 [Log]
 Environment = "development" # "production" or "development"
@@ -53,7 +53,7 @@ Outputs = ["stderr"]
                 Port = "{{.aggregator_db.port}}"
                 EnableLog = false
                 MaxConns = 200
-       
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
@@ -62,3 +62,4 @@ CheckSettledInterval = "5s"
 # The initial block number from which to start syncing.
 # Default: 0
 InitialBlock = {{.zkevm_rollup_manager_block_number}}
+
