@@ -4,17 +4,8 @@ L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 AggLayerURL="{{.agglayer_url}}"
 
 ForkId = {{.zkevm_rollup_fork_id}}
+ContractVersions = "{{.zkevm_rollup_fork_name}}"
 IsValidiumMode = {{.is_cdk_validium}}
-
-{{if eq .zkevm_rollup_fork_id "12"}}
-ContractVersions = "banana"
-{{else if eq .zkevm_rollup_fork_id "13"}}
-# Doesn't look like this is needed at the moment, but soon perhaps?
-# ContractVersions = "durian"
-ContractVersions = "banana"
-{{else}}
-ContractVersions = "elderberry"
-{{end}}
 
 L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
@@ -68,5 +59,7 @@ CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
 
 [L1InfoTreeSync]
-InitialBlock="{{.zkevm_rollup_manager_block_number}}"
+# The initial block number from which to start syncing.
+# Default: 0
+InitialBlock = {{.zkevm_rollup_manager_block_number}}
 

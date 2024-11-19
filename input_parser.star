@@ -430,6 +430,7 @@ def get_fork_id(zkevm_contracts_image):
     fork_name = "elderberry"
     if fork_id >= 12:
         fork_name = "banana"
+    # TODO: Add support for durian once released.
 
     return (fork_id, fork_name)
 
