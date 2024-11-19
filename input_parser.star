@@ -29,7 +29,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.5",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.12",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
