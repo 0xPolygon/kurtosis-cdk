@@ -70,14 +70,7 @@ GetBatchWaitInterval = "10s"
         UpgradeEtrogBatchNumber = "{{.zkevm_rollup_manager_block_number}}"
         RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
         WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-        {{if .is_cdk_validium}}
-        SenderAddress = "{{.zkevm_l2_agglayer_address}}"
-        SettlementBackend = "agglayer"
-        AggLayerTxTimeout = "600s"
-        AggLayerURL = "http://agglayer:{{.agglayer_port}}"
-        {{else}}
         SenderAddress = "{{.zkevm_l2_aggregator_address}}"
-        {{end}}
         UseFullWitness = false
         SyncModeOnlyEnabled = false
 

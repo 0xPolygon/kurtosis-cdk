@@ -17,9 +17,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy CDK central/trusted environment.
     "deploy_cdk_central_environment": True,
     # Deploy CDK bridge infrastructure.
-    "deploy_cdk_bridge_infra": True,
+    "deploy_cdk_bridge_infra": False,
     # Deploy the agglayer.
-    "deploy_agglayer": True,
+    "deploy_agglayer": False,
     # Deploy cdk-erigon node.
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
@@ -27,8 +27,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:feature-storage-adding-epoch-packing",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_erigon_node_image": "thorax/erigon", # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "cdk",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
@@ -128,7 +128,7 @@ DEFAULT_L1_ARGS = {
     #   - apache
     #  - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
-    "l1_additional_services": [],
+    "l1_additional_services": [ "blockscout" ],
     # Preset for the network.
     # Default: "mainnet"
     # Options:
@@ -198,7 +198,7 @@ DEFAULT_ARGS = (
         # - pless_zkevm_node
         # - prometheus_grafana
         # - tx_spammer
-        "additional_services": [],
+        "additional_services": [ "blockscout" ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",

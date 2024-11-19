@@ -1246,43 +1246,10 @@ GasOffset = 150000
 # ------------------------------------------------------------------------------
 UpgradeEtrogBatchNumber = 0
 
-{{if .is_cdk_validium}}
-## CDK Validium Specific Settings
-
-# ------------------------------------------------------------------------------
-# SenderAddress is used as input for the prover. The address that's
-# configured here must match the ultimate sender of the aggregated
-# proof to L1. In this case the final sender is the agglayer itself
-# ------------------------------------------------------------------------------
-SenderAddress = "{{.zkevm_l2_agglayer_address}}"
-
-# ------------------------------------------------------------------------------
-# SettlementBackend determines if we're settling with the `agglayer'
-# or `direct' with L1
-# ------------------------------------------------------------------------------
-SettlementBackend = "agglayer"
-
-# ------------------------------------------------------------------------------
-# AggLayerTxTimeout determines how long we'll wait for the AggLayer to
-# respond successfully that a transaction has been mined on L1. The
-# current implementation will block while we wait, so it makes sense
-# not to push this number overly high.
-# ------------------------------------------------------------------------------
-AggLayerTxTimeout = "600s"
-
-# ------------------------------------------------------------------------------
-# AggLayerURL is the RPC URL of the agglayer itself
-# In the case of attaching multiple CDKs, the AgglayerURL 
-# should always follow the first deployment_suffix "-001"
-# by default.
-# ------------------------------------------------------------------------------
-AggLayerURL = "http://agglayer:{{.agglayer_port}}"
-{{else}}
 # ------------------------------------------------------------------------------
 # SenderAddress represents the address of the trusted aggregator
 # ------------------------------------------------------------------------------
 SenderAddress = "{{.zkevm_l2_aggregator_address}}"
-{{end}}
 
 # ------------------------------------------------------------------------------
 # PrivateKey is a object with the keystore and password that are used
