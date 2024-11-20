@@ -29,9 +29,6 @@ jobs:
         go-version: ${{ matrix.go-version }}
       env:
         GOARCH: ${{ matrix.goarch }}
-
-    - name: Build Docker
-      run: make build-docker
  
       # this is better to get the action in
     - name: Install kurtosis
@@ -54,7 +51,7 @@ jobs:
 
     - name: Install polycli
       run: |
-        POLYCLI_VERSION="${{ vars.POLYCLI_VERSION }}"
+        POLYCLI_VERSION="v0.1.63"
         tmp_dir=$(mktemp -d) 
         curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${POLYCLI_VERSION}/polycli_${POLYCLI_VERSION}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
         mv "$tmp_dir"/* /usr/local/bin/polycli 
@@ -75,17 +72,22 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: 0xPolygon/cdk
+        path: "cdk"
         ref: "v0.4.0-beta10"
+
+    - name: Build Docker
+      run: make build-docker
+      working-directory: ${{ github.workspace }}/cdk
 
     - name: Setup Bats and bats libs
       uses: bats-core/bats-action@2.0.0
 
     - name: Test
       run: make test-e2e-${{ matrix.e2e-group }}
-      working-directory: ${{ github.workspace }}/cdk/test
+      working-directory: ./cdk/test
       env:
-        KURTOSIS_FOLDER: ./
-        # BATS_LIB_PATH: /usr/lib/
+        KURTOSIS_FOLDER: ${{ github.workspace }}
+        BATS_LIB_PATH: /usr/lib/
     
     - name: Dump enclave logs
       if: failure()
