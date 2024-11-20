@@ -5,7 +5,6 @@ on:
       - '**'
   workflow_dispatch: {}
 
-
 jobs:
   test-e2e:
     strategy:
@@ -30,7 +29,6 @@ jobs:
       env:
         GOARCH: ${{ matrix.goarch }}
  
-      # this is better to get the action in
     - name: Install kurtosis
       shell: bash
       run: |
@@ -62,12 +60,6 @@ jobs:
     - name: Install foundry
       uses: foundry-rs/foundry-toolchain@v1
 
-    # - name: checkout kurtosis-cdk
-    #   uses: actions/checkout@v4
-    #   with:
-    #     repository: 0xPolygon/kurtosis-cdk
-    #     path: "kurtosis-cdk"
-    #     ref: "v0.2.19"
     - name: checkout polygon-cdk
       uses: actions/checkout@v4
       with:
