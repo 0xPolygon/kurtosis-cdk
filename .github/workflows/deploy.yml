@@ -38,8 +38,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Run Starlark
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -122,8 +121,7 @@ jobs:
         run: ./combine-ymls.sh
 
       - name: Run Starlark
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -217,8 +215,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy L1 chain
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
       
       - name: Deploy gas token on L1
         run: |
@@ -253,7 +250,7 @@ jobs:
             --enclave=${{ env.ENCLAVE_NAME }} \
             --args-file=./.github/tests/gas-token/pre-deployed.yml \
             . \
-            '{"deployment_stages": {"deploy_l1": false}, "args": {"verbosity": "debug"}}'
+            '{"deployment_stages": {"deploy_l1": false}}'
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -298,8 +295,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Run Starlark
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -402,12 +398,10 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
 
       - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
 
       - name: Update the agglayer config
         run: |
@@ -473,12 +467,11 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy L1 chain
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml . '{"args": {"verbosity": "debug"}}'
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
 
       - name: Deploy to local L1 chain
         run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}, "args": {"verbosity": "debug"}}'
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
