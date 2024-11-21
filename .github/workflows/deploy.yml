@@ -6,7 +6,8 @@ name: Deploy
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - '**'
 
 concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
@@ -291,7 +292,7 @@ jobs:
           name: dump_additional_services_${{ github.run_id }}
           path: ./dump
 
-  attach-second-cdk:
+  attach-additional-cdks:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -315,8 +316,11 @@ jobs:
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
 
-      - name: Attach a second CDK L2 chain (cdk-erigon sequencer + cdk stack)
+      - name: Attach a second FEP CDK L2 chain (cdk-erigon sequencer + cdk FEP stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
+
+      - name: Attach a third PP CDK L2 chain (cdk-erigon sequencer + cdk PP stack)
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-third-cdk.yml .
 
       - name: Update the agglayer config
         run: |
@@ -325,6 +329,8 @@ jobs:
           cd agglayer-config-artifact
           # Update the config by adding the rpc and proof signer of the second chain.
           tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"2": "http://cdk-erigon-rpc-002:8123"}' agglayer-config.toml
+          # Update the config by adding the rpc and proof signer of the third chain.
+          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"3": "http://cdk-erigon-rpc-003:8123"}' agglayer-config.toml
           # Replace the agglayer config.
           agglayer_container_id="$(docker ps --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
           docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
@@ -348,6 +354,13 @@ jobs:
           ./monitor-verified-batches.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-002 rpc)"
+
+      - name: Monitor verified batches of the third PP L2 chain (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: |
+          ./monitor-verified-batches.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)"
 
       - name: Dump enclave
         if: ${{ !cancelled() }}
