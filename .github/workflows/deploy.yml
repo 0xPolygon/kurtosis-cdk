@@ -246,11 +246,8 @@ jobs:
 
       - name: Deploy the rest of the stack
         run: |
-          kurtosis run \
-            --enclave=${{ env.ENCLAVE_NAME }} \
-            --args-file=./.github/tests/gas-token/pre-deployed.yml \
-            . \
-            '{"deployment_stages": {"deploy_l1": false}}'
+          yq -Y --in-place ".deployment_stages.deploy_l1 = false" ./.github/tests/gas-token/pre-deployed.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/gas-token/pre-deployed.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -471,7 +468,7 @@ jobs:
 
       - name: Deploy to local L1 chain
         run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} . '{"deployment_stages": {"deploy_l1": false}}'
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
