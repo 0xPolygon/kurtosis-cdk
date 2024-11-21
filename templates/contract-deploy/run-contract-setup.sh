@@ -124,12 +124,17 @@ forge create \
     contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
     --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
     > gasToken-erc20.json
+jq \
+    --slurpfile c gasToken-erc20.json \
+    '.gasTokenAddress = $c[0].deployedTo' \
+    /opt/contract-deploy/create_rollup_parameters.json \
+    > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # {{else}}
 echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
 # {{end}}
 jq \
-    --slurpfile c gasToken-erc20.json \
-    '.gasTokenAddress = $c[0].deployedTo' \
+    --arg c "{{ .gas_token_address }}" \
+    '.gasTokenAddress = $c' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # {{end}}
