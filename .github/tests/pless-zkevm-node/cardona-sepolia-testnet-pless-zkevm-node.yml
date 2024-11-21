@@ -9,6 +9,7 @@ deployment_stages:
   deploy_l2_contracts: false
 
 args:
+  verbosity: debug
   additional_services:
     - pless_zkevm_node
   l1_rpc_url: CHANGE_ME
