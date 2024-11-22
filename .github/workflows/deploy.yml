@@ -6,8 +6,7 @@ name: Deploy
 on:
   pull_request:
   push:
-    branches:
-      - '**'
+    branches: [main]
 
 concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
