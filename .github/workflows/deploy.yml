@@ -322,6 +322,11 @@ jobs:
       - name: Attach a third PP CDK L2 chain (cdk-erigon sequencer + cdk PP stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-third-cdk.yml .
 
+      - name: Restart the Erigon RPC of the PP network
+        run: |
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003
+          kurtosis service start ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003
+
       - name: Update the agglayer config
         run: |
           # Download the agglayer config file.
