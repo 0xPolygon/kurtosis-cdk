@@ -28,6 +28,11 @@ POSTGRES_MASTER_PASSWORD = "master_password"
 # Databases that make up the central environment of an L2 chain, including sequencer, aggregator,
 # prover, bridge service, and DAC.
 CENTRAL_ENV_DBS = {
+    "aggregator_db": {
+        "name": "aggregator_db",
+        "user": "aggregator_user",
+        "password": "redacted",
+    },
     "aggregator_syncer_db": {
         "name": "aggregator_syncer_db",
         "user": "aggregator_syncer_db_user",
