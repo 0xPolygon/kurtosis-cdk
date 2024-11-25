@@ -1,5 +1,4 @@
 data_availability_package = import_module("./lib/data_availability.star")
-service_package = import_module("./lib/service.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
@@ -8,7 +7,7 @@ cdk_node_package = import_module("./lib/cdk_node.star")
 databases = import_module("./databases.star")
 
 
-def run(plan, args):
+def run(plan, args, contract_setup_addresses):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
@@ -89,7 +88,9 @@ def run(plan, args):
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):
-        dac_config_artifact = create_dac_config_artifact(plan, args, db_configs)
+        dac_config_artifact = create_dac_config_artifact(
+            plan, args, db_configs, contract_setup_addresses
+        )
         dac_config = zkevm_dac_package.create_dac_service_config(
             args, dac_config_artifact, keystore_artifacts.dac
         )
@@ -102,9 +103,6 @@ def run(plan, args):
         # Create the cdk node config.
         node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
-        )
-        contract_setup_addresses = service_package.get_contract_setup_addresses(
-            plan, args
         )
         node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
@@ -169,9 +167,8 @@ def get_keystores_artifacts(plan, args):
     )
 
 
-def create_dac_config_artifact(plan, args, db_configs):
+def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses):
     dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     return plan.render_templates(
         name="dac-config-artifact",
         config={

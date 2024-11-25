@@ -1,5 +1,6 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
+service_package = import_module("./lib/service.star")
 
 # Main service packages.
 agglayer_package = "./agglayer.star"
@@ -59,6 +60,9 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
+    # Retrieve contract setup addresses.
+    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+
     # Deploy databases.
     if deployment_stages.get("deploy_databases", False):
         plan.print("Deploying databases")
@@ -79,7 +83,7 @@ def run(plan, args={}):
     # Deploy the agglayer.
     if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
-        import_module(agglayer_package).run(plan, args)
+        import_module(agglayer_package).run(plan, args, contract_setup_addresses)
     else:
         plan.print("Skipping the deployment of the agglayer")
 
@@ -88,7 +92,9 @@ def run(plan, args={}):
         # Deploy cdk-erigon sequencer node.
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
-            import_module(cdk_erigon_package).run_sequencer(plan, args)
+            import_module(cdk_erigon_package).run_sequencer(
+                plan, args, contract_setup_addresses
+            )
         else:
             plan.print("Skipping the deployment of cdk-erigon sequencer")
 
@@ -102,7 +108,9 @@ def run(plan, args={}):
         # Deploy cdk-erigon node.
         if deployment_stages.get("deploy_cdk_erigon_node", False):
             plan.print("Deploying cdk-erigon node")
-            import_module(cdk_erigon_package).run_rpc(plan, args)
+            import_module(cdk_erigon_package).run_rpc(
+                plan, args, contract_setup_addresses
+            )
         else:
             plan.print("Skipping the deployment of cdk-erigon node")
 
@@ -110,7 +118,7 @@ def run(plan, args={}):
         central_environment_args = dict(args)
         central_environment_args["genesis_artifact"] = genesis_artifact
         import_module(cdk_central_environment_package).run(
-            plan, central_environment_args
+            plan, central_environment_args, contract_setup_addresses
         )
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
@@ -119,7 +127,9 @@ def run(plan, args={}):
     if deployment_stages.get("deploy_cdk_bridge_infra", False):
         plan.print("Deploying cdk/bridge infrastructure")
         import_module(cdk_bridge_infra_package).run(
-            plan, args | {"use_local_l1": deployment_stages.get("deploy_l1", False)}
+            plan,
+            args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
+            contract_setup_addresses,
         )
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
@@ -161,10 +171,14 @@ def run(plan, args={}):
             deploy_additional_service(plan, "erpc", erpc_package, args)
         elif additional_service == "prometheus_grafana":
             deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
-            deploy_additional_service(plan, "prometheus", prometheus_package, args)
+            deploy_additional_service(
+                plan, "prometheus", prometheus_package, args, contract_setup_addresses
+            )
             deploy_additional_service(plan, "grafana", grafana_package, args)
         elif additional_service == "tx_spammer":
-            deploy_additional_service(plan, "tx_spammer", tx_spammer_package, args)
+            deploy_additional_service(
+                plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
+            )
         elif additional_service == "assertoor":
             deploy_additional_service(plan, "assertoor", assertoor_package, args)
         else:

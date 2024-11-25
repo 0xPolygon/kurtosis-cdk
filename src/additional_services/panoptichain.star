@@ -4,8 +4,10 @@ service_package = import_module("../../lib/service.star")
 PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.62"
 
 
-def run(plan, args):
-    panoptichain_config_artifact = get_panoptichain_config(plan, args)
+def run(plan, args, contract_setup_addresses):
+    panoptichain_config_artifact = get_panoptichain_config(
+        plan, args, contract_setup_addresses
+    )
     (ports, public_ports) = get_panoptichain_ports(args)
     plan.add_service(
         name="panoptichain" + args["deployment_suffix"],
@@ -18,11 +20,10 @@ def run(plan, args):
     )
 
 
-def get_panoptichain_config(plan, args):
+def get_panoptichain_config(plan, args, contract_setup_addresses):
     panoptichain_config_template = read_file(
         src="../../static_files/additional_services/panoptichain-config/config.yml"
     )
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
 
     # Ensure that the `l2_accounts_to_fund` parameter is > 0 or else the l2 time
