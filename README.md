@@ -309,6 +309,15 @@ kurtosis cluster set docker
 
 Occasionally, Kurtosis deployments may run indefinitely. Typically, deployments should complete within 10 to 15 minutes. If you experience longer deployment times or if it seems stuck, check the Docker engine's memory limit and set it to 16GB if possible. If this does not resolve the issue, please refer to the troubleshooting steps provided.
 
+> 🚨 If you're deploying the package on a mac, you may face an issue when trying to pull the [zkevm-prover](https://github.com/0xPolygonHermez/zkevm-prover) image! Kurtosis will complain by saying `Error response from daemon: no matching manifest for linux/arm64/v8 in the manifest list entries: no match for platform in manifest: not found`. Indeed, the image is meant to be used on `linux/amd64` architectures, which is a bit different from m1 macs architectures, `linux/arm64/v8`.
+>
+> A work-around is to pull the image by specifying the `linux/amd64` architecture before deploying the package.
+>
+> ```bash
+> docker pull --platform linux/amd64 hermeznetwork/zkevm-prover:<tag>
+> kurtosis run ...
+> ```
+
 1. Make sure the issue is related to Kurtosis itself. If you made any changes to the package, most common issues are misconfigurations of services, file artefacts, ports, etc.
 
 2. Remove the Kurtosis enclaves.
