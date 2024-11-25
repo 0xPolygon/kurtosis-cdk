@@ -170,10 +170,14 @@ def run(plan, args={}):
         elif additional_service == "erpc":
             deploy_additional_service(plan, "erpc", erpc_package, args)
         elif additional_service == "prometheus_grafana":
-            deploy_additional_service(plan, "panoptichain", panoptichain_package, args)
             deploy_additional_service(
-                plan, "prometheus", prometheus_package, args, contract_setup_addresses
+                plan,
+                "panoptichain",
+                panoptichain_package,
+                args,
+                contract_setup_addresses,
             )
+            deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
         elif additional_service == "tx_spammer":
             deploy_additional_service(
