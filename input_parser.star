@@ -238,8 +238,12 @@ DEFAULT_ROLLUP_ARGS = {
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
-    # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
-    "zkevm_use_gas_token_contract": False,
+    # Set to true to use an L1 ERC20 contract as the gas token on the rollup.
+    # The address of the gas token will be determined by the value of `gas_token_address`.
+    "gas_token_enabled": False,
+    # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
+    # If the address is empty, a contract will be deployed automatically.
+    "gas_token_address": "",
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
     # ports.
@@ -329,6 +333,15 @@ def parse_args(plan, args):
 
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
+
+    gas_token_enabled = args.get("gas_token_enabled", False)
+    gas_token_address = args.get("gas_token_address", "")
+    if not gas_token_enabled and gas_token_address != "":
+        fail(
+            "Gas token address set to '{}' but gas token is not enabled".format(
+                gas_token_address
+            )
+        )
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")

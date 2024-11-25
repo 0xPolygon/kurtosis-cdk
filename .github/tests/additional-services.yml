@@ -1,4 +1,5 @@
 args:
+  verbosity: debug
   additional_services:
     - arpeggio
     # - blockscout # blockscout experiences Out of Memory (OOM) termination when deployed inside github runners.

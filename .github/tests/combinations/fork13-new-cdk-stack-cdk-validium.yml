@@ -1,4 +1,5 @@
 args:
+  verbosity: debug
   zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta10
