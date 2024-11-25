@@ -334,7 +334,7 @@ def parse_args(plan, args):
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
 
-    gas_token_enabled = args.get("gas_token_enabled", false)
+    gas_token_enabled = args.get("gas_token_enabled", False)
     gas_token_address = args.get("gas_token_address", "")
     if not gas_token_enabled and gas_token_address != "":
         fail(
