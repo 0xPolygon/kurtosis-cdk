@@ -230,8 +230,11 @@ def deploy_helper_service(plan, args):
     )
 
 
-def deploy_additional_service(plan, name, package, args):
+def deploy_additional_service(plan, name, package, args, contract_setup_addresses={}):
     plan.print("Launching %s" % name)
     service_args = dict(args)
-    import_module(package).run(plan, service_args)
+    if contract_setup_addresses == {}:
+        import_module(package).run(plan, service_args)
+    else:
+        import_module(package).run(plan, service_args, contract_setup_addresses)
     plan.print("Successfully launched %s" % name)
