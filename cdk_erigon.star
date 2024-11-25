@@ -1,11 +1,9 @@
-service_package = import_module("./lib/service.star")
 cdk_erigon_package = import_module("./lib/cdk_erigon.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
-def run_sequencer(plan, args):
+def run_sequencer(plan, args, contract_setup_addresses):
     cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yml")
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_sequencer_config_artifact = plan.render_templates(
         name="cdk-erigon-sequencer-config-artifact",
         config={
@@ -63,7 +61,7 @@ def run_sequencer(plan, args):
     )
 
 
-def run_rpc(plan, args):
+def run_rpc(plan, args, contract_setup_addresses):
     # Start the zkevm stateless executor if strict mode is enabled.
     if args["erigon_strict_mode"]:
         stateless_configs = {}
@@ -106,7 +104,6 @@ def run_rpc(plan, args):
         pool_manager_service.ports["http"].number,
     )
     cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yml")
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     cdk_erigon_rpc_config_artifact = plan.render_templates(
         name="cdk-erigon-rpc-config-artifact",
         config={

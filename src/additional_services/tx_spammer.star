@@ -1,9 +1,10 @@
 constants = import_module("../../src/package_io/constants.star")
-service_package = import_module("../../lib/service.star")
 
 
-def run(plan, args):
-    tx_spammer_config_artifacts = get_tx_spammer_config(plan, args)
+def run(plan, args, contract_setup_addresses):
+    tx_spammer_config_artifacts = get_tx_spammer_config(
+        plan, args, contract_setup_addresses
+    )
     plan.add_service(
         name="tx-spammer" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -17,15 +18,13 @@ def run(plan, args):
     )
 
 
-def get_tx_spammer_config(plan, args):
+def get_tx_spammer_config(plan, args, contract_setup_addresses):
     spam_script_template = read_file(
         src="../../static_files/additional_services/tx-spammer-config/spam.sh"
     )
     bridge_script_template = read_file(
         src="../../static_files/additional_services/tx-spammer-config/bridge.sh"
     )
-
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
 
     l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
     l2_rpc_url = "http://{}:{}".format(
