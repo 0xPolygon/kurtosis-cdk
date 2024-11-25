@@ -12,7 +12,7 @@ args:
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
 
   additional_services:
     - tx_spammer

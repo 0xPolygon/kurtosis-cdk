@@ -5,7 +5,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
   additional_services:
     - pless_zkevm_node
     - tx_spammer
