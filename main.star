@@ -42,9 +42,13 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of a local L1")
 
     # Deploy zkevm contracts on L1.
+    contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
         import_module(deploy_zkevm_contracts_package).run(plan, args)
+        contract_setup_addresses = service_package.get_contract_setup_addresses(
+            plan, args
+        )
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
@@ -57,11 +61,11 @@ def run(plan, args={}):
     ):
         plan.print("Deploying helper service to retrieve rollup data")
         deploy_helper_service(plan, args)
+        contract_setup_addresses = service_package.get_contract_setup_addresses(
+            plan, args
+        )
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
-
-    # Retrieve contract setup addresses.
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
 
     # Deploy databases.
     if deployment_stages.get("deploy_databases", False):
