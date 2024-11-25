@@ -49,6 +49,7 @@ def _start_service(
     # Leaving the name out for now. This might cause some idempotency
     # issues, but we're not currently relying on that for now.‡
     proc_runner_file_artifact = plan.upload_files(
+        name="cdk-erigon-" + type + "-proc-runner" + args["deployment_suffix"],
         src="../templates/proc-runner.sh",
     )
     plan_files["/usr/local/share/proc-runner"] = proc_runner_file_artifact
