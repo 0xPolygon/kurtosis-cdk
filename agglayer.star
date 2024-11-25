@@ -1,9 +1,8 @@
 databases_package = import_module("./databases.star")
-service_package = import_module("./lib/service.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 
-def run(plan, args):
+def run(plan, args, contract_setup_addresses):
     # Create agglayer prover service.
     agglayer_prover_config_artifact = create_agglayer_prover_config_artifact(plan, args)
     (ports, public_ports) = get_agglayer_prover_ports(args)
@@ -41,7 +40,7 @@ def run(plan, args):
 
     # Deploy agglayer service.
     agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, agglayer_prover_url
+        plan, args, agglayer_prover_url, contract_setup_addresses
     )
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
@@ -104,11 +103,12 @@ def create_agglayer_prover_config_artifact(plan, args):
     )
 
 
-def create_agglayer_config_artifact(plan, args, agglayer_prover_url):
+def create_agglayer_config_artifact(
+    plan, args, agglayer_prover_url, contract_setup_addresses
+):
     agglayer_config_template = read_file(
         src="./templates/bridge-infra/agglayer-config.toml"
     )
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
     db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
