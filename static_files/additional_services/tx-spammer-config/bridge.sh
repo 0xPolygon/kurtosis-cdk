@@ -4,17 +4,17 @@ set -e
 # The amount of value to transfer from the admin to the spammer
 spammer_value="10ether"
 
-cast wallet new -j | jq '.[0]' | tee .bridge.wallet.json
+cast wallet new --json | jq '.[0]' | tee .bridge.wallet.json
 
 eth_address="$(jq -r '.address' .bridge.wallet.json)"
 private_key="$(jq -r '.private_key' .bridge.wallet.json)"
 
 until cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" --value "$spammer_value" "$eth_address"; do
-    echo "Attempting to fund a test account on layer 1"
+  echo "Attempting to fund a test account on layer 1"
 done
 
 until cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l2_rpc_url}}" --value "$spammer_value" "$eth_address"; do
-    echo "Attempting to fund a test account on layer 2"
+  echo "Attempting to fund a test account on layer 2"
 done
 
 # The address of the recipient.
@@ -23,7 +23,6 @@ destination_address="$eth_address"
 # The destination networks.
 ethereum_network="0"
 zkevm_l2_network="1"
-
 
 # Functions for deploying an ERC20 contract on LX.
 deploy_erc20_contract_on_l1() {
@@ -45,13 +44,14 @@ deploy_erc20_contract() {
     --rpc-url "$rpc_url" \
     --legacy \
     --json \
-    --create "$(cat /opt/bindings/tokens/ERC20.bin)" | jq > "/opt/erc20-network-$network-deployment-receipt.json"
+    --create "$(cat /opt/bindings/tokens/ERC20.bin)" | jq >"/opt/erc20-network-$network-deployment-receipt.json"
   erc20_address="$(jq -r '.contractAddress' "/opt/erc20-network-$network-deployment-receipt.json")"
   echo "ERC20 contract deployed at $erc20_address"
 
   get_erc20_balance_on_lx "$network" "$rpc_url" "$erc20_address"
 
-  echo; echo "Allowing the zkevm-bridge to spend the owner's tokens..."
+  echo
+  echo "Allowing the zkevm-bridge to spend the owner's tokens..."
   cast send \
     --private-key "$private_key" \
     --rpc-url "$rpc_url" \
@@ -104,7 +104,8 @@ bridge_assets_from_lx_to_ly() {
     "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
     "$ly_network" "$destination_address" 10 "$erc20_contract_address" true "0x"
 
-  echo; echo "Checking the amount of last updated deposit count to the GER..."
+  echo
+  echo "Checking the amount of last updated deposit count to the GER..."
   cast call \
     --rpc-url "$rpc_url" \
     "$bridge_address" \
@@ -135,22 +136,25 @@ claim_assets() {
   claim_sig="claimAsset(bytes32[32],bytes32[32],uint256,bytes32,bytes32,uint32,address,uint32,address,uint256,bytes)"
 
   echo "Getting the list of deposits on network $network..."
-  curl -s "{{.zkevm_bridge_api_url}}/bridges/$destination_address?limit=100&offset=0" | jq > /opt/bridge-deposits.json
+  curl -s "{{.zkevm_bridge_api_url}}/bridges/$destination_address?limit=100&offset=0" | jq >/opt/bridge-deposits.json
   cat /opt/bridge-deposits.json
 
-  echo; echo "Filtering the list of deposits..."
+  echo
+  echo "Filtering the list of deposits..."
   # shellcheck disable=SC2086
-  jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$network')]' /opt/bridge-deposits.json | jq > /opt/claimable-txs.json
+  jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$network')]' /opt/bridge-deposits.json | jq >/opt/claimable-txs.json
   cat /opt/claimable-txs.json
 
   jq -c '.[]' /opt/claimable-txs.json | while IFS= read -r tx; do
-    echo; echo "Processing claimable tx..."
+    echo
+    echo "Processing claimable tx..."
     echo "$tx"
 
-    echo; echo "Getting the merkle proof of our deposit..."
+    echo
+    echo "Getting the merkle proof of our deposit..."
     curr_deposit_cnt="$(echo "$tx" | jq -r '.deposit_cnt')"
     curr_network_id="$(echo "$tx" | jq -r '.network_id')"
-    curl -s "{{.zkevm_bridge_api_url}}/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq > /opt/proof.json
+    curl -s "{{.zkevm_bridge_api_url}}/merkle-proof?deposit_cnt=$curr_deposit_cnt&net_id=$curr_network_id" | jq >/opt/proof.json
     cat /opt/proof.json
 
     in_merkle_proof="$(jq -r -c '.proof.merkle_proof' /opt/proof.json | tr -d '"')"
@@ -165,13 +169,15 @@ claim_assets() {
     in_amount="$(echo "$tx" | jq -r '.amount')"
     in_metadata="$(echo "$tx" | jq -r '.metadata')"
 
-    echo; echo "Performing an eth call to make sure the bridge claim tx will work..."
+    echo
+    echo "Performing an eth call to make sure the bridge claim tx will work..."
     cast call \
       --rpc-url "$rpc_url" \
       "$bridge_address" \
       "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
 
-    echo; echo "Publishing the bridge claim tx..."
+    echo
+    echo "Publishing the bridge claim tx..."
     cast send \
       --private-key "$private_key" \
       --rpc-url "$rpc_url" \
@@ -185,12 +191,12 @@ claim_assets() {
 # If not, run a few bridge operations.
 if [ -z "$1" ]; then
   deploy_erc20_contract_on_l1
-  for ((i=0; i<=10; i++)); do
+  for ((i = 0; i <= 10; i++)); do
     bridge_assets_from_l1_to_l2
   done
 
   deploy_erc20_contract_on_l2
-  for ((i=0; i<=10; i++)); do
+  for ((i = 0; i <= 10; i++)); do
     bridge_assets_from_l2_to_l1
   done
 fi
