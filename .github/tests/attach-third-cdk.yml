@@ -58,10 +58,11 @@ args:
   cdk_node_image: nulyjkdhthz/cdk:6d775da5dad55990f534e0190a89613ae64f5ccf
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
-  zkevm_contracts_image: nulyjkdhthz/zkevm-contracts:v9.0.0-rc.3-pp-fork.12
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12
   additional_services: []
   consensus_contract_type: pessimistic
   sequencer_type: erigon
   erigon_strict_mode: false
   zkevm_use_gas_token_contract: false
+  # agglayer_prover_sp1_key:
   enable_normalcy: true
