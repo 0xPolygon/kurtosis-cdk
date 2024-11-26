@@ -267,7 +267,7 @@ This looks good, it looks like our operation is scheduled. We now just
 need to wait until ~1713985543~.
 
 #+begin_src bash :exports both verbatim :results output code
-printf "%d\n" $(cast block -j --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) | jq -r '.timestamp')
+printf "%d\n" $(cast block --json --rpc-url $(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc) | jq -r '.timestamp')
 #+end_src
 
 #+RESULTS:
