@@ -69,6 +69,7 @@ jobs:
 
     - name: Build cdk image
       run: make build-docker
+      working-directory: ${{ github.workspace }}/cdk
 
     - name: Setup bats
       uses: bats-core/bats-action@3.0.0
