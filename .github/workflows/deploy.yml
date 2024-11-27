@@ -377,6 +377,13 @@ jobs:
           "http://$originNetworkURL" \
           "123123123123" \
           "3"
+          if [[ $ret_code -eq 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+              exit 0
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              exit 1
+          fi
 
           echo "Waiting for deposit to be claimable..."
           sleep 60
@@ -390,12 +397,11 @@ jobs:
           "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
           "$destNetworkURL" \
           "$bridgeURL"
-
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim Transaction successfuly sent!"
               exit 0
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim Transaction failed!"
               exit 1
           fi
 
