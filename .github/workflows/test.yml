@@ -76,9 +76,9 @@ jobs:
 
     - name: Run e2e tests
       run: make test-e2e-${{ matrix.e2e-group }}
-      working-directory: ${{ github.workspace }}/cdk/test
+      working-directory: ./cdk/test
       env:
-        KURTOSIS_FOLDER: ${{ github.workspace }}/kurtosis-cdk
+        KURTOSIS_FOLDER: ${{ github.workspace }}
         BATS_LIB_PATH: /usr/lib/
         agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
     
