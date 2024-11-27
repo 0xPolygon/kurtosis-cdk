@@ -235,6 +235,10 @@ DEFAULT_ROLLUP_ARGS = {
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
     "zkevm_use_real_verifier": False,
+    # If we're using pessimistic consensus and a real verifier, we'll
+    # need to know which vkey to use. This value is tightly coupled to
+    # the agglayer version that's being used
+    "verifier_program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
