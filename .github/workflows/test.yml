@@ -15,7 +15,7 @@ concurrency:
 env:
   GO_VERSION: 1.22.x
   POLYCLI_VERSION: v0.1.64
-  CDK_VERSION: a642291 # https://github.com/0xPolygon/cdk/commit/a6422912423e05f8
+  CDK_VERSION: a6422912423e05f8b1494a3959de000e992499f9 # https://github.com/0xPolygon/cdk/commit/a6422912423e05f8
 
 jobs:
   cdk-e2e-tests:
