@@ -4,7 +4,6 @@ on:
   pull_request:
   push:
     branches: [main]
-  workflow_dispatch: {}
 
 concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
@@ -17,6 +16,8 @@ env:
 
 jobs:
   cdk-e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -26,7 +27,6 @@ jobs:
           - "fork12-validium"
           - "fork12-rollup"
           - "fork12-pessimistic"
-    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-go@v5
