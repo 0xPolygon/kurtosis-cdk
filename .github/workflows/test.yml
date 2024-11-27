@@ -1,3 +1,6 @@
+---
+# A copy/paste of the cdk node e2e tests.
+# https://github.com/0xPolygon/cdk/blob/main/.github/workflows/test-e2e.yml
 name: Test
 
 on: 
@@ -6,7 +9,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: deploy-${{ github.event.pull_request.number || github.ref }}
+  group: test-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
