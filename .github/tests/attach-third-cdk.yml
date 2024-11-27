@@ -64,5 +64,5 @@ args:
   sequencer_type: erigon
   erigon_strict_mode: false
   zkevm_use_gas_token_contract: false
-  # agglayer_prover_sp1_key:
+  # agglayer_prover_sp1_key: ""
   enable_normalcy: true
