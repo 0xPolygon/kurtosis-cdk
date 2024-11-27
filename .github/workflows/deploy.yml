@@ -379,7 +379,6 @@ jobs:
           "3"
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
-              exit 0
           else
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
               exit 1
