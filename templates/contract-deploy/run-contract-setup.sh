@@ -121,6 +121,7 @@ printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules
 # {{if eq .gas_token_address ""}}
 echo_ts "Deploying gas token to L1"
 forge create \
+    --broadcast \
     --json \
     --rpc-url "{{.l1_rpc_url}}" \
     --mnemonic "{{.l1_preallocated_mnemonic}}" \
