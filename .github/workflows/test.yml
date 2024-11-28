@@ -33,6 +33,7 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version: 1.22.x
+        cache-dependency-path: cdk/go.sum
 
     - name: Build cdk docker image
       run: make build-docker
