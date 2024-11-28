@@ -1,5 +1,5 @@
 ---
-# A copy/paste of the cdk node e2e tests.
+# A copy/paste of the cdk node e2e tests with small changes to make in work in the kurtosis-cdk repository.
 # https://github.com/0xPolygon/cdk/blob/main/.github/workflows/test-e2e.yml
 name: Test
 
