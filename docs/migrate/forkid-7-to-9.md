@@ -156,6 +156,7 @@ After a few minutes, the number of verified batches should increase (the first b
 
     ```sh
     forge create \
+        --broadcast \
         --json \
         --rpc-url "$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)" \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
@@ -171,6 +172,7 @@ After a few minutes, the number of verified batches should increase (the first b
     bridge="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json" | tail -n +2)"
     mngr="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonRollupManager /opt/zkevm/combined.json" | tail -n +2)"
     forge create \
+        --broadcast \
         --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
         contracts/v2/consensus/validium/migration/PolygonValidiumStorageMigration.sol:PolygonValidiumStorageMigration \
