@@ -1,2 +1,3 @@
 args:
   agglayer_prover_sp1_key: ""
+  global_log_level: "info"
