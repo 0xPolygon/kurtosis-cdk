@@ -36,8 +36,8 @@ jobs:
         cache-dependency-path: cdk/go.sum
 
     - name: Build cdk docker image
-      run: make build-docker
       working-directory: cdk
+      run: make build-docker
     
     - name: Save cdk image to archive
       run: docker save --output /tmp/cdk.tar cdk
@@ -110,8 +110,8 @@ jobs:
         docker image ls -a
 
     - name: Run e2e tests
-      run: make test-e2e-${{ matrix.e2e-group }}
       working-directory: cdk/test
+      run: make test-e2e-${{ matrix.e2e-group }}
       # Some of the test environments, the pessimistic envs, require the SP1 private key.
       # This check makes sure that such environments will be tested only if the necessary secrets
       # are available, preventing failures on pull requests from forked repositories.
