@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: 1.22.x
   POLYCLI_VERSION: v0.1.64
   CDK_VERSION: a6422912423e05f8b1494a3959de000e992499f9 # https://github.com/0xPolygon/cdk/commit/a6422912423e05f8
 
@@ -23,6 +22,14 @@ jobs:
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
+
+    - name: Checkout cdk repository
+      uses: actions/checkout@v4
+      with:
+        repository: 0xPolygon/cdk
+        path: cdk
+        ref: ${{ env.CDK_VERSION }}
+
     - uses: actions/setup-go@v5
       with:
         go-version: 1.22.x
@@ -42,6 +49,7 @@ jobs:
   cdk-e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    needs: build-cdk-image
     strategy:
       fail-fast: false
       matrix:
