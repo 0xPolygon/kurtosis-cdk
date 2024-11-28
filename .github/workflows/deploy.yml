@@ -234,10 +234,11 @@ jobs:
             --rpc-url $l1_rpc_url \
             --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete" \
             contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-            --constructor-args  "CDK Gas Token" "CDK" "0xE34aaF64b29273B7D567FCFc40544c014EEe9970" "1000000000000000000000000" \
-            > gas_token.output
-          cat gas_token.output
-          gas_token_address=$(jq --raw-output '.deployedTo' gas_token.output)
+            --constructor-args "CDK Gas Token" "CDK" "0xE34aaF64b29273B7D567FCFc40544c014EEe9970" "1000000000000000000000000" \
+            > gasToken-erc20.json
+          cat gasToken-erc20.json
+          
+          gas_token_address=$(jq --raw-output '.deployedTo' gasToken-erc20.json)
           if [[ -z "$gas_token_address" || "$gas_token_address" == "null" ]]; then
             echo "Unable to deploy gas token"
             exit 1

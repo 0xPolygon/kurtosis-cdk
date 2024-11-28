@@ -125,7 +125,7 @@ forge create \
     --rpc-url "{{.l1_rpc_url}}" \
     --mnemonic "{{.l1_preallocated_mnemonic}}" \
     contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+    --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
     > gasToken-erc20.json
 jq \
     --slurpfile c gasToken-erc20.json \
