@@ -11,7 +11,8 @@ on:
 
 env:
   IMAGE_NAME: leovct/zkevm-contracts
-  POLYCLI_VERSION: main
+  POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64
+  FOUNDRY_VERSION: nightly-c63aba816b76f9bad103b1275cc662a063919403 # https://github.com/foundry-rs/foundry/releases/tag/nightly-c63aba816b76f9bad103b1275cc662a063919403
 
 jobs:
   zkevm-contracts:
@@ -63,6 +64,7 @@ jobs:
           build-args: |
             ZKEVM_CONTRACTS_BRANCH=${{ github.event.inputs.zkevm_contracts_version }}
             POLYCLI_VERSION=${{ env.POLYCLI_VERSION }}
+            FOUNDRY_VERSION=${{ env.FOUNDRY_VERSION }}
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.full_tag }}
           cache-from: type=gha

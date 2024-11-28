@@ -81,6 +81,7 @@ docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
   --build-arg POLYCLI_VERSION=main \
+  --build-arg FOUNDRY_VERSION=nightly \
   --file zkevm-contracts.Dockerfile
 ```
 
