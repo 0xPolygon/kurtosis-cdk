@@ -54,6 +54,21 @@ jobs:
           ./monitor-verified-batches.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
+      
+      # Run cdk e2e tests.
+      - name: Checkout cdk repository
+        uses: actions/checkout@v4
+        with:
+          repository: 0xPolygon/cdk
+          path: cdk
+          ref: ${{ env.CDK_VERSION }} 
+      - uses: bats-core/bats-action@3.0.0
+      - name: Run cdk e2e tests
+        working-directory: cdk/test
+        run: bats .
+        env:
+          KURTOSIS_FOLDER: ${{ github.workspace }}
+          BATS_LIB_PATH: /usr/lib/
 
       - name: Dump enclave
         if: ${{ !cancelled() }}

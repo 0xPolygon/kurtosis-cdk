@@ -7,6 +7,10 @@ inputs:
     description: The version of kurtosis
     required: false
     default: '1.4.1' # https://github.com/kurtosis-tech/kurtosis/releases
+  polycli-version:
+    description: The version of polycli
+    required: false
+    default: 'v0.1.64' # https://github.com/0xPolygon/polygon-cli
 
 runs:
   using: "composite"
@@ -38,3 +42,14 @@ runs:
 
     - name: Install foundry
       uses: foundry-rs/foundry-toolchain@v1
+    
+    - name: Install polycli
+      shell: bash
+      run: |
+        polycli_version=${{ inputs.polycli-version }}
+        tmp_dir=$(mktemp -d) 
+        curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${polycli_version}/polycli_${polycli_version}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
+        mv "$tmp_dir"/* /usr/local/bin/polycli 
+        rm -rf "$tmp_dir"
+        sudo chmod +x /usr/local/bin/polycli
+        /usr/local/bin/polycli version
