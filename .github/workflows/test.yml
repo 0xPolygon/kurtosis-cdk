@@ -18,6 +18,27 @@ env:
   CDK_VERSION: a6422912423e05f8b1494a3959de000e992499f9 # https://github.com/0xPolygon/cdk/commit/a6422912423e05f8
 
 jobs:
+  build-cdk-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.22.x
+
+    - name: Build cdk docker image
+      run: make build-docker
+    
+    - name: Save cdk image to archive
+      run: docker save --output /tmp/cdk.tar cdk
+    
+    - name: Upload archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: cdk
+        path: /tmp/cdk.tar
+
   cdk-e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -64,17 +85,19 @@ jobs:
         path: cdk
         ref: ${{ env.CDK_VERSION }}
 
-    - uses: actions/setup-go@v5
-      with:
-        go-version: ${{ env.GO_VERSION }}
-        cache-dependency-path: cdk/go.sum
-
-    - name: Build cdk image
-      run: make build-docker
-      working-directory: ${{ github.workspace }}/cdk
-
     - name: Setup bats
       uses: bats-core/bats-action@3.0.0
+    
+    - name: Download cdk archive
+      uses: actions/download-artifact@v4
+      with:
+        name: cdk
+        path: /tmp
+    
+    - name: Load cdk image
+      run: |
+        docker load --input /tmp/cdk.tar
+        docker image ls -a
 
     - name: Run e2e tests
       run: make test-e2e-${{ matrix.e2e-group }}
