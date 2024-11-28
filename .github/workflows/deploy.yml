@@ -237,8 +237,6 @@ jobs:
             contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
             --constructor-args "CDK Gas Token" "CDK" "0xE34aaF64b29273B7D567FCFc40544c014EEe9970" "1000000000000000000000000" \
             > gasToken-erc20.json
-          cat gasToken-erc20.json
-
           gas_token_address=$(jq --raw-output '.deployedTo' gasToken-erc20.json)
           if [[ -z "$gas_token_address" || "$gas_token_address" == "null" ]]; then
             echo "Unable to deploy gas token"
