@@ -425,7 +425,7 @@ jobs:
           fi
 
           echo "Waiting for deposit to be claimable..."
-          sleep 60
+          sleep 300
 
           destNetworkURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
           bridgeURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-001 rpc)
