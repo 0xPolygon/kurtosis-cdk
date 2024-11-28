@@ -6,6 +6,7 @@ RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygo
 
 
 FROM ubuntu:24.04
+ARG FOUNDRY_VERSION
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
 
@@ -23,5 +24,5 @@ RUN apt-get update \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup \
+  && /root/.foundry/bin/foundryup --version ${FOUNDRY_VERSION} \
   && cp /root/.foundry/bin/* /usr/local/bin
