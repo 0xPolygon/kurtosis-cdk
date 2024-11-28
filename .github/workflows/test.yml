@@ -78,7 +78,7 @@ jobs:
 
     - name: Run e2e tests
       run: make test-e2e-${{ matrix.e2e-group }}
-      working-directory: ./cdk/test
+      working-directory: cdk/test
       env:
         KURTOSIS_FOLDER: ${{ github.workspace }}
         BATS_LIB_PATH: /usr/lib/
