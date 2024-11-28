@@ -36,6 +36,7 @@ jobs:
 
     - name: Build cdk docker image
       run: make build-docker
+      working-directory: cdk
     
     - name: Save cdk image to archive
       run: docker save --output /tmp/cdk.tar cdk
