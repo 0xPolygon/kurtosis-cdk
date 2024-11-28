@@ -82,11 +82,7 @@ jobs:
       # Some of the test environments, the pessimistic envs, require the SP1 private key.
       # This check makes sure that such environments will be tested only if the necessary secrets
       # are available, preventing failures on pull requests from forked repositories.
-      if: >
-        ${{
-          !contains(matrix.e2e-group, 'pessimistic') ||
-          (contains(matrix.e2e-group, 'pessimistic') && secrets.SP1_PRIVATE_KEY)
-        }}
+      if: ${{ !contains(matrix.e2e-group, 'pessimistic') || (contains(matrix.e2e-group, 'pessimistic') && secrets.SP1_PRIVATE_KEY) }}
       env:
         KURTOSIS_FOLDER: ${{ github.workspace }}
         BATS_LIB_PATH: /usr/lib/
