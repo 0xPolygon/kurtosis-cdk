@@ -225,12 +225,15 @@ Check the [tests](.github/tests/) folder for sample configuration files.
 kurtosis run --enclave cdk --args-file params.yml .
 ```
 
-5. Deploy with a configuration file and specify on-the-fly custom arguments.
+5. Do not deploy with a configuration file and specify on-the-fly custom arguments.
 
-Note: In this specific case, on-the-fly custom arguments take precedence over defaults and config file arguments.
+🚨 Avoid using this method, as Kurtosis is unable to merge parameters from two different sources (the parameters file and on-the-fly arguments).
+
+The parameters file will not be used, and only the on-the-fly arguments will be considered.
 
 ```bash
 kurtosis run --enclave cdk --args-file params.yml . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
+# similar to: kurtosis run --enclave cdk . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
 ```
 
 </details>
