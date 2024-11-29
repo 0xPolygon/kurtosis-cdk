@@ -9,7 +9,7 @@ on:
         description: The ZkEVM contracts version tag to build (e.g., v8.1.0-rc.1-fork.13 or a commit hash)
         required: true
       patch_version:
-        description: The version number for the batch
+        description: The version number for the patch
         required: false
 
 env:
