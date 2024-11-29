@@ -14,7 +14,8 @@ concurrency:
 
 env:
   POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64 - 2024-11-25
-  CDK_VERSION: 426eeb719cad9ca2b563d6193de6cd371b838815 # https://github.com/0xPolygon/cdk/commit/426eeb719cad9ca2b563d6193de6cd371b838815
+  # Use fork instead of cdk repository until they migrate to the new version of kurtosis-cdk.
+  CDK_VERSION: d9845e94bf3c93fb297f81942e1673bc01fd2701 # https://github.com/leovct/cdk/commit/d9845e94bf3c93fb297f81942e1673bc01fd2701
 
 jobs:
   build-cdk-image:
@@ -26,7 +27,9 @@ jobs:
     - name: Checkout cdk repository
       uses: actions/checkout@v4
       with:
-        repository: 0xPolygon/cdk
+        # Use fork instead of cdk repository until they migrate to the new version of kurtosis-cdk.
+        # repository: 0xPolygon/cdk
+        repository: leovct/cdk
         path: cdk
         ref: ${{ env.CDK_VERSION }}
 
@@ -91,7 +94,9 @@ jobs:
     - name: Checkout cdk repository
       uses: actions/checkout@v4
       with:
-        repository: 0xPolygon/cdk
+        # Use fork instead of cdk repository until they migrate to the new version of kurtosis-cdk.
+        # repository: 0xPolygon/cdk
+        repository: leovct/cdk
         path: cdk
         ref: ${{ env.CDK_VERSION }}
 
