@@ -9,12 +9,12 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 - They are [hosted](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) on the Docker Hub.
 - They share the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).
 - They have been suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For example, pessimistic tags have been prefixed with `-fork.12`, e.g. the zkevm-contracts tag `v9.0.0-rc.2-pp` corresponds to `leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12`.
-- Because of some dependency breaking changes with `foundry`, we have introduced patch images.
+- Because of some dependency breaking changes with `foundry`, we have introduced patch images. They are not compatible with all the versions of kurtosis-cdk!
 
-  | Patch Version | Foundry Version | Polycli Version |
-  | ------------- | --------------- | --------------- |
-  | None | [nightly-31dd1f77fd9156d09836486d97963cec7f555343](https://github.com/foundry-rs/foundry/releases/tag/nightly-31dd1f77fd9156d09836486d97963cec7f555343) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) |
-  | `patch1` | [nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76](https://github.com/foundry-rs/foundry/tree/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) |
+  | Patch Version | Foundry Version | Polycli Version | Compatibility with kurtosis-cdk |
+  | ------------- | --------------- | --------------- | --------------- |
+  | None | [nightly-31dd1f77fd9156d09836486d97963cec7f555343](https://github.com/foundry-rs/foundry/releases/tag/nightly-31dd1f77fd9156d09836486d97963cec7f555343) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | <= `v0.2.22` |
+  | `patch1` | [nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76](https://github.com/foundry-rs/foundry/tree/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | > `v0.2.22` |
 
 ### ZkEVM Bridge UI
 
