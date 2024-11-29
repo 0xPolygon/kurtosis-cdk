@@ -8,6 +8,9 @@ on:
       zkevm_contracts_version:
         description: The ZkEVM contracts version tag to build (e.g., v8.1.0-rc.1-fork.13 or a commit hash)
         required: true
+      patch_version:
+        description: The version number for the batch
+        required: false
 
 env:
   IMAGE_NAME: leovct/zkevm-contracts
@@ -29,6 +32,7 @@ jobs:
       - name: Determine full tag
         id: determine_tag
         run: |
+          # Append the fork id to the image tag.
           TAG=${{ github.event.inputs.zkevm_contracts_version }}
           if [[ $TAG == *-fork.10 ]]; then
             # Custom rule to label fork10 tags as fork11.
@@ -42,6 +46,13 @@ jobs:
           else
             FULL_TAG=$TAG
           fi
+
+          # If provided, append the patch version at the end of the image tag.
+          PATCH_VERSION= ${{ github.event.inputs.patch_version }}
+          if [[ $PATCH_VERSION != "" ]]; then
+            FULL_TAG=$FULL_TAG-patch${PATCH_VERSION}
+          fi
+
           echo "full_tag=$FULL_TAG" >> $GITHUB_OUTPUT
 
       - name: Check if image already exists
