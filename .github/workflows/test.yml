@@ -14,7 +14,7 @@ concurrency:
 
 env:
   POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64 - 2024-11-25
-  CDK_VERSION: a6422912423e05f8b1494a3959de000e992499f9 # https://github.com/0xPolygon/cdk/commit/a6422912423e05f8
+  CDK_VERSION: 426eeb719cad9ca2b563d6193de6cd371b838815 # https://github.com/0xPolygon/cdk/commit/426eeb719cad9ca2b563d6193de6cd371b838815
 
 jobs:
   build-cdk-image:
