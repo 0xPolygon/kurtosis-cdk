@@ -44,19 +44,19 @@ jobs:
           fi
           echo "full_tag=$FULL_TAG" >> $GITHUB_OUTPUT
 
-      # - name: Check if image already exists
-      #   id: check_image
-      #   run: |
-      #     if docker manifest inspect ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.full_tag }} > /dev/null 2>&1; then
-      #       echo "Image already exists, skipping build."
-      #       echo "exists=true" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "Image does not exist."
-      #       echo "exists=false" >> $GITHUB_OUTPUT
-      #     fi
+      - name: Check if image already exists
+        id: check_image
+        run: |
+          if docker manifest inspect ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.full_tag }} > /dev/null 2>&1; then
+            echo "Image already exists, skipping build."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Image does not exist."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build image and push to the Docker Hub
-        # if: ${{ steps.check_image.outputs.exists == 'false' }}
+        if: ${{ steps.check_image.outputs.exists == 'false' }}
         uses: docker/build-push-action@v6
         with:
           context: docker
