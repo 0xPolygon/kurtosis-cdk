@@ -9,7 +9,7 @@ on:
         description: The ZkEVM contracts version tag to build (e.g., v8.1.0-rc.1-fork.13 or a commit hash)
         required: true
       patch_version:
-        description: The version number for the patch
+        description: The version for the patch (e.g., 1, 2 or a string)
         required: false
 
 env:
@@ -48,9 +48,9 @@ jobs:
           fi
 
           # If provided, append the patch version at the end of the image tag.
-          PATCH_VERSION= ${{ github.event.inputs.patch_version }}
-          if [[ $PATCH_VERSION != "" ]]; then
-            FULL_TAG=$FULL_TAG-patch${PATCH_VERSION}
+          PATCH_VERSION=${{ github.event.inputs.patch_version }}
+          if [[ -n "$PATCH_VERSION" ]]; then
+            FULL_TAG="${FULL_TAG}-patch.${PATCH_VERSION}"
           fi
 
           echo "full_tag=$FULL_TAG" >> $GITHUB_OUTPUT
