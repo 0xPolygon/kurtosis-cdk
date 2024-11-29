@@ -12,7 +12,7 @@ on:
 env:
   IMAGE_NAME: leovct/zkevm-contracts
   POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64
-  FOUNDRY_VERSION: nightly-c63aba816b76f9bad103b1275cc662a063919403 # https://github.com/foundry-rs/foundry/releases/tag/nightly-c63aba816b76f9bad103b1275cc662a063919403
+  FOUNDRY_VERSION: nightly-31dd1f77fd9156d09836486d97963cec7f555343
 
 jobs:
   zkevm-contracts:
@@ -44,16 +44,16 @@ jobs:
           fi
           echo "full_tag=$FULL_TAG" >> $GITHUB_OUTPUT
 
-      - name: Check if image already exists
-        id: check_image
-        run: |
-          if docker manifest inspect ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.full_tag }} > /dev/null 2>&1; then
-            echo "Image already exists, skipping build."
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Image does not exist."
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
+      # - name: Check if image already exists
+      #   id: check_image
+      #   run: |
+      #     if docker manifest inspect ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.full_tag }} > /dev/null 2>&1; then
+      #       echo "Image already exists, skipping build."
+      #       echo "exists=true" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "Image does not exist."
+      #       echo "exists=false" >> $GITHUB_OUTPUT
+      #     fi
 
       - name: Build image and push to the Docker Hub
         if: ${{ steps.check_image.outputs.exists == 'false' }}
