@@ -14,8 +14,8 @@ on:
 
 env:
   IMAGE_NAME: leovct/zkevm-contracts
-  POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64
-  FOUNDRY_VERSION: nightly-31dd1f77fd9156d09836486d97963cec7f555343
+  POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64 - 2024-11-25
+  FOUNDRY_VERSION: nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 # https://github.com/foundry-rs/foundry/releases/tag/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 - 2024-11-29
 
 jobs:
   zkevm-contracts:

@@ -10,7 +10,7 @@ inputs:
   foundry-version:
     description: The version of foundry
     required: false
-    default: nightly-c63aba816b76f9bad103b1275cc662a063919403 # https://github.com/foundry-rs/foundry/releases/tag/nightly-c63aba816b76f9bad103b1275cc662a063919403
+    default: nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 # https://github.com/foundry-rs/foundry/releases/tag/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 - 2024-11-29
 
 runs:
   using: "composite"
