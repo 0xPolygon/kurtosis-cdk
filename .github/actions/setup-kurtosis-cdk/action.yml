@@ -6,7 +6,11 @@ inputs:
   kurtosis-version:
     description: The version of kurtosis
     required: false
-    default: '1.4.1' # https://github.com/kurtosis-tech/kurtosis/releases
+    default: 1.4.2 # Should be aligned with .github/workflows/lint.yml
+  foundry-version:
+    description: The version of foundry
+    required: false
+    default: nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 # https://github.com/foundry-rs/foundry/releases/tag/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 - 2024-11-29
 
 runs:
   using: "composite"
@@ -38,3 +42,5 @@ runs:
 
     - name: Install foundry
       uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: ${{ inputs.foundry-version }}

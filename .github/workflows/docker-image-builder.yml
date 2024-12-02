@@ -8,10 +8,14 @@ on:
       zkevm_contracts_version:
         description: The ZkEVM contracts version tag to build (e.g., v8.1.0-rc.1-fork.13 or a commit hash)
         required: true
+      patch_version:
+        description: The version for the patch (e.g., 1, 2 or a string)
+        required: false
 
 env:
   IMAGE_NAME: leovct/zkevm-contracts
-  POLYCLI_VERSION: main
+  POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64 - 2024-11-25
+  FOUNDRY_VERSION: nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 # https://github.com/foundry-rs/foundry/releases/tag/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 - 2024-11-29
 
 jobs:
   zkevm-contracts:
@@ -28,14 +32,27 @@ jobs:
       - name: Determine full tag
         id: determine_tag
         run: |
+          # Append the fork id to the image tag.
           TAG=${{ github.event.inputs.zkevm_contracts_version }}
-          if [[ $TAG == *pp ]]; then
+          if [[ $TAG == *-fork.10 ]]; then
+            # Custom rule to label fork10 tags as fork11.
+            FULL_TAG="${TAG%-fork.10}-fork.11"
+          elif [[ $TAG == *pp ]]; then
+            # Custom rule to label pp tags as fork12.
             FULL_TAG="${TAG}-fork.12"
           elif [[ $TAG != *-fork.[0-9]* ]]; then
+            # Custom rule to label undefined tags as fork13.
             FULL_TAG="${TAG}-fork.13"
           else
             FULL_TAG=$TAG
           fi
+
+          # If provided, append the patch version at the end of the image tag.
+          PATCH_VERSION=${{ github.event.inputs.patch_version }}
+          if [[ -n "$PATCH_VERSION" ]]; then
+            FULL_TAG="${FULL_TAG}-patch.${PATCH_VERSION}"
+          fi
+
           echo "full_tag=$FULL_TAG" >> $GITHUB_OUTPUT
 
       - name: Check if image already exists
@@ -58,6 +75,7 @@ jobs:
           build-args: |
             ZKEVM_CONTRACTS_BRANCH=${{ github.event.inputs.zkevm_contracts_version }}
             POLYCLI_VERSION=${{ env.POLYCLI_VERSION }}
+            FOUNDRY_VERSION=${{ env.FOUNDRY_VERSION }}
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.full_tag }}
           cache-from: type=gha
