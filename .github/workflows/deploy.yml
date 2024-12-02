@@ -400,6 +400,11 @@ jobs:
       - name: Replace Agglayer SP1 Prover Key with Github Secrets
         run: |
           sed -i "s/agglayer_prover_sp1_key: \"\"/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/agglayer-sp1-key.yml
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.agglayer_prover_sp1_key }}
+        env :
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/agglayer-sp1-key.yml .
