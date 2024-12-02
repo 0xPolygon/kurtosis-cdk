@@ -1,5 +1,5 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@4.3.0"
+    "github.com/ethpandaops/ethereum-package/main.star@4.4.0"
 )
 
 
