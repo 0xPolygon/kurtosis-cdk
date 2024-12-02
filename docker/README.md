@@ -6,23 +6,15 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 
 ### ZkEVM Contracts
 
-Kurtosis CDK's zkevm contracts images are [hosted](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) on the Docker Hub.
+- They are [hosted](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) on the Docker Hub.
+- They share the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).
+- They have been suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For example, pessimistic tags have been prefixed with `-fork.12`, e.g. the zkevm-contracts tag `v9.0.0-rc.2-pp` corresponds to `leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12`.
+- Because of some dependency breaking changes with `foundry`, we have introduced patch images. They are not compatible with all the versions of kurtosis-cdk!
 
-These images share the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).
-
-> **🚨 Images must be suffixed with `-fork.<id>` to work properly with Kurtosis CDK!**
-
-| Fork ID   | zkEVM Contracts Tag / Commit | Image                                           |
-| --------- | ---------------------------- | ----------------------------------------------- |
-| 13-RC1    | `v8.1.0-rc.1-fork.13`        | `leovct/zkevm-contracts:v8.1.0-rc.1-fork.13`    |
-| 12-PP-RC2 | `v9.0.0-rc.2-pp`             | `leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12` |
-| 12-PP-RC1 | `v9.0.0-rc.1-pp`             | `leovct/zkevm-contracts:v9.0.0-rc.1-pp-fork.12` |
-| 12-RC4    | `v8.0.0-rc.4-fork.12`        | `leovct/zkevm-contracts:v8.0.0-rc.4-fork.12`    |
-| 12-RC3    | `v8.0.0-rc.3-fork.12`        | `leovct/zkevm-contracts:v8.0.0-rc.3-fork.12`    |
-| 12-RC2    | `v8.0.0-rc.2-fork.12`        | `leovct/zkevm-contracts:v8.0.0-rc.2-fork.12`    |
-| 12-RC1    | `v8.0.0-rc.1-fork.12`        | `leovct/zkevm-contracts:v8.0.0-rc.1-fork.12`    |
-| 11-RC2    | `v7.0.0-rc.2-fork.10`        | `leovct/zkevm-contracts:v7.0.0-rc.2-fork.11`    |
-| 9-RC1     | `v6.0.0-rc.1-fork.9`         | `leovct/zkevm-contracts:v6.0.0-rc.1-fork.9` |
+  | Patch Version | Foundry Version | Polycli Version | Compatibility with kurtosis-cdk |
+  | ------------- | --------------- | --------------- | --------------- |
+  | None | [nightly-31dd1f77fd9156d09836486d97963cec7f555343](https://github.com/foundry-rs/foundry/releases/tag/nightly-31dd1f77fd9156d09836486d97963cec7f555343) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | <= `v0.2.22` |
+  | `patch1` | [nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76](https://github.com/foundry-rs/foundry/tree/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | > `v0.2.22` |
 
 ### ZkEVM Bridge UI
 
@@ -81,6 +73,7 @@ docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
   --build-arg POLYCLI_VERSION=main \
+  --build-arg FOUNDRY_VERSION=nightly \
   --file zkevm-contracts.Dockerfile
 ```
 
@@ -131,6 +124,7 @@ Build the `toolbox` image.
 docker build . \
   --tag local/toolbox:local \
   --build-arg POLYCLI_VERSION=main \
+  --build-arg FOUNDRY_VERSION=nightly \
   --file toolbox.Dockerfile
 ```
 

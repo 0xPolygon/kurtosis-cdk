@@ -77,8 +77,8 @@ for fork in "${forks[@]}"; do
                             source: "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/\(.args.zkevm_prover_image | split(":")[1] | split("-fork")[0])",
                         },
                         zkevm_contracts: {
-                            version: .args.zkevm_contracts_image | split(":")[1],
-                            source: "https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/\(.args.zkevm_contracts_image | split(":")[1])",
+                            version: .args.zkevm_contracts_image | split(":")[1] | split("-patch.")[0],
+                            source: "https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/\(.args.zkevm_contracts_image | split(":")[1] | split("-patch.")[0])",
                         },
                         data_availability: {
                             version: .args.zkevm_da_image | split(":")[1],

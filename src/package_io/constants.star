@@ -11,4 +11,4 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.5"
+TX_SPAMMER_IMG = "leovct/toolbox:0.0.7"

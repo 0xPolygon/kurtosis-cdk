@@ -29,14 +29,14 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.12",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.0-beta8",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.17",  # https://github.com/agglayer/agglayer/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
-    "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC2",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-fork.12-patch.1",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -238,8 +238,12 @@ DEFAULT_ROLLUP_ARGS = {
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
-    # Set to true to automatically deploy an ERC20 contract on L1 to be used as the gas token on the rollup.
-    "zkevm_use_gas_token_contract": False,
+    # Set to true to use an L1 ERC20 contract as the gas token on the rollup.
+    # The address of the gas token will be determined by the value of `gas_token_address`.
+    "gas_token_enabled": False,
+    # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
+    # If the address is empty, a contract will be deployed automatically.
+    "gas_token_address": "",
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
     # ports.
@@ -330,6 +334,15 @@ def parse_args(plan, args):
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
 
+    gas_token_enabled = args.get("gas_token_enabled", False)
+    gas_token_address = args.get("gas_token_address", "")
+    if not gas_token_enabled and gas_token_address != "":
+        fail(
+            "Gas token address set to '{}' but gas token is not enabled".format(
+                gas_token_address
+            )
+        )
+
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
     (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
@@ -404,18 +417,20 @@ def get_fork_id(zkevm_contracts_image):
     Extract the fork identifier and fork name from a zkevm contracts image name.
 
     The zkevm contracts tags follow the convention:
-    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>
+    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
 
     Where:
     - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
     - <RC_NUMBER> is the release candidate number.
     - <FORK_ID> is the fork identifier.
+    - -patch.<PATCH_NUMBER> is optional and represents the patch number.
 
     Example:
     - v8.0.0-rc.2-fork.12
     - v7.0.0-rc.1-fork.10
+    - v7.0.0-rc.1-fork.11-patch.1
     """
-    result = zkevm_contracts_image.split("fork.")
+    result = zkevm_contracts_image.split("-patch.")[0].split("-fork.")
     if len(result) != 2:
         fail(
             "The zkevm contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(

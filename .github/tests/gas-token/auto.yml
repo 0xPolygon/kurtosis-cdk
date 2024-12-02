@@ -1,0 +1,3 @@
+args:
+  verbosity: debug
+  gas_token_enabled: true

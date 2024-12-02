@@ -1,18 +1,20 @@
 args:
-  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.12
-  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13
+  verbosity: debug
 
-  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v8
+  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.13
+  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13-patch.1
+
+  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v9
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
 
   # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta10
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
 
   # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
 
   additional_services:
     - tx_spammer

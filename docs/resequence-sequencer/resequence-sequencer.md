@@ -53,7 +53,7 @@ This can usually be done by querying the L1 explorer, but in a Kurtosis devnet e
 
 ```bash
 # Queries the latest verified batch number
-current_batch=$(cast logs --rpc-url "$(kurtosis port print cdk el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 0 -j | jq -r '.[] | select(.topics[0] == "0x9c72852172521097ba7e1482e6b44b351323df0155f97f4ea18fcec28e1f5966" or .topics[0] == "0xd1ec3a1216f08b6eff72e169ceb548b782db18a6614852618d86bb19f3f9b0d3") | .topics[1]' | tail -n 1 | sed 's/^0x//')
+current_batch=$(cast logs --rpc-url "$(kurtosis port print cdk el-1-geth-lighthouse rpc)" --address 0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91 --from-block 0 --json | jq -r '.[] | select(.topics[0] == "0x9c72852172521097ba7e1482e6b44b351323df0155f97f4ea18fcec28e1f5966" or .topics[0] == "0xd1ec3a1216f08b6eff72e169ceb548b782db18a6614852618d86bb19f3f9b0d3") | .topics[1]' | tail -n 1 | sed 's/^0x//')
 
 # Converts hexadecimal value
 current_batch_dec=$((16#$current_batch))

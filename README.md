@@ -225,12 +225,15 @@ Check the [tests](.github/tests/) folder for sample configuration files.
 kurtosis run --enclave cdk --args-file params.yml .
 ```
 
-5. Deploy with a configuration file and specify on-the-fly custom arguments.
+5. Do not deploy with a configuration file and specify on-the-fly custom arguments.
 
-Note: In this specific case, on-the-fly custom arguments take precedence over defaults and config file arguments.
+🚨 Avoid using this method, as Kurtosis is unable to merge parameters from two different sources (the parameters file and on-the-fly arguments).
+
+The parameters file will not be used, and only the on-the-fly arguments will be considered.
 
 ```bash
 kurtosis run --enclave cdk --args-file params.yml . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
+# similar to: kurtosis run --enclave cdk . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
 ```
 
 </details>
@@ -308,6 +311,15 @@ kurtosis cluster set docker
 <summary><b>Click to expand</b></summary>
 
 Occasionally, Kurtosis deployments may run indefinitely. Typically, deployments should complete within 10 to 15 minutes. If you experience longer deployment times or if it seems stuck, check the Docker engine's memory limit and set it to 16GB if possible. If this does not resolve the issue, please refer to the troubleshooting steps provided.
+
+> 🚨 If you're deploying the package on a mac, you may face an issue when trying to pull the [zkevm-prover](https://github.com/0xPolygonHermez/zkevm-prover) image! Kurtosis will complain by saying `Error response from daemon: no matching manifest for linux/arm64/v8 in the manifest list entries: no match for platform in manifest: not found`. Indeed, the image is meant to be used on `linux/amd64` architectures, which is a bit different from m1 macs architectures, `linux/arm64/v8`.
+>
+> A work-around is to pull the image by specifying the `linux/amd64` architecture before deploying the package.
+>
+> ```bash
+> docker pull --platform linux/amd64 hermeznetwork/zkevm-prover:<tag>
+> kurtosis run ...
+> ```
 
 1. Make sure the issue is related to Kurtosis itself. If you made any changes to the package, most common issues are misconfigurations of services, file artefacts, ports, etc.
 

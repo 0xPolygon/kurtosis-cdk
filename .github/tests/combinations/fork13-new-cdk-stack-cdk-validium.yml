@@ -1,9 +1,10 @@
 args:
-  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13
+  verbosity: debug
+  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13-patch.1
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta10
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
   additional_services:
     - tx_spammer
   deploy_l2_contracts: true
