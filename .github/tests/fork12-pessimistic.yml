@@ -13,4 +13,4 @@ args:
   #agglayer_prover_sp1_key:
   zkevm_use_real_verifier: true
   enable_normalcy: true
-  verifier_program_vkey: 0x00e2a9cbc4eb87500598aa0c0953e9bee97097677c438cd71afd6c5
+  verifier_program_vkey: 0x00617f688d0a520d3cdda077a80a3437e1997f630595d404117adfcb0ad56785
