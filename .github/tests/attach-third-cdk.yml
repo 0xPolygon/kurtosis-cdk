@@ -53,11 +53,11 @@ args:
   zkevm_l2_claimsponsor_address: "0xeA06890A8A547aDd71f98A6845542eb3B63C2862"
   zkevm_l2_claimsponsor_private_key: "0xb97112e36cfcde131faa110430eed6593b75406e5d6991d8db3ed0f492a73b6f"
 
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.5
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta4
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.11
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
   cdk_node_image: nulyjkdhthz/cdk:6d775da5dad55990f534e0190a89613ae64f5ccf
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC1
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12
   additional_services: []
   consensus_contract_type: pessimistic
