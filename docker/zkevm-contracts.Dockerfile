@@ -19,6 +19,7 @@ RUN git clone https://github.com/0xPolygonHermez/zkevm-contracts . \
   && npx hardhat compile
 
 # STEP 2: Install tools.
+ARG FOUNDRY_VERSION
 COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 WORKDIR /opt
 # WARNING (DL3008): Pin versions in apt get install.
@@ -32,7 +33,7 @@ RUN apt-get update \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup \
+  && /root/.foundry/bin/foundryup --version ${FOUNDRY_VERSION} \
   && cp /root/.foundry/bin/* /usr/local/bin
 
 USER node

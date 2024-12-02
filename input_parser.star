@@ -29,14 +29,14 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.14",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer-rs
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.1.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.17",  # https://github.com/agglayer/agglayer/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
-    "zkevm_bridge_proxy_image": "haproxy:3.0-bookworm",  # https://hub.docker.com/_/haproxy/tags
+    "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC2",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-fork.12-patch.1",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -421,18 +421,20 @@ def get_fork_id(zkevm_contracts_image):
     Extract the fork identifier and fork name from a zkevm contracts image name.
 
     The zkevm contracts tags follow the convention:
-    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>
+    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
 
     Where:
     - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
     - <RC_NUMBER> is the release candidate number.
     - <FORK_ID> is the fork identifier.
+    - -patch.<PATCH_NUMBER> is optional and represents the patch number.
 
     Example:
     - v8.0.0-rc.2-fork.12
     - v7.0.0-rc.1-fork.10
+    - v7.0.0-rc.1-fork.11-patch.1
     """
-    result = zkevm_contracts_image.split("fork.")
+    result = zkevm_contracts_image.split("-patch.")[0].split("-fork.")
     if len(result) != 2:
         fail(
             "The zkevm contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
