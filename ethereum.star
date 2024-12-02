@@ -2,6 +2,9 @@ ethereum_package = import_module(
     "github.com/ethpandaops/ethereum-package/main.star@4.4.0"
 )
 
+GETH_IMAGE = "ethereum/client-go:v1.14.12"
+LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.0"
+
 
 def run(plan, args):
     port_publisher = generate_port_publisher_config(args)
@@ -11,7 +14,9 @@ def run(plan, args):
             "participants": [
                 {
                     "el_type": "geth",
+                    "el_image": GETH_IMAGE,
                     "cl_type": "lighthouse",
+                    "cl_image": LIGHTHOUSE_IMAGE,
                     "el_extra_params": ["--gcmode archive"],
                     "cl_extra_params": [
                         # Disable optimistic finalized sync. This will force Lighthouse to
@@ -26,6 +31,8 @@ def run(plan, args):
                         # required for staking.
                         "--disable-backfill-rate-limiting",
                     ],
+                    "vc_type": "lighthouse",
+                    "vc_image": LIGHTHOUSE_IMAGE,
                     "count": args["l1_participants_count"],
                 }
             ],
