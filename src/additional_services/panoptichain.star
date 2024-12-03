@@ -1,7 +1,8 @@
 ports_package = import_module("../package_io/ports.star")
 service_package = import_module("../../lib/service.star")
 
-PANOPTICHAIN_IMAGE = "minhdvu/panoptichain:0.1.62"
+# https://github.com/0xPolygon/panoptichain/releases
+PANOPTICHAIN_IMAGE = "0xpolygon/panoptichain:v1.0.0"
 
 
 def run(plan, args, contract_setup_addresses):
