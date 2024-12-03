@@ -3,7 +3,7 @@ args:
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1
   additional_services: []
   consensus_contract_type: pessimistic
   sequencer_type: erigon
