@@ -397,7 +397,7 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Step to handle when the SP1_PRIVATE_KEY secret is available
+      # Step to handle when the SP1_PRIVATE_KEY secret is available.
       - name: Replace Agglayer SP1 Prover Key with Github Secrets
         run: |
           sed -i "s/agglayer_prover_sp1_key: \"\"/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/agglayer-sp1-key.yml
@@ -407,7 +407,7 @@ jobs:
         env :
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
       
-      # Step to handle when the SP1_PRIVATE_KEY secret is not available
+      # Step to handle when the SP1_PRIVATE_KEY secret is not available.
       - name: Handle missing SP1_PRIVATE_KEY secret
         if: ${{ !env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key == '' }}
         run: |
@@ -421,13 +421,22 @@ jobs:
       - name: Attach a second FEP CDK L2 chain (cdk-erigon sequencer + cdk FEP stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
 
+      # Only run this step if the SP1_PRIVATE_KEY secrets is available.
       - name: Attach a third PP CDK L2 chain (cdk-erigon sequencer + cdk PP stack)
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-third-cdk.yml .
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
+        run: |
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-third-cdk.yml .
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
+      # Only run this step if the SP1_PRIVATE_KEY secrets is available.
       - name: Restart the Erigon RPC of the PP network
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         run: |
           kurtosis service stop ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003
           kurtosis service start ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Update the agglayer config
         run: |
@@ -463,6 +472,7 @@ jobs:
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-002 rpc)"
 
       - name: Send bridge transactions from L1 to the third PP L2 chain
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
         run: |
           echo "Sending a bridge transaction from L1 to the PP network Erigon RPC..."
@@ -501,8 +511,11 @@ jobs:
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim Transaction failed!"
               exit 1
           fi
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Bridge from third PP L2 chain to first Rollup chain.
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
         run: |
           echo "Sending a bridge transaction from third PP network to the first rollup Erigon RPC..."
@@ -541,6 +554,8 @@ jobs:
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim Transaction failed!"
               exit 1
           fi
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
           
       - name: Dump enclave
         if: ${{ !cancelled() }}
