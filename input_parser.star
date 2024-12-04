@@ -154,6 +154,8 @@ DEFAULT_L1_ARGS = {
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     # The L1 WS RPC endpoint.
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
+    # The L1 concensus layer RPC endpoint.
+    "l1_cl_rpc_url": "http://cl-1-lighthouse-geth:4000",
     # The additional services to spin up.
     # Default: []
     # Options:

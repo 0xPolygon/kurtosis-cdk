@@ -10,6 +10,7 @@ cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
+optimism_package = "./optimism.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 
@@ -51,6 +52,10 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
+
+    # TEST: Deploy the OP stack
+    optimism_package.run(plan, args)
+    return
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
