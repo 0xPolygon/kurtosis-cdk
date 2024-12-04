@@ -1,6 +1,6 @@
 args:
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.18
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta6
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta7
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
   zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
   zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network

@@ -11,6 +11,7 @@ prover-entrypoint = "{{.agglayer_prover_entrypoint}}"
 port = {{.agglayer_port}}
 host = "0.0.0.0"
 request-timeout = 180
+max-request-body-size = 104857600
 
 [outbound.rpc.settle]
 max-retries = 3

@@ -2,6 +2,7 @@
 echo "dont run this!"
 exit 1;
 
+# # Multi Chain PP Test
 # To run this stuff you'll want to run most of these commands from within the kurtosis-cdk repo root.
 
 # Start up the networks (the secret file here is the same as the normal file but with an SP1 key)
@@ -55,8 +56,8 @@ cast balance --ether --rpc-url $l2_pp_url $eth_address
 cast balance --ether --rpc-url $l2_fep_url $eth_address
 
 # Let's fund the claim tx manager for both rollups. These address come from the chain configurations (so either input_parser or the args file)
-cast send --legacy --value 10ether --rpc-url $l2_pp_url --private-key $private_key 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
-cast send --legacy --value 10ether --rpc-url $l2_fep_url --private-key $private_key 0x93F63c24735f45Cd0266E87353071B64dd86bc05
+cast send --legacy --value 100ether --rpc-url $l2_pp_url --private-key $private_key 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+cast send --legacy --value 100ether --rpc-url $l2_fep_url --private-key $private_key 0x93F63c24735f45Cd0266E87353071B64dd86bc05
 
 # Let's mint some POL for bridge testing
 cast send \
@@ -522,7 +523,7 @@ function distribute() {
 export -f distribute
 
 seq 0 32768 | parallel -j32 distribute {} $l1_rpc_url $bridge_address 0 &> r0-bridge-logs.log &
-seq 0 32768 | parallel -j32 distribute {} $l2_pp_url $bridge_address  1 &> r1-bridge-logs.log &
+seq 0 32768 | parallel -j32 distribute {} $l2_pp_url  $bridge_address 1 &> r1-bridge-logs.log &
 seq 0 32768 | parallel -j32 distribute {} $l2_fep_url $bridge_address 2 &> r2-bridge-logs.log &
 
 # Check why cdk-node is running hot
