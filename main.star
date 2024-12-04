@@ -42,6 +42,9 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of a local L1")
 
+    # TEST: Deploy the OP stack
+    import_module(optimism_package).run(plan, args)
+
     # Deploy zkevm contracts on L1.
     contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
@@ -52,10 +55,6 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of zkevm contracts on L1")
-
-    # TEST: Deploy the OP stack
-    import_module(optimism_package).run(plan, args)
-    return
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
