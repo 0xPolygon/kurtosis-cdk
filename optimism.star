@@ -13,6 +13,9 @@ OP_NODE_IMAGE = (
     "https://us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
 )
 
+# https://github.com/ethereum-optimism/optimism/releases?q=op-deployer
+OP_DEPLOYER_IMAGE = "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7"
+
 
 def run(plan, args):
     private_key_result = plan.run_sh(
@@ -39,7 +42,7 @@ def run(plan, args):
                     }
                 ],
                 "op_contract_deployer_params": {
-                    "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.6",
+                    "image": OP_DEPLOYER_IMAGE,
                     "l1_artifacts_locator": "tag://op-contracts/v1.6.0",
                     "l2_artifacts_locator": "tag://op-contracts/v1.7.0-beta.1+l2-contracts",
                 },
