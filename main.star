@@ -218,7 +218,7 @@ def deploy_helper_service(plan, args):
     plan.add_service(
         name=helper_service_name,
         config=ServiceConfig(
-            image=constants.TX_SPAMMER_IMG,
+            image=constants.TOOLBOX_IMAGE,
             files={"/opt/zkevm": get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
