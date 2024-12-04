@@ -32,13 +32,15 @@ def run(plan, args):
             "optimism_package": {
                 "chains": [
                     {
-                        "participants": {
-                            "el_type": "op-geth",
-                            "el_image": OP_GETH_IMAGE,
-                            "cl_type": "op-node",
-                            "cl_image": OP_NODE_IMAGE,
-                            "count": 1,
-                        }
+                        "participants": [
+                            {
+                                "el_type": "op-geth",
+                                "el_image": OP_GETH_IMAGE,
+                                "cl_type": "op-node",
+                                "cl_image": OP_NODE_IMAGE,
+                                "count": 1,
+                            }
+                        ]
                     }
                 ],
                 "op_contract_deployer_params": {
