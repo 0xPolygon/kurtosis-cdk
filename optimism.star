@@ -49,7 +49,7 @@ def run(plan, args):
                 "rpc_kind": "standard",
                 "el_rpc_url": args["l1_rpc_url"],
                 "el_ws_url": args["l1_ws_url"],
-                "cl_rpc_url": args["l1_cl_rpc_url"],
+                "cl_rpc_url": args["l1_beacon_url"],
                 "priv_key": private_key,
             },
         },
