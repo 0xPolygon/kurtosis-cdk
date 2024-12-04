@@ -54,7 +54,7 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of zkevm contracts on L1")
 
     # TEST: Deploy the OP stack
-    optimism_package.run(plan, args)
+    import_module(optimism_package).run(plan, args)
     return
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
