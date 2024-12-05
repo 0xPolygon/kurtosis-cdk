@@ -16,7 +16,9 @@ OP_NODE_IMAGE = (
 )
 
 # https://github.com/ethereum-optimism/optimism/releases?q=op-deployer
-OP_DEPLOYER_IMAGE = "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.6"
+OP_DEPLOYER_IMAGE = "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7"
+OP_DEPLOYER_L1_ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz"
+OP_DEPLOYER_L2_ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz"
 
 
 def run(plan, args):
@@ -33,6 +35,26 @@ def run(plan, args):
     optimism_package.run(
         plan,
         {
+            "optimism_package": {
+                "chains": [
+                    {
+                        "participants": [
+                            {
+                                "el_type": "op-geth",
+                                "el_image": OP_GETH_IMAGE,
+                                "cl_type": "op-node",
+                                "cl_image": OP_NODE_IMAGE,
+                                "count": 1,
+                            },
+                        ],
+                    },
+                ],
+                "op_contract_deployer_params": {
+                    "image": OP_DEPLOYER_IMAGE,
+                    "l1_artifacts_locator": OP_DEPLOYER_L1_ARTIFACTS_LOCATOR,
+                    "l2_artifacts_locator": OP_DEPLOYER_L2_ARTIFACTS_LOCATOR,
+                },
+            },
             "external_l1_network_params": {
                 "network_id": str(args["l1_chain_id"]),
                 "rpc_kind": "standard",
@@ -43,37 +65,3 @@ def run(plan, args):
             },
         },
     )
-
-    # optimism_package.run(
-    #     plan,
-    #     {
-    #         "optimism_package": {
-    #             "chains": [
-    #                 {
-    #                     "participants": [
-    #                         {
-    #                             "el_type": "op-geth",
-    #                             "el_image": OP_GETH_IMAGE,
-    #                             "cl_type": "op-node",
-    #                             "cl_image": OP_NODE_IMAGE,
-    #                             "count": 1,
-    #                         }
-    #                     ]
-    #                 }
-    #             ],
-    #             "op_contract_deployer_params": {
-    #                 "image": OP_DEPLOYER_IMAGE,
-    #                 "l1_artifacts_locator": "tag://op-contracts/v1.6.0",
-    #                 "l2_artifacts_locator": "tag://op-contracts/v1.7.0-beta.1+l2-contracts",
-    #             },
-    #         },
-    #         "external_l1_network_params": {
-    #             "network_id": str(args["l1_chain_id"]),
-    #             "rpc_kind": "standard",
-    #             "el_rpc_url": args["l1_rpc_url"],
-    #             "el_ws_url": args["l1_ws_url"],
-    #             "cl_rpc_url": args["l1_beacon_url"],
-    #             "priv_key": private_key,
-    #         },
-    #     },
-    # )

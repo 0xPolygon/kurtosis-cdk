@@ -68,6 +68,13 @@ def run(plan, args):
                         "storage": {},
                         "nonce": "1",
                     },
+                    # Optimism contract manager (OPCM), a proxy contract that deploys L1 contracts for an OP Stack rollup in a signle transaction.
+                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266": {
+                        "balance": "10000ETH",
+                        "code": "0x",
+                        "storage": {},
+                        "nonce": "0",
+                    },
                 },
             },
             "additional_services": args["l1_additional_services"],
