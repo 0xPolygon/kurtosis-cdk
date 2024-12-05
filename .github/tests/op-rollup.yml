@@ -1,0 +1,2 @@
+deployment_stages:
+  deploy_optimism_rollup: true
