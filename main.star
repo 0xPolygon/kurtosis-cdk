@@ -151,7 +151,7 @@ def run(plan, args={}):
 
     # Deploy an OP Stack rollup.
     if deployment_stages.get("deploy_optimism_rollup", False):
-        plan.print("Deploying an Optimism rollup")
+        plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
         import_module(optimism_package).run(plan, op_stack_args)
     else:
         plan.print("Skipping the deployment of an Optimism rollup")
