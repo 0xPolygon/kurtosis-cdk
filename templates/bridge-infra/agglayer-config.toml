@@ -54,8 +54,13 @@ rpc-timeout = 45
 [telemetry]
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
+# https://github.com/orgs/agglayer/discussions/213
+
 [rate-limiting]
 send-tx = "unlimited"
+# [rate-limiting.send-tx]
+# max-per-interval = 1
+# time-interval = "15m"
 
 [rate-limiting.network]
 
