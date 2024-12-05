@@ -13,7 +13,8 @@ ethereum_package = "./ethereum.star"
 optimism_package = (
     "github.com/leovct/optimism-package/main.star@feat/deploy-to-external-l1"
 )
-# optimism_package = "github.com/ethpandaops/ethereum-package/main.star@1.1.0"
+# TODO: Use the official repository once the feature to deploy the OP package to an external L1 is merged.
+# optimism_package = "github.com/ethpandaops/ethereum-package/main.star@???"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 
