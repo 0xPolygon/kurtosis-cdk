@@ -270,6 +270,28 @@ DEFAULT_ROLLUP_ARGS = {
     "zkevm_path_rw_data": "/tmp/",
 }
 
+# https://github.com/ethpandaops/optimism-package
+DEFAULT_OP_PACKAGE_ARGS = {
+    "chains": [
+        {
+            "participants": [
+                {
+                    "el_type": "op-geth",
+                    "el_image": "https://us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "cl_type": "op-node",
+                    "cl_image": "https://us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
+                    "count": 1,
+                },
+            ],
+        },
+    ],
+    "op_contract_deployer_params": {
+        "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
+        "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+        "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+    },
+}
+
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
@@ -366,10 +388,8 @@ def parse_args(plan, args):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
 
-    # Remove deployment stages from the args struct.
-    # This prevents updating already deployed services when updating the deployment stages.
-    if "deployment_stages" in args:
-        args.pop("deployment_stages")
+    # Determine OP stack args.
+    op_stack_args = get_op_stack_args(plan, args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -378,6 +398,11 @@ def parse_args(plan, args):
         )
         args["l1_preset"] = "mainnet"
         args["l1_participant_count"] = 2
+
+    # Remove deployment stages from the args struct.
+    # This prevents updating already deployed services when updating the deployment stages.
+    if "deployment_stages" in args:
+        args.pop("deployment_stages")
 
     args = args | {
         "l2_rpc_name": l2_rpc_name,
@@ -392,7 +417,8 @@ def parse_args(plan, args):
     # Sort dictionaries for debug purposes.
     sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)
     sorted_args = dict.sort_dict_by_values(args)
-    return (sorted_deployment_stages, sorted_args)
+    sorted_op_stack_args = dict.sort_dict_by_values(op_stack_args)
+    return (sorted_deployment_stages, sorted_args, sorted_op_stack_args)
 
 
 def validate_log_level(name, log_level):
@@ -474,3 +500,33 @@ def get_l2_rpc_name(deploy_cdk_erigon_node):
         return "cdk-erigon-rpc"
     else:
         return "zkevm-node-rpc"
+
+
+def get_op_stack_args(plan, args):
+    optimism_args = args.get("optimism_package") or DEFAULT_OP_PACKAGE_ARGS
+    l1_chain_id = str(args.get("l1_chain_id"))
+    l1_rpc_url = args.get("l1_rpc_url")
+    l1_ws_url = args.get("l1_ws_url")
+    l1_beacon_url = args.get("l1_beacon_url")
+
+    l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic")
+    private_key_result = plan.run_sh(
+        description="Derive private key from mnemonic",
+        run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
+            l1_preallocated_mnemonic
+        ),
+        image=constants.TOOLBOX_IMAGE,
+    )
+    private_key = private_key_result.output
+
+    return {
+        "optimism_package": optimism_args,
+        "external_l1_network_params": {
+            "network_id": l1_chain_id,
+            "rpc_kind": "standard",
+            "el_rpc_url": l1_rpc_url,
+            "el_ws_url": l1_ws_url,
+            "cl_rpc_url": l1_beacon_url,
+            "priv_key": private_key,
+        },
+    }
