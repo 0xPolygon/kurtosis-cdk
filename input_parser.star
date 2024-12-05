@@ -277,9 +277,9 @@ DEFAULT_OP_PACKAGE_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
-                    "el_image": "https://us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
                     "cl_type": "op-node",
-                    "cl_image": "https://us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
                     "count": 1,
                 },
             ],
