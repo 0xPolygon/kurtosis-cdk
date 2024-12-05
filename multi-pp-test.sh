@@ -75,69 +75,40 @@ cast send \
      'approve(address,uint256)' \
      $bridge_address 10000000000000000000000
 
+cast call --rpc-url $l1_rpc_url $bridge_address 'WETHToken()'
 
 # Let's go to madison county
-
-# R0, R1, Native, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 100000000000000000000 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    1 $target_address 100000000000000000000 $(cast az) true 0x
-
-# R0, R2, Native, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 100000000000000000000 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    2 $target_address 100000000000000000000 $(cast az) true 0x
-
-# R0, R1, Native, No Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 1000000000000000000 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    1 $target_address 1000000000000000000 $(cast az) false 0x
-
-# R0, R2, Native, No Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 1000000000000000000 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    2 $target_address 1000000000000000000 $(cast az) false 0x
-
-
-# R0, R1, POL, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    1 $target_address 1000000000000000000 $pol_address true 0x
-
-# R0, R2, POL, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    2 $target_address 1000000000000000000 $pol_address true 0x
-
-# We'll need to wait a little bit...
+for token_addr in $(cast az) $pol_address ; do
+    for destination_network in 1 2 ; do
+        for ger_update in "false" "true" ; do
+            value="0"
+            permit_data="0x"
+            if [[ $token_addr == $(cast az) ]]; then
+                value="100000000000000000000"
+                permit_data="0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $((RANDOM & ~1)))"
+            fi
+            polycli ulxly bridge asset \
+                    --private-key $private_key \
+                    --value $value \
+                    --bridge-address $bridge_address \
+                    --destination-network $destination_network \
+                    --destination-address $target_address \
+                    --force-update-root $ger_update \
+                    --call-data $permit_data \
+                    --rpc-url $l1_rpc_url \
+                    --token-address $token_addr
+            polycli ulxly bridge message \
+                    --private-key $private_key \
+                    --value $value \
+                    --bridge-address $bridge_address \
+                    --destination-network $destination_network \
+                    --destination-address $target_address \
+                    --force-update-root $ger_update \
+                    --call-data $permit_data \
+                    --rpc-url $l1_rpc_url
+        done
+    done
+done
 
 # Let's see if our balances have grown (both should be non-zero)
 cast balance --ether --rpc-url $l2_pp_url $target_address
@@ -149,227 +120,71 @@ l2_pol_address=$(cast call --rpc-url $l2_pp_url  $bridge_address 'tokenInfoToWra
 cast call --rpc-url $l2_pp_url $l2_pol_address 'balanceOf(address)(uint256)' $target_address
 cast call --rpc-url $l2_fep_url $l2_pol_address 'balanceOf(address)(uint256)' $target_address
 
-# We should be in a good position now to try some bridge exits!!
-# PP Exits
-# R1, R0, Native, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_pp_url \
-    --value 100000000000000003 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    0 $target_address 100000000000000003 $(cast az) false 0x
+for token_addr in $(cast az) $l2_pol_address ; do
+    for destination_network in 0 2 ; do
+        for ger_update in "false" "true" ; do
+            value="0"
+            permit_data="0x"
+            if [[ $token_addr == $(cast az) ]]; then
+                value="100000000000000000"
+                permit_data="0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $((RANDOM & ~1)))"
+            fi
+            polycli ulxly bridge asset \
+                    --private-key $target_private_key \
+                    --value $value \
+                    --bridge-address $bridge_address \
+                    --destination-network $destination_network \
+                    --destination-address $target_address \
+                    --force-update-root $ger_update \
+                    --call-data $permit_data \
+                    --rpc-url $l2_pp_url \
+                    --token-address $token_addr
+            polycli ulxly bridge message \
+                    --private-key $target_private_key \
+                    --value $value \
+                    --bridge-address $bridge_address \
+                    --destination-network $destination_network \
+                    --destination-address $target_address \
+                    --force-update-root $ger_update \
+                    --call-data $permit_data \
+                    --rpc-url $l2_pp_url
+        done
+    done
+done
 
-# R1, R2, Native, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_pp_url \
-    --value 100000000000000004 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    2 $target_address 100000000000000004 $(cast az) false 0x
-
-# R1, R0, POL, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_pp_url \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    0 $target_address 100000000000000005 $l2_pol_address false 0x
-
-# R1, R2, POL, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_pp_url \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    2 $target_address 100000000000000006 $l2_pol_address false 0x
-
-# R1, R0, Native, Force
-cast send \
-    --legacy \
-    --rpc-url $l2_pp_url \
-    --value 100000000000000001 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    0 $target_address 100000000000000001 $(cast az) true 0x
-
-# R1, R2, Native, Force
-cast send \
-    --legacy \
-    --rpc-url $l2_pp_url \
-    --value 100000000000000002 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    2 $target_address 100000000000000002 $(cast az) true 0x
-
-# FEP Exists
-# R2, R0, Native, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_fep_url \
-    --value 100000000000000007 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    0 $target_address 100000000000000007 $(cast az) false 0x
-
-# R2, R1, Native, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_fep_url \
-    --value 100000000000000008 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    1 $target_address 100000000000000008 $(cast az) false 0x
-
-# R2, R0, POL, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_fep_url \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    0 $target_address 100000000000000009 $l2_pol_address false 0x
-
-# R2, R1, POL, No Force
-cast send \
-    --legacy \
-    --rpc-url $l2_fep_url \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    1 $target_address 100000000000000010 $l2_pol_address false 0x
-
-# R2, R0, Native, Force
-cast send \
-    --legacy \
-    --rpc-url $l2_fep_url \
-    --value 100000000000000011 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    0 $target_address 100000000000000011 $(cast az) true 0x
-
-# R2, R1, Native, Force
-cast send \
-    --legacy \
-    --rpc-url $l2_fep_url \
-    --value 100000000000000012 \
-    --private-key $target_private_key \
-    $bridge_address \
-    "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-    1 $target_address 100000000000000012 $(cast az) true 0x
-
-
-# Do some criss-crossing
-for i in {1..20}; do
-    # R1, R0, Native, Force
-    cast send \
-         --legacy \
-         --rpc-url $l2_pp_url \
-         --value 100000000000000001 \
-         --private-key $target_private_key \
-         $bridge_address \
-         "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-         0 $target_address 100000000000000001 $(cast az) true 0x
-
-    # R2, R0, Native, Force
-    cast send \
-         --legacy \
-         --rpc-url $l2_fep_url \
-         --value 100000000000000011 \
-         --private-key $target_private_key \
-         $bridge_address \
-         "bridgeAsset(uint32,address,uint256,address,bool,bytes)" \
-         0 $target_address 100000000000000011 $(cast az) true 0x
+for token_addr in $(cast az) $l2_pol_address ; do
+    for destination_network in 0 1 ; do
+        for ger_update in "false" "true" ; do
+            value="0"
+            permit_data="0x"
+            if [[ $token_addr == $(cast az) ]]; then
+                value="100000000000000000"
+                permit_data="0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $((RANDOM & ~1)))"
+            fi
+            polycli ulxly bridge asset \
+                    --private-key $target_private_key \
+                    --value $value \
+                    --bridge-address $bridge_address \
+                    --destination-network $destination_network \
+                    --destination-address $target_address \
+                    --force-update-root $ger_update \
+                    --call-data $permit_data \
+                    --rpc-url $l2_fep_url \
+                    --token-address $token_addr
+            polycli ulxly bridge message \
+                    --private-key $target_private_key \
+                    --value $value \
+                    --bridge-address $bridge_address \
+                    --destination-network $destination_network \
+                    --destination-address $target_address \
+                    --force-update-root $ger_update \
+                    --call-data $permit_data \
+                    --rpc-url $l2_fep_url
+        done
+    done
 done
 
 
-# Do a bridge message
-# R0, R1, Message, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 1 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeMessage(uint32,address,bool,bytes)" \
-    1 "0xFFFF000000000000000000000000000000000001" "true" "0x1234"
-
-# R0, R2, Message, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 1 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeMessage(uint32,address,bool,bytes)" \
-    2 "0xFFFF000000000000000000000000000000000001" "true" "0x1234"
-
-# R0, R9999, Message, Force
-cast send \
-    --legacy \
-    --rpc-url $l1_rpc_url \
-    --value 1 \
-    --private-key $private_key \
-    $bridge_address \
-    "bridgeMessage(uint32,address,bool,bytes)" \
-    9999 "0xFFFF000000000000000000000000000000000001" "true" "0x1234"
-
-
-for i in {2..16}; do
-    call_size=$(bc <<< "2^$i")
-    # R0, R1, Message, Force
-    cast send \
-         --legacy \
-         --rpc-url $l1_rpc_url \
-         --value 1 \
-         --private-key $private_key \
-         $bridge_address \
-         "bridgeMessage(uint32,address,bool,bytes)" \
-         1 "0xFFFF000000000000000000000000000000000001" "true" "0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $call_size)"
-
-    # R0, R2, Message, Force
-    cast send \
-         --legacy \
-         --rpc-url $l1_rpc_url \
-         --value 1 \
-         --private-key $private_key \
-         $bridge_address \
-         "bridgeMessage(uint32,address,bool,bytes)" \
-         2 "0xFFFF000000000000000000000000000000000001" "true" "0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $call_size)"
-done
-
-
-for i in {2..16}; do
-    call_size=$(bc <<< "2^$i")
-    # R1, R0, Message, Force
-    cast send \
-         --legacy \
-         --rpc-url $l2_pp_url \
-         --value 1 \
-         --private-key $target_private_key \
-         $bridge_address \
-         "bridgeMessage(uint32,address,bool,bytes)" \
-         0 "0xFFFF000000000000000000000000000000000001" "true" "0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $call_size)"
-    # R1, R2, Message, Force
-    cast send \
-         --legacy \
-         --rpc-url $l2_pp_url \
-         --value 1 \
-         --private-key $target_private_key \
-         $bridge_address \
-         "bridgeMessage(uint32,address,bool,bytes)" \
-         2 "0xFFFF000000000000000000000000000000000001" "true" "0x$(cat /dev/random | xxd -p | tr -d "\n" | head -c $call_size)"
-done
 
 # At this point, I've encountered the error
 # [agglayer] {"timestamp":"2024-11-27T20:18:52.021621Z","level":"WARN","fields":{"message":"Error during certification process of 0x24319d4ef5dda589b80498917cea4a66fd91494993fb391bfe5a02ddda84e674: native execution failed: MissingTokenBalanceProof(TokenInfo { origin_network: NetworkId(0), origin_token_address: 0x0000000000000000000000000000000000000000 })","hash":"0x24319d4ef5dda589b80498917cea4a66fd91494993fb391bfe5a02ddda84e674"},"target":"agglayer_certificate_orchestrator::network_task"}
@@ -529,3 +344,5 @@ seq 0 32768 | parallel -j32 distribute {} $l2_fep_url $bridge_address 2 &> r2-br
 # Check why cdk-node is running hot
 sudo /usr/sbin/profile-bpfcc --stack-storage-size 32000 -f -F 199 -p 3770750 100 > cdk-node-folded.out
 ~/code/FlameGraph/flamegraph.pl --title="CDK Node Profile" cdk-node-folded.out > cdk-node.2.svg
+
+# TODO We still need to run some tests specifically with a gas token network. perhaps this test suite shoudl be updated so there is a third PP network that uses a gas token
