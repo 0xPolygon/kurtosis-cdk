@@ -25,7 +25,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
-    "deploy_optimism_rollup": True,
+    "deploy_optimism_rollup": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
