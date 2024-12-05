@@ -351,6 +351,7 @@ SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 def parse_args(plan, args):
     # Merge the provided args with defaults.
     deployment_stages = DEFAULT_DEPLOYMENT_STAGES | args.get("deployment_stages", {})
+    op_stack_args = args.get("optimism_package", {})
     args = DEFAULT_ARGS | args.get("args", {})
 
     # Validation step.
@@ -389,7 +390,7 @@ def parse_args(plan, args):
         args = DEFAULT_STATIC_PORTS | args
 
     # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, args)
+    op_stack_args = get_op_stack_args(plan, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
