@@ -271,7 +271,7 @@ DEFAULT_ROLLUP_ARGS = {
 }
 
 # https://github.com/ethpandaops/optimism-package
-DEFAULT_OP_PACKAGE_ARGS = {
+DEFAULT_OP_STACK_ARGS = {
     "chains": [
         {
             "participants": [
@@ -390,7 +390,7 @@ def parse_args(plan, args):
         args = DEFAULT_STATIC_PORTS | args
 
     # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, op_stack_args)
+    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -503,14 +503,16 @@ def get_l2_rpc_name(deploy_cdk_erigon_node):
         return "zkevm-node-rpc"
 
 
-def get_op_stack_args(plan, args):
-    optimism_args = args.get("optimism_package") or DEFAULT_OP_PACKAGE_ARGS
-    l1_chain_id = str(args.get("l1_chain_id"))
-    l1_rpc_url = args.get("l1_rpc_url")
-    l1_ws_url = args.get("l1_ws_url")
-    l1_beacon_url = args.get("l1_beacon_url")
+def get_op_stack_args(plan, args, op_stack_args):
+    if not op_stack_args:
+        op_stack_args = DEFAULT_OP_STACK_ARGS
 
-    l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic")
+    l1_chain_id = str(args.get("l1_chain_id", ""))
+    l1_rpc_url = args.get("l1_rpc_url", "")
+    l1_ws_url = args.get("l1_ws_url", "")
+    l1_beacon_url = args.get("l1_beacon_url", "")
+
+    l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic", "")
     private_key_result = plan.run_sh(
         description="Derive private key from mnemonic",
         run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
@@ -521,7 +523,7 @@ def get_op_stack_args(plan, args):
     private_key = private_key_result.output
 
     return {
-        "optimism_package": optimism_args,
+        "optimism_package": op_stack_args,
         "external_l1_network_params": {
             "network_id": l1_chain_id,
             "rpc_kind": "standard",
