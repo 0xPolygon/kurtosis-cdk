@@ -10,10 +10,10 @@ cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
-optimism_package = import_module(
+optimism_package = (
     "github.com/leovct/optimism-package/main.star@feat/deploy-to-external-l1"
-    # "github.com/ethpandaops/ethereum-package/main.star@1.1.0"
 )
+# optimism_package = "github.com/ethpandaops/ethereum-package/main.star@1.1.0"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 
