@@ -32,29 +32,11 @@ def run(plan, args):
     private_key = private_key_result.output
     plan.print(private_key)
 
+    optimism_args = args.get("optimism_package") or default_optimism_args()
     optimism_package.run(
         plan,
         {
-            "optimism_package": {
-                "chains": [
-                    {
-                        "participants": [
-                            {
-                                "el_type": "op-geth",
-                                "el_image": OP_GETH_IMAGE,
-                                "cl_type": "op-node",
-                                "cl_image": OP_NODE_IMAGE,
-                                "count": 1,
-                            },
-                        ],
-                    },
-                ],
-                "op_contract_deployer_params": {
-                    "image": OP_DEPLOYER_IMAGE,
-                    "l1_artifacts_locator": OP_DEPLOYER_L1_ARTIFACTS_LOCATOR,
-                    "l2_artifacts_locator": OP_DEPLOYER_L2_ARTIFACTS_LOCATOR,
-                },
-            },
+            "optimism_package": optimism_args,
             "external_l1_network_params": {
                 "network_id": str(args["l1_chain_id"]),
                 "rpc_kind": "standard",
@@ -65,3 +47,26 @@ def run(plan, args):
             },
         },
     )
+
+
+def default_optimism_args():
+    return {
+        "chains": [
+            {
+                "participants": [
+                    {
+                        "el_type": "op-geth",
+                        "el_image": OP_GETH_IMAGE,
+                        "cl_type": "op-node",
+                        "cl_image": OP_NODE_IMAGE,
+                        "count": 1,
+                    },
+                ],
+            },
+        ],
+        "op_contract_deployer_params": {
+            "image": OP_DEPLOYER_IMAGE,
+            "l1_artifacts_locator": OP_DEPLOYER_L1_ARTIFACTS_LOCATOR,
+            "l2_artifacts_locator": OP_DEPLOYER_L2_ARTIFACTS_LOCATOR,
+        },
+    }
