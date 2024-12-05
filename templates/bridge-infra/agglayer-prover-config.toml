@@ -21,3 +21,10 @@ proving-timeout = 900
 [network-prover]
 enabled = {{.is_network_prover_enabled}}
 proving-timeout = 900
+
+[grpc]
+# size is define in bytes e.g. 100 * 1024 * 1024
+# same for `max-encoding-message-size`
+# default value is equal to 4MB
+max-decoding-message-size = 104857600
+
