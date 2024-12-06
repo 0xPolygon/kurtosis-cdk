@@ -317,7 +317,7 @@ transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7ff
 deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
 cast send \
     --rpc-url "{{.l1_rpc_url}}" \
-    --private-key "$l1_private_key" \
+    --mnemonic "{{.l1_preallocated_mnemonic}}" \
     --value "0.01ether" \
     "$signer_address"
 cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
