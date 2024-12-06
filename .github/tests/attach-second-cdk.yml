@@ -27,7 +27,19 @@ args:
   zkevm_l2_proofsigner_private_key: "0xc7fe3a006d75ba9326d9792523385abb49057c66aee0b8b4248821a89713f975"
 
 
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta7
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta6
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC3
+  zkevm_bridge_ui_image: leovct/zkevm-bridge-ui:multi-network
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1
   additional_services: []
+  consensus_contract_type: pessimistic
+  sequencer_type: erigon
+  erigon_strict_mode: false
+  gas_token_enabled: true
+  agglayer_prover_sp1_key: "0x7a2baab6e39878897307784a76f9711e783d54e6221d23f1cd4f3baf7d044f6c"
+  zkevm_use_real_verifier: true
+  enable_normalcy: true
+  verifier_program_vkey: 0x00617f688d0a520d3cdda077a80a3437e1997f630595d404117adfcb0ad56785
+
