@@ -146,7 +146,6 @@ jobs:
           fi
 
       - name: Monitor CDK chain verified batches (Central RPC)
-        working-directory: .github/scripts
         run: |
           sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
           rpc_name=""
@@ -161,16 +160,15 @@ jobs:
             exit 1
           fi
           echo "RPC name: $rpc_name"
-          .monitor-cdk-chain.sh \
+          ./.github/scripts/monitor-cdk-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
-        working-directory: .github/scripts
         run: |
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./monitor-cdk-chain.sh \
+            ./.github/scripts/monitor-cdk-chain.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
               --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
           else
@@ -178,11 +176,10 @@ jobs:
           fi
 
       - name: Monitor OP rollup finalized blocks (OP CL RPC)
-        working-directory: .github/scripts
         run: |
           result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./monitor-op-rollup.sh \
+            ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
               --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-op-kurtosis http)
           else
