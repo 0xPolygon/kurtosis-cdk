@@ -48,7 +48,7 @@ jobs:
           postgres_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-001 postgres | cut -d':' -f3)
           PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres_port" --username master_user --dbname master --list
 
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
           ./monitor-verified-batches.sh \
@@ -145,7 +145,7 @@ jobs:
             echo "Skipping."  
           fi
 
-      - name: Monitor verified batches (Central RPC)
+      - name: Monitor CDK chain verified batches (Central RPC)
         run: |
           sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
           rpc_name=""
@@ -164,7 +164,7 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
-      - name: Monitor verified batches (zkEVM Permissionless RPC)
+      - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
@@ -175,7 +175,7 @@ jobs:
             echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
           fi
       
-      - name: Monitor finalized blocks (OP CL RPC)
+      - name: Monitor OP rollup finalized blocks (OP CL RPC)
         run: |
           result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
@@ -266,7 +266,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches
+      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
           ./monitor-verified-batches.sh \
@@ -311,7 +311,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
           ./monitor-verified-batches.sh \
@@ -431,14 +431,14 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches of the first L2 chain (CDK Erigon Permissionless RPC)
+      - name: Monitor CDK chain 1 verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
           ./monitor-verified-batches.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
-      - name: Monitor verified batches of the second L2 chain (CDK Erigon Permissionless RPC)
+      - name: Monitor CDK chain 2 verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
           ./monitor-verified-batches.sh \
@@ -487,7 +487,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches
+      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
           ./monitor-verified-batches.sh \
