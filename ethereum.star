@@ -60,22 +60,6 @@ def run(plan, args):
                 # GENESIS_DELAY, Default: 12
                 # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
                 "genesis_delay": 12,
-                "additional_preloaded_contracts": {
-                    # Deterministic deployer (used by the op-deployer).
-                    "0x4e59b44847b379578588920cA78FbF26c0B4956C": {
-                        "balance": "0ETH",
-                        "code": "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
-                        "storage": {},
-                        "nonce": "1",
-                    },
-                    # Optimism contract manager (OPCM), a proxy contract that deploys L1 contracts for an OP Stack rollup in a signle transaction.
-                    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266": {
-                        "balance": "10000ETH",
-                        "code": "0x",
-                        "storage": {},
-                        "nonce": "0",
-                    },
-                },
             },
             "additional_services": args["l1_additional_services"],
             "port_publisher": port_publisher,

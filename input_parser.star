@@ -197,10 +197,6 @@ DEFAULT_L1_ARGS = {
     "l1_funding_amount": "1000000ether",
     # Default: 2
     "l1_participants_count": 1,
-    # Whether to deploy https://github.com/Arachnid/deterministic-deployment-proxy.
-    # Not deploying this will may cause errors or short circuit other contract
-    # deployments.
-    "l1_deploy_deterministic_deployment_proxy": True,
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l1_deploy_lxly_bridge_and_call": True,
     # Set this to true if the L1 contracts for the rollup are already

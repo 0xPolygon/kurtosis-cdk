@@ -90,23 +90,6 @@ if [[ -z "$l1_private_key" ]]; then
 fi
 
 # shellcheck disable=SC2078
-if [[ "{{.l1_deploy_deterministic_deployment_proxy}}" ]]; then
-    echo_ts "Deploying deterministic deployment proxy on l1"
-    cast send \
-        --rpc-url "{{.l1_rpc_url}}" \
-        --private-key "$l1_private_key" \
-        --value "$gas_cost" \
-        "$signer_address"
-    cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
-    if [[ $(cast code --rpc-url "{{.l1_rpc_url}}" $deployer_address) == "0x" ]]; then
-        echo_ts "No code at expected l1 address: $deployer_address"
-        exit 1;
-    fi
-else
-    echo_ts "Skipping deployment of deterministic deployment proxy on l1"
-fi
-
-# shellcheck disable=SC2078
 if [[ "{{.l2_deploy_deterministic_deployment_proxy}}" ]]; then
     echo_ts "Deploying deterministic deployment proxy on l2"
     cast send \
