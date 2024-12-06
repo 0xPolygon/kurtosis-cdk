@@ -278,7 +278,7 @@ DEFAULT_OP_STACK_ARGS = {
                     "cl_type": "op-node",
                     # https://github.com/ethereum-optimism/optimism/releases/tag/v1.9.5
                     "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
-                    "count": 1,
+                    "count": 2, # one is a sequencer node and the other an rpc
                 },
             ],
             "batcher_params": {
