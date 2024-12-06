@@ -8,7 +8,7 @@ def run(plan, args, contract_setup_addresses):
     plan.add_service(
         name="tx-spammer" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=constants.TX_SPAMMER_IMG,
+            image=constants.TOOLBOX_IMAGE,
             files={
                 "/opt/scripts": Directory(artifact_names=[tx_spammer_config_artifacts]),
             },
