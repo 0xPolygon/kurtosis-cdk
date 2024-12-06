@@ -277,12 +277,22 @@ DEFAULT_OP_STACK_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
+                    # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
+                    # https://github.com/ethereum-optimism/optimism/releases/tag/v1.9.5
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
                     "count": 1,
                 },
             ],
+            "batcher_params": {
+                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.9.5",
+            },
+            # The OP package does not run the op-proposer for now.
+            # https://github.com/ethpandaops/optimism-package/blob/0d60a9d3997f83ecee6f7f6695027f819d776309/src/participant_network.star#L87
+            # "proposer_params": {
+            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
+            # },
         },
     ],
     "op_contract_deployer_params": {
