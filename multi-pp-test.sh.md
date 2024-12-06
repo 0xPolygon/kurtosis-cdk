@@ -23,7 +23,7 @@ with an SP1 key
 
 ```sh
 kurtosis run --enclave pp --args-file .github/tests/fork12-pessimistic-secret.yml .
-kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk.yml .
+kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk.yml . # TODO investigate issue with first block startup
 ```
 
 In order to proceed, we'll need to grab the combined files from both
@@ -34,6 +34,28 @@ from the second chain because we need to know the gas token address.
 kurtosis service exec pp contracts-001 "cat /opt/zkevm/combined-001.json"  | tail -n +2 | jq '.' > combined-001.json
 kurtosis service exec pp contracts-002 "cat /opt/zkevm/combined-002.json"  | tail -n +2 | jq '.' > combined-002.json
 kurtosis service exec pp contracts-002 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq -r '.gasTokenAddress' > gas-token-address.json
+
+
+
+cast logs --from-block 0 --to-block 1 --rpc-url https://rpc.cdk12.dev.polygon --address 0x1348947e282138d8f377b467F7D9c2EB0F335d1f 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498
+
+
+curl http://127.0.0.1:33725 \
+--json '{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "eth_call",
+    "params": [
+        {
+            "chainId": "0x1ce",
+            "data": "0xbab161bf",
+            "from": "0x0000000000000000000000000000000000000000",
+            "input": "0xbab161bf",
+            "to": "0xd8886e9D827218a02B8C04323b5550f2F36BC8d5"
+        },
+        "latest"
+    ]
+}'
 ```
 
 This diagnosis isn't critical, but it's nice to confirm that we are
