@@ -80,16 +80,19 @@ while true; do
     echo "$stopped_services"
     echo
 
-    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' |
+      while read -r container; do
+        echo "Printing logs for $container"
+        docker logs --tail 50 "$container"
+      done
     exit 1
   fi
 
   # Query the number of finalized blocks from the CL RPC URL.
   op_rollup_sync_status="$(cast rpc --rpc-url "$cl_rpc_url" optimism_syncStatus)"
-  unsafe_l2_block_number="$(jq '.unsafe_l2.number' <<< $op_rollup_sync_status)"
-  safe_l2_block_number="$(jq '.safe_l2.number' <<< $op_rollup_sync_status)"
-  finalized_l2_block_number="$(jq '.finalized_l2.number' <<< $op_rollup_sync_status)"
+  unsafe_l2_block_number="$(jq '.unsafe_l2.number' <<<"$op_rollup_sync_status")"
+  safe_l2_block_number="$(jq '.safe_l2.number' <<<"$op_rollup_sync_status")"
+  finalized_l2_block_number="$(jq '.finalized_l2.number' <<<"$op_rollup_sync_status")"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Unsafe: $unsafe_l2_block_number, Safe: $safe_l2_block_number, Finalized: $finalized_l2_block_number"
 
   # Check if the finalized block target has been reached.
