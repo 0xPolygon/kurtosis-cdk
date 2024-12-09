@@ -11,10 +11,10 @@ args:
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
 
   # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.10
+  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.11
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC2
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC3
 
   additional_services:
     - tx_spammer

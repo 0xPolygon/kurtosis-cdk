@@ -34,10 +34,10 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.4.0",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC2",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC3",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-fork.12-patch.1",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
-    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.10",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
+    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
