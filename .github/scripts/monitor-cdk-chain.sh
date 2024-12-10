@@ -68,9 +68,9 @@ echo
 # Calculate the end time based on the current time and the specified timeout.
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
-gas_price_factor=1
 
 # Main loop to monitor batch verification.
+gas_price_factor=1
 while true; do
   # Check if there are any stopped services.
   stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
