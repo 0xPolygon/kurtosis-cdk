@@ -315,9 +315,18 @@ cast send \
 # finalized block
 l1_preset="{{.l1_preset}}"
 if [[ $l1_preset == "minimal" ]]; then
-    wait_for_finalized_block;
+    # This might not be required, but it seems like the downstream
+    # processes are more reliable if we wait for all of the deployments to
+    # finalize before moving on
+    current_block_number="$(cast block-number --rpc-url '{{.l1_rpc_url}}')"
+    finalized_block_number=0
+    until [[ $finalized_block_number -gt $current_block_number ]]; do
+        sleep 5
+        finalized_block_number="$(cast block-number --rpc-url '{{.l1_rpc_url}}' finalized)"
+    done
 fi
 
 # The contract setup is done!
 touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
+
 

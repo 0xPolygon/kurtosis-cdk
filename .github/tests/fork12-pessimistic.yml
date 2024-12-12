@@ -9,6 +9,5 @@ args:
   gas_token_enabled: false
   zkevm_use_real_verifier: true
   enable_normalcy: true
-  verifier_program_vkey: 0x00b4769114e641ec0d62858e7063b73ce02f8ba1a360dd678bc5aa5b2bd4410c
   agglayer_prover_sp1_key: ""
 

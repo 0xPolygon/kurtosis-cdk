@@ -45,8 +45,14 @@ cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-002.json | jq -r '.verifierAddress') | sha256sum
 
 # It's also worth while probably to confirm that the vkey matches!
-kurtosis service exec pp agglayer agglayer vkey
+kurtosis service exec pp agglayer "agglayer vkey"
 cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32,bytes32)' 1
+
+# Let's make sure both rollups have the same vkey
+
+cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 1
+cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 2
+
 
 # At this point, the agglayer config needs to be manually updated for
 # rollup2. This will add a second entry to the agglayer config. If the
@@ -122,7 +128,10 @@ cast send \
      'approve(address,uint256)' \
      $bridge_address 10000000000000000000000
 
-# We're also going to mint  POL and Gas Token from the target account for additional test scenarios
+# We're also going to mint POL and Gas Token from the target account
+# for additional test scenarios. The logic here is that we don't want
+# to send Ether to the target address on L2 because we might risk
+# withdrawing more than we deposit
 cast send --rpc-url $l1_rpc_url --private-key $target_private_key $pol_address 'mint(address,uint256)' $target_address 10000000000000000000000
 cast send --rpc-url $l1_rpc_url --private-key $target_private_key $pol_address 'approve(address,uint256)' $bridge_address 10000000000000000000000
 
@@ -340,26 +349,23 @@ polycli ulxly claim asset \
 cast call --rpc-url $l1_rpc_url $bridge_address 'depositCount() external view returns (uint256)'
 
 
-deposit_cnt=2
-polycli ulxly claim asset \
-        --bridge-address $bridge_address \
-        --bridge-service-url $l2_pp2b_url \
-        --rpc-url $l1_rpc_url \
-        --deposit-count $deposit_cnt \
-        --deposit-network 2 \
-        --destination-address $target_address \
-        --private-key $private_key
-
-
 # ## Pict Based Test Scenarios
-# I'm using a command like this to generate the test cases.
-pict lxly.pict /f:json | jq -c '.[] | from_entries' | jq -s > ~/code/kurtosis-cdk/test-scenarios.json
+#
+# The goal here is to have some methods for creating more robust
+# testing combinations. In theory, we can probably brute force test
+# every combination of parameters, but as the number of parameters
+# grows, this might become too difficult. I'm using a command like
+# this to generate the test cases.
+pict lxly.pict /f:json | jq -c '.[] | from_entries' | jq -s > test-scenarios.json
 
-# I want to setup the deterministic deployer for some consistent l2 addresses
+# For the sake of simplicity, I'm going to use the deterministic
+# deployer so that I have the same ERC20 address on each chain. Here
+# I'm adding some funds to the deterministict deployer address.
 cast send --legacy --value 0.1ether --rpc-url $l1_rpc_url --private-key $private_key 0x3fab184622dc19b6109349b94811493bf2a45362
 cast send --legacy --value 0.1ether --rpc-url $l2_pp1_url --private-key $private_key 0x3fab184622dc19b6109349b94811493bf2a45362
 cast send --legacy --value 0.1ether --rpc-url $l2_pp2_url --private-key $private_key 0x3fab184622dc19b6109349b94811493bf2a45362
 
+# The tx data and address are standard for the deterministict deployer
 deterministic_deployer_tx=0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222
 deterministic_deployer_addr=0x4e59b44847b379578588920ca78fbf26c0b4956c
 
@@ -506,12 +512,38 @@ curl -s $l2_pp2b_url/bridges/$target_address | jq -c '.deposits[] | select(.netw
                 --private-key $private_key
     fi
 done
+curl -s $l2_pp1b_url/bridges/$target_address | jq -c '.deposits[] | select(.network_id == 1) | select(.dest_net == 2)' | while read deposit ; do
+    echo $deposit | jq -c '.'
+    leaf_type=$(echo $deposit | jq -r '.leaf_type')
+    if [[ $leaf_type == "0" ]]; then
+        polycli ulxly claim asset \
+                --bridge-address $bridge_address \
+                --bridge-service-url $l2_pp1b_url \
+                --rpc-url $l2_pp2_url \
+                --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
+                --deposit-network 1 \
+                --destination-address $(echo $deposit | jq -r '.dest_addr') \
+                --private-key $private_key
+
+    else
+        polycli ulxly claim message \
+                --bridge-address $bridge_address \
+                --bridge-service-url $l2_pp1b_url \
+                --rpc-url $l2_pp2_url \
+                --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
+                --deposit-network 1 \
+                --destination-address $(echo $deposit | jq -r '.dest_addr') \
+                --private-key $private_key
+    fi
+done
 
 
 
-constructor_args=$(cast abi-encode 'f(string,string,address,uint256)' 'Bridge Test' 'BT' "$target_address" $(cast max-uint) | sed 's/0x//')
+
+
+constructor_args=$(cast abi-encode 'f(string,string,address,uint256)' 'Big Test' 'BT' "$target_address" $(cast max-uint) | sed 's/0x//')
 cast send --legacy --rpc-url $l2_pp1_url --private-key $target_private_key $deterministic_deployer_addr 0x6a6f686e2068696c6c696172642077617320686572650a000000000000000002$erc_20_bytecode$constructor_args
-cast send --legacy --rpc-url $l2_pp1_url --private-key $target_private_key 0x0B006480c0318197b33458DA1448b9CE07C76A2E 'approve(address,uint256)' $bridge_address $(cast max-uint)
+cast send --legacy --rpc-url $l2_pp1_url --private-key $target_private_key 0x8A5B34caF06Da682FDC4d08696417054fBaA5D6B 'approve(address,uint256)' $bridge_address $(cast max-uint)
 
 polycli ulxly bridge asset \
         --private-key $target_private_key \
@@ -521,14 +553,33 @@ polycli ulxly bridge asset \
         --destination-address $target_address \
         --call-data 0x \
         --rpc-url $l2_pp1_url \
-        --token-address 0x0B006480c0318197b33458DA1448b9CE07C76A2E \
+        --token-address 0x8A5B34caF06Da682FDC4d08696417054fBaA5D6B \
         --force-update-root=true
 
-# 5:44PM INF bridgeTxn: 0xfc34856a8a0009fdb3d3c1f431716557c60431d693e6526756588d27dfcf05a8
-# 5:44PM INF Deposit transaction successful txHash=0xfc34856a8a0009fdb3d3c1f431716557c60431d693e6526756588d27dfcf05a8
+# 9:45AM INF bridgeTxn: 0x2b23e48077674e683ddd0af6e753ec6e394bc5d880e819db3903899e2dffce71
+# 9:45AM INF Deposit transaction successful txHash=0x2b23e48077674e683ddd0af6e753ec6e394bc5d880e819db3903899e2dffce71
+token_hash=$(cast keccak $(cast abi-encode --packed 'f(uint32,address)' 1 0x8A5B34caF06Da682FDC4d08696417054fBaA5D6B))
+pp2_big_test_addr=$(cast call --rpc-url $l2_pp2_url  $bridge_address 'tokenInfoToWrappedToken(bytes32)(address)' $token_hash)
+cast call --rpc-url $l2_pp2_url $pp2_big_test_addr 'balanceOf(address)' $target_address
+
+
+polycli ulxly bridge asset \
+        --private-key $target_private_key \
+        --value 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe \
+        --bridge-address $bridge_address \
+        --destination-network 1 \
+        --destination-address $target_address \
+        --rpc-url $l2_pp2_url \
+        --token-address $pp2_big_test_addr \
+        --force-update-root=true
+
 
 
 curl -s $l2_pp1b_url/bridges/$target_address
+
+# TODO add a test where there is more than uint256 funds
+# TODO add some tests with reverting
+# TODO add some tests where the bridge is called via a smart contract rather than directly
 
 # ## State Capture Procedure
 pushd $(mktemp -d)
