@@ -26,7 +26,7 @@ args:
   zkevm_l2_proofsigner_private_key: "0xc7fe3a006d75ba9326d9792523385abb49057c66aee0b8b4248821a89713f975"
 
 
-  cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta8
+  cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta10
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1
   additional_services: []
@@ -36,5 +36,5 @@ args:
   gas_token_enabled: true
   zkevm_use_real_verifier: true
   enable_normalcy: true
-  verifier_program_vkey: 0x00766aa16a6efe4ac05c0fe21d4b50f9631dbd1a2663a982da861427085ea2ea
+  verifier_program_vkey: 0x00b4769114e641ec0d62858e7063b73ce02f8ba1a360dd678bc5aa5b2bd4410c
 
