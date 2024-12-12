@@ -57,6 +57,8 @@ Outputs = ["stderr"]
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
+MaxCertSize = 102760448
+SaveCertificatesToFilesPath="/tmp"
 
 [L1InfoTreeSync]
 # The initial block number from which to start syncing.
