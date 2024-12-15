@@ -26,7 +26,7 @@ This section shows you how to create a custom CDK validium DAC contract.
         - Use the Polygon DAC implementation contract: [PolygonDataCommittee.sol](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v6.0.0-rc.1-fork.9/contracts/v2/consensus/validium/PolygonDataCommittee.sol) as a guide.
         - The contract supports custom smart contract implementation and, through this, DACs can add their custom on-chain verification logic.
 
-6. You can leave the `verifyMessage` function empty but make sure the `getProcotolName` function returns a unique name (such as Avail, Celestia, etc). The following example code comes from the [PolygonDataCommitee.sol](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v6.0.0-rc.1-fork.9/contracts/v2/consensus/validium/PolygonDataCommittee.sol)  implementation.
+6. You can leave the `verifyMessage` function empty but make sure the `getProtocolName` function returns a unique name (such as Avail, Celestia, etc). The following example code comes from the [PolygonDataCommitee.sol](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v6.0.0-rc.1-fork.9/contracts/v2/consensus/validium/PolygonDataCommittee.sol)  implementation.
 
     ```solidity
     // Name of the data availability protocol
@@ -35,7 +35,7 @@ This section shows you how to create a custom CDK validium DAC contract.
     /**
      * @notice Return the protocol name
      */
-    function getProcotolName() external pure override returns (string memory) {
+    function getProtocolName() external pure override returns (string memory) {
         return _PROTOCOL_NAME;
     }
     ```
@@ -43,7 +43,7 @@ This section shows you how to create a custom CDK validium DAC contract.
 7. Update the [/deployment/v2/4_createRollup.ts](https://github.com/0xPolygonHermez/zkevm-contracts/blob/54f58c8b64806429bc4d5c52248f29cf80ba401c/deployment/v2/4_createRollup.ts#L77) script to add your contract name.
 
     ```ts
-    const supporteDataAvailabilityProtocols = ["<CONTRACT_NAME>"];
+    const supportedDataAvailabilityProtocols = ["<CONTRACT_NAME>"];
     ```
 
 8. Make your contract deployable by copying, editing for your custom implementation, and pasting back in, the `if` statement from the [/deployment/v2/4_createRollup.ts#L251](https://github.com/0xPolygonHermez/zkevm-contracts/blob/54f58c8b64806429bc4d5c52248f29cf80ba401c/deployment/v2/4_createRollup.ts#L260) node creation script.
