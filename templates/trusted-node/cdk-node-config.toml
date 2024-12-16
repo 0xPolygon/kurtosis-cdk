@@ -45,14 +45,6 @@ Outputs = ["stderr"]
         VerifyProofInterval = "10s"
         GasOffset = 150000
         SettlementBackend = "agglayer"
-        [Aggregator.DB]
-                Name = "{{.aggregator_db.name}}"
-                User = "{{.aggregator_db.user}}"
-                Password = "{{.aggregator_db.password}}"
-                Host = "{{.aggregator_db.hostname}}"
-                Port = "{{.aggregator_db.port}}"
-                EnableLog = false
-                MaxConns = 200
 
 [AggSender]
 CertificateSendInterval = "1m"
