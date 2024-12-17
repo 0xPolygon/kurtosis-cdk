@@ -10,7 +10,7 @@ cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
-optimism_package = "github.com/ethpandaops/ethereum-package/main.star@1.2.0"
+optimism_package = "github.com/ethpandaops/optimism-package/main.star@1.2.0"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 
