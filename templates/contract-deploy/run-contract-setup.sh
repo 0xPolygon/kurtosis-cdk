@@ -27,20 +27,6 @@ wait_for_rpc_to_be_available() {
     done
 }
 
-wait_for_finalized_block() {
-    counter=0
-    max_retries=100
-    until cast block --rpc-url "{{.l1_rpc_url}}" finalized &> /dev/null; do
-        ((counter++))
-        echo_ts "No finalized block yet... Retrying ($counter)..."
-        if [[ $counter -ge $max_retries ]]; then
-            echo_ts "Exceeded maximum retry attempts. Exiting."
-            exit 1
-        fi
-        sleep 5
-    done
-}
-
 fund_account_on_l1() {
     name="$1"
     address="$2"
