@@ -13,9 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  POLYCLI_VERSION: v0.1.64 # https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64 - 2024-11-25
-  # Use fork instead of cdk repository until they migrate to the new version of kurtosis-cdk.
-  CDK_VERSION: e254ec910be055fbc73b33d21bb99d7c492a0ac0 # https://github.com/0xPolygon/cdk/tree/develop
+  POLYCLI_VERSION: v0.1.65 # 2024-12-16
+  CDK_VERSION: v0.5.0-beta10 # 2024-12-10
 
 jobs:
   build-cdk-image:
