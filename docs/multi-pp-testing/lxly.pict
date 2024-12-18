@@ -3,21 +3,23 @@ DepositChain       : L1, PP1 (2), PP2 (2)
 DestinationChain   : L1, PP1, PP2
 DestinationAddress : EOA, Contract, Precompile
 BridgeType         : Asset, Message, Weth
-Token              : NativeEther (5), LocalERC20 (5), POL (2), Invalid, WETH (2)
+Token              : NativeEther, LocalERC20, POL, Buggy, WETH
 MetaData           : 0x, Random
 ForceUpdate        : True (4), False
-Amount             : 0, 1, Random
+Amount             : 0, 1, Random, Max
 
 IF [DepositChain] = "L1" THEN [DestinationChain] <> "L1";
 IF [DepositChain] = "PP1" THEN [DestinationChain] <> "PP1";
 IF [DepositChain] = "PP2" THEN [DestinationChain] <> "PP2";
+IF [DepositChain] = "PP2" AND [BridgeType] = "Message" THEN [Amount] = "0";
 
 IF [BridgeType] = "Message" THEN [Token] = "NativeEther";
 IF [BridgeType] = "Weth" THEN [Token] = "WETH";
 
+
 IF [Token] = "POL" THEN [DepositChain] = "L1";
 IF [Token] = "WETH" THEN [DepositChain] = "PP2";
-IF [Token] = "LocalERC20" OR [Token] = "WETH" OR [Token] = "POL" OR [Token] = "Invalid" THEN [MetaData] = "0x";
+IF [Token] = "LocalERC20" OR [Token] = "WETH" OR [Token] = "POL" OR [Token] = "Buggy" THEN [MetaData] = "0x";
 
-
+IF [Amount] = "Max" THEN [Token] = "Buggy";
 

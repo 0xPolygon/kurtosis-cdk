@@ -49,8 +49,8 @@ kurtosis service exec pp agglayer "agglayer vkey"
 cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32,bytes32)' 1
 
 # Let's make sure both rollups have the same vkey
-cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 1
-cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 2
+cast call --json --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 1 | jq '.[11]'
+cast call --json --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 2 | jq '.[11]'
 
 
 # At this point, the agglayer config needs to be manually updated for
@@ -190,28 +190,22 @@ curl -s $l2_pp1b_url/bridges/$target_address | jq '.deposits[] | select(.ready_f
 curl -s $l2_pp2b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
 
 # We should be able to take these commands and then try to claim each
-# of the deposits.
-curl -s $l2_pp1b_url/bridges/$target_address | jq -c '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")' | while read deposit ; do
-    polycli ulxly claim message \
-            --bridge-address $bridge_address \
-            --bridge-service-url $l2_pp1b_url \
-            --rpc-url $l2_pp1_url \
-            --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
-            --deposit-network $(echo $deposit | jq -r '.orig_net') \
-            --destination-address $(echo $deposit | jq -r '.dest_addr') \
-            --private-key $private_key
-done
-
-curl -s $l2_pp2b_url/bridges/$target_address | jq -c '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")' | while read deposit ; do
-    polycli ulxly claim message \
-            --bridge-address $bridge_address \
-            --bridge-service-url $l2_pp2b_url \
-            --rpc-url $l2_pp2_url \
-            --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
-            --deposit-network $(echo $deposit | jq -r '.orig_net') \
-            --destination-address $(echo $deposit | jq -r '.dest_addr') \
-            --private-key $private_key
-done
+# of the deposits. This will print out some errors right now because
+# it's going to try to claim some deposits that are already claimed
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --rpc-url $l2_pp1_url \
+        --destination-address $target_address \
+        --private-key $private_key
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --rpc-url $l2_pp2_url \
+        --destination-address $target_address \
+        --private-key $private_key
 
 # Hopefully at this point everything has been claimed on L2. These
 # calls should return empty.
@@ -375,7 +369,7 @@ cast call --rpc-url $l1_rpc_url $bridge_address 'depositCount() external view re
 # every combination of parameters, but as the number of parameters
 # grows, this might become too difficult. I'm using a command like
 # this to generate the test cases.
-pict lxly.pict /f:json | jq -c '.[] | from_entries' | jq -s > test-scenarios.json
+pict docs/multi-pp-testing/lxly.pict /f:json | jq -c '.[] | from_entries' | jq -s > test-scenarios.json
 
 # For the sake of simplicity, I'm going to use the deterministic
 # deployer so that I have the same ERC20 address on each chain. Here
@@ -407,7 +401,6 @@ cast send --legacy --rpc-url $l1_rpc_url --private-key $target_private_key $test
 cast send --legacy --rpc-url $l2_pp1_url --private-key $target_private_key $test_erc20_addr 'approve(address,uint256)' $bridge_address 100000000000000000000
 cast send --legacy --rpc-url $l2_pp2_url --private-key $target_private_key $test_erc20_addr 'approve(address,uint256)' $bridge_address 100000000000000000000
 
-# docker run -v $PWD/src:/contracts ethereum/solc:0.7.6 --bin /contracts/tokens/ERC20Buggy.sol
 erc20_buggy_bytecode=608060405234801561001057600080fd5b506040516109013803806109018339818101604052606081101561003357600080fd5b810190808051604051939291908464010000000082111561005357600080fd5b90830190602082018581111561006857600080fd5b825164010000000081118282018810171561008257600080fd5b82525081516020918201929091019080838360005b838110156100af578181015183820152602001610097565b50505050905090810190601f1680156100dc5780820380516001836020036101000a031916815260200191505b50604052602001805160405193929190846401000000008211156100ff57600080fd5b90830190602082018581111561011457600080fd5b825164010000000081118282018810171561012e57600080fd5b82525081516020918201929091019080838360005b8381101561015b578181015183820152602001610143565b50505050905090810190601f1680156101885780820380516001836020036101000a031916815260200191505b5060405260209081015185519093506101a792506003918601906101d8565b5081516101bb9060049060208501906101d8565b506005805460ff191660ff92909216919091179055506102799050565b828054600181600116156101000203166002900490600052602060002090601f01602090048101928261020e5760008555610254565b82601f1061022757805160ff1916838001178555610254565b82800160010185558215610254579182015b82811115610254578251825591602001919060010190610239565b50610260929150610264565b5090565b5b808211156102605760008155600101610265565b610679806102886000396000f3fe608060405234801561001057600080fd5b50600436106100b45760003560e01c806370a082311161007157806370a082311461021257806395d89b41146102385780639dc29fac14610240578063a9059cbb1461026c578063b46310f614610298578063dd62ed3e146102c4576100b4565b806306fdde03146100b9578063095ea7b31461013657806318160ddd1461017657806323b872dd14610190578063313ce567146101c657806340c10f19146101e4575b600080fd5b6100c16102f2565b6040805160208082528351818301528351919283929083019185019080838360005b838110156100fb5781810151838201526020016100e3565b50505050905090810190601f1680156101285780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6101626004803603604081101561014c57600080fd5b506001600160a01b038135169060200135610380565b604080519115158252519081900360200190f35b61017e6103e6565b60408051918252519081900360200190f35b610162600480360360608110156101a657600080fd5b506001600160a01b038135811691602081013590911690604001356103ec565b6101ce610466565b6040805160ff9092168252519081900360200190f35b610210600480360360408110156101fa57600080fd5b506001600160a01b03813516906020013561046f565b005b61017e6004803603602081101561022857600080fd5b50356001600160a01b031661047d565b6100c161048f565b6102106004803603604081101561025657600080fd5b506001600160a01b0381351690602001356104ea565b6101626004803603604081101561028257600080fd5b506001600160a01b0381351690602001356104f4565b610210600480360360408110156102ae57600080fd5b506001600160a01b03813516906020013561054f565b61017e600480360360408110156102da57600080fd5b506001600160a01b038135811691602001351661056b565b6003805460408051602060026001851615610100026000190190941693909304601f810184900484028201840190925281815292918301828280156103785780601f1061034d57610100808354040283529160200191610378565b820191906000526020600020905b81548152906001019060200180831161035b57829003601f168201915b505050505081565b3360008181526002602090815260408083206001600160a01b038716808552908352818420869055815186815291519394909390927f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925928290030190a350600192915050565b60005481565b6001600160a01b0380841660008181526002602090815260408083203384528252808320805487900390558383526001825280832080548790039055938616808352848320805487019055845186815294519294909392600080516020610624833981519152929181900390910190a35060019392505050565b60055460ff1681565b6104798282610588565b5050565b60016020526000908152604090205481565b6004805460408051602060026001851615610100026000190190941693909304601f810184900484028201840190925281815292918301828280156103785780601f1061034d57610100808354040283529160200191610378565b61047982826105d3565b336000818152600160209081526040808320805486900390556001600160a01b03861680845281842080548701905581518681529151939490939092600080516020610624833981519152928290030190a350600192915050565b6001600160a01b03909116600090815260016020526040902055565b600260209081526000928352604080842090915290825290205481565b6001600160a01b038216600081815260016020908152604080832080548601905582548501835580518581529051600080516020610624833981519152929181900390910190a35050565b6001600160a01b0382166000818152600160209081526040808320805486900390558254859003835580518581529051929392600080516020610624833981519152929181900390910190a3505056feddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa2646970667358221220364a383ccce0e270376267b8631412d1b7ddb1883c5379556b58cbefc1ca504564736f6c63430007060033
 constructor_args=$(cast abi-encode 'f(string,string,uint8)' 'Buggy ERC20' 'BUG' "18" | sed 's/0x//')
 
@@ -459,12 +452,16 @@ cat test-scenarios.json | jq -c '.[]' | while read scenario ; do
         testCommand="$testCommand weth"
     fi
 
+    temp_rpc_url=""
     if [[ $testDepositChain == "L1" ]]; then
         testCommand="$testCommand --rpc-url $l1_rpc_url"
+        temp_rpc_url="$l1_rpc_url"
     elif [[ $testDepositChain == "PP1" ]]; then
         testCommand="$testCommand --rpc-url $l2_pp1_url"
+        temp_rpc_url="$l2_pp1_url"
     else
         testCommand="$testCommand --rpc-url $l2_pp2_url"
+        temp_rpc_url="$l2_pp2_url"
     fi
 
     if [[ $testDestinationChain == "L1" ]]; then
@@ -489,8 +486,8 @@ cat test-scenarios.json | jq -c '.[]' | while read scenario ; do
         testCommand="$testCommand --token-address $test_erc20_addr"
     elif [[ $testToken == "WETH" ]]; then
         testCommand="$testCommand --token-address $pp2_weth_address"
-    elif [[ $testToken == "Invalid" ]]; then
-        testCommand="$testCommand --token-address $(< /dev/urandom xxd -p | tr -d "\n" | head -c 40)"
+    elif [[ $testToken == "Buggy" ]]; then
+        testCommand="$testCommand --token-address $test_erc20_buggy_addr"
     else
         testCommand="$testCommand --token-address 0x0000000000000000000000000000000000000000"
     fi
@@ -511,6 +508,10 @@ cat test-scenarios.json | jq -c '.[]' | while read scenario ; do
         testCommand="$testCommand --value 0"
     elif [[ $testAmount == "1" ]]; then
         testCommand="$testCommand --value 1"
+    elif [[ $testAmount == "Max" ]]; then
+        cast send --legacy --rpc-url $temp_rpc_url --private-key $target_private_key $test_erc20_buggy_addr 'mint(address,uint256)' $target_address $(cast max-uint)
+        cast send --legacy --rpc-url $temp_rpc_url --private-key $target_private_key $test_erc20_buggy_addr 'setBalanceOf(address,uint256)' $bridge_address 0
+        testCommand="$testCommand --value $(cast max-uint)"
     else
         testCommand="$testCommand --value $(date +%s)"
     fi
@@ -521,57 +522,40 @@ cat test-scenarios.json | jq -c '.[]' | while read scenario ; do
     echo $scenario | jq -c '.'
     echo $testCommand
     $testCommand
-done
 
-
-curl -s $l2_pp2b_url/bridges/$target_address | jq -c '.deposits[] | select(.network_id == 2) | select(.dest_net == 1)' | while read deposit ; do
-    echo $deposit | jq -c '.'
-    leaf_type=$(echo $deposit | jq -r '.leaf_type')
-    if [[ $leaf_type == "0" ]]; then
-        polycli ulxly claim asset \
-                --bridge-address $bridge_address \
-                --bridge-service-url $l2_pp2b_url \
-                --rpc-url $l2_pp1_url \
-                --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
-                --deposit-network 2 \
-                --destination-address $(echo $deposit | jq -r '.dest_addr') \
-                --private-key $private_key
-
-    else
-        polycli ulxly claim message \
-                --bridge-address $bridge_address \
-                --bridge-service-url $l2_pp2b_url \
-                --rpc-url $l2_pp1_url \
-                --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
-                --deposit-network 2 \
-                --destination-address $(echo $deposit | jq -r '.dest_addr') \
-                --private-key $private_key
+    # In this particular case, we should zero the bridge out after the deposit is made
+    if [[ $testAmount == "Max" ]]; then
+        cast send --legacy --rpc-url $temp_rpc_url --private-key $target_private_key $test_erc20_buggy_addr 'setBalanceOf(address,uint256)' $bridge_address 0
     fi
 done
-curl -s $l2_pp1b_url/bridges/$target_address | jq -c '.deposits[] | select(.network_id == 1) | select(.dest_net == 2)' | while read deposit ; do
-    echo $deposit | jq -c '.'
-    leaf_type=$(echo $deposit | jq -r '.leaf_type')
-    if [[ $leaf_type == "0" ]]; then
-        polycli ulxly claim asset \
-                --bridge-address $bridge_address \
-                --bridge-service-url $l2_pp1b_url \
-                --rpc-url $l2_pp2_url \
-                --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
-                --deposit-network 1 \
-                --destination-address $(echo $deposit | jq -r '.dest_addr') \
-                --private-key $private_key
 
-    else
-        polycli ulxly claim message \
-                --bridge-address $bridge_address \
-                --bridge-service-url $l2_pp1b_url \
-                --rpc-url $l2_pp2_url \
-                --deposit-count $(echo $deposit | jq -r '.deposit_cnt') \
-                --deposit-network 1 \
-                --destination-address $(echo $deposit | jq -r '.dest_addr') \
-                --private-key $private_key
-    fi
-done
+
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --rpc-url $l2_pp1_url \
+        --destination-address $target_address \
+        --private-key $private_key \
+        --bridge-limit 100
+
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --rpc-url $l2_pp2_url \
+        --destination-address $target_address \
+        --private-key $private_key \
+        --bridge-limit 100
+
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --rpc-url $l1_rpc_url \
+        --destination-address $target_address \
+        --private-key $private_key \
+        --bridge-limit 100
 
 # ## Buggy ERC 20
 #
@@ -615,6 +599,19 @@ polycli ulxly bridge asset \
 cast send --legacy --rpc-url $l2_pp2_url --private-key $target_private_key $test_erc20_buggy_addr 'mint(address,uint256)' $target_address $(cast max-uint)
 cast send --legacy --rpc-url $l2_pp2_url --private-key $target_private_key $test_erc20_buggy_addr 'setBalanceOf(address,uint256)' $bridge_address 0
 
+# Then do the same thing for PP2 to L1
+polycli ulxly bridge asset \
+        --private-key $target_private_key \
+        --value 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe \
+        --bridge-address $bridge_address \
+        --destination-network 0 \
+        --destination-address $target_address \
+        --rpc-url $l2_pp2_url \
+        --token-address $test_erc20_buggy_addr \
+        --force-update-root=true
+
+cast send --legacy --rpc-url $l2_pp2_url --private-key $target_private_key $test_erc20_buggy_addr 'mint(address,uint256)' $target_address $(cast max-uint)
+cast send --legacy --rpc-url $l2_pp2_url --private-key $target_private_key $test_erc20_buggy_addr 'setBalanceOf(address,uint256)' $bridge_address 0
 
 curl -s $l2_pp1b_url/bridges/$target_address
 
@@ -640,15 +637,21 @@ cast send --legacy --value 1 --rpc-url $l2_pp2_url --private-key $target_private
 # testing. You might not have this. The idea is to call the bridge
 # contract from a bunch of contexts and ensure that things more or
 # less still work
-tester_contract_address=0xfBE07a394847c26b1d998B6e44EE78A9C8191f13
+tester_contract_address=0xc54E34B55EF562FE82Ca858F70D1B73244e86388
 
-address_tester_actions="001 002 003 004 011 012 013 014 021 022 023 024 031 032 033 034 041 042 043 044 101 201 301 401 501 601 701 801 901"
+# address_tester_actions="001 002 003 004 011 012 013 014 021 022 023 024 031 032 033 034 041 042 043 044 101 201 301 401 501 601 701 801 901"
+address_tester_actions="001 011 021 031 041 101 201 301 401 501 601 701 801 901"
 
 for create_mode in 0 1 2; do
     for action in $address_tester_actions ; do
-        cast send --legacy --value 1 --rpc-url $l1_rpc_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 1)
-        cast send --legacy --value 2 --rpc-url $l2_pp1_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 2)
-        cast send --legacy --value 1 --rpc-url $l2_pp2_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 1)
+        cast send --gas-limit 1000000 --legacy --value 1 --rpc-url $l1_rpc_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 1)
+        cast send --gas-limit 1000000 --legacy --value 2 --rpc-url $l1_rpc_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 2)
+
+        cast send --gas-limit 1000000 --legacy --value 0 --rpc-url $l2_pp1_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 0)
+        cast send --gas-limit 1000000 --legacy --value 2 --rpc-url $l2_pp1_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 2)
+
+        cast send --gas-limit 1000000 --legacy --value 0 --rpc-url $l2_pp2_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 0)
+        cast send --gas-limit 1000000 --legacy --value 1 --rpc-url $l2_pp2_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x"$create_mode$action" $test_lxly_proxy_addr 1)
     done
 done
 
@@ -656,6 +659,47 @@ done
 # TODO add some tests with reverting
 # TODO add some tests where the bridge is called via a smart contract rather than directly
 # TODO add a scneario that does a full sweep of the target account native token and the end to ensure all of the accounting looks good
+
+cast send --legacy --gas-limit 1000000 --value 2 --rpc-url $l2_pp1_url --private-key $target_private_key $tester_contract_address $(cast abi-encode 'f(uint32, address, uint256)' 0x0201 $test_lxly_proxy_addr 2)
+
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --destination-address $target_address \
+        --private-key $target_private_key \
+        --rpc-url $l2_pp1_url \
+        --bridge-limit 100
+
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --destination-address $target_address \
+        --private-key $target_private_key \
+        --rpc-url $l2_pp2_url \
+        --bridge-limit 100
+
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --destination-address $target_address \
+        --private-key $target_private_key \
+        --rpc-url $l1_rpc_url \
+        --bridge-limit 100
+
+curl -s "$l2_pp1b_url/bridges/0xbecE3a31343c6019CDE0D5a4dF2AF8Df17ebcB0f?limit=150" | jq '.deposits[] | select(.deposit_cnt == 111)'
+curl -s "$l2_pp1b_url/merkle-proof?deposit_cnt=111&net_id=0" | jq '.'
+curl -s "$l2_pp1b_url/merkle-proof?deposit_cnt=111&net_id=1" | jq '.'
+curl -s "$l2_pp1b_url/merkle-proof?deposit_cnt=111&net_id=2" | jq '.'
+
+curl -s "$l2_pp2b_url/bridges/0xbecE3a31343c6019CDE0D5a4dF2AF8Df17ebcB0f?limit=150" | jq '.deposits[] | select(.tx_hash == "0x932945c01362a5e121405b6bf38b14da8b6ddeee253732cdf362be74b455bea8")'
+curl -s "$l2_pp2b_url/bridges/0xbecE3a31343c6019CDE0D5a4dF2AF8Df17ebcB0f?limit=150" | jq '.deposits[] | select(.deposit_cnt == 111)'
+curl -s "$l2_pp2b_url/merkle-proof?deposit_cnt=111&net_id=0" | jq '.'
+curl -s "$l2_pp2b_url/merkle-proof?deposit_cnt=111&net_id=1" | jq '.'
+curl -s "$l2_pp2b_url/merkle-proof?deposit_cnt=111&net_id=2" | jq '.'
+
 
 # ## State Capture Procedure
 pushd $(mktemp -d)
@@ -669,3 +713,9 @@ kurtosis enclave dump pp
 
 popd
 tar caf agglayer-details.tar.xz /tmp/tmp.VKezDefjS6
+
+
+# drop table public.gorp_migrations;
+# drop schema sync cascade;
+# drop schema mt cascade;
+# delete from sync.claim where index = '14' and rollup_index = 0 and network_id = 2;
