@@ -23,3 +23,6 @@ args:
     - tx_spammer
 
   deploy_l2_contracts: true
+
+  # https://github.com/agglayer/agglayer/tags
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.20

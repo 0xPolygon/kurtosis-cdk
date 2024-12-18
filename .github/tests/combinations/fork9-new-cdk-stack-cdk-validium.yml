@@ -11,5 +11,6 @@ args:
     - pless_zkevm_node
     - tx_spammer
   deploy_l2_contracts: true
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.20
   consensus_contract_type: cdk-validium
   sequencer_type: erigon
