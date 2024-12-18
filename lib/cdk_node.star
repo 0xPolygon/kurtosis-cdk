@@ -39,7 +39,14 @@ def create_cdk_node_service_config(
 def get_cdk_node_ports(args):
     # We won't have an aggregator if we're in PP mode
     if args["consensus_contract_type"] == "pessimistic":
-        return (dict(), dict())
+        ports = {
+            "rpc": PortSpec(
+                args["zkevm_cdk_node_port"],
+                application_protocol="http",
+            ),
+        }
+        public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+        return (ports, public_ports)
 
     # In the case where we have pre deployed contract, the cdk node
     # can go through a syncing process that takes a long time and
@@ -58,6 +65,10 @@ def get_cdk_node_ports(args):
             application_protocol="grpc",
             wait=aggregator_wait,
         ),
+        "rpc": PortSpec(
+                args["zkevm_cdk_node_port"],
+                application_protocol="http",
+            ),
     }
 
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
