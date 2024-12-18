@@ -62,6 +62,7 @@ DEFAULT_PORTS = {
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
+    "zkevm_cdk_node_port": 5576,
 }
 
 DEFAULT_STATIC_PORTS = {

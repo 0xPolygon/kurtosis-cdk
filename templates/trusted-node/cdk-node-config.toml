@@ -53,6 +53,8 @@ Outputs = ["stderr"]
                 Port = "{{.aggregator_db.port}}"
                 EnableLog = false
                 MaxConns = 200
+[RPC]
+        Port = {{.zkevm_cdk_node_port}}
 
 [AggSender]
 CertificateSendInterval = "1m"
