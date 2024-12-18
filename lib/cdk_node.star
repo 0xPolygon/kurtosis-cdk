@@ -43,9 +43,12 @@ def get_cdk_node_ports(args):
             "rpc": PortSpec(
                 args["zkevm_cdk_node_port"],
                 application_protocol="http",
+                wait=None,
             ),
         }
-        public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+        public_ports = ports_package.get_public_ports(
+            ports, "cdk_node_start_port", args
+        )
         return (ports, public_ports)
 
     # In the case where we have pre deployed contract, the cdk node
@@ -66,9 +69,10 @@ def get_cdk_node_ports(args):
             wait=aggregator_wait,
         ),
         "rpc": PortSpec(
-                args["zkevm_cdk_node_port"],
-                application_protocol="http",
-            ),
+            args["zkevm_cdk_node_port"],
+            application_protocol="http",
+            wait=None,
+        ),
     }
 
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
