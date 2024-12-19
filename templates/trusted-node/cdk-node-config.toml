@@ -45,10 +45,14 @@ Outputs = ["stderr"]
         VerifyProofInterval = "10s"
         GasOffset = 150000
         SettlementBackend = "agglayer"
+[RPC]
+        Port = {{.zkevm_cdk_node_port}}
 
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
+MaxCertSize = 102760448
+SaveCertificatesToFilesPath="/tmp"
 
 [L1InfoTreeSync]
 # The initial block number from which to start syncing.

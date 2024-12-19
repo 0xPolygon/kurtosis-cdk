@@ -28,7 +28,7 @@ Height = 32
 GRPCPort = "{{.zkevm_bridge_grpc_port}}"
 HTTPPort = "{{.zkevm_bridge_rpc_port}}"
 DefaultPageLimit = 25
-MaxPageLimit = 100
+MaxPageLimit = 1000
 BridgeVersion = "v1"
     # Read only
     [BridgeServer.DB]
