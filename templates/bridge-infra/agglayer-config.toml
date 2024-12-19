@@ -1,4 +1,5 @@
 prover-entrypoint = "{{.agglayer_prover_entrypoint}}"
+debug-mode = true
 
 [full-node-rpcs]
 # TODO switch this to permissionless
@@ -78,3 +79,4 @@ input-backpressure-buffer-size = 1000
 
 [storage]
 db-path = "/etc/zkevm/storage"
+

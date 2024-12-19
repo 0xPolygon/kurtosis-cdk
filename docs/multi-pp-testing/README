@@ -6,21 +6,20 @@ exit 1;
 #
 # ## Infra Setup
 #
-# This is an example of a system where there are two PP chains
-# attached to the rollup manager. One chain uses a gas token and the
-# other does not. Between those two chains we're going to attempt a
-# bunch of bridge scenarios.
+# This is an example of a system where there are two PP chains and one
+# FEP chain attached to the rollup manager. One chain uses a gas token
+# and the others do not. Between those three chains we're going to
+# attempt a bunch of bridge scenarios.
 #
 # To run this stuff you'll want to run most of these commands from
 # within the kurtosis-cdk repo root.
 #
-# First we're going to do a Kurtosis run to spin up both of the
-# networks. The secret file here is the same as the normal file but
-# with an SP1 key
+# First we're going to do a Kurtosis run to spin up the networks. If
+# you're going to run this you *need an SP1 key* in the `net1.yml`
+# file.
 kurtosis run --enclave pp --args-file docs/multi-pp-testing/net1.yml .
 kurtosis run --enclave pp --args-file docs/multi-pp-testing/net2.yml .
 kurtosis run --enclave pp --args-file docs/multi-pp-testing/net3.yml .
-kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk-pessimistic.yml .
 
 # At this point we should be able to confirm that things look right
 # for both chains. Recently, it seems like the fork id isn't initially
@@ -142,11 +141,11 @@ cast send \
 # for additional test scenarios. The logic here is that we don't want
 # to send Ether to the target address on L2 because we might risk
 # withdrawing more than we deposit
-cast send --rpc-url $l1_rpc_url --private-key $target_private_key $pol_address 'mint(address,uint256)' $target_address 10000000000000000000000
-cast send --rpc-url $l1_rpc_url --private-key $target_private_key $pol_address 'approve(address,uint256)' $bridge_address 10000000000000000000000
+cast send --rpc-url $l1_rpc_url --private-key $private_key $pol_address 'mint(address,uint256)' $target_address 10000000000000000000000
+cast send --rpc-url $l1_rpc_url --private-key $private_key $pol_address 'approve(address,uint256)' $bridge_address 10000000000000000000000
 
-cast send --rpc-url $l1_rpc_url --private-key $target_private_key $gas_token_address 'mint(address,uint256)' $target_address 10000000000000000000000
-cast send --rpc-url $l1_rpc_url --private-key $target_private_key $gas_token_address 'approve(address,uint256)' $bridge_address 10000000000000000000000
+cast send --rpc-url $l1_rpc_url --private-key $private_key $gas_token_address 'mint(address,uint256)' $target_address 10000000000000000000000
+cast send --rpc-url $l1_rpc_url --private-key $private_key $gas_token_address 'approve(address,uint256)' $bridge_address 10000000000000000000000
 
 # We're going to do a little matrix of L1 to L2 bridges here. The idea
 # is to mix bridges across a few scenarios
@@ -301,7 +300,7 @@ polycli ulxly bridge asset \
         --private-key $target_private_key \
         --value $(date +%s) \
         --bridge-address $bridge_address \
-        --destination-network 2 \
+        --destination-network 3 \
         --destination-address $target_address \
         --force-update-root=true \
         --rpc-url $l2_pp1_url
