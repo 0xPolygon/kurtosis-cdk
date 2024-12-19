@@ -38,9 +38,10 @@ kurtosis service exec pp contracts-002 "cat /opt/zkevm-contracts/deployment/v2/c
 kurtosis service exec pp contracts-003 "cat /opt/zkevm/combined-003.json"  | tail -n +2 | jq '.' > combined-003.json
 
 # This diagnosis isn't critical, but it's nice to confirm that we are
-# using a real verifier.
+# using a real verifier for the PP networks and mock for the FEP.
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.verifierAddress')
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-002.json | jq -r '.verifierAddress')
+cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-003.json | jq -r '.verifierAddress')
 
 # Check that the hash of the verifier is actually the sp1 verifier. It should be f33fc6bc90b5ea5e0272a7ab87d701bdd05ecd78b8111ca4f450eeff1e6df26a
 kurtosis service exec pp contracts-001 'cat /opt/zkevm-contracts/artifacts/contracts/verifiers/SP1Verifier.sol/SP1Verifier.json' | tail -n +2 | jq -r '.deployedBytecode' | sha256sum
@@ -52,7 +53,6 @@ cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(
 
 # It's also worth while probably to confirm that the vkey matches!
 kurtosis service exec pp agglayer "agglayer vkey"
-cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32,bytes32)' 1
 
 # Let's make sure both rollups have the same vkey
 cast call --json --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 1 | jq '.[11]'
@@ -748,6 +748,8 @@ mkdir cdk-001
 docker cp cdk-node-001--bd52b030071a4c438cf82b6c281219e6:/tmp cdk-001/
 mkdir cdk-002
 docker cp cdk-node-002--3c9a92d0e1aa4259a795d7a60156188c:/tmp cdk-002/
+mkdir cdk-003
+docker cp cdk-node-003--60ace3d2425e43df8f0da4f8058d97f9:/tmp cdk-003/
 kurtosis enclave dump pp
 
 popd
