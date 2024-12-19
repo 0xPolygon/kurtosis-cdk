@@ -18,7 +18,7 @@ exit 1;
 # networks. The secret file here is the same as the normal file but
 # with an SP1 key
 kurtosis run --enclave pp --args-file .github/tests/fork12-pessimistic-secret.yml .
-kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk.yml .
+kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk-pessimistic.yml .
 
 # At this point we should be able to confirm that things look right
 # for both chains. Recently, it seems like the fork id isn't initially
