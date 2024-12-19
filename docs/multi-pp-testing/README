@@ -17,7 +17,9 @@ exit 1;
 # First we're going to do a Kurtosis run to spin up both of the
 # networks. The secret file here is the same as the normal file but
 # with an SP1 key
-kurtosis run --enclave pp --args-file .github/tests/fork12-pessimistic-secret.yml .
+kurtosis run --enclave pp --args-file docs/multi-pp-testing/net1.yml .
+kurtosis run --enclave pp --args-file docs/multi-pp-testing/net2.yml .
+kurtosis run --enclave pp --args-file docs/multi-pp-testing/net3.yml .
 kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk-pessimistic.yml .
 
 # At this point we should be able to confirm that things look right
@@ -26,6 +28,7 @@ kurtosis run --enclave pp --args-file .github/tests/attach-second-cdk-pessimisti
 # away.
 polycli monitor --rpc-url $(kurtosis port print pp cdk-erigon-rpc-001 rpc)
 polycli monitor --rpc-url $(kurtosis port print pp cdk-erigon-rpc-002 rpc)
+polycli monitor --rpc-url $(kurtosis port print pp cdk-erigon-rpc-003 rpc)
 
 # In order to proceed, we'll need to grab the combined files from both
 # chains. We'll specifically want the create rollup parameters file
@@ -33,6 +36,7 @@ polycli monitor --rpc-url $(kurtosis port print pp cdk-erigon-rpc-002 rpc)
 kurtosis service exec pp contracts-001 "cat /opt/zkevm/combined-001.json"  | tail -n +2 | jq '.' > combined-001.json
 kurtosis service exec pp contracts-002 "cat /opt/zkevm/combined-002.json"  | tail -n +2 | jq '.' > combined-002.json
 kurtosis service exec pp contracts-002 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq -r '.gasTokenAddress' > gas-token-address.json
+kurtosis service exec pp contracts-003 "cat /opt/zkevm/combined-003.json"  | tail -n +2 | jq '.' > combined-003.json
 
 # This diagnosis isn't critical, but it's nice to confirm that we are
 # using a real verifier.
@@ -44,6 +48,9 @@ kurtosis service exec pp contracts-001 'cat /opt/zkevm-contracts/artifacts/contr
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.verifierAddress') | sha256sum
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-002.json | jq -r '.verifierAddress') | sha256sum
 
+# The third network here should use a mock verifier and should be different
+cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-003.json | jq -r '.verifierAddress') | sha256sum
+
 # It's also worth while probably to confirm that the vkey matches!
 kurtosis service exec pp agglayer "agglayer vkey"
 cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32,bytes32)' 1
@@ -52,12 +59,12 @@ cast call --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(
 cast call --json --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 1 | jq '.[11]'
 cast call --json --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.polygonRollupManagerAddress') 'rollupIDToRollupDataV2(uint32 rollupID)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint8,bytes32,bytes32)' 2 | jq '.[11]'
 
-
 # At this point, the agglayer config needs to be manually updated for
 # rollup2. This will add a second entry to the agglayer config. If the
 # second chain is also pessimistic, this isn't strictly necessary, but
 # there's no harm in it.
 kurtosis service exec pp agglayer "sed -i 's/\[proof\-signers\]/2 = \"http:\/\/cdk-erigon-rpc-002:8123\"\n\[proof-signers\]/i' /etc/zkevm/agglayer-config.toml"
+kurtosis service exec pp agglayer "sed -i 's/\[proof\-signers\]/3 = \"http:\/\/cdk-erigon-rpc-003:8123\"\n\[proof-signers\]/i' /etc/zkevm/agglayer-config.toml"
 kurtosis service stop pp agglayer
 kurtosis service start pp agglayer
 
@@ -74,16 +81,19 @@ eth_address=$(cast wallet address --private-key $private_key)
 l1_rpc_url=http://$(kurtosis port print pp el-1-geth-lighthouse rpc)
 l2_pp1_url=$(kurtosis port print pp cdk-erigon-rpc-001 rpc)
 l2_pp2_url=$(kurtosis port print pp cdk-erigon-rpc-002 rpc)
+l2_fep_url=$(kurtosis port print pp cdk-erigon-rpc-003 rpc)
 bridge_address=$(cat combined-001.json | jq -r .polygonZkEVMBridgeAddress)
 pol_address=$(cat combined-001.json | jq -r .polTokenAddress)
 gas_token_address=$(<gas-token-address.json)
 l2_pp1b_url=$(kurtosis port print pp zkevm-bridge-service-001 rpc)
 l2_pp2b_url=$(kurtosis port print pp zkevm-bridge-service-002 rpc)
+l2_fepb_url=$(kurtosis port print pp zkevm-bridge-service-003 rpc)
 
 # Now let's make sure we have balance everywhere
 cast balance --ether --rpc-url $l1_rpc_url $eth_address
 cast balance --ether --rpc-url $l2_pp1_url $eth_address
 cast balance --ether --rpc-url $l2_pp2_url $eth_address
+cast balance --ether --rpc-url $l2_fep_url $eth_address
 
 # ## Initial Funding
 # Let's fund the claim tx manager for both rollups. These address come
@@ -92,6 +102,7 @@ cast balance --ether --rpc-url $l2_pp2_url $eth_address
 # behalf for bridge assets
 cast send --legacy --value 100ether --rpc-url $l2_pp1_url --private-key $private_key 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
 cast send --legacy --value 100ether --rpc-url $l2_pp2_url --private-key $private_key 0x93F63c24735f45Cd0266E87353071B64dd86bc05
+cast send --legacy --value 100ether --rpc-url $l2_fep_url --private-key $private_key 0x8edC8CE0DB10137d513aB5767ffF13D1c51885a8
 
 # We should also fund the target address on L1 so that we can use this
 # key for L1 bridge transfers
@@ -144,7 +155,7 @@ cast send --rpc-url $l1_rpc_url --private-key $target_private_key $gas_token_add
 # - GER Updating
 dry_run=false
 for token_addr in $(cast az) $pol_address $gas_token_address ; do
-    for destination_network in 1 2 ; do
+    for destination_network in 1 2 3 ; do
         for ger_update in "false" "true" ; do
             permit_data="0x"
             value="1000000000000000000"
@@ -181,6 +192,7 @@ done
 # issue with network id detection in the bridge service
 curl -s $l2_pp1b_url/bridges/$target_address | jq '.'
 curl -s $l2_pp2b_url/bridges/$target_address | jq '.'
+curl -s $l2_fepb_url/bridges/$target_address | jq '.'
 
 # Some of the bridges will be claimed already, but some will need to
 # be claimed manually. Most of the ones that need to be claimed
@@ -188,6 +200,7 @@ curl -s $l2_pp2b_url/bridges/$target_address | jq '.'
 # asset.
 curl -s $l2_pp1b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
 curl -s $l2_pp2b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
+curl -s $l2_fepb_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
 
 # We should be able to take these commands and then try to claim each
 # of the deposits. This will print out some errors right now because
@@ -196,40 +209,57 @@ polycli ulxly claim-everything \
         --bridge-address $bridge_address \
         --bridge-service-map 1=$l2_pp1b_url \
         --bridge-service-map 2=$l2_pp2b_url \
+        --bridge-service-map 3=$l2_fepb_url \
         --rpc-url $l2_pp1_url \
         --destination-address $target_address \
-        --private-key $private_key
+        --private-key $private_key \
+        --bridge-limit 100
 polycli ulxly claim-everything \
         --bridge-address $bridge_address \
         --bridge-service-map 1=$l2_pp1b_url \
         --bridge-service-map 2=$l2_pp2b_url \
+        --bridge-service-map 3=$l2_fepb_url \
         --rpc-url $l2_pp2_url \
         --destination-address $target_address \
-        --private-key $private_key
+        --private-key $private_key \
+        --bridge-limit 100
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map 1=$l2_pp1b_url \
+        --bridge-service-map 2=$l2_pp2b_url \
+        --bridge-service-map 3=$l2_fepb_url \
+        --rpc-url $l2_fep_url \
+        --destination-address $target_address \
+        --private-key $private_key \
+        --bridge-limit 100
 
 # Hopefully at this point everything has been claimed on L2. These
 # calls should return empty.
 curl -s $l2_pp1b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
 curl -s $l2_pp2b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
+curl -s $l2_fepb_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
 
-# Let's see if our balances have grown (both should be non-zero)
+# Let's see if our balances have grown (all should be non-zero)
 cast balance --ether --rpc-url $l2_pp1_url $target_address
 cast balance --ether --rpc-url $l2_pp2_url $target_address
+cast balance --ether --rpc-url $l2_fep_url $target_address
 
-# Let's check our L2 Pol token balance (both should be non-zero)
+# Let's check our L2 Pol token balance (all should be non-zero)
 token_hash=$(cast keccak $(cast abi-encode --packed 'f(uint32,address)' 0 $pol_address))
 l2_pol_address=$(cast call --rpc-url $l2_pp1_url  $bridge_address 'tokenInfoToWrappedToken(bytes32)(address)' $token_hash)
 cast call --rpc-url $l2_pp1_url $l2_pol_address 'balanceOf(address)(uint256)' $target_address
 cast call --rpc-url $l2_pp2_url $l2_pol_address 'balanceOf(address)(uint256)' $target_address
+cast call --rpc-url $l2_fep_url $l2_pol_address 'balanceOf(address)(uint256)' $target_address
 
-# We should also check our gas token balance on both networks. The
+# We should also check our gas token balance on all networks. The
 # first network should have a balance because it's treated as ordinary
-# token. The other network should have nothing because the bridge
+# token. The second network should have nothing because the bridge
 # would have been received as a native token.
 token_hash=$(cast keccak $(cast abi-encode --packed 'f(uint32,address)' 0 $gas_token_address))
 l2_gas_address=$(cast call --rpc-url $l2_pp1_url  $bridge_address 'tokenInfoToWrappedToken(bytes32)(address)' $token_hash)
 cast call --rpc-url $l2_pp1_url $l2_gas_address 'balanceOf(address)(uint256)' $target_address
 cast call --rpc-url $l2_pp2_url $l2_gas_address 'balanceOf(address)(uint256)' $target_address
+cast call --rpc-url $l2_fep_url $l2_gas_address 'balanceOf(address)(uint256)' $target_address
 
 # Similarly, we should confirm that on the second network we have some
 # wrapped ETH.
@@ -256,7 +286,17 @@ polycli ulxly bridge asset \
         --force-update-root=true \
         --rpc-url $l2_pp1_url
 
-# Now let's try a native bridge from PP1 back to PP2
+# Now let's try a native bridge from PP1 to PP2
+polycli ulxly bridge asset \
+        --private-key $target_private_key \
+        --value $(date +%s) \
+        --bridge-address $bridge_address \
+        --destination-network 2 \
+        --destination-address $target_address \
+        --force-update-root=true \
+        --rpc-url $l2_pp1_url
+
+# Now let's try a native bridge from PP1 to FEP
 polycli ulxly bridge asset \
         --private-key $target_private_key \
         --value $(date +%s) \
