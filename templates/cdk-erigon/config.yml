@@ -267,14 +267,19 @@ zkevm.data-stream-inactivity-check-interval: 5m
 # A shorter time increases block creation frequency but may lead to higher network load.
 # Consider network capacity and desired transaction confirmation speed when adjusting.
 # Default: 6s
-zkevm.sequencer-block-seal-time: 6s
+zkevm.sequencer-block-seal-time: 3s
 
 # The batch seal time.
 # Determine how frequently the sequencer groups blocks into a batch and seals it.
 # Longer times allow more blocks (and more txs) per batch, potentially improving efficiency,
 # but may increase overall transaction confirmation time.
 # Default: 12s
-zkevm.sequencer-batch-seal-time: 12s
+zkevm.sequencer-batch-seal-time: 15s
+
+# Seal the batch immediately when detecting a counter overflow
+# This setting can be helpful to close batches faster while testing with a single account.
+# Default: false
+zkevm.seal-batch-immediately-on-overflow: true
 
 # Specify the maximum duration allowed for batch verification, including retry attempts.
 # This effectively limits how long the sequencer can operate without an executor.

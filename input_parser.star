@@ -29,7 +29,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.17",  # https://github.com/agglayer/agglayer/tags
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.22",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.0",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -62,6 +62,7 @@ DEFAULT_PORTS = {
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
+    "zkevm_cdk_node_port": 5576,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -235,6 +236,10 @@ DEFAULT_ROLLUP_ARGS = {
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
     "zkevm_use_real_verifier": False,
+    # If we're using pessimistic consensus and a real verifier, we'll
+    # need to know which vkey to use. This value is tightly coupled to
+    # the agglayer version that's being used
+    "verifier_program_vkey": "0x00e360ff2c18d456d6ee96c17f4e746216b475b62174bd2e9e8775ed99368ca3",
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,

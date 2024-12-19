@@ -65,7 +65,7 @@ jobs:
       - name: Generate test combinations and cdk version matrix
         working-directory: .github/tests
         run: ./combine-ymls.sh
-      
+
       - name: Check if test combinations and cdk version matrix are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
