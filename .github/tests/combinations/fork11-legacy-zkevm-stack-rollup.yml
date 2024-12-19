@@ -9,7 +9,7 @@ args:
   additional_services:
     - tx_spammer
   deploy_l2_contracts: true
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.20
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
   consensus_contract_type: rollup
   sequencer_type: zkevm
 deployment_stages:
