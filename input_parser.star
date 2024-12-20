@@ -239,7 +239,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If we're using pessimistic consensus and a real verifier, we'll
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
-    "verifier_program_vkey": "0x00e360ff2c18d456d6ee96c17f4e746216b475b62174bd2e9e8775ed99368ca3",
+    "verifier_program_vkey": "0x002d324867c82b5b5e0c66a822b004694cb73166d74c0713add59a282b8ce3e0",
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,

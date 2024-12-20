@@ -305,7 +305,7 @@ polycli ulxly bridge asset \
         --force-update-root=true \
         --rpc-url $l2_pp1_url
 
-# Neither of these transactions will be claimed automatically. So
+# None of these transactions will be claimed automatically. So
 # let's claim them and make sure that works fine.
 curl -s $l2_pp1b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
 deposit_cnt=0
@@ -329,6 +329,16 @@ polycli ulxly claim asset \
         --bridge-address $bridge_address \
         --bridge-service-url $l2_pp1b_url \
         --rpc-url $l2_pp2_url \
+        --deposit-count $deposit_cnt \
+        --deposit-network 1 \
+        --destination-address $target_address \
+        --private-key $private_key
+
+deposit_cnt=2
+polycli ulxly claim asset \
+        --bridge-address $bridge_address \
+        --bridge-service-url $l2_pp1b_url \
+        --rpc-url $l2_fep_url \
         --deposit-count $deposit_cnt \
         --deposit-network 1 \
         --destination-address $target_address \
@@ -360,11 +370,12 @@ polycli ulxly bridge weth \
         --private-key $target_private_key \
         --value $(date +%s) \
         --bridge-address $bridge_address \
-        --destination-network 1 \
+        --destination-network 3 \
         --destination-address $target_address \
         --force-update-root=true \
         --token-address $pp2_weth_address \
         --rpc-url $l2_pp2_url
+
 
 # Now we should try to claim these transactions again on Layer one and PP1
 curl -s $l2_pp2b_url/bridges/$target_address | jq '.deposits[] | select(.ready_for_claim) | select(.claim_tx_hash == "")'
@@ -393,7 +404,7 @@ deposit_cnt=2
 polycli ulxly claim message \
         --bridge-address $bridge_address \
         --bridge-service-url $l2_pp2b_url \
-        --rpc-url $l2_pp1_url \
+        --rpc-url $l2_fep_url \
         --deposit-count $deposit_cnt \
         --deposit-network 2 \
         --destination-address $target_address \
@@ -401,7 +412,17 @@ polycli ulxly claim message \
 
 cast call --rpc-url $l1_rpc_url $bridge_address 'depositCount() external view returns (uint256)'
 
-# ## Pict Based Test Scenarios
+# There are some more advanced test cases in the init.sh script and
+# run.sh script in this folder
+
+
+
+
+
+
+
+
+## Pict Based Test Scenarios
 #
 # The goal here is to have some methods for creating more robust
 # testing combinations. In theory, we can probably brute force test
