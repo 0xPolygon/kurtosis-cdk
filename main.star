@@ -134,6 +134,7 @@ def run(plan, args={}):
             plan,
             args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
             contract_setup_addresses,
+            deployment_stages.get("deploy_cdk_bridge_ui", True),
         )
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
