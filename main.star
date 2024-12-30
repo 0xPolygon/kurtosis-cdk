@@ -10,6 +10,7 @@ cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
+optimism_package = "github.com/ethpandaops/optimism-package/main.star@1.2.0"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 
@@ -28,7 +29,7 @@ assertoor_package = "./src/additional_services/assertoor.star"
 
 def run(plan, args={}):
     # Parse args.
-    (deployment_stages, args) = input_parser.parse_args(plan, args)
+    (deployment_stages, args, op_stack_args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
     verbosity = args.get("verbosity", "")
     if verbosity == constants.LOG_LEVEL.debug or verbosity == constants.LOG_LEVEL.trace:
@@ -146,6 +147,13 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of contracts on L2")
 
+    # Deploy an OP Stack rollup.
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
+        import_module(optimism_package).run(plan, op_stack_args)
+    else:
+        plan.print("Skipping the deployment of an Optimism rollup")
+
     # Launching additional services.
     additional_services = args["additional_services"]
 
@@ -215,7 +223,7 @@ def deploy_helper_service(plan, args):
     plan.add_service(
         name=helper_service_name,
         config=ServiceConfig(
-            image=constants.TX_SPAMMER_IMG,
+            image=constants.TOOLBOX_IMAGE,
             files={"/opt/zkevm": get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],

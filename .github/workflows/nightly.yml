@@ -49,10 +49,10 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor verified batches (zkEVM Node Permissionless RPC)
+      - name: Monitor CDK chain verified batches (zkEVM Node Permissionless RPC)
         working-directory: .github/scripts
         run: |
-          ./monitor-verified-batches.sh \
+          ./monitor-cdk-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)"
 
@@ -104,7 +104,7 @@ jobs:
 
   #     - name: Monitor verified batches (CDK Erigon Permissionless RPC)
   #       working-directory: .github/scripts
-  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+  #       run: ./monitor-cdk-chain.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
   # Deploy the CDK environment incrementally, stage by stage.
   # TODO: Fix this job.
@@ -194,4 +194,4 @@ jobs:
 
   #     - name: Monitor verified batches (CDK Erigon Permissionless RPC)
   #       working-directory: .github/scripts
-  #       run: ./monitor-verified-batches.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+  #       run: ./monitor-cdk-chain.sh --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
