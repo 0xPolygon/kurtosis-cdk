@@ -33,7 +33,7 @@ RUN apt-get update \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup --version ${FOUNDRY_VERSION} \
+  && /root/.foundry/bin/foundryup -i ${FOUNDRY_VERSION} \
   && cp /root/.foundry/bin/* /usr/local/bin
 
 USER node
