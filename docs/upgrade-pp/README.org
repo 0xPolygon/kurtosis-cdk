@@ -140,7 +140,7 @@ Now we should be in the shell for the contracts container.
 
 #+begin_src bash
 cd zkevm-contracts/
-git stash # there are some local modifcations to set the localhost network
+git stash # there are some local modifications to set the localhost network
 git pull
 git checkout v9.0.0-rc.3-pp
 git stash apply
