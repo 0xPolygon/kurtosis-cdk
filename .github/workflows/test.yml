@@ -3,7 +3,8 @@
 # https://github.com/0xPolygon/cdk/blob/main/.github/workflows/test-e2e.yml
 name: Test
 
-on: 
+on:
+  workflow_dispatch: # This keeps the workflow valid but prevents it from being triggered automatically.
   pull_request:
   push:
     branches: [main]
