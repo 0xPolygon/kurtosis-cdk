@@ -19,11 +19,15 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_cdk_central_environment": True,
     # Deploy CDK bridge infrastructure.
     "deploy_cdk_bridge_infra": True,
+    # Deploy CDK bridge UI.
+    "deploy_cdk_bridge_ui": True,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # Deploy cdk-erigon node.
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
+    # Deploy Optimism rollup.
+    "deploy_optimism_rollup": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -155,6 +159,8 @@ DEFAULT_L1_ARGS = {
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     # The L1 WS RPC endpoint.
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
+    # The L1 concensus layer RPC endpoint.
+    "l1_beacon_url": "http://cl-1-lighthouse-geth:4000",
     # The additional services to spin up.
     # Default: []
     # Options:
@@ -194,10 +200,6 @@ DEFAULT_L1_ARGS = {
     "l1_funding_amount": "1000000ether",
     # Default: 2
     "l1_participants_count": 1,
-    # Whether to deploy https://github.com/Arachnid/deterministic-deployment-proxy.
-    # Not deploying this will may cause errors or short circuit other contract
-    # deployments.
-    "l1_deploy_deterministic_deployment_proxy": True,
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l1_deploy_lxly_bridge_and_call": True,
     # Set this to true if the L1 contracts for the rollup are already
@@ -271,6 +273,38 @@ DEFAULT_ROLLUP_ARGS = {
     "zkevm_path_rw_data": "/tmp/",
 }
 
+# https://github.com/ethpandaops/optimism-package
+DEFAULT_OP_STACK_ARGS = {
+    "chains": [
+        {
+            "participants": [
+                {
+                    "el_type": "op-geth",
+                    # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "cl_type": "op-node",
+                    # https://github.com/ethereum-optimism/optimism/releases/tag/v1.9.5
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
+                    "count": 2,  # one is a sequencer node and the other an rpc
+                },
+            ],
+            "batcher_params": {
+                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.9.5",
+            },
+            # The OP package does not run the op-proposer for now.
+            # https://github.com/ethpandaops/optimism-package/blob/0d60a9d3997f83ecee6f7f6695027f819d776309/src/participant_network.star#L87
+            # "proposer_params": {
+            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
+            # },
+        },
+    ],
+    "op_contract_deployer_params": {
+        "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
+        "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+        "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+    },
+}
+
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
@@ -330,6 +364,7 @@ SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 def parse_args(plan, args):
     # Merge the provided args with defaults.
     deployment_stages = DEFAULT_DEPLOYMENT_STAGES | args.get("deployment_stages", {})
+    op_stack_args = args.get("optimism_package", {})
     args = DEFAULT_ARGS | args.get("args", {})
 
     # Validation step.
@@ -367,10 +402,8 @@ def parse_args(plan, args):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
 
-    # Remove deployment stages from the args struct.
-    # This prevents updating already deployed services when updating the deployment stages.
-    if "deployment_stages" in args:
-        args.pop("deployment_stages")
+    # Determine OP stack args.
+    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -379,6 +412,11 @@ def parse_args(plan, args):
         )
         args["l1_preset"] = "mainnet"
         args["l1_participant_count"] = 2
+
+    # Remove deployment stages from the args struct.
+    # This prevents updating already deployed services when updating the deployment stages.
+    if "deployment_stages" in args:
+        args.pop("deployment_stages")
 
     args = args | {
         "l2_rpc_name": l2_rpc_name,
@@ -393,7 +431,8 @@ def parse_args(plan, args):
     # Sort dictionaries for debug purposes.
     sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)
     sorted_args = dict.sort_dict_by_values(args)
-    return (sorted_deployment_stages, sorted_args)
+    sorted_op_stack_args = dict.sort_dict_by_values(op_stack_args)
+    return (sorted_deployment_stages, sorted_args, sorted_op_stack_args)
 
 
 def validate_log_level(name, log_level):
@@ -475,3 +514,35 @@ def get_l2_rpc_name(deploy_cdk_erigon_node):
         return "cdk-erigon-rpc"
     else:
         return "zkevm-node-rpc"
+
+
+def get_op_stack_args(plan, args, op_stack_args):
+    if not op_stack_args:
+        op_stack_args = DEFAULT_OP_STACK_ARGS
+
+    l1_chain_id = str(args.get("l1_chain_id", ""))
+    l1_rpc_url = args.get("l1_rpc_url", "")
+    l1_ws_url = args.get("l1_ws_url", "")
+    l1_beacon_url = args.get("l1_beacon_url", "")
+
+    l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic", "")
+    private_key_result = plan.run_sh(
+        description="Derive private key from mnemonic",
+        run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
+            l1_preallocated_mnemonic
+        ),
+        image=constants.TOOLBOX_IMAGE,
+    )
+    private_key = private_key_result.output
+
+    return {
+        "optimism_package": op_stack_args,
+        "external_l1_network_params": {
+            "network_id": l1_chain_id,
+            "rpc_kind": "standard",
+            "el_rpc_url": l1_rpc_url,
+            "el_ws_url": l1_ws_url,
+            "cl_rpc_url": l1_beacon_url,
+            "priv_key": private_key,
+        },
+    }
