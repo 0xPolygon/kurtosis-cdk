@@ -86,7 +86,8 @@ echo -e "- L2 RPC URL:\t\t\t$l2_rpc_url"
 echo -e "- Rollup Manager Address:\t$rollup_manager_addr"
 echo -e "- Rollup ID:\t\t\t$rollup_id"
 
-# Update datastreamer config.
+# Update datastreamer config. This requires the sanity check script to be run
+# from the root of the kurtosis-cdk repo.
 # shellcheck disable=SC2016
 tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" '.Online.URI = $l2_datastreamer_url' scripts/datastreamer.toml
 
@@ -110,7 +111,11 @@ function fetch_l2_batch_info_from_datastream() {
   local batch_number="$1"
   local result
 
-  # This is meant to read the stream and just add all of the objects together which is a little odd but would allow us to see the last unique fields
+  # This is meant to read the stream and just add all of the objects together
+  # which is a little odd but would allow us to see the last unique fields.
+  #
+  # The tool can be found and built from source here:
+  # https://github.com/0xPolygonHermez/zkevm-node/tree/develop/tools/datastreamer
   result="$(zkevm-datastreamer decode-batch --cfg scripts/datastreamer.toml --batch "$batch_number" --json | jq -s 'add')"
 
   local ts

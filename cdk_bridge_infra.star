@@ -2,7 +2,7 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 databases = import_module("./databases.star")
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, args, contract_setup_addresses, deploy_bridge_ui=True):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
@@ -24,16 +24,17 @@ def run(plan, args, contract_setup_addresses):
         config=bridge_service_config,
     )
 
-    # Start the bridge UI.
-    bridge_ui_config_artifact = create_bridge_ui_config_artifact(
-        plan, args, contract_setup_addresses
-    )
-    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+    if deploy_bridge_ui:
+        # Start the bridge UI.
+        bridge_ui_config_artifact = create_bridge_ui_config_artifact(
+            plan, args, contract_setup_addresses
+        )
+        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
-    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
-    if args["use_local_l1"]:
-        proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
-        zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
+        # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
+        if args["use_local_l1"]:
+            proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
+            zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):

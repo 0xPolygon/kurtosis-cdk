@@ -308,6 +308,25 @@ cast send \
     "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 # {{end}}
 
+# Deploy deterministic proxy.
+# https://github.com/Arachnid/deterministic-deployment-prox
+# You can find the `signer_address`, `transaction` and `deployer_address` by looking at the README.
+echo_ts "Deploying deterministic deployment proxy"
+signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
+transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
+deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
+cast send \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --mnemonic "{{.l1_preallocated_mnemonic}}" \
+    --value "0.01ether" \
+    "$signer_address"
+cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
+if [[ $(cast code --rpc-url "{{.l1_rpc_url}}" $deployer_address) == "0x" ]]; then
+    echo_ts "No code at deployer address: $deployer_address"
+    exit 1
+fi
+
+
 # If we've configured the l1 network with the minimal preset, we
 # should probably wait for the first finalized block. This isn't
 # strictly specific to minimal preset, but if we don't have "minimal"
@@ -315,7 +334,7 @@ cast send \
 # finalized block
 l1_preset="{{.l1_preset}}"
 if [[ $l1_preset == "minimal" ]]; then
-    wait_for_finalized_block;
+    wait_for_finalized_block
 fi
 
 # The contract setup is done!
