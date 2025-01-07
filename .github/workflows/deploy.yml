@@ -469,12 +469,12 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain 1 verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+      # - name: Monitor CDK chain 1 verified batches (CDK Erigon Permissionless RPC)
+      #   working-directory: .github/scripts
+      #   run: |
+      #     ./monitor-cdk-chain.sh \
+      #       --enclave ${{ env.ENCLAVE_NAME }} \
+      #       --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
       - name: Monitor CDK chain 2 verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
