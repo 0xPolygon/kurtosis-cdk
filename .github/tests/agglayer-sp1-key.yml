@@ -1,3 +1,10 @@
 args:
   agglayer_prover_sp1_key: ""
-  global_log_level: "info"
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1
+  additional_services: []
+  consensus_contract_type: pessimistic
+  sequencer_type: erigon
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  # zkevm_use_real_verifier: true
+  enable_normalcy: true

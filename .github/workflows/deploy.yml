@@ -489,6 +489,7 @@ jobs:
         run: |
           echo "Sending a bridge transaction from L1 to the PP network Erigon RPC..."
           originNetworkURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
+          # Use polycli ulxly once https://github.com/0xPolygon/polygon-cli/pull/448 gets merged.
           # polycli ulxly bridge asset \
           #     --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
           #     --value 1000000000000000000 \
@@ -517,6 +518,7 @@ jobs:
 
           destNetworkURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)
           bridgeURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-003 rpc)
+          # Use polycli ulxly once https://github.com/0xPolygon/polygon-cli/pull/448 gets merged.
           # polycli ulxly claim asset \
           #     --bridge-address 0xd8886e9D827218a02B8C04323b5550f2F36BC8d5 \
           #     --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
@@ -548,6 +550,7 @@ jobs:
         run: |
           echo "Sending a bridge transaction from third PP network to the first rollup Erigon RPC..."
           originNetworkURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)
+          # Use polycli ulxly once https://github.com/0xPolygon/polygon-cli/pull/448 gets merged.
           # polycli ulxly bridge asset \
           #     --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
           #     --value 1000000000000 \
@@ -575,7 +578,8 @@ jobs:
           sleep 300
 
           destNetworkURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
-          bridgeURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-001 rpc)
+          bridgeURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-003 rpc)
+          # Use polycli ulxly once https://github.com/0xPolygon/polygon-cli/pull/448 gets merged.
           # polycli ulxly claim asset \
           #     --bridge-address 0xd8886e9D827218a02B8C04323b5550f2F36BC8d5 \
           #     --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
