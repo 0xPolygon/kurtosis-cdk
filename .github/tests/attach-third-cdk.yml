@@ -56,9 +56,7 @@ args:
   cdk_node_image: ghcr.io/0xpolygon/cdk:0.5.0-beta10
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1
-  additional_services: []
   consensus_contract_type: pessimistic
-  sequencer_type: erigon
   erigon_strict_mode: false
   gas_token_enabled: false
   # zkevm_use_real_verifier: true

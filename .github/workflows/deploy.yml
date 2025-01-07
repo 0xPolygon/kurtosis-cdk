@@ -418,14 +418,6 @@ jobs:
         if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
         env :
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
-      
-      # Step to handle when the SP1_PRIVATE_KEY secret is not available.
-      - name: Handle missing SP1_PRIVATE_KEY secret
-        if: ${{ !env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key == '' }}
-        run: |
-          sed -i '/agglayer_prover_sp1_key:/d' ./.github/tests/agglayer-sp1-key.yml
-        env:
-          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/agglayer-sp1-key.yml .
