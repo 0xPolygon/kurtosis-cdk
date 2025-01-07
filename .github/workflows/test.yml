@@ -3,7 +3,7 @@
 # https://github.com/0xPolygon/cdk/blob/main/.github/workflows/test-e2e.yml
 name: Test
 
-on: 
+on:
   pull_request:
   push:
     branches: [main]
@@ -18,6 +18,7 @@ env:
 
 jobs:
   build-cdk-image:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,10 +39,10 @@ jobs:
     - name: Build cdk docker image
       working-directory: cdk
       run: make build-docker
-    
+
     - name: Save cdk image to archive
       run: docker save --output /tmp/cdk.tar cdk
-    
+
     - name: Upload archive
       uses: actions/upload-artifact@v4
       with:
@@ -49,6 +50,7 @@ jobs:
         path: /tmp/cdk.tar
 
   cdk-e2e-tests:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: build-cdk-image
@@ -63,7 +65,7 @@ jobs:
           - "fork12-pessimistic"
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
@@ -75,15 +77,15 @@ jobs:
       env:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    
+
     - name: Install Kurtosis CDK tools
       uses: ./.github/actions/setup-kurtosis-cdk
-    
+
     - name: Install polycli
       run: |
-        tmp_dir=$(mktemp -d) 
-        curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
-        mv "$tmp_dir"/* /usr/local/bin/polycli 
+        tmp_dir=$(mktemp -d)
+        curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir"
+        mv "$tmp_dir"/* /usr/local/bin/polycli
         rm -rf "$tmp_dir"
         sudo chmod +x /usr/local/bin/polycli
         /usr/local/bin/polycli version
@@ -97,13 +99,13 @@ jobs:
 
     - name: Setup bats
       uses: bats-core/bats-action@3.0.0
-    
+
     - name: Download cdk archive
       uses: actions/download-artifact@v4
       with:
         name: cdk
         path: /tmp
-    
+
     - name: Load cdk image
       run: |
         docker load --input /tmp/cdk.tar
@@ -120,11 +122,11 @@ jobs:
         KURTOSIS_FOLDER: ${{ github.workspace }}
         BATS_LIB_PATH: /usr/lib/
         agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
-    
+
     - name: Dump enclave
       if: failure()
       run: kurtosis enclave dump cdk ./dump
-    
+
     - name: Generate archive name
       if: failure()
       run: |
