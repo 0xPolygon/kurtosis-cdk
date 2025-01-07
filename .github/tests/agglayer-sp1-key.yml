@@ -1,4 +1,5 @@
 args:
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.23
   agglayer_prover_sp1_key: ""
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1
   additional_services: []
