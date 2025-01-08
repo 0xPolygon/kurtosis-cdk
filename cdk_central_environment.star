@@ -154,14 +154,17 @@ def run(plan, args, contract_setup_addresses):
         )
 
         # Start the aggoracle components.
-        cdk_aggoracle_configs = cdk_aggoracle_package.create_cdk_aggoracle_service_config(
-            args, aggoracle_config_artifact, genesis_artifact, keystore_artifacts
+        cdk_aggoracle_configs = (
+            cdk_aggoracle_package.create_cdk_aggoracle_service_config(
+                args, aggoracle_config_artifact, genesis_artifact, keystore_artifacts
+            )
         )
 
         plan.add_services(
             configs=cdk_aggoracle_configs,
             description="Starting the cdk aggoracle components",
         )
+
 
 def get_keystores_artifacts(plan, args):
     sequencer_keystore_artifact = plan.store_service_files(

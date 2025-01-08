@@ -35,7 +35,6 @@ def create_cdk_aggoracle_service_config(
 
 
 def get_cdk_aggoracle_ports(args):
-
     # FEP requires the aggregator
     ports = {
         "rpc": PortSpec(
