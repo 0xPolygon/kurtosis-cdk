@@ -48,6 +48,82 @@ Outputs = ["stderr"]
 [RPC]
         Port = {{.zkevm_cdk_node_port}}
 
+
+[AggOracle]
+TargetChainType="EVM"
+URLRPCL1="http://el-1-geth-lighthouse:8545"
+BlockFinality="FinalizedBlock"
+WaitPeriodNextGER="1s"
+	[AggOracle.EVMSender]
+        GlobalExitRootL2="{{.zkevm_global_exit_root_l2_address}}"
+        URLRPCL2="http://cdk-erigon-rpc-001:8123" # This can be replaced with desired L2 e.g. OP Geth RPC
+        ChainIDL2=2151908
+        GasOffset=0
+        WaitPeriodMonitorTx="1s"
+        SenderAddr="{{.zkevm_l2_aggoracle_address}}"
+                [AggOracle.EVMSender.EthTxManager]
+                FrequencyToMonitorTxs = "1s"
+                WaitTxToBeMined = "1s"
+                GetReceiptMaxTime = "1s"
+                GetReceiptWaitInterval = "1s"
+                PrivateKeys = [
+                        {Path = "/app/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+                ]
+                ForcedGas = 0
+                GasPriceMarginFactor = 1
+                MaxGasPriceLimit = 0
+                PersistenceFilename = "/tmp/ethtxmanager-sequencesender.json"
+                ReadPendingL1Txs = false
+                SafeStatusL1NumberOfBlocks = 5
+                FinalizedStatusL1NumberOfBlocks = 10
+                        [AggOracle.EVMSender.EthTxManager.Etherman]
+                        URL = "http://cdk-erigon-rpc-001:8123" # This can be replaced with desired L2 e.g. OP Geth RPC
+                        MultiGasProvider = false
+                        L1ChainID = 2151908
+                        HTTPHeaders = []
+
+[ClaimSponsor]
+DBPath = "/tmp/claimsponsor"
+Enabled = true
+SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
+BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+MaxGas = 200000
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+WaitTxToBeMinedPeriod = "3s"
+WaitOnEmptyQueue = "3s"
+GasOffset = 0
+	[ClaimSponsor.EthTxManager]
+        FrequencyToMonitorTxs = "1s"
+        WaitTxToBeMined = "2s"
+        GetReceiptMaxTime = "250ms"
+        GetReceiptWaitInterval = "1s"
+        PrivateKeys = [
+                {Path = "/app/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+        ]
+        ForcedGas = 0
+        GasPriceMarginFactor = 1
+        MaxGasPriceLimit = 0
+        PersistenceFilename = "/tmp/ethtxmanager-claimsponsor.json"
+        ReadPendingL1Txs = false
+        SafeStatusL1NumberOfBlocks = 5
+        FinalizedStatusL1NumberOfBlocks = 10
+                [ClaimSponsor.EthTxManager.Etherman]
+                URL = "http://cdk-erigon-rpc-001:8123" # This can be replaced with desired L2 e.g. OP Geth RPC
+                MultiGasProvider = false
+                L1ChainID = 2151908
+                HTTPHeaders = []
+
+[LastGERSync]
+DBPath = "/tmp/lastgersync"
+BlockFinality = "LatestBlock"
+InitialBlockNum = 0
+GlobalExitRootL2Addr = "{{.zkevm_global_exit_root_l2_address}}"
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+WaitForNewBlocksPeriod = "1s"
+DownloadBufferSize = 100
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
