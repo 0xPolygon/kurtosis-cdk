@@ -11,7 +11,7 @@ def create_cdk_aggoracle_service_config(
     (ports, public_ports) = get_cdk_aggoracle_ports(args)
     service_command = get_cdk_aggoracle_cmd(args)
     cdk_aggoracle_service_config = ServiceConfig(
-        image=args["cdk_node_image"],
+        image=args["cdk_aggoracle_image"],
         ports=ports,
         public_ports=public_ports,
         files={
@@ -53,7 +53,7 @@ def get_cdk_aggoracle_cmd(args):
         "sleep 20 && cdk-node run "
         + "--cfg=/app/config.toml "
         + "--custom-network-file=/app/genesis.json "
-        + "--components=aggoracle,rpc"
+        + "--components=aggoracle,aggsender"
     ]
 
     return service_command

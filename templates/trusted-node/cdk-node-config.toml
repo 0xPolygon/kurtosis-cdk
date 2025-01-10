@@ -116,7 +116,7 @@ GasOffset = 0
 
 [LastGERSync]
 DBPath = "/tmp/lastgersync"
-BlockFinality = "LatestBlock"
+BlockFinality = "FinalizedBlock"
 InitialBlockNum = 0
 GlobalExitRootL2Addr = "{{.zkevm_global_exit_root_l2_address}}"
 RetryAfterErrorPeriod = "1s"
@@ -129,6 +129,38 @@ CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
 MaxCertSize = 102760448
 SaveCertificatesToFilesPath="/tmp"
+StoragePath = "/tmp/aggsender.sqlite"
+AggLayerURL = "{{.agglayer_url}}"
+AggsenderPrivateKey = {Path = "/app/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+URLRPCL2="http://cdk-erigon-rpc-001:8123"
+BlockFinality = "FinalizedBlock"
+EpochNotificationPercentage = 50
+MaxRetriesStoreCertificate = 3
+DelayBeetweenRetries = "60s"
+KeepCertificatesHistory = true
+BridgeMetadataAsHash = true
+DryRun = false
+EnableRPC = true
+
+[BridgeL1Sync]
+DBPath = "/tmp/bridgel1sync.sqlite"
+BlockFinality = "FinalizedBlock"
+InitialBlockNum = 0
+BridgeAddr = "{{.zkevm_bridge_address}}"
+SyncBlockChunkSize = 100
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+WaitForNewBlocksPeriod = "3s"
+
+[BridgeL2Sync]
+DBPath = "/tmp/bridgel2sync.sqlite"
+BlockFinality = "FinalizedBlock"
+InitialBlockNum = 0
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+SyncBlockChunkSize = 100
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+WaitForNewBlocksPeriod = "3s"
 
 [L1InfoTreeSync]
 # The initial block number from which to start syncing.
