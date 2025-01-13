@@ -60,7 +60,6 @@ WaitPeriodNextGER="1s"
         ChainIDL2=2151908
         GasOffset=0
         WaitPeriodMonitorTx="1s"
-        SenderAddr="{{.zkevm_l2_aggoracle_address}}"
                 [AggOracle.EVMSender.EthTxManager]
                 FrequencyToMonitorTxs = "1s"
                 WaitTxToBeMined = "1s"
