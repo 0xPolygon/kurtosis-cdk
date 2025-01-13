@@ -103,7 +103,7 @@ def run(plan, args, contract_setup_addresses):
     if args["sequencer_type"] == "erigon":
         # Create the cdk node config.
         node_config_template = read_file(
-            src="./templates/trusted-node/cdk-node-config.toml"
+            src="./templates/trusted-node/cdk-node-config-no-aggoracle.toml"
         )
         node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
@@ -153,10 +153,16 @@ def run(plan, args, contract_setup_addresses):
             },
         )
 
+        sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
+        sovereign_genesis_artifact = plan.render_templates(
+            name="sovereign_genesis",
+            config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
+        )
+
         # Start the aggoracle components.
         cdk_aggoracle_configs = (
             cdk_aggoracle_package.create_cdk_aggoracle_service_config(
-                args, aggoracle_config_artifact, genesis_artifact, keystore_artifacts
+                args, aggoracle_config_artifact, sovereign_genesis_artifact, keystore_artifacts
             )
         )
 
