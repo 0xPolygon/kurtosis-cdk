@@ -1,0 +1,67 @@
+PathRWData = "/tmp/"
+L1URL="http://el-1-geth-lighthouse:8545"
+L2URL="http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+AggLayerURL="http://agglayer:4444"
+
+ForkId = 12
+ContractVersions = "banana"
+IsValidiumMode = false
+
+# This is the admin account for now
+L2Coinbase =  "0x8281AdB2fC133536ACDC4c923bc573A26f66F260"
+SequencerPrivateKeyPath = ""
+SequencerPrivateKeyPassword  = ""
+
+AggregatorPrivateKeyPath = ""
+AggregatorPrivateKeyPassword  = ""
+SenderProofToL1Addr = ""
+polygonBridgeAddr = "0xd8886e9D827218a02B8C04323b5550f2F36BC8d5"
+
+
+RPCURL = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+WitnessURL = ""
+
+# This values can be overriden directly from genesis.json
+rollupCreationBlockNumber = "47"
+rollupManagerCreationBlockNumber = "47"
+genesisBlockNumber = "47"
+
+[L1Config]
+chainId = "271828"
+polygonZkEVMGlobalExitRootAddress = "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
+polygonRollupManagerAddress = "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+polTokenAddress = "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
+# This aligns with the address that we created
+polygonZkEVMAddress = "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568"
+
+[L2Config]
+GlobalExitRootAddr = "0x38b6Ba96AC4149888e27AA4315DDC366f1676BCf"
+
+[Log]
+Environment = "development" # "production" or "development"
+Level = "info"
+Outputs = ["stderr"]
+
+[RPC]
+Port = 5576
+
+[AggSender]
+AggsenderPrivateKey = {Path = "/app/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+
+[AggOracle.EVMSender]
+GlobalExitRootL2="0x38b6Ba96AC4149888e27AA4315DDC366f1676BCf"
+
+[AggOracle.EVMSender.EthTxManager]
+PrivateKeys = [{Path = "/app/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+
+[AggOracle.EVMSender.EthTxManager.Etherman]
+# Ok this is bizarre, but needs to be set to be the L2 chain id
+L1ChainID = 2151908
+
+[BridgeL2Sync]
+BridgeAddr = "0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C"
+
+[L1InfoTreeSync]
+# The initial block number from which to start syncing.
+# Default: 0
+InitialBlock = "47"

@@ -7,11 +7,11 @@ def create_cdk_aggoracle_service_config(
     genesis_artifact,
     keystore_artifact,
 ):
-    cdk_aggoracle_name = "cdk-aggoracle" + args["deployment_suffix"]
+    cdk_aggoracle_name = "cdk-aggkit" + args["deployment_suffix"]
     (ports, public_ports) = get_cdk_aggoracle_ports(args)
     service_command = get_cdk_aggoracle_cmd(args)
     cdk_aggoracle_service_config = ServiceConfig(
-        image=args["cdk_aggoracle_image"],
+        image=args["cdk_aggkit_image"],
         ports=ports,
         public_ports=public_ports,
         files={
@@ -19,8 +19,9 @@ def create_cdk_aggoracle_service_config(
                 artifact_names=[
                     config_artifact,
                     genesis_artifact,
-                    keystore_artifact.claimsponsor,
                     keystore_artifact.aggoracle,
+                    keystore_artifact.sovereignadmin,
+                    keystore_artifact.claimtx,
                 ],
             ),
             "/data": Directory(
@@ -35,7 +36,6 @@ def create_cdk_aggoracle_service_config(
 
 
 def get_cdk_aggoracle_ports(args):
-    # FEP requires the aggregator
     ports = {
         "rpc": PortSpec(
             args["zkevm_cdk_node_port"],

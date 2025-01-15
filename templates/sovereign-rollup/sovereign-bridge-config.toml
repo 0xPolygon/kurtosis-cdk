@@ -1,0 +1,59 @@
+[Log]
+Level = "info"
+Environment = "production"
+Outputs = ["stderr"]
+
+[SyncDB]
+Database = "postgres"
+User = "{{.bridge_db.user}}"
+Name = "{{.bridge_db.name}}"
+Password = "{{.bridge_db.password}}"
+Host = "{{.bridge_db.hostname}}"
+Port = "{{.bridge_db.port}}"
+MaxConns = 20
+
+[Etherman]
+l1URL = "http://el-1-geth-lighthouse:8545"
+L2URLs = ["http://op-el-1-op-geth-op-node-op-kurtosis:8545"]
+
+[Synchronizer]
+SyncInterval = "5s"
+SyncChunkSize = 100
+
+[BridgeController]
+Store = "postgres"
+Height = 32
+
+[BridgeServer]
+GRPCPort = "9090"
+HTTPPort = "8080"
+DefaultPageLimit = 25
+MaxPageLimit = 1000
+BridgeVersion = "v1"
+# Read only
+[BridgeServer.DB]
+Database = "postgres"
+User = "{{.bridge_db.user}}"
+Name = "{{.bridge_db.name}}"
+Password = "{{.bridge_db.password}}"
+Host = "{{.bridge_db.hostname}}"
+Port = "{{.bridge_db.port}}"
+MaxConns = 20
+
+[NetworkConfig]
+GenBlockNumber = "39"
+PolygonBridgeAddress = "0xd8886e9D827218a02B8C04323b5550f2F36BC8d5"
+PolygonZkEVMGlobalExitRootAddress = "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
+PolygonRollupManagerAddress = "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+PolygonZkEVMAddress = "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568"
+L2PolygonBridgeAddresses = ["0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C"]
+
+SovereignChains = [true]
+L2PolygonZkEVMGlobalExitRootAddresses = ["0x38b6Ba96AC4149888e27AA4315DDC366f1676BCf"]
+
+[ClaimTxManager]
+FrequencyToMonitorTxs = "5s"
+PrivateKey = {Path = "/etc/zkevm/claimtx.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+Enabled = true
+RetryInterval = "1s"
+RetryNumber = 10

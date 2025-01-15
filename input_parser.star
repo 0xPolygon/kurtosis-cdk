@@ -34,14 +34,14 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.23",  # https://github.com/agglayer/agglayer/tags
-    "cdk_aggoracle_image": "cdk-aggoracle:latest",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_aggkit_image": "cdk-aggoracle:latest",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "cdk-aggoracle:latest",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:sovereign-test",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.3-pp-fork.12-patch.1",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -146,9 +146,13 @@ DEFAULT_ACCOUNTS = {
     # claimsponsor
     "zkevm_l2_claimsponsor_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
     "zkevm_l2_claimsponsor_private_key": "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-    # aggoracle: prefunded OP Geth account, not originated from the above mnemonic.
-    "zkevm_l2_aggoracle_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-    "zkevm_l2_aggoracle_private_key": "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+    # AggKit Addresses
+    "zkevm_l2_aggoracle_address": "0x2Ac2c49Ee3Ac5f663115C86F405Ea855B365D5Ec",
+    "zkevm_l2_aggoracle_private_key": "0xd65de4634c214d45673528bf55be28fe43b0664c99cc99089ef75a922b3a22fd",
+    "zkevm_l2_sovereignadmin_address": "0x8281AdB2fC133536ACDC4c923bc573A26f66F260",
+    "zkevm_l2_sovereignadmin_private_key": "0x45f3ccdaff88ab1b3bb41472f09d5cde7cb20a6cbbc9197fddf64e2f3d67aaf2",
+    "zkevm_l2_claimtx_address": "0x3754Aa77EE1E8AfB200Ce36a8c943ed8F5AaB7BC",
+    "zkevm_l2_claimtx_private_key": "0xfa333c42db7bc56277bf67c93ba19e4f414d802ef9886b8b5dc7c450655ae77f",
 }
 
 DEFAULT_L1_ARGS = {

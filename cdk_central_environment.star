@@ -4,7 +4,6 @@ zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 cdk_node_package = import_module("./lib/cdk_node.star")
-cdk_aggoracle_package = import_module("./lib/cdk_aggoracle.star")
 databases = import_module("./databases.star")
 
 
@@ -103,7 +102,7 @@ def run(plan, args, contract_setup_addresses):
     if args["sequencer_type"] == "erigon":
         # Create the cdk node config.
         node_config_template = read_file(
-            src="./templates/trusted-node/cdk-node-config-no-aggoracle.toml"
+            src="./templates/trusted-node/cdk-node-config.toml"
         )
         node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
@@ -132,46 +131,6 @@ def run(plan, args, contract_setup_addresses):
             description="Starting the cdk node components",
         )
 
-        # Create the cdk aggoracle config.
-        aggoracle_config_template = read_file(
-            src="./templates/trusted-node/cdk-node-config.toml"
-        )
-        aggoracle_config_artifact = plan.render_templates(
-            name="cdk-aggoracle-config-artifact",
-            config={
-                "config.toml": struct(
-                    template=aggoracle_config_template,
-                    data=args
-                    | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(
-                            args
-                        ),
-                    }
-                    | db_configs
-                    | contract_setup_addresses,
-                )
-            },
-        )
-
-        sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
-        sovereign_genesis_artifact = plan.render_templates(
-            name="sovereign_genesis",
-            config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
-        )
-
-        # Start the aggoracle components.
-        cdk_aggoracle_configs = (
-            cdk_aggoracle_package.create_cdk_aggoracle_service_config(
-                args, aggoracle_config_artifact, sovereign_genesis_artifact, keystore_artifacts
-            )
-        )
-
-        plan.add_services(
-            configs=cdk_aggoracle_configs,
-            description="Starting the cdk aggoracle components",
-        )
-
-
 def get_keystores_artifacts(plan, args):
     sequencer_keystore_artifact = plan.store_service_files(
         name="sequencer-keystore",
@@ -198,18 +157,12 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimsponsor.keystore",
     )
-    aggoracle_keystore_artifact = plan.store_service_files(
-        name="aggoracle-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggoracle.keystore",
-    )
     return struct(
         sequencer=sequencer_keystore_artifact,
         aggregator=aggregator_keystore_artifact,
         proofsigner=proofsigner_keystore_artifact,
         dac=dac_keystore_artifact,
         claimsponsor=claimsponsor_keystore_artifact,
-        aggoracle=aggoracle_keystore_artifact,
     )
 
 
