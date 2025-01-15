@@ -131,7 +131,6 @@ def run(plan, args, contract_setup_addresses):
             description="Starting the cdk node components",
         )
 
-
 def get_keystores_artifacts(plan, args):
     sequencer_keystore_artifact = plan.store_service_files(
         name="sequencer-keystore",
