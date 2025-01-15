@@ -15,7 +15,7 @@ SequencerPrivateKeyPassword  = ""
 AggregatorPrivateKeyPath = ""
 AggregatorPrivateKeyPassword  = ""
 SenderProofToL1Addr = ""
-polygonBridgeAddr = "0xd8886e9D827218a02B8C04323b5550f2F36BC8d5"
+polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 
 RPCURL = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
