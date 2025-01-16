@@ -518,7 +518,8 @@ jobs:
               --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
               --deposit-network 0 \
               --rpc-url $destNetworkURL \
-              --bridge-service-url $bridgeURL
+              --bridge-service-url $bridgeURL \
+              --gas-price $(cast gas-price --rpc-url $destNetworkURL)
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim Transaction successfuly sent!"
               exit 0
@@ -542,7 +543,8 @@ jobs:
               --bridge-address 0xd8886e9D827218a02B8C04323b5550f2F36BC8d5 \
               --destination-network 1 \
               --force-update-root=true \
-              --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+              --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
+              --gas-price $(cast gas-price --rpc-url $originNetworkURL)
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
           else
@@ -562,7 +564,8 @@ jobs:
               --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
               --deposit-network 3 \
               --rpc-url $destNetworkURL \
-              --bridge-service-url $bridgeURL
+              --bridge-service-url $bridgeURL \
+              --gas-price $(cast gas-price --rpc-url $destNetworkURL)
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim Transaction successfuly sent!"
               exit 0
