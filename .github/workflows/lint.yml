@@ -50,7 +50,7 @@ jobs:
         run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
 
       - name: Run shellcheck
-        run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
+        run: find . -type f -name '*.sh' | grep -v "./docs" | sort | xargs -I {} shellcheck {}
 
   check-test-combinations-and-cdk-version-matrix:
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
       - name: Generate test combinations and cdk version matrix
         working-directory: .github/tests
         run: ./combine-ymls.sh
-      
+
       - name: Check if test combinations and cdk version matrix are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
