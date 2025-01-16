@@ -267,7 +267,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "agglayer_prover_network_url": "https://rpc.production2.succinct.tools/",
+    "agglayer_prover_network_url": "https://rpc.succinct.xyz/",
     # The URL where the agglayer can be reached
     "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
     # This is a path where the cdk-node will write data
