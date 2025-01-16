@@ -33,7 +33,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.23",  # https://github.com/agglayer/agglayer/tags
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.1-rc.1",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -241,7 +241,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If we're using pessimistic consensus and a real verifier, we'll
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
-    "verifier_program_vkey": "0x002d324867c82b5b5e0c66a822b004694cb73166d74c0713add59a282b8ce3e0",
+    "verifier_program_vkey": "0x0062c685702e0582d900f3a19521270c92a58e2588230c4a5cf3b45103f4a512",
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
@@ -266,6 +266,8 @@ DEFAULT_ROLLUP_ARGS = {
     "enable_normalcy": False,
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
+    # If we're setting an sp1 key, we might want to specify a specific RPC url as well
+    "agglayer_prover_network_url": "https://rpc.production2.succinct.tools/",
     # The URL where the agglayer can be reached
     "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
     # This is a path where the cdk-node will write data
