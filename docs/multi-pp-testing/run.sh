@@ -7,7 +7,7 @@ fi
 
 tester_contract_address=0xc54E34B55EF562FE82Ca858F70D1B73244e86388
 test_erc20_buggy_addr=0x22939b3A4dFD9Fc6211F99Cdc6bd9f6708ae2956
-test_lxly_proxy_addr=0x1786B94e55cA57b897aF0f59a1e5b31EA0469547
+test_lxly_proxy_addr=0x5d1847D52a39a05E6EDb45F2890d52D83155CF7F
 tester_contract_address=0xc54E34B55EF562FE82Ca858F70D1B73244e86388
 
 l1_rpc_url=http://$(kurtosis port print pp el-1-geth-lighthouse rpc)
@@ -134,6 +134,14 @@ while read scenario ; do
         testCommand="$testCommand --call-data $(date +%s | xxd -p)"
     elif [[ $testMetaData == "0x" ]]; then
         testCommand="$testCommand --call-data 0x"
+    elif [[ $testMetaData == "Huge" ]]; then
+        temp_file=$(mktemp)
+        xxd -p /dev/random | tr -d "\n" | head -c 97000 > $temp_file
+        testCommand="$testCommand --call-data-file $temp_file"
+    elif [[ $testMetaData == "Max" ]]; then
+        temp_file=$(mktemp)
+        xxd -p /dev/random | tr -d "\n" | head -c 261569 > $temp_file
+        testCommand="$testCommand --call-data-file $temp_file"
     else
         printf "Unrecognized Metadata: $testMetaData\n"
         exit 1;
@@ -205,7 +213,7 @@ polycli ulxly claim-everything \
         --destination-address $eth_address \
         --private-key $private_key \
         --rpc-url $l2_fep_url \
-        --bridge-limit 1000
+        --bridge-limit 1000 --bridge-offset 0
 polycli ulxly claim-everything \
         --bridge-address $bridge_address \
         --bridge-service-map $network_id_fep=$l2_fepb_url \
@@ -214,7 +222,7 @@ polycli ulxly claim-everything \
         --destination-address $eth_address \
         --private-key $private_key \
         --rpc-url $l2_pp1_url \
-        --bridge-limit 1000
+        --bridge-limit 1000 --bridge-offset 0
 polycli ulxly claim-everything \
         --bridge-address $bridge_address \
         --bridge-service-map $network_id_fep=$l2_fepb_url \
@@ -223,4 +231,13 @@ polycli ulxly claim-everything \
         --destination-address $eth_address \
         --private-key $private_key \
         --rpc-url $l2_pp2_url \
-        --bridge-limit 1000
+        --bridge-limit 1000 --bridge-offset 0
+polycli ulxly claim-everything \
+        --bridge-address $bridge_address \
+        --bridge-service-map $network_id_fep=$l2_fepb_url \
+        --bridge-service-map $network_id_pp1=$l2_pp1b_url \
+        --bridge-service-map $network_id_pp2=$l2_pp2b_url \
+        --destination-address $eth_address \
+        --private-key $private_key \
+        --rpc-url $l1_rpc_url \
+        --bridge-limit 1000 --bridge-offset 0
