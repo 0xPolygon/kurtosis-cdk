@@ -4,7 +4,7 @@ DestinationChain   : L1, PP1, PP2, FEP
 DestinationAddress : EOA, Contract, Precompile
 BridgeType         : Asset, Message, Weth
 Token              : NativeEther, LocalERC20, Buggy, WETH, GasToken
-MetaData           : 0x, Random
+MetaData           : 0x, Random, Huge, Max
 ForceUpdate        : True (4), False
 Amount             : 0, 1, Random, Max
 
