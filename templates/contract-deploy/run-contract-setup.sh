@@ -40,7 +40,7 @@ fund_account_on_l1() {
 
 deploy_rollup_manager() {
     # Deploy contracts.
-    echo_ts "Step 1: Preparing tesnet"
+    echo_ts "Step 1: Preparing testnet"
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
 
     echo_ts "Step 2: Creating genesis"

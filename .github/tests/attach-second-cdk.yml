@@ -25,3 +25,5 @@ args:
   zkevm_l2_dac_private_key: "0x992c9ab11d5eab6b6c2634b8bb0b85f3d8d1acf25024dc99c359cb2afd9b40a7"
   zkevm_l2_proofsigner_address: "0xf1a661D7b601Ec46a040f57193cC99aB8c4132FA"
   zkevm_l2_proofsigner_private_key: "0xc7fe3a006d75ba9326d9792523385abb49057c66aee0b8b4248821a89713f975"
+
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
