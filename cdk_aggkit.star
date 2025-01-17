@@ -4,7 +4,7 @@ databases = import_module("./databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
@@ -27,7 +27,8 @@ def run(plan, args, contract_setup_addresses):
                     ),
                 }
                 | db_configs
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | sovereign_contract_setup_addresses
             )
         },
     )
@@ -52,7 +53,7 @@ def run(plan, args, contract_setup_addresses):
 
     # Start the bridge service.
     bridge_config_artifact = create_bridge_config_artifact(
-        plan, args, contract_setup_addresses, db_configs
+        plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs
     )
     bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
         args, bridge_config_artifact, keystore_artifacts.claimtx
@@ -85,7 +86,7 @@ def get_keystores_artifacts(plan, args):
         claimtx=claimtx_keystore_artifact,
     )
 
-def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
+def create_bridge_config_artifact(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs):
     bridge_config_template = read_file(
         src="./templates/sovereign-rollup/sovereign-bridge-config.toml"
     )
@@ -106,7 +107,8 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                 }
                 | contract_setup_addresses
-                | db_configs,
+                | sovereign_contract_setup_addresses
+                | db_configs
             )
         },
     )

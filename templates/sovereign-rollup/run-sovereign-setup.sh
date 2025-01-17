@@ -18,7 +18,7 @@ rollup_admin_key="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82
 cast send --private-key $rollup_admin_key --rpc-url http://el-1-geth-lighthouse:8545 $rollup_manager_addr 'createNewRollup(uint32,uint64,address,address,address,string,string)' $rollupTypeID $chainID $admin $sequencer $gasTokenAddress $sequencerURL $networkName
 
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-cast call --json --rpc-url  http://el-1-geth-lighthouse:8545 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"rollupContract": .[0], "chainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}'
+cast call --json --rpc-url  http://el-1-geth-lighthouse:8545 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr=0x72aA7C55e1c7BF4017F22a3bc19722de11911A81
@@ -47,11 +47,11 @@ libs = ['node_modules']" > foundry.toml
 
 forge build contracts/v2/sovereignChains/BridgeL2SovereignChain.sol contracts/v2/sovereignChains/GlobalExitRootManagerL2SovereignChain.sol
 
-bridge_impl_nonce=$(cast nonce --rpc-url $rpc_url $bridge_admin_addr)
-bridge_impl_addr=$(cast compute-address --nonce $bridge_impl_nonce $bridge_admin_addr | sed 's/.*: //')
-ger_impl_addr=$(cast compute-address --nonce $((bridge_impl_nonce+1)) $bridge_admin_addr | sed 's/.*: //')
-ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+2)) $bridge_admin_addr | sed 's/.*: //')
-bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+3)) $bridge_admin_addr | sed 's/.*: //')
+    bridge_impl_nonce=$(cast nonce --rpc-url $rpc_url $bridge_admin_addr)
+    bridge_impl_addr=$(cast compute-address --nonce $bridge_impl_nonce $bridge_admin_addr | sed 's/.*: //')
+    ger_impl_addr=$(cast compute-address --nonce $((bridge_impl_nonce+1)) $bridge_admin_addr | sed 's/.*: //')
+    ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+2)) $bridge_admin_addr | sed 's/.*: //')
+    bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+3)) $bridge_admin_addr | sed 's/.*: //')
 
 # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
 cast send --value 1000ether --rpc-url $rpc_url --private-key $private_key $bridge_proxy_addr
@@ -77,7 +77,7 @@ calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTok
 
 forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args $bridge_impl_addr $bridge_admin_addr $calldata
 
-echo "bridge_impl_addr:  $bridge_impl_addr" >> sovereign-contracts.out
-echo "ger_impl_addr:     $ger_impl_addr" >> sovereign-contracts.out
-echo "ger_proxy_addr:    $ger_proxy_addr" >> sovereign-contracts.out
-echo "bridge_proxy_addr: $bridge_proxy_addr" >> sovereign-contracts.out
+jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json

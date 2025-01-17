@@ -22,20 +22,20 @@ RPCURL = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
 WitnessURL = ""
 
 # This values can be overriden directly from genesis.json
-rollupCreationBlockNumber = "47"
-rollupManagerCreationBlockNumber = "47"
-genesisBlockNumber = "47"
+rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 
 [L1Config]
-chainId = "271828"
-polygonZkEVMGlobalExitRootAddress = "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
-polygonRollupManagerAddress = "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-polTokenAddress = "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E"
+chainId = "{{.l1_chain_id}}"
+polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+polTokenAddress = "{{.pol_token_address}}"
 # This aligns with the address that we created
-polygonZkEVMAddress = "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568"
+polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 
 [L2Config]
-GlobalExitRootAddr = "0x38b6Ba96AC4149888e27AA4315DDC366f1676BCf"
+GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 
 [Log]
 Environment = "development" # "production" or "development"
@@ -49,19 +49,19 @@ Port = 5576
 AggsenderPrivateKey = {Path = "/app/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
 [AggOracle.EVMSender]
-GlobalExitRootL2="0x38b6Ba96AC4149888e27AA4315DDC366f1676BCf"
+GlobalExitRootL2="{{.sovereign_ger_proxy_addr}}"
 
 [AggOracle.EVMSender.EthTxManager]
 PrivateKeys = [{Path = "/app/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
 
 [AggOracle.EVMSender.EthTxManager.Etherman]
 # Ok this is bizarre, but needs to be set to be the L2 chain id
-L1ChainID = 2151908
+L1ChainID = "{{.sovereign_chain_id}}"
 
 [BridgeL2Sync]
-BridgeAddr = "0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C"
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 
 [L1InfoTreeSync]
 # The initial block number from which to start syncing.
 # Default: 0
-InitialBlock = "47"
+InitialBlock = "{{.zkevm_rollup_manager_block_number}}"

@@ -157,11 +157,15 @@ def run(plan, args={}):
         # Deploy Sovereign contracts
         plan.print("Deploying sovereign contracts on OP Stack")
         import_module(deploy_sovereign_contracts_package).run(plan, args)
+        # Extract Sovereign contract addresses
+        sovereign_contract_setup_addresses = service_package.get_sovereign_contract_setup_addresses(
+            plan, args
+        )
         # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
         import_module(cdk_aggkit_package).run(
-            plan, central_environment_args, contract_setup_addresses
+            plan, central_environment_args, contract_setup_addresses, sovereign_contract_setup_addresses
         )
     else:
         plan.print("Skipping the deployment of an Optimism rollup")

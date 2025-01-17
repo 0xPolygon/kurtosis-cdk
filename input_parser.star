@@ -273,7 +273,7 @@ DEFAULT_ROLLUP_ARGS = {
     # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
     "enable_normalcy": False,
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
-    "agglayer_prover_sp1_key": "",
+    "agglayer_prover_sp1_key": None,
     # The URL where the agglayer can be reached
     "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
     # This is a path where the cdk-node will write data
