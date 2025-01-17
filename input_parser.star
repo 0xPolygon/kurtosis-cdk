@@ -27,7 +27,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
-    "deploy_optimism_rollup": True,
+    "deploy_optimism_rollup": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -35,6 +35,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.1-rc.1",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_aggkit_image": "cdk-aggoracle:latest",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags

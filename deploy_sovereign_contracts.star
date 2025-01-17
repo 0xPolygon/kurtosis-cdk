@@ -1,5 +1,4 @@
 def run(plan, args):
-
     plan.exec(
         description="Deploying sovereign contracts on OP Stack",
         service_name="contracts" + args["deployment_suffix"],

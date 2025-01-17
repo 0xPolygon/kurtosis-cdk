@@ -65,6 +65,7 @@ def get_l2_rpc_url(plan, args):
         ),
     )
 
+
 def get_sovereign_contract_setup_addresses(plan, args):
     extract = {
         "sovereign_ger_proxy_addr": "fromjson | .ger_proxy_addr",

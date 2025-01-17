@@ -22,13 +22,11 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
                 template=aggoracle_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(
-                        args
-                    ),
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                 }
                 | db_configs
                 | contract_setup_addresses
-                | sovereign_contract_setup_addresses
+                | sovereign_contract_setup_addresses,
             )
         },
     )
@@ -40,10 +38,8 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     )
 
     # Start the aggoracle components.
-    cdk_aggoracle_configs = (
-        cdk_aggkit_package.create_cdk_aggoracle_service_config(
-            args, aggoracle_config_artifact, sovereign_genesis_artifact, keystore_artifacts
-        )
+    cdk_aggoracle_configs = cdk_aggkit_package.create_cdk_aggoracle_service_config(
+        args, aggoracle_config_artifact, sovereign_genesis_artifact, keystore_artifacts
     )
 
     plan.add_services(
@@ -53,7 +49,11 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
 
     # Start the bridge service.
     bridge_config_artifact = create_bridge_config_artifact(
-        plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        db_configs,
     )
     bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
         args, bridge_config_artifact, keystore_artifacts.claimtx
@@ -86,7 +86,10 @@ def get_keystores_artifacts(plan, args):
         claimtx=claimtx_keystore_artifact,
     )
 
-def create_bridge_config_artifact(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs):
+
+def create_bridge_config_artifact(
+    plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs
+):
     bridge_config_template = read_file(
         src="./templates/sovereign-rollup/sovereign-bridge-config.toml"
     )
@@ -108,7 +111,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, sovereig
                 }
                 | contract_setup_addresses
                 | sovereign_contract_setup_addresses
-                | db_configs
+                | db_configs,
             )
         },
     )
