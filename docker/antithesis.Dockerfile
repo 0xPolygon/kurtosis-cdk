@@ -10,9 +10,10 @@ RUN apt-get update \
 RUN git clone --branch v0.2.27 https://github.com/0xPolygon/kurtosis-cdk
 
 # Pull kurtosis-cdk package dependencies.
-# The package has other dependencies (blockscout, prometheus, grafana, etc.) but they shouldn't be used when testing the package with Antithesis.
+# The package has other dependencies (blockscout, prometheus and grafana) but they shouldn't be used when testing the package with Antithesis.
 RUN git clone --branch 4.4.0 https://github.com/ethpandaops/ethereum-package
-RUN sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/ethereum-package: ../ethereum-package' /kurtosis-cdk/kurtosis.yml
+RUN git clone --branch 1.2.0 https://github.com/ethpandaops/optimism-package
+RUN sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/ethereum-package: ../ethereum-package\n    github.com/kurtosis-tech/optimism-package: ../optimism-package' /kurtosis-cdk/kurtosis.yml
 
 # Pull ethereum package dependencies.
 RUN git clone --branch main https://github.com/kurtosis-tech/prometheus-package
@@ -22,6 +23,9 @@ RUN git clone --branch main https://github.com/kurtosis-tech/redis-package
 # Make the package reference locally pulled dependencies.
 RUN sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/prometheus-package: ../prometheus-package\n    github.com/kurtosis-tech/postgres-package: ../postgres-package\n    github.com/bharath-123/db-adminer-package: ../db-adminer-package\n    github.com/kurtosis-tech/redis-package: ../redis-package' /ethereum-package/kurtosis.yml
 
+# Pull optimism package dependencies.
+# It relies on the ethereum package which is already pulled.
+RUN sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/ethereum-package: ../ethereum-package' /optimism-package/kurtosis.yml
 
 FROM scratch
 
@@ -31,3 +35,4 @@ COPY --from=builder /prometheus-package /prometheus-package
 COPY --from=builder /postgres-package /postgres-package
 COPY --from=builder /db-adminer-package /db-adminer-package
 COPY --from=builder /redis-package /redis-package
+COPY --from=builder /optimism-package /optimism-package
