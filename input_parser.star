@@ -344,7 +344,7 @@ DEFAULT_ARGS = (
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessmistic consensus
-        "consensus_contract_type": "pessimistic",
+        "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
