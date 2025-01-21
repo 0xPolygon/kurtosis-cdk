@@ -89,8 +89,9 @@ def get_cdk_node_cmd(args):
 
     if args["consensus_contract_type"] == "pessimistic":
         service_command = [
-            "sleep 20 && aggkit run "
+            "sleep 20 && aggkit-node run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
+            + "--save-config-path=/tmp/ "
             + "--components=aggsender"
         ]
     return service_command
