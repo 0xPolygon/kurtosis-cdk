@@ -15,7 +15,7 @@ def create_cdk_aggoracle_service_config(
         ports=ports,
         public_ports=public_ports,
         files={
-            "/app": Directory(
+            "/etc/cdk": Directory(
                 artifact_names=[
                     config_artifact,
                     genesis_artifact,
@@ -51,8 +51,7 @@ def get_cdk_aggoracle_ports(args):
 def get_cdk_aggoracle_cmd(args):
     service_command = [
         "sleep 20 && cdk-node run "
-        + "--cfg=/app/config.toml "
-        + "--custom-network-file=/app/genesis.json "
+        + "--cfg=/etc/cdk/config.toml "
         + "--components=aggoracle,aggsender"
     ]
 

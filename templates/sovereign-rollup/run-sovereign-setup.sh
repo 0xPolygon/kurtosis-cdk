@@ -11,7 +11,7 @@ admin=$sov_admin_addr
 sequencer=$sov_admin_addr
 gasTokenAddress=$(cast az)
 sequencerURL=http://op-el-1-op-geth-op-node-op-kurtosis:8545
-networkName="Soverign Chain"
+networkName="Sovereign Chain"
 
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_admin_key="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
@@ -19,8 +19,7 @@ rollup_admin_key="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82
 # shellcheck disable=SC2086
 cast send --private-key $rollup_admin_key --rpc-url http://el-1-geth-lighthouse:8545 $rollup_manager_addr 'createNewRollup(uint32,uint64,address,address,address,string,string)' $rollupTypeID $chainID $admin $sequencer $gasTokenAddress $sequencerURL $networkName
 
-rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-cast call --json --rpc-url  http://el-1-geth-lighthouse:8545 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
+cast call --json --rpc-url  http://el-1-geth-lighthouse:8545 $rollup_manager_addr 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr=0x72aA7C55e1c7BF4017F22a3bc19722de11911A81
@@ -52,6 +51,7 @@ src = 'contracts'
 out = 'out'
 libs = ['node_modules']" > foundry.toml
 
+echo "Building contracts with forge build"
 forge build contracts/v2/sovereignChains/BridgeL2SovereignChain.sol contracts/v2/sovereignChains/GlobalExitRootManagerL2SovereignChain.sol
 # shellcheck disable=SC2086
 bridge_impl_nonce=$(cast nonce --rpc-url $rpc_url $bridge_admin_addr)
