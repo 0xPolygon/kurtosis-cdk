@@ -12,14 +12,14 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
     # Create the cdk aggoracle config.
-    aggoracle_config_template = read_file(
+    aggkit_config_template = read_file(
         src="./templates/sovereign-rollup/cdk-aggkit-config.toml"
     )
-    aggoracle_config_artifact = plan.render_templates(
+    aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
         config={
             "config.toml": struct(
-                template=aggoracle_config_template,
+                template=aggkit_config_template,
                 data=args
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
@@ -38,13 +38,13 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     )
 
     # Start the aggoracle components.
-    cdk_aggoracle_configs = cdk_aggkit_package.create_cdk_aggoracle_service_config(
-        args, aggoracle_config_artifact, sovereign_genesis_artifact, keystore_artifacts
+    aggkit_configs = cdk_aggkit_package.create_aggkit_service_config(
+        args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
     )
 
     plan.add_services(
-        configs=cdk_aggoracle_configs,
-        description="Starting the cdk aggoracle components",
+        configs=aggkit_configs,
+        description="Starting the cdk aggkit components",
     )
 
     # Start the bridge service.

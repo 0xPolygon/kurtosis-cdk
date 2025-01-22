@@ -1,14 +1,14 @@
 ports_package = import_module("../src/package_io/ports.star")
 
 
-def create_cdk_aggoracle_service_config(
+def create_aggkit_service_config(
     args,
     config_artifact,
     genesis_artifact,
     keystore_artifact,
 ):
     cdk_aggoracle_name = "cdk-aggkit" + args["deployment_suffix"]
-    (ports, public_ports) = get_cdk_aggoracle_ports(args)
+    (ports, public_ports) = get_aggkit_ports(args)
     service_command = get_cdk_aggoracle_cmd(args)
     cdk_aggoracle_service_config = ServiceConfig(
         image=args["cdk_aggkit_image"],
@@ -35,7 +35,7 @@ def create_cdk_aggoracle_service_config(
     return {cdk_aggoracle_name: cdk_aggoracle_service_config}
 
 
-def get_cdk_aggoracle_ports(args):
+def get_aggkit_ports(args):
     ports = {
         "rpc": PortSpec(
             args["zkevm_cdk_node_port"],
@@ -50,9 +50,9 @@ def get_cdk_aggoracle_ports(args):
 
 def get_cdk_aggoracle_cmd(args):
     service_command = [
-        "sleep 20 && cdk-node run "
+        "sleep 20 && aggkit run "
         + "--cfg=/etc/cdk/config.toml "
-        + "--components=aggoracle,aggsender"
+        + "--components=aggsender,aggoracle"
     ]
 
     return service_command
