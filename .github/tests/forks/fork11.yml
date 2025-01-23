@@ -8,7 +8,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.4-fork.11
 
   # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.2
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.6
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags?name=fork11
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0-fork11
