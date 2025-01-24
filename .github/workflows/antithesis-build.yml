@@ -7,7 +7,7 @@ on:
 
 env:
   ANTITHESIS_REGISTRY: us-central1-docker.pkg.dev
-  REPOSITORY: molten-verve-216720/polygon-repository
+  ANTITHESIS_REPOSITORY: molten-verve-216720/polygon-repository
 
 concurrency:
   group: antithesis-build-and-push-${{ github.event.pull_request.number || github.ref }}
@@ -19,30 +19,30 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: docker/login-action@v3
-      with:
-        registry: ${{ env.ANTITHESIS_REGISTRY }}
-        username: _json_key
-        password: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
-      # This step will only execute if the necessary secrets are available, preventing failures
-      # on pull requests from forked repositories.
-      if: ${{ env.ANTITHESIS_JSON_LOGIN_KEY }}
-      env:
-        ANTITHESIS_JSON_LOGIN_KEY: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ANTITHESIS_REGISTRY }}
+          username: _json_key
+          password: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.ANTITHESIS_JSON_LOGIN_KEY }}
+        env:
+          ANTITHESIS_JSON_LOGIN_KEY: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
 
-    - name: Build and push config image
-      uses: docker/build-push-action@v6
-      with:
-        context: docker
-        file: docker/antithesis.Dockerfile
-        push: true
-        tags: |
-          ${{ env.ANTITHESIS_REGISTRY }}/${{ env.REPOSITORY}}/config:antithesis-latest,
-          ${{ env.ANTITHESIS_REGISTRY }}/${{ env.REPOSITORY}}/config:${{ github.sha }}
-      # This step will only execute if the necessary secrets are available, preventing failures
-      # on pull requests from forked repositories.
-      if: ${{ env.ANTITHESIS_JSON_LOGIN_KEY }}
-      env:
-        ANTITHESIS_JSON_LOGIN_KEY: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
+      - name: Build and push config image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker
+          file: docker/antithesis.Dockerfile
+          push: true
+          tags: |
+            ${{ env.ANTITHESIS_REGISTRY }}/${{ env.ANTITHESIS_REPOSITORY}}/config:antithesis-latest,
+            ${{ env.ANTITHESIS_REGISTRY }}/${{ env.ANTITHESIS_REPOSITORY}}/config:${{ github.sha }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.ANTITHESIS_JSON_LOGIN_KEY }}
+        env:
+          ANTITHESIS_JSON_LOGIN_KEY: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
