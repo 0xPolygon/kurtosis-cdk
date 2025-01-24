@@ -10,7 +10,7 @@ env:
   REPOSITORY: molten-verve-216720/polygon-repository
 
 concurrency:
-  group: deploy-${{ github.event.pull_request.number || github.ref }}
+  group: antithesis-build-and-push-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:

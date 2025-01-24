@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-${{ github.event.pull_request.number || github.ref }}
+  group: antithesis-test-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
