@@ -1,0 +1,34 @@
+# Workflow for running Antithesis tests.
+name: Run Antithesis Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  antithesis:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Antithesis Tests
+      uses: antithesishq/antithesis-trigger-action@main
+      with:
+        notebook_name: polygon
+        tenant: polygon
+        username: ${{ secrets.ANTITHESIS_USERNAME }}
+        password: ${{ secrets.ANTITHESIS_PASSWORD }}
+        github_token: ${{ secrets.GH_PAT }}
+        config_image: us-central1-docker.pkg.dev/molten-verve-216720/polygon-repository/config:antithesis-latest
+        images: ""
+        description: ""
+        email_recipients: ""
+        test_name: initial test
+        additional_parameters: |-
+          custom.configuration=${{ inputs.configuration }}
+          custom.duration = 1.0 # in hours

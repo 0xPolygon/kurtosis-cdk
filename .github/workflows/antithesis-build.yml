@@ -6,7 +6,7 @@ on:
 
 env:
   ANTITHESIS_REGISTRY: us-central1-docker.pkg.dev
-  REPOSITORY: molten-verve-216720/kurtosis-cdk-repository
+  REPOSITORY: molten-verve-216720/polygon-repository
 
 jobs:
   build-and-push:
