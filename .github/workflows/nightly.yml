@@ -14,6 +14,41 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
+  # Trigger Antithesis tests.
+  # Note that the configuration docker image must have been pushed into the Antithesis registry.
+  antithesis:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Trigger Antithesis tests
+      uses: antithesishq/antithesis-trigger-action@main
+      with:
+        notebook_name: polygon
+        tenant: polygon
+        username: ${{ secrets.ANTITHESIS_USERNAME }}
+        password: ${{ secrets.ANTITHESIS_PASSWORD }}
+        github_token: ${{ secrets.GH_PAT }}
+        config_image: us-central1-docker.pkg.dev/molten-verve-216720/polygon-repository/config:antithesis-latest
+        images: ""
+        description: ""
+        email_recipients: ""
+        test_name: initial test
+        additional_parameters: |-
+          custom.configuration=${{ inputs.configuration }}
+          custom.duration = 1.0 # in hours
+      # This step will only execute if the necessary secrets are available, preventing failures
+      # on pull requests from forked repositories.
+      if: ${{ env.ANTITHESIS_USERNAME && env.ANTITHESIS_PASSWORD }}
+      env:
+        ANTITHESIS_USERNAME: ${{ secrets.ANTITHESIS_USERNAME }}
+        ANTITHESIS_PASSWORD: ${{ secrets.ANTITHESIS_PASSWORD }}
+
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
   cardona-sepolia-testnet-pless-zkevm-node:
     runs-on: ubuntu-latest

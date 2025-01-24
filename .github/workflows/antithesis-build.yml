@@ -1,5 +1,5 @@
 # Workflow for automatically building and pushing the config image to the Antithesis registry.
-name: Antithesis
+name: Antithesis Docker Image Builder
 
 on:
   pull_request:
