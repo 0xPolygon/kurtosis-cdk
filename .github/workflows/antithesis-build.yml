@@ -2,6 +2,7 @@
 name: Antithesis Config Image Builder
 
 on:
+  pull_request:
   workflow_dispatch:
 
 env:
