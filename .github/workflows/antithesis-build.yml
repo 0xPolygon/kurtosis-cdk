@@ -26,6 +26,11 @@ jobs:
         registry: ${{ env.ANTITHESIS_REGISTRY }}
         username: _json_key
         password: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
+      # This step will only execute if the necessary secrets are available, preventing failures
+      # on pull requests from forked repositories.
+      if: ${{ env.ANTITHESIS_JSON_LOGIN_KEY }}
+      env:
+        ANTITHESIS_JSON_LOGIN_KEY: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
 
     - name: Build and push config image
       uses: docker/build-push-action@v6
@@ -36,3 +41,8 @@ jobs:
         tags: |
           ${{ env.ANTITHESIS_REGISTRY }}/${{ env.REPOSITORY}}/config:antithesis-latest,
           ${{ env.ANTITHESIS_REGISTRY }}/${{ env.REPOSITORY}}/config:${{ github.sha }}
+      # This step will only execute if the necessary secrets are available, preventing failures
+      # on pull requests from forked repositories.
+      if: ${{ env.ANTITHESIS_JSON_LOGIN_KEY }}
+      env:
+        ANTITHESIS_JSON_LOGIN_KEY: ${{ secrets.ANTITHESIS_JSON_LOGIN_KEY }}
