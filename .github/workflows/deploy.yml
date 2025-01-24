@@ -7,7 +7,7 @@ on:
   pull_request:
   push:
     branches:
-      - '**'
+      - "**"
 
 concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
@@ -409,9 +409,9 @@ jobs:
 
       - name: Install polycli
         run: |
-          tmp_dir=$(mktemp -d) 
-          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
-          mv "$tmp_dir"/* /usr/local/bin/polycli 
+          tmp_dir=$(mktemp -d)
+          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir"
+          mv "$tmp_dir"/* /usr/local/bin/polycli
           rm -rf "$tmp_dir"
           sudo chmod +x /usr/local/bin/polycli
           /usr/local/bin/polycli version
@@ -426,7 +426,7 @@ jobs:
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
-        env :
+        env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
@@ -577,7 +577,7 @@ jobs:
           fi
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
-          
+
       - name: Dump enclave
         if: ${{ !cancelled() }}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
