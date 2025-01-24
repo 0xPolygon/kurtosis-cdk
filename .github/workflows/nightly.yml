@@ -33,7 +33,7 @@ jobs:
         tenant: polygon
         username: ${{ secrets.ANTITHESIS_USERNAME }}
         password: ${{ secrets.ANTITHESIS_PASSWORD }}
-        github_token: ${{ secrets.GH_PAT }}
+        github_token: ${{ secrets.ANTITHESIS_PAT }}
         config_image: us-central1-docker.pkg.dev/molten-verve-216720/polygon-repository/config:antithesis-latest
         images: ""
         description: ""
@@ -44,10 +44,11 @@ jobs:
           custom.duration = 1.0 # in hours
       # This step will only execute if the necessary secrets are available, preventing failures
       # on pull requests from forked repositories.
-      if: ${{ env.ANTITHESIS_USERNAME && env.ANTITHESIS_PASSWORD }}
+      if: ${{ env.ANTITHESIS_USERNAME && env.ANTITHESIS_PASSWORD && env.ANTITHESIS_PAT }}
       env:
         ANTITHESIS_USERNAME: ${{ secrets.ANTITHESIS_USERNAME }}
         ANTITHESIS_PASSWORD: ${{ secrets.ANTITHESIS_PASSWORD }}
+        ANTITHESIS_PAT: ${{ secrets.ANTITHESIS_PAT }}
 
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
   cardona-sepolia-testnet-pless-zkevm-node:
