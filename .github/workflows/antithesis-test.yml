@@ -1,12 +1,16 @@
 # Workflow for running Antithesis tests.
-name: Run Antithesis Tests
+name: Antithesis
 
 on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: deploy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  antithesis:
+  test:
     runs-on: ubuntu-latest
 
     permissions:

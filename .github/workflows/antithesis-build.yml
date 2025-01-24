@@ -1,5 +1,5 @@
 # Workflow for automatically building and pushing the config image to the Antithesis registry.
-name: Antithesis Config Image Builder
+name: Antithesis
 
 on:
   pull_request:
@@ -8,6 +8,10 @@ on:
 env:
   ANTITHESIS_REGISTRY: us-central1-docker.pkg.dev
   REPOSITORY: molten-verve-216720/polygon-repository
+
+concurrency:
+  group: deploy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
