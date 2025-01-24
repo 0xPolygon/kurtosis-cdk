@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       param_file:
-        description: Parameter file to use with Kurtosis CDK
+        description: This parameter file will be used when running Antithesis tests
         required: false
         type: string
         default: .github/tests/fork13-new-cdk-stack-cdk-validium.yml
@@ -18,7 +18,9 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-  DEFAULT_PARAM_FILE: .github/tests/fork13-new-cdk-stack-cdk-validium.yml
+  
+  # This parameter file will be used when running Antithesis tests using the nightly schedule.
+  DEFAULT_ANTITHESIS_PARAM_FILE: .github/tests/fork13-new-cdk-stack-cdk-validium.yml
 
 jobs:
   # Trigger Antithesis tests.
@@ -33,8 +35,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set param file
-      run: echo "PARAM_FILE=${{ github.event_name == 'workflow_dispatch' && inputs.param_file || env.DEFAULT_PARAM_FILE }}" >> $GITHUB_ENV
+    - name: Set the parameter file to be used in Antithesis tests
+      run: echo "PARAM_FILE=${{ github.event_name == 'workflow_dispatch' && inputs.param_file || env.DEFAULT_ANTITHESIS_PARAM_FILE }}" >> $GITHUB_ENV
 
     - name: Trigger Antithesis tests
       uses: antithesishq/antithesis-trigger-action@main
