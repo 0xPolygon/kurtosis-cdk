@@ -5,6 +5,12 @@ on:
   schedule:
     - cron: 0 6 * * * # Run this workflow every day at 6 AM Paris time (UTC+2).
   workflow_dispatch:
+    inputs:
+      param_file:
+        description: Parameter file to use with Kurtosis CDK
+        required: false
+        type: string
+        default: .github/tests/fork13-new-cdk-stack-cdk-validium.yml
 
 concurrency:
   group: nightly-${{ github.event.pull_request.number || github.ref }}
@@ -12,6 +18,7 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
+  DEFAULT_PARAM_FILE: .github/tests/fork13-new-cdk-stack-cdk-validium.yml
 
 jobs:
   # Trigger Antithesis tests.
@@ -26,6 +33,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set param file
+      run: echo "PARAM_FILE=${{ github.event_name == 'workflow_dispatch' && inputs.param_file || env.DEFAULT_PARAM_FILE }}" >> $GITHUB_ENV
+
     - name: Trigger Antithesis tests
       uses: antithesishq/antithesis-trigger-action@main
       with:
@@ -35,20 +45,19 @@ jobs:
         password: ${{ secrets.ANTITHESIS_PASSWORD }}
         github_token: ${{ secrets.ANTITHESIS_PAT }}
         config_image: us-central1-docker.pkg.dev/molten-verve-216720/polygon-repository/config:antithesis-latest
-        images: ""
-        description: ""
-        email_recipients: ""
-        test_name: initial test
+        description: Kurtosis CDK tests
+        email_recipients: ${{ secrets.ANTITHESIS_EMAIL_RECIPIENTS }} # this is a ";" delimited list (e.g. "u1@site.com;u2@site.com").
         additional_parameters: |-
-          custom.configuration=${{ inputs.configuration }}
-          custom.duration = 1.0 # in hours
+          custom.configuration=${{ env.PARAM_FILE }}
+          custom.duration="1.0" # in hours (min 0.5 hours)
       # This step will only execute if the necessary secrets are available, preventing failures
       # on pull requests from forked repositories.
-      if: ${{ env.ANTITHESIS_USERNAME && env.ANTITHESIS_PASSWORD && env.ANTITHESIS_PAT }}
+      if: ${{ env.ANTITHESIS_USERNAME && env.ANTITHESIS_PASSWORD && env.ANTITHESIS_PAT && env.ANTITHESIS_EMAIL_RECIPIENTS }}
       env:
         ANTITHESIS_USERNAME: ${{ secrets.ANTITHESIS_USERNAME }}
         ANTITHESIS_PASSWORD: ${{ secrets.ANTITHESIS_PASSWORD }}
         ANTITHESIS_PAT: ${{ secrets.ANTITHESIS_PAT }}
+        ANTITHESIS_EMAIL_RECIPIENTS: ${{ secrets.ANTITHESIS_EMAIL_RECIPIENTS }}
 
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
   cardona-sepolia-testnet-pless-zkevm-node:
