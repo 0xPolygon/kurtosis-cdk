@@ -14,7 +14,7 @@ RUN apt-get update \
   && git clone --branch 4.4.0 https://github.com/ethpandaops/ethereum-package \
   && git clone --branch 1.2.0 https://github.com/ethpandaops/optimism-package \
   # Make the kurtosis-cdk package reference locally pulled dependencies.
-  && sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/ethereum-package: ../ethereum-package\n    github.com/kurtosis-tech/optimism-package: ../optimism-package' /kurtosis-cdk/kurtosis.yml \
+  && sed -i '$ a\\nreplace:\n    github.com/ethpandaops/ethereum-package: ../ethereum-package\n    github.com/ethpandaops/optimism-package: ../optimism-package\n    github.com/kurtosis-tech/redis-package: ../redis-package\n    github.com/kurtosis-tech/postgres-package: ../postgres-package\n    github.com/bharath-123/db-adminer-package: ../db-adminer-package\n    github.com/kurtosis-tech/prometheus-package: ../prometheus-package' /kurtosis-cdk/kurtosis.yml \
   # Pull ethereum package dependencies.
   && git clone --branch main https://github.com/kurtosis-tech/prometheus-package \
   && git clone --branch main https://github.com/kurtosis-tech/postgres-package \
@@ -24,7 +24,7 @@ RUN apt-get update \
   && sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/prometheus-package: ../prometheus-package\n    github.com/kurtosis-tech/postgres-package: ../postgres-package\n    github.com/bharath-123/db-adminer-package: ../db-adminer-package\n    github.com/kurtosis-tech/redis-package: ../redis-package' /ethereum-package/kurtosis.yml \
   # Pull optimism package dependencies.
   # It relies on the ethereum package which is already pulled.
-  && sed -i '$ a\\nreplace:\n    github.com/kurtosis-tech/ethereum-package: ../ethereum-package' /optimism-package/kurtosis.yml
+  && sed -i '$ a\\nreplace:\n    github.com/ethpandaops/ethereum-package: ../ethereum-package' /optimism-package/kurtosis.yml
 
 
 FROM scratch
