@@ -43,7 +43,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.11
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC6
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC7
   deploy_l2_contracts: true
   consensus_contract_type: cdk-validium
   sequencer_type: zkevm
@@ -299,7 +299,7 @@ args:
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.0-beta4
   cdk_node_image: nulyjkdhthz/cdk:6d775da5dad55990f534e0190a89613ae64f5ccf
   zkevm_bridge_proxy_image: haproxy:3.0-bookworm
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC6
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC7
   zkevm_contracts_image: nulyjkdhthz/zkevm-contracts:v9.0.0-rc.3-pp-fork.12
   additional_services: []
   consensus_contract_type: pessimistic
