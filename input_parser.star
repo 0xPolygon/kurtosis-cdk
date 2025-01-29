@@ -33,7 +33,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.0-rc.23",  # https://github.com/agglayer/agglayer/tags
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.1-rc.1",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.60.2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_aggkit_image": "jhkimqd/cdk-aggkit:hashmeddlerfix",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
@@ -41,7 +41,7 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
