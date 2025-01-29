@@ -67,6 +67,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
     "zkevm_cdk_node_port": 5576,
+    "blockscout_frontend_port": 3000,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -313,6 +314,12 @@ DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
 }
 
+DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
+    "blockscout_params": {
+        "blockscout_public_port": DEFAULT_PORTS.get("blockscout_frontend_port"),
+    },
+}
+
 DEFAULT_ARGS = (
     {
         # Suffix appended to service names.
@@ -357,6 +364,7 @@ DEFAULT_ARGS = (
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
     | DEFAULT_L2_ARGS
+    | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
