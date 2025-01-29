@@ -38,7 +38,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.0-beta10",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC6",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v8.0.0-fork.12-patch.1",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
@@ -67,6 +67,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
     "zkevm_cdk_node_port": 5576,
+    "blockscout_frontend_port": 3000,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -313,6 +314,12 @@ DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "genesis_file": "templates/permissionless-node/genesis.json",
 }
 
+DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
+    "blockscout_params": {
+        "blockscout_public_port": DEFAULT_PORTS.get("blockscout_frontend_port"),
+    },
+}
+
 DEFAULT_ARGS = (
     {
         # Suffix appended to service names.
@@ -357,6 +364,7 @@ DEFAULT_ARGS = (
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
     | DEFAULT_L2_ARGS
+    | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
