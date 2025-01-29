@@ -50,7 +50,7 @@ def get_aggkit_ports(args):
 
 def get_cdk_aggoracle_cmd(args):
     service_command = [
-        "sleep 20 && aggkit run "
+        "sleep 20 && cdk-node run "  # This needs to change to aggkit run once the aggkit image with the HashMeddler fix is up.
         + "--cfg=/etc/cdk/config.toml "
         + "--components=aggsender,aggoracle"
     ]
