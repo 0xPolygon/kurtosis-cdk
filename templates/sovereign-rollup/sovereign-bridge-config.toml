@@ -48,7 +48,7 @@ PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 PolygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 L2PolygonBridgeAddresses = ["{{.sovereign_bridge_proxy_addr}}"]
 
-SovereignChains = [true]
+RequireSovereignChainSmcs = [true]
 L2PolygonZkEVMGlobalExitRootAddresses = ["{{.sovereign_ger_proxy_addr}}"]
 
 [ClaimTxManager]
