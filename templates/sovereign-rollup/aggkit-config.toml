@@ -46,13 +46,13 @@ Outputs = ["stderr"]
 Port = 5576
 
 [AggSender]
-AggsenderPrivateKey = {Path = "/etc/cdk/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
 [AggOracle.EVMSender]
 GlobalExitRootL2="{{.sovereign_ger_proxy_addr}}"
 
 [AggOracle.EVMSender.EthTxManager]
-PrivateKeys = [{Path = "/etc/cdk/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
 
 [AggOracle.EVMSender.EthTxManager.Etherman]
 # Ok this is bizarre, but needs to be set to be the L2 chain id

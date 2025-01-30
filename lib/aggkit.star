@@ -7,15 +7,15 @@ def create_aggkit_service_config(
     genesis_artifact,
     keystore_artifact,
 ):
-    cdk_aggoracle_name = "cdk-aggkit" + args["deployment_suffix"]
+    aggkit_name = "aggkit" + args["deployment_suffix"]
     (ports, public_ports) = get_aggkit_ports(args)
-    service_command = get_cdk_aggoracle_cmd(args)
+    service_command = get_aggkit_cmd(args)
     cdk_aggoracle_service_config = ServiceConfig(
-        image=args["cdk_aggkit_image"],
+        image=args["aggkit_image"],
         ports=ports,
         public_ports=public_ports,
         files={
-            "/etc/cdk": Directory(
+            "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
                     genesis_artifact,
@@ -32,7 +32,7 @@ def create_aggkit_service_config(
         cmd=service_command,
     )
 
-    return {cdk_aggoracle_name: cdk_aggoracle_service_config}
+    return {aggkit_name: cdk_aggoracle_service_config}
 
 
 def get_aggkit_ports(args):
@@ -48,10 +48,10 @@ def get_aggkit_ports(args):
     return (ports, public_ports)
 
 
-def get_cdk_aggoracle_cmd(args):
+def get_aggkit_cmd(args):
     service_command = [
-        "sleep 20 && cdk-node run "  # This needs to change to aggkit run once the aggkit image with the HashMeddler fix is up.
-        + "--cfg=/etc/cdk/config.toml "
+        "sleep 20 && aggkit run "
+        + "--cfg=/etc/aggkit/config.toml "
         + "--components=aggsender,aggoracle"
     ]
 

@@ -6,7 +6,7 @@ service_package = import_module("./lib/service.star")
 agglayer_package = "./agglayer.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-cdk_aggkit_package = "./cdk_aggkit.star"
+aggkit_package = "./aggkit.star"
 cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
@@ -164,7 +164,7 @@ def run(plan, args={}):
         # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
-        import_module(cdk_aggkit_package).run(
+        import_module(aggkit_package).run(
             plan,
             central_environment_args,
             contract_setup_addresses,

@@ -1,5 +1,5 @@
 data_availability_package = import_module("./lib/data_availability.star")
-cdk_aggkit_package = import_module("./lib/cdk_aggkit.star")
+aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
@@ -13,7 +13,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
 
     # Create the cdk aggoracle config.
     aggkit_config_template = read_file(
-        src="./templates/sovereign-rollup/cdk-aggkit-config.toml"
+        src="./templates/sovereign-rollup/aggkit-config.toml"
     )
     aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
@@ -38,7 +38,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     )
 
     # Start the aggoracle components.
-    aggkit_configs = cdk_aggkit_package.create_aggkit_service_config(
+    aggkit_configs = aggkit_package.create_aggkit_service_config(
         args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
     )
 
