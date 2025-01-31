@@ -32,6 +32,10 @@ forks=(forks/*.yml)
 data_availability=(da-modes/*.yml)
 components=(components/*.yml)
 
+default_erigon_version="$(grep -P "cdk_erigon_node_image.*hermeznetwork/cdk-erigon" ../../input_parser.star | sed 's#.*hermeznetwork/cdk-erigon:\([^"]*\).*#\1#')"
+default_bridge_version="$(grep -P "zkevm_bridge_service_image.*hermeznetwork" ../../input_parser.star | sed 's#.*hermeznetwork/zkevm-bridge-service:\([^"]*\).*#\1#')"
+default_da_version="$(grep -P "zkevm_da_image.*0xpolygon" ../../input_parser.star | sed 's#.*0xpolygon/cdk-data-availability:\([^"]*\).*#\1#')"
+
 # Nested loops to create all combinations.
 echo "Creating combinations..."
 mkdir -p "$COMBINATIONS_FOLDER"
@@ -66,11 +70,16 @@ for fork in "${forks[@]}"; do
             if [[ "$base_da" == "cdk-validium" && "$base_comp" == "new-cdk-stack" ]]; then
                 fork_id=${base_fork#fork}
                 # shellcheck disable=SC2016
-                yq --raw-output --arg fork_id "$fork_id" --yaml-output '{
+                yq --raw-output \
+                   --arg fork_id "$fork_id" \
+                   --arg bridge_version "$default_bridge_version" \
+                   --arg da_version "$default_da_version" \
+                   --arg erigon_version "$default_erigon_version" \
+                   --yaml-output '{
                     ($fork_id): {
                         cdk_erigon: {
-                            version: .args.cdk_erigon_node_image | split(":")[1],
-                            source: "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\(.args.cdk_erigon_node_image | split(":")[1])",
+                            version: $erigon_version,
+                            source: "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\($erigon_version)",
                         },
                         zkevm_prover: {
                             version: .args.zkevm_prover_image | split(":")[1],
@@ -81,12 +90,12 @@ for fork in "${forks[@]}"; do
                             source: "https://github.com/0xPolygonHermez/zkevm-contracts/releases/tag/\(.args.zkevm_contracts_image | split(":")[1] | split("-patch.")[0])",
                         },
                         data_availability: {
-                            version: .args.zkevm_da_image | split(":")[1],
-                            source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v\(.args.zkevm_da_image | split(":")[1])",
+                            version: $da_version,
+                            source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v\($da_version)",
                         },
                         bridge_service: {
-                            version: .args.zkevm_bridge_service_image | split(":")[1],
-                            source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\(.args.zkevm_bridge_service_image | split(":")[1])",
+                            version: $bridge_version,
+                            source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\($bridge_version)",
                         },
                 }}
                 ' "$output_file" >> "$MATRIX_VERSION_FILE"
