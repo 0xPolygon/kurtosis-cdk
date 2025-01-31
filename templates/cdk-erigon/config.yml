@@ -152,16 +152,6 @@ zkevm.sync-limit: 0
 # Default: false
 zkevm.reject-smart-contract-deployments: false
 
-## Virtual Counters
-# Disables virtual counters, which are used by sequencer nodes when external execution is not enabled.
-# This can impact performance and transaction processing capabilities.
-# Default: false
-# {{if .enable_normalcy}}
-zkevm.disable-virtual-counters: true
-# {{else}}
-zkevm.disable-virtual-counters: false
-# {{end}}
-
 
 # Multiplier used to reduce the depth of SMT when calculating virtual counters.
 # A value less than 1 will decrease SMT depth, potentially improving performance but may affect accuracy.
@@ -174,13 +164,6 @@ zkevm.virtual-counters-smt-reduction: 0.6
 # Default: ""
 # TODO: Find out why we don't set it?!
 zkevm.da-url: ""
-
-# {{if not .is_sequencer}}
-# URL of the pool manager, applicable only for non-sequencer nodes.
-# If specified, all eth_sendRawTransaction calls will be redirected to this service for processing.
-# Default: ""
-zkevm.pool-manager-url: {{.pool_manager_url}}
-# {{end}}
 
 # {{if eq .consensus_contract_type "pessimistic"}}
 # The file that contains the initial (injected) batch data for pessimistic proofs consensus.
@@ -229,17 +212,6 @@ zkevm.data-stream-host: 0.0.0.0
 zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # {{end}}
 
-# Specify the encoding format used for data streaming:
-# - 1: PreBigEndian (legacy format)
-# - 2: BigEndian (improved format)
-# - 3: Latest format with additional features
-# Default: 2
-# fork12 or after {{if eq .zkevm_rollup_fork_name "banana"}}
-zkevm.datastream-version: 3
-# before fork12 {{else}}
-zkevm.datastream-version: 2
-# {{end}}
-
 # Maximum time to wait for a new block when requesting from the data streamer.
 # Shorter timeouts can improve responsiveness but may increase the risk of timeouts during network delays.
 # Default: 500ms
@@ -275,13 +247,6 @@ zkevm.data-stream-inactivity-check-interval: 5m
 # Consider network capacity and desired transaction confirmation speed when adjusting.
 # Default: 6s
 zkevm.sequencer-block-seal-time: 3s
-
-# The batch seal time.
-# Determine how frequently the sequencer groups blocks into a batch and seals it.
-# Longer times allow more blocks (and more txs) per batch, potentially improving efficiency,
-# but may increase overall transaction confirmation time.
-# Default: 12s
-zkevm.sequencer-batch-seal-time: 15s
 
 # Seal the batch immediately when detecting a counter overflow
 # This setting can be helpful to close batches faster while testing with a single account.
@@ -515,12 +480,6 @@ zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
 zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 # {{end}}
 
-# Maximum time to wait for data from the datastreamer before reporting an error.
-# Balances between allowing for network delays and detecting genuine connection issues.
-# Any setting below 500ms will be adjusted to 3s.
-# Default: 0s
-zkevm.l2-datastreamer-timeout: 0s
-
 
 # --------------------------------------------------------------------------------------------------
 #   _____ _____ _   _ _   _    _    ____  _   _
@@ -644,10 +603,6 @@ sentry.api.addr: ""
 # Log detailed peer info when a peer connects or disconnects.
 # Enable to integrate with observer.
 sentry.log-peer-info: false
-
-# Drop useless peers, aka peers that return empty body or header responses.
-# Default: false
-# sentry.drop-useless-peers: false
 
 # The downloaded address.
 # Format: <host>:<port>
