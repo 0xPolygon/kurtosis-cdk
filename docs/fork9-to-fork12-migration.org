@@ -90,7 +90,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.11
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC6
+  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC7
   additional_services: []
   deploy_l2_contracts: true
   consensus_contract_type: cdk-validium
@@ -643,7 +643,7 @@ yq -y '
   .args.zkevm_prover_image = "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12" |
   .args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:v2.60.0-beta10" |
   .args.zkevm_da_image = "0xpolygon/cdk-data-availability:0.0.11" |
-  .args.zkevm_bridge_service_image = "hermeznetwork/zkevm-bridge-service:v0.6.0-RC6" |
+  .args.zkevm_bridge_service_image = "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7" |
   .args.consensus_contract_type = "cdk-validium" |
   .args.sequencer_type = "erigon" |
   .deployment_stages.deploy_cdk_erigon_node = true |

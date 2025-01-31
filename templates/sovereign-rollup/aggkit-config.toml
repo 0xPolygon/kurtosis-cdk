@@ -1,0 +1,67 @@
+PathRWData = "/tmp/"
+L1URL="http://el-1-geth-lighthouse:8545"
+L2URL="http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+AggLayerURL="http://agglayer:4444"
+
+ForkId = 12
+ContractVersions = "banana"
+IsValidiumMode = false
+
+# This is the admin account for now
+L2Coinbase =  "0x8281AdB2fC133536ACDC4c923bc573A26f66F260"
+SequencerPrivateKeyPath = ""
+SequencerPrivateKeyPassword  = ""
+
+AggregatorPrivateKeyPath = ""
+AggregatorPrivateKeyPassword  = ""
+SenderProofToL1Addr = ""
+polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+
+
+RPCURL = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+WitnessURL = ""
+
+# This values can be overriden directly from genesis.json
+rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+
+[L1Config]
+chainId = "{{.l1_chain_id}}"
+polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+polTokenAddress = "{{.pol_token_address}}"
+# This aligns with the address that we created
+polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
+
+[L2Config]
+GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
+
+[Log]
+Environment = "development" # "production" or "development"
+Level = "info"
+Outputs = ["stderr"]
+
+[RPC]
+Port = 5576
+
+[AggSender]
+AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+
+[AggOracle.EVMSender]
+GlobalExitRootL2="{{.sovereign_ger_proxy_addr}}"
+
+[AggOracle.EVMSender.EthTxManager]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+
+[AggOracle.EVMSender.EthTxManager.Etherman]
+# Ok this is bizarre, but needs to be set to be the L2 chain id
+L1ChainID = "{{.sovereign_chain_id}}"
+
+[BridgeL2Sync]
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+
+[L1InfoTreeSync]
+# The initial block number from which to start syncing.
+# Default: 0
+InitialBlock = "{{.zkevm_rollup_manager_block_number}}"

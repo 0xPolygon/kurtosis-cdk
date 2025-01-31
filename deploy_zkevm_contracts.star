@@ -25,6 +25,10 @@ ARTIFACTS = [
         "name": "run-l2-contract-setup.sh",
         "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
     },
+    {
+        "name": "run-sovereign-setup.sh",
+        "file": "./templates/sovereign-rollup/run-sovereign-setup.sh",
+    },
 ]
 
 
