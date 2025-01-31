@@ -432,6 +432,22 @@ jobs:
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/agglayer-sp1-key.yml .
 
+      - name: Update the agglayer config
+        run: |
+          # Download the agglayer config file.
+          kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
+          cd agglayer-config-artifact
+          # Update the config by adding the rpc and proof signer of the second chain.
+          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"2": "http://cdk-erigon-rpc-002:8123"}' agglayer-config.toml
+          # Update the config by adding the rpc and proof signer of the third chain.
+          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"3": "http://cdk-erigon-rpc-003:8123"}' agglayer-config.toml
+          # Replace the agglayer config.
+          agglayer_container_id="$(docker ps --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
+          docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
+          # Restart the agglayer service.
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
+          kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
+
       - name: Attach a second FEP CDK L2 chain (cdk-erigon sequencer + cdk FEP stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
 
@@ -451,22 +467,6 @@ jobs:
           kurtosis service start ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
-
-      - name: Update the agglayer config
-        run: |
-          # Download the agglayer config file.
-          kurtosis files download ${{ env.ENCLAVE_NAME }} agglayer-config-artifact
-          cd agglayer-config-artifact
-          # Update the config by adding the rpc and proof signer of the second chain.
-          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"2": "http://cdk-erigon-rpc-002:8123"}' agglayer-config.toml
-          # Update the config by adding the rpc and proof signer of the third chain.
-          tomlq -Y --toml-output --in-place '."full-node-rpcs" += {"3": "http://cdk-erigon-rpc-003:8123"}' agglayer-config.toml
-          # Replace the agglayer config.
-          agglayer_container_id="$(docker ps --filter name=agglayer --format json | jq -r -s '. | map(select(.Names | startswith("agglayer--"))) | .[].ID')"
-          docker cp agglayer-config.toml "$agglayer_container_id:/etc/zkevm/agglayer-config.toml"
-          # Restart the agglayer service.
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} agglayer
-          kurtosis service start ${{ env.ENCLAVE_NAME }} agglayer
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
