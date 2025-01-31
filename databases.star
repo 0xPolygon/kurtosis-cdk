@@ -48,6 +48,11 @@ CENTRAL_ENV_DBS = {
         "user": "dac_user",
         "password": "redacted",
     },
+    "sovereign_bridge_db": {
+        "name": "sovereign_bridge_db",
+        "user": "sovereign_bridge_user",
+        "password": "redacted",
+    },
 }
 
 # The prover database is a component of both central environment and permissionless zkEVM node environment.
