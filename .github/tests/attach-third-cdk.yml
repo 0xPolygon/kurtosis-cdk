@@ -1,6 +1,7 @@
 deployment_stages:
   deploy_l1: false
   deploy_agglayer: false
+  deploy_cdk_bridge_ui: false
 
 args:
   deployment_suffix: "-003"

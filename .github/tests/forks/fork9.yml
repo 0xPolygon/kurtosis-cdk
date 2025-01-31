@@ -7,20 +7,11 @@ args:
   # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v6
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.8
 
-  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.60.2
-
   # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags?name=v0.7
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
 
   # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags?name=0.7
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
-
-  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.11
-
-  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC7
 
   additional_services:
     - pless_zkevm_node
