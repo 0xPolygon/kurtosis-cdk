@@ -7,15 +7,6 @@ args:
   # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v9
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
 
-  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.61.2
-
-  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
-  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.11
-
-  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-  zkevm_bridge_service_image: hermeznetwork/zkevm-bridge-service:v0.6.0-RC7
-
   additional_services:
     - tx_spammer
 
