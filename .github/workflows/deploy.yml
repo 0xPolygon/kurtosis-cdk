@@ -422,7 +422,7 @@ jobs:
       # Step to handle when the SP1_PRIVATE_KEY secret is available.
       - name: Replace Agglayer SP1 Prover Key with Github Secrets
         run: |
-          sed -i "s/agglayer_prover_sp1_key: None/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/agglayer-sp1-key.yml
+          sed -i "s/agglayer_prover_sp1_key: null/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/agglayer-sp1-key.yml
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
