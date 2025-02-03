@@ -285,7 +285,7 @@ DEFAULT_ROLLUP_ARGS = {
 }
 
 # https://github.com/ethpandaops/optimism-package
-# The below OP params can be customized by specifically referring to an artifact or image. 
+# The below OP params can be customized by specifically referring to an artifact or image.
 # If none is is provided, it will refer to the default images from the Optimism-Package repo.
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 DEFAULT_OP_STACK_ARGS = {
