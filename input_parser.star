@@ -285,6 +285,9 @@ DEFAULT_ROLLUP_ARGS = {
 }
 
 # https://github.com/ethpandaops/optimism-package
+# The below OP params can be customized by specifically referring to an artifact or image. 
+# If none is is provided, it will refer to the default images from the Optimism-Package repo.
+# https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 DEFAULT_OP_STACK_ARGS = {
     "chains": [
         {
@@ -292,28 +295,28 @@ DEFAULT_OP_STACK_ARGS = {
                 {
                     "el_type": "op-geth",
                     # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
                     "cl_type": "op-node",
                     # https://github.com/ethereum-optimism/optimism/releases/tag/v1.9.5
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
+                    # "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
                     "count": 2,  # one is a sequencer node and the other an rpc
                 },
             ],
-            "batcher_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.9.5",
-            },
+            # "batcher_params": {
+            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
+            # },
             # The OP package does not run the op-proposer for now.
             # https://github.com/ethpandaops/optimism-package/blob/0d60a9d3997f83ecee6f7f6695027f819d776309/src/participant_network.star#L87
             # "proposer_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
+            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
             # },
         },
     ],
-    "op_contract_deployer_params": {
-        "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
-        "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-        "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    },
+    # "op_contract_deployer_params": {
+    #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
+    #     "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+    #     "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+    # },
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
