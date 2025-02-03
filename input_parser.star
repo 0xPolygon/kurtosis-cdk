@@ -34,7 +34,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "jhkimqd/aggkit:latest",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.2-rc.1",  # https://github.com/agglayer/agglayer/tags
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.2-rc.3",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.6-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc3",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -276,7 +276,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "agglayer_prover_network_url": "https://rpc.succinct.xyz/",
+    "agglayer_prover_network_url": "https://rpc.production2.succinct.tools",
     # The URL where the agglayer can be reached
     "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
     # This is a path where the cdk-node will write data
