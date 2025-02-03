@@ -157,6 +157,8 @@ DEFAULT_ACCOUNTS = {
 }
 
 DEFAULT_L1_ARGS = {
+    # The L1 engine to use, either "geth" or "anvil".
+    "l1_engine": "geth",
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # This mnemonic will:
@@ -388,6 +390,16 @@ def parse_args(plan, args):
     deployment_stages = DEFAULT_DEPLOYMENT_STAGES | args.get("deployment_stages", {})
     op_stack_args = args.get("optimism_package", {})
     args = DEFAULT_ARGS | args.get("args", {})
+
+    if args["l1_engine"] == "anvil":
+        args["l1_rpc_url"] = "http://anvil:8545"
+        args["l1_ws_url"] = "ws://anvil:8545"
+    elif args["l1_engine"] != "geth":
+        fail(
+            "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
+                args["l1_engine"]
+            )
+        )
 
     # Validation step.
     verbosity = args.get("verbosity", "")
