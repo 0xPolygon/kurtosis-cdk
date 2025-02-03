@@ -219,6 +219,7 @@ DEFAULT_L1_ARGS = {
     # TODO at some point it would be nice if erigon could recover itself, but this is not going to be easy if there's a DAC
     "use_previously_deployed_contracts": False,
     "erigon_datadir_archive": None,
+    "anvil_state_file": None,
 }
 
 DEFAULT_L2_ARGS = {
@@ -391,9 +392,12 @@ def parse_args(plan, args):
     op_stack_args = args.get("optimism_package", {})
     args = DEFAULT_ARGS | args.get("args", {})
 
+    if args["anvil_state_file"] != None:
+        args["l1_engine"] = "anvil"
+
     if args["l1_engine"] == "anvil":
-        args["l1_rpc_url"] = "http://anvil:8545"
-        args["l1_ws_url"] = "ws://anvil:8545"
+        args["l1_rpc_url"] = "http://anvil" + args["deployment_suffix"] + ":8545"
+        args["l1_ws_url"] = "ws://anvil" + args["deployment_suffix"] + ":8545"
     elif args["l1_engine"] != "geth":
         fail(
             "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(

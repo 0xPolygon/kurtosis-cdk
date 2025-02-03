@@ -430,7 +430,7 @@ zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
 # Used for network recovery from L1 batch data.
 # Set to 0 to use the datastream instead.
 # Default: 0
-zkevm.l1-sync-start-block: 0
+zkevm.l1-sync-start-block: {{.l1_sync_start_block}}
 
 # Limits the number of batches to sync from L1.
 # Useful for debugging or partial recoveries.
@@ -999,3 +999,4 @@ db.size.limit: 8TB
 # - config
 # - lightclient.x
 # - sentinel.x
+

@@ -3,6 +3,29 @@ zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 
 
 def run_sequencer(plan, args, contract_setup_addresses):
+    # Start the zkevm stateless executor if strict mode is enabled.
+    if args["erigon_strict_mode"]:
+        stateless_configs = {}
+        stateless_configs["stateless_executor"] = True
+        stateless_executor_config_template = read_file(
+            src="./templates/trusted-node/prover-config.json"
+        )
+        stateless_executor_config_artifact = plan.render_templates(
+            name="stateless-executor-config-artifact",
+            config={
+                "stateless-executor-config.json": struct(
+                    template=stateless_executor_config_template,
+                    data=args | stateless_configs,
+                )
+            },
+        )
+        zkevm_prover_package.start_stateless_executor(
+            plan,
+            args,
+            stateless_executor_config_artifact,
+            "zkevm_stateless_executor_start_port",
+        )
+
     cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     cdk_erigon_sequencer_config_artifact = plan.render_templates(
         name="cdk-erigon-sequencer-config-artifact",
@@ -13,6 +36,7 @@ def run_sequencer(plan, args, contract_setup_addresses):
                     "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                     "is_sequencer": True,
                     "consensus_contract_type": args["consensus_contract_type"],
+                    "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
                 }
                 | args
                 | contract_setup_addresses,
@@ -49,12 +73,17 @@ def run_sequencer(plan, args, contract_setup_addresses):
         name="cdk-erigon-chain-first-batch",
     )
 
+    cdk_erigon_datadir = Directory(
+        persistent_key="cdk-erigon-datadir" + args["deployment_suffix"],
+    )
+
     config_artifacts = struct(
         config=cdk_erigon_sequencer_config_artifact,
         chain_spec=cdk_erigon_chain_spec_artifact,
         chain_config=cdk_erigon_chain_config_artifact,
         chain_allocs=cdk_erigon_chain_allocs_artifact,
         chain_first_batch=cdk_erigon_chain_first_batch_artifact,
+        datadir=cdk_erigon_datadir,
     )
     cdk_erigon_package.start_cdk_erigon_sequencer(
         plan, args, config_artifacts, "cdk_erigon_sequencer_start_port"
@@ -62,29 +91,6 @@ def run_sequencer(plan, args, contract_setup_addresses):
 
 
 def run_rpc(plan, args, contract_setup_addresses):
-    # Start the zkevm stateless executor if strict mode is enabled.
-    if args["erigon_strict_mode"]:
-        stateless_configs = {}
-        stateless_configs["stateless_executor"] = True
-        stateless_executor_config_template = read_file(
-            src="./templates/trusted-node/prover-config.json"
-        )
-        stateless_executor_config_artifact = plan.render_templates(
-            name="stateless-executor-config-artifact",
-            config={
-                "stateless-executor-config.json": struct(
-                    template=stateless_executor_config_template,
-                    data=args | stateless_configs,
-                )
-            },
-        )
-        zkevm_prover_package.start_stateless_executor(
-            plan,
-            args,
-            stateless_executor_config_artifact,
-            "zkevm_stateless_executor_start_port",
-        )
-
     zkevm_sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
@@ -115,6 +121,7 @@ def run_rpc(plan, args, contract_setup_addresses):
                     "is_sequencer": False,
                     "pool_manager_url": pool_manager_url,
                     "consensus_contract_type": args["consensus_contract_type"],
+                    "l1_sync_start_block": 0,
                 }
                 | args
                 | contract_setup_addresses,
