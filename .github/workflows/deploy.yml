@@ -554,7 +554,7 @@ jobs:
           fi
 
           echo "Waiting for deposit to be claimable..."
-          sleep 300
+          sleep 210
 
           destNetworkURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
           bridgeURL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-003 rpc)
@@ -635,4 +635,193 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_deploy_to_external_l1_${{ github.run_id }}
+          path: ./dump
+
+  attach-sovereign-rollup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Install polycli
+        run: |
+          tmp_dir=$(mktemp -d) 
+          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
+          mv "$tmp_dir"/* /usr/local/bin/polycli 
+          rm -rf "$tmp_dir"
+          sudo chmod +x /usr/local/bin/polycli
+          /usr/local/bin/polycli version
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      # Step to handle when the SP1_PRIVATE_KEY secret is available.
+      - name: Replace Agglayer SP1 Prover Key with Github Secrets
+        run: |
+          sed -i "s/agglayer_prover_sp1_key: null/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/attach-sovereign-rollup.yml
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
+        env :
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
+
+      # Only run this step if the SP1_PRIVATE_KEY secrets is available.
+      - name: Deploy L1 and PP CDK L2 and OP Sovereign Rollup
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
+        run: |
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-sovereign-rollup.yml .
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Send bridge transactions from L1 to OP Sovereign L2
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
+        working-directory: .github/scripts
+        run: |
+          echo "Sending a bridge transaction from L1 to the OP Sovereign RPC..."
+          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
+          eth_address=$(cast wallet address --private-key $private_key)
+
+          polycli ulxly bridge asset \
+              --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+              --destination-network 2 \
+              --private-key $private_key \
+              --rpc-url http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc) \
+              --value 10000000000000000000
+          if [[ $ret_code -eq 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              exit 1
+          fi
+
+          echo "Waiting for deposit to be autoclaimed..."
+          sleep 60
+
+          balance=$(cast balance --ether --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc) $eth_address)
+          # Use bc to compare floating-point numbers
+          result=$(echo "$balance > 0" | bc)
+          if [[ "$result" -eq 1 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit was not claimed successfully..."
+          fi
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
+
+      - name: Bridge from OP Sovereign L2 to L1
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
+        working-directory: .github/scripts
+        run: |
+          echo "Sending a bridge transaction from OP Sovereign L2 to L1..."
+          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
+          eth_address=$(cast wallet address --private-key $private_key)
+          polycli ulxly bridge asset \
+              --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
+              --destination-network 0 \
+              --private-key $private_key \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc) \
+              --value $(date +%s) \
+              --destination-address 0xC0FFEE0000000000000000000000000000000001
+          if [[ $ret_code -eq 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              exit 1
+          fi
+
+          echo "Waiting for deposit to be claimable..."
+          sleep 210
+
+          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
+          eth_address=$(cast wallet address --private-key $private_key)
+          polycli ulxly claim asset \
+              --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+              --bridge-service-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc) \
+              --deposit-count 0 \
+              --destination-address 0xc0FFee0000000000000000000000000000000001 \
+              --deposit-network 2 \
+              --private-key $private_key \
+              --rpc-url http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
+          if [[ $ret_code -eq 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim Transaction successfuly sent!"
+              exit 0
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim Transaction failed!"
+              exit 1
+          fi
+        env:
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
+
+      - name: Bridge from OP Sovereign L2 to CDK L2
+        if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
+        working-directory: .github/scripts
+        run: |
+          echo "Sending a bridge transaction from OP Sovereign L2 to CDK L2..."
+          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
+          eth_address=$(cast wallet address --private-key $private_key)
+
+          polycli ulxly bridge asset \
+              --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
+              --destination-network 1 \
+              --private-key $private_key \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc) \
+              --value $(date +%s) \
+              --destination-address 0xC0FFEE0000000000000000000000000000000002
+          if [[ $ret_code -eq 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              exit 1
+          fi
+
+          echo "Waiting for deposit to be claimable..."
+          sleep 210
+
+          polycli ulxly claim asset \
+              --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+              --bridge-service-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc) \
+              --deposit-count 1 \
+              --destination-address 0xc0FFee0000000000000000000000000000000002 \
+              --deposit-network 2 \
+              --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc) \
+              --gas-price $(cast gas-price --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc))
+          if [[ $ret_code -eq 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim Transaction successfuly sent!"
+              exit 0
+          else
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim Transaction failed!"
+              exit 1
+          fi
+        env:
+            agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
+            
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_attach_sovereign_${{ github.run_id }}
           path: ./dump
