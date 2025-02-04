@@ -148,32 +148,42 @@ jobs:
 
       - name: Monitor CDK chain verified batches (Central RPC)
         run: |
-          sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
-          rpc_name=""
-          if [[ "$sequencer_type" == "erigon" ]]; then
-            rpc_name="cdk-erigon-rpc-001"
-          elif [[ "$sequencer_type" == "zkevm" ]]; then
-            rpc_name="zkevm-node-rpc-001"
-          elif [[ "$sequencer_type" == "null" ]]; then
-            rpc_name="cdk-erigon-rpc-001"
+          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file_name }})
+          if [[ "$result" == "true" ]]; then
+            echo "Skipping block verification as consensus is pessimistic."
           else
-            echo "Unknown sequencer type: $sequencer_type"
-            exit 1
+            sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
+            rpc_name=""
+            if [[ "$sequencer_type" == "erigon" ]]; then
+              rpc_name="cdk-erigon-rpc-001"
+            elif [[ "$sequencer_type" == "zkevm" ]]; then
+              rpc_name="zkevm-node-rpc-001"
+            elif [[ "$sequencer_type" == "null" ]]; then
+              rpc_name="cdk-erigon-rpc-001"
+            else
+              echo "Unknown sequencer type: $sequencer_type"
+              exit 1
+            fi
+            echo "RPC name: $rpc_name"
+            ./.github/scripts/monitor-cdk-chain.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
           fi
-          echo "RPC name: $rpc_name"
-          ./.github/scripts/monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
 
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
-          result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
-            ./.github/scripts/monitor-cdk-chain.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+            echo "Skipping block verification as consensus is pessimistic."
           else
-            echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
+            result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
+            if [[ "$result" == "true" ]]; then
+              ./.github/scripts/monitor-cdk-chain.sh \
+                --enclave ${{ env.ENCLAVE_NAME }} \
+                --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+            else
+              echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
+            fi
           fi
 
       - name: Monitor OP rollup finalized blocks (OP CL RPC)
