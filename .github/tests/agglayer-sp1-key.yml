@@ -1,7 +1,11 @@
+deployment_stages:
+  deploy_cdk_bridge_ui: false
+
 args:
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.23
-  agglayer_prover_sp1_key: ""
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
+  agglayer_prover_sp1_key: null
+  agglayer_prover_network_url: https://rpc.production2.succinct.tools
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
+
   consensus_contract_type: pessimistic
   erigon_strict_mode: false
   gas_token_enabled: false

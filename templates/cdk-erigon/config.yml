@@ -133,7 +133,13 @@ zkevm.default-gas-price: 1000000000
 # still be accepted. If you want to reject transactions that are
 # priced at 0 gwei, you'll need to set this as `true
 # Default: false
+# {{if .enable_normalcy}}
+zkevm.reject-low-gas-price-transactions: false
+# {{else}}
 zkevm.reject-low-gas-price-transactions: true
+# {{end}}
+
+
 
 # Apply a factor to convert L1 gas prices into L2 gas prices.
 # A value of 1 means no adjustment; values greater than 1 increase L2 costs proportionally.

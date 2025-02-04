@@ -101,7 +101,6 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
 # Deploy gas token
-# TODO in the future this should be configurable. I.e. we should be able to specify a token address that has already been deployed
 # {{if .gas_token_enabled}}
 
 # {{if eq .gas_token_address ""}}
@@ -169,6 +168,11 @@ jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c
 # Add the L2 GER Proxy address in combined.json (for panoptichain).
 zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
+
+# {{if .gas_token_enabled}}
+jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
+# {{end}}
+
 
 # There are a bunch of fields that need to be renamed in order for the
 # older fork7 code to be compatible with some of the fork8
