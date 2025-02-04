@@ -4,7 +4,6 @@ CDK_ERIGON_TYPE = struct(
     sequencer="sequencer",
     rpc="rpc",
 )
-CDK_ERIGON_CMD = "cdk-erigon --config /etc/cdk-erigon/config.yaml"
 
 
 def start_cdk_erigon_sequencer(plan, args, config_artifact, start_port_name):
@@ -85,7 +84,7 @@ def _start_service(
             public_ports=public_ports,
             files=plan_files,
             entrypoint=["/usr/local/share/proc-runner/proc-runner.sh"],
-            cmd=[CDK_ERIGON_CMD],
+            cmd=["cdk-erigon --config /etc/cdk-erigon/config.yaml"],
             env_vars=env_vars,
         ),
     )
