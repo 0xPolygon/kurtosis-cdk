@@ -12,3 +12,4 @@ optimism_package:
 
 args:
   verbosity: debug
+  consensus_contract_type: pessimistic

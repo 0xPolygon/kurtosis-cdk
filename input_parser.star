@@ -35,7 +35,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "jhkimqd/aggkit:latest",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.2-rc.3",  # https://github.com/agglayer/agglayer/tags
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.6-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.7-RC1-amd64",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc3",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
@@ -47,6 +47,7 @@ DEFAULT_IMAGES = {
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
 }
 
 DEFAULT_PORTS = {
@@ -69,6 +70,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
     "zkevm_cdk_node_port": 5576,
     "blockscout_frontend_port": 3000,
+    "anvil_port": 8545,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -157,6 +159,8 @@ DEFAULT_ACCOUNTS = {
 }
 
 DEFAULT_L1_ARGS = {
+    # The L1 engine to use, either "geth" or "anvil".
+    "l1_engine": "geth",
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # This mnemonic will:
@@ -217,6 +221,7 @@ DEFAULT_L1_ARGS = {
     # TODO at some point it would be nice if erigon could recover itself, but this is not going to be easy if there's a DAC
     "use_previously_deployed_contracts": False,
     "erigon_datadir_archive": None,
+    "anvil_state_file": None,
 }
 
 DEFAULT_L2_ARGS = {
@@ -383,11 +388,39 @@ DEFAULT_ARGS = (
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
 
-def parse_args(plan, args):
+def parse_args(plan, user_args):
     # Merge the provided args with defaults.
-    deployment_stages = DEFAULT_DEPLOYMENT_STAGES | args.get("deployment_stages", {})
-    op_stack_args = args.get("optimism_package", {})
-    args = DEFAULT_ARGS | args.get("args", {})
+    deployment_stages = DEFAULT_DEPLOYMENT_STAGES | user_args.get(
+        "deployment_stages", {}
+    )
+    op_stack_args = user_args.get("optimism_package", {})
+    args = DEFAULT_ARGS | user_args.get("args", {})
+
+    if args["anvil_state_file"] != None:
+        args["l1_engine"] = "anvil"
+
+    if args["l1_engine"] == "anvil":
+        # We override only is user did not provide explicit values
+        if not user_args.get("args", {}).get("l1_rpc_url"):
+            args["l1_rpc_url"] = (
+                "http://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+        if not user_args.get("args", {}).get("l1_ws_url"):
+            args["l1_ws_url"] = (
+                "ws://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+    elif args["l1_engine"] != "geth":
+        fail(
+            "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
+                args["l1_engine"]
+            )
+        )
 
     # Validation step.
     verbosity = args.get("verbosity", "")
