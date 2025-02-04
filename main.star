@@ -11,6 +11,7 @@ cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
+anvil_package = "./anvil.star"
 optimism_package = "github.com/ethpandaops/optimism-package/main.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
@@ -40,7 +41,10 @@ def run(plan, args={}):
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
         plan.print("Deploying a local L1")
-        import_module(ethereum_package).run(plan, args)
+        if args.get("l1_engine", "geth") == "anvil":
+            import_module(anvil_package).run(plan, args)
+        else:
+            import_module(ethereum_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 

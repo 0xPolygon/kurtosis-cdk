@@ -44,10 +44,7 @@ def run(plan, args):
     artifact_paths = list(ARTIFACTS)
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
-    if (
-        "use_previously_deployed_contracts" in args
-        and args["use_previously_deployed_contracts"]
-    ):
+    if args.get("use_previously_deployed_contracts"):
         artifact_paths.append(
             {
                 "name": "genesis.json",

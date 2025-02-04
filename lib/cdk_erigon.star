@@ -29,7 +29,13 @@ def start_cdk_erigon_rpc(plan, args, config_artifact, start_port_name):
 
 
 def _start_service(
-    plan, type, args, config_artifact, start_port_name, additional_ports={}, env_vars={}
+    plan,
+    type,
+    args,
+    config_artifact,
+    start_port_name,
+    additional_ports={},
+    env_vars={},
 ):
     cdk_erigon_chain_artifact_names = [
         config_artifact.chain_spec,
@@ -37,6 +43,7 @@ def _start_service(
         config_artifact.chain_allocs,
         config_artifact.chain_first_batch,
     ]
+
     plan_files = {
         "/etc/cdk-erigon": Directory(
             artifact_names=[config_artifact.config] + cdk_erigon_chain_artifact_names,
@@ -45,6 +52,11 @@ def _start_service(
             artifact_names=cdk_erigon_chain_artifact_names,
         ),
     }
+
+    if hasattr(config_artifact, "datadir"):
+        plan_files[
+            "/home/erigon/data/dynamic-" + args["chain_name"] + "-sequencer"
+        ] = config_artifact.datadir
 
     proc_runner_file_artifact = plan.upload_files(
         name="cdk-erigon-" + type + "-proc-runner",
