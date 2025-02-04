@@ -299,7 +299,7 @@ cast send \
 # {{end}}
 
 # Deploy deterministic proxy.
-# https://github.com/Arachnid/deterministic-deployment-prox
+# https://github.com/Arachnid/deterministic-deployment-proxy
 # You can find the `signer_address`, `transaction` and `deployer_address` by looking at the README.
 echo_ts "Deploying deterministic deployment proxy"
 signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
