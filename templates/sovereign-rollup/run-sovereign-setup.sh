@@ -5,6 +5,8 @@
 cd /opt/zkevm-contracts || exit
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
+# The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
+# The templates being used here - create_new_rollup.json and genesis.json were directly referenced from the above source.
 cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
 cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
 
