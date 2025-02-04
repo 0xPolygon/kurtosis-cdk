@@ -29,6 +29,14 @@ ARTIFACTS = [
         "name": "run-sovereign-setup.sh",
         "file": "./templates/sovereign-rollup/run-sovereign-setup.sh",
     },
+    {
+        "name": "create_new_rollup.json",
+        "file": "./templates/sovereign-rollup/create_new_rollup.json",
+    },
+    {
+        "name": "sovereign-genesis.json",
+        "file": "./templates/sovereign-rollup/genesis.json",
+    },
 ]
 
 

@@ -3,3 +3,4 @@ deployment_stages:
 
 args:
   verbosity: debug
+  consensus_contract_type: pessimistic
