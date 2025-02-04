@@ -64,3 +64,27 @@ def get_l2_rpc_url(plan, args):
             l2_rpc_service.ports["ws-rpc"].number,
         ),
     )
+
+
+def get_sovereign_contract_setup_addresses(plan, args):
+    extract = {
+        "sovereign_ger_proxy_addr": "fromjson | .ger_proxy_addr",
+        "sovereign_bridge_proxy_addr": "fromjson | .bridge_proxy_addr",
+        "sovereign_rollup_addr": "fromjson | .sovereignRollupContract",
+        "sovereign_chain_id": "fromjson | .sovereignChainID",
+    }
+
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat /opt/zkevm-contracts/sovereign-rollup-out.json"],
+        extract=extract,
+    )
+    service_name = "contracts"
+    service_name += args["deployment_suffix"]
+    result = plan.exec(
+        description="Getting contract setup addresses from {} service".format(
+            service_name
+        ),
+        service_name=service_name,
+        recipe=exec_recipe,
+    )
+    return get_exec_recipe_result(result)

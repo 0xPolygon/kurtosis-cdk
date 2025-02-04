@@ -47,7 +47,7 @@ PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 PolygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 L2PolygonBridgeAddresses = ["{{.zkevm_bridge_l2_address}}"]
-SovereignChains = [false]
+RequireSovereignChainSmcs = [false]
 L2PolygonZkEVMGlobalExitRootAddresses = ["{{.zkevm_global_exit_root_l2_address}}"]
 
 [ClaimTxManager]
