@@ -149,7 +149,7 @@ jobs:
       - name: Monitor CDK chain verified batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file_name }})
-          if [[ "$result" == "true" ]]; then
+          if [[ "$result" == "pessimistic" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
@@ -173,7 +173,7 @@ jobs:
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file_name }})
-          if [[ "$result" == "true" ]]; then
+          if [[ "$result" == "pessimistic" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
             result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
