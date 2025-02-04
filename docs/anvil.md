@@ -53,7 +53,7 @@ for file in $DEPLOYMENT_FILES; do
     docker cp contracts-001--$contracts_uuid:/opt/zkevm/$file ./templates/contract-deploy/$file
 done
 
-# Dump Anvilstate (L1)
+# Dump Anvil state (L1)
 anvil_uuid=$(kurtosis enclave inspect --full-uuids $ENCLAVE | grep anvil | awk '{ print $1 }')
 docker cp anvil--001--$anvil_uuid:/tmp/state_out.json $STATE_FILE
 ```
