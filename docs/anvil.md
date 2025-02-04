@@ -55,7 +55,7 @@ done
 
 # Dump Anvil state (L1)
 anvil_uuid=$(kurtosis enclave inspect --full-uuids $ENCLAVE | grep anvil | awk '{ print $1 }')
-docker cp anvil--001--$anvil_uuid:/tmp/state_out.json $STATE_FILE
+docker cp anvil-001--$anvil_uuid:/tmp/state_out.json $STATE_FILE
 ```
 
 At that point you have all you need, you can totally remove the network.

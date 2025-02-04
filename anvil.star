@@ -1,5 +1,3 @@
-ANVIL_IMAGE = "ghcr.io/foundry-rs/foundry:latest"
-ANVIL_PORT = 8545
 ANVIL_BLOCK_TIME = 1
 ANVIL_SLOTS_IN_AN_EPOCH = (
     2  # Setting to X leads to block N-(X+1) being finalized, being N latest block
@@ -20,7 +18,7 @@ def run(plan, args):
         + " --chain-id "
         + chain_id
         + " --host 0.0.0.0 --port "
-        + str(ANVIL_PORT)
+        + str(args["anvil_port"])
         + " --dump-state "
         + STATE_PATH
         + "/state_out.json"
@@ -46,9 +44,9 @@ def run(plan, args):
     plan.add_service(
         name="anvil" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=ANVIL_IMAGE,
+            image=args["anvil_image"],
             ports={
-                "rpc": PortSpec(ANVIL_PORT, application_protocol="http"),
+                "rpc": PortSpec(args["anvil_port"], application_protocol="http"),
             },
             files=service_files,
             cmd=[cmd],

@@ -47,6 +47,7 @@ DEFAULT_IMAGES = {
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
 }
 
 DEFAULT_PORTS = {
@@ -69,6 +70,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
     "zkevm_cdk_node_port": 5576,
     "blockscout_frontend_port": 3000,
+    "anvil_port": 8545,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -386,18 +388,33 @@ DEFAULT_ARGS = (
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
 
-def parse_args(plan, args):
+def parse_args(plan, user_args):
     # Merge the provided args with defaults.
-    deployment_stages = DEFAULT_DEPLOYMENT_STAGES | args.get("deployment_stages", {})
-    op_stack_args = args.get("optimism_package", {})
-    args = DEFAULT_ARGS | args.get("args", {})
+    deployment_stages = DEFAULT_DEPLOYMENT_STAGES | user_args.get(
+        "deployment_stages", {}
+    )
+    op_stack_args = user_args.get("optimism_package", {})
+    args = DEFAULT_ARGS | user_args.get("args", {})
 
     if args["anvil_state_file"] != None:
         args["l1_engine"] = "anvil"
 
     if args["l1_engine"] == "anvil":
-        args["l1_rpc_url"] = "http://anvil" + args["deployment_suffix"] + ":8545"
-        args["l1_ws_url"] = "ws://anvil" + args["deployment_suffix"] + ":8545"
+        # We override only is user did not provide explicit values
+        if not user_args.get("args", {}).get("l1_rpc_url"):
+            args["l1_rpc_url"] = (
+                "http://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+        if not user_args.get("args", {}).get("l1_ws_url"):
+            args["l1_ws_url"] = (
+                "ws://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
     elif args["l1_engine"] != "geth":
         fail(
             "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
