@@ -7,7 +7,7 @@ l1_engine: anvil
 
 Please, understand that by doing:
 - l1_chain_id is taken into account
-- l1_rpc_url is automatically set to http://anvil-001:8545"
+- l1_rpc_url is automatically set to http://anvil-001:8545
 - l1_ws_url is automatically set to ws://anvil-001:8545
 - These params are ignored:
     - l1_beacon_url
