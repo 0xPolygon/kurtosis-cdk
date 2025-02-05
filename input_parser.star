@@ -27,6 +27,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
+    # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
+    # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
@@ -459,6 +461,12 @@ def parse_args(plan, user_args):
 
     # Determine OP stack args.
     op_stack_args = get_op_stack_args(plan, args, op_stack_args)
+    # deploy_optimistic_rollup and consensus_contract_type check
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
+            fail(
+                "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
