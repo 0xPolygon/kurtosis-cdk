@@ -24,6 +24,26 @@ To do so, you have to set to True the desired component.
 
 With this, the component will send queries to MITM, and they will be forwarded to the real L1. You can modify ```/scripts/empty.py``` on the MITM service to achieve whatever you want.
 
+## L1 missbehaving
+
+Several L1 missbehaving scenarios had been implemented with MITM and can be easily tested.
+
+You can test them all by just executing this [existing script](/scripts/mitm/test_l1_failures.sh) (form the repo's root folder)
+```bash
+./scripts/mitm/test_l1_failures.sh
+```
+Existing failures are implemented on [/scripts/mitm/failures.py](/scripts/mitm/failures.py), right now:
+- ```HttpErrorResponse```: Returning random http error codes
+- ```NullResponse```: Returning no data with 200 http code
+- ```EmptyJSONResultResponse```: Returning JSON with empty result field
+- ```EmptyJSONResponse```: Returning and empty JSON
+- ```ArbirtraryHTMLResponse```: Returning a fixed HTML content
+- ```ArbirtraryJSONResponse```: Returning a fixed JSON content
+- ```SlowResponse```: Delay response for few seconds
+- ```CorruptedJSONResponse```: Change a random byte on the returned JSON
+- ```NoResponse```: Closing the HTTP connection without returning any answer
+- ```AddJSONFieldsResponse```: Adding arbitrary JSON fields to the returned answer
+
 
 ## Reorg + Null answers
 
