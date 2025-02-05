@@ -38,6 +38,10 @@ def run(plan, args={}):
     if verbosity == constants.LOG_LEVEL.debug or verbosity == constants.LOG_LEVEL.trace:
         plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
+    # Sanity check for conflicting parameters.
+    plan.print("Checking for incompatible parameters...")
+    sanity_check(plan, deployment_stages, args, op_stack_args)
+
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
         plan.print("Deploying a local L1")
@@ -278,3 +282,14 @@ def deploy_additional_service(plan, name, package, args, contract_setup_addresse
     else:
         import_module(package).run(plan, service_args, contract_setup_addresses)
     plan.print("Successfully launched %s" % name)
+
+
+# Helper function to check for parameter combinations that will result in errors within individual services even though the deployment may succeed.
+def sanity_check(plan, deployment_stages, args, op_stack_args):
+    # deploy_optimistic_rollup and consensus_contract_type check
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
+            plan.print(
+                "OP Stack rollup requires pessimistic consensus contract type, halting further deployment..."
+            )
+            return fail("Incompatible parameters")
