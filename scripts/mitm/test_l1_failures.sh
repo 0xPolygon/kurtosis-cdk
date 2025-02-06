@@ -2,6 +2,13 @@ ENCLAVE_NAME=test-failures
 CDK_NODE_VERS=0.5.1-rc4
 REAL_RPC_URL=http://anvil-001:8545
 
+# TEST PARAMS
+TEST_PERCENTAGE=0.15
+TEST_DURATION=30
+TIMEOUT=240  # 4 minutes
+RETRY_TIMEOUT=480  # 8 minutes
+
+# MITM PROXY
 L1_PROXY_NAME=mitm
 L1_PROXY_PORT=8234
 
@@ -15,7 +22,7 @@ kurtosis enclave add --name $ENCLAVE_NAME
 
 # Launch mitm docker in the background
 MITM_IP=$(docker network inspect kt-$ENCLAVE_NAME | jq -r .[0].IPAM.Config[0].Subnet | cut -f1-3 -d.).199
-echo "" > remove_me_later.py
+echo > remove_me_later.py
 (sleep 10 && docker run --detach --rm --name $L1_PROXY_NAME --network kt-${ENCLAVE_NAME} --ip $MITM_IP \
     -v $(pwd)/scripts/mitm/failures.py:/failures.py:ro \
     -v $(pwd)/remove_me_later.py:/mitm.py:ro \
@@ -31,6 +38,10 @@ kurtosis run --enclave $ENCLAVE_NAME . \
           "l1_engine": "anvil",
         }
     }'
+
+RPC_URL=$(kurtosis port print test-failures cdk-erigon-rpc-001 rpc);
+(while true; do cast send --legacy --rpc-url $RPC_URL --value 1wei --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed; sleep 1; done) &
+TXSENDER_PID=$!
 
 
 wait_for_verification() {
@@ -71,20 +82,22 @@ wait_for_verification() {
 
 export ETH_RPC_URL=$(kurtosis port print $ENCLAVE_NAME cdk-erigon-sequencer-001 rpc)
 
-TEST_PERCENTAGE=0.50
-TEST_DURATION=120
-TIMEOUT=300
 
 # Test failures, 2 minutes each
 classes=$(sed -n 's/^class \([A-Za-z0-9]\+\).*/\1/p'  scripts/mitm/failures.py  | grep -v Generic)
 for class in $classes; do
     echo "import failures" > remove_me_later.py
-    echo "addons = [failures.${class}(${TEST_PERCENTAGE})]" >> remove_me_later.py
+    if [ "$class" == "RedirectRequest" ]; then
+        redirect_url="http://cdk-erigon-rpc-001:8123"
+        echo "addons = [failures.${class}(${TEST_PERCENTAGE}, '${redirect_url}')]" >> remove_me_later.py
+    else
+        echo "addons = [failures.${class}(${TEST_PERCENTAGE})]" >> remove_me_later.py
+    fi
     echo >> remove_me_later.py
     echo "Testing failure class $class for a $TEST_DURATION seconds"
     sleep $TEST_DURATION
     echo "Resuming normal operation"
-    echo "" > remove_me_later.py
+    echo > remove_me_later.py
     wait_for_verification $TIMEOUT
     if [ $? -eq 0 ]; then
         echo "Verification successful!"
@@ -104,6 +117,7 @@ done
 
 
 # Clean UP
+kill -9 $TXSENDER_PID
 docker stop $L1_PROXY_NAME
 kurtosis enclave stop $ENCLAVE_NAME
 kurtosis enclave rm $ENCLAVE_NAME
