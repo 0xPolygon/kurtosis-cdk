@@ -1,5 +1,11 @@
+deployment_stages:
+  deploy_l2_contracts: true
+
 args:
   verbosity: debug
+
+  # https://github.com/agglayer/agglayer/tags
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
 
   # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.9
   zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9-patch.1
@@ -16,8 +22,3 @@ args:
   additional_services:
     - pless_zkevm_node
     - tx_spammer
-
-  deploy_l2_contracts: true
-
-  # https://github.com/agglayer/agglayer/tags
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
