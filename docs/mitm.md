@@ -43,7 +43,7 @@ Existing failures are implemented on [/scripts/mitm/failures.py](/scripts/mitm/f
 - ```CorruptedJSONResponse```: Change a random byte on the returned JSON
 - ```NoResponse```: Closing the HTTP connection without returning any answer
 - ```AddJSONFieldsResponse```: Adding arbitrary JSON fields to the returned answer
-
+- ```RedirectRequest```: Sending the request to a different(specified) server
 
 ## Reorg + Null answers
 
