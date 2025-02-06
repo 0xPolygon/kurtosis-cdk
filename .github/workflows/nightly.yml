@@ -58,9 +58,10 @@ jobs:
           config_image: ${{ env.ANTITHESIS_REGISTRY }}/${{ env.ANTITHESIS_REPOSITORY}}/config:antithesis-latest
           description: Kurtosis CDK tests
           email_recipients: ${{ secrets.ANTITHESIS_EMAIL_RECIPIENTS }} # this is a ";" delimited list (e.g. "u1@site.com;u2@site.com").
+          # Note: duration must be specified in number of hours (min 0.5 hours).
           additional_parameters: |-
             custom.configuration=${{ env.PARAM_FILE }}
-            custom.duration="1.0" # in hours (min 0.5 hours)
+            custom.duration=1.0
 
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
