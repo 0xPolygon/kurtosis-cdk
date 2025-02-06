@@ -1,0 +1,23 @@
+# Deploy all the components except the bridge ui and optimism rollup.
+deployment_stages:
+  deploy_l1: true
+  deploy_zkevm_contracts_on_l1: true
+  deploy_databases: true
+  deploy_cdk_central_environment: true
+  deploy_cdk_bridge_infra: true
+  deploy_cdk_bridge_ui: false
+  deploy_agglayer: true
+  deploy_cdk_erigon_node: true
+  deploy_optimism_rollup: false
+  deploy_l2_contracts: true
+
+args:
+  verbosity: debug
+  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13-patch.1
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
+  consensus_contract_type: cdk-validium
+  sequencer_type: erigon
+  additional_services:
+    - tx_spammer
+
+  
