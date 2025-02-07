@@ -9,7 +9,7 @@ deployment_stages:
   deploy_agglayer: true
   deploy_cdk_erigon_node: true
   deploy_optimism_rollup: false
-  deploy_l2_contracts: true
+  deploy_l2_contracts: false
 
 args:
   verbosity: debug
