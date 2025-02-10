@@ -12,13 +12,13 @@ extract_base_name() {
 
 # Convert a YML array into a Markdown table.
 yml2md() {
-    echo "Fork ID|CDK Erigon|ZkEVM Prover|ZkEVM Contracts|Data Availability|Bridge"
-    echo "---|---|---|---|---|---"
+    echo "Fork ID|Consensus|CDK Erigon|ZkEVM Prover|ZkEVM Contracts|Data Availability|Bridge"
+    echo "---|---|---|---|---|---|---"
     yq -r '
         to_entries |
-        sort_by(.key | tonumber) | reverse |
+        sort_by(.value.fork_id | tonumber) | reverse |
         map(
-            "\(.key)|[\(.value.cdk_erigon.version)](\(.value.cdk_erigon.source))|[\(.value.zkevm_prover.version)](\(.value.zkevm_prover.source))|[\(.value.zkevm_contracts.version)](\(.value.zkevm_contracts.source))|[\(.value.data_availability.version)](\(.value.data_availability.source))|[\(.value.bridge_service.version)](\(.value.bridge_service.source))"
+            "\(.value.fork_id)|\(.value.consensus)|[\(.value.cdk_erigon.version)](\(.value.cdk_erigon.source))|[\(.value.zkevm_prover.version)](\(.value.zkevm_prover.source))|[\(.value.zkevm_contracts.version)](\(.value.zkevm_contracts.source))|[\(.value.data_availability.version)](\(.value.data_availability.source))|[\(.value.bridge_service.version)](\(.value.bridge_service.source))"
         ) |
         join("\n")
     ' "$1"
@@ -67,16 +67,19 @@ for fork in "${forks[@]}"; do
             echo "- $output_file"
 
             # Save version matrix for each fork.
-            if [[ "$base_cons" == "validium" && "$base_comp" == "cdk-erigon" ]]; then
+            if [[ "$base_comp" == "cdk-erigon" && ("$base_cons" == "validium" || "$base_cons" == "sovereign") ]]; then
                 fork_id=${base_fork#fork}
                 # shellcheck disable=SC2016
                 yq --raw-output \
                     --arg fork_id "$fork_id" \
+                    --arg consensus "$base_cons" \
                     --arg bridge_version "$default_bridge_version" \
                     --arg da_version "$default_da_version" \
                     --arg erigon_version "$default_erigon_version" \
                     --yaml-output '{
-                    ($fork_id): {
+                    ($fork_id + "-" + $consensus): {
+                        fork_id: $fork_id,
+                        consensus: $consensus,
                         cdk_erigon: {
                             version: $erigon_version,
                             source: "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\($erigon_version)",
