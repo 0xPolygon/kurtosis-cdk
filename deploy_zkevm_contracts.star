@@ -163,7 +163,7 @@ def run(plan, args):
 
     # Force update GER.
     plan.exec(
-        description="Update the GER so the L1 Info Tree Index is greater than 0",
+        description="Updating the GER so the L1 Info Tree Index is greater than 0",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[

@@ -25,7 +25,6 @@ def run(plan, args):
             },
             cmd=["/app/blutgang", "-c", "/etc/blutgang/config.toml"],
         ),
-        description="Starting blutgang service",
     )
 
 
