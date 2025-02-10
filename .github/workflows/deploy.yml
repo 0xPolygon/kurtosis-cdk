@@ -44,11 +44,6 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: List databases
-        run: |
-          postgres_port=$(kurtosis port print ${{ env.ENCLAVE_NAME }} postgres-001 postgres | cut -d':' -f3)
-          PGPASSWORD=master_password psql --host 127.0.0.1 --port "$postgres_port" --username master_user --dbname master --list
-
       - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
