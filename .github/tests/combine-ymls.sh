@@ -46,18 +46,18 @@ for fork in "${forks[@]}"; do
             base_da="$(extract_base_name "$da")"
             base_comp="$(extract_base_name "$comp")"
 
-            # The legacy stack doesn't work with fork 12
-            if [[ "$base_fork" == "fork12" && "$base_comp" == "legacy-zkevm" ]]; then
+            # The legacy stack doesn't work with fork 12 and 13.
+            if [[ ("$base_fork" == "fork12" || "$base_fork" == "fork13") && "$base_comp" == "legacy-zkevm" ]]; then
                 continue
             fi
 
-            # The legacy stack also doesn't work with fork 13
-            if [[ "$base_fork" == "fork13" && "$base_comp" == "legacy-zkevm" ]]; then
-                continue
-            fi
-
-            # The combination of fork 11 with the zkevm stack with validium mode does not work
+            # The combination of fork 11 with the zkevm stack with validium mode does not work.
             if [[ "$base_fork" == "fork11" && "$base_comp" == "legacy-zkevm" && "$base_da" == "validium" ]]; then
+                continue
+            fi
+
+            # cdk-erigon-sovereign only works for fork12 for now.
+            if [[ "$base_da" ==  "sovereign" && "$base_fork" != "fork12" ]]; then
                 continue
             fi
 
