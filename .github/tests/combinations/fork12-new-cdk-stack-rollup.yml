@@ -1,9 +1,0 @@
-args:
-  verbosity: debug
-  zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-fork.12-patch.1
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12
-  additional_services:
-    - tx_spammer
-  deploy_l2_contracts: true
-  consensus_contract_type: rollup
-  sequencer_type: erigon
