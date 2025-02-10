@@ -63,7 +63,7 @@ for fork in "${forks[@]}"; do
 
             output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_cons.yml"
             echo "# This file has been generated automatically." >"$output_file"
-            yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output >>"$output_file"
+            yq --slurp ".[0] * .[1] * .[2]" "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
             echo "- $output_file"
 
             # Save version matrix for each fork.
