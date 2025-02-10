@@ -27,6 +27,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
+    # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
+    # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
@@ -396,6 +398,9 @@ def parse_args(plan, user_args):
     op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
 
+    # Sanity check step for incompatible parameters
+    args_sanity_check(plan, deployment_stages, args, op_stack_args)
+
     if args["anvil_state_file"] != None:
         args["l1_engine"] = "anvil"
 
@@ -415,12 +420,6 @@ def parse_args(plan, user_args):
                 + ":"
                 + str(DEFAULT_PORTS.get("anvil_port"))
             )
-    elif args["l1_engine"] != "geth":
-        fail(
-            "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
-                args["l1_engine"]
-            )
-        )
 
     # Validation step.
     verbosity = args.get("verbosity", "")
@@ -428,15 +427,6 @@ def parse_args(plan, user_args):
 
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
-
-    gas_token_enabled = args.get("gas_token_enabled", False)
-    gas_token_address = args.get("gas_token_address", "")
-    if not gas_token_enabled and gas_token_address != "":
-        fail(
-            "Gas token address set to '{}' but gas token is not enabled".format(
-                gas_token_address
-            )
-        )
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
@@ -448,9 +438,6 @@ def parse_args(plan, user_args):
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
-
-    if args["enable_normalcy"] and args["erigon_strict_mode"]:
-        fail("normalcy and strict mode cannot be enabled together")
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
@@ -601,3 +588,37 @@ def get_op_stack_args(plan, args, op_stack_args):
             "priv_key": private_key,
         },
     }
+
+
+# Helper function to compact together checks for incompatible parameters in input_parser.star
+def args_sanity_check(plan, deployment_stages, args, op_stack_args):
+    # Unsupported L1 engine check
+    if args["l1_engine"] != "geth":
+        if args["l1_engine"] != "anvil":
+            fail(
+                "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
+                    args["l1_engine"]
+                )
+            )
+
+    # Gas token enabled and gas token address check
+    if (
+        not args.get("gas_token_enabled", False)
+        and args.get("gas_token_address", "") != ""
+    ):
+        fail(
+            "Gas token address set to '{}' but gas token is not enabled".format(
+                args.get("gas_token_address", "")
+            )
+        )
+
+    # CDK Erigon normalcy and strict mode check
+    if args["enable_normalcy"] and args["erigon_strict_mode"]:
+        fail("normalcy and strict mode cannot be enabled together")
+
+    # OP rollup deploy_optimistic_rollup and consensus_contract_type check
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
+            fail(
+                "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
