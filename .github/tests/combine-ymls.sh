@@ -15,7 +15,7 @@ yml2md() {
     echo "Fork ID|CDK Erigon|ZkEVM Prover|ZkEVM Contracts|Data Availability|Bridge"
     echo "---|---|---|---|---|---"
     yq -r '
-        to_entries | 
+        to_entries |
         sort_by(.key | tonumber) | reverse |
         map(
             "\(.key)|[\(.value.cdk_erigon.version)](\(.value.cdk_erigon.source))|[\(.value.zkevm_prover.version)](\(.value.zkevm_prover.source))|[\(.value.zkevm_contracts.version)](\(.value.zkevm_contracts.source))|[\(.value.data_availability.version)](\(.value.data_availability.source))|[\(.value.bridge_service.version)](\(.value.bridge_service.source))"
@@ -24,8 +24,8 @@ yml2md() {
     ' "$1"
 }
 
-true > "$MATRIX_VERSION_FILE"
-echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" > "$MATRIX_VERSION_README"
+true >"$MATRIX_VERSION_FILE"
+echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" >"$MATRIX_VERSION_README"
 
 # File combinations.
 forks=(forks/*.yml)
@@ -46,36 +46,35 @@ for fork in "${forks[@]}"; do
             base_da="$(extract_base_name "$da")"
             base_comp="$(extract_base_name "$comp")"
 
-
             # The legacy stack doesn't work with fork 12
-            if [[ "$base_fork" == "fork12" && "$base_comp" == "legacy-zkevm-stack" ]]; then
+            if [[ "$base_fork" == "fork12" && "$base_comp" == "legacy-zkevm" ]]; then
                 continue
             fi
 
             # The legacy stack also doesn't work with fork 13
-            if [[ "$base_fork" == "fork13" && "$base_comp" == "legacy-zkevm-stack" ]]; then
+            if [[ "$base_fork" == "fork13" && "$base_comp" == "legacy-zkevm" ]]; then
                 continue
             fi
 
             # The combination of fork 11 with the zkevm stack with validium mode does not work
-            if [[ "$base_fork" == "fork11" && "$base_comp" == "legacy-zkevm-stack" && "$base_da" == "cdk-validium" ]]; then
+            if [[ "$base_fork" == "fork11" && "$base_comp" == "legacy-zkevm" && "$base_da" == "validium" ]]; then
                 continue
             fi
 
             output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_da.yml"
-            yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output > "$output_file"
+            yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output >"$output_file"
             echo "- $output_file"
 
             # Save version matrix for each fork.
-            if [[ "$base_da" == "cdk-validium" && "$base_comp" == "new-cdk-stack" ]]; then
+            if [[ "$base_da" == "validium" && "$base_comp" == "cdk-erigon" ]]; then
                 fork_id=${base_fork#fork}
                 # shellcheck disable=SC2016
                 yq --raw-output \
-                   --arg fork_id "$fork_id" \
-                   --arg bridge_version "$default_bridge_version" \
-                   --arg da_version "$default_da_version" \
-                   --arg erigon_version "$default_erigon_version" \
-                   --yaml-output '{
+                    --arg fork_id "$fork_id" \
+                    --arg bridge_version "$default_bridge_version" \
+                    --arg da_version "$default_da_version" \
+                    --arg erigon_version "$default_erigon_version" \
+                    --yaml-output '{
                     ($fork_id): {
                         cdk_erigon: {
                             version: $erigon_version,
@@ -98,10 +97,10 @@ for fork in "${forks[@]}"; do
                             source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\($bridge_version)",
                         },
                 }}
-                ' "$output_file" >> "$MATRIX_VERSION_FILE"
+                ' "$output_file" >>"$MATRIX_VERSION_FILE"
             fi
         done
     done
 done
-yml2md "$MATRIX_VERSION_FILE" >> "$MATRIX_VERSION_README"
+yml2md "$MATRIX_VERSION_FILE" >>"$MATRIX_VERSION_README"
 echo "All combinations created!"
