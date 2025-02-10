@@ -304,8 +304,7 @@ DEFAULT_OP_STACK_ARGS = {
                     # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
                     # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
                     "cl_type": "op-node",
-                    # https://github.com/ethereum-optimism/optimism/releases/tag/v1.9.5
-                    # "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:d44bbea2407f4308f9fda20cf776bcb6dff7ff08",
                     "count": 2,  # one is a sequencer node and the other an rpc
                 },
             ],
