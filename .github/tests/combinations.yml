@@ -1,6 +1,6 @@
 combinations:
   - fork: 9
-    da-modes:
+    consensus:
       - validium
       - rollup
     components:
@@ -8,21 +8,21 @@ combinations:
       - cdk-erigon
 
   - fork: 11
-    da-modes:
+    consensus:
       - validium
       - rollup
     components:
       - cdk-erigon
 
   - fork: 12
-    da-modes:
+    consensus:
       - validium
       - rollup
     components:
       - cdk-erigon
 
   - fork: 13
-    da-modes:
+    consensus:
       - validium
       - rollup
     components:

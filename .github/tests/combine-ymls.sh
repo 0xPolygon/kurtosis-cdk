@@ -29,7 +29,7 @@ echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are mea
 
 # File combinations.
 forks=(forks/*.yml)
-data_availability=(da-modes/*.yml)
+consensus=(consensus/*.yml)
 components=(components/*.yml)
 
 default_erigon_version="$(grep -E "cdk_erigon_node_image.*hermeznetwork/cdk-erigon" ../../input_parser.star | sed 's#.*hermeznetwork/cdk-erigon:\([^"]*\).*#\1#')"
@@ -40,10 +40,10 @@ default_da_version="$(grep -E "zkevm_da_image.*0xpolygon" ../../input_parser.sta
 echo "Creating combinations..."
 mkdir -p "$COMBINATIONS_FOLDER"
 for fork in "${forks[@]}"; do
-    for da in "${data_availability[@]}"; do
+    for cons in "${consensus[@]}"; do
         for comp in "${components[@]}"; do
             base_fork="$(extract_base_name "$fork")"
-            base_da="$(extract_base_name "$da")"
+            base_cons="$(extract_base_name "$cons")"
             base_comp="$(extract_base_name "$comp")"
 
             # The legacy stack doesn't work with fork 12 and 13.
@@ -52,22 +52,22 @@ for fork in "${forks[@]}"; do
             fi
 
             # The combination of fork 11 with the zkevm stack with validium mode does not work.
-            if [[ "$base_fork" == "fork11" && "$base_comp" == "legacy-zkevm" && "$base_da" == "validium" ]]; then
+            if [[ "$base_fork" == "fork11" && "$base_comp" == "legacy-zkevm" && "$base_cons" == "validium" ]]; then
                 continue
             fi
 
             # cdk-erigon-sovereign only works for fork12 for now.
-            if [[ "$base_da" ==  "sovereign" && "$base_fork" != "fork12" ]]; then
+            if [[ "$base_cons" == "sovereign" && "$base_fork" != "fork12" ]]; then
                 continue
             fi
 
-            output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_da.yml"
+            output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_cons.yml"
             echo "# This file has been generated automatically." >"$output_file"
             yq --slurp ".[0] * .[1] * .[2]" "$fork" "$da" "$comp" --yaml-output >>"$output_file"
             echo "- $output_file"
 
             # Save version matrix for each fork.
-            if [[ "$base_da" == "validium" && "$base_comp" == "cdk-erigon" ]]; then
+            if [[ "$base_cons" == "validium" && "$base_comp" == "cdk-erigon" ]]; then
                 fork_id=${base_fork#fork}
                 # shellcheck disable=SC2016
                 yq --raw-output \

@@ -5,7 +5,7 @@ The purpose of this tool is to automate the creation of comprehensive test suite
 The script combines configuration files from three categories:
 
 - Fork configurations under `forks/` (e.g., fork9.yml, fork10.yml)
-- Data availability modes under `da-modes/` (e.g., rollup.yml, validium.yml)
+- Consensus modes under `consensus/` (e.g., rollup.yml, validium.yml)
 - Component types under `components` (e.g., zkevm-node-sequencer-sequence-sender-aggregator.yml, erigon-sequencer-cdk-sequence-sender-aggregator.yml)
 
 It then creates new `.yml` files that represent each unique combination of these configurations.
