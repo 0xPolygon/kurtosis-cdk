@@ -29,12 +29,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          files=$(ls -R \
-            ./.github/tests/gas-token/auto.yml \
-            ./.github/tests/static-ports/custom-static-ports.yml \
-            ./.github/tests/static-ports/default-static-ports.yml \
-            ./.github/tests/op-rollup/*.yml \
-            | grep -v 'additional-services.yml')
+          files=$(ls -R ./.github/tests/nightly/**/*.yml )
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
