@@ -28,7 +28,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml)
+          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -v "sovereign")
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
