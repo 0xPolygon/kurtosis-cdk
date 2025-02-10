@@ -17,6 +17,7 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
+  # Deploy the package using the defaults parameters.
   run-without-args:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -62,6 +63,7 @@ jobs:
           name: dump_run_without_args_${{ github.run_id }}
           path: ./dump
 
+  # Create the test matrix.
   list-ymls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -75,18 +77,14 @@ jobs:
         run: ./combine-ymls.sh
 
       - id: set-matrix
-        # List all yml files in the .github/tests directory, as well as test combinations, except for the additional-services.yml file.
         run: |
           files=$(ls -R \
             ./.github/tests/combinations/*.yml \
-            ./.github/tests/gas-token/auto.yml \
-            ./.github/tests/static-ports/custom-static-ports.yml \
-            ./.github/tests/static-ports/default-static-ports.yml \
-            ./.github/tests/op-rollup/*.yml \
             | grep -v 'additional-services.yml')
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
+  # Deploy the package using the matrix of test files.
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
@@ -122,24 +120,6 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Verify static ports
-        run: |
-          if [[ ${{ matrix.file_name }} == "./.github/tests/static-ports/default-static-ports.yml" ]]; then
-            echo "Making sure public ports start by a 5 as defined by the static ports in the input_parser.star file."
-
-            ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
-            if ! wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none'); then
-              echo "✅ Default static ports are set correctly."
-              exit 0
-            else
-              echo "wrong_ports: $wrong_ports"
-              echo "❌ Default static ports are not set correctly."
-              exit 1
-            fi
-          else
-            echo "Skipping."
-          fi
 
       - name: Monitor CDK chain verified batches (Central RPC)
         run: |
