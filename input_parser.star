@@ -210,7 +210,7 @@ DEFAULT_L1_ARGS = {
     "l1_preset": "minimal",
     # Number of seconds per slot on the Beacon chain
     # Default: 12
-    "l1_seconds_per_slot": 1,
+    "l1_seconds_per_slot": 2,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
@@ -621,4 +621,13 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+
+    # OP rollup check L1 blocktime >= L2 blocktime
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        if (
+            args.get("l1_seconds_per_slot", 12) < 2
+        ):  # 2 seconds is the default blocktime for Optimism L2.
+            fail(
+                "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
