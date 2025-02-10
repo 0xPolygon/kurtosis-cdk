@@ -211,85 +211,6 @@ jobs:
           name: ${{ env.ARCHIVE_NAME }}
           path: ./dump
 
-  pre-deployed-gas-token:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy L1 chain
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
-
-      - name: Deploy gas token on L1
-        run: |
-          zkevm_contracts_version="v8.0.0-rc.4-fork.12"
-          echo "Cloning zkevm-contracts $zkevm_contracts_version..."
-          git clone https://github.com/0xPolygonHermez/zkevm-contracts
-          pushd zkevm-contracts
-          git checkout $zkevm_contracts_version
-          npm install @openzeppelin/contracts@4.8.2
-          printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
-
-          echo "Deploying gas token to L1..."
-          l1_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
-          forge create \
-            --broadcast \
-            --json \
-            --rpc-url $l1_rpc_url \
-            --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete" \
-            contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-            --constructor-args "CDK Gas Token" "CDK" "0xE34aaF64b29273B7D567FCFc40544c014EEe9970" "1000000000000000000000000" \
-            > gasToken-erc20.json
-          gas_token_address=$(jq --raw-output '.deployedTo' gasToken-erc20.json)
-          if [[ -z "$gas_token_address" || "$gas_token_address" == "null" ]]; then
-            echo "Unable to deploy gas token"
-            exit 1
-          fi
-          echo "Gas token contract deployed at $gas_token_address on L1"
-          popd
-          yq -Y --in-place ".args.gas_token_address = \"$gas_token_address\"" ./.github/tests/gas-token/pre-deployed.yml
-
-      - name: Deploy the rest of the stack
-        run: |
-          yq -Y --in-place ".deployment_stages.deploy_l1 = false" ./.github/tests/gas-token/pre-deployed.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/gas-token/pre-deployed.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
-
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dump_pre_deployed_gas_token${{ github.run_id }}
-          path: ./dump
-
   additional-services:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -413,9 +334,9 @@ jobs:
 
       - name: Install polycli
         run: |
-          tmp_dir=$(mktemp -d) 
-          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
-          mv "$tmp_dir"/* /usr/local/bin/polycli 
+          tmp_dir=$(mktemp -d)
+          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir"
+          mv "$tmp_dir"/* /usr/local/bin/polycli
           rm -rf "$tmp_dir"
           sudo chmod +x /usr/local/bin/polycli
           /usr/local/bin/polycli version
@@ -430,7 +351,7 @@ jobs:
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
-        env :
+        env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Deploy L1 chain and a first CDK L2 chain (cdk-erigon sequencer + cdk stack)
@@ -581,7 +502,7 @@ jobs:
           fi
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
-          
+
       - name: Dump enclave
         if: ${{ !cancelled() }}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
@@ -663,9 +584,9 @@ jobs:
 
       - name: Install polycli
         run: |
-          tmp_dir=$(mktemp -d) 
-          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir" 
-          mv "$tmp_dir"/* /usr/local/bin/polycli 
+          tmp_dir=$(mktemp -d)
+          curl -L "https://github.com/0xPolygon/polygon-cli/releases/download/${{ env.POLYCLI_VERSION }}/polycli_${{ env.POLYCLI_VERSION }}_linux_amd64.tar.gz" | tar -xz -C "$tmp_dir"
+          mv "$tmp_dir"/* /usr/local/bin/polycli
           rm -rf "$tmp_dir"
           sudo chmod +x /usr/local/bin/polycli
           /usr/local/bin/polycli version
@@ -680,7 +601,7 @@ jobs:
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
-        env :
+        env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       # Only run this step if the SP1_PRIVATE_KEY secrets is available.
@@ -694,7 +615,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
         if: ${{ env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != '' }}
-        env :
+        env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Send bridge transactions from L1 to OP Sovereign L2
@@ -822,12 +743,12 @@ jobs:
               exit 1
           fi
         env:
-            agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
-            
+          agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
+
       - name: Dump enclave
         if: ${{ !cancelled() && env.agglayer_prover_sp1_key && env.agglayer_prover_sp1_key != ''}}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-        env :
+        env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
       - name: Upload enclave dump
