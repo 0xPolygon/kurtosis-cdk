@@ -17,7 +17,6 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  # Deploy the package using the default parameters.
   run-without-args:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -63,7 +62,6 @@ jobs:
           name: dump_run_without_args_${{ github.run_id }}
           path: ./dump
 
-  # Create the test matrix.
   list-ymls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -83,7 +81,6 @@ jobs:
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
-  # Deploy the package using the matrix of test files.
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
@@ -188,109 +185,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARCHIVE_NAME }}
-          path: ./dump
-
-  additional-services:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
-
-      - name: Verify Arpeggio RPC
-        run: |
-          result=$(yq '.args.additional_services | contains(["arpeggio"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
-          else
-            echo "Arpeggio is not deployed."
-          fi
-
-      - name: Verify Blutgang RPC
-        run: |
-          result=$(yq '.args.additional_services | contains(["blutgang"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
-          else
-            echo "Blutgang is not deployed."
-          fi
-
-      - name: Verify erpc RPC
-        run: |
-          result=$(yq '.args.additional_services | contains(["erpc"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
-          else
-            echo "ERPC is not deployed."
-          fi
-
-      - name: Verify permissionless zkevm-node rpc
-        run: |
-          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
-          else
-            echo "Permissionless zkevm-node is not deployed."
-          fi
-
-      - name: Verify that Prometheus collects Panoptichain metrics
-        run: |
-          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            echo "Wait for one minute while Prometheus gathers metrics..."
-            sleep 60
-
-            echo "Retrieve Panoptichain metrics from Prometheus..."
-            panoptichain_metric="panoptichain_system_uptime"
-            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
-            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
-            echo $prometheus_query | jq
-            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
-              echo "✅ Prometheus collects panoptichain metrics!"
-            else
-              echo "❌ Prometheus does not collect panoptichain metrics..."
-              exit 1
-            fi
-          else
-            echo "Prometheus is not deployed."
-          fi
-
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dump_additional_services_${{ github.run_id }}
           path: ./dump
 
   attach-additional-cdks:
@@ -493,55 +387,6 @@ jobs:
           name: dump_attach_ckds_${{ github.run_id }}
           path: ./dump
 
-  deploy-to-external_l1:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Deploy L1 chain
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
-
-      - name: Deploy to local L1 chain
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
-        run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
-
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dump_deploy_to_external_l1_${{ github.run_id }}
-          path: ./dump
-
   attach-sovereign-rollup:
     # This workflow depends on the existence of a valid secrets.SP1_PRIVATE_KEY, and will only run if this dependency is met.
     runs-on: ubuntu-latest
@@ -739,7 +584,7 @@ jobs:
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
-  deploy-to-anvil_l1:
+  additional-services:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -760,8 +605,118 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      - name: Deploy stack with anvil
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/anvil/rollup.yml .
+      - name: Run Starlark
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: |
+          ./monitor-cdk-chain.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
+
+      - name: Verify Arpeggio RPC
+        run: |
+          result=$(yq '.args.additional_services | contains(["arpeggio"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
+          else
+            echo "Arpeggio is not deployed."
+          fi
+
+      - name: Verify Blutgang RPC
+        run: |
+          result=$(yq '.args.additional_services | contains(["blutgang"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+          else
+            echo "Blutgang is not deployed."
+          fi
+
+      - name: Verify erpc RPC
+        run: |
+          result=$(yq '.args.additional_services | contains(["erpc"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
+          else
+            echo "ERPC is not deployed."
+          fi
+
+      - name: Verify permissionless zkevm-node rpc
+        run: |
+          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+          else
+            echo "Permissionless zkevm-node is not deployed."
+          fi
+
+      - name: Verify that Prometheus collects Panoptichain metrics
+        run: |
+          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            echo "Wait for one minute while Prometheus gathers metrics..."
+            sleep 60
+
+            echo "Retrieve Panoptichain metrics from Prometheus..."
+            panoptichain_metric="panoptichain_system_uptime"
+            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+            echo $prometheus_query | jq
+            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+              echo "✅ Prometheus collects panoptichain metrics!"
+            else
+              echo "❌ Prometheus does not collect panoptichain metrics..."
+              exit 1
+            fi
+          else
+            echo "Prometheus is not deployed."
+          fi
+
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_additional_services_${{ github.run_id }}
+          path: ./dump
+
+  deploy-to-external_l1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy L1 chain
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
+
+      - name: Deploy to local L1 chain
+        run: |
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
@@ -778,5 +733,5 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: dump_deploy_to_anvil_l1_${{ github.run_id }}
+          name: dump_deploy_to_external_l1_${{ github.run_id }}
           path: ./dump

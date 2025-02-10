@@ -14,7 +14,6 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  # Create the test matrix.
   list-ymls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -33,7 +32,6 @@ jobs:
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
-  # Deploy the package using the matrix of test files.
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
@@ -158,7 +156,6 @@ jobs:
           name: ${{ env.ARCHIVE_NAME }}
           path: ./dump
 
-  # Deploy the package with a pre-deployed gas token.
   pre-deployed-gas-token:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -236,6 +233,48 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_pre_deployed_gas_token_${{ github.run_id }}
+          path: ./dump
+
+  deploy-to-anvil_l1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+
+      - name: Deploy stack with anvil
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/anvil/rollup.yml .
+
+      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
+        working-directory: .github/scripts
+        run: |
+          ./monitor-cdk-chain.sh \
+            --enclave ${{ env.ENCLAVE_NAME }} \
+            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+
+      - name: Dump enclave
+        if: ${{ !cancelled() }}
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
+      - name: Upload enclave dump
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_deploy_to_anvil_l1_${{ github.run_id }}
           path: ./dump
 
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
