@@ -37,8 +37,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "jhkimqd/aggkit:latest",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.2-rc.3",  # https://github.com/agglayer/agglayer/tags
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.7-RC1-amd64",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc3",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.11-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags

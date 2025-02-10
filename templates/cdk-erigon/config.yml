@@ -207,7 +207,7 @@ zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
 # NOTE: The flag must be specified but it is not used in the code!
 # https://github.com/0xPolygonHermez/cdk-erigon/issues/1254
 # Default: 0
-zkevm.rpc-ratelimit: 250
+# zkevm.rpc-ratelimit: 10000
 
 # Define the maximum number of concurrent requests allowed to the executor for getBatchWitness operations.
 # This setting helps manage system resources and prevent overloading the executor.
@@ -241,7 +241,7 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # - 3: Latest format with additional features
 # Default: 2
 # fork12 or after {{if eq .zkevm_rollup_fork_name "banana"}}
-zkevm.datastream-version: 3
+# zkevm.datastream-version: 3
 # before fork12 {{else}}
 zkevm.datastream-version: 2
 # {{end}}
