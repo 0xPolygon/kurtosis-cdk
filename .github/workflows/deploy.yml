@@ -17,7 +17,7 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
-  # Deploy the package using the defaults parameters.
+  # Deploy the package using the default parameters.
   run-without-args:
     runs-on: ubuntu-latest
     timeout-minutes: 30
