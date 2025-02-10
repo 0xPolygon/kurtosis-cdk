@@ -1,3 +1,4 @@
+# This file has been generated automatically.
 args:
   verbosity: debug
   zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13-patch.1
