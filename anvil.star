@@ -51,5 +51,4 @@ def run(plan, args):
             files=service_files,
             cmd=[cmd],
         ),
-        description="Anvil",
     )

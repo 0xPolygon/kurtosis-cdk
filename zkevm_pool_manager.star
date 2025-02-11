@@ -19,7 +19,6 @@ def run_zkevm_pool_manager(plan, args):
     # Start the pool manager service.
     zkevm_pool_manager_services = plan.add_services(
         configs=zkevm_pool_manager_config,
-        description="Starting pool manager infra",
     )
 
 

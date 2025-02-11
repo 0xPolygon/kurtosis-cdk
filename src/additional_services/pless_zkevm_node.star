@@ -55,5 +55,4 @@ def run(plan, args, genesis_artifact):
     )
     plan.add_services(
         configs=rpc_config,
-        description="Starting zkevm node rpc",
     )

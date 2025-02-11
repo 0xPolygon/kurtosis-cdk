@@ -1,3 +1,4 @@
+# This file has been generated automatically.
 args:
   verbosity: debug
   zkevm_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11-patch.1
@@ -7,7 +8,5 @@ args:
     - tx_spammer
   deploy_l2_contracts: true
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
-  consensus_contract_type: rollup
-  sequencer_type: zkevm
-deployment_stages:
-  deploy_cdk_erigon_node: false
+  consensus_contract_type: cdk-validium
+  sequencer_type: erigon
