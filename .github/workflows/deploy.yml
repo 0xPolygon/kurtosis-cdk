@@ -819,9 +819,6 @@ jobs:
               exit 1
           fi
 
-          echo "Waiting for deposit to be claimable..."
-          sleep 210
-
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             result=$(polycli ulxly claim asset \
