@@ -28,7 +28,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -v "sovereign")
+          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|anvil|gas-token|pless-zkevm-node")
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
@@ -207,12 +207,12 @@ jobs:
           fi
           echo "Gas token contract deployed at $gas_token_address on L1"
           popd
-          yq -Y --in-place ".args.gas_token_address = \"$gas_token_address\"" ./.github/tests/gas-token/pre-deployed.yml
+          yq -Y --in-place ".args.gas_token_address = \"$gas_token_address\"" ./.github/tests/nightly/gas-token/pre-deployed.yml
 
       - name: Deploy the rest of the stack
         run: |
-          yq -Y --in-place ".deployment_stages.deploy_l1 = false" ./.github/tests/gas-token/pre-deployed.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/gas-token/pre-deployed.yml .
+          yq -Y --in-place ".deployment_stages.deploy_l1 = false" ./.github/tests/nightly/gas-token/pre-deployed.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/gas-token/pre-deployed.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -257,7 +257,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Deploy stack with anvil
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/anvil/rollup.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/anvil/rollup.yml .
 
       - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
@@ -301,8 +301,8 @@ jobs:
 
       - name: Deploy the permisionless node
         run: |
-          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' ./.github/tests/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml --show-enclave-inspect=false .
+          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' ./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml --show-enclave-inspect=false .
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.ALCHEMY_SEPOLIA_RPC_URL}}
