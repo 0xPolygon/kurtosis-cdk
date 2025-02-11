@@ -18,6 +18,7 @@ args:
 
     ## CDK node
     cdk_node_start_port: 61100
+    cdk_node_prometheus_port: 9091
 
     ## Bridge services
     zkevm_bridge_service_start_port: 61200
