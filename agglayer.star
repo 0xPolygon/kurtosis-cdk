@@ -80,12 +80,6 @@ def create_agglayer_prover_config_artifact(plan, args):
         src="./templates/bridge-infra/agglayer-prover-config.toml"
     )
 
-    is_cpu_prover_enabled = "true"
-    is_network_prover_enabled = "false"
-    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
-        is_cpu_prover_enabled = "false"
-        is_network_prover_enabled = "true"
-
     return plan.render_templates(
         name="agglayer-prover-config-artifact",
         config={
@@ -98,8 +92,7 @@ def create_agglayer_prover_config_artifact(plan, args):
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
                     "prometheus_port": args["agglayer_prover_metrics_port"],
-                    "is_cpu_prover_enabled": is_cpu_prover_enabled,
-                    "is_network_prover_enabled": is_network_prover_enabled,
+                    "primary_prover": args["agglayer_prover_primary_prover"],
                 },
             )
         },
@@ -115,6 +108,11 @@ def create_agglayer_config_artifact(
     db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
+    mock_verifier = False
+
+    if args["agglayer_prover_primary_prover"] == "mock-prover":
+        mock_verifier = True
+
     return plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -138,6 +136,8 @@ def create_agglayer_config_artifact(
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
+                    # verifier
+                    "mock_verifier": mock_verifier,
                 }
                 | contract_setup_addresses
                 | db_configs,

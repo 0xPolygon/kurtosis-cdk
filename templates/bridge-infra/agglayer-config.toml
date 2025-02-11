@@ -1,6 +1,10 @@
 prover-entrypoint = "{{.agglayer_prover_entrypoint}}"
 debug-mode = true
 
+{{if .mock_verifier}}
+mock-verifier = true
+{{end}}
+
 [full-node-rpcs]
 # TODO switch this to permissionless
 1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
@@ -79,4 +83,3 @@ input-backpressure-buffer-size = 1000
 
 [storage]
 db-path = "/etc/zkevm/storage"
-
