@@ -533,7 +533,7 @@ jobs:
                 echo "$result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retring in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retring in 15 seconds..."
                 echo "$result"
                 echo
                 sleep 15
@@ -588,7 +588,7 @@ jobs:
                 echo "$result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
                 echo "$result"
                 echo
                 sleep 15
@@ -792,7 +792,7 @@ jobs:
                 echo "$result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
                 echo "$result"
                 echo
                 sleep 15
@@ -845,7 +845,7 @@ jobs:
                 echo "$result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
                 echo "$result"
                 echo
                 sleep 15
