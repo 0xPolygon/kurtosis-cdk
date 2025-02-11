@@ -493,6 +493,7 @@ jobs:
       - name: Send bridge transactions from L1 to the third PP L2 chain
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
+        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           echo "Sending a bridge transaction from L1 to the PP network Erigon RPC..."
           bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
@@ -544,6 +545,7 @@ jobs:
       - name: Bridge from third PP L2 chain to first Rollup chain.
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
+        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           echo "Sending a bridge transaction from third PP network to the first rollup Erigon RPC..."
           bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
@@ -710,6 +712,7 @@ jobs:
       - name: Send bridge transactions from L1 to OP Sovereign L2
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
+        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           echo "Sending a bridge transaction from L1 to the OP Sovereign RPC..."
           l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
@@ -747,6 +750,7 @@ jobs:
       - name: Bridge from OP Sovereign L2 to L1
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
+        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           echo "Sending a bridge transaction from OP Sovereign L2 to L1..."
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
@@ -800,6 +804,7 @@ jobs:
       - name: Bridge from OP Sovereign L2 to CDK L2
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         working-directory: .github/scripts
+        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           echo "Sending a bridge transaction from OP Sovereign L2 to CDK L2..."
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
