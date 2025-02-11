@@ -13,7 +13,7 @@ args:
   additional_services:
     - pless_zkevm_node
   l1_rpc_url: CHANGE_ME
-  genesis_file: ../../.github/tests/pless-zkevm-node/cardona-sepolia-testnet-genesis.json
+  genesis_file: ../../.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-genesis.json
   consensus_contract_type: rollup
 
   # Cardona/Sepolia is using fork id 9.

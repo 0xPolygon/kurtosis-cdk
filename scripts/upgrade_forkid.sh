@@ -32,7 +32,10 @@ fi
 SOURCE_FORKID=$1
 TARGET_FORKID=$2
 ERIGON_IMAGE=hermeznetwork/cdk-erigon:v2.61.4-RC1
-STACK_NAME=upgradeCDK-$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13; echo)
+STACK_NAME=upgradeCDK-$(
+    tr -dc A-Za-z0-9 </dev/urandom | head -c 13
+    echo
+)
 
 if [ "$TARGET_FORKID" -eq "11" ]; then
     TAG_TARGET_FORKID=v7.0.0-fork.10-fork.11
@@ -42,12 +45,12 @@ elif [ "$TARGET_FORKID" -eq "13" ]; then
     TAG_TARGET_FORKID=v8.1.0-rc.2-fork.13
 fi
 
-PARAMS_FILE=".github/tests/combinations/fork${SOURCE_FORKID}-new-cdk-stack-rollup.yml"
+PARAMS_FILE=".github/tests/combinations/fork${SOURCE_FORKID}-cdk-erigon-rollup.yml"
 
 KURTOSIS_CONFIG=upgrade_from_${SOURCE_FORKID}_to_${TARGET_FORKID}_enclave_${STACK_NAME}.json
 cp "$PARAMS_FILE" "$KURTOSIS_CONFIG"
 sed -ni '/cdk_erigon_node_image/!p' "$KURTOSIS_CONFIG"
-echo "  cdk_erigon_node_image: $ERIGON_IMAGE" >> "$KURTOSIS_CONFIG"
+echo "  cdk_erigon_node_image: $ERIGON_IMAGE" >>"$KURTOSIS_CONFIG"
 
 # DEPLOY STACK
 kurtosis run --enclave "$STACK_NAME" --args-file "$KURTOSIS_CONFIG" .
@@ -70,7 +73,7 @@ echo "Halting sequencer..."
 kurtosis service exec "$STACK_NAME" $SVC_SEQUENCER \
     "HALTON=\$(printf \"%d\\n\" \$((\$(curl -s -X POST -H \"Content-Type: application/json\" -d '{\"method\":\"zkevm_batchNumber\",\"id\":1,\"jsonrpc\":\"2.0\"}' http://localhost:8123 | jq -r .result)+2))); \
     sed -i 's/zkevm.sequencer-halt-on-batch-number: 0/zkevm.sequencer-halt-on-batch-number: '\$HALTON'/' /etc/cdk-erigon/config.yaml"
-    # echo \"zkevm.sequencer-halt-on-batch-number: \$HALTON\" >> /etc/erigon/erigon-sequencer.yaml"
+# echo \"zkevm.sequencer-halt-on-batch-number: \$HALTON\" >> /etc/erigon/erigon-sequencer.yaml"
 kurtosis service stop "$STACK_NAME" $SVC_SEQUENCER
 kurtosis service start "$STACK_NAME" $SVC_SEQUENCER
 
@@ -130,11 +133,11 @@ echo "DONE: RPC status is up to date"
 # Stop services
 echo "Stopping services..."
 kurtosis service stop "$STACK_NAME" $SVC_CDKNODE
-kurtosis service stop "$STACK_NAME" $SVC_PROVER 
-kurtosis service stop "$STACK_NAME" $SVC_BRIDGE 
+kurtosis service stop "$STACK_NAME" $SVC_PROVER
+kurtosis service stop "$STACK_NAME" $SVC_BRIDGE
 kurtosis service stop "$STACK_NAME" $SVC_RPC
 kurtosis service stop "$STACK_NAME" $SVC_SEQUENCER
-kurtosis service stop "$STACK_NAME" $SVC_SLESS_EXECUTOR 
+kurtosis service stop "$STACK_NAME" $SVC_SLESS_EXECUTOR
 
 # Depoly verifier
 echo "Deploying verifier..."
@@ -158,7 +161,6 @@ kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS \
     \$CONSENSUS \
     \"\$(jq -r '.deployedTo' /opt/verifier-out.json)\" \
     $TARGET_FORKID 0 \$GENESIS 'new_forkid_$TARGET_FORKID' > /opt/add-rollup-type-out.json"
-
 
 # Update rollup
 echo "Updating rollup..."
@@ -194,7 +196,7 @@ kurtosis service start "$STACK_NAME" $SVC_SEQUENCER
 
 # Wait for sequencer to become responsive
 echo "Waiting for Sequencer's rpc port to become available"
-until cast rpc --json --rpc-url $(kurtosis port print "$STACK_NAME" "$SVC_SEQUENCER" rpc) zkevm_getForkId &> /dev/null; do
+until cast rpc --json --rpc-url $(kurtosis port print "$STACK_NAME" "$SVC_SEQUENCER" rpc) zkevm_getForkId &>/dev/null; do
     printf '.'
     sleep 3
 done
@@ -214,7 +216,7 @@ kurtosis service start "$STACK_NAME" $SVC_RPC
 
 # Wait for rpc to become responsive
 echo "Waiting for RPC's rpc port to become available"
-until cast rpc --json --rpc-url $(kurtosis port print "$STACK_NAME" "$SVC_RPC" rpc) zkevm_getForkId &> /dev/null; do
+until cast rpc --json --rpc-url $(kurtosis port print "$STACK_NAME" "$SVC_RPC" rpc) zkevm_getForkId &>/dev/null; do
     printf '.'
     sleep 3
 done
@@ -229,7 +231,7 @@ while [ "$FORKID" -ne "$TARGET_FORKID" ]; do
     FORKID=$(printf "%d" $(cast rpc --json --rpc-url $(kurtosis port print "$STACK_NAME" "$SVC_RPC" rpc) zkevm_getForkId | jq -r))
     echo "Current RPC forkid: $FORKID"
     if [[ $COUNTER -ge $MAX_RETRIES ]]; then
-        FORKID=$TARGET_FORKID  # To break the loop
+        FORKID=$TARGET_FORKID # To break the loop
     else
         sleep 3
     fi

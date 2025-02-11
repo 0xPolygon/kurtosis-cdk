@@ -567,7 +567,7 @@ def get_op_stack_args(plan, args, op_stack_args):
 
     l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic", "")
     private_key_result = plan.run_sh(
-        description="Derive private key from mnemonic",
+        description="Deriving the private key from the mnemonic",
         run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
             l1_preallocated_mnemonic
         ),

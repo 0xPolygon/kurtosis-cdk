@@ -27,7 +27,6 @@ def run(plan, args):
             },
             cmd=["--config", "/config/config.yaml"],
         ),
-        description="Starting assertoor service",
     )
 
 

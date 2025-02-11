@@ -5,7 +5,7 @@ The purpose of this tool is to automate the creation of comprehensive test suite
 The script combines configuration files from three categories:
 
 - Fork configurations under `forks/` (e.g., fork9.yml, fork10.yml)
-- Data availability modes under `da-modes/` (e.g., rollup.yml, cdk-validium.yml)
+- Consensus modes under `consensus/` (e.g., rollup.yml, validium.yml)
 - Component types under `components` (e.g., zkevm-node-sequencer-sequence-sender-aggregator.yml, erigon-sequencer-cdk-sequence-sender-aggregator.yml)
 
 It then creates new `.yml` files that represent each unique combination of these configurations.
@@ -17,15 +17,17 @@ Here is an example:
 ```bash
 $ ./combine-ymls.sh
 Creating combinations...
-- combinations/fork11-new-cdk-stack-cdk-validium.yml
-- combinations/fork11-legacy-zkevm-stack-rollup.yml
-- combinations/fork11-new-cdk-stack-rollup.yml
-- combinations/fork12-new-cdk-stack-cdk-validium.yml
-- combinations/fork12-new-cdk-stack-rollup.yml
-- combinations/fork9-legacy-zkevm-stack-cdk-validium.yml
-- combinations/fork9-new-cdk-stack-cdk-validium.yml
-- combinations/fork9-legacy-zkevm-stack-rollup.yml
-- combinations/fork9-new-cdk-stack-rollup.yml
+- combinations/fork11-cdk-erigon-rollup.yml
+- combinations/fork11-legacy-zkevm-rollup.yml
+- combinations/fork11-cdk-erigon-validium.yml
+- combinations/fork12-cdk-erigon-rollup.yml
+- combinations/fork12-cdk-erigon-validium.yml
+- combinations/fork13-cdk-erigon-rollup.yml
+- combinations/fork13-cdk-erigon-validium.yml
+- combinations/fork9-cdk-erigon-rollup.yml
+- combinations/fork9-legacy-zkevm-rollup.yml
+- combinations/fork9-cdk-erigon-validium.yml
+- combinations/fork9-legacy-zkevm-validium.yml
 All combinations created!
 ```
 
