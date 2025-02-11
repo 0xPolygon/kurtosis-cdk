@@ -470,14 +470,18 @@ jobs:
           sleep 60
 
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
-          balance=$(cast balance --ether --rpc-url $op_rollup_rpc_url $eth_address)
-          # Use bc to compare floating-point numbers
-          result=$(echo "$balance > 0" | bc)
-          if [[ "$result" -eq 1 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
-          else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit was not claimed successfully..."
-          fi
+          while true; do
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit was claimed..."
+            balance=$(cast balance --ether --rpc-url $op_rollup_rpc_url $eth_address)
+            result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
+            if [[ "$result" -eq 1 ]]; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
+            else
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit has not been claimed yet... Retrying in 15 seconds..."
+                sleep 15
+            fi
+          done
+
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
