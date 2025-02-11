@@ -307,7 +307,7 @@ jobs:
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url $l2_cdk3_rpc_url)
-            result=$(polycli ulxly claim asset \
+            polycli ulxly claim asset \
                 --bridge-address $bridge_address \
                 --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
                 --deposit-count 3 \
@@ -315,16 +315,13 @@ jobs:
                 --deposit-network 0 \
                 --rpc-url $l2_cdk3_rpc_url \
                 --bridge-service-url $bridge_url \
-                --gas-price $gas_price)
+                --gas-price $gas_price
             ret_code=$?
             if [[ "$ret_code" -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retring in 15 seconds..."
-                echo "$result"
-                echo
                 sleep 15
             fi
           done
@@ -362,7 +359,7 @@ jobs:
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url $l2_cdk1_rpc_url)
-            result=$(polycli ulxly claim asset \
+            polycli ulxly claim asset \
                 --bridge-address $bridge_address \
                 --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
                 --deposit-count 0 \
@@ -370,16 +367,13 @@ jobs:
                 --deposit-network 3 \
                 --rpc-url $l2_cdk1_rpc_url \
                 --bridge-service-url $bridge_url \
-                --gas-price $gas_price)
+                --gas-price $gas_price
             ret_code=$?
             if [[ $ret_code -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
-                echo "$result"
-                echo
                 sleep 15
             fi
           done
@@ -518,23 +512,20 @@ jobs:
           eth_address=$(cast wallet address --private-key $private_key)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
-            result=$(polycli ulxly claim asset \
+            polycli ulxly claim asset \
                 --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
                 --bridge-service-url $bridge_url \
                 --deposit-count 0 \
                 --destination-address 0xc0FFee0000000000000000000000000000000001 \
                 --deposit-network 2 \
                 --private-key $private_key \
-                --rpc-url $l1_rpc_url)
+                --rpc-url $l1_rpc_url
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
-                echo "$result"
-                echo
                 sleep 15
             fi
           done
@@ -570,7 +561,7 @@ jobs:
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url $l2_rpc_url)
-            result=$(polycli ulxly claim asset \
+            polycli ulxly claim asset \
                 --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
                 --bridge-service-url $bridge_url \
                 --deposit-count 1 \
@@ -578,16 +569,13 @@ jobs:
                 --deposit-network 2 \
                 --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
                 --rpc-url $l2_rpc_url \
-                --gas-price $gas_price)
+                --gas-price $gas_price
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
-                echo "$result"
-                echo
                 sleep 15
             fi
           done
