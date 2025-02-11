@@ -87,6 +87,7 @@ def create_agglayer_prover_config_artifact(plan, args):
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
+                    "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
                     "prometheus_port": args["agglayer_prover_metrics_port"],
