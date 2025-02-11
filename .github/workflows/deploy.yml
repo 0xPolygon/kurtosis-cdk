@@ -428,7 +428,6 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Step to handle when the SP1_PRIVATE_KEY secret is available.
       - name: Replace Agglayer SP1 Prover Key with Github Secrets
         run: |
           sed -i "s/agglayer_prover_sp1_key: null/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/agglayer-sp1-key.yml
@@ -460,15 +459,12 @@ jobs:
       - name: Attach a second FEP CDK L2 chain (cdk-erigon sequencer + cdk FEP stack)
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-second-cdk.yml .
 
-      # Only run this step if the SP1_PRIVATE_KEY secrets is available.
       - name: Attach a third PP CDK L2 chain (cdk-erigon sequencer + cdk PP stack)
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-third-cdk.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-third-cdk.yml .
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
-      # Only run this step if the SP1_PRIVATE_KEY secrets is available.
       - name: Restart the Erigon RPC of the PP network
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
         run: |
@@ -500,42 +496,43 @@ jobs:
         run: |
           echo "Sending a bridge transaction from L1 to the PP network Erigon RPC..."
           bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
-          origin_network_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
+          l1_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
           polycli ulxly bridge asset \
               --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
               --value 1000000000000000000 \
-              --rpc-url http://$origin_network_url \
+              --rpc-url $l1_rpc_url \
               --bridge-address $bridge_address \
               --destination-network 3 \
               --force-update-root=true \
               --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
 
-          dest_network_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)
+          l2_cdk3_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)
           bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-003 rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
+            gas_price=$(cast gas-price --rpc-url $l2_cdk3_rpc_url)
             result=$(polycli ulxly claim asset \
                 --bridge-address $bridge_address \
                 --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
                 --deposit-count 3 \
                 --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
                 --deposit-network 0 \
-                --rpc-url $dest_network_url \
+                --rpc-url $l2_cdk3_rpc_url \
                 --bridge-service-url $bridge_url \
-                --gas-price $(cast gas-price --rpc-url $dest_network_url))
+                --gas-price $gas_price)
             ret_code=$?
             if [[ "$ret_code" -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
                 echo "Output: $result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim transaction failed! Retring in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retring in 15 seconds..."
                 echo "Output: $result"
                 echo
                 sleep 15
@@ -550,44 +547,46 @@ jobs:
         run: |
           echo "Sending a bridge transaction from third PP network to the first rollup Erigon RPC..."
           bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
-          origin_network_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)
+          l2_cdk3_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)
+          gas_price=$(cast gas-price --rpc-url $l2_cdk3_rpc_url)
           polycli ulxly bridge asset \
               --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
               --value 1000000000000 \
-              --rpc-url $origin_network_url \
+              --rpc-url $l2_cdk3_rpc_url \
               --bridge-address $bridge_address \
               --destination-network 1 \
               --force-update-root=true \
               --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
-              --gas-price $(cast gas-price --rpc-url $origin_network_url)
+              --gas-price $gas_price
           ret_code=$?
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
 
-          dest_network_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
+          l2_cdk1_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
           bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-003 rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
+            gas_price=$(cast gas-price --rpc-url $l2_cdk1_rpc_url)
             result=$(polycli ulxly claim asset \
                 --bridge-address $bridge_address \
                 --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
                 --deposit-count 0 \
                 --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
                 --deposit-network 3 \
-                --rpc-url $dest_network_url \
+                --rpc-url $l2_cdk1_rpc_url \
                 --bridge-service-url $bridge_url \
-                --gas-price $(cast gas-price --rpc-url $dest_network_url))
+                --gas-price $gas_price)
             ret_code=$?
             if [[ $ret_code -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
                 echo "Output: $result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim transaction failed! Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
                 echo "Output: $result"
                 echo
                 sleep 15
@@ -687,7 +686,6 @@ jobs:
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
 
-      # Step to handle when the SP1_PRIVATE_KEY secret is available.
       - name: Replace Agglayer SP1 Prover Key with Github Secrets
         run: |
           sed -i "s/agglayer_prover_sp1_key: null/agglayer_prover_sp1_key: \"${{ secrets.SP1_PRIVATE_KEY }}\"/" ./.github/tests/attach-sovereign-rollup.yml
@@ -697,11 +695,9 @@ jobs:
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
-      # Only run this step if the SP1_PRIVATE_KEY secrets is available.
       - name: Deploy L1 and PP CDK L2 and OP Sovereign Rollup
         if: ${{ env.agglayer_prover_sp1_key || env.agglayer_prover_sp1_key != '' }}
-        run: |
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-sovereign-rollup.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/attach-sovereign-rollup.yml .
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
@@ -716,6 +712,7 @@ jobs:
         working-directory: .github/scripts
         run: |
           echo "Sending a bridge transaction from L1 to the OP Sovereign RPC..."
+          l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
           eth_address=$(cast wallet address --private-key $private_key)
@@ -723,19 +720,20 @@ jobs:
               --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
               --destination-network 2 \
               --private-key $private_key \
-              --rpc-url http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc) \
+              --rpc-url $l1_rpc_url \
               --value 10000000000000000000
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
 
           echo "Waiting for deposit to be autoclaimed..."
           sleep 60
 
-          balance=$(cast balance --ether --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc) $eth_address)
+          op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
+          balance=$(cast balance --ether --rpc-url $op_rollup_rpc_url $eth_address)
           # Use bc to compare floating-point numbers
           result=$(echo "$balance > 0" | bc)
           if [[ "$result" -eq 1 ]]; then
@@ -751,6 +749,7 @@ jobs:
         working-directory: .github/scripts
         run: |
           echo "Sending a bridge transaction from OP Sovereign L2 to L1..."
+          op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
           eth_address=$(cast wallet address --private-key $private_key)
@@ -758,16 +757,18 @@ jobs:
               --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
               --destination-network 0 \
               --private-key $private_key \
-              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc) \
+              --rpc-url $op_rollup_rpc_url \
               --value $(date +%s) \
               --destination-address 0xC0FFEE0000000000000000000000000000000001
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
 
+          bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc)
+          l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
           eth_address=$(cast wallet address --private-key $private_key)
@@ -775,19 +776,19 @@ jobs:
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             result=$(polycli ulxly claim asset \
                 --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
-                --bridge-service-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc) \
+                --bridge-service-url $bridge_url \
                 --deposit-count 0 \
                 --destination-address 0xc0FFee0000000000000000000000000000000001 \
                 --deposit-network 2 \
                 --private-key $private_key \
-                --rpc-url http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc))
+                --rpc-url $l1_rpc_url)
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
                 echo "Output: $result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim transaction failed! Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
                 echo "Output: $result"
                 echo
                 sleep 15
@@ -801,45 +802,48 @@ jobs:
         working-directory: .github/scripts
         run: |
           echo "Sending a bridge transaction from OP Sovereign L2 to CDK L2..."
+          op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
           eth_address=$(cast wallet address --private-key $private_key)
-
           polycli ulxly bridge asset \
               --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
               --destination-network 1 \
               --private-key $private_key \
-              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc) \
+              --rpc-url $op_rollup_rpc_url \
               --value $(date +%s) \
               --destination-address 0xC0FFEE0000000000000000000000000000000002
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
 
+          l2_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
+          bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
+            gas_price=$(cast gas-price --rpc-url $l2_rpc_url)
             result=$(polycli ulxly claim asset \
                 --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
-                --bridge-service-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc) \
+                --bridge-service-url $bridge_url \
                 --deposit-count 1 \
                 --destination-address 0xc0FFee0000000000000000000000000000000002 \
                 --deposit-network 2 \
                 --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-                --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc) \
-                --gas-price $(cast gas-price --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)))
+                --rpc-url $l2_rpc_url \
+                --gas-price $gas_price)
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
                 echo "Output: $result"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim transaction failed! Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
                 echo "Output: $result"
                 echo
-                exit 1
+                sleep 15
             fi
           done
         env:
