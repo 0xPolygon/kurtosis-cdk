@@ -8,7 +8,9 @@ args:
   deploy_l2_contracts: true
   consensus_contract_type: pessimistic
   erigon_strict_mode: false
-  zkevm_use_real_verifier: true
+  gas_token_enabled: false
+  zkevm_use_real_verifier: false
   enable_normalcy: true
   agglayer_prover_sp1_key: ''
+  agglayer_prover_primary_prover: mock-prover
   sequencer_type: erigon

@@ -13,11 +13,12 @@ args:
   # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags?name=0.7
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
 
+  # Use this specific version of the agglayer to avoid the following issue:
+  # Error: Unable to get the InitL1InfoRootMap: Event InitL1InfoRootMap not found
+  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
+
   additional_services:
     - pless_zkevm_node
     - tx_spammer
 
   deploy_l2_contracts: true
-
-  # https://github.com/agglayer/agglayer/tags
-  agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
