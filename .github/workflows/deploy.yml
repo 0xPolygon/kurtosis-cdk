@@ -476,6 +476,7 @@ jobs:
             result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
             if [[ "$result" -eq 1 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
+                exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit has not been claimed yet... Retrying in 15 seconds..."
                 sleep 15
