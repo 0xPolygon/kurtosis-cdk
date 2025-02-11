@@ -526,15 +526,15 @@ jobs:
                 --deposit-network 0 \
                 --rpc-url $l2_cdk3_rpc_url \
                 --bridge-service-url $bridge_url \
-                --gas-price $gas_price 2>&1)
+                --gas-price $gas_price)
             ret_code=$?
             if [[ "$ret_code" -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "Output: $result"
+                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retring in 15 seconds..."
-                echo "Output: $result"
+                echo "$result"
                 echo
                 sleep 15
             fi
@@ -581,15 +581,15 @@ jobs:
                 --deposit-network 3 \
                 --rpc-url $l2_cdk1_rpc_url \
                 --bridge-service-url $bridge_url \
-                --gas-price $gas_price 2>&1)
+                --gas-price $gas_price)
             ret_code=$?
             if [[ $ret_code -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "Output: $result"
+                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
-                echo "Output: $result"
+                echo "$result"
                 echo
                 sleep 15
             fi
@@ -785,15 +785,15 @@ jobs:
                 --destination-address 0xc0FFee0000000000000000000000000000000001 \
                 --deposit-network 2 \
                 --private-key $private_key \
-                --rpc-url $l1_rpc_url 2>&1)
+                --rpc-url $l1_rpc_url)
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "Output: $result"
+                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
-                echo "Output: $result"
+                echo "$result"
                 echo
                 sleep 15
             fi
@@ -838,15 +838,15 @@ jobs:
                 --deposit-network 2 \
                 --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
                 --rpc-url $l2_rpc_url \
-                --gas-price $gas_price 2>&1)
+                --gas-price $gas_price)
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                echo "Output: $result"
+                echo "$result"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction failed! Retrying in 15 seconds..."
-                echo "Output: $result"
+                echo "$result"
                 echo
                 sleep 15
             fi
