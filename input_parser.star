@@ -301,11 +301,10 @@ DEFAULT_OP_STACK_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
-                    # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
-                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:d44bbea2407f4308f9fda20cf776bcb6dff7ff08",
-                    "count": 2,  # one is a sequencer node and the other an rpc
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "count": 2,
                 },
             ],
             # "batcher_params": {
