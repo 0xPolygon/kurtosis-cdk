@@ -1,9 +1,7 @@
 prover-entrypoint = "{{.agglayer_prover_entrypoint}}"
 debug-mode = true
 
-{{if .mock_verifier}}
-mock-verifier = true
-{{end}}
+mock-verifier = {{.mock_verifier}}
 
 [full-node-rpcs]
 # TODO switch this to permissionless

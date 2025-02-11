@@ -108,10 +108,6 @@ def create_agglayer_config_artifact(
     db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
-    mock_verifier = False
-
-    if args["agglayer_prover_primary_prover"] == "mock-prover":
-        mock_verifier = True
 
     return plan.render_templates(
         name="agglayer-config-artifact",
@@ -137,7 +133,8 @@ def create_agglayer_config_artifact(
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
-                    "mock_verifier": mock_verifier,
+                    "mock_verifier": args["agglayer_prover_primary_prover"]
+                    == "mock-prover",
                 }
                 | contract_setup_addresses
                 | db_configs,
