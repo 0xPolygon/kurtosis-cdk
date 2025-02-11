@@ -97,10 +97,11 @@ def create_agglayer_prover_config_artifact(plan, args):
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
                     "prometheus_port": args["agglayer_prover_metrics_port"],
-                    "primary_prover": args["agglayer_prover_primary_prover"],
-                    # only needed by fork 9 and 11.
+                    # prover settings (fork9/11)
                     "is_cpu_prover_enabled": is_cpu_prover_enabled,
                     "is_network_prover_enabled": is_network_prover_enabled,
+                    # prover settings (fork12+)
+                    "primary_prover": args["agglayer_prover_primary_prover"],
                 },
             )
         },
