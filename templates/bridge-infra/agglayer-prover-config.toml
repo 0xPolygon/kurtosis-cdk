@@ -11,18 +11,18 @@ outputs = ["stderr"]
 format = "json"
 
 [telemetry]
-prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
-{{if and (ne .zkevm_rollup_fork_id "9") (ne .zkevm_rollup_fork_id "11")}}
-[primary-prover.{{.primary_prover}}]
-{{else}}
+{{if or (eq .zkevm_rollup_fork_id "9") (eq .zkevm_rollup_fork_id "11")}}
+prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 [cpu-prover]
-enabled = {{.is_cpu_prover_enabled}}	
-max-concurrency-limit = 100	
+enabled = {{.is_cpu_prover_enabled}}
+max-concurrency-limit = 100
 proving-timeout = 900
 
-[network-prover]	
+[network-prover]
 enabled = {{.is_network_prover_enabled}}
+{{else}}
+[primary-prover.{{.primary_prover}}]
 {{end}}
 proving-timeout = 900
 
