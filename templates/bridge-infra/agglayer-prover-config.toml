@@ -11,9 +11,9 @@ outputs = ["stderr"]
 format = "json"
 
 [telemetry]
+prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
 {{if or (eq .zkevm_rollup_fork_id "9") (eq .zkevm_rollup_fork_id "11")}}
-prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 [cpu-prover]
 enabled = {{.is_cpu_prover_enabled}}
 max-concurrency-limit = 100
