@@ -1,3 +1,4 @@
+# This file has been generated automatically.
 args:
   verbosity: debug
   zkevm_contracts_image: leovct/zkevm-contracts:v8.0.0-fork.12-patch.1
@@ -5,5 +6,5 @@ args:
   additional_services:
     - tx_spammer
   deploy_l2_contracts: true
-  consensus_contract_type: cdk-validium
+  consensus_contract_type: rollup
   sequencer_type: erigon

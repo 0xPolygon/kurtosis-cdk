@@ -210,7 +210,7 @@ DEFAULT_L1_ARGS = {
     "l1_preset": "minimal",
     # Number of seconds per slot on the Beacon chain
     # Default: 12
-    "l1_seconds_per_slot": 1,
+    "l1_seconds_per_slot": 2,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
@@ -304,11 +304,10 @@ DEFAULT_OP_STACK_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
-                    # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
-                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:d44bbea2407f4308f9fda20cf776bcb6dff7ff08",
-                    "count": 2,  # one is a sequencer node and the other an rpc
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "count": 2,
                 },
             ],
             # "batcher_params": {
@@ -571,7 +570,7 @@ def get_op_stack_args(plan, args, op_stack_args):
 
     l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic", "")
     private_key_result = plan.run_sh(
-        description="Derive private key from mnemonic",
+        description="Deriving the private key from the mnemonic",
         run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
             l1_preallocated_mnemonic
         ),
@@ -623,4 +622,13 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+
+    # OP rollup check L1 blocktime >= L2 blocktime
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        if (
+            args.get("l1_seconds_per_slot", 12) < 2
+        ):  # 2 seconds is the default blocktime for Optimism L2.
+            fail(
+                "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )

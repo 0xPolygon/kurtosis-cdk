@@ -1,30 +1,29 @@
 combinations:
   - fork: 9
-    da-modes:
-      - cdk-validium
+    consensus:
+      - validium
       - rollup
     components:
-      - legacy-zkevm-stack
-      - new-cdk-stack
+      - legacy-zkevm
+      - cdk-erigon
 
   - fork: 11
-    da-modes:
-      - cdk-validium
+    consensus:
+      - validium
       - rollup
     components:
-      - new-cdk-stack
+      - cdk-erigon
 
   - fork: 12
-    da-modes:
-      - cdk-validium
+    consensus:
+      - validium
       - rollup
     components:
-     - new-cdk-stack
+      - cdk-erigon
 
   - fork: 13
-    da-modes:
-      - cdk-validium
+    consensus:
+      - validium
       - rollup
     components:
-     - new-cdk-stack
-
+      - cdk-erigon
