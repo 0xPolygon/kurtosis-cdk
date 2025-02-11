@@ -726,9 +726,9 @@ jobs:
               --rpc-url http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc) \
               --value 10000000000000000000
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
               exit 1
           fi
 
@@ -762,9 +762,9 @@ jobs:
               --value $(date +%s) \
               --destination-address 0xC0FFEE0000000000000000000000000000000001
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
               exit 1
           fi
 
@@ -813,31 +813,38 @@ jobs:
               --value $(date +%s) \
               --destination-address 0xC0FFEE0000000000000000000000000000000002
           if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit Transaction successfuly sent!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Deposit transaction successfuly sent!"
           else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit Transaction failed!"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Deposit transaction failed!"
               exit 1
           fi
 
           echo "Waiting for deposit to be claimable..."
           sleep 210
 
-          polycli ulxly claim asset \
-              --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
-              --bridge-service-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc) \
-              --deposit-count 1 \
-              --destination-address 0xc0FFee0000000000000000000000000000000002 \
-              --deposit-network 2 \
-              --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
-              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc) \
-              --gas-price $(cast gas-price --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc))
-          if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim Transaction successfuly sent!"
-              exit 0
-          else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim Transaction failed!"
-              exit 1
-          fi
+          while true; do
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
+            result=$(polycli ulxly claim asset \
+                --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+                --bridge-service-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc) \
+                --deposit-count 1 \
+                --destination-address 0xc0FFee0000000000000000000000000000000002 \
+                --deposit-network 2 \
+                --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+                --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc) \
+                --gas-price $(cast gas-price --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)))
+            ret_code="$?"
+            if [[ $ret_code -eq 0 ]]; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Exiting... Claim transaction successfuly sent!"
+                echo "Output: $result"
+                exit 0
+            else
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Exiting... Claim transaction failed! Retrying in 15 seconds..."
+                echo "Output: $result"
+                echo
+                exit 1
+            fi
+          done
         env:
           agglayer_prover_sp1_key: ${{ secrets.SP1_PRIVATE_KEY }}
 
