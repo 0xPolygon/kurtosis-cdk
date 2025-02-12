@@ -1,6 +1,4 @@
 # This file has been generated automatically.
-deployment_stages:
-  deploy_l2_contracts: true
 args:
   verbosity: debug
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
