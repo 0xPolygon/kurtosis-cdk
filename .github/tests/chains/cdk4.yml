@@ -1,3 +1,10 @@
+# This args-file deploys the CDK-4 chain.
+# RollupID for the CI would be:
+# 0: L1 (271828)
+# 1: cdk-erigon-validium-1 (10101)
+# 2: cdk-opgeth-sovereign (2151908)
+# 3: cdk-erigon-validium-2 (30303)
+# 4: cdk-erigon-sovereign (40404)
 deployment_stages:
   deploy_l1: false
   deploy_agglayer: false
@@ -6,12 +13,6 @@ deployment_stages:
 args:
   deployment_suffix: "-004"
   zkevm_rollup_chain_id: 40404
-  # RollupID for the CI would be:
-  # 0: L1 (271828)
-  # 1: CDK (10101)
-  # 2: OP (2151908)
-  # 3: attach-cdk-3 (30303)
-  # 4: attach-cdk-4 (40404)
   zkevm_rollup_id: 4
 
   # polycli wallet inspect --mnemonic 'holiday crunch rule artefact cinnamon suit uphold evil shrimp topic core abstract' --addresses 11 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: " $1 ""; print "zkevm_l2_" roles[NR] "_private_key: 0x" $2 "\n"}'

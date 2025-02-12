@@ -1,3 +1,10 @@
+# This args-file deploys the CDK-3 chain.
+# RollupID for the CI would be:
+# 0: L1 (271828)
+# 1: cdk-erigon-validium-1 (10101)
+# 2: cdk-opgeth-sovereign (2151908)
+# 3: cdk-erigon-validium-2 (30303)
+# 4: cdk-erigon-sovereign (40404)
 deployment_stages:
   deploy_l1: false
   deploy_agglayer: false
@@ -6,12 +13,6 @@ deployment_stages:
 args:
   deployment_suffix: "-003"
   zkevm_rollup_chain_id: 30303
-  # RollupID for the CI would be:
-  # 0: L1 (271828)
-  # 1: CDK (10101)
-  # 2: OP (2151908)
-  # 3: attach-cdk-3 (30303)
-  # 4: attach-cdk-4 (40404)
   zkevm_rollup_id: 3
   
   # The following accounts have been generated using the following command:
