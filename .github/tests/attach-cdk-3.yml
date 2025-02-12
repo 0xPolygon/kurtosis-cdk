@@ -4,10 +4,15 @@ deployment_stages:
   deploy_cdk_bridge_ui: false
 
 args:
-  verbosity: debug
-  deployment_suffix: "-002"
-  zkevm_rollup_chain_id: 20202
-  zkevm_rollup_id: 2
+  deployment_suffix: "-003"
+  zkevm_rollup_chain_id: 30303
+  # RollupID for the CI would be:
+  # 0: L1 (271828)
+  # 1: CDK (10101)
+  # 2: OP (2151908)
+  # 3: attach-cdk-3 (30303)
+  # 4: attach-cdk-4 (40404)
+  zkevm_rollup_id: 3
   
   # The following accounts have been generated using the following command:
   # polycli wallet inspect --mnemonic 'bless share truly shadow primary sun relief border van gallery stairs edit reflect gentle athlete main device smile response rescue mirror floor say people' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
@@ -26,5 +31,3 @@ args:
   zkevm_l2_dac_private_key: "0x992c9ab11d5eab6b6c2634b8bb0b85f3d8d1acf25024dc99c359cb2afd9b40a7"
   zkevm_l2_proofsigner_address: "0xf1a661D7b601Ec46a040f57193cC99aB8c4132FA"
   zkevm_l2_proofsigner_private_key: "0xc7fe3a006d75ba9326d9792523385abb49057c66aee0b8b4248821a89713f975"
-
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
