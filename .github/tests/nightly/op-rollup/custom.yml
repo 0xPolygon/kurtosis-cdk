@@ -1,0 +1,22 @@
+deployment_stages:
+  deploy_optimism_rollup: true
+
+optimism_package:
+  chains:
+    - participants:
+      - el_type: op-geth
+        cl_type: op-node
+        cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2
+      - el_type: op-reth
+        cl_type: op-node
+        cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2
+      - el_type: op-erigon
+        cl_type: op-node
+        cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2
+      - el_type: op-nethermind
+        cl_type: op-node
+        cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2
+
+args:
+  verbosity: debug
+  consensus_contract_type: pessimistic

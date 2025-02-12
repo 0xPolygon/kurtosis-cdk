@@ -4,7 +4,8 @@ deployment_stages:
 args:
   verbosity: debug
 
-  # https://github.com/agglayer/agglayer/tags
+  # Use this specific version of the agglayer to avoid the following issue:
+  # Error: Unable to get the InitL1InfoRootMap: Event InitL1InfoRootMap not found
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
 
   # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.11

@@ -187,7 +187,6 @@ def create_postgres_service(plan, db_configs, args, start_port_name):
     plan.add_service(
         name=_service_name(args["deployment_suffix"]),
         config=postgres_service_cfg,
-        description="Starting Postgres Service",
     )
 
 

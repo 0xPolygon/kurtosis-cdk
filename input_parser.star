@@ -36,9 +36,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "jhkimqd/aggkit:latest",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.2.2-rc.3",  # https://github.com/agglayer/agglayer/tags
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.10-RC1-amd64",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc3",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "agglayer_image": "ghcr.io/agglayer/agglayer:main",  # https://github.com/agglayer/agglayer/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.9-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
@@ -210,7 +210,7 @@ DEFAULT_L1_ARGS = {
     "l1_preset": "minimal",
     # Number of seconds per slot on the Beacon chain
     # Default: 12
-    "l1_seconds_per_slot": 1,
+    "l1_seconds_per_slot": 2,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
@@ -284,6 +284,9 @@ DEFAULT_ROLLUP_ARGS = {
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "agglayer_prover_network_url": "https://rpc.production2.succinct.tools",
+    # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
+    # agglayer-node will also be configured with a mock verifier
+    "agglayer_prover_primary_prover": "mock-prover",
     # The URL where the agglayer can be reached
     "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
     # This is a path where the cdk-node will write data
@@ -301,12 +304,10 @@ DEFAULT_OP_STACK_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
-                    # https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101411.3
-                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
-                    # https://github.com/ethereum-optimism/optimism/releases/tag/v1.9.5
-                    # "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.5",
-                    "count": 2,  # one is a sequencer node and the other an rpc
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "count": 2,
                 },
             ],
             # "batcher_params": {
@@ -569,7 +570,7 @@ def get_op_stack_args(plan, args, op_stack_args):
 
     l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic", "")
     private_key_result = plan.run_sh(
-        description="Derive private key from mnemonic",
+        description="Deriving the private key from the mnemonic",
         run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
             l1_preallocated_mnemonic
         ),
@@ -621,4 +622,13 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+
+    # OP rollup check L1 blocktime >= L2 blocktime
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        if (
+            args.get("l1_seconds_per_slot", 12) < 2
+        ):  # 2 seconds is the default blocktime for Optimism L2.
+            fail(
+                "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )

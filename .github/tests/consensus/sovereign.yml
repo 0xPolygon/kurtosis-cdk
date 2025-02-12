@@ -1,0 +1,11 @@
+# only supported by fork12 for now
+args:
+  consensus_contract_type: pessimistic
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  zkevm_use_real_verifier: false
+  enable_normalcy: true
+  agglayer_prover_sp1_key: ""
+  agglayer_prover_primary_prover: mock-prover # use mock-prover as primary executor
+  # agglayer_prover_primary_prover: network-prover # use network-prover as primary executor (using SP1 network)

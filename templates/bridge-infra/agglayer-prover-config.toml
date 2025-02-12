@@ -4,7 +4,7 @@ max-request-duration = 300
 max-buffered-queries = 100
 
 [log]
-environment = "production"      # "production" or "development"
+environment = "production" # "production" or "development"
 # level = "{{.global_log_level}}"
 level = "debug"
 outputs = ["stderr"]
@@ -13,6 +13,7 @@ format = "json"
 [telemetry]
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
+{{if or (eq .zkevm_rollup_fork_id "9") (eq .zkevm_rollup_fork_id "11")}}
 [cpu-prover]
 enabled = {{.is_cpu_prover_enabled}}
 max-concurrency-limit = 100
@@ -20,6 +21,9 @@ proving-timeout = 900
 
 [network-prover]
 enabled = {{.is_network_prover_enabled}}
+{{else}}
+[primary-prover.{{.primary_prover}}]
+{{end}}
 proving-timeout = 900
 
 [grpc]
@@ -27,4 +31,3 @@ proving-timeout = 900
 # same for `max-encoding-message-size`
 # default value is equal to 4MB
 max-decoding-message-size = 104857600
-

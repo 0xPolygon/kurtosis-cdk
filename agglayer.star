@@ -35,7 +35,6 @@ def run(plan, args, contract_setup_addresses):
             env_vars=prover_env_vars,
             cmd=["prover", "--cfg", "/etc/zkevm/agglayer-prover-config.toml"],
         ),
-        description="AggLayer Prover",
     )
     agglayer_prover_url = "http://{}:{}".format(
         agglayer_prover.ip_address, agglayer_prover.ports["api"].number
@@ -71,7 +70,6 @@ def run(plan, args, contract_setup_addresses):
             ],
             cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
         ),
-        description="AggLayer",
     )
 
 
@@ -95,11 +93,15 @@ def create_agglayer_prover_config_artifact(plan, args):
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
+                    "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
                     "prometheus_port": args["agglayer_prover_metrics_port"],
+                    # prover settings (fork9/11)
                     "is_cpu_prover_enabled": is_cpu_prover_enabled,
                     "is_network_prover_enabled": is_network_prover_enabled,
+                    # prover settings (fork12+)
+                    "primary_prover": args["agglayer_prover_primary_prover"],
                 },
             )
         },
@@ -115,6 +117,7 @@ def create_agglayer_config_artifact(
     db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
+
     return plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -127,6 +130,7 @@ def create_agglayer_config_artifact(
                     "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l1_ws_url": args["l1_ws_url"],
+                    "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "zkevm_l2_proofsigner_address": args[
                         "zkevm_l2_proofsigner_address"
@@ -138,6 +142,9 @@ def create_agglayer_config_artifact(
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
+                    # verifier
+                    "mock_verifier": args["agglayer_prover_primary_prover"]
+                    == "mock-prover",
                 }
                 | contract_setup_addresses
                 | db_configs,

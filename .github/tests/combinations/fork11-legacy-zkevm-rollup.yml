@@ -1,3 +1,4 @@
+# This file has been generated automatically.
 deployment_stages:
   deploy_l2_contracts: true
   deploy_cdk_erigon_node: false
