@@ -1,7 +1,0 @@
-deployment_stages:
-  deploy_optimism_rollup: true
-
-args:
-  agglayer_prover_sp1_key: null
-  consensus_contract_type: pessimistic
-  agglayer_prover_network_url: https://rpc.production2.succinct.tools
