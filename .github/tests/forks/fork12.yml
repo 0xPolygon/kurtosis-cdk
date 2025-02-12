@@ -1,3 +1,6 @@
+deployment_stages:
+  deploy_l2_contracts: true
+
 args:
   verbosity: debug
 
@@ -9,5 +12,3 @@ args:
 
   additional_services:
     - tx_spammer
-
-  deploy_l2_contracts: true
