@@ -50,5 +50,5 @@ SaveCertificatesToFilesPath = "{{.zkevm_path_rw_data}}/"
 
 [Prometheus]
 Enabled = true
-Host = "localhost"
+Host = "0.0.0.0"
 Port = 9091

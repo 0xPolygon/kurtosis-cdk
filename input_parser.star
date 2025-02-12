@@ -67,6 +67,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
     "zkevm_cdk_node_port": 5576,
+    "cdk_node_prometheus_port":9091,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -82,7 +83,6 @@ DEFAULT_STATIC_PORTS = {
         "agglayer_prover_start_port": 51010,
         # CDK node (51100-51199).
         "cdk_node_start_port": 51100,
-        "cdk_node_prometheus_port": 9091,
         # Bridge services (51200-51299).
         "zkevm_bridge_service_start_port": 51200,
         "zkevm_bridge_ui_start_port": 51210,

@@ -52,7 +52,7 @@ def get_cdk_node_ports(args):
             ),
         }
         public_ports = ports_package.get_public_ports(
-            ports, "cdk_node_start_port", "cdk_node_prometheus_port", args
+            ports, "cdk_node_start_port", args
         )
         return (ports, public_ports)
 
