@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  POLYCLI_VERSION: v0.1.67 # https://github.com/0xPolygon/polygon-cli/releases/
+  POLYCLI_VERSION: v0.1.72 # https://github.com/0xPolygon/polygon-cli/releases/
   ENCLAVE_NAME: cdk
 
 jobs:
