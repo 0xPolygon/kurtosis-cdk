@@ -50,6 +50,7 @@ DEFAULT_IMAGES = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
+    "mitm_image": "mitmproxy/mitmproxy:11.1.2",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
 }
 
 DEFAULT_PORTS = {
@@ -73,6 +74,7 @@ DEFAULT_PORTS = {
     "zkevm_cdk_node_port": 5576,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
+    "mitm_port": 8234,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -162,7 +164,7 @@ DEFAULT_ACCOUNTS = {
 
 DEFAULT_L1_ARGS = {
     # The L1 engine to use, either "geth" or "anvil".
-    "l1_engine": "geth",
+    "l1_engine": "anvil",
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # This mnemonic will:
@@ -224,6 +226,15 @@ DEFAULT_L1_ARGS = {
     "use_previously_deployed_contracts": False,
     "erigon_datadir_archive": None,
     "anvil_state_file": None,
+    "mitm_proxied_components": {
+        "agglayer": False,
+        "aggkit": False,
+        "bridge": True,
+        "dac": False,
+        "erigon-sequencer": False,
+        "erigon-rpc": False,
+        "cdk-node": False,
+    },
 }
 
 DEFAULT_L2_ARGS = {
@@ -421,6 +432,17 @@ def parse_args(plan, user_args):
                 + ":"
                 + str(DEFAULT_PORTS.get("anvil_port"))
             )
+
+    # Setting mitm for each element set to true on mitm dict
+    mitm_rpc_url = (
+        "http://mitm"
+        + args["deployment_suffix"]
+        + ":"
+        + str(DEFAULT_PORTS.get("mitm_port"))
+    )
+    args["mitm_rpc_url"] = {
+        k: mitm_rpc_url for k, v in args.get("mitm_proxied_components", {}).items() if v
+    }
 
     # Validation step.
     verbosity = args.get("verbosity", "")
