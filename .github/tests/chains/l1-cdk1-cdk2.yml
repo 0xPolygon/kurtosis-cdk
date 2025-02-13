@@ -10,7 +10,7 @@ deployment_stages:
   deploy_optimism_rollup: true
 
 args:
-  agglayer_prover_sp1_key: "0x7b2dda6f65b3dbb9038f6b49a7cd6d85b65031f229169b89bec249eba3aef527"
+  agglayer_prover_sp1_key: null
 
   consensus_contract_type: pessimistic
   erigon_strict_mode: false

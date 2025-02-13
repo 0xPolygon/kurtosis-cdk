@@ -16,6 +16,7 @@ optimism_package = "github.com/ethpandaops/optimism-package/main.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
+op_succinct_package = "./op_succinct.star"
 
 # Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -176,6 +177,17 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of an Optimism rollup")
+
+    # Deploy OP Succinct.
+    if deployment_stages.get("deploy_op_succinct", False):
+        plan.print("Deploying op-succinct contract deployer helper component")
+        import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
+        plan.print("Deploying op-succinct-server component")
+        import_module(op_succinct_package).op_succinct_server_run(plan, args)
+        plan.print("Deploying op-succinct-proposer component")
+        import_module(op_succinct_package).op_succinct_proposer_run(plan, args)
+    else:
+        plan.print("Skipping the deployment of OP Succinct")
 
     # Launching additional services.
     additional_services = args["additional_services"]

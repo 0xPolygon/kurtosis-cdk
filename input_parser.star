@@ -29,7 +29,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy Optimism rollup.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
-    "deploy_optimism_rollup": False,
+    "deploy_optimism_rollup": True,
+    # After deploying OP Stack, upgrade it to OP Succinct.
+    "deploy_op_succinct": True,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -50,6 +52,9 @@ DEFAULT_IMAGES = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-server
+    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
 }
 
 DEFAULT_PORTS = {
@@ -73,6 +78,8 @@ DEFAULT_PORTS = {
     "zkevm_cdk_node_port": 5576,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
+    "op_succinct_server_port": 3000,
+    "op_succinct_proposer_port": 7300,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -283,7 +290,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "agglayer_prover_network_url": "https://rpc.production2.succinct.tools",
+    "agglayer_prover_network_url": "rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
@@ -304,27 +311,27 @@ DEFAULT_OP_STACK_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
+                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0",
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
                     "count": 2,
                 },
             ],
-            # "batcher_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
-            # },
+            "batcher_params": {
+                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0",
+            },
             # The OP package does not run the op-proposer for now.
             # https://github.com/ethpandaops/optimism-package/blob/0d60a9d3997f83ecee6f7f6695027f819d776309/src/participant_network.star#L87
-            # "proposer_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
-            # },
+            "proposer_params": {
+                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
+            },
         },
     ],
-    # "op_contract_deployer_params": {
-    #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
-    #     "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    #     "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    # },
+    "op_contract_deployer_params": {
+        "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11",
+        "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
+        "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
+    },
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -361,8 +368,8 @@ DEFAULT_ARGS = (
         # Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
-        # - 'pessimistic': deploy with pessmistic consensus
-        "consensus_contract_type": "cdk-validium",
+        # - 'pessimistic': deploy with pessimistic consensus
+        "consensus_contract_type": "pessimistic",
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
@@ -622,6 +629,13 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+    
+    # If OP-Succinct is enabled, OP-Rollup must be enabled
+    if deployment_stages.get("deploy_op_succinct", False):
+        if deployment_stages.get("deploy_optimism_rollup", False) == False:
+            fail(
+                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
