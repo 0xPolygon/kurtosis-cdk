@@ -29,10 +29,8 @@ TEST_DURATION=180                       # amount of time to test each failure
 TIMEOUT=240                             # Time to wait for everything to settle after the failure
 CHECK_SC_VERIFICATION=0                 # Disable when using soverign chain
 TEST_COMPONENT=agglayer                 # Set if you want to test a single component
-CLASSES="ArbirtraryHTMLResponse"        # Set if you want to test a specific error class
+CLASSES="HttpErrorResponse"        # Set if you want to test a specific error class
 
-# Cleanup everything when done
-CLEANUP=0
 
 # Just in case docker/stack was already running
 docker stop $L1_PROXY_NAME > /dev/null 2>&1
@@ -145,11 +143,10 @@ for class in $CLASSES; do
     fi
 done
 
+read -p "Press any key to cleanup everything.."
 # Clean UP
-if [ $CLEANUP -eq 1 ]; then
-    echo "Cleaning up..."
-    kurtosis enclave stop $ENCLAVE_NAME
-    kurtosis enclave rm $ENCLAVE_NAME
-    docker stop $L1_PROXY_NAME
-    rm remove_me_later.py
-fi
+echo "Cleaning up..."
+kurtosis enclave stop $ENCLAVE_NAME
+kurtosis enclave rm $ENCLAVE_NAME
+docker stop $L1_PROXY_NAME
+rm remove_me_later.py
