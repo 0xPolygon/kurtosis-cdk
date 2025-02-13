@@ -164,7 +164,7 @@ DEFAULT_ACCOUNTS = {
 
 DEFAULT_L1_ARGS = {
     # The L1 engine to use, either "geth" or "anvil".
-    "l1_engine": "anvil",
+    "l1_engine": "geth",
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # This mnemonic will:
@@ -227,13 +227,13 @@ DEFAULT_L1_ARGS = {
     "erigon_datadir_archive": None,
     "anvil_state_file": None,
     "mitm_proxied_components": {
-        "agglayer": True,
+        "agglayer": False,
         "aggkit": False,
-        "bridge": True,
+        "bridge": False,
         "dac": False,
         "erigon-sequencer": False,
         "erigon-rpc": False,
-        "cdk-node": True,
+        "cdk-node": False,
     },
 }
 

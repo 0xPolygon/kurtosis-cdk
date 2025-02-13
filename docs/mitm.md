@@ -1,4 +1,30 @@
 # MITM tests in Kurtosis
+
+## Integrated MITM
+There are option to set MITM as the L1 endpoint for many components:
+- Agglayer
+- AggKit
+- Bridge
+- DAC
+- Erigon Sequencer
+- Eirgon RPC
+- CDK-Node
+
+To do so, you have to set to True the desired component.
+
+    "mitm_proxied_components": {
+        "agglayer": False,
+        "aggkit": False,
+        "bridge": False,
+        "dac": False,
+        "erigon-sequencer": False,
+        "erigon-rpc": False,
+        "cdk-node": False,
+    }
+
+With this, the component will send queries to MITM, and they will be forwarded to the real L1. You can modify ```/scripts/empty.py``` on the MITM service to achieve whatever you want.
+
+
 ## Reorg + Null answers
 
 Run kurtosis setting ```l1_rpc_url``` to ```http://mitm:8234```
