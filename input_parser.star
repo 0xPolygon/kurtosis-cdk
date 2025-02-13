@@ -227,13 +227,13 @@ DEFAULT_L1_ARGS = {
     "erigon_datadir_archive": None,
     "anvil_state_file": None,
     "mitm_proxied_components": {
-        "agglayer": False,
+        "agglayer": True,
         "aggkit": False,
         "bridge": True,
         "dac": False,
         "erigon-sequencer": False,
         "erigon-rpc": False,
-        "cdk-node": False,
+        "cdk-node": True,
     },
 }
 
