@@ -2,6 +2,7 @@ SRC_MITM_SCRIPT_PATH = "./scripts/mitm"
 DST_MITM_SCRIPT_PATH = "/scripts"
 DEFAULT_SCRIPT = "empty.py"
 
+
 def run(plan, args):
     mitm_script = plan.upload_files(
         name="mitm-script",
