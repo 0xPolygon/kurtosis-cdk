@@ -18,7 +18,7 @@ def op_succinct_contract_deployer_run(plan, args):
             command=[
                 "/bin/sh",
                 "-c",
-                "cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && ./{0}".format(
+                "cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && sh {0}".format(
                     "/opt/op-succinct/deploy-op-succinct-contracts.sh"
                 ),
             ]

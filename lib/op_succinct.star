@@ -52,8 +52,8 @@ def create_op_succinct_server_service_config(
         "L2_NODE_RPC":"http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
         "PRIVATE_KEY":"bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
         "ETHERSCAN_API_KEY":"",
-        "VERIFIER_ADDRESS":"0x48b90E15Bd620e44266CCbba434C3f454a12b361",
-        "L2OO_ADDRESS":"0x0EeC8BC5B2A3879A9B8997100486F4e26a4f299f",
+        "VERIFIER_ADDRESS":"0x34fa02cf467232c201FB9E90c786A69c7d743D8D",
+        "L2OO_ADDRESS":"0xF01ecC1dF1868C3B15f0edC4768812b9c435BBfb",
         "OP_SUCCINCT_MOCK":"true",
         },
     )
@@ -84,8 +84,8 @@ def create_op_succinct_proposer_service_config(
         "L2_NODE_RPC":"http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
         "PRIVATE_KEY":"bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
         "ETHERSCAN_API_KEY":"",
-        "VERIFIER_ADDRESS":"0x48b90E15Bd620e44266CCbba434C3f454a12b361",
-        "L2OO_ADDRESS":"0x0EeC8BC5B2A3879A9B8997100486F4e26a4f299f",
+        "VERIFIER_ADDRESS":"0x34fa02cf467232c201FB9E90c786A69c7d743D8D",
+        "L2OO_ADDRESS":"0xF01ecC1dF1868C3B15f0edC4768812b9c435BBfb",
         "OP_SUCCINCT_MOCK":"true",
         },
     )
