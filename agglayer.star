@@ -128,7 +128,9 @@ def create_agglayer_config_artifact(
                     "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
                     "l1_chain_id": args["l1_chain_id"],
-                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "agglayer", args["l1_rpc_url"]
+                    ),
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
