@@ -5,6 +5,5 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
   additional_services:
     - tx_spammer
-  deploy_l2_contracts: true
   consensus_contract_type: rollup
   sequencer_type: erigon

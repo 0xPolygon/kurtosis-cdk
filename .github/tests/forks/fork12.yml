@@ -9,5 +9,3 @@ args:
 
   additional_services:
     - tx_spammer
-
-  deploy_l2_contracts: true
