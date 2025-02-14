@@ -1,52 +1,63 @@
-PathRWData = "{{.zkevm_path_rw_data}}/"
+PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 AggLayerURL="{{.agglayer_url}}"
 
 ForkId = {{.zkevm_rollup_fork_id}}
+ContractVersions = "{{.zkevm_rollup_fork_name}}"
 IsValidiumMode = {{.is_cdk_validium}}
-
-{{if eq .zkevm_rollup_fork_id "12"}}
-ContractVersions = "banana"
-{{else if eq .zkevm_rollup_fork_id "13"}}
-# Doesn't look like this is needed at the moment, but soon perhaps?
-# ContractVersions = "durian"
-ContractVersions = "banana"
-{{else}}
-ContractVersions = "elderberry"
-{{end}}
 
 L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
-SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"   
-polygonBridgeAddr = "{{.zkevm_bridge_address}}" 
+AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
+AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"
+polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
+
+RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-
 
 # This values can be override directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 [L1Config]
-	chainId = "{{.l1_chain_id}}"
-	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
-	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
-	polTokenAddress = "{{.pol_token_address}}"
-	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-	
+        chainId = "{{.l1_chain_id}}"
+        polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+        polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+        polTokenAddress = "{{.pol_token_address}}"
+        polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+
 [L2Config]
-	GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
+        GlobalExitRootAddr = "{{.zkevm_global_exit_root_address}}"
 
 [Log]
 Environment = "development" # "production" or "development"
 Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
-       
+
+[Aggregator]
+        Port = "{{.zkevm_aggregator_port}}"
+        RetryTime = "30s"
+        VerifyProofInterval = "10s"
+        GasOffset = 150000
+        SettlementBackend = "agglayer"
+[RPC]
+        Port = {{.zkevm_cdk_node_port}}
+
 [AggSender]
-SaveCertificatesToFilesPath = "{{.zkevm_path_rw_data}}/"
+CertificateSendInterval = "1m"
+CheckSettledInterval = "5s"
+MaxCertSize = 102760448
+SaveCertificatesToFilesPath="/tmp"
+
+[L1InfoTreeSync]
+# The initial block number from which to start syncing.
+# Default: 0
+InitialBlock = {{.zkevm_rollup_manager_block_number}}
 
 [Prometheus]
 Enabled = true
