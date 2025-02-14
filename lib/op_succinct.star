@@ -23,7 +23,7 @@ def create_op_succinct_contract_deployer_service_config(
         )
         artifacts.append(artifact)
 
-    op_succinct_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+    op_succinct_name = "op-succinct-contract-deployer"
     op_succinct_contract_deployer_service_config = ServiceConfig(
         image=args["op_succinct_contract_deployer_image"],
         files={
@@ -37,10 +37,12 @@ def create_op_succinct_contract_deployer_service_config(
 
     return {op_succinct_name: op_succinct_contract_deployer_service_config}
 
+# The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
+# NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_server_service_config(
     args,
 ):
-    op_succinct_name = "op-succinct-server" + args["deployment_suffix"]
+    op_succinct_name = "op-succinct-server"
     ports = get_op_succinct_server_ports(args)
     op_succinct_server_service_config = ServiceConfig(
         image=args["op_succinct_server_image"],
@@ -55,17 +57,19 @@ def create_op_succinct_server_service_config(
         "VERIFIER_ADDRESS":"0x34fa02cf467232c201FB9E90c786A69c7d743D8D",
         "L2OO_ADDRESS":"0xF01ecC1dF1868C3B15f0edC4768812b9c435BBfb",
         "OP_SUCCINCT_MOCK":"true",
+        "NETWORK_PRIVATE_KEY":args["agglayer_prover_sp1_key"],
         },
     )
 
     return {op_succinct_name: op_succinct_server_service_config}
 
-
+# The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
+# NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
     args,
     db_artifact,
 ):
-    op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
+    op_succinct_name = "op-succinct-proposer"
     ports = get_op_succinct_proposer_ports(args)
     op_succinct_proposer_service_config = ServiceConfig(
         image=args["op_succinct_proposer_image"],
@@ -87,6 +91,7 @@ def create_op_succinct_proposer_service_config(
         "VERIFIER_ADDRESS":"0x34fa02cf467232c201FB9E90c786A69c7d743D8D",
         "L2OO_ADDRESS":"0xF01ecC1dF1868C3B15f0edC4768812b9c435BBfb",
         "OP_SUCCINCT_MOCK":"true",
+        "NETWORK_PRIVATE_KEY":args["agglayer_prover_sp1_key"],
         },
     )
 

@@ -13,7 +13,7 @@ def op_succinct_contract_deployer_run(plan, args):
 
     plan.exec(
         description="Deploying op-succinct contracts",
-        service_name="op-succinct-contract-deployer" + args["deployment_suffix"],
+        service_name="op-succinct-contract-deployer",
         recipe=ExecRecipe(
             command=[
                 "/bin/sh",

@@ -31,6 +31,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
+    # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": True,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
@@ -288,7 +289,7 @@ DEFAULT_ROLLUP_ARGS = {
     # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
     "enable_normalcy": False,
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
-    "agglayer_prover_sp1_key": None, # DONOTCOMMIT
+    "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
@@ -636,6 +637,10 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if deployment_stages.get("deploy_optimism_rollup", False) == False:
             fail(
                 "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
+            )
+        if args["agglayer_prover_sp1_key"] == None or args["agglayer_prover_sp1_key"] == "":
+            fail(
+                "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
