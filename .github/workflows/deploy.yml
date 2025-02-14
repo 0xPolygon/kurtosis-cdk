@@ -254,11 +254,12 @@ jobs:
         run: |
           echo "Sending a bridge transaction from L1 to the cdk-2 RPC..."
           l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
+          bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
           eth_address=$(cast wallet address --private-key $private_key)
           polycli ulxly bridge asset \
-              --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+              --bridge-address $bridge_address \
               --destination-network 2 \
               --private-key $private_key \
               --rpc-url $l1_rpc_url \
@@ -270,19 +271,16 @@ jobs:
               exit 1
           fi
 
-          echo "Waiting for deposit to be autoclaimed..."
-          sleep 60
-
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
           while true; do
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit was claimed..."
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit can be claimed..."
             balance=$(cast balance --ether --rpc-url $op_rollup_rpc_url $eth_address)
             result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
             if [[ "$result" -eq 1 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit has not been claimed yet... Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit can't be claimed for now... Retrying in 15 seconds..."
                 sleep 15
             fi
           done
@@ -301,7 +299,7 @@ jobs:
               --destination-network 0 \
               --private-key $private_key \
               --rpc-url $op_rollup_rpc_url \
-              --value $(date +%s) \
+              --value 10000000000000000000 \
               --destination-address 0xC0FFEE0000000000000000000000000000000001
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
@@ -311,6 +309,7 @@ jobs:
           fi
 
           bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc)
+          bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
           l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
@@ -318,19 +317,19 @@ jobs:
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             polycli ulxly claim asset \
-                --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+                --bridge-address $bridge_address \
                 --bridge-service-url $bridge_url \
                 --deposit-count 0 \
-                --destination-address 0xc0FFee0000000000000000000000000000000001 \
+                --destination-address 0xC0FFEE0000000000000000000000000000000001 \
                 --deposit-network 2 \
                 --private-key $private_key \
                 --rpc-url $l1_rpc_url
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit can't be claimed for now. Retrying in 15 seconds..."
                 sleep 15
             fi
           done
@@ -349,7 +348,7 @@ jobs:
               --destination-network 1 \
               --private-key $private_key \
               --rpc-url $op_rollup_rpc_url \
-              --value $(date +%s) \
+              --value 10000000000000000000 \
               --destination-address 0xC0FFEE0000000000000000000000000000000002
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
@@ -360,11 +359,12 @@ jobs:
 
           l2_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
           bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc)
+          bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url $l2_rpc_url)
             polycli ulxly claim asset \
-                --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
+                --bridge-address $bridge_address \
                 --bridge-service-url $bridge_url \
                 --deposit-count 1 \
                 --destination-address 0xc0FFee0000000000000000000000000000000002 \
@@ -374,10 +374,10 @@ jobs:
                 --gas-price $gas_price
             ret_code="$?"
             if [[ $ret_code -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit can't be claimed for now. Retrying in 15 seconds..."
                 sleep 15
             fi
           done
@@ -420,10 +420,10 @@ jobs:
                 --gas-price $gas_price
             ret_code=$?
             if [[ "$ret_code" -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retring in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit can't be claimed for now. Retring in 15 seconds..."
                 sleep 15
             fi
           done
@@ -469,10 +469,10 @@ jobs:
                 --gas-price $gas_price
             ret_code=$?
             if [[ $ret_code -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit can't be claimed for now. Retrying in 15 seconds..."
                 sleep 15
             fi
           done
