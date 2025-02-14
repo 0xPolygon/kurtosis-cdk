@@ -46,7 +46,7 @@ def get_cdk_node_ports(args):
                 wait=None,
             ),
             "prometheus": PortSpec(
-                args["cdk_node_prometheus_port"],
+                args["prometheus_port"],
                 application_protocol="http",
                 wait=None,
             ),
