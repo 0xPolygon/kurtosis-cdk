@@ -49,7 +49,9 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
-                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "bridge", args["l1_rpc_url"]
+                    ),
                     "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # ports
@@ -86,8 +88,9 @@ def create_reverse_proxy_config_artifact(plan, args):
         src="./templates/bridge-infra/haproxy.cfg"
     )
 
-    l1rpc_host = args["l1_rpc_url"].split(":")[1].replace("//", "")
-    l1rpc_port = args["l1_rpc_url"].split(":")[2]
+    l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
+    l1rpc_host = l1_rpc_url.split(":")[1].replace("//", "")
+    l1rpc_port = l1_rpc_url.split(":")[2]
     l2rpc_service = plan.get_service(
         name=args["l2_rpc_name"] + args["deployment_suffix"]
     )
