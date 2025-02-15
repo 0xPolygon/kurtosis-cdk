@@ -189,7 +189,7 @@ jobs:
 
   multi-cdk-chains:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -284,8 +284,6 @@ jobs:
           sleep 30
           
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
-          op_bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc)
-          op_private_key=$(cast wallet private-key --mnemonic "test test test test test test test test test test test junk")
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit was claimed..."
             balance=$(cast balance --ether --rpc-url $op_rollup_rpc_url $eth_address)
@@ -294,23 +292,8 @@ jobs:
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
                 exit 0
             else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to manually claim the deposit..."
-                polycli ulxly claim asset \
-                    --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
-                    --bridge-service-url $op_bridge_url \
-                    --deposit-count 1 \
-                    --destination-address 0x8943545177806ED17B9F23F0a21ee5948eCaa776 \
-                    --deposit-network 0 \
-                    --private-key $op_private_key \
-                    --rpc-url $op_rollup_rpc_url
-                ret_code="$?"
-                if [[ $ret_code -eq 0 ]]; then
-                    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Claim transaction successfuly sent!"
-                    exit 0
-                else
-                    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Claim transaction not available for now. Retrying in 15 seconds..."
-                    sleep 15
-                fi
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit has not been claimed yet... Retrying in 15 seconds..."
+                sleep 15
             fi
           done
 
