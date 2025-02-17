@@ -59,7 +59,7 @@ SaveCertificatesToFilesPath="/tmp"
 # Default: 0
 InitialBlock = {{.zkevm_rollup_manager_block_number}}
 
-[Metrics]
+[Prometheus]
 Enabled = true
 Host = "0.0.0.0"
 Port = 9091
