@@ -189,7 +189,7 @@ jobs:
 
   multi-cdk-chains:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -248,34 +248,36 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Send bridge transactions from L1 to cdk-2
+      - name: Set environment variables
+        run: |
+          echo "L1_RPC_URL=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)" >> $GITHUB_ENV
+          echo "CDK2_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)" >> $GITHUB_ENV
+          echo "BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
+
+          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+          echo "PRIVATE_KEY=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")" >> $GITHUB_ENV
+          echo "ETH_ADDRESS=$(cast wallet address --private-key $private_key)" >> $GITHUB_ENV
+
+      - name: Bridge from l1 to cdk2
         working-directory: .github/scripts
         shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
-          echo "Sending a bridge transaction from L1 to the cdk-2 RPC..."
-          l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
-          bridge_address=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')
-          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
-          eth_address=$(cast wallet address --private-key $private_key)
           polycli ulxly bridge asset \
-              --bridge-address $bridge_address \
+              --bridge-address $BRIDGE_ADDRESS \
               --destination-network 2 \
-              --private-key $private_key \
-              --rpc-url $l1_rpc_url \
+              --private-key $PRIVATE_KEY \
+              --rpc-url $L1_RPC_URL \
               --value 10000000000000000000
-          if [[ $ret_code -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
-          else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
+          ret_code="$?"
+          if [[ $ret_code -ne 0 ]]; then
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit failed!"
               exit 1
           fi
 
-          op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit can be claimed..."
-            balance=$(cast balance --ether --rpc-url $op_rollup_rpc_url $eth_address)
-            result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
+            balance=$(cast balance --ether --rpc-url $CDK2_RPC_URL $ETH_ADDRESS)
+            result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers.
             if [[ "$result" -eq 1 ]]; then
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed, balance is $balance"
                 exit 0
