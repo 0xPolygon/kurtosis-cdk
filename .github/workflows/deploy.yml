@@ -255,8 +255,10 @@ jobs:
           echo "BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
 
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-          echo "PRIVATE_KEY=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")" >> $GITHUB_ENV
-          echo "ETH_ADDRESS=$(cast wallet address --private-key $private_key)" >> $GITHUB_ENV
+          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
+          address=$(cast wallet address --private-key $private_key)
+          echo "PRIVATE_KEY=$private_key" >> $GITHUB_ENV
+          echo "ETH_ADDRESS=$address" >> $GITHUB_ENV
 
       - name: Bridge from l1 to cdk2
         working-directory: .github/scripts
