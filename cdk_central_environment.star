@@ -114,6 +114,9 @@ def run(plan, args, contract_setup_addresses):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
+                        "l1_rpc_url": args["mitm_rpc_url"].get(
+                            "cdk-node", args["l1_rpc_url"]
+                        ),
                     }
                     | db_configs
                     | contract_setup_addresses,
@@ -177,7 +180,7 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
-                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # ports

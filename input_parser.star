@@ -53,6 +53,7 @@ DEFAULT_IMAGES = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
+    "mitm_image": "mitmproxy/mitmproxy:11.1.2",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
     "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-server
     "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
@@ -79,6 +80,7 @@ DEFAULT_PORTS = {
     "zkevm_cdk_node_port": 5576,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
+    "mitm_port": 8234,
     "op_succinct_server_port": 3000,
     "op_succinct_proposer_port": 7300,
 }
@@ -232,6 +234,15 @@ DEFAULT_L1_ARGS = {
     "use_previously_deployed_contracts": False,
     "erigon_datadir_archive": None,
     "anvil_state_file": None,
+    "mitm_proxied_components": {
+        "agglayer": False,
+        "aggkit": False,
+        "bridge": False,
+        "dac": False,
+        "erigon-sequencer": False,
+        "erigon-rpc": False,
+        "cdk-node": False,
+    },
 }
 
 DEFAULT_L2_ARGS = {
@@ -429,6 +440,17 @@ def parse_args(plan, user_args):
                 + ":"
                 + str(DEFAULT_PORTS.get("anvil_port"))
             )
+
+    # Setting mitm for each element set to true on mitm dict
+    mitm_rpc_url = (
+        "http://mitm"
+        + args["deployment_suffix"]
+        + ":"
+        + str(DEFAULT_PORTS.get("mitm_port"))
+    )
+    args["mitm_rpc_url"] = {
+        k: mitm_rpc_url for k, v in args.get("mitm_proxied_components", {}).items() if v
+    }
 
     # Validation step.
     verbosity = args.get("verbosity", "")

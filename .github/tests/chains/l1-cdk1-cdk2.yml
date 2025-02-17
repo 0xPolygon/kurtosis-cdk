@@ -11,7 +11,6 @@ deployment_stages:
 
 args:
   agglayer_prover_sp1_key: null
-
   consensus_contract_type: pessimistic
   erigon_strict_mode: false
   gas_token_enabled: false
