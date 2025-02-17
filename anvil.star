@@ -1,6 +1,6 @@
-ANVIL_BLOCK_TIME = 1
+ANVIL_BLOCK_TIME = 5
 ANVIL_SLOTS_IN_AN_EPOCH = (
-    2  # Setting to X leads to block N-(X+1) being finalized, being N latest block
+    32  # Setting to X leads to block N-(X+1) being finalized, being N latest block
 )
 STATE_PATH = "/tmp"
 
