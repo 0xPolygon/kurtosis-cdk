@@ -249,12 +249,30 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
+      - name: Set environment variables
+        run: |
+          # Retrieve RPC urls.
+          echo "L1_RPC_URL=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)" >> $GITHUB_ENV
+          echo "CDK1_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)" >> $GITHUB_ENV
+          echo "CDK2_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)" >> $GITHUB_ENV
+          echo "CDK3_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)" >> $GITHUB_ENV
+          echo "CDK4_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-004 rpc)" >> $GITHUB_ENV
+          echo "BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
+
+          # Set up a test account.
+          l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+          private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
+          address=$(cast wallet address --private-key $private_key)
+          echo "PRIVATE_KEY=$private_key" >> $GITHUB_ENV
+          echo "ETH_ADDRESS=$address" >> $GITHUB_ENV
+
+          echo $GITHUB_ENV
+
       - name: Send bridge transactions from L1 to cdk-2
         working-directory: .github/scripts
         shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           echo "Sending a bridge transaction from L1 to the cdk-2 RPC..."
-          l1_rpc_url=http://$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
           private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
           eth_address=$(cast wallet address --private-key $private_key)
@@ -262,7 +280,7 @@ jobs:
               --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
               --destination-network 2 \
               --private-key $private_key \
-              --rpc-url $l1_rpc_url \
+              --rpc-url $L1_RPC_URL \
               --value 10000000000000000000
           if [[ $ret_code -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit transaction successfuly sent!"
