@@ -53,11 +53,11 @@ L2_RPC_URL=$(kurtosis port print $ENCLAVE_NAME cdk-erigon-rpc-001 rpc)
 
 # Fund claimtxmanager
 sleep 10
-cast send --legacy --rpc-url $L2_RPC_URL --private-key "$FUNDED_PRV_KEY" --value 10ether 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+cast send --legacy --rpc-url "$L2_RPC_URL" --private-key "$FUNDED_PRV_KEY" --value 10ether 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
 
 # Deposit on L1 to avoid negative balance
 polycli ulxly bridge asset \
-    --value $(cast to-wei 90) \
+    --value "$(cast to-wei 90)" \
     --gas-limit "1250000" \
     --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
     --destination-address 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 \
@@ -71,19 +71,19 @@ polycli ulxly bridge asset \
 sleep $((BLOCK_TIME*BLOCKS_PER_EPOCH*2))
 
 
-LATEST_BLOCK=$(cast bn --rpc-url $L1_RPC_URL latest)
-SAFE_BLOCK=$(cast bn --rpc-url $L1_RPC_URL safe)
-FINALIZED_BLOCK=$(cast bn --rpc-url $L1_RPC_URL finalized)
+LATEST_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" latest)
+SAFE_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" safe)
+FINALIZED_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" finalized)
 echo "L1 | Latest: $LATEST_BLOCK, Safe: $SAFE_BLOCK, Finalized: $FINALIZED_BLOCK"
 
 # Wait until there at least 5 finalez blocks on L1
-while [ $FINALIZED_BLOCK -lt 5 ]; do
+while [ "$FINALIZED_BLOCK" -lt 5 ]; do
     echo "Waiting for at least 5 finalized blocks ($FINALIZED_BLOCK so far)"
     sleep $BLOCK_TIME
-    FINALIZED_BLOCK=$(cast bn --rpc-url $L1_RPC_URL finalized)
+    FINALIZED_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" finalized)
 done
 
-FORK_BLOCK=$(cast bn --rpc-url $L1_RPC_URL latest)
+FORK_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" latest)
 
 docker run --detach --name fork --rm --network kt-${ENCLAVE_NAME} -p 8545:8545 \
     ghcr.io/foundry-rs/foundry:v1.0.0-rc \
@@ -100,20 +100,20 @@ FORK_RPC_URL=http://localhost:8545
 
 sleep 3
 
-F_LATEST_BLOCK=$(cast bn --rpc-url $FORK_RPC_URL latest)
-F_SAFE_BLOCK=$(cast bn --rpc-url $FORK_RPC_URL safe)
-F_FINALIZED_BLOCK=$(cast bn --rpc-url $FORK_RPC_URL finalized)
+F_LATEST_BLOCK=$(cast bn --rpc-url "$FORK_RPC_URL" latest)
+F_SAFE_BLOCK=$(cast bn --rpc-url "$FORK_RPC_URL" safe)
+F_FINALIZED_BLOCK=$(cast bn --rpc-url "$FORK_RPC_URL" finalized)
 echo "Fork | Latest: $F_LATEST_BLOCK, Safe: $F_SAFE_BLOCK, Finalized: $F_FINALIZED_BLOCK"
 
 # Set fork on cdknode
-kurtosis service exec $ENCLAVE_NAME mitm-001 \
+kurtosis service exec "$ENCLAVE_NAME" mitm-001 \
     'echo "import failures" > /scripts/empty.py'
-kurtosis service exec $ENCLAVE_NAME mitm-001 \
+kurtosis service exec "$ENCLAVE_NAME" mitm-001 \
     'echo "addons = [ failures.RedirectRequest(ratio=1.0, selected_peers=[], redirect_url=\"http://fork:8545\") ]" >> /scripts/empty.py'
 
 
 # Let's keep the fork until we're 5 blocks behind finalized
-while [ $FINALIZED_BLOCK -lt $((FORK_BLOCK - 6)) ]; do
+while [ "$FINALIZED_BLOCK" -lt $((FORK_BLOCK - 6)) ]; do
     polycli ulxly bridge asset \
         --value 10 \
         --gas-limit "250000" \
@@ -127,26 +127,26 @@ while [ $FINALIZED_BLOCK -lt $((FORK_BLOCK - 6)) ]; do
     echo "Forkid from $FORK_BLOCK still ahead from finalized $FINALIZED_BLOCK"
     sleep $BLOCK_TIME
 
-    F_LATEST_BLOCK=$(cast bn --rpc-url $FORK_RPC_URL latest)
-    F_SAFE_BLOCK=$(cast bn --rpc-url $FORK_RPC_URL safe)
-    F_FINALIZED_BLOCK=$(cast bn --rpc-url $FORK_RPC_URL finalized)
+    F_LATEST_BLOCK=$(cast bn --rpc-url "$FORK_RPC_URL" latest)
+    F_SAFE_BLOCK=$(cast bn --rpc-url "$FORK_RPC_URL" safe)
+    F_FINALIZED_BLOCK=$(cast bn --rpc-url "$FORK_RPC_URL" finalized)
     echo "Fork | Latest: $F_LATEST_BLOCK, Safe: $F_SAFE_BLOCK, Finalized: $F_FINALIZED_BLOCK"
 
-    LATEST_BLOCK=$(cast bn --rpc-url $L1_RPC_URL latest)
-    SAFE_BLOCK=$(cast bn --rpc-url $L1_RPC_URL safe)
-    FINALIZED_BLOCK=$(cast bn --rpc-url $L1_RPC_URL finalized)
+    LATEST_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" latest)
+    SAFE_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" safe)
+    FINALIZED_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" finalized)
     echo "L1 | Latest: $LATEST_BLOCK, Safe: $SAFE_BLOCK, Finalized: $FINALIZED_BLOCK"
 done
 
 # Disable fork
-kurtosis service exec $ENCLAVE_NAME mitm-001 'echo > /scripts/empty.py'
+kurtosis service exec "$ENCLAVE_NAME" mitm-001 'echo > /scripts/empty.py'
 
-LATEST_BLOCK=$(cast bn --rpc-url $L1_RPC_URL latest)
-SAFE_BLOCK=$(cast bn --rpc-url $L1_RPC_URL safe)
-FINALIZED_BLOCK=$(cast bn --rpc-url $L1_RPC_URL finalized)
+LATEST_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" latest)
+SAFE_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" safe)
+FINALIZED_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" finalized)
 echo "L1 | Latest: $LATEST_BLOCK, Safe: $SAFE_BLOCK, Finalized: $FINALIZED_BLOCK"
 
-read -p "Press any key to continue sending bridges.."
+read -r -p "Press any key to continue sending bridges.."
 
 while true; do
     polycli ulxly bridge asset \
@@ -160,14 +160,14 @@ while true; do
         --chain-id 10101 \
         --pretty-logs=false
     # In the following line -t for timeout, -N for just 1 character
-    read -p "Press any key to stop sending bridges" -t 5 -N 1 input
+    read -r -p "Press any key to stop sending bridges" -t 5 -N 1 input
     if [[ -n $input ]]; then
         echo
         break 
     fi
 done
 
-read -p "Press any key to clean up !!"
+read -r -p "Press any key to clean up !!"
 docker stop fork
-kurtosis enclave stop $ENCLAVE_NAME
-kurtosis enclave rm $ENCLAVE_NAME
+kurtosis enclave stop "$ENCLAVE_NAME"
+kurtosis enclave rm "$ENCLAVE_NAME"
