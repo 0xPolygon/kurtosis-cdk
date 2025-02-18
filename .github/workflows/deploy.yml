@@ -189,7 +189,7 @@ jobs:
 
   multi-cdk-chains:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -578,7 +578,7 @@ jobs:
 
   deploy-to-external-l1:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
