@@ -13,7 +13,7 @@ L1_BEACON_RPC="http://cl-1-lighthouse-geth:4000"
 L2_RPC="http://op-el-1-op-geth-op-node-op-kurtosis:8545"
 L2_NODE_RPC="http://op-cl-1-op-node-op-geth-op-kurtosis:8547"
 PRIVATE_KEY="bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
-ETHERSCAN_API_KEY=""
+ETHERSCAN_API_KEY=\"\"
 SUBMISSION_INTERVAL="10"
 
 # Known after deploying mock verifier, will be replaced with the below command.
@@ -21,9 +21,7 @@ VERIFIER_ADDRESS="0x48b90E15Bd620e44266CCbba434C3f454a12b361"
 
 # Known after deploying oracle, will be replaced with the below command.
 L2OO_ADDRESS="0x0EeC8BC5B2A3879A9B8997100486F4e26a4f299f"
-OP_SUCCINCT_MOCK="true"
-ADMIN_PK="bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
-DEPLOY_PK="bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"" > /opt/op-succinct/.env
+OP_SUCCINCT_MOCK="true"" > /opt/op-succinct/.env
 
 # Update import ISemver which wouldn't run otherwise
 sed -i 's|import {ISemver} from "src/universal/interfaces/ISemver.sol";|import {ISemver} from "@optimism/src/universal/interfaces/ISemver.sol";|' /opt/op-succinct/contracts/src/fp/OPSuccinctFaultDisputeGame.sol
