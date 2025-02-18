@@ -262,7 +262,7 @@ jobs:
 
           # Retrieve bridge addresses.
           echo "ZKEVM_BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
-          echo "SOVEREIGN_BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jr -r .bridge_proxy_addr /opt/zkevm-contracts/sovereign-rollup-out.json'  2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
+          echo "SOVEREIGN_BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .bridge_proxy_addr /opt/zkevm-contracts/sovereign-rollup-out.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
 
           # Set up a test account.
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
