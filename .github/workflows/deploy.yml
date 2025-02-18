@@ -368,7 +368,7 @@ jobs:
                 --deposit-network 2 \
                 --deposit-count 1 \
                 --destination-address 0xc0FFee0000000000000000000000000000000002 \
-                --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+                --private-key ${{ env.PRIVATE_KEY }} \
                 --rpc-url ${{ env.CDK1_RPC_URL }} \
                 --gas-price $gas_price
             ret_code="$?"
@@ -432,7 +432,7 @@ jobs:
               --destination-network 1 \
               --force-update-root=true \
               --destination-address 0xc0FFee0000000000000000000000000000000004 \
-              --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+              --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.CDK4_RPC_URL }} \
               --value $(cast to-wei 1 ether) \
               --gas-price $gas_price
@@ -453,7 +453,7 @@ jobs:
                 --deposit-network 4 \
                 --deposit-count 0 \
                 --destination-address 0xc0FFee0000000000000000000000000000000004 \
-                --private-key 12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
+                --private-key ${{ env.PRIVATE_KEY }} \
                 --rpc-url ${{ env.CDK1_RPC_URL }} \
                 --gas-price $gas_price
             ret_code=$?
