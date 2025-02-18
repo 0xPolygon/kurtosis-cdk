@@ -1,17 +1,18 @@
 SRC_MITM_SCRIPT_PATH = "./scripts/mitm"
-DST_MITM_SCRIPT_PATH = "/scripts"
+SRC_MITM_SCRIPTS = ["empty.py", "failures.py"]
 DEFAULT_SCRIPT = "empty.py"
+DST_MITM_SCRIPT_PATH = "/scripts"
 
 
 def run(plan, args):
-    mitm_script = plan.upload_files(
-        name="mitm-script",
-        src=SRC_MITM_SCRIPT_PATH + "/" + DEFAULT_SCRIPT,
-        description="Uploading MITM script",
-    )
-    service_files = {
-        DST_MITM_SCRIPT_PATH: mitm_script,
-    }
+    artifacts = []
+    for script in SRC_MITM_SCRIPTS:
+        mitm_script = plan.upload_files(
+            name="mitm-script-" + script,
+            src=SRC_MITM_SCRIPT_PATH + "/" + script,
+            description="Uploading MITM script " + script,
+        )
+        artifacts.append(mitm_script)
 
     plan.add_service(
         name="mitm" + args["deployment_suffix"],
@@ -20,7 +21,9 @@ def run(plan, args):
             ports={
                 "rpc": PortSpec(args["mitm_port"], application_protocol="http"),
             },
-            files=service_files,
+            files={
+                DST_MITM_SCRIPT_PATH: Directory(artifact_names=artifacts),
+            },
             cmd=[
                 "sh",
                 "-c",

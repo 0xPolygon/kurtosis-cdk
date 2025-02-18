@@ -219,6 +219,12 @@ DEFAULT_L1_ARGS = {
     "l1_participants_count": 1,
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l1_deploy_lxly_bridge_and_call": True,
+    # Anvil: l1_anvil_slots_in_epoch will set the gap of blocks finalized vs safe vs latest
+    #   l1_anvil_block_time * l1_anvil_slots_in_epoch -> total seconds to transition a block from latest to safe
+    # l1_anvil_block_time: seconds per block
+    "l1_anvil_block_time": 1,
+    # l1_anvil_slots_in_epoch: number of slots in an epoch
+    "l1_anvil_slots_in_epoch": 1,
     # Set this to true if the L1 contracts for the rollup are already
     # deployed. This also means that you'll need some way to run
     # recovery from outside of kurtosis
