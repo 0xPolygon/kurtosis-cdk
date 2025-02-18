@@ -133,5 +133,5 @@ Check the size of the image.
 ```bash
 $ docker images --filter "reference=local/toolbox"
 REPOSITORY       TAG    IMAGE ID       CREATED         SIZE
-local/toolbox   local   3f85f026aaf9   2 seconds ago   490MB
+local/toolbox   local   3f85f026aaf9   2 seconds ago   448MB
 ```
