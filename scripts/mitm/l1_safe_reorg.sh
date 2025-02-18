@@ -76,7 +76,7 @@ SAFE_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" safe)
 FINALIZED_BLOCK=$(cast bn --rpc-url "$L1_RPC_URL" finalized)
 echo "L1 | Latest: $LATEST_BLOCK, Safe: $SAFE_BLOCK, Finalized: $FINALIZED_BLOCK"
 
-# Wait until there at least 5 finalez blocks on L1
+# Wait until there at least 5 finaled blocks on L1
 while [ "$FINALIZED_BLOCK" -lt 5 ]; do
     echo "Waiting for at least 5 finalized blocks ($FINALIZED_BLOCK so far)"
     sleep $BLOCK_TIME
