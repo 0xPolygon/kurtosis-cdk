@@ -72,7 +72,7 @@ version="v8.0.0-rc.4-fork.12"
 docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
-  --build-arg POLYCLI_VERSION=main \
+  --build-arg POLYCLI_VERSION="v0.1.73" \
   --build-arg FOUNDRY_VERSION=stable \
   --file zkevm-contracts.Dockerfile
 ```
@@ -123,7 +123,7 @@ Build the `toolbox` image.
 ```bash
 docker build . \
   --tag local/toolbox:local \
-  --build-arg POLYCLI_VERSION=main \
+  --build-arg POLYCLI_VERSION="v0.1.73" \
   --build-arg FOUNDRY_VERSION=stable \
   --file toolbox.Dockerfile
 ```
