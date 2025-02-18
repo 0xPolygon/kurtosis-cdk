@@ -97,6 +97,7 @@ if [[ "{{.l2_deploy_deterministic_deployment_proxy}}" ]]; then
         --rpc-url "$l2_rpc_url" \
         --private-key "{{.zkevm_l2_admin_private_key}}" \
         --value "$gas_cost" \
+        --nonce "$account_nonce" \
         "$signer_address"
     cast publish --rpc-url "$l2_rpc_url" "$transaction"
     if [[ $(cast code --rpc-url "$l2_rpc_url" $deployer_address) == "0x" ]]; then
