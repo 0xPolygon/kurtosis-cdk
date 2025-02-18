@@ -270,112 +270,112 @@ jobs:
 
           echo $GITHUB_ENV
 
-      - name: Bridge from L1 to cdk-2
-        working-directory: .github/scripts
-        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
-        run: |
-          polycli ulxly bridge asset \
-              --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
-              --destination-network 2 \
-              --private-key ${{ env.PRIVATE_KEY }} \
-              --rpc-url ${{ env.L1_RPC_URL }} \
-              --value 10000000000000000000
-          if [[ $? -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
-          else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to make the deposit..."
-              exit 1
-          fi
+      # - name: Bridge from L1 to cdk-2
+      #   working-directory: .github/scripts
+      #   shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
+      #   run: |
+      #     polycli ulxly bridge asset \
+      #         --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
+      #         --destination-network 2 \
+      #         --private-key ${{ env.PRIVATE_KEY }} \
+      #         --rpc-url ${{ env.L1_RPC_URL }} \
+      #         --value 10000000000000000000
+      #     if [[ $? -eq 0 ]]; then
+      #         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
+      #     else
+      #         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to make the deposit..."
+      #         exit 1
+      #     fi
 
-          while true; do
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit can be claimed..."
-            balance=$(cast balance --ether --rpc-url ${{ env.CDK2_RPC_URL }} ${{ env.ETH_ADDRESS }})
-            echo "Balance: $balance ether"
-            result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
-            if [[ "$result" -eq 1 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
-                exit 0
-            else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
-                sleep 15
-            fi
-          done
+      #     while true; do
+      #       echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit can be claimed..."
+      #       balance=$(cast balance --ether --rpc-url ${{ env.CDK2_RPC_URL }} ${{ env.ETH_ADDRESS }})
+      #       echo "Balance: $balance ether"
+      #       result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
+      #       if [[ "$result" -eq 1 ]]; then
+      #           echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
+      #           exit 0
+      #       else
+      #           echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
+      #           sleep 15
+      #       fi
+      #     done
 
-      - name: Bridge from cdk-2 to L1
-        working-directory: .github/scripts
-        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
-        run: |
-          polycli ulxly bridge asset \
-              --bridge-address ${{ env.SOVEREIGN_BRIDGE_ADDRESS }} \
-              --destination-network 0 \
-              --destination-address 0xC0FFEE0000000000000000000000000000000001 \
-              --private-key ${{ env.PRIVATE_KEY }} \
-              --rpc-url ${{ env.CDK2_RPC_URL }} \
-              --value $(date +%s)
-          if [[ $? -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
-          else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to make the deposit..."
-              exit 1
-          fi
+      # - name: Bridge from cdk-2 to L1
+      #   working-directory: .github/scripts
+      #   shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
+      #   run: |
+      #     polycli ulxly bridge asset \
+      #         --bridge-address ${{ env.SOVEREIGN_BRIDGE_ADDRESS }} \
+      #         --destination-network 0 \
+      #         --destination-address 0xC0FFEE0000000000000000000000000000000001 \
+      #         --private-key ${{ env.PRIVATE_KEY }} \
+      #         --rpc-url ${{ env.CDK2_RPC_URL }} \
+      #         --value $(date +%s)
+      #     if [[ $? -eq 0 ]]; then
+      #         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
+      #     else
+      #         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to make the deposit..."
+      #         exit 1
+      #     fi
 
-          while true; do
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
-            polycli ulxly claim asset \
-                --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
-                --bridge-service-url ${{ env.SOVEREIGN_BRIDGE_URL }} \
-                --deposit-network 2 \
-                --deposit-count 0 \
-                --destination-address 0xc0FFee0000000000000000000000000000000001 \
-                --private-key ${{ env.PRIVATE_KEY }} \
-                --rpc-url ${{ env.L1_RPC_URL }}
-            if [[ $? -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
-                exit 0
-            else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
-                sleep 15
-            fi
-          done
+      #     while true; do
+      #       echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
+      #       polycli ulxly claim asset \
+      #           --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
+      #           --bridge-service-url ${{ env.SOVEREIGN_BRIDGE_URL }} \
+      #           --deposit-network 2 \
+      #           --deposit-count 0 \
+      #           --destination-address 0xc0FFee0000000000000000000000000000000001 \
+      #           --private-key ${{ env.PRIVATE_KEY }} \
+      #           --rpc-url ${{ env.L1_RPC_URL }}
+      #       if [[ $? -eq 0 ]]; then
+      #           echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
+      #           exit 0
+      #       else
+      #           echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
+      #           sleep 15
+      #       fi
+      #     done
 
-      - name: Bridge from cdk-2 to cdk-1
-        working-directory: .github/scripts
-        shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
-        run: |
-          polycli ulxly bridge asset \
-              --bridge-address ${{ env.SOVEREIGN_BRIDGE_ADDRESS }} \
-              --destination-network 1 \
-              --destination-address 0xC0FFEE0000000000000000000000000000000002 \
-              --private-key ${{ env.PRIVATE_KEY }} \
-              --rpc-url ${{ env.CDK2_RPC_URL }} \
-              --value $(date +%s)
-          if [[ $? -eq 0 ]]; then
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
-          else
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to make the deposit..."
-              exit 1
-          fi
+      # - name: Bridge from cdk-2 to cdk-1
+      #   working-directory: .github/scripts
+      #   shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
+      #   run: |
+      #     polycli ulxly bridge asset \
+      #         --bridge-address ${{ env.SOVEREIGN_BRIDGE_ADDRESS }} \
+      #         --destination-network 1 \
+      #         --destination-address 0xC0FFEE0000000000000000000000000000000002 \
+      #         --private-key ${{ env.PRIVATE_KEY }} \
+      #         --rpc-url ${{ env.CDK2_RPC_URL }} \
+      #         --value $(date +%s)
+      #     if [[ $? -eq 0 ]]; then
+      #         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
+      #     else
+      #         echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to make the deposit..."
+      #         exit 1
+      #     fi
 
-          while true; do
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
-            gas_price=$(cast gas-price --rpc-url ${{ env.CDK1_RPC_URL }})
-            polycli ulxly claim asset \
-                --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
-                --bridge-service-url ${{ env.SOVEREIGN_BRIDGE_URL }} \
-                --deposit-network 2 \
-                --deposit-count 1 \
-                --destination-address 0xc0FFee0000000000000000000000000000000002 \
-                --private-key ${{ env.PRIVATE_KEY }} \
-                --rpc-url ${{ env.CDK1_RPC_URL }} \
-                --gas-price $gas_price
-            if [[ $? -eq 0 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
-                exit 0
-            else
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
-                sleep 15
-            fi
-          done
+      #     while true; do
+      #       echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
+      #       gas_price=$(cast gas-price --rpc-url ${{ env.CDK1_RPC_URL }})
+      #       polycli ulxly claim asset \
+      #           --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
+      #           --bridge-service-url ${{ env.SOVEREIGN_BRIDGE_URL }} \
+      #           --deposit-network 2 \
+      #           --deposit-count 1 \
+      #           --destination-address 0xc0FFee0000000000000000000000000000000002 \
+      #           --private-key ${{ env.PRIVATE_KEY }} \
+      #           --rpc-url ${{ env.CDK1_RPC_URL }} \
+      #           --gas-price $gas_price
+      #       if [[ $? -eq 0 ]]; then
+      #           echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
+      #           exit 0
+      #       else
+      #           echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
+      #           sleep 15
+      #       fi
+      #     done
 
       - name: Bridge from L1 to cdk-4
         working-directory: .github/scripts
