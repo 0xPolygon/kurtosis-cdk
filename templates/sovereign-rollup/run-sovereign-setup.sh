@@ -3,11 +3,11 @@
 
 # Fund L1 OP addresses.
 # 0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35 is the OP Batcher Address on L1
-# The private key is an L1 prefunded address
+# bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 is the L1 prefunded address' private key
 cast send \
     --private-key bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 \
-    --rpc-url http://el-1-geth-lighthouse:8545 \
-    --value 100ether \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --value "{{.l2_funding_amount}}" \
     "0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35" \
 
 # Create New Rollup Step
@@ -21,7 +21,7 @@ cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/create
 
 npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-cast call --json --rpc-url  http://el-1-geth-lighthouse:8545 $rollup_manager_addr 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
+cast call --json --rpc-url  "{{.l1_rpc_url}}" $rollup_manager_addr 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr=0x72aA7C55e1c7BF4017F22a3bc19722de11911A81
@@ -35,9 +35,9 @@ rpc_url=http://op-el-1-op-geth-op-node-op-kurtosis:8545
 # This is the default prefunded account for the OP Network
 private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 
-cast send --value 10ether  --rpc-url $rpc_url --private-key $private_key $bridge_admin_addr
-cast send --value 10ether  --rpc-url $rpc_url --private-key $private_key $aggoracle_addr
-cast send --value 100ether --rpc-url $rpc_url --private-key $private_key $claimtx_addr
+cast send --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key $private_key $bridge_admin_addr
+cast send --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key $private_key $aggoracle_addr
+cast send --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key $private_key $claimtx_addr
 
 # Contract Deployment Step
 cd /opt/zkevm-contracts || exit
@@ -56,7 +56,7 @@ ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+2)) $bridge_a
 bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+3)) $bridge_admin_addr | sed 's/.*: //')
 
 # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
-cast send --value 1000ether --rpc-url $rpc_url --private-key $private_key $bridge_proxy_addr
+cast send --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key $private_key $bridge_proxy_addr
 forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key BridgeL2SovereignChain
 forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args $bridge_proxy_addr
 calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $aggoracle_addr)
