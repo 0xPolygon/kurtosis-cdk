@@ -1,6 +1,15 @@
 #!/bin/bash
 # shellcheck disable=SC2034,SC2086
 
+# Fund L1 OP addresses.
+# 0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35 is the OP Batcher Address on L1
+# The private key is an L1 prefunded address
+cast send \
+    --private-key bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 \
+    --rpc-url http://el-1-geth-lighthouse:8545 \
+    --value 100ether \
+    "0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35" \
+
 # Create New Rollup Step
 cd /opt/zkevm-contracts || exit
 
