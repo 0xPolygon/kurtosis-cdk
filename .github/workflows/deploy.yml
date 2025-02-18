@@ -293,9 +293,10 @@ jobs:
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit can be claimed..."
             balance=$(cast balance --ether --rpc-url ${{ env.CDK2_RPC_URL }} ${{ env.ETH_ADDRESS }})
+            echo "Balance: $balance ether"
             result=$(echo "$balance > 0" | bc) # Use bc to compare floating-point numbers
             if [[ "$result" -eq 1 ]]; then
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed! Balance is $balance ether."
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit claimed!"
                 exit 0
             else
                 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Unable to claim the deposit. Retrying in 15 seconds..."
