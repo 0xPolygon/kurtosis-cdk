@@ -279,9 +279,6 @@ jobs:
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
-
-          echo "Waiting for deposit to be autoclaimed..."
-          sleep 30
           
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
           while true; do
