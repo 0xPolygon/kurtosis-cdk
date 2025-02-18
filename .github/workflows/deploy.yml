@@ -169,11 +169,9 @@ jobs:
           fi
 
       - name: Dump enclave
-        if: ${{ !cancelled() }}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Generate archive name
-        if: ${{ !cancelled() }}
         run: |
           file_name=$(basename "${{ matrix.file_name }}" ".yml")
           archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
@@ -181,7 +179,6 @@ jobs:
           echo "Generated archive name: ${archive_name}"
 
       - name: Upload enclave dump
-        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARCHIVE_NAME }}
@@ -463,11 +460,9 @@ jobs:
           done
 
       - name: Dump enclave
-        if: ${{ !cancelled() }}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload enclave dump
-        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: dump_attach_cdks_${{ github.run_id }}
@@ -566,11 +561,9 @@ jobs:
           fi
 
       - name: Dump enclave
-        if: ${{ !cancelled() }}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload enclave dump
-        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
@@ -615,11 +608,9 @@ jobs:
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
       - name: Dump enclave
-        if: ${{ !cancelled() }}
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload enclave dump
-        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: dump_deploy_to_external_l1_${{ github.run_id }}
