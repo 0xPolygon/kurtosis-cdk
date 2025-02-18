@@ -257,8 +257,12 @@ jobs:
           echo "CDK2_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)" >> $GITHUB_ENV
           echo "CDK3_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-003 rpc)" >> $GITHUB_ENV
           echo "CDK4_RPC_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-004 rpc)" >> $GITHUB_ENV
+          echo "CDK4_BRIDGE_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-004 rpc)" >> $GITHUB_ENV
           echo "SOVEREIGN_BRIDGE_URL=$(kurtosis port print ${{ env.ENCLAVE_NAME }} sovereign-bridge-service-001 rpc)" >> $GITHUB_ENV
-          echo "BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
+
+          # Retrieve bridge addresses.
+          echo "ZKEVM_BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json' 2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
+          echo "SOVEREIGN_BRIDGE_ADDRESS=$(kurtosis service exec ${{ env.ENCLAVE_NAME }} contracts-001 'jr -r .bridge_proxy_addr /opt/zkevm-contracts/sovereign-rollup-out.json'  2>&1 | grep -P '0x\h*')" >> $GITHUB_ENV
 
           # Set up a test account.
           l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
@@ -274,7 +278,7 @@ jobs:
         shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           polycli ulxly bridge asset \
-              --bridge-address ${{ env.BRIDGE_ADDRESS }} \
+              --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
               --destination-network 2 \
               --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.L1_RPC_URL }} \
@@ -304,7 +308,7 @@ jobs:
         shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           polycli ulxly bridge asset \
-              --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
+              --bridge-address ${{ env.SOVEREIGN_BRIDGE_ADDRESS }} \
               --destination-network 0 \
               --destination-address 0xC0FFEE0000000000000000000000000000000001 \
               --private-key ${{ env.PRIVATE_KEY }} \
@@ -320,7 +324,7 @@ jobs:
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             polycli ulxly claim asset \
-                --bridge-address ${{ env.BRIDGE_ADDRESS }} \
+                --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
                 --bridge-service-url ${{ env.SOVEREIGN_BRIDGE_URL }} \
                 --deposit-network 2 \
                 --deposit-count 0 \
@@ -342,7 +346,7 @@ jobs:
         shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           polycli ulxly bridge asset \
-              --bridge-address 0x9A1f8eA578835d2b7b1e1EB8CD5EE3Bb7692338C \
+              --bridge-address ${{ env.SOVEREIGN_BRIDGE_ADDRESS }} \
               --destination-network 1 \
               --destination-address 0xC0FFEE0000000000000000000000000000000002 \
               --private-key ${{ env.PRIVATE_KEY }} \
@@ -359,7 +363,7 @@ jobs:
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url ${{ env.CDK1_RPC_URL }})
             polycli ulxly claim asset \
-                --bridge-address ${{ env.BRIDGE_ADDRESS }} \
+                --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
                 --bridge-service-url ${{ env.SOVEREIGN_BRIDGE_URL }} \
                 --deposit-network 2 \
                 --deposit-count 1 \
@@ -382,7 +386,7 @@ jobs:
         shell: bash {0} # By default, GHA runs with `set -e`. This line disables that.
         run: |
           polycli ulxly bridge asset \
-              --bridge-address ${{ env.BRIDGE_ADDRESS }} \
+              --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
               --destination-network 4 \
               --destination-address 0xc0FFee0000000000000000000000000000000003 \
               --force-update-root=true \
@@ -396,13 +400,12 @@ jobs:
               exit 1
           fi
 
-          bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-004 rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url ${{ env.CDK4_RPC_URL }})
             polycli ulxly claim asset \
-                --bridge-address ${{ env.BRIDGE_ADDRESS }} \
-                --bridge-service-url $bridge_url \
+                --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
+                --bridge-service-url ${{ env.CDK4_BRIDGE_URL }} \
                 --deposit-network 0 \
                 --deposit-count 4 \
                 --destination-address 0xc0FFee0000000000000000000000000000000003 \
@@ -425,7 +428,7 @@ jobs:
         run: |
           gas_price=$(cast gas-price --rpc-url $l2_cdk4_rpc_url)
           polycli ulxly bridge asset \
-              --bridge-address ${{ env.BRIDGE_ADDRESS }} \
+              --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
               --destination-network 1 \
               --force-update-root=true \
               --destination-address 0xc0FFee0000000000000000000000000000000004 \
@@ -441,13 +444,12 @@ jobs:
               exit 1
           fi
 
-          bridge_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-bridge-service-004 rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Attempting to claim the deposit..."
             gas_price=$(cast gas-price --rpc-url ${{ env.CDK1_RPC_URL }})
             polycli ulxly claim asset \
-                --bridge-address ${{ env.BRIDGE_ADDRESS }} \
-                --bridge-service-url $bridge_url \
+                --bridge-address ${{ env.ZKEVM_BRIDGE_ADDRESS }} \
+                --bridge-service-url ${{ env.CDK4_BRIDGE_URL }} \
                 --deposit-network 4 \
                 --deposit-count 0 \
                 --destination-address 0xc0FFee0000000000000000000000000000000004 \
