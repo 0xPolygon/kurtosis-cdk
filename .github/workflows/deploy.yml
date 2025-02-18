@@ -282,7 +282,7 @@ jobs:
               --destination-network 2 \
               --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.L1_RPC_URL }} \
-              --value $(cast to-wei 1 gwei)
+              --value 10000000000000000000
           if [[ $? -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
           else
@@ -313,7 +313,7 @@ jobs:
               --destination-address 0xC0FFEE0000000000000000000000000000000001 \
               --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.CDK2_RPC_URL }} \
-              --value $(cast to-wei 1 gwei)
+              --value 10000
           if [[ $? -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
           else
@@ -350,7 +350,7 @@ jobs:
               --destination-address 0xC0FFEE0000000000000000000000000000000002 \
               --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.CDK2_RPC_URL }} \
-              --value $(cast to-wei 1 gwei)
+              --value 10000
           if [[ $? -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
           else
@@ -390,7 +390,7 @@ jobs:
               --force-update-root=true \
               --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.L1_RPC_URL }} \
-              --value $(cast to-wei 1 gwei)
+              --value 1000000000000000000
           if [[ $? -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
           else
@@ -431,7 +431,7 @@ jobs:
               --destination-address 0xc0FFee0000000000000000000000000000000004 \
               --private-key ${{ env.PRIVATE_KEY }} \
               --rpc-url ${{ env.CDK4_RPC_URL }} \
-              --value $(cast to-wei 1 gwei) \
+              --value 10000 \
               --gas-price $gas_price
           if [[ $? -eq 0 ]]; then
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Deposit made!"
