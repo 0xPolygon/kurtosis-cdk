@@ -189,7 +189,7 @@ jobs:
 
   multi-cdk-chains:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -279,10 +279,7 @@ jobs:
               echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Deposit transaction failed!"
               exit 1
           fi
-
-          echo "Waiting for deposit to be autoclaimed..."
-          sleep 60
-
+          
           op_rollup_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} op-el-1-op-geth-op-node-op-kurtosis rpc)
           while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Checking if the deposit was claimed..."
