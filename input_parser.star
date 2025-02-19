@@ -41,7 +41,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC9",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
@@ -50,6 +50,7 @@ DEFAULT_IMAGES = {
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
+    "mitm_image": "mitmproxy/mitmproxy:11.1.2",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
 }
 
 DEFAULT_PORTS = {
@@ -73,6 +74,7 @@ DEFAULT_PORTS = {
     "zkevm_cdk_node_port": 5576,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
+    "mitm_port": 8234,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -182,6 +184,7 @@ DEFAULT_L1_ARGS = {
     #   - assertoor
     #   - broadcaster
     #   - tx_spammer
+    #   - bridge_spammer
     #   - blob_spammer
     #   - custom_flood
     #   - goomy_blob
@@ -217,6 +220,12 @@ DEFAULT_L1_ARGS = {
     "l1_participants_count": 1,
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l1_deploy_lxly_bridge_and_call": True,
+    # Anvil: l1_anvil_slots_in_epoch will set the gap of blocks finalized vs safe vs latest
+    #   l1_anvil_block_time * l1_anvil_slots_in_epoch -> total seconds to transition a block from latest to safe
+    # l1_anvil_block_time: seconds per block
+    "l1_anvil_block_time": 1,
+    # l1_anvil_slots_in_epoch: number of slots in an epoch
+    "l1_anvil_slots_in_epoch": 1,
     # Set this to true if the L1 contracts for the rollup are already
     # deployed. This also means that you'll need some way to run
     # recovery from outside of kurtosis
@@ -224,6 +233,15 @@ DEFAULT_L1_ARGS = {
     "use_previously_deployed_contracts": False,
     "erigon_datadir_archive": None,
     "anvil_state_file": None,
+    "mitm_proxied_components": {
+        "agglayer": False,
+        "aggkit": False,
+        "bridge": False,
+        "dac": False,
+        "erigon-sequencer": False,
+        "erigon-rpc": False,
+        "cdk-node": False,
+    },
 }
 
 DEFAULT_L2_ARGS = {
@@ -283,7 +301,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "agglayer_prover_network_url": "https://rpc.production2.succinct.tools",
+    "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
@@ -307,7 +325,7 @@ DEFAULT_OP_STACK_ARGS = {
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
                     "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
-                    "count": 2,
+                    "count": 1,
                 },
             ],
             # "batcher_params": {
@@ -372,6 +390,7 @@ DEFAULT_ARGS = (
         # - pless_zkevm_node
         # - prometheus_grafana
         # - tx_spammer
+        # - bridge_spammer
         "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
@@ -421,6 +440,17 @@ def parse_args(plan, user_args):
                 + ":"
                 + str(DEFAULT_PORTS.get("anvil_port"))
             )
+
+    # Setting mitm for each element set to true on mitm dict
+    mitm_rpc_url = (
+        "http://mitm"
+        + args["deployment_suffix"]
+        + ":"
+        + str(DEFAULT_PORTS.get("mitm_port"))
+    )
+    args["mitm_rpc_url"] = {
+        k: mitm_rpc_url for k, v in args.get("mitm_proxied_components", {}).items() if v
+    }
 
     # Validation step.
     verbosity = args.get("verbosity", "")

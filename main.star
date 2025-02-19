@@ -16,6 +16,7 @@ optimism_package = "github.com/ethpandaops/optimism-package/main.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
+mitm_package = "./mitm.star"
 
 # Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -27,6 +28,7 @@ panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
+bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
 assertoor_package = "./src/additional_services/assertoor.star"
 
 
@@ -91,6 +93,13 @@ def run(plan, args={}):
             src="/opt/zkevm/genesis.json",
         )
 
+    # Deploy MITM
+    if any(args["mitm_proxied_components"].values()):
+        plan.print("Deploying MITM")
+        import_module(mitm_package).run(plan, args)
+    else:
+        plan.print("Skipping the deployment of MITM")
+
     # Deploy the agglayer.
     if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
@@ -104,7 +113,14 @@ def run(plan, args={}):
         if args["sequencer_type"] == "erigon":
             plan.print("Deploying cdk-erigon sequencer")
             import_module(cdk_erigon_package).run_sequencer(
-                plan, args, contract_setup_addresses
+                plan,
+                args
+                | {
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "erigon-sequencer", args["l1_rpc_url"]
+                    )
+                },
+                contract_setup_addresses,
             )
         else:
             plan.print("Skipping the deployment of cdk-erigon sequencer")
@@ -120,7 +136,14 @@ def run(plan, args={}):
         if deployment_stages.get("deploy_cdk_erigon_node", False):
             plan.print("Deploying cdk-erigon node")
             import_module(cdk_erigon_package).run_rpc(
-                plan, args, contract_setup_addresses
+                plan,
+                args
+                | {
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "erigon-rpc", args["l1_rpc_url"]
+                    )
+                },
+                contract_setup_addresses,
             )
         else:
             plan.print("Skipping the deployment of cdk-erigon node")
@@ -218,6 +241,14 @@ def run(plan, args={}):
         elif additional_service == "tx_spammer":
             deploy_additional_service(
                 plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
+            )
+        elif additional_service == "bridge_spammer":
+            deploy_additional_service(
+                plan,
+                "bridge_spammer",
+                bridge_spammer_package,
+                args,
+                contract_setup_addresses,
             )
         elif additional_service == "assertoor":
             deploy_additional_service(plan, "assertoor", assertoor_package, args)

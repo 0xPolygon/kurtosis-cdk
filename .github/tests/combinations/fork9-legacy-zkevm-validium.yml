@@ -1,4 +1,7 @@
 # This file has been generated automatically.
+deployment_stages:
+  deploy_l2_contracts: true
+  deploy_cdk_erigon_node: false
 args:
   verbosity: debug
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
@@ -11,5 +14,3 @@ args:
     - tx_spammer
   consensus_contract_type: cdk-validium
   sequencer_type: zkevm
-deployment_stages:
-  deploy_cdk_erigon_node: false

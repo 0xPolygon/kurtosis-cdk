@@ -1,3 +1,6 @@
+deployment_stages:
+  deploy_l2_contracts: true
+
 args:
   verbosity: debug
 

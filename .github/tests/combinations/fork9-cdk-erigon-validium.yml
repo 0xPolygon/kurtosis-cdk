@@ -1,4 +1,6 @@
 # This file has been generated automatically.
+deployment_stages:
+  deploy_l2_contracts: true
 args:
   verbosity: debug
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19

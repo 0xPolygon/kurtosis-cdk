@@ -1,20 +1,18 @@
-ANVIL_BLOCK_TIME = 1
-ANVIL_SLOTS_IN_AN_EPOCH = (
-    2  # Setting to X leads to block N-(X+1) being finalized, being N latest block
-)
 STATE_PATH = "/tmp"
 
 
 def run(plan, args):
     chain_id = str(args["l1_chain_id"])
+    block_time = args.get("l1_anvil_block_time")
+    slots_in_epoch = args.get("l1_anvil_slots_in_epoch")
     service_files = {}
     mnemonic = args.get("l1_preallocated_mnemonic")
 
     cmd = (
         "anvil --block-time "
-        + str(ANVIL_BLOCK_TIME)
+        + str(block_time)
         + " --slots-in-an-epoch "
-        + str(ANVIL_SLOTS_IN_AN_EPOCH)
+        + str(slots_in_epoch)
         + " --chain-id "
         + chain_id
         + " --host 0.0.0.0 --port "
