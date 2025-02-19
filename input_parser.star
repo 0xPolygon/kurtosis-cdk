@@ -337,8 +337,6 @@ DEFAULT_OP_STACK_ARGS = {
             # "batcher_params": {
             #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
             # },
-            # The OP package does not run the op-proposer for now.
-            # https://github.com/ethpandaops/optimism-package/blob/0d60a9d3997f83ecee6f7f6695027f819d776309/src/participant_network.star#L87
             # "proposer_params": {
             #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
             # },
