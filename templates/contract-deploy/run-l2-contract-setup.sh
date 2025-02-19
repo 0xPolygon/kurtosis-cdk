@@ -69,7 +69,7 @@ fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
 
 # Only fund the claim tx manager address if l2 contracts are not being deployed.
 if [[ "$1" != "true" ]]; then
-    exit 1
+    exit
 fi
 
 echo_ts "Funding accounts on l2"
