@@ -20,7 +20,7 @@ ContractVersions = "banana"
 IsValidiumMode = false
 
 # This is the admin account for now
-L2Coinbase =  "0x8281AdB2fC133536ACDC4c923bc573A26f66F260"
+L2Coinbase =  "0x635243A11B41072264Df6c9186e3f473402F94e9"
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 

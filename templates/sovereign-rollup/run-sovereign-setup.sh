@@ -26,9 +26,9 @@ cast call --json --rpc-url  "{{.l1_rpc_url}}" $rollup_manager_addr 'rollupIDToRo
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr=0x72aA7C55e1c7BF4017F22a3bc19722de11911A81
 bridge_admin_private_key=0x5f3556010771f2cc34eb2669401ee1109bc05aed993024ed10ff04ba7309e28b
-aggoracle_addr=0x2Ac2c49Ee3Ac5f663115C86F405Ea855B365D5Ec
+aggoracle_addr=0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16
 aggoracle_private_key=0xd65de4634c214d45673528bf55be28fe43b0664c99cc99089ef75a922b3a22fd
-claimtx_addr=0x3754Aa77EE1E8AfB200Ce36a8c943ed8F5AaB7BC
+claimtx_addr=0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F
 claimtx_private_key=0xfa333c42db7bc56277bf67c93ba19e4f414d802ef9886b8b5dc7c450655ae77f
 
 rpc_url=http://op-el-1-op-geth-op-node-op-kurtosis:8545
