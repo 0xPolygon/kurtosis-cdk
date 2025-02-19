@@ -1,8 +1,7 @@
 #!/bin/bash
-# shellcheck disable=SC2034,SC2086
 
 # Fund L1 OP addresses.
-# 0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35 is the OP Batcher Address on L1
+# 0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35 is the default OP Batcher Address on L1
 # bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 is the L1 prefunded address' private key
 cast send \
     --private-key bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 \
@@ -20,18 +19,19 @@ cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/create
 cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
 
 npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost
-rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
+# Extract the rollup manager address from the JSON file
+rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined-001.json)"
 cast call --json --rpc-url  "{{.l1_rpc_url}}" $rollup_manager_addr 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
-bridge_admin_addr=0x72aA7C55e1c7BF4017F22a3bc19722de11911A81
-bridge_admin_private_key=0x5f3556010771f2cc34eb2669401ee1109bc05aed993024ed10ff04ba7309e28b
-aggoracle_addr=0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16
-aggoracle_private_key=0xd65de4634c214d45673528bf55be28fe43b0664c99cc99089ef75a922b3a22fd
-claimtx_addr=0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F
-claimtx_private_key=0xfa333c42db7bc56277bf67c93ba19e4f414d802ef9886b8b5dc7c450655ae77f
+bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"
+bridge_admin_private_key="{{.zkevm_l2_sovereignadmin_private_key}}"
+aggoracle_addr="{{.zkevm_l2_aggoracle_address}}"
+aggoracle_private_key="{{.zkevm_l2_aggoracle_private_key}}"
+claimtx_addr="{{.zkevm_l2_claimtx_address}}"
+claimtx_private_key="{{.zkevm_l2_claimtx_private_key}}"
 
-rpc_url=http://op-el-1-op-geth-op-node-op-kurtosis:8545
+rpc_url="{{.op_el_rpc_url}}"
 # This is the default prefunded account for the OP Network
 private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 

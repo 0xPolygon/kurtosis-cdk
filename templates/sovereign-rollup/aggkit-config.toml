@@ -10,17 +10,17 @@
 # production environments. DYOR                              
 # The below configs are the default mandatory parameters to be used.
 
-PathRWData = "/tmp/"
-L1URL="http://el-1-geth-lighthouse:8545"
-L2URL="http://op-el-1-op-geth-op-node-op-kurtosis:8545"
-AggLayerURL="http://agglayer:4444"
+PathRWData = "{{.zkevm_path_rw_data}}"
+L1URL="{{.l1_rpc_url}}"
+L2URL="{{.op_el_rpc_url}}"
+AggLayerURL="http://agglayer:{{.agglayer_port}}"
 
 ForkId = 12
 ContractVersions = "banana"
 IsValidiumMode = false
 
 # This is the admin account for now
-L2Coinbase =  "0x635243A11B41072264Df6c9186e3f473402F94e9"
+L2Coinbase =  "{{.zkevm_l2_sovereignadmin_address}}"
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 
@@ -29,7 +29,7 @@ AggregatorPrivateKeyPassword  = ""
 SenderProofToL1Addr = ""
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
-RPCURL = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+RPCURL = "{{.op_el_rpc_url}}"
 WitnessURL = ""
 
 # These values can be overriden directly from genesis.json
@@ -158,7 +158,7 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # ------------------------------------------------------------------------------
 # URLRPCL2 is the URL of the L2 RPC node
 # ------------------------------------------------------------------------------
-# URLRPCL2 = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+# URLRPCL2 = "{{.op_el_rpc_url}}"
 
 # ------------------------------------------------------------------------------
 # BlockFinality indicates which finality follows AggLayer accepted values are:
@@ -236,7 +236,7 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # ------------------------------------------------------------------------------
 # URLRPCL1 is the URL of the L1 RPC node
 # ------------------------------------------------------------------------------
-# URLRPCL1 = "http://el-1-geth-lighthouse:8545"
+# URLRPCL1 = "{{.l1_rpc_url}}"
 
 # ------------------------------------------------------------------------------
 # BlockFinality indicates which finality follows AggLayer accepted values are:
@@ -258,7 +258,7 @@ GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 # ------------------------------------------------------------------------------
 # URLRPCL2 is the URL of the L2 RPC node
 # ------------------------------------------------------------------------------
-# URLRPCL2 = "http://op-el-1-op-geth-op-node-op-kurtosis:8545"
+# URLRPCL2 = "{{.op_el_rpc_url}}"
 
 # ------------------------------------------------------------------------------
 # GasOffset is the gas to add on the estimated gas when sending the claim txs
@@ -342,7 +342,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 # ------------------------------------------------------------------------------
 # StoragePath is the path of the internal storage
 # ------------------------------------------------------------------------------
-# StoragePath = "/tmp/ethtxmanager-aggoracle.sqlite"
+# StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-aggoracle.sqlite"
 
 # ------------------------------------------------------------------------------
 # ReadPendingL1Txs is a flag to enable the reading of pending L1 txs
@@ -387,7 +387,7 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # ------------------------------------------------------------------------------
 # DBPath path of the sqlite db
 # ------------------------------------------------------------------------------
-# DBPath = "/tmp/bridgel2sync.sqlite"
+# DBPath = "{{.zkevm_path_rw_data}}bridgel2sync.sqlite"
 
 # ------------------------------------------------------------------------------
 # BlockFinality indicates the status of the blocks that will be queried to sync

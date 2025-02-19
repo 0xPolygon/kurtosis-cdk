@@ -257,6 +257,8 @@ DEFAULT_L2_ARGS = {
     "l2_deploy_lxly_bridge_and_call": True,
     # This is used by erigon for naming the config files
     "chain_name": "kurtosis",
+    # Config name for OP stack rollup
+    "sovereign_chain_name": "op-sovereign",
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -283,6 +285,7 @@ DEFAULT_ROLLUP_ARGS = {
     "gas_token_enabled": False,
     # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
     # If the address is empty, a contract will be deployed automatically.
+    # This value will also be used for sovereignWETHAddress parameter in the Sovereign rollup.
     "gas_token_address": "",
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
@@ -309,6 +312,8 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
+    # OP Stack RPC URL
+    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
 }
 
 # https://github.com/ethpandaops/optimism-package
