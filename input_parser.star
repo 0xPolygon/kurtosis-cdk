@@ -184,6 +184,7 @@ DEFAULT_L1_ARGS = {
     #   - assertoor
     #   - broadcaster
     #   - tx_spammer
+    #   - bridge_spammer
     #   - blob_spammer
     #   - custom_flood
     #   - goomy_blob
@@ -395,6 +396,7 @@ DEFAULT_ARGS = (
         # - pless_zkevm_node
         # - prometheus_grafana
         # - tx_spammer
+        # - bridge_spammer
         "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
