@@ -7,7 +7,7 @@
     "rollupAdminAddress": "{{ .zkevm_l2_sovereignadmin_address }}",
     "consensusContractName": "PolygonPessimisticConsensus",
     "gasTokenAddress": "{{ .gas_token_address }}",
-    "deployerPvtKey": " {{ .zkevm_l2_admin_private_key }} ",
+    "deployerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
     "maxFeePerGas": "",
     "maxPriorityFeePerGas": "",
     "multiplierGas": "",

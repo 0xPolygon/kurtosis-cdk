@@ -286,7 +286,8 @@ DEFAULT_ROLLUP_ARGS = {
     # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
     # If the address is empty, a contract will be deployed automatically.
     # This value will also be used for sovereignWETHAddress parameter in the Sovereign rollup.
-    "gas_token_address": "",
+    # Default value is 0x0000000000000000000000000000000000000000
+    "gas_token_address": "0x0000000000000000000000000000000000000000",
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
     # ports.
@@ -638,7 +639,8 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
     # Gas token enabled and gas token address check
     if (
         not args.get("gas_token_enabled", False)
-        and args.get("gas_token_address", "") != ""
+        and args.get("gas_token_address", "0x0000000000000000000000000000000000000000")
+        != "0x0000000000000000000000000000000000000000"
     ):
         fail(
             "Gas token address set to '{}' but gas token is not enabled".format(
