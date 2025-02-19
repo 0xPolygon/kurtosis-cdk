@@ -1,13 +1,28 @@
 #!/bin/bash
 
 # Fund L1 OP addresses.
-# 0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35 is the default OP Batcher Address on L1
-# bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 is the L1 prefunded address' private key
-cast send \
-    --private-key bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 \
-    --rpc-url "{{.l1_rpc_url}}" \
-    --value "{{.l2_funding_amount}}" \
-    "0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35" \
+    # batcher = '0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35'
+    # challenger = '0xf08f610d1956CAAAb34f18e9e0A122E389496529'
+    # l1ProxyAdminOwner = '0x8943545177806ED17B9F23F0a21ee5948eCaa776'
+    # l2ProxyAdminOwner = '0x8943545177806ED17B9F23F0a21ee5948eCaa776'
+    # proposer = '0xb0994E702b603df7191cd68E6544f99126135e34'
+    # systemConfigOwner = '0x8943545177806ED17B9F23F0a21ee5948eCaa776'
+    # unsafeBlockSigner = '0xbb900Cf56918A2639dAA90c3f7DC5DCD2f5B9935'
+addresses=(
+    "0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35"
+    "0xf08f610d1956CAAAb34f18e9e0A122E389496529"
+    "0x8943545177806ED17B9F23F0a21ee5948eCaa776"
+    "0xb0994E702b603df7191cd68E6544f99126135e34"
+    "0xbb900Cf56918A2639dAA90c3f7DC5DCD2f5B9935"
+)
+
+for address in "${addresses[@]}"; do
+    cast send \
+        --private-key bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 \
+        --rpc-url "{{.l1_rpc_url}}" \
+        --value "{{.l2_funding_amount}}" \
+        "$address"
+done
 
 # Create New Rollup Step
 cd /opt/zkevm-contracts || exit
