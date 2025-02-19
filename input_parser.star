@@ -325,7 +325,7 @@ DEFAULT_OP_STACK_ARGS = {
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
                     "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
-                    "count": 2,
+                    "count": 1,
                 },
             ],
             # "batcher_params": {
