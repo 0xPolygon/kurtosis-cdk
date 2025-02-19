@@ -1,13 +1,14 @@
+deployment_stages:
+  deploy_l2_contracts: true
+
 args:
   verbosity: debug
 
   # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.13
-  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.1-fork.13-patch.1
+  zkevm_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.2-fork.13
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v9
-  zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC2-fork.13
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC3-fork.13
 
   additional_services:
     - tx_spammer
-
-  deploy_l2_contracts: true

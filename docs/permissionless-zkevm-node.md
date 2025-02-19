@@ -1,68 +1,50 @@
----
-comments: true
----
+# How to set up a permissionless zkevm node?
 
-In addition to the core stack, you can also attach and synchronize a permissionless zkevm node.
+We'll show you how to set up a permissionless zkevm node against Cardona / Sepolia testnet. Note that you can set up such node against any other network, including kurtosis-cdk networks.
 
-## Prerequisites
+Let's create a `params.yml` file with the following content.
 
-1. You have followed the [deployment guide](deploy-stack.md) and have a running CDK stack.
+```yml
+# Set all the deployment stages to false.
+# We'll deploy the permissionless zkevm node using the additional_services flag.
+deployment_stages:
+  deploy_l1: false
+  deploy_zkevm_contracts_on_l1: false
+  deploy_databases: false
+  deploy_cdk_central_environment: false
+  deploy_cdk_bridge_infra: false
+  deploy_cdk_bridge_ui: false
+  deploy_agglayer: false
+  deploy_cdk_erigon_node: false
+  deploy_optimism_rollup: false
+  deploy_l2_contracts: false
 
-2. Grab the genesis file artifact and add it to the `permissionless_node` kurtosis package.
+args:
+  verbosity: debug
+  consensus_contract_type: rollup
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.8
+  zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
+  additional_services:
+    - pless_zkevm_node
+  l1_rpc_url: CHANGE_ME
+  genesis_file: ../.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-genesis.json
+```
 
-```sh
+You will need two things:
+
+1) An RPC url - you can use any RPC node provider.
+2) The genesis file - you can take a look at `.github/tests/nightly/pless-zkevm-node`.
+
+If you want to run the permissionless zkevm node against a kurtosis-cdk stack, you can retrieve the genesis using the following commands.
+
+```bash
 rm -r /tmp/zkevm
 kurtosis files download cdk-v1 genesis /tmp
-cp /tmp/genesis.json templates/permissionless-node/genesis.json
+cat /tmp/genesis.json
 ```
 
-## Add permissionless node to the enclave
+To deploy the permissionless node, you can use the following command.
 
-Run the following command:
-
-```sh
-yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-kurtosis run --enclave cdk-v1 --args-file params.yml .
+```bash
+kurtosis run --enclave cdk --args-file params.yml .
 ```
-
-## Sync an external permissionless node
-
-You can also use the package you have just set up to sync data from a production network.
-
-1. Some of the parameters in the Kurtosis genesis file need to be replaced, or better still you could replace the whole genesis file with one representing the external network.
-
-    The parameters that need to change in the file are as follows:
-
-    ```json
-      "rollupCreationBlockNumber": 22,
-      "rollupManagerCreationBlockNumber": 18,
-      "genesisBlockNumber": 22,
-      "L1Config": {
-        "chainId": 271828,
-        "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
-        "polygonRollupManagerAddress": "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
-        "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
-        "polygonZkEVMAddress": "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91"
-      }
-    ```
-
-    !!! tip
-        The [run-contract-setup.sh](https://github.com/0xPolygon/kurtosis-cdk/blob/main/templates/run-contract-setup.sh) file may help you understand how these fields populate.
-
-2. When you have the updated genesis file ready, drop it into `./templates/permissionless-node/genesis.json`.
-
-3. In addition to the genesis setup, tweak the parameter `l1_rpc_url` in the [params.yml](https://github.com/0xPolygon/kurtosis-cdk/blob/main/params.yml) file:
-
-    `l1_rpc_url: http://el-1-geth-lighthouse:8545` -> `l1_rpc_url: <MY_L1_URL>`
-
-    !!! tip
-        - There are other parameters that seem like they should be changed, e.g. `l1_chain_id`, but they aren't used for the permissionless setup.
-
-4. Now you can start synchronizing with the following command:
-
-    ```sh
-    yq -Y --in-place 'with_entries(if .key == "deploy_zkevm_permissionless_node" then .value = true elif .value | type == "boolean" then .value = false else . end)' params.yml
-    kurtosis run --enclave cdk-v1 --args-file params.yml .
-    ```
-
-<br/>

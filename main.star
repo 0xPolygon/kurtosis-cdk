@@ -29,6 +29,7 @@ panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
+bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
 assertoor_package = "./src/additional_services/assertoor.star"
 
 
@@ -252,6 +253,14 @@ def run(plan, args={}):
         elif additional_service == "tx_spammer":
             deploy_additional_service(
                 plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
+            )
+        elif additional_service == "bridge_spammer":
+            deploy_additional_service(
+                plan,
+                "bridge_spammer",
+                bridge_spammer_package,
+                args,
+                contract_setup_addresses,
             )
         elif additional_service == "assertoor":
             deploy_additional_service(plan, "assertoor", assertoor_package, args)

@@ -40,23 +40,23 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.0.2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:main",  # https://github.com/agglayer/agglayer/tags
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.9-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.14-RC1-amd64",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC7",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC9",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC14-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
+    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0-rc",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
-    "mitm_image": "mitmproxy/mitmproxy:11.1.2",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-server
-    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.1", # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
+    "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.2", # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.2", # https://hub.docker.com/r/jhkimqd/op-succinct-server
+    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.2", # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
 }
 
 DEFAULT_PORTS = {
@@ -126,7 +126,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor,aggoracle",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor,aggoracle,sovereignadmin,claimtx",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -162,12 +162,12 @@ DEFAULT_ACCOUNTS = {
     "zkevm_l2_claimsponsor_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
     "zkevm_l2_claimsponsor_private_key": "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
     # AggKit Addresses
-    "zkevm_l2_aggoracle_address": "0x2Ac2c49Ee3Ac5f663115C86F405Ea855B365D5Ec",
-    "zkevm_l2_aggoracle_private_key": "0xd65de4634c214d45673528bf55be28fe43b0664c99cc99089ef75a922b3a22fd",
-    "zkevm_l2_sovereignadmin_address": "0x8281AdB2fC133536ACDC4c923bc573A26f66F260",
-    "zkevm_l2_sovereignadmin_private_key": "0x45f3ccdaff88ab1b3bb41472f09d5cde7cb20a6cbbc9197fddf64e2f3d67aaf2",
-    "zkevm_l2_claimtx_address": "0x3754Aa77EE1E8AfB200Ce36a8c943ed8F5AaB7BC",
-    "zkevm_l2_claimtx_private_key": "0xfa333c42db7bc56277bf67c93ba19e4f414d802ef9886b8b5dc7c450655ae77f",
+    "zkevm_l2_aggoracle_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
+    "zkevm_l2_aggoracle_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
+    "zkevm_l2_sovereignadmin_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+    "zkevm_l2_sovereignadmin_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
+    "zkevm_l2_claimtx_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
+    "zkevm_l2_claimtx_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
 }
 
 DEFAULT_L1_ARGS = {
@@ -192,6 +192,7 @@ DEFAULT_L1_ARGS = {
     #   - assertoor
     #   - broadcaster
     #   - tx_spammer
+    #   - bridge_spammer
     #   - blob_spammer
     #   - custom_flood
     #   - goomy_blob
@@ -227,6 +228,12 @@ DEFAULT_L1_ARGS = {
     "l1_participants_count": 1,
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l1_deploy_lxly_bridge_and_call": True,
+    # Anvil: l1_anvil_slots_in_epoch will set the gap of blocks finalized vs safe vs latest
+    #   l1_anvil_block_time * l1_anvil_slots_in_epoch -> total seconds to transition a block from latest to safe
+    # l1_anvil_block_time: seconds per block
+    "l1_anvil_block_time": 1,
+    # l1_anvil_slots_in_epoch: number of slots in an epoch
+    "l1_anvil_slots_in_epoch": 1,
     # Set this to true if the L1 contracts for the rollup are already
     # deployed. This also means that you'll need some way to run
     # recovery from outside of kurtosis
@@ -259,6 +266,8 @@ DEFAULT_L2_ARGS = {
     "l2_deploy_lxly_bridge_and_call": True,
     # This is used by erigon for naming the config files
     "chain_name": "kurtosis",
+    # Config name for OP stack rollup
+    "sovereign_chain_name": "op-sovereign",
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -285,7 +294,9 @@ DEFAULT_ROLLUP_ARGS = {
     "gas_token_enabled": False,
     # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
     # If the address is empty, a contract will be deployed automatically.
-    "gas_token_address": "",
+    # This value will also be used for sovereignWETHAddress parameter in the Sovereign rollup.
+    # Default value is 0x0000000000000000000000000000000000000000
+    "gas_token_address": "0x0000000000000000000000000000000000000000",
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
     # ports.
@@ -311,6 +322,8 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
+    # OP Stack RPC URL
+    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
 }
 
 # https://github.com/ethpandaops/optimism-package
@@ -323,17 +336,16 @@ DEFAULT_OP_STACK_ARGS = {
             "participants": [
                 {
                     "el_type": "op-geth",
-                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
                     "cl_type": "op-node",
+                    # "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
                     "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
-                    "count": 2,
+                    "count": 1,
                 },
             ],
             "batcher_params": {
                 "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0",
             },
-            # The OP package does not run the op-proposer for now.
-            # https://github.com/ethpandaops/optimism-package/blob/0d60a9d3997f83ecee6f7f6695027f819d776309/src/participant_network.star#L87
             "proposer_params": {
                 "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
             },
@@ -391,6 +403,7 @@ DEFAULT_ARGS = (
         # - pless_zkevm_node
         # - prometheus_grafana
         # - tx_spammer
+        # - bridge_spammer
         "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
@@ -635,7 +648,8 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
     # Gas token enabled and gas token address check
     if (
         not args.get("gas_token_enabled", False)
-        and args.get("gas_token_address", "") != ""
+        and args.get("gas_token_address", "0x0000000000000000000000000000000000000000")
+        != "0x0000000000000000000000000000000000000000"
     ):
         fail(
             "Gas token address set to '{}' but gas token is not enabled".format(

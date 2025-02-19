@@ -6,15 +6,26 @@ l1_engine: anvil
 ```
 
 Please, understand that by doing:
-- l1_chain_id is taken into account
-- l1_rpc_url is automatically set to http://anvil-001:8545
-- l1_ws_url is automatically set to ws://anvil-001:8545
+- ```l1_chain_id``` is taken into account
+- ```l1_rpc_url``` is automatically set to http://anvil-001:8545
+- ```l1_ws_url``` is automatically set to ws://anvil-001:8545
 - These params are ignored:
-    - l1_beacon_url
-    - l1_additional_services
-    - l1_preset
-    - l1_seconds_per_slot
-    - l1_participants_count
+    - ```l1_beacon_url```
+    - ```l1_additional_services```
+    - ```l1_preset```
+    - ```l1_seconds_per_slot```
+    - ```l1_participants_count```
+
+## Parameters
+These are optional config params for Anvil:
+- ```l1_anvil_block_time```: seconds per block
+- ```l1_anvil_slots_in_epoch```: number of slots in an epoch
+
+For instance setting
+- ```l1_anvil_block_time: 6```
+- ```l1_anvil_slots_in_epoch: 32```
+
+Will produce blocks each 6 seconds, and the most recent safe block will be the latest one - 32 (that one from 32 * 6 seconds ago).
 
 
 ## State dump and recover

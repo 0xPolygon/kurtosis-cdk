@@ -18,11 +18,12 @@ COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (SC1091): (Sourced) file not included in mock.
 # hadolint ignore=DL3008,DL3013,DL4006,SC1091
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends curl git jq pipx \
+  && apt-get install --yes --no-install-recommends bc curl git jq pipx \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
   && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
-  && cp /root/.foundry/bin/* /usr/local/bin
+  && ln -s /root/.foundry/bin/* /usr/local/bin/ \
+  && rm -fr /root/.foundry/versions/*
