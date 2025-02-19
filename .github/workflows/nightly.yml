@@ -10,7 +10,7 @@ on:
         description: This parameter file will be used when running Antithesis tests
         required: false
         type: string
-        default: .github/tests/antithesis/fork13-new-cdk-stack-cdk-validium.yml
+        default: .github/tests/antithesis/fork12-cdk-erigon-validium.yml
 
 concurrency:
   group: nightly-${{ github.event.pull_request.number || github.ref }}
@@ -26,7 +26,7 @@ env:
   ANTITHESIS_NOTEBOOK: polygon
 
   # This parameter file will be used when running Antithesis tests using the nightly schedule.
-  DEFAULT_ANTITHESIS_PARAM_FILE: .github/tests/fork13-new-cdk-stack-cdk-validium.yml
+  DEFAULT_ANTITHESIS_PARAM_FILE: .github/tests/antithesis/fork12-cdk-erigon-validium.yml
 
 jobs:
   list-ymls:
