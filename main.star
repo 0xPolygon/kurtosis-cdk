@@ -154,6 +154,11 @@ def run(plan, args={}):
         import_module(cdk_central_environment_package).run(
             plan, central_environment_args, contract_setup_addresses
         )
+
+        # Deploy contracts on L2.
+        plan.print("Deploying contracts on L2")
+        deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
+        import_module(deploy_l2_contracts_package).run(plan, args, deploy_l2_contracts)
     else:
         plan.print("Skipping the deployment of cdk central/trusted environment")
 
@@ -168,11 +173,6 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of cdk/bridge infrastructure")
-
-    # Deploy contracts on L2.
-    plan.print("Deploying contracts on L2")
-    deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
-    import_module(deploy_l2_contracts_package).run(plan, args, deploy_l2_contracts)
 
     # Deploy an OP Stack rollup.
     if deployment_stages.get("deploy_optimism_rollup", False):
