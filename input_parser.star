@@ -54,9 +54,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.2", # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.2", # https://hub.docker.com/r/jhkimqd/op-succinct-server
-    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.2", # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-server
+    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
 }
 
 DEFAULT_PORTS = {
@@ -322,8 +322,10 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
-    # OP Stack RPC URL
+    # OP Stack EL RPC URL
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
+    # OP Stack CL Node URL
+    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
 }
 
 # https://github.com/ethpandaops/optimism-package
@@ -667,14 +669,17 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
             )
-    
+
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
         if deployment_stages.get("deploy_optimism_rollup", False) == False:
             fail(
                 "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
             )
-        if args["agglayer_prover_sp1_key"] == None or args["agglayer_prover_sp1_key"] == "":
+        if (
+            args["agglayer_prover_sp1_key"] == None
+            or args["agglayer_prover_sp1_key"] == ""
+        ):
             fail(
                 "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
             )

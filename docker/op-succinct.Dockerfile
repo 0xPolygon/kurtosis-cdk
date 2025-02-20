@@ -7,6 +7,10 @@ ARG RUST_VERSION
 ARG FOUNDRY_VERSION
 WORKDIR /opt
 ENV PATH="/root/.cargo/bin:${PATH}"
+# WARNING (DL3008): Pin versions in apt get install.
+# WARNING (DL3013): Pin versions in pip.
+# WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
+# hadolint ignore=DL3008,DL3013,DL4006
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         curl \
