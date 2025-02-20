@@ -15,7 +15,7 @@ def get_public_ports(port_config, start_port_name, args):
     for index, (key, port) in enumerate(sorted_port_config.items()):
         new_port = PortSpec(
             number=start_port + index,
-            # Some ports don't define a transport protocol which makes this specific intruction fail.
+            # Some ports don't define a transport protocol which makes this specific instruction fail.
             # Solutions:
             #   1. We don't care about transport protocol in the case of public ports.
             #   2. We make it mandatory to define transport protocols in PortSpec.
