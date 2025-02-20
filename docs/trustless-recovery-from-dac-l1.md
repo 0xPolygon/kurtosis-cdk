@@ -32,7 +32,7 @@ kurtosis service stop cdk cdk-erigon-sequencer-001
 kurtosis service start cdk cdk-erigon-sequencer-001
 ```
 
-The resync is expected to take some time, which is dependent on the `zkevm.l1-sync-start-block` value. The sequencer will sync from the configured start block number to the latest block nubmer.
+The resync is expected to take some time, which is dependent on the `zkevm.l1-sync-start-block` value. The sequencer will sync from the configured start block number to the latest block number.
 Since this is a local devnet, the L1 block height is not expected to be too high, so `1` has been used. Do not use this for production or even testnet environments.
 
 Monitor the sequencer's logs
