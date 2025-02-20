@@ -9,8 +9,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   # Pull kurtosis-cdk package.
   # Temporary hack for now.
-  # && git clone --branch v0.2.29 https://github.com/0xPolygon/kurtosis-cdk \
-  && git clone --branch feat/antithesis-integration https://github.com/leovct/kurtosis-cdk \
+  && git clone --branch v0.2.31 https://github.com/0xPolygon/kurtosis-cdk \
   # Pull kurtosis-cdk dependencies.
   # The package has other dependencies (blockscout, prometheus and grafana) but they shouldn't be used when testing the package with Antithesis.
   && git clone --branch 4.4.0 https://github.com/ethpandaops/ethereum-package \
