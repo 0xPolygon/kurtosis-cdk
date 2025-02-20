@@ -75,7 +75,7 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          files=$(ls -R ./.github/tests/combinations/*.yml | grep -v "sovereign")
+          files=$(ls -R ./.github/tests/combinations/*.yml)
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
