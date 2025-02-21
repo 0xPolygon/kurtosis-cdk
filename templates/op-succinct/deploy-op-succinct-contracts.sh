@@ -1,10 +1,6 @@
 #!/bin/bash
 # This script deploys the OP-Succinct contracts to the OP network.
 
-# Checkout the v1.2.2 release
-git fetch --all
-git checkout -b op-succinct-v1.2.2 tags/op-succinct-v1.2.2
-
 # Create the .env file
 cd /opt/op-succinct || exit
 touch /opt/op-succinct/.env
