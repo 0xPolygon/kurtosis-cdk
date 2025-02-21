@@ -29,10 +29,10 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy Optimism rollup.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
-    "deploy_optimism_rollup": True,
+    "deploy_optimism_rollup": False,
     # After deploying OP Stack, upgrade it to OP Succinct.
     # Even mock-verifier deployments require an actual SPN network key.
-    "deploy_op_succinct": True,
+    "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -337,27 +337,35 @@ DEFAULT_OP_STACK_ARGS = {
         {
             "participants": [
                 {
+                    # OP Rollup configuration
                     "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
-                    # "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
                     "count": 1,
+                    # OP Succinct compatible configuration
+                    # "el_type": "op-geth",
+                    # "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3",
+                    # "cl_type": "op-node",
+                    # "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1",
+                    # "count": 1,
                 },
             ],
-            "batcher_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0",
-            },
-            "proposer_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
-            },
+            # Uncomment the below to use OP Succinct compatible images
+            # "batcher_params": {
+            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0",
+            # },
+            # "proposer_params": {
+            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5",
+            # },
         },
     ],
-    "op_contract_deployer_params": {
-        "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11",
-        "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
-        "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
-    },
+    # Uncomment the below to use OP Succinct compatible images
+    # "op_contract_deployer_params": {
+    #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11",
+    #     "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
+    #     "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
+    # },
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -395,7 +403,7 @@ DEFAULT_ARGS = (
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
-        "consensus_contract_type": "pessimistic",
+        "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
@@ -683,32 +691,51 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
             fail(
                 "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
             )
-        if ( 
-            op_stack_args.get("optimism_package").get("chains")[0].get("participants")[0].get("el_image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
-                ):
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("participants")[0]
+            .get("el_image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+        ):
             fail(
                 "OP Succinct requires el_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
             )
-        if ( 
-            op_stack_args.get("optimism_package").get("chains")[0].get("participants")[0].get("cl_image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("participants")[0]
+            .get("cl_image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
         ):
             fail(
                 "OP Succinct requires cl_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
             )
-        if ( 
-            op_stack_args.get("optimism_package").get("chains")[0].get("batcher_params").get("image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("batcher_params")
+            .get("image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
         ):
             fail(
                 "OP Succinct requires batcher_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
             )
-        if ( 
-            op_stack_args.get("optimism_package").get("chains")[0].get("proposer_params").get("image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("proposer_params")
+            .get("image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
         ):
             fail(
                 "OP Succinct requires proposer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
             )
-        if ( 
-            op_stack_args.get("optimism_package").get("op_contract_deployer_params").get("image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
+        if (
+            op_stack_args.get("optimism_package")
+            .get("op_contract_deployer_params")
+            .get("image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
         ):
             fail(
                 "OP Succinct requires op_contract_deployer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
