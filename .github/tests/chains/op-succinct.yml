@@ -1,0 +1,26 @@
+# This args-file deploys the OP Succinct chain.
+deployment_stages:
+  deploy_optimism_rollup: true
+  deploy_op_succinct: true
+
+args:
+  agglayer_prover_sp1_key: null
+  agglayer_prover_primary_prover: "mock-prover"
+  consensus_contract_type: pessimistic
+
+optimism_package:
+  chains:
+    - participants:
+        - el_type: op-geth
+          el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+          cl_type: op-node
+          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
+          count: 1
+      batcher_params:
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
+      proposer_params:
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
+  op_contract_deployer_params:
+    image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
+    l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz"
+    l2_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz"

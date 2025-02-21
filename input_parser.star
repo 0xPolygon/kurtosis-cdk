@@ -30,6 +30,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
+    # After deploying OP Stack, upgrade it to OP Succinct.
+    # Even mock-verifier deployments require an actual SPN network key.
+    "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -51,6 +54,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-server
+    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
 }
 
 DEFAULT_PORTS = {
@@ -75,6 +81,8 @@ DEFAULT_PORTS = {
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
+    "op_succinct_server_port": 3000,
+    "op_succinct_proposer_port": 7300,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -314,8 +322,10 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
-    # OP Stack RPC URL
+    # OP Stack EL RPC URL
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
+    # OP Stack CL Node URL
+    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
 }
 
 # https://github.com/ethpandaops/optimism-package
@@ -327,6 +337,7 @@ DEFAULT_OP_STACK_ARGS = {
         {
             "participants": [
                 {
+                    # OP Rollup configuration
                     "el_type": "op-geth",
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
@@ -334,18 +345,18 @@ DEFAULT_OP_STACK_ARGS = {
                     "count": 1,
                 },
             ],
-            # "batcher_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
-            # },
-            # "proposer_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
-            # },
+            #     "batcher_params": {
+            #         "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
+            #     },
+            #     "proposer_params": {
+            #         "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
+            #     },
         },
     ],
     # "op_contract_deployer_params": {
-    #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
-    #     "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    #     "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
+    #     # "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11",
+    #     # "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
+    #     # "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
     # },
 }
 
@@ -383,7 +394,7 @@ DEFAULT_ARGS = (
         # Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
-        # - 'pessimistic': deploy with pessmistic consensus
+        # - 'pessimistic': deploy with pessimistic consensus
         "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
@@ -421,6 +432,9 @@ def parse_args(plan, user_args):
     )
     op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
+
+    # Determine OP stack args.
+    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, op_stack_args)
@@ -478,9 +492,6 @@ def parse_args(plan, user_args):
     if not args.get("use_dynamic_ports", True):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
-
-    # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -657,6 +668,69 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+
+    # If OP-Succinct is enabled, OP-Rollup must be enabled
+    if deployment_stages.get("deploy_op_succinct", False):
+        if deployment_stages.get("deploy_optimism_rollup", False) == False:
+            fail(
+                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
+            )
+        if (
+            args["agglayer_prover_sp1_key"] == None
+            or args["agglayer_prover_sp1_key"] == ""
+        ):
+            fail(
+                "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
+            )
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("participants")[0]
+            .get("el_image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+        ):
+            fail(
+                "OP Succinct requires el_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+            )
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("participants")[0]
+            .get("cl_image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
+        ):
+            fail(
+                "OP Succinct requires cl_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
+            )
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("batcher_params")
+            .get("image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
+        ):
+            fail(
+                "OP Succinct requires batcher_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
+            )
+        if (
+            op_stack_args.get("optimism_package")
+            .get("chains")[0]
+            .get("proposer_params")
+            .get("image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
+        ):
+            fail(
+                "OP Succinct requires proposer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
+            )
+        if (
+            op_stack_args.get("optimism_package")
+            .get("op_contract_deployer_params")
+            .get("image")
+            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
+        ):
+            fail(
+                "OP Succinct requires op_contract_deployer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
