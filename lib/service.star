@@ -96,6 +96,7 @@ def get_op_succinct_env_vars(plan, args):
         "verifier_address": "fromjson | .VERIFIER_ADDRESS",
         "l2oo_address": "fromjson | .L2OO_ADDRESS",
         "op_succinct_mock": "fromjson | .OP_SUCCINCT_MOCK",
+        "l1_preallocated_mnemonic": "fromjson | .PRIVATE_KEY",
     }
 
     exec_recipe = ExecRecipe(

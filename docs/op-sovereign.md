@@ -24,6 +24,8 @@ DEFAULT_ARGS = (
 
 ## Deploying OP Succinct
 
+Simply run `kurtosis run --enclave=cdk --args-file ./.github/tests/chains/op-succinct.yml .`
+
 This requires more precise configuration to correctly run. Reference the below parameters - the `DEFAULT_OP_STACK_ARGS` versions must be exact:
 
 ```

@@ -1,6 +1,8 @@
 #!/bin/bash
 # This script deploys the OP-Succinct contracts to the OP network.
 
+private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
+
 # Create the .env file
 cd /opt/op-succinct || exit
 touch /opt/op-succinct/.env
@@ -11,7 +13,7 @@ L2_RPC="{{.op_el_rpc_url}}"
 L2_NODE_RPC="{{.op_cl_rpc_url}}"
 
 # Private key of the prefunded OP Stack address
-PRIVATE_KEY="bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
+PRIVATE_KEY="$private_key"
 
 # API key for Etherscan
 ETHERSCAN_API_KEY=""
