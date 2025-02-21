@@ -433,6 +433,9 @@ def parse_args(plan, user_args):
     op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
 
+    # Determine OP stack args.
+    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
+
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, op_stack_args)
 
@@ -489,9 +492,6 @@ def parse_args(plan, user_args):
     if not args.get("use_dynamic_ports", True):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
-
-    # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -682,6 +682,36 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         ):
             fail(
                 "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
+            )
+        if ( 
+            op_stack_args.get("optimism_package").get("chains")[0].get("participants")[0].get("el_image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+                ):
+            fail(
+                "OP Succinct requires el_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+            )
+        if ( 
+            op_stack_args.get("optimism_package").get("chains")[0].get("participants")[0].get("cl_image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
+        ):
+            fail(
+                "OP Succinct requires cl_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
+            )
+        if ( 
+            op_stack_args.get("optimism_package").get("chains")[0].get("batcher_params").get("image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
+        ):
+            fail(
+                "OP Succinct requires batcher_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
+            )
+        if ( 
+            op_stack_args.get("optimism_package").get("chains")[0].get("proposer_params").get("image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
+        ):
+            fail(
+                "OP Succinct requires proposer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
+            )
+        if ( 
+            op_stack_args.get("optimism_package").get("op_contract_deployer_params").get("image") != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
+        ):
+            fail(
+                "OP Succinct requires op_contract_deployer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
