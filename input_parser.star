@@ -26,6 +26,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy cdk-erigon node.
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
+    # Deploy only the OP sovereign stack.
+    "deploy_optimism_sovereign_isolated": False,
     # Deploy Optimism rollup.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
@@ -657,6 +659,13 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+
+    # If only isolated OP Stack is deployed, make sure the deploy_optimism_rollup parameter is set
+    if deployment_stages.get("deploy_optimism_sovereign_isolated", False):
+        if not deployment_stages.get("deploy_optimism_rollup", False):
+            fail(
+                "Isolated OP Stack rollup requires deploy_optimism_rollup parameter to be set to True."
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
