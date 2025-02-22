@@ -54,9 +54,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-server
-    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.2",  # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.3",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.3",  # https://hub.docker.com/r/jhkimqd/op-succinct-server
+    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.3",  # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
 }
 
 DEFAULT_PORTS = {
@@ -683,55 +683,6 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         ):
             fail(
                 "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
-            )
-        if (
-            op_stack_args.get("optimism_package")
-            .get("chains")[0]
-            .get("participants")[0]
-            .get("el_image")
-            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
-        ):
-            fail(
-                "OP Succinct requires el_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
-            )
-        if (
-            op_stack_args.get("optimism_package")
-            .get("chains")[0]
-            .get("participants")[0]
-            .get("cl_image")
-            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
-        ):
-            fail(
-                "OP Succinct requires cl_image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.10.1"
-            )
-        if (
-            op_stack_args.get("optimism_package")
-            .get("chains")[0]
-            .get("batcher_params")
-            .get("image")
-            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
-        ):
-            fail(
-                "OP Succinct requires batcher_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.10.0"
-            )
-        if (
-            op_stack_args.get("optimism_package")
-            .get("chains")[0]
-            .get("proposer_params")
-            .get("image")
-            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
-        ):
-            fail(
-                "OP Succinct requires proposer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.5"
-            )
-        if (
-            op_stack_args.get("optimism_package")
-            .get("op_contract_deployer_params")
-            .get("image")
-            != "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
-        ):
-            fail(
-                "OP Succinct requires op_contract_deployer_params.image to be set to us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
