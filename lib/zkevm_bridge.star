@@ -23,6 +23,9 @@ def get_bridge_service_ports(args):
     ports = {
         "rpc": PortSpec(args["zkevm_bridge_rpc_port"], application_protocol="http"),
         "grpc": PortSpec(args["zkevm_bridge_grpc_port"], application_protocol="grpc"),
+        "prometheus": PortSpec(
+            args["zkevm_bridge_metrics_port"], application_protocol="http"
+        ),
     }
     public_ports = ports_package.get_public_ports(
         ports, "zkevm_bridge_service_start_port", args

@@ -898,7 +898,7 @@ metrics.addr: 0.0.0.0
 
 # The listening address of the metrics server.
 # Default: 6060
-metrics.port: 9090
+metrics.port: {{.prometheus_port}}
 
 
 # ==============================================================================
