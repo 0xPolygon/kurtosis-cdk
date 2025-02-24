@@ -8,8 +8,8 @@ args:
   agglayer_prover_primary_prover: "mock-prover"
   consensus_contract_type: pessimistic
   op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.3" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-  op_succinct_server_image: "jhkimqd/op-succinct-server:v0.0.3" # https://hub.docker.com/r/jhkimqd/op-succinct-server
-  op_succinct_proposer_image: "jhkimqd/op-succinct-proposer:v0.0.3" # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
+  op_succinct_server_image: "ghcr.io/succinctlabs/op-succinct/succinct-proposer:sha-b13f7ef" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+  op_succinct_proposer_image: "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-b13f7ef" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
   # true = mock
   # false = network
   op_succinct_mock: false
