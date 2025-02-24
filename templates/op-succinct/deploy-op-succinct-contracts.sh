@@ -19,7 +19,7 @@ PRIVATE_KEY="$private_key"
 ETHERSCAN_API_KEY=""
 
 # Interval between submissions
-SUBMISSION_INTERVAL="10"
+SUBMISSION_INTERVAL="{{.op_succinct_submission_interval}}"
 
 # Verifier address, to be set after mock verifier deployment
 VERIFIER_ADDRESS=""
@@ -28,7 +28,12 @@ VERIFIER_ADDRESS=""
 L2OO_ADDRESS=""
 
 # Mock OP Stack succinct flag
-OP_SUCCINCT_MOCK="true"
+# true = mock
+# false = network
+OP_SUCCINCT_MOCK="{{.op_succinct_mock}}"
+
+# The RPC endpoint for the Succinct Prover Network
+NETWORK_RPC_URL="{{.agglayer_prover_network_url}}"
 EOF
 
 # Fix broken justfile paths
