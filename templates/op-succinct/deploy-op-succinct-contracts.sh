@@ -36,12 +36,6 @@ OP_SUCCINCT_MOCK="{{.op_succinct_mock}}"
 NETWORK_RPC_URL="{{.agglayer_prover_network_url}}"
 EOF
 
-# Fix broken justfile paths
-sed -i 's|script/|script/validity/|g' /opt/op-succinct/justfile
-
-# Update import ISemver which wouldn't run otherwise
-# sed -i 's|import {ISemver} from "src/universal/interfaces/ISemver.sol";|import {ISemver} from "@optimism/src/universal/interfaces/ISemver.sol";|' /opt/op-succinct/contracts/src/fp/OPSuccinctFaultDisputeGame.sol
-
 # Deploy the mock-verifier and save the address to the verifier_address.out
 just deploy-mock-verifier | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "VERIFIER_ADDRESS=\"{}\"" > /opt/op-succinct/verifier_address.out
 # Update the VERIFIER_ADDRESS in the .env file with the output from the previous command
