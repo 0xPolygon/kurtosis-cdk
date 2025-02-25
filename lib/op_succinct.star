@@ -20,7 +20,7 @@ def create_op_succinct_contract_deployer_service_config(
         )
         artifacts.append(artifact)
 
-    op_succinct_name = "op-succinct-contract-deployer"
+    op_succinct_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
     op_succinct_contract_deployer_service_config = ServiceConfig(
         image=args["op_succinct_contract_deployer_image"],
         files={
@@ -38,7 +38,7 @@ def create_op_succinct_contract_deployer_service_config(
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_server_service_config(args, op_succinct_env_vars):
-    op_succinct_name = "op-succinct-server"
+    op_succinct_name = "op-succinct-server" + args["deployment_suffix"]
     ports = get_op_succinct_server_ports(args)
     op_succinct_server_service_config = ServiceConfig(
         image=args["op_succinct_server_image"],
@@ -68,7 +68,7 @@ def create_op_succinct_proposer_service_config(
     op_succinct_env_vars,
     db_artifact,
 ):
-    op_succinct_name = "op-succinct-proposer"
+    op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
     op_succinct_proposer_service_config = ServiceConfig(
         image=args["op_succinct_proposer_image"],
@@ -92,6 +92,10 @@ def create_op_succinct_proposer_service_config(
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
+            "OP_SUCCINCT_SERVER_URL": "http://op-succinct-server"
+            + args["deployment_suffix"]
+            + ":"
+            + str(args["op_succinct_server_port"]),
         },
     )
 

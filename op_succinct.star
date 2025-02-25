@@ -14,9 +14,10 @@ def op_succinct_contract_deployer_run(plan, args):
         description="Starting the op-succinct contract deployer helper component",
     )
 
+    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
     plan.exec(
         description="Deploying op-succinct contracts",
-        service_name="op-succinct-contract-deployer",
+        service_name=service_name,
         recipe=ExecRecipe(
             command=[
                 "/bin/bash",

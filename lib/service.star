@@ -103,7 +103,7 @@ def get_op_succinct_env_vars(plan, args):
         command=["/bin/sh", "-c", "cat /opt/op-succinct/op-succinct-env-vars.json"],
         extract=extract,
     )
-    service_name = "op-succinct-contract-deployer"
+    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
     result = plan.exec(
         description="Getting op-succinct environment variables from {} service".format(
             service_name
