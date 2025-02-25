@@ -55,8 +55,8 @@ DEFAULT_IMAGES = {
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.3",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "jhkimqd/op-succinct-server:v0.0.3",  # https://hub.docker.com/r/jhkimqd/op-succinct-server
-    "op_succinct_proposer_image": "jhkimqd/op-succinct-proposer:v0.0.3",  # https://hub.docker.com/r/jhkimqd/op-succinct-proposer
+    "op_succinct_server_image": "ghcr.io/succinctlabs/op-succinct/succinct-proposer:sha-b13f7ef",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-b13f7ef",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
@@ -327,6 +327,10 @@ DEFAULT_ROLLUP_ARGS = {
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
     # OP Stack CL Node URL
     "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
+    # If the OP Succinct will use the Network Prover or CPU(Mock) Prover
+    # true = mock
+    # false = network
+    "op_succinct_mock": False,
 }
 
 # https://github.com/ethpandaops/optimism-package
@@ -346,19 +350,8 @@ DEFAULT_OP_STACK_ARGS = {
                     "count": 1,
                 },
             ],
-            #     "batcher_params": {
-            #         "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
-            #     },
-            #     "proposer_params": {
-            #         "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
-            #     },
         },
     ],
-    # "op_contract_deployer_params": {
-    #     # "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.11",
-    #     # "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
-    #     # "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-c193a1863182092bc6cb723e523e8313a0f4b6e9c9636513927f1db74c047c15.tar.gz",
-    # },
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {

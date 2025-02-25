@@ -12,7 +12,7 @@ args:
   op_succinct_proposer_image: "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-b13f7ef" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
   # true = mock
   # false = network
-  op_succinct_mock: false
+  op_succinct_mock: true
   # The maximum number of blocks to include in each span proof. For chains with high throughput, you need to decrease this value.
   op_succinct_proposer_span_proof: "50"
   # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
