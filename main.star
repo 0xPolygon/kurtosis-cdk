@@ -84,7 +84,7 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
-    if not deployment_stages.get("deploy_optimism_sovereign_isolated", False):
+    if not deployment_stages.get("deploy_optimism_rollup", False):
         genesis_artifact = ""
         if deployment_stages.get("deploy_cdk_central_environment", False):
             plan.print("Getting genesis file")
@@ -108,7 +108,7 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of the agglayer")
 
-    if not deployment_stages.get("deploy_optimism_sovereign_isolated", False):
+    if not deployment_stages.get("deploy_optimism_rollup", False):
         # Deploy cdk central/trusted environment.
         if deployment_stages.get("deploy_cdk_central_environment", False):
             # Deploy cdk-erigon sequencer node.
