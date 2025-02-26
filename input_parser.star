@@ -27,6 +27,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
+    # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
@@ -352,6 +353,9 @@ DEFAULT_OP_STACK_ARGS = {
             ],
         },
     ],
+    "observability": {
+        "enabled": False,
+    },
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
