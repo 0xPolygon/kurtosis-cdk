@@ -13,134 +13,158 @@
   - [Testing](#testing)
     - [L2 Finalized Block Number](#l2-finalized-block-number)
     - [E2E Bridge Scenario Tests](#e2e-bridge-scenario-tests)
+      - [L1 -\> L2 Bridge](#l1---l2-bridge)
+      - [L2 -\> L1 Bridge](#l2---l1-bridge)
   - [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram)
+    - [L1 -\> L2 Sovereign Bridge Flow](#l1---l2-sovereign-bridge-flow)
+    - [L2 Sovereign -\> L1 Bridge Flow](#l2-sovereign---l1-bridge-flow)
+
+---
 
 ## Integration Details
 
-The OP Stack within Kurtosis CDK is attached as a sovereign rollup. This means the L1, CDK/zkEVM, and Agglayer infrastructure is deployed first, then the OP Stack and Aggkit components are deployed and attached.
+The OP Stack within Kurtosis CDK is implemented as a sovereign rollup. The deployment process follows this sequence:
+1. L1 infrastructure
+2. CDK/zkEVM components
+3. Agglayer infrastructure
+4. OP Stack and Aggkit components
 
 ### OP Sovereign Infrastructure Overview
-When `deploy_optimism_rollup` is set to `True`, it will skip the CDK Erigon infrastructure deployments and proceed with the deployments of:
-- L1 infra (execution + consensus clients).
-- zkEVM contracts onto the deployed L1 - including the RollupManager, Bridge, GER contracts.
-- Agglayer
-- OP Stack
-  - op-geth, op-node, op-batcher, op-proposer, and op-challenger
-  - Sovereign contracts deployment. Refer to [OP Sovereign Contracts Setup](#op-sovereign-contracts-setup) for more details.
-  - Sovereign bridge service infrastructure 
-  - Aggkit infrastructure (AggOracle, and AggSender)
-- (If enabled) OP Succinct
-  - op-succinct-contract-deployer to deploy the op-succinct specific contracts and setup the deployment
-  - op-succinct-server, op-succinct-proposer
+
+When `deploy_optimism_rollup` is set to `True`, the CDK Erigon infrastructure deployments are skipped, and the following components are deployed:
+
+- **L1 Infrastructure**: Execution and consensus clients
+- **zkEVM Contracts**: Deployed on L1, including:
+  - RollupManager
+  - Bridge
+  - GER contracts
+- **Agglayer**
+- **OP Stack Components**:
+  - op-geth
+  - op-node
+  - op-batcher
+  - op-proposer
+  - op-challenger
+  - Sovereign contracts (See [OP Sovereign Contracts Setup](#op-sovereign-contracts-setup))
+  - Sovereign bridge service infrastructure
+  - Aggkit infrastructure (AggOracle and AggSender)
+- **OP Succinct (if enabled)**:
+  - op-succinct-contract-deployer
+  - op-succinct-server
+  - op-succinct-proposer
 
 ### OP Sovereign Contracts Setup
-This step can be summarized in two steps:
-1. Create new rollup onchain by calling the RollupManager contract
-2. Deploy sovereign contracts
 
-The first step is done by using the [createNewRollup.ts](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v10.0.0-rc.1/tools/createNewRollup/createNewRollup.ts) script within the zkevm-contracts repo.
+The setup process consists of two main steps:
 
-A `create_new_rollup.json` file is created as the input file for the script:
-```
-{
-    "type":"EOA",
-    "trustedSequencerURL": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
-    "networkName": "op-sovereign",
-    "trustedSequencer": "0x635243A11B41072264Df6c9186e3f473402F94e9",
-    "chainID": 2151908,
-    "rollupAdminAddress": "0x635243A11B41072264Df6c9186e3f473402F94e9",
-    "consensusContractName": "PolygonPessimisticConsensus",
-    "gasTokenAddress": "0x0000000000000000000000000000000000000000",
-    "deployerPvtKey": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
-    "maxFeePerGas": "",
-    "maxPriorityFeePerGas": "",
-    "multiplierGas": "",
-    "timelockDelay": 0,
-    "timelockSalt": "",
-    "rollupManagerAddress":"0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
-    "rollupTypeId": 1,
-    "isVanillaClient": true,
-    "sovereignParams": {
-        "bridgeManager": "0x635243A11B41072264Df6c9186e3f473402F94e9",
-        "sovereignWETHAddress": "0x0000000000000000000000000000000000000000",
-        "sovereignWETHAddressIsNotMintable": false,
-        "globalExitRootUpdater": "0x635243A11B41072264Df6c9186e3f473402F94e9",
-        "globalExitRootRemover": "0x635243A11B41072264Df6c9186e3f473402F94e9"
-    }
-}
-```
+1. **Create New Rollup Onchain**
+   - Uses the script: [createNewRollup.ts](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v10.0.0-rc.1/tools/createNewRollup/createNewRollup.ts)
+   - Configuration file: `create_new_rollup.json`
+   
+   ```json
+   {
+     "type": "EOA",
+     "trustedSequencerURL": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
+     "networkName": "op-sovereign",
+     "trustedSequencer": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+     "chainID": 2151908,
+     "rollupAdminAddress": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+     "consensusContractName": "PolygonPessimisticConsensus",
+     "gasTokenAddress": "0x0000000000000000000000000000000000000000",
+     "deployerPvtKey": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
+     "maxFeePerGas": "",
+     "maxPriorityFeePerGas": "",
+     "multiplierGas": "",
+     "timelockDelay": 0,
+     "timelockSalt": "",
+     "rollupManagerAddress": "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
+     "rollupTypeId": 1,
+     "isVanillaClient": true,
+     "sovereignParams": {
+       "bridgeManager": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+       "sovereignWETHAddress": "0x0000000000000000000000000000000000000000",
+       "sovereignWETHAddressIsNotMintable": false,
+       "globalExitRootUpdater": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+       "globalExitRootRemover": "0x635243A11B41072264Df6c9186e3f473402F94e9"
+     }
+   }
+   ```
 
-Then the [sovereign contracts](https://github.com/0xPolygonHermez/zkevm-contracts/tree/v10.0.0-rc.1/contracts/v2/sovereignChains) `BridgeL2SovereignChain`, `GlobalExitRootManagerL2SovereignChain` and their proxies are deployed on the OP network. The output information is then saved in a file:
-
-```
-{
-  "sovereignRollupContract": "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568",
-  "sovereignChainID": "2151908",
-  "verifier": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
-  "forkID": "12",
-  "lastLocalExitRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "lastBatchSequenced": "0",
-  "lastVerifiedBatch": "0",
-  "_legacyLastPendingState": "0",
-  "_legacyLastPendingStateConsolidated": "0",
-  "lastVerifiedBatchBeforeUpgrade": "0",
-  "rollupTypeID": "1",
-  "rollupVerifierType": "1",
-  "bridge_impl_addr": "0x2ECfD134955De2b504564Cc28966160244DF0175",
-  "ger_impl_addr": "0x9b7b679B2dD577B6116648C6fB6af6A365e408DA",
-  "ger_proxy_addr": "0x494990B3d02A31718c22fdCd520cAa4C55f710B3",
-  "bridge_proxy_addr": "0x0ba8688239009E5748895b06D30556040b0866b5"
-}
-```
+2. **Deploy Sovereign Contracts**
+   - Contracts deployed on OP network:
+     - `BridgeL2SovereignChain`
+     - `GlobalExitRootManagerL2SovereignChain`
+     - Associated proxies
+   - Output saved in a file:
+   
+   ```json
+   {
+     "sovereignRollupContract": "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568",
+     "sovereignChainID": "2151908",
+     "verifier": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+     "forkID": "12",
+     "lastLocalExitRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+     "lastBatchSequenced": "0",
+     "lastVerifiedBatch": "0",
+     "_legacyLastPendingState": "0",
+     "_legacyLastPendingStateConsolidated": "0",
+     "lastVerifiedBatchBeforeUpgrade": "0",
+     "rollupTypeID": "1",
+     "rollupVerifierType": "1",
+     "bridge_impl_addr": "0x2ECfD134955De2b504564Cc28966160244DF0175",
+     "ger_impl_addr": "0x9b7b679B2dD577B6116648C6fB6af6A365e408DA",
+     "ger_proxy_addr": "0x494990B3d02A31718c22fdCd520cAa4C55f710B3",
+     "bridge_proxy_addr": "0x0ba8688239009E5748895b06D30556040b0866b5"
+   }
+   ```
 
 ### OP Sovereign Bridge Setup
-The OP Sovereign bridge deployment is identical to the CDK Erigon bridge deployment. The [reference config](https://github.com/0xPolygon/kurtosis-cdk/blob/v0.2.31/templates/sovereign-rollup/sovereign-bridge-config.toml) will show the parameters are changed accordingly.
 
-For more details on how the sovereign bridge works e2e, refer to the [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram) section.
+The bridge deployment mirrors the CDK Erigon bridge setup. Key parameters are adjusted as shown in the [reference config](https://github.com/0xPolygon/kurtosis-cdk/blob/v0.2.31/templates/sovereign-rollup/sovereign-bridge-config.toml). For a detailed end-to-end explanation, see [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram).
+
+---
 
 ## Running OP Rollup
 
-The default behavior for deploying OP Rollup in Kurtosis CDK is isolated - only the OP Sovereign Stack will be deployed and the CDK Erigon Stack will not be deployed.
-Under `input_parser.star` change the `deploy_optimism_rollup` parameter to `True` and `consensus_contract_type` to `pessimistic`:
+To deploy OP Rollup in isolation (without CDK Erigon Stack):
+1. Edit `input_parser.star`
+2. Set:
+   ```starlark
+   DEFAULT_DEPLOYMENT_STAGES = {
+       "deploy_optimism_rollup": True,
+   }
+   DEFAULT_ARGS = (
+       {
+           "consensus_contract_type": "pessimistic",
+       }
+   )
+   ```
 
-```
-DEFAULT_DEPLOYMENT_STAGES = {
-    "deploy_optimism_rollup": True,
-}
-
-
-DEFAULT_ARGS = (
-    {
-        "consensus_contract_type": "pessimistic",
-    }
-)
-```
+---
 
 ## Running OP Succinct
 
-Simply run `kurtosis run --enclave=cdk --args-file ./.github/tests/chains/op-succinct.yml .`
-You can inspect the `op-succinct.yml` file to understand the changes - this requires more precise configuration to correctly run. Reference the below parameters - the `DEFAULT_OP_STACK_ARGS` versions must be exact:
-
+Run the following command:
 ```
+kurtosis run --enclave=cdk --args-file ./.github/tests/chains/op-succinct.yml .
+```
+
+Key configuration requirements in `op-succinct.yml`:
+```starlark
 DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_optimism_rollup": True,
-    # After deploying OP Stack, upgrade it to OP Succinct.
-    # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": True,
 }
-
 
 DEFAULT_ARGS = (
     {
         "consensus_contract_type": "pessimistic",
     }
 )
-
 
 DEFAULT_ROLLUP_ARGS = {
     "agglayer_prover_sp1_key": <SPN_KEY>,
 }
-
 
 DEFAULT_OP_STACK_ARGS = {
     "chains": [
@@ -168,39 +192,40 @@ DEFAULT_OP_STACK_ARGS = {
         "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz",
     },
 }
-
 ```
 
-There are additional OP-Succinct specific parameters which are configurable such as:
-
+Additional configurable parameters:
 ```
-  # The maximum number of blocks to include in each span proof. For chains with high throughput, you need to decrease this value.
-  op_succinct_proposer_span_proof: "50"
-  # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
-  op_succinct_submission_interval: "100"
+op_succinct_proposer_span_proof: "50"  # Max blocks per span proof
+op_succinct_submission_interval: "100" # Minimum L2 block interval for checkpoints
 ```
 
 ### OP Succinct Contracts Setup
-Before further reading, note there are more details in the [official docs](https://succinctlabs.github.io/op-succinct/quick-start/mock.html).
 
-Similar to the previous OP Stack, OP-Succinct requires additional setup. First, an `.env` file is created and used to run the OP-Succinct contracts deployment scripts `DeployMockVerifier` to deploy the mock SP1 verifier contract and `OPSuccinctDeployer` to deploy the `OPSuccinctL2OutputOracle` contract.
+Refer to [official docs](https://succinctlabs.github.io/op-succinct/quick-start/mock.html) for more details.
 
-These are saved and used to configure the `op-succint-proposer` and `op-succinct-server` services which are responsible for requesting proofs to the SP1 provers and updating the L2 state.
+Steps:
+1. Create `.env` file
+2. Deploy contracts using:
+   - `DeployMockVerifier` (mock SP1 verifier)
+   - `OPSuccinctDeployer` (`OPSuccinctL2OutputOracle`)
+3. Configure `op-succinct-proposer` and `op-succinct-server`
+
+---
 
 ## Testing
 
-To verify the OP Stack within Kurtosis CDK is working correctly, there are few steps one can take:
-- Verify that the finalized block number on L2 is increasing
-- Verify the e2e sovereign bridge scenarios
+Verify functionality with these methods:
 
 ### L2 Finalized Block Number
-To test the L2 block number is increasing, a simple `cast` call can be made to the op-geth rpc.
+
+Check if L2 block number increases:
 ```
-$ cast rpc --rpc-url $(kurtosis port print cdk op-cl-1-op-node-op-geth-op-kurtosis http) optimism_syncStatus | jq '.finalized_l2'
+cast rpc --rpc-url $(kurtosis port print cdk op-cl-1-op-node-op-geth-op-kurtosis http) optimism_syncStatus | jq '.finalized_l2'
 ```
 
-Note the `number` value in the output.
-```
+Example output:
+```json
 {
   "hash": "0x4fdc220679f2b7496570d63ec3a9fce79d410efb1ef1e951a895faab0b4bf5e8",
   "number": 161,
@@ -214,54 +239,41 @@ Note the `number` value in the output.
 }
 ```
 
-Similarly, in OP-Succinct, this can be verified by looking at the logs of the op-succinct-proposer service.
+For OP-Succinct, check proposer logs:
 ```
 kurtosis service logs cdk op-succinct-proposer-001 -f
 ```
-Monitor the logs and look at `L2FinalizedBlock`.
+Look for `L2FinalizedBlock` in logs:
 ```
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Proposer status" metrics="{L2UnsafeHeadBlock:373 L2FinalizedBlock:161 LatestContractL2Block:100 HighestProvenContiguousL2Block:150 MinBlockToProveToAgg:200 NumProving:0 NumWitnessgen:0 NumUnrequested:0}"
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Stage 1: Getting Range Proof Boundaries..."
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Stage 2: Processing PROVING requests..."
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Stage 3: Processing WITNESSGEN requests..."
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Stage 4: Deriving Agg Proofs..."
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Stage 5: Requesting Queued Proofs..."
-[op-succinct-proposer-001] t=2025-02-26T05:04:45+0000 lvl=info msg="Stage 6: Submitting Agg Proofs..."
+t=2025-02-26T05:04:45+0000 lvl=info msg="Proposer status" metrics="{L2UnsafeHeadBlock:373 L2FinalizedBlock:161 ...}"
 ```
 
-Another option is to look at the succinct explorer - `https://network.succinct.xyz/requester/<YOUR_SPN_ADDRESS>`
+Or use Succinct Explorer: `https://network.succinct.xyz/requester/<YOUR_SPN_ADDRESS>`
 
 ### E2E Bridge Scenario Tests
 
-First bridge from L1 -> OP L2. The deposits should be autoclaimed on the OP network.
+#### L1 -> L2 Bridge
 ```
-# L1 -> L2
 l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
 private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
 eth_address=$(cast wallet address --private-key $private_key)
 
-# bridge 10 ether to our sov chain
 polycli ulxly bridge asset \
     --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
     --destination-network 2 \
     --private-key $private_key \
     --rpc-url http://$(kurtosis port print cdk el-1-geth-lighthouse rpc) \
-    --value 10000000000000000000 
+    --value 10000000000000000000
 ```
 
-Check that the balance of the deposit address has increased.
+Verify balance:
 ```
-$ cast balance --ether --rpc-url $(kurtosis port print cdk op-el-1-op-geth-op-node-op-kurtosis rpc) $eth_address
+cast balance --ether --rpc-url $(kurtosis port print cdk op-el-1-op-geth-op-node-op-kurtosis rpc) $eth_address
+# Expected: 10.000000000000000000
+```
 
-10.000000000000000000
+#### L2 -> L1 Bridge
 ```
-
-Then bridge from L2 -> L1 again.
-```
-# L2 -> L1
-l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
-eth_address=$(cast wallet address --private-key $private_key)
 polycli ulxly bridge asset \
     --bridge-address 0x0ba8688239009E5748895b06D30556040b0866b5 \
     --destination-network 0 \
@@ -271,10 +283,13 @@ polycli ulxly bridge asset \
     --destination-address 0xC0FFEE0000000000000000000000000000000001
 ```
 
-The sovereign-bridge-service can be called to view the details.
+Check bridge service:
 ```
-$ curl $(kurtosis port print cdk sovereign-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
+curl $(kurtosis port print cdk sovereign-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
+```
 
+Example output:
+```json
 {
   "deposits": [
     {
@@ -298,12 +313,8 @@ $ curl $(kurtosis port print cdk sovereign-bridge-service-001 rpc)/bridges/0xC0F
 }
 ```
 
-When `ready_for_claim` turns `true`, send a claim transaction.
+When `ready_for_claim` is `true`, claim:
 ```
-# Claim
-l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
-eth_address=$(cast wallet address --private-key $private_key)
 polycli ulxly claim asset \
     --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
     --bridge-service-url $(kurtosis port print cdk sovereign-bridge-service-001 rpc) \
@@ -314,18 +325,18 @@ polycli ulxly claim asset \
     --rpc-url http://$(kurtosis port print cdk el-1-geth-lighthouse rpc)
 ```
 
-Check the balance on L1.
+Verify L1 balance:
 ```
-$ cast balance --ether --rpc-url http://$(kurtosis port print cdk el-1-geth-lighthouse rpc) 0xc0FFee0000000000000000000000000000000001
+cast balance --ether --rpc-url http://$(kurtosis port print cdk el-1-geth-lighthouse rpc) 0xc0FFee0000000000000000000000000000000001
+# Expected: 0.000000001740546568
+```
 
-0.000000001740546568
-```
+---
 
 ## Sovereign Bridging Sequence Diagram
+
+### L1 -> L2 Sovereign Bridge Flow
 ```mermaid
----
-title: "L1 -> L2 Sovereign Bridge Flow"
----
 sequenceDiagram
     participant L1User as L1 User
     participant L1BridgeContract as L1BridgeContract
@@ -348,15 +359,10 @@ sequenceDiagram
     L2SovereignBridge->>L2GERManager: Fetch GER
     ClaimTxnManager->>L2SovereignBridge: Autoclaim
     ClaimTxnManager->>L2User: processDepositStatus()
-
 ```
 
----
-
+### L2 Sovereign -> L1 Bridge Flow
 ```mermaid
----
-title: "L2 Sovereign -> L1 Bridge Flow"
----
 sequenceDiagram
     participant L2User as L2 User
     participant L2SovereignBridge as L2SovereignBridgeContract
@@ -378,5 +384,4 @@ sequenceDiagram
     AggLayer->>L1GERManager: Update GER
     L1GERManager->>L1BridgeContract: Ready for Claim
     L1User->>L1BridgeContract: claimAsset()
-
 ```
