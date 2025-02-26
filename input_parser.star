@@ -31,6 +31,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
+    # After deploying OP Stack, upgrade it to OP Succinct.
+    # Even mock-verifier deployments require an actual SPN network key.
+    "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -38,7 +41,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.0.2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:main",  # https://github.com/agglayer/agglayer/tags
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.16-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.16-hotfix2",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
@@ -52,6 +55,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.4",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "ghcr.io/succinctlabs/op-succinct/succinct-proposer:sha-cb18ac0",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-cb18ac0",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
@@ -77,6 +83,8 @@ DEFAULT_PORTS = {
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
+    "op_succinct_server_port": 3000,
+    "op_succinct_proposer_port": 7300,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -316,8 +324,14 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
-    # OP Stack RPC URL
+    # OP Stack EL RPC URL
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
+    # OP Stack CL Node URL
+    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
+    # If the OP Succinct will use the Network Prover or CPU(Mock) Prover
+    # true = mock
+    # false = network
+    "op_succinct_mock": False,
 }
 
 # https://github.com/ethpandaops/optimism-package
@@ -329,6 +343,7 @@ DEFAULT_OP_STACK_ARGS = {
         {
             "participants": [
                 {
+                    # OP Rollup configuration
                     "el_type": "op-geth",
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
                     "cl_type": "op-node",
@@ -377,7 +392,7 @@ DEFAULT_ARGS = (
         # Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
-        # - 'pessimistic': deploy with pessmistic consensus
+        # - 'pessimistic': deploy with pessimistic consensus
         "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
@@ -415,6 +430,9 @@ def parse_args(plan, user_args):
     )
     op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
+
+    # Determine OP stack args.
+    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, op_stack_args)
@@ -472,9 +490,6 @@ def parse_args(plan, user_args):
     if not args.get("use_dynamic_ports", True):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
-
-    # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -651,6 +666,20 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
             fail(
                 "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            )
+
+    # If OP-Succinct is enabled, OP-Rollup must be enabled
+    if deployment_stages.get("deploy_op_succinct", False):
+        if deployment_stages.get("deploy_optimism_rollup", False) == False:
+            fail(
+                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
+            )
+        if (
+            args["agglayer_prover_sp1_key"] == None
+            or args["agglayer_prover_sp1_key"] == ""
+        ):
+            fail(
+                "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime

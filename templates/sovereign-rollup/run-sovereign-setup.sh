@@ -16,9 +16,11 @@ addresses=(
     "0xbb900Cf56918A2639dAA90c3f7DC5DCD2f5B9935"
 )
 
+private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
+
 for address in "${addresses[@]}"; do
     cast send \
-        --private-key bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31 \
+        --private-key "$private_key" \
         --rpc-url "{{.l1_rpc_url}}" \
         --value "{{.l2_funding_amount}}" \
         "$address"

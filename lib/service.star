@@ -88,3 +88,27 @@ def get_sovereign_contract_setup_addresses(plan, args):
         recipe=exec_recipe,
     )
     return get_exec_recipe_result(result)
+
+
+def get_op_succinct_env_vars(plan, args):
+    extract = {
+        "submission_interval": "fromjson | .SUBMISSION_INTERVAL",
+        "verifier_address": "fromjson | .VERIFIER_ADDRESS",
+        "l2oo_address": "fromjson | .L2OO_ADDRESS",
+        "op_succinct_mock": "fromjson | .OP_SUCCINCT_MOCK",
+        "l1_preallocated_mnemonic": "fromjson | .PRIVATE_KEY",
+    }
+
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat /opt/op-succinct/op-succinct-env-vars.json"],
+        extract=extract,
+    )
+    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+    result = plan.exec(
+        description="Getting op-succinct environment variables from {} service".format(
+            service_name
+        ),
+        service_name=service_name,
+        recipe=exec_recipe,
+    )
+    return get_exec_recipe_result(result)
