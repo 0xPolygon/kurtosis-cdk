@@ -27,6 +27,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
+    # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
@@ -335,19 +336,11 @@ DEFAULT_OP_STACK_ARGS = {
                     "count": 1,
                 },
             ],
-            # "batcher_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
-            # },
-            # "proposer_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
-            # },
         },
     ],
-    # "op_contract_deployer_params": {
-    #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
-    #     "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    #     "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    # },
+    "observability": {
+        "enabled": False,
+    },
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
