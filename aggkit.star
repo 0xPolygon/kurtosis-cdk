@@ -110,6 +110,7 @@ def create_bridge_config_artifact(
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
                     "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "zkevm_bridge_metrics_port": args["zkevm_bridge_metrics_port"],
                 }
                 | contract_setup_addresses
                 | sovereign_contract_setup_addresses

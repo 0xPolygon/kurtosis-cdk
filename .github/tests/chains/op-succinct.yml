@@ -1,0 +1,40 @@
+# This args-file deploys the OP Succinct chain.
+deployment_stages:
+  deploy_optimism_rollup: true
+  deploy_op_succinct: true
+
+args:
+  # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
+  # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+  agglayer_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
+  agglayer_prover_primary_prover: "mock-prover"
+  consensus_contract_type: pessimistic
+  op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.4" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+  op_succinct_server_image: "ghcr.io/succinctlabs/op-succinct/succinct-proposer:sha-cb18ac0" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+  op_succinct_proposer_image: "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-cb18ac0" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+  # true = mock
+  # false = network
+  op_succinct_mock: true
+  # The maximum number of blocks to include in each span proof. For chains with high throughput, you need to decrease this value.
+  op_succinct_proposer_span_proof: "50"
+  # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
+  op_succinct_submission_interval: "100"
+
+optimism_package:
+  chains:
+    - participants:
+        - el_type: op-geth
+          el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:latest"
+          cl_type: op-node
+          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop"
+          count: 1
+      batcher_params:
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:develop"
+      proposer_params:
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:develop"
+  op_contract_deployer_params:
+    image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.12"
+    l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz"
+    l2_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz"
+  observability:
+    enabled: false

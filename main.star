@@ -17,6 +17,7 @@ zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
 mitm_package = "./mitm.star"
+op_succinct_package = "./op_succinct.star"
 
 # Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
@@ -84,14 +85,15 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
-    genesis_artifact = ""
-    if deployment_stages.get("deploy_cdk_central_environment", False):
-        plan.print("Getting genesis file")
-        genesis_artifact = plan.store_service_files(
-            name="genesis",
-            service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/genesis.json",
-        )
+    if not deployment_stages.get("deploy_optimism_rollup", False):
+        genesis_artifact = ""
+        if deployment_stages.get("deploy_cdk_central_environment", False):
+            plan.print("Getting genesis file")
+            genesis_artifact = plan.store_service_files(
+                name="genesis",
+                service_name="contracts" + args["deployment_suffix"],
+                src="/opt/zkevm/genesis.json",
+            )
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
@@ -107,72 +109,77 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of the agglayer")
 
-    # Deploy cdk central/trusted environment.
-    if deployment_stages.get("deploy_cdk_central_environment", False):
-        # Deploy cdk-erigon sequencer node.
-        if args["sequencer_type"] == "erigon":
-            plan.print("Deploying cdk-erigon sequencer")
-            import_module(cdk_erigon_package).run_sequencer(
-                plan,
-                args
-                | {
-                    "l1_rpc_url": args["mitm_rpc_url"].get(
-                        "erigon-sequencer", args["l1_rpc_url"]
-                    )
-                },
-                contract_setup_addresses,
+    if not deployment_stages.get("deploy_optimism_rollup", False):
+        # Deploy cdk central/trusted environment.
+        if deployment_stages.get("deploy_cdk_central_environment", False):
+            # Deploy cdk-erigon sequencer node.
+            if args["sequencer_type"] == "erigon":
+                plan.print("Deploying cdk-erigon sequencer")
+                import_module(cdk_erigon_package).run_sequencer(
+                    plan,
+                    args
+                    | {
+                        "l1_rpc_url": args["mitm_rpc_url"].get(
+                            "erigon-sequencer", args["l1_rpc_url"]
+                        )
+                    },
+                    contract_setup_addresses,
+                )
+            else:
+                plan.print("Skipping the deployment of cdk-erigon sequencer")
+
+            # Deploy zkevm-pool-manager service.
+            if deployment_stages.get("deploy_cdk_erigon_node", False):
+                plan.print("Deploying zkevm-pool-manager service")
+                import_module(zkevm_pool_manager_package).run_zkevm_pool_manager(
+                    plan, args
+                )
+            else:
+                plan.print("Skipping the deployment of zkevm-pool-manager service")
+
+            # Deploy cdk-erigon node.
+            if deployment_stages.get("deploy_cdk_erigon_node", False):
+                plan.print("Deploying cdk-erigon node")
+                import_module(cdk_erigon_package).run_rpc(
+                    plan,
+                    args
+                    | {
+                        "l1_rpc_url": args["mitm_rpc_url"].get(
+                            "erigon-rpc", args["l1_rpc_url"]
+                        )
+                    },
+                    contract_setup_addresses,
+                )
+            else:
+                plan.print("Skipping the deployment of cdk-erigon node")
+
+            plan.print("Deploying cdk central/trusted environment")
+            central_environment_args = dict(args)
+            central_environment_args["genesis_artifact"] = genesis_artifact
+            import_module(cdk_central_environment_package).run(
+                plan, central_environment_args, contract_setup_addresses
+            )
+
+            # Deploy contracts on L2.
+            plan.print("Deploying contracts on L2")
+            deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
+            import_module(deploy_l2_contracts_package).run(
+                plan, args, deploy_l2_contracts
             )
         else:
-            plan.print("Skipping the deployment of cdk-erigon sequencer")
+            plan.print("Skipping the deployment of cdk central/trusted environment")
 
-        # Deploy zkevm-pool-manager service.
-        if deployment_stages.get("deploy_cdk_erigon_node", False):
-            plan.print("Deploying zkevm-pool-manager service")
-            import_module(zkevm_pool_manager_package).run_zkevm_pool_manager(plan, args)
-        else:
-            plan.print("Skipping the deployment of zkevm-pool-manager service")
-
-        # Deploy cdk-erigon node.
-        if deployment_stages.get("deploy_cdk_erigon_node", False):
-            plan.print("Deploying cdk-erigon node")
-            import_module(cdk_erigon_package).run_rpc(
+        # Deploy cdk/bridge infrastructure.
+        if deployment_stages.get("deploy_cdk_bridge_infra", False):
+            plan.print("Deploying cdk/bridge infrastructure")
+            import_module(cdk_bridge_infra_package).run(
                 plan,
-                args
-                | {
-                    "l1_rpc_url": args["mitm_rpc_url"].get(
-                        "erigon-rpc", args["l1_rpc_url"]
-                    )
-                },
+                args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
                 contract_setup_addresses,
+                deployment_stages.get("deploy_cdk_bridge_ui", True),
             )
         else:
-            plan.print("Skipping the deployment of cdk-erigon node")
-
-        plan.print("Deploying cdk central/trusted environment")
-        central_environment_args = dict(args)
-        central_environment_args["genesis_artifact"] = genesis_artifact
-        import_module(cdk_central_environment_package).run(
-            plan, central_environment_args, contract_setup_addresses
-        )
-
-        # Deploy contracts on L2.
-        plan.print("Deploying contracts on L2")
-        deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
-        import_module(deploy_l2_contracts_package).run(plan, args, deploy_l2_contracts)
-    else:
-        plan.print("Skipping the deployment of cdk central/trusted environment")
-
-    # Deploy cdk/bridge infrastructure.
-    if deployment_stages.get("deploy_cdk_bridge_infra", False):
-        plan.print("Deploying cdk/bridge infrastructure")
-        import_module(cdk_bridge_infra_package).run(
-            plan,
-            args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
-            contract_setup_addresses,
-            deployment_stages.get("deploy_cdk_bridge_ui", True),
-        )
-    else:
-        plan.print("Skipping the deployment of cdk/bridge infrastructure")
+            plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
     # Deploy an OP Stack rollup.
     if deployment_stages.get("deploy_optimism_rollup", False):
@@ -197,6 +204,23 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of an Optimism rollup")
+
+    # Deploy OP Succinct.
+    if deployment_stages.get("deploy_op_succinct", False):
+        plan.print("Deploying op-succinct contract deployer helper component")
+        import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
+        plan.print("Extracting environment variables from the contract deployer")
+        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+        plan.print("Deploying op-succinct-server component")
+        import_module(op_succinct_package).op_succinct_server_run(
+            plan, args, op_succinct_env_vars
+        )
+        plan.print("Deploying op-succinct-proposer component")
+        import_module(op_succinct_package).op_succinct_proposer_run(
+            plan, args, op_succinct_env_vars
+        )
+    else:
+        plan.print("Skipping the deployment of OP Succinct")
 
     # Launching additional services.
     additional_services = args["additional_services"]

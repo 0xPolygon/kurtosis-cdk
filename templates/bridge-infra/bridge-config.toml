@@ -56,3 +56,8 @@ PrivateKey = {Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.zkevm_
 Enabled = true
 RetryInterval = "1s"
 RetryNumber = 10
+
+[Metrics]
+Enabled = true
+Host = "0.0.0.0"
+Port = "{{.zkevm_bridge_metrics_port}}"
