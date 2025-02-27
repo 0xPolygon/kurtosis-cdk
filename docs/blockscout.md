@@ -7,7 +7,7 @@ If you want to publish Blockscout so it can be remotely accessed, you need to se
 
 - blockscout_public_ip: This is the public IP that will be used to remotely access your Blockscout. If you have any network device NATing your IP, you need to set here the public facing IP address, as that ip address will be used by user's browser to access resources.
 - blockscout_public_port: The port for the frontend (UI) that will be exposed by Kurtosis without remapping. That's the port that a remote user needs to type in its browser. 
-- blockscot_backend_port: The backend is directly accesed by the browser, so this is the port where backend will be directly exposed by Kurtosis.
+- blockscot_backend_port: The backend is directly accessed by the browser, so this is the port where backend will be directly exposed by Kurtosis.
 
 Example:
 ```yaml
