@@ -47,6 +47,6 @@ USER nonroot
 # STEP 2: Download op-succinct contract dependencies.
 WORKDIR /opt/op-succinct
 ARG OP_SUCCINCT_BRANCH
-RUN git clone https://github.com/succinctlabs/op-succinct.git . \
+RUN git clone https://github.com/agglayer/op-succinct.git . \
   && git checkout ${OP_SUCCINCT_BRANCH} \
   && git submodule update --init --recursive
