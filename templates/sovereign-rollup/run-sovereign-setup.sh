@@ -31,21 +31,50 @@ cd /opt/zkevm-contracts || exit
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
+# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined-001.json because it must be constant.
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined-001.json)"
 
 # Replace the placeholder with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
 
+# Replace the placeholder with the extracted address
+sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
+
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
 # The templates being used here - create_new_rollup.json and genesis.json were directly referenced from the above source.
-cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
-cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
 
-npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost
+# rollupTypeID="{{ .zkevm_rollup_id }}"
+# if [[ "$rollupTypeID" -eq 1 ]]; then
+#     cp /opt/contract-deploy/add_rollup_type.json /opt/zkevm-contracts/tools/addRollupType/add_rollup_type.json
+#     cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/addRollupType/genesis.json
+
+#     npx hardhat run ./tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 05_add_rollup_type.out
+# else
+#     echo "rollupTypeID is not equal to 1. Skipping the commands."
+# fi
+
+rollupTypeID="{{ .zkevm_rollup_id }}"
+if [[ "$rollupTypeID" -eq 1 ]]; then
+    echo "rollupID is 1. Running 4_createRollup.ts script"
+    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
+else
+    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+    cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
+    npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
+fi
+
+# cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+# cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
+
+# npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
+
+# cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
 # Save Rollup Information to a file.
-cast call --json --rpc-url  "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' 2 | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
+cast call --json --rpc-url  "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"
@@ -86,7 +115,7 @@ forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_
 calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $aggoracle_addr)
 forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
 
-initNetworkID=2
+initNetworkID="{{.zkevm_rollup_id}}"
 initGasTokenAddress=$(cast az)
 initGasTokenNetwork=0
 initGlobalExitRootManager=$ger_proxy_addr

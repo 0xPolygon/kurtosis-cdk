@@ -106,6 +106,8 @@ def create_bridge_config_artifact(
                     ),
                     "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "op_el_rpc_url": args["op_el_rpc_url"],
+                    "op_cl_rpc_url": args["op_cl_rpc_url"],
                     # ports
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
                     "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],

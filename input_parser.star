@@ -55,7 +55,7 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.4",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.4-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
     "op_succinct_server_image": "ghcr.io/succinctlabs/op-succinct/succinct-proposer:sha-cb18ac0",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
     "op_succinct_proposer_image": "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-cb18ac0",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
@@ -324,38 +324,16 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
-    # OP Stack EL RPC URL
-    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
-    # OP Stack CL Node URL
-    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-op-kurtosis:8547",
+    # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check().
+    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
+    # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check().
+    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-001:8547",
     # If the OP Succinct will use the Network Prover or CPU(Mock) Prover
     # true = mock
     # false = network
     "op_succinct_mock": False,
-}
-
-# https://github.com/ethpandaops/optimism-package
-# The below OP params can be customized by specifically referring to an artifact or image.
-# If none is is provided, it will refer to the default images from the Optimism-Package repo.
-# https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
-DEFAULT_OP_STACK_ARGS = {
-    "chains": [
-        {
-            "participants": [
-                {
-                    # OP Rollup configuration
-                    "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
-                    "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
-                    "count": 1,
-                },
-            ],
-        },
-    ],
-    "observability": {
-        "enabled": False,
-    },
+    # OP Stack Rollup Chain ID
+    "sovereign_chain_id": 2151908,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -418,6 +396,35 @@ DEFAULT_ARGS = (
     | DEFAULT_L2_ARGS
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
+
+# https://github.com/ethpandaops/optimism-package
+# The below OP params can be customized by specifically referring to an artifact or image.
+# If none is is provided, it will refer to the default images from the Optimism-Package repo.
+# https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
+DEFAULT_OP_STACK_ARGS = {
+    "chains": [
+        {
+            "participants": [
+                {
+                    # OP Rollup configuration
+                    "el_type": "op-geth",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
+                    "cl_type": "op-node",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "count": 1,
+                },
+            ],
+            "network_params": {
+                # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
+                # the "-" however adds another "-" to the Kurtosis deployment_suffix. So we are doing string manipulation to remove the "-"
+                "name": DEFAULT_ARGS.get("deployment_suffix")[1:]
+            },
+        },
+    ],
+    "observability": {
+        "enabled": False,
+    },
+}
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
@@ -636,6 +643,47 @@ def get_op_stack_args(plan, args, op_stack_args):
 
 # Helper function to compact together checks for incompatible parameters in input_parser.star
 def args_sanity_check(plan, deployment_stages, args, op_stack_args):
+    # Fix the op stack el rpc urls according to the deployment_suffix.
+    if (
+        args["op_el_rpc_url"]
+        != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+    ):
+        plan.print(
+            "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
+                args["op_el_rpc_url"], args["deployment_suffix"]
+            )
+        )
+        args["op_el_rpc_url"] = (
+            "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+        )
+    # Fix the op stack cl rpc urls according to the deployment_suffix.
+    if (
+        args["op_cl_rpc_url"]
+        != "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+    ):
+        plan.print(
+            "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
+                args["op_cl_rpc_url"], args["deployment_suffix"]
+            )
+        )
+        args["op_cl_rpc_url"] = (
+            "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+        )
+    # The optimism-package network_params is a frozen hash table, and is not modifiable during runtime.
+    # The check will return fail() instead of dynamically changing the network_params name.
+    if (
+        op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"]
+        != args["deployment_suffix"][1:]
+    ):
+        fail(
+            "op_stack_args network_params name is set to '{}', please change it to match deployment_suffix '{}'".format(
+                op_stack_args["optimism_package"]["chains"][0]["network_params"][
+                    "name"
+                ],
+                args["deployment_suffix"][1:],
+            )
+        )
+
     # Unsupported L1 engine check
     if args["l1_engine"] != "geth":
         if args["l1_engine"] != "anvil":
@@ -664,9 +712,15 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
         if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
-            fail(
-                "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            plan.print(
+                "consensus_contract_type is set to '{}', changing to '{}' which is supported by sovereign rollups".format(
+                    args["consensus_contract_type"], "pessimistic"
+                )
             )
+            args["consensus_contract_type"] = "pessimistic"
+            # fail(
+            #     "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+            # )
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
