@@ -142,7 +142,7 @@ fi
 
 # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
 deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
-if [[ ! $deploy_optimism_rollup ]]; then
+if [[ "$deploy_optimism_rollup" != "true" ]]; then
     echo_ts "Step 5: Creating Rollup/Validium"
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
     if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
