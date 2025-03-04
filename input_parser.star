@@ -438,31 +438,15 @@ def parse_args(plan, user_args):
     op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
 
+    # Change some params if anvil set to make it work
+    # As it changes L1 config it needs to be run before other functions/checks
+    set_anvil_args(plan, args, user_args)
+
     # Determine OP stack args.
     op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # Sanity check step for incompatible parameters
-    args_sanity_check(plan, deployment_stages, args, op_stack_args)
-
-    if args["anvil_state_file"] != None:
-        args["l1_engine"] = "anvil"
-
-    if args["l1_engine"] == "anvil":
-        # We override only is user did not provide explicit values
-        if not user_args.get("args", {}).get("l1_rpc_url"):
-            args["l1_rpc_url"] = (
-                "http://anvil"
-                + args["deployment_suffix"]
-                + ":"
-                + str(DEFAULT_PORTS.get("anvil_port"))
-            )
-        if not user_args.get("args", {}).get("l1_ws_url"):
-            args["l1_ws_url"] = (
-                "ws://anvil"
-                + args["deployment_suffix"]
-                + ":"
-                + str(DEFAULT_PORTS.get("anvil_port"))
-            )
+    args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -641,8 +625,39 @@ def get_op_stack_args(plan, args, op_stack_args):
     }
 
 
+def set_anvil_args(plan, args, user_args):
+    if args["anvil_state_file"] != None:
+        if user_args.get("args", {}).get("l1_engine") != "anvil":
+            args["l1_engine"] = "anvil"
+            plan.print("Anvil state file detected - changing l1_engine to anvil")
+
+    if args["l1_engine"] == "anvil":
+        # We override only is user did not provide explicit values
+        if not user_args.get("args", {}).get("l1_rpc_url"):
+            args["l1_rpc_url"] = (
+                "http://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+        if not user_args.get("args", {}).get("l1_ws_url"):
+            args["l1_ws_url"] = (
+                "ws://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+        if not user_args.get("args", {}).get("l1_beacon_url"):
+            args["l1_beacon_url"] = (
+                "http://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+
+
 # Helper function to compact together checks for incompatible parameters in input_parser.star
-def args_sanity_check(plan, deployment_stages, args, op_stack_args):
+def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if (
         args["op_el_rpc_url"]
@@ -685,13 +700,12 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
         )
 
     # Unsupported L1 engine check
-    if args["l1_engine"] != "geth":
-        if args["l1_engine"] != "anvil":
-            fail(
-                "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
-                    args["l1_engine"]
-                )
+    if args["l1_engine"] not in constants.L1_ENGINES:
+        fail(
+            "Unsupported L1 engine: '{}', please use one of {}".format(
+                args["l1_engine"], constants.L1_ENGINES
             )
+        )
 
     # Gas token enabled and gas token address check
     if (
@@ -711,14 +725,12 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
-        if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
-            plan.print(
-                "consensus_contract_type is set to '{}', changing to '{}' which is supported by sovereign rollups".format(
-                    args["consensus_contract_type"], "pessimistic"
-                )
+        user_consensus = user_args.get("args", {}).get("consensus_contract_type")
+        if user_consensus and user_consensus != "pessimitic":
+            fail(
+                "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
             )
-            # Instead of failing the deployment, we will change the consensus_contract_type to pessimistic
-            args["consensus_contract_type"] = "pessimistic"
+        args["consensus_contract_type"] = "pessimistic"
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
