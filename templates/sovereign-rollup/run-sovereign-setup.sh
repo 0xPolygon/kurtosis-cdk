@@ -32,7 +32,7 @@ cd /opt/zkevm-contracts || exit
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined{{.deployment_suffix}}.json)"
+rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
@@ -122,7 +122,7 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_ad
 jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # Append the output of sovereign-rollup-out.json to the combined{{.deployment_suffix}}.json file.
-jq -s '.[0] * .[1]' /opt/zkevm/combined{{.deployment_suffix}}.json /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm/combined{{.deployment_suffix}}.json.temp && mv /opt/zkevm/combined{{.deployment_suffix}}.json.temp /opt/zkevm/combined{{.deployment_suffix}}.json
+jq -s '.[0] * .[1]' "/opt/zkevm/combined{{.deployment_suffix}}.json" "/opt/zkevm-contracts/sovereign-rollup-out.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
 
 # Extract values from sovereign-rollup-out.json
 ger_proxy_addr=$(jq -r '.ger_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
@@ -131,4 +131,4 @@ bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' /opt/zkevm-contracts/sovereign-ro
 # Update the polygonZkEVMGlobalExitRootL2Address and polygonZkEVML2BridgeAddress addresses within combined{{.deployment_suffix}}.json file with the new values
 jq --arg ger_proxy_addr "$ger_proxy_addr" --arg bridge_proxy_addr "$bridge_proxy_addr" \
    '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr | .polygonZkEVML2BridgeAddress = $bridge_proxy_addr' \
-   /opt/zkevm/combined{{.deployment_suffix}}.json > /opt/zkevm/combined{{.deployment_suffix}}.json.temp && mv /opt/zkevm/combined{{.deployment_suffix}}.json.temp /opt/zkevm/combined{{.deployment_suffix}}.json
+   "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
