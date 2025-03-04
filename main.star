@@ -43,7 +43,9 @@ def run(plan, args={}):
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
-        plan.print("Deploying a local L1")
+        plan.print(
+            "Deploying a local L1 (based on {})".format(args.get("l1_engine", "geth"))
+        )
         if args.get("l1_engine", "geth") == "anvil":
             import_module(anvil_package).run(plan, args)
         else:

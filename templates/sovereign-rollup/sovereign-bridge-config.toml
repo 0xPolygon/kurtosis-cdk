@@ -13,7 +13,7 @@ Port = "{{.sovereign_bridge_db.port}}"
 MaxConns = 20
 
 [Etherman]
-l1URL = "http://el-1-geth-lighthouse:8545"
+l1URL = "{{.l1_rpc_url}}"
 L2URLs = ["http://op-el-1-op-geth-op-node-op-kurtosis:8545"]
 
 [Synchronizer]
