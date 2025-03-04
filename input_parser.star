@@ -726,11 +726,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
         user_consensus = user_args.get("args", {}).get("consensus_contract_type")
-        if user_consensus and user_consensus != "pessimitic":
-            fail(
-                "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+        if user_consensus and user_consensus != "pessimistic":
+            plan.print(
+                "consensus_contract_type was set to '{}', changing to pessimistic".format(
+                    user_consensus
+                )
             )
-        args["consensus_contract_type"] = "pessimistic"
+            args["consensus_contract_type"] = "pessimistic"
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
