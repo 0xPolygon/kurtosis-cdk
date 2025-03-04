@@ -31,47 +31,34 @@ cd /opt/zkevm-contracts || exit
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
-# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined-001.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined-001.json)"
+# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
+rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined{{.deployment_suffix}}.json)"
 
-# Replace the placeholder with the extracted address
+# Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
 
-# Replace the placeholder with the extracted address
+# Replace polygonRollupManagerAddress with the extracted address
 sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
-# The templates being used here - create_new_rollup.json and genesis.json were directly referenced from the above source.
-
-# rollupTypeID="{{ .zkevm_rollup_id }}"
-# if [[ "$rollupTypeID" -eq 1 ]]; then
-#     cp /opt/contract-deploy/add_rollup_type.json /opt/zkevm-contracts/tools/addRollupType/add_rollup_type.json
-#     cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/addRollupType/genesis.json
-
-#     npx hardhat run ./tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 05_add_rollup_type.out
-# else
-#     echo "rollupTypeID is not equal to 1. Skipping the commands."
-# fi
-
+# The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
 rollupTypeID="{{ .zkevm_rollup_id }}"
 if [[ "$rollupTypeID" -eq 1 ]]; then
+    # For the first rollup, we need use https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
     echo "rollupID is 1. Running 4_createRollup.ts script"
     cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 else
-    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
-    cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
-    npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
+    # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/tools/createNewRollup/createNewRollup.ts
+    # cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+    # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
+    # npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
+
+    # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
+    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 fi
-
-# cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
-# cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
-
-# npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
-
-# cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-# npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
 # Save Rollup Information to a file.
 cast call --json --rpc-url  "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "sovereignChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
@@ -128,7 +115,20 @@ initSovereignWETHAddressIsNotMintable=false
 calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _polygonRollupManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initPolygonRollupManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
 forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
 
+# Save the contract addresses to the sovereign-rollup-out.json file
 jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+
+# Append the output of sovereign-rollup-out.json to the combined{{.deployment_suffix}}.json file.
+jq -s '.[0] * .[1]' /opt/zkevm/combined{{.deployment_suffix}}.json /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm/combined{{.deployment_suffix}}.json.temp && mv /opt/zkevm/combined{{.deployment_suffix}}.json.temp /opt/zkevm/combined{{.deployment_suffix}}.json
+
+# Extract values from sovereign-rollup-out.json
+ger_proxy_addr=$(jq -r '.ger_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
+bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
+
+# Update the polygonZkEVMGlobalExitRootL2Address and polygonZkEVML2BridgeAddress addresses within combined{{.deployment_suffix}}.json file with the new values
+jq --arg ger_proxy_addr "$ger_proxy_addr" --arg bridge_proxy_addr "$bridge_proxy_addr" \
+   '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr | .polygonZkEVML2BridgeAddress = $bridge_proxy_addr' \
+   /opt/zkevm/combined{{.deployment_suffix}}.json > /opt/zkevm/combined{{.deployment_suffix}}.json.temp && mv /opt/zkevm/combined{{.deployment_suffix}}.json.temp /opt/zkevm/combined{{.deployment_suffix}}.json

@@ -5,7 +5,7 @@ optimism_package:
   chains:
     - network_params:
         name: "001"
-      additional_services: ["rollup-boost"]
+      # additional_services: ["rollup-boost"]
   observability:
     enabled: false
 

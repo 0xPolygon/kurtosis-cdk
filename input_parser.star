@@ -324,9 +324,9 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
-    # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check().
+    # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check() function.
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
-    # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check().
+    # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check() function.
     "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-001:8547",
     # If the OP Succinct will use the Network Prover or CPU(Mock) Prover
     # true = mock
@@ -717,10 +717,8 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
                     args["consensus_contract_type"], "pessimistic"
                 )
             )
+            # Instead of failing the deployment, we will change the consensus_contract_type to pessimistic
             args["consensus_contract_type"] = "pessimistic"
-            # fail(
-            #     "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
-            # )
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
