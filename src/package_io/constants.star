@@ -12,3 +12,5 @@ SEQUENCER_TYPE = struct(
 )
 
 TOOLBOX_IMAGE = "leovct/toolbox:0.0.8"
+
+L1_ENGINES = ("geth", "anvil")

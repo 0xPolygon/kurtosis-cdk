@@ -84,3 +84,8 @@ input-backpressure-buffer-size = 1000
 
 [storage]
 db-path = "/etc/zkevm/storage"
+
+[storage.backup]
+path = "/etc/zkevm/backups"
+state-max-backup-count = 100
+pending-max-backup-count = 100
