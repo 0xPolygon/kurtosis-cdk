@@ -52,6 +52,8 @@ node-url = "{{.l1_rpc_url}}"
 ws-node-url = "{{.l1_ws_url}}"
 rollup-manager-contract = "{{.zkevm_rollup_manager_address}}"
 polygon-zkevm-global-exit-root-v2-contract = "{{.zkevm_global_exit_root_address}}"
+# TODO: update with proper aggchain base contract address once available 
+aggchain-base-contract = "{{.zkevm_rollup_manager_address}}"
 rpc-timeout = 45
 
 [l2]
