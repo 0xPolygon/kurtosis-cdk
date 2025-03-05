@@ -154,8 +154,6 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
    --arg _legacyLastPendingStateConsolidated "$_legacyLastPendingStateConsolidated" \
    --arg lastVerifiedBatchBeforeUpgrade "$lastVerifiedBatchBeforeUpgrade" \
    --arg rollupVerifierType "$rollupVerifierType" \
-   --arg bridge_impl_addr "$bridge_impl_addr" \
-   --arg ger_impl_addr "$ger_impl_addr" \
    '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr | 
     .polygonZkEVML2BridgeAddress = $bridge_proxy_addr | 
     .rollupTypeId = $rollupTypeID | 
@@ -169,8 +167,6 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
     ._legacyLastPendingState = $_legacyLastPendingState | 
     ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated | 
     .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade | 
-    .rollupVerifierType = $rollupVerifierType | 
-    .bridge_impl_addr = $bridge_impl_addr | 
-    .ger_impl_addr = $ger_impl_addr' \
+    .rollupVerifierType = $rollupVerifierType' \
    "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && \
    mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
