@@ -1,5 +1,5 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@4.4.0"
+    "github.com/ethpandaops/ethereum-package/main.star@4.5.0"
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.12"
