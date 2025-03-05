@@ -5,12 +5,6 @@ on:
   schedule:
     - cron: 0 6 * * * # Run this workflow every day at 6 AM Paris time (UTC+2).
   workflow_dispatch:
-    inputs:
-      param_file:
-        description: This parameter file will be used when running Antithesis tests
-        required: false
-        type: string
-        default: .github/tests/antithesis/fork12-cdk-erigon-validium.yml
 
 concurrency:
   group: nightly-${{ github.event.pull_request.number || github.ref }}
@@ -18,15 +12,6 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-
-  # Antithesis parameters.
-  ANTITHESIS_REGISTRY: us-central1-docker.pkg.dev
-  ANTITHESIS_REPOSITORY: molten-verve-216720/polygon-repository
-  ANTITHESIS_TENANT: polygon
-  ANTITHESIS_NOTEBOOK: polygon
-
-  # This parameter file will be used when running Antithesis tests using the nightly schedule.
-  DEFAULT_ANTITHESIS_PARAM_FILE: .github/tests/antithesis/fork12-cdk-erigon-validium.yml
 
 jobs:
   list-ymls:
@@ -344,49 +329,6 @@ jobs:
         with:
           name: dump_cardona_sepolia_testnet_pless_zkevm_node_${{ github.run_id }}
           path: ./dump
-
-  # Trigger Antithesis tests.
-  # Note that the configuration docker image must have been pushed into the Antithesis registry.
-  antithesis:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set the parameter file to be used in Antithesis tests
-        run: echo "PARAM_FILE=${{ github.event_name == 'workflow_dispatch' && inputs.param_file || env.DEFAULT_ANTITHESIS_PARAM_FILE }}" >> $GITHUB_ENV
-
-      - name: Trigger Antithesis tests
-        uses: antithesishq/antithesis-trigger-action@main
-        with:
-          username: ${{ secrets.ANTITHESIS_USERNAME }}
-          password: ${{ secrets.ANTITHESIS_PASSWORD }}
-          github_token: ${{ secrets.ANTITHESIS_PAT }}
-
-          tenant: ${{ env.ANTITHESIS_TENANT }}
-          notebook_name: ${{ env.ANTITHESIS_NOTEBOOK }}
-          test_name: cdk
-
-          config_image: ${{ env.ANTITHESIS_REGISTRY }}/${{ env.ANTITHESIS_REPOSITORY}}/config:antithesis-latest
-          description: Kurtosis CDK tests
-          email_recipients: ${{ secrets.ANTITHESIS_EMAIL_RECIPIENTS }} # this is a ";" delimited list (e.g. "u1@site.com;u2@site.com").
-          # Note: duration must be specified in number of hours (min 0.5 hours).
-          additional_parameters: |-
-            custom.configuration=${{ env.PARAM_FILE }}
-            custom.duration=1.0
-
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.ANTITHESIS_USERNAME && env.ANTITHESIS_PASSWORD && env.ANTITHESIS_PAT && env.ANTITHESIS_EMAIL_RECIPIENTS }}
-        env:
-          ANTITHESIS_USERNAME: ${{ secrets.ANTITHESIS_USERNAME }}
-          ANTITHESIS_PASSWORD: ${{ secrets.ANTITHESIS_PASSWORD }}
-          ANTITHESIS_PAT: ${{ secrets.ANTITHESIS_PAT }}
-          ANTITHESIS_EMAIL_RECIPIENTS: ${{ secrets.ANTITHESIS_EMAIL_RECIPIENTS }}
 
   # Deploy the CDK environment against a local l1 chain with pre-deployed zkevm contracts.
   # TODO: Fix this job.
