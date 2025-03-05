@@ -16,6 +16,9 @@ optimism_package = "github.com/ethpandaops/optimism-package/main.star@dad910ae88
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
+create_sovereign_predeployed_genesis_package = (
+    "./create_sovereign_predeployed_genesis.star"
+)
 mitm_package = "./mitm.star"
 op_succinct_package = "./op_succinct.star"
 
@@ -96,6 +99,8 @@ def run(plan, args={}):
                 service_name="contracts" + args["deployment_suffix"],
                 src="/opt/zkevm/genesis.json",
             )
+    else:
+        import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):

@@ -75,9 +75,9 @@ rpc_url="{{.op_el_rpc_url}}"
 # This is the default prefunded account for the OP Network
 private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 
-cast send --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
-cast send --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
-cast send --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtx_addr
+cast send --legacy --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
+cast send --legacy --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
+cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtx_addr
 
 # Contract Deployment Step
 cd /opt/zkevm-contracts || exit
@@ -96,11 +96,11 @@ ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+2)) $bridge_a
 bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+3)) $bridge_admin_addr | sed 's/.*: //')
 
 # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
-cast send --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
-forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key BridgeL2SovereignChain
-forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args "$bridge_proxy_addr"
+cast send --legacy  --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
+forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key BridgeL2SovereignChain
+forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args "$bridge_proxy_addr"
 calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $aggoracle_addr)
-forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
+forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
 
 initNetworkID="{{.zkevm_rollup_id}}"
 initGasTokenAddress=$(cast az)
@@ -113,7 +113,7 @@ initSovereignWETHAddress=$(cast az)
 initSovereignWETHAddressIsNotMintable=false
 
 calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _polygonRollupManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initPolygonRollupManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
-forge create --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
+forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
 
 # Save the contract addresses to the sovereign-rollup-out.json file
 jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
