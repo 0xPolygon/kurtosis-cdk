@@ -121,14 +121,52 @@ jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}'
 jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 
-# Append the output of sovereign-rollup-out.json to the combined{{.deployment_suffix}}.json file.
-jq -s '.[0] * .[1]' "/opt/zkevm/combined{{.deployment_suffix}}.json" "/opt/zkevm-contracts/sovereign-rollup-out.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
-
 # Extract values from sovereign-rollup-out.json
+sovereignRollupContract=$(jq -r '.sovereignRollupContract' /opt/zkevm-contracts/sovereign-rollup-out.json)
+rollupChainID=$(jq -r '.rollupChainID' /opt/zkevm-contracts/sovereign-rollup-out.json)
+verifier=$(jq -r '.verifier' /opt/zkevm-contracts/sovereign-rollup-out.json)
+forkID=$(jq -r '.forkID' /opt/zkevm-contracts/sovereign-rollup-out.json)
+lastLocalExitRoot=$(jq -r '.lastLocalExitRoot' /opt/zkevm-contracts/sovereign-rollup-out.json)
+lastBatchSequenced=$(jq -r '.lastBatchSequenced' /opt/zkevm-contracts/sovereign-rollup-out.json)
+lastVerifiedBatch=$(jq -r '.lastVerifiedBatch' /opt/zkevm-contracts/sovereign-rollup-out.json)
+_legacyLastPendingState=$(jq -r '._legacyLastPendingState' /opt/zkevm-contracts/sovereign-rollup-out.json)
+_legacyLastPendingStateConsolidated=$(jq -r '._legacyLastPendingStateConsolidated' /opt/zkevm-contracts/sovereign-rollup-out.json)
+lastVerifiedBatchBeforeUpgrade=$(jq -r '.lastVerifiedBatchBeforeUpgrade' /opt/zkevm-contracts/sovereign-rollup-out.json)
+rollupTypeID=$(jq -r '.rollupTypeID' /opt/zkevm-contracts/sovereign-rollup-out.json)
+rollupVerifierType=$(jq -r '.rollupVerifierType' /opt/zkevm-contracts/sovereign-rollup-out.json)
+bridge_impl_addr=$(jq -r '.bridge_impl_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
+ger_impl_addr=$(jq -r '.ger_impl_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
 ger_proxy_addr=$(jq -r '.ger_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
 bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
 
-# Update the polygonZkEVMGlobalExitRootL2Address and polygonZkEVML2BridgeAddress addresses within combined{{.deployment_suffix}}.json file with the new values
-jq --arg ger_proxy_addr "$ger_proxy_addr" --arg bridge_proxy_addr "$bridge_proxy_addr" \
-   '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr | .polygonZkEVML2BridgeAddress = $bridge_proxy_addr' \
-   "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+# Update existing fields and append new ones to combined.json
+jq --arg ger_proxy_addr "$ger_proxy_addr" \
+   --arg bridge_proxy_addr "$bridge_proxy_addr" \
+   --arg rollupTypeID "$rollupTypeID" \
+   --arg verifier "$verifier" \
+   --arg sovereignRollupContract "$sovereignRollupContract" \
+   --arg rollupChainID "$rollupChainID" \
+   --arg forkID "$forkID" \
+   --arg lastLocalExitRoot "$lastLocalExitRoot" \
+   --arg lastBatchSequenced "$lastBatchSequenced" \
+   --arg lastVerifiedBatch "$lastVerifiedBatch" \
+   --arg _legacyLastPendingState "$_legacyLastPendingState" \
+   --arg _legacyLastPendingStateConsolidated "$_legacyLastPendingStateConsolidated" \
+   --arg lastVerifiedBatchBeforeUpgrade "$lastVerifiedBatchBeforeUpgrade" \
+   --arg rollupVerifierType "$rollupVerifierType" \
+   '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr | 
+    .polygonZkEVML2BridgeAddress = $bridge_proxy_addr | 
+    .rollupTypeId = $rollupTypeID | 
+    .verifierAddress = $verifier | 
+    .rollupAddress = $sovereignRollupContract | 
+    .rollupChainID = $rollupChainID | 
+    .forkID = $forkID | 
+    .lastLocalExitRoot = $lastLocalExitRoot | 
+    .lastBatchSequenced = $lastBatchSequenced | 
+    .lastVerifiedBatch = $lastVerifiedBatch | 
+    ._legacyLastPendingState = $_legacyLastPendingState | 
+    ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated | 
+    .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade | 
+    .rollupVerifierType = $rollupVerifierType' \
+   "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && \
+   mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
