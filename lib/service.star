@@ -84,7 +84,7 @@ def get_sovereign_contract_setup_addresses(plan, args):
         "sovereign_ger_proxy_addr": "fromjson | .ger_proxy_addr",
         "sovereign_bridge_proxy_addr": "fromjson | .bridge_proxy_addr",
         "sovereign_rollup_addr": "fromjson | .sovereignRollupContract",
-        "sovereign_chain_id": "fromjson | .sovereignChainID",
+        "zkevm_rollup_chain_id": "fromjson | .rollupChainID",
     }
 
     exec_recipe = ExecRecipe(

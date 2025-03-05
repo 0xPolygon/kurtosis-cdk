@@ -332,8 +332,6 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
-    # OP Stack Rollup Chain ID
-    "sovereign_chain_id": 2151908,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
