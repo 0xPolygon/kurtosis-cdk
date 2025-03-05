@@ -1,18 +1,31 @@
 data_availability_package = import_module("./data_availability.star")
 
 
-def get_contract_setup_addresses(plan, args):
-    extract = {
-        "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
-        "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
-        "zkevm_rollup_address": "fromjson | .rollupAddress",
-        "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
-        "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
-        "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
-        "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
-        "pol_token_address": "fromjson | .polTokenAddress",
-        "zkevm_admin_address": "fromjson | .admin",
-    }
+def get_contract_setup_addresses(plan, args, deployment_stages):
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        # Deploying optimism rollup doesn't have .rollupAddress field. This should be removed.
+        extract = {
+            "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
+            "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
+            "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+            "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+            "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
+            "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+            "pol_token_address": "fromjson | .polTokenAddress",
+            "zkevm_admin_address": "fromjson | .admin",
+        }
+    else:
+        extract = {
+            "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
+            "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
+            "zkevm_rollup_address": "fromjson | .rollupAddress",
+            "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+            "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+            "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
+            "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+            "pol_token_address": "fromjson | .polTokenAddress",
+            "zkevm_admin_address": "fromjson | .admin",
+        }
     if data_availability_package.is_cdk_validium(args):
         extract[
             "polygon_data_committee_address"

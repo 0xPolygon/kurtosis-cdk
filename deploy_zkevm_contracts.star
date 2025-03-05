@@ -34,6 +34,10 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/create_new_rollup.json",
     },
     {
+        "name": "add_rollup_type.json",
+        "file": "./templates/sovereign-rollup/add_rollup_type.json",
+    },
+    {
         "name": "sovereign-genesis.json",
         "file": "./templates/sovereign-rollup/genesis.json",
     },
