@@ -10,7 +10,7 @@ optimism_package:
     enabled: false
 
 args:
-  sovereign_chain_id: 2151908
+  zkevm_rollup_chain_id: 2151908
   deployment_suffix: "-001"
   zkevm_rollup_id: 1
   consensus_contract_type: pessimistic

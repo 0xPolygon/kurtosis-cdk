@@ -332,8 +332,6 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
-    # OP Stack Rollup Chain ID
-    "sovereign_chain_id": 2151908,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -417,7 +415,8 @@ DEFAULT_OP_STACK_ARGS = {
             "network_params": {
                 # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
                 # the "-" however adds another "-" to the Kurtosis deployment_suffix. So we are doing string manipulation to remove the "-"
-                "name": DEFAULT_ARGS.get("deployment_suffix")[1:]
+                "name": DEFAULT_ARGS.get("deployment_suffix")[1:],
+                "network_id": str(DEFAULT_ROLLUP_ARGS.get("zkevm_rollup_chain_id")),
             },
         },
     ],

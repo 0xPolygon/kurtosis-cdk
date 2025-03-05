@@ -100,7 +100,7 @@ The setup process consists of two main steps:
    ```json
    {
      "sovereignRollupContract": "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568",
-     "sovereignChainID": "2151908",
+     "rollupChainID": "2151908",
      "verifier": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
      "forkID": "12",
      "lastLocalExitRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
