@@ -13,7 +13,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
 
     # Create the cdk aggoracle config.
     aggkit_config_template = read_file(
-        src="./templates/sovereign-rollup/aggkit-config.toml"
+        src="./templates/aggkit/aggkit-config.toml"
     )
     aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
