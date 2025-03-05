@@ -85,3 +85,20 @@ Now I have the interface name ~br-edd588fc6880~ and I can use that for
 
 https://github.com/torvalds/linux/blob/55027e689933ba2e64f3d245fb1ff185b3e7fc81/Documentation/ABI/testing/sysfs-class-net#L188-L207
 
+* MITM
+
+#+begin_src bash
+# start mitmproxy
+docker run --name mitmproxy --rm -it -v ~/.mitmproxy:/home/mitmproxy/.mitmproxy --network kt-pp mitmproxy/mitmproxy mitmproxy -p 443 --mode reverse:https://target.whatever
+
+# copy to the ca to the container you want to intercept
+docker cp ~/.mitmproxy/mitmproxy-ca.pem agglayer-prover--0072a38be52544f190d6e7addd236ca8:/usr/local/share/ca-certificates/mitm.crt
+
+# update the certs (assuming this is all installed)
+docker exec agglayer-prover--0072a38be52544f190d6e7addd236ca8 update-ca-certificates
+
+# add an entry in the /etc/hosts file
+# mitmip target.wahter
+1.2.3.4 target.whatever
+#+end_src
+

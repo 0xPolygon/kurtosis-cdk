@@ -41,7 +41,7 @@ log.dir.path: /tmp/cdk-erigon.log
 
 # --------------------------------------------------------------------------------------------------
 # The data directory for the databases.
-datadir: ./data/dynamic-kurtosis-sequencer
+datadir: ./data/dynamic-{{.chain_name}}-sequencer
 
 # The network identifier.
 # For testnets, use --chain <testnet-name> instead.
@@ -56,7 +56,7 @@ networkid: 1 # ethereum
 # you need to add the prefix "dynamic-" in front of the chain name.
 # Same thing for the dynamic configuration files.
 # https://github.com/0xPolygonHermez/cdk-erigon?tab=readme-ov-file#dynamic-chain-configuration
-chain: dynamic-kurtosis
+chain: dynamic-{{.chain_name}}
 
 # Custom node name.
 # Default: ""
@@ -128,6 +128,19 @@ zkevm.effective-gas-price-contract-deployment: 1
 # Default: 10000000
 zkevm.default-gas-price: 1000000000
 
+# Reject the sequencer to proceed transactions with low gas price
+# If this is `false` transactions below the default gas price will
+# still be accepted. If you want to reject transactions that are
+# priced at 0 gwei, you'll need to set this as `true
+# Default: false
+# {{if .enable_normalcy}}
+zkevm.reject-low-gas-price-transactions: false
+# {{else}}
+zkevm.reject-low-gas-price-transactions: true
+# {{end}}
+
+
+
 # Apply a factor to convert L1 gas prices into L2 gas prices.
 # A value of 1 means no adjustment; values greater than 1 increase L2 costs proportionally.
 # Default: 1
@@ -149,7 +162,12 @@ zkevm.reject-smart-contract-deployments: false
 # Disables virtual counters, which are used by sequencer nodes when external execution is not enabled.
 # This can impact performance and transaction processing capabilities.
 # Default: false
+# {{if .enable_normalcy}}
+zkevm.disable-virtual-counters: true
+# {{else}}
 zkevm.disable-virtual-counters: false
+# {{end}}
+
 
 # Multiplier used to reduce the depth of SMT when calculating virtual counters.
 # A value less than 1 will decrease SMT depth, potentially improving performance but may affect accuracy.
@@ -168,6 +186,11 @@ zkevm.da-url: ""
 # If specified, all eth_sendRawTransaction calls will be redirected to this service for processing.
 # Default: ""
 zkevm.pool-manager-url: {{.pool_manager_url}}
+# {{end}}
+
+# {{if eq .consensus_contract_type "pessimistic"}}
+# The file that contains the initial (injected) batch data for pessimistic proofs consensus.
+zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
 # {{end}}
 
 # --------------------------------------------------------------------------------------------------
@@ -257,14 +280,19 @@ zkevm.data-stream-inactivity-check-interval: 5m
 # A shorter time increases block creation frequency but may lead to higher network load.
 # Consider network capacity and desired transaction confirmation speed when adjusting.
 # Default: 6s
-zkevm.sequencer-block-seal-time: 6s
+zkevm.sequencer-block-seal-time: 3s
 
 # The batch seal time.
 # Determine how frequently the sequencer groups blocks into a batch and seals it.
 # Longer times allow more blocks (and more txs) per batch, potentially improving efficiency,
 # but may increase overall transaction confirmation time.
 # Default: 12s
-zkevm.sequencer-batch-seal-time: 12s
+zkevm.sequencer-batch-seal-time: 15s
+
+# Seal the batch immediately when detecting a counter overflow
+# This setting can be helpful to close batches faster while testing with a single account.
+# Default: false
+zkevm.seal-batch-immediately-on-overflow: true
 
 # Specify the maximum duration allowed for batch verification, including retry attempts.
 # This effectively limits how long the sequencer can operate without an executor.
@@ -402,7 +430,7 @@ zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
 # Used for network recovery from L1 batch data.
 # Set to 0 to use the datastream instead.
 # Default: 0
-zkevm.l1-sync-start-block: 0
+zkevm.l1-sync-start-block: {{.l1_sync_start_block}}
 
 # Limits the number of batches to sync from L1.
 # Useful for debugging or partial recoveries.
@@ -495,7 +523,7 @@ zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
 
 # Maximum time to wait for data from the datastreamer before reporting an error.
 # Balances between allowing for network delays and detecting genuine connection issues.
-# Set to 0s to disable the timeout check (not recommended for production use).
+# Any setting below 500ms will be adjusted to 3s.
 # Default: 0s
 zkevm.l2-datastreamer-timeout: 0s
 
@@ -870,7 +898,7 @@ metrics.addr: 0.0.0.0
 
 # The listening address of the metrics server.
 # Default: 6060
-metrics.port: 9090
+metrics.port: {{.prometheus_port}}
 
 
 # ==============================================================================
@@ -971,3 +999,4 @@ db.size.limit: 8TB
 # - config
 # - lightclient.x
 # - sentinel.x
+

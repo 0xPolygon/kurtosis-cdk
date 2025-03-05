@@ -17,24 +17,30 @@ Specifically, this package will deploy:
 - [Getting Started](#getting-started)
 - [Supported Configurations](#supported-configurations)
 - [Advanced Use Cases](#advanced-use-cases)
+- [FAQ](#faq)
 - [Contact](#contact)
 - [License](#license)
 - [Contribution](#contribution)
 
+
 ## Supported Configurations
 
-The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack. The table provided illustrates the different combinations of sequencers and sequence sender/aggregator components that can be used, along with their current support status in Kurtosis.
+The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack.
+
+You can take a look at this [table](CDK_VERSION_MATRIX.MD) to see which versions of the CDK are meant to work together, broken by fork identifier.
+
+The table provided illustrates the different combinations of sequencers and sequence sender/aggregator components that can be used, along with their current support status in Kurtosis.
 
 > The team is actively working on enabling the use cases that are currently not possible.
 
-| Stack | Sequencer | Sequence Sender / Aggregator | Supported by Kurtosis? |
-| ----- | --------- | ---------------------------- | ---------------------- |
-| New CDK stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [cdk-node](https://github.com/0xPolygon/cdk) | ✅ |
-| New sequencer with new zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) - Check the [kurtosis-cdk-erigon](https://github.com/xavier-romero/kurtosis-cdk-erigon) package |
-| New sequencer with legacy zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | ❌ (WIP) |
-| Legacy sequencer with new cdk stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [cdk-node](https://github.com/0xPolygon/cdk) | ❌ (WIP) |
-| Legacy sequencer with new zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) |
-| Legacy zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | ✅ |
+| Stack                                 | Sequencer                                                   | Sequence Sender / Aggregator                                                                                                                                | Supported by Kurtosis?                                                                                   |
+| ------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| New CDK stack                         | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [cdk-node](https://github.com/0xPolygon/cdk)                                                                                                                | ✅                                                                                                       |
+| New sequencer with new zkevm stack    | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP) - Check the [kurtosis-cdk-erigon](https://github.com/xavier-romero/kurtosis-cdk-erigon) package |
+| New sequencer with legacy zkevm stack | [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node)                                                                                                 | ❌ (WIP)                                                                                                 |
+| Legacy sequencer with new cdk stack   | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [cdk-node](https://github.com/0xPolygon/cdk)                                                                                                                | ❌ (WIP)                                                                                                 |
+| Legacy sequencer with new zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP)                                                                                                 |
+| Legacy zkevm stack                    | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node)                                                                                                 | ✅                                                                                                       |
 
 To understand how to configure Kurtosis for these use cases, refer to the [documentation](.github/tests/README.md) and review the test files located in the `.github/tests/` directory.
 
@@ -43,6 +49,8 @@ To understand how to configure Kurtosis for these use cases, refer to the [docum
 ### Prerequisites
 
 To begin, you will need to install [Docker](https://docs.docker.com/get-docker/) (>= [v4.27.0](https://docs.docker.com/desktop/release-notes/#4270) for Mac users) and [Kurtosis](https://docs.kurtosis.com/install/).
+
+- If you notice some services, such as the `zkevm-stateless-executor` or `zkevm-prover`, consistently having the status of `STOPPED`, try increasing the Docker memory allocation.
 
 If you intend to interact with and debug the stack, you may also want to consider a few additional optional tools such as:
 
@@ -59,8 +67,7 @@ Once that is good and installed on your system, you can run the following comman
 kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk
 ```
 
-The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at 
-[input_parser.star](./input_parser.star).
+The default deployment includes [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) as the sequencer, and [cdk-node](https://github.com/0xPolygon/cdk) functioning as the sequence sender and aggregator. You can verify the default versions of these components and the default fork ID by reviewing input_parser.star. You can check the default versions of the deployed components and the default fork ID by looking at [input_parser.star](./input_parser.star).
 
 To make customizations to the CDK environment, clone this repo, make any desired configuration changes, and then run:
 
@@ -86,10 +93,10 @@ kurtosis enclave inspect cdk
 
 That output, while quite useful, might also be a little overwhelming. Let's store the RPC URL in an environment variable.
 
-> You may need to adjust the various commands slightly if you deployed the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. You should target the `zkevm-node-rpc-001` service instead of `cdk-erigon-node-001`.
+> You may need to adjust the various commands slightly if you deployed the legacy [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) as the sequencer. You should target the `zkevm-node-rpc-001` service instead of `cdk-erigon-rpc-001`.
 
 ```bash
-export ETH_RPC_URL="$(kurtosis port print cdk cdk-erigon-node-001 rpc)"
+export ETH_RPC_URL="$(kurtosis port print cdk cdk-erigon-rpc-001 rpc)"
 ```
 
 That is the same environment variable that `cast` uses, so you should now be able to run this command. Note that the steps below will assume you have the [Foundry toolchain](https://book.getfoundry.sh/getting-started/installation) installed.
@@ -160,11 +167,12 @@ For more information about the CDK stack, visit the [Polygon Knowledge Layer](ht
 
 This section features documentation specifically designed for advanced users, outlining complex operations and techniques.
 
+- How to use CDK [ACL](docs/acl-allowlists-blocklists.md).
 - How to deploy [additional services](docs/additional-services.md) alongside the CDK stack, such as transaction spammer, monitoring tools, permissionless nodes etc.
 - How to [attach multiple CDK chains to the AggLayer](docs/attach-multiple-cdks.md).
-- How to use CDK [ACL](docs/acl-allowlists-blocklists.md).
 - How to use the different [data availability modes](docs/data-availability-modes.md).
 - How to [deploy the stack to an external L1](docs/deploy-using-sepolia.org) such as Sepolia.
+- How to [deploy contracts with the deterministic deployment proxy](docs/deterministic-deployment-proxy.md).
 - How to [edit the zkevm contracts](docs/edit-contracts.md).
 - How to [perform an environment migration](docs/environment-migration.org) with clean copies of the databases.
 - How to [iterate and debug quickly](docs/fast-iteration-cycle.md) with Kurtosis.
@@ -175,9 +183,247 @@ This section features documentation specifically designed for advanced users, ou
 - How to use a [native token](docs/native-token/native-token.md).
 - How to [play with the network](docs/network-ops.org) to introduce latencies.
 - How to [set up a permissionless zkevm node](docs/permissionless-zkevm-node.md).
+- How to [resequence batches with the cdk-erigon sequencer](docs/resequence-sequencer/resequence-sequencer.md).
 - How to [run a debugger](docs/running-a-debugger/running-a-debugger.org).
+- How to [assign static ports](docs/static-ports/static-ports.md) to Kurtosis services.
 - How to work with the [timelock](docs/timelock.org).
 - How to [trigger a reorg](docs/trigger-a-reorg/trigger-a-reorg.md).
+- How to [perform a trustless recovery the DAC and L1](docs/trustless-recovery-from-dac-l1.md).
+
+## FAQ
+
+### Q: What are the different ways to deploy this package?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+1. Deploy the package without cloning the repository.
+
+```bash
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk@main
+kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk@v0.2.15
+```
+
+2. Deploy the package with the default parameters.
+
+```bash
+kurtosis run --enclave cdk .
+```
+
+3. Deploy with the default parameters and specify on-the-fly custom arguments.
+
+```bash
+kurtosis run --enclave cdk . '{"deployment_stages": {"deploy_l1": false}}'
+```
+
+4. Deploy with a configuration file.
+
+Check the [tests](.github/tests/) folder for sample configuration files.
+
+```bash
+kurtosis run --enclave cdk --args-file params.yml .
+```
+
+5. Do not deploy with a configuration file and specify on-the-fly custom arguments.
+
+🚨 Avoid using this method, as Kurtosis is unable to merge parameters from two different sources (the parameters file and on-the-fly arguments).
+
+The parameters file will not be used, and only the on-the-fly arguments will be considered.
+
+```bash
+kurtosis run --enclave cdk --args-file params.yml . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
+# similar to: kurtosis run --enclave cdk . '{"args": {"agglayer_image": "ghcr.io/agglayer/agglayer:latest"}}'
+```
+
+</details>
+
+### Q: How do I deploy the package to Kubernetes?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+By default your Kurtosis cluster should be `docker`. You can check this using the following command:
+
+```bash
+kurtosis cluster get
+```
+
+You can also list the available clusters.
+
+```bash
+kurtosis cluster ls
+```
+
+If you take a look at your Kurtosis configuration, it should be similar to this:
+
+```yaml
+config-version: 2
+should-send-metrics: true
+kurtosis-clusters:
+  docker:
+    type: "docker"
+```
+
+Let's say you've deployed a local [minikube](https://minikube.sigs.k8s.io/docs/) cluster. It would work the same for any type of Kubernetes cluster.
+
+Edit the Kurtosis configuration file.
+
+```bash
+vi "$(kurtosis config path)"
+```
+
+Under `kurtosis-clusters`, you should add another entry for your local Kubernetes cluster.
+
+```yaml
+kurtosis-clusters:
+  minikube: # give it the name you want
+    type: "kubernetes"
+    config:
+      kubernetes-cluster-name: "local-01" # should be the same as your cluster name
+      storage-class: "standard"
+      enclave-size-in-megabytes: 10
+```
+
+Then point Kurtosis to the local Kubernetes cluster.
+
+```bash
+kurtosis cluster set minikube
+```
+
+Deploy the package to Kubernetes.
+
+```bash
+kurtosis run --enclave cdk .
+```
+
+If you want to revert back to Docker, simply use:
+
+```bash
+kurtosis cluster set docker
+```
+
+</details>
+
+### Q: I'm trying to deploy the package and Kurtosis is complaining, what should I do?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+Occasionally, Kurtosis deployments may run indefinitely. Typically, deployments should complete within 10 to 15 minutes. If you experience longer deployment times or if it seems stuck, check the Docker engine's memory limit and set it to 16GB if possible. If this does not resolve the issue, please refer to the troubleshooting steps provided.
+
+> 🚨 If you're deploying the package on a mac, you may face an issue when trying to pull the [zkevm-prover](https://github.com/0xPolygonHermez/zkevm-prover) image! Kurtosis will complain by saying `Error response from daemon: no matching manifest for linux/arm64/v8 in the manifest list entries: no match for platform in manifest: not found`. Indeed, the image is meant to be used on `linux/amd64` architectures, which is a bit different from m1 macs architectures, `linux/arm64/v8`.
+>
+> A work-around is to pull the image by specifying the `linux/amd64` architecture before deploying the package.
+>
+> ```bash
+> docker pull --platform linux/amd64 hermeznetwork/zkevm-prover:<tag>
+> kurtosis run ...
+> ```
+
+1. Make sure the issue is related to Kurtosis itself. If you made any changes to the package, most common issues are misconfigurations of services, file artefacts, ports, etc.
+
+2. Remove the Kurtosis enclaves.
+
+Note: By specifying the `--all` flag, Kurtosis will also remove running enclaves.
+
+```bash
+kurtosis clean --all
+```
+
+3. Restart the Kurtosis engine.
+
+```bash
+kurtosis engine restart
+```
+
+4. Restart the Docker daemon.
+
+</details>
+
+### Q: How do I debug in Kurtosis?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+Kurtosis is just a thin wrapper on top of Docker so you can use all the `docker`commands you want.
+
+On top of that, here are some useful commands.
+
+1. View the state of the enclave (services and endpoints).
+
+```bash
+kurtosis enclave inspect cdk
+```
+
+2. Follow the logs of a service.
+
+Note: If you want to see all the logs of a service, you can specify the `--all` flag.
+
+```bash
+kurtosis service logs cdk cdk-erigon-sequencer-001 --follow
+```
+
+3. Execute a command inside a service.
+
+```bash
+kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq
+```
+
+4. Get a shell inside a service.
+
+```bash
+kurtosis service shell cdk cdk-erigon-sequencer-001
+```
+
+5. Stop or start a service.
+
+```bash
+kurtosis service stop cdk cdk-erigon-sequencer-001
+kurtosis service start cdk cdk-erigon-sequencer-001
+```
+
+6. Get a specific endpoint.
+
+```bash
+kurtosis port print cdk cdk-erigon-node-001 http-rpc
+```
+
+7. Inspect a file artifact.
+
+```bash
+kurtosis files inspect cdk cdk-erigon-node-config-artifact-sequencer config.yaml
+```
+
+8. Download a file artifact.
+
+```bash
+kurtosis files download cdk cdk-erigon-node-config-artifact
+```
+
+</details>
+
+### Q: How to lint Starlark code?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+```bash
+kurtosis lint --format .
+```
+
+</details>
+
+### Q: How do I do x, y, z in Kurtosis?
+
+<details>
+<summary><b>Click to expand</b></summary>
+
+Head to the Kurtosis [documentation](https://docs.kurtosis.com/).
+
+You can also take a look at the [Starlark language specification](https://github.com/bazelbuild/starlark/blob/master/spec.md) to know if certain operations are supported.
+
+</details>
 
 ## Contact
 

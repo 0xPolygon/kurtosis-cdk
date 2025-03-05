@@ -51,7 +51,7 @@ acl mode --mode allowlist --datadir /home/erigon/data/dynamic-kurtosis-sequencer
 The above example will block all addresses from sending transactions.
 
 ```bash
-$ export ETH_RPC_URL="$(kurtosis port print cdk cdk-erigon-node-001 rpc)"
+$ export ETH_RPC_URL="$(kurtosis port print cdk cdk-erigon-rpc-001 rpc)"
 $ private_key="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 
 $ cast send --legacy --private-key "$private_key" --value 0.01ether --rpc-url "$ETH_RPC_URL" 0x0000000000000000000000000000000000000000

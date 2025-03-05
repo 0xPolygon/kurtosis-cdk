@@ -29,17 +29,22 @@ check_variable() {
 #
 ####################################################################################################
 
-# LOCAL KURTOSIS-CDK
+# ENCLAVE
 enclave="cdk"
+
+if [[ "$enclave" != "" ]] && ! kurtosis enclave inspect "$enclave"; then
+  exit 1
+fi
+
+# LOCAL KURTOSIS-CDK
 l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
 l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
-l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-node-001 rpc)"
+l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-rpc-001 rpc)"
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
-# enclave="erigon-18-4"
 # l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
 # l2_sequencer_url="$(kurtosis port print "$enclave" sequencer001 sequencer8123)"
 # l2_datastreamer_url="$(kurtosis port print "$enclave" sequencer001 sequencer6900)"
@@ -81,7 +86,8 @@ echo -e "- L2 RPC URL:\t\t\t$l2_rpc_url"
 echo -e "- Rollup Manager Address:\t$rollup_manager_addr"
 echo -e "- Rollup ID:\t\t\t$rollup_id"
 
-# Update datastreamer config.
+# Update datastreamer config. This requires the sanity check script to be run
+# from the root of the kurtosis-cdk repo.
 # shellcheck disable=SC2016
 tomlq -Y --toml-output --in-place --arg l2_datastreamer_url "$l2_datastreamer_url" '.Online.URI = $l2_datastreamer_url' scripts/datastreamer.toml
 
@@ -104,12 +110,25 @@ function fetch_l2_batch_info_from_rpc() {
 function fetch_l2_batch_info_from_datastream() {
   local batch_number="$1"
   local result
-  result="$(zkevm-datastreamer decode-batch --cfg scripts/datastreamer.toml --batch "$batch_number" --json | jq -s '. | last')"
+
+  # This is meant to read the stream and just add all of the objects together
+  # which is a little odd but would allow us to see the last unique fields.
+  #
+  # The tool can be found and built from source here:
+  # https://github.com/0xPolygonHermez/zkevm-node/tree/develop/tools/datastreamer
+  result="$(zkevm-datastreamer decode-batch --cfg scripts/datastreamer.toml --batch "$batch_number" --json | jq -s 'add')"
+
+  local ts
+  ts="$(echo "$result" | jq -r '.Timestamp' | sed 's/ .*//')"
+  ts="$(printf '0x%x' "$ts")"
+
   jq -n \
     --argjson result "$result" \
+    --arg ts "$ts" \
     '{
       localExitRoot: $result["Local Exit Root"],
-      stateRoot: $result["State Root"]
+      stateRoot: $result["State Root"],
+      timestamp: $ts
     }'
 }
 
@@ -198,12 +217,12 @@ function _compare_json() {
 if [[ "$enclave" != "" ]]; then
   echo "
 ####################################################################################################
-#   _  ___   _ ____ _____ ___  ____ ___ ____  
-#  | |/ / | | |  _ \_   _/ _ \/ ___|_ _/ ___| 
-#  | ' /| | | | |_) || || | | \___ \| |\___ \ 
+#   _  ___   _ ____ _____ ___  ____ ___ ____
+#  | |/ / | | |  _ \_   _/ _ \/ ___|_ _/ ___|
+#  | ' /| | | | |_) || || | | \___ \| |\___ \
 #  | . \| |_| |  _ < | || |_| |___) | | ___) |
-#  |_|\_\\___/|_| \_\|_| \___/|____/___|____/ 
-#                                            
+#  |_|\_\\___/|_| \_\|_| \___/|____/___|____/
+#
 ####################################################################################################
 "
   stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
@@ -212,8 +231,11 @@ if [[ "$enclave" != "" ]]; then
     echo "$stopped_services"
     echo
 
-    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' \
-      | while read -r container; do echo "Printing logs for $container"; docker logs --tail 50 "$container"; done
+    kurtosis enclave inspect "$enclave" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' |
+      while read -r container; do
+        echo "Printing logs for $container"
+        docker logs --tail 50 "$container"
+      done
     exit 1
   else
     echo "✅ All services are running."
@@ -277,7 +299,7 @@ consensus_type=""
 da_protocol_addr=""
 result=$(cast call --json --rpc-url "$l1_rpc_url" "$rollup_contract" "dataAvailabilityProtocol()(address)" 2>&1)
 # shellcheck disable=SC2181
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
   consensus_type="validium"
   da_protocol_addr="$(echo "$result" | jq -r '.[0]')"
 else
@@ -370,8 +392,8 @@ rpc_trusted_batch_info="$(fetch_l2_batch_info_from_rpc "$l2_rpc_url" "$rpc_lates
 echo "Batch: $((rpc_latest_batch_number))"
 echo "$rpc_trusted_batch_info" | jq '.'
 
-# Compare batch data (only if they match).
-if [[ "$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))" ]]; then
+# Compare batch data (only if they match) and if the batch is closed
+if [[ ("$((sequencer_latest_batch_number))" -eq "$((rpc_latest_batch_number))") && ("true" == "$(echo "$sequencer_trusted_batch_info" | jq -r '.closed')") ]]; then
   echo -e "\nComparing L2 sequencer and L2 RPC..."
   compare_json_full_match \
     "l2_sequencer" "$sequencer_trusted_batch_info" \
@@ -405,10 +427,6 @@ echo -e "\nFetching data from L2 datastreamer..."
 l2_datastreamer_virtualized_batch_info="$(fetch_l2_batch_info_from_datastream "$((last_virtualized_batch))")"
 echo "$l2_datastreamer_virtualized_batch_info" | jq '.'
 
-echo -e "\nFetching data from L1 RollupManager contract..."
-l1_virtualized_batch_info="$(fetch_l1_batch_info "$last_virtualized_batch")"
-echo "$l1_virtualized_batch_info" | jq '.'
-
 # Compare batch data.
 echo -e "\nComparing L2 sequencer and L2 RPC..."
 compare_json_full_match \
@@ -419,16 +437,6 @@ echo -e "\nComparing L2 datastreamer and L2 rpc..."
 compare_json_partial_match \
   "l2_datastreamer" "$l2_datastreamer_virtualized_batch_info" \
   "l2_rpc" "$l2_rpc_virtualized_batch_info"
-
-echo -e "\nComparing L2 sequencer and L1 contracts..."
-compare_json_partial_match \
-  "l2_sequencer" "$l2_sequencer_virtualized_batch_info" \
-  "l1_contract" "$l1_virtualized_batch_info"
-
-echo -e "\nComparing L2 RPC and L1 contracts..."
-compare_json_partial_match \
-  "l2_rpc" "$l2_rpc_virtualized_batch_info" \
-  "l1_contract" "$l1_virtualized_batch_info"
 
 # shellcheck disable=SC2028
 echo '

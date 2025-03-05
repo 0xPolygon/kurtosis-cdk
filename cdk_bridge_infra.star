@@ -1,10 +1,8 @@
-service_package = import_module("./lib/service.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 databases = import_module("./databases.star")
 
 
-def run(plan, args):
-    contract_setup_addresses = service_package.get_contract_setup_addresses(plan, args)
+def run(plan, args, contract_setup_addresses, deploy_bridge_ui=True):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
@@ -26,16 +24,17 @@ def run(plan, args):
         config=bridge_service_config,
     )
 
-    # Start the bridge UI.
-    bridge_ui_config_artifact = create_bridge_ui_config_artifact(
-        plan, args, contract_setup_addresses
-    )
-    zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+    if deploy_bridge_ui:
+        # Start the bridge UI.
+        bridge_ui_config_artifact = create_bridge_ui_config_artifact(
+            plan, args, contract_setup_addresses
+        )
+        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
 
-    # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
-    if args["use_local_l1"]:
-        proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
-        zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
+        # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
+        if args["use_local_l1"]:
+            proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
+            zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
@@ -50,12 +49,15 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                 data={
                     "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
-                    "l1_rpc_url": args["l1_rpc_url"],
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "bridge", args["l1_rpc_url"]
+                    ),
                     "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     # ports
                     "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
                     "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
+                    "zkevm_bridge_metrics_port": args["zkevm_bridge_metrics_port"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                 }
                 | contract_setup_addresses
@@ -87,7 +89,9 @@ def create_reverse_proxy_config_artifact(plan, args):
         src="./templates/bridge-infra/haproxy.cfg"
     )
 
-    l1rpc_service = plan.get_service("el-1-geth-lighthouse")
+    l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
+    l1rpc_host = l1_rpc_url.split(":")[1].replace("//", "")
+    l1rpc_port = l1_rpc_url.split(":")[2]
     l2rpc_service = plan.get_service(
         name=args["l2_rpc_name"] + args["deployment_suffix"]
     )
@@ -104,8 +108,8 @@ def create_reverse_proxy_config_artifact(plan, args):
             "haproxy.cfg": struct(
                 template=bridge_ui_proxy_config_template,
                 data={
-                    "l1rpc_ip": l1rpc_service.ip_address,
-                    "l1rpc_port": l1rpc_service.ports["rpc"].number,
+                    "l1rpc_ip": l1rpc_host,
+                    "l1rpc_port": l1rpc_port,
                     "l2rpc_ip": l2rpc_service.ip_address,
                     "l2rpc_port": l2rpc_service.ports["rpc"].number,
                     "bridgeservice_ip": bridge_service.ip_address,

@@ -21,9 +21,9 @@ The `agglayer-config.toml` file should be changed as follows:
 ```bash
 [full-node-rpcs]
 # RPC of the first rollup node
-1 = "http://cdk-erigon-node-001:8123"
+1 = "http://cdk-erigon-rpc-001:8123"
 # RPC of the second rollup node
-2 = "http://cdk-erigon-node-002:8123"
+2 = "http://cdk-erigon-rpc-002:8123"
 
 [proof-signers]
 # Sequencer address for first rollup

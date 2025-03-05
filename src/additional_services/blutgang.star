@@ -1,3 +1,4 @@
+ports_package = import_module("../package_io/ports.star")
 service_package = import_module("../../lib/service.star")
 
 BLUTGANG_IMAGE = "makemake1337/blutgang:0.3.6"
@@ -8,14 +9,13 @@ ADMIN_PORT_NUMBER = 8556
 
 def run(plan, args):
     blutgang_config_artifact = get_blutgang_config(plan, args)
+    (ports, public_ports) = get_blutgang_ports(args)
     plan.add_service(
         name="blutgang" + args["deployment_suffix"],
         config=ServiceConfig(
             image=BLUTGANG_IMAGE,
-            ports={
-                "http": PortSpec(RPC_PORT_NUMBER),
-                "admin": PortSpec(ADMIN_PORT_NUMBER),
-            },
+            ports=ports,
+            public_ports=public_ports,
             files={
                 "/etc/blutgang": Directory(
                     artifact_names=[
@@ -25,7 +25,6 @@ def run(plan, args):
             },
             cmd=["/app/blutgang", "-c", "/etc/blutgang/config.toml"],
         ),
-        description="Starting blutgang service",
     )
 
 
@@ -77,3 +76,12 @@ def get_blutgang_config(plan, args):
             )
         },
     )
+
+
+def get_blutgang_ports(args):
+    ports = {
+        "http": PortSpec(RPC_PORT_NUMBER, application_protocol="http"),
+        "admin": PortSpec(ADMIN_PORT_NUMBER, application_protocol="http"),
+    }
+    public_ports = ports_package.get_public_ports(ports, "blutgang_start_port", args)
+    return (ports, public_ports)

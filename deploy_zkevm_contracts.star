@@ -21,6 +21,26 @@ ARTIFACTS = [
         "name": "update-ger.sh",
         "file": "./templates/contract-deploy/update-ger.sh",
     },
+    {
+        "name": "run-l2-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
+    },
+    {
+        "name": "run-sovereign-setup.sh",
+        "file": "./templates/sovereign-rollup/run-sovereign-setup.sh",
+    },
+    {
+        "name": "create_new_rollup.json",
+        "file": "./templates/sovereign-rollup/create_new_rollup.json",
+    },
+    {
+        "name": "add_rollup_type.json",
+        "file": "./templates/sovereign-rollup/add_rollup_type.json",
+    },
+    {
+        "name": "sovereign-genesis.json",
+        "file": "./templates/sovereign-rollup/genesis.json",
+    },
 ]
 
 
@@ -28,10 +48,7 @@ def run(plan, args):
     artifact_paths = list(ARTIFACTS)
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
-    if (
-        "use_previously_deployed_contracts" in args
-        and args["use_previously_deployed_contracts"]
-    ):
+    if args.get("use_previously_deployed_contracts"):
         artifact_paths.append(
             {
                 "name": "genesis.json",
@@ -42,6 +59,22 @@ def run(plan, args):
             {
                 "name": "combined.json",
                 "file": "./templates/contract-deploy/combined.json",
+            }
+        )
+        artifact_paths.append(
+            {
+                "name": "dynamic-" + args["chain_name"] + "-conf.json",
+                "file": "./templates/contract-deploy/dynamic-"
+                + args["chain_name"]
+                + "-conf.json",
+            }
+        )
+        artifact_paths.append(
+            {
+                "name": "dynamic-" + args["chain_name"] + "-allocs.json",
+                "file": "./templates/contract-deploy/dynamic-"
+                + args["chain_name"]
+                + "-allocs.json",
             }
         )
 
@@ -115,21 +148,26 @@ def run(plan, args):
     )
 
     # Store CDK configs.
-    cdk_erigon_node_chain_config_artifact = plan.store_service_files(
-        name="cdk-erigon-node-chain-config",
+    plan.store_service_files(
+        name="cdk-erigon-chain-config",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-kurtosis-conf.json",
+        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
     )
 
-    cdk_erigon_node_chain_allocs_artifact = plan.store_service_files(
-        name="cdk-erigon-node-chain-allocs",
+    plan.store_service_files(
+        name="cdk-erigon-chain-allocs",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-kurtosis-allocs.json",
+        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+    )
+    plan.store_service_files(
+        name="cdk-erigon-chain-first-batch",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/first-batch-config.json",
     )
 
     # Force update GER.
     plan.exec(
-        description="Update the GER so the L1 Info Tree Index is greater than 0",
+        description="Updating the GER so the L1 Info Tree Index is greater than 0",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[

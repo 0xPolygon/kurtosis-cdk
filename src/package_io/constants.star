@@ -1,4 +1,4 @@
-GLOBAL_LOG_LEVEL = struct(
+LOG_LEVEL = struct(
     error="error",
     warn="warn",
     info="info",
@@ -11,9 +11,6 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
-SEQUENCER_NAME = struct(
-    CDK_ERIGON="cdk-erigon-sequencer",
-    ZKEVM="zkevm-node-sequencer",
-)
+TOOLBOX_IMAGE = "leovct/toolbox:0.0.8"
 
-TX_SPAMMER_IMG = "leovct/toolbox:0.0.5"
+L1_ENGINES = ("geth", "anvil")

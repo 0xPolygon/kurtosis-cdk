@@ -1,0 +1,32 @@
+{
+    "realVerifier": "{{.zkevm_use_real_verifier}}",
+    "forkID": 12,
+    "programVKey": "{{.verifier_program_vkey}}",
+    "description": "kurtosis-devnet - {{.chain_name}}",
+    "adminZkEVM": "{{.zkevm_l2_admin_address}}",
+    "consensusContract": "{{.zkevm_rollup_consensus}}",
+    "type":"EOA",
+    "trustedSequencerURL": "{{ .op_el_rpc_url }}",
+    "networkName": "{{ .sovereign_chain_name }}",
+    "trustedSequencer": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "chainID": "{{ .zkevm_rollup_chain_id }}",
+    "rollupAdminAddress": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "consensusContractName": "PolygonPessimisticConsensus",
+    "gasTokenAddress": "{{ .gas_token_address }}",
+    "deployerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
+    "maxFeePerGas": "",
+    "maxPriorityFeePerGas": "",
+    "multiplierGas": "",
+    "timelockDelay": 0,
+    "timelockSalt": "",
+    "rollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
+    "rollupTypeId": 1,
+    "isVanillaClient": true,
+    "sovereignParams": {
+        "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+        "sovereignWETHAddress": "{{ .gas_token_address }}",
+        "sovereignWETHAddressIsNotMintable": false,
+        "globalExitRootUpdater": "{{ .zkevm_l2_sovereignadmin_address }}",
+        "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}"
+    }
+}

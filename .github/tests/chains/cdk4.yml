@@ -1,0 +1,68 @@
+# This args-file deploys the CDK-4 chain.
+# RollupID for the CI would be:
+# 0: L1 (271828)
+# 1: cdk-erigon-validium-1 (10101)
+# 2: cdk-opgeth-sovereign (2151908)
+# 3: cdk-erigon-validium-2 (30303)
+# 4: cdk-erigon-sovereign (40404)
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_cdk_bridge_ui: false
+
+args:
+  deployment_suffix: "-004"
+  zkevm_rollup_chain_id: 40404
+  zkevm_rollup_id: 4
+
+  # polycli wallet inspect --mnemonic 'holiday crunch rule artefact cinnamon suit uphold evil shrimp topic core abstract' --addresses 11 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: " $1 ""; print "zkevm_l2_" roles[NR] "_private_key: 0x" $2 "\n"}'
+
+  # sequencer
+  zkevm_l2_sequencer_address: "0x0d59BC8C02A089D48d9Cd465b74Cb6E23dEB950D"
+  zkevm_l2_sequencer_private_key: "0xf6385a27e7710349617340c6f9310e88f0aad10d01646a9bb204177431babcd8"
+
+  # aggregator
+  zkevm_l2_aggregator_address: "0x2D20D9081fb403E856355F2cddd1C4863D0109cb"
+  zkevm_l2_aggregator_private_key: "0x2cb77c2cca48d3fee64c14d73564fd6e90676a4f6da6545681e10c8b9b22fce2"
+
+  # claimtxmanager
+  zkevm_l2_claimtxmanager_address: "0x1359D1eAf25aADaA04304Ee7EFC5b94C43e0e1D5"
+  zkevm_l2_claimtxmanager_private_key: "0xb0244fcbf83d7aaa2d51dc78a55233058af31797a974d25f724de041f3484418"
+
+  # timelock
+  zkevm_l2_timelock_address: "0x7803E33388C695E7cbd85eD55f4abe6455E9ce2e"
+  zkevm_l2_timelock_private_key: "0xe12e739b58489a2c2f49c472169ba20eb89d039e71f04d5342ab645dc3fb6540"
+
+  # admin
+  # zkevm_l2_admin_address: "0x5666Cc6B46ad32b469D9Aec7C1eE6d02f7312759"
+  # zkevm_l2_admin_private_key: "0xd2ee309113fc97bed6030201fea0d1234d6b4acbc47b9a4fe12a8fa5270052aa"
+
+  # loadtest
+  zkevm_l2_loadtest_address: "0x5198d92d278Fd36e5745C308F728d256198A0e3d"
+  zkevm_l2_loadtest_private_key: "0xcc594c53eca19f9e56200cadf60c94757b0bdee1fc4bc73552ba879d51fd82b3"
+
+  # agglayer
+  zkevm_l2_agglayer_address: "0x9b5A1f2bC7bb48419d9f6407CFcA454F87884072"
+  zkevm_l2_agglayer_private_key: "0x7b1164f53f633e940089031a3c265c308d2bcf4756bc8dcf9046bf00e21ec3b1"
+
+  # dac
+  zkevm_l2_dac_address: "0xA9875E9B9FE3BD46da758ba69a5d4B9dFCA6F133"
+  zkevm_l2_dac_private_key: "0x5d1a923f60e2423932f782dab9510e1c2fd64b0f29b0893978864191ecdd6f4f"
+
+  # proofsigner
+  zkevm_l2_proofsigner_address: "0x3AA075513578d86dC63f9344cD9489b948d7686a"
+  zkevm_l2_proofsigner_private_key: "0xfd402dcc8c7fc7ce0df59fe12f33da7ac2ed760a619188ff16974fde16f9b00e"
+
+  # l1testing
+  zkevm_l2_l1testing_address: "0x943413d3b2E1B6aF09a758c35b6F5d23a4d6d262"
+  zkevm_l2_l1testing_private_key: "0x27d8ab2d65296d0da072b172ca9ca874583f9930adb6ac3222fd9494ae7c7f0d"
+
+  # claimsponsor
+  zkevm_l2_claimsponsor_address: "0xeA06890A8A547aDd71f98A6845542eb3B63C2862"
+  zkevm_l2_claimsponsor_private_key: "0xb97112e36cfcde131faa110430eed6593b75406e5d6991d8db3ed0f492a73b6f"
+
+  consensus_contract_type: pessimistic
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  # zkevm_use_real_verifier: true
+  enable_normalcy: true

@@ -1,4 +1,4 @@
-FROM golang:1.21 AS polycli-builder
+FROM golang:1.22 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
@@ -12,13 +12,14 @@ LABEL description="Helper image to deploy zkevm contracts"
 # STEP 1: Download zkevm contracts dependencies and compile contracts.
 ARG ZKEVM_CONTRACTS_BRANCH
 WORKDIR /opt/zkevm-contracts
-RUN git clone  https://github.com/0xPolygonHermez/zkevm-contracts . \
+RUN git clone https://github.com/0xPolygonHermez/zkevm-contracts . \
   && git checkout ${ZKEVM_CONTRACTS_BRANCH} \
   && npm install --global npm@10.9.0 \
   && npm install \
   && npx hardhat compile
 
 # STEP 2: Install tools.
+ARG FOUNDRY_VERSION
 COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 WORKDIR /opt
 # WARNING (DL3008): Pin versions in apt get install.
@@ -32,7 +33,7 @@ RUN apt-get update \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
-  && /root/.foundry/bin/foundryup \
+  && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
   && cp /root/.foundry/bin/* /usr/local/bin
 
 USER node

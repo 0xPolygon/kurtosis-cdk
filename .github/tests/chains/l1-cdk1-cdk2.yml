@@ -1,0 +1,19 @@
+# This args-file deploys the L1 chain with the CDK-1 and CDK-2 chains.
+# RollupID for the CI would be:
+# 0: L1 (271828)
+# 1: cdk-erigon-validium-1 (10101)
+# 2: cdk-opgeth-sovereign (2151908)
+# 3: cdk-erigon-validium-2 (30303)
+# 4: cdk-erigon-sovereign (40404)
+deployment_stages:
+  deploy_cdk_bridge_ui: false
+  deploy_optimism_rollup: true
+
+args:
+  agglayer_prover_sp1_key: null
+  agglayer_prover_primary_prover: "mock-prover"
+  consensus_contract_type: pessimistic
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  # zkevm_use_real_verifier: true
+  enable_normalcy: true

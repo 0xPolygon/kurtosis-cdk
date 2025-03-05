@@ -1,0 +1,17 @@
+# This file has been generated automatically.
+deployment_stages:
+  deploy_l2_contracts: true
+args:
+  verbosity: debug
+  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
+  additional_services:
+    - tx_spammer
+  consensus_contract_type: pessimistic
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  zkevm_use_real_verifier: false
+  enable_normalcy: true
+  agglayer_prover_sp1_key: ''
+  agglayer_prover_primary_prover: mock-prover
+  sequencer_type: erigon

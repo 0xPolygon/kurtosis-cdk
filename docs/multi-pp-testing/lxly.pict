@@ -1,0 +1,25 @@
+# pict lxly.pict /f:json | jq -c '.[] | from_entries'
+DepositChain       : L1, PP1, PP2, FEP
+DestinationChain   : L1, PP1, PP2, FEP
+DestinationAddress : EOA, Contract, Precompile
+BridgeType         : Asset, Message, Weth
+Token              : NativeEther, LocalERC20, Buggy, WETH, GasToken
+MetaData           : 0x, Random, Huge, Max
+ForceUpdate        : True (4), False
+Amount             : 0, 1, Random, Max
+
+IF [DepositChain] = "L1" THEN [DestinationChain] <> "L1";
+IF [DepositChain] = "FEP" THEN [DestinationChain] <> "FEP";
+IF [DepositChain] = "PP1" THEN [DestinationChain] <> "PP1";
+IF [DepositChain] = "PP2" THEN [DestinationChain] <> "PP2";
+IF [DepositChain] = "PP2" AND [BridgeType] = "Message" THEN [Amount] = "0";
+
+IF [BridgeType] = "Message" THEN [Token] = "NativeEther";
+IF [BridgeType] = "Weth" THEN [Token] = "WETH";
+
+
+IF [Token] = "WETH" THEN [DepositChain] = "PP2";
+IF [Token] = "LocalERC20" OR [Token] = "WETH" OR [Token] = "GasToken" OR [Token] = "Buggy" THEN [MetaData] = "0x";
+
+IF [Amount] = "Max" THEN [Token] = "Buggy";
+

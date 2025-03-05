@@ -1,4 +1,4 @@
-FROM golang:1.21 AS polycli-builder
+FROM golang:1.22 AS polycli-builder
 WORKDIR /opt/polygon-cli
 RUN git clone https://github.com/maticnetwork/polygon-cli.git . \
   && make build

@@ -90,7 +90,7 @@ kurtosis clean --all
 
 # Fetch and edit the docker image `zkevm-contracts`
 
-Clone the repo [`zkevm-contracts`](https://github.com/0xPolygonHermez/zkevm-contracts). Due to Docker's constraints on coyping files from the local build context, it will help us later to clone this repo into a new subdirectory `docker/local-test-zkevm-contracts` of the current repo `kurtosis-cdk`:
+Clone the repo [`zkevm-contracts`](https://github.com/0xPolygonHermez/zkevm-contracts). Due to Docker's constraints on copying files from the local build context, it will help us later to clone this repo into a new subdirectory `docker/local-test-zkevm-contracts` of the current repo `kurtosis-cdk`:
 
 ```bash
 git clone git@github.com:0xPolygonHermez/zkevm-contracts.git docker/local-test-zkevm-contracts
@@ -164,6 +164,7 @@ docker build . \
  --tag local/zkevm-contracts:v6.0.0-rc.1-fork.9 \
  --build-arg ZKEVM_CONTRACTS_BRANCH=v6.0.0-rc.1-fork.9 \
  --build-arg POLYCLI_VERSION=main \
+--build-arg FOUNDRY_VERSION=nightly \
  --file zkevm-contracts.Dockerfile
 ```
 

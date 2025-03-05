@@ -27,20 +27,6 @@ wait_for_rpc_to_be_available() {
     done
 }
 
-wait_for_finalized_block() {
-    counter=0
-    max_retries=100
-    until cast block --rpc-url "{{.l1_rpc_url}}" finalized &> /dev/null; do
-        ((counter++))
-        echo_ts "No finalized block yet... Retrying ($counter)..."
-        if [[ $counter -ge $max_retries ]]; then
-            echo_ts "Exceeded maximum retry attempts. Exiting."
-            exit 1
-        fi
-        sleep 5
-    done
-}
-
 fund_account_on_l1() {
     name="$1"
     address="$2"
@@ -54,7 +40,7 @@ fund_account_on_l1() {
 
 deploy_rollup_manager() {
     # Deploy contracts.
-    echo_ts "Step 1: Preparing tesnet"
+    echo_ts "Step 1: Preparing testnet"
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
 
     echo_ts "Step 2: Creating genesis"
@@ -83,10 +69,14 @@ fi
 
 # If we had a genesis, and combined that were created outside of
 # kurtosis entirely, we'll use those and exit. This is like a
-# permissionless use case
+# permissionless use case or a use case where we're starting from
+# recovered network
 if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
     echo_ts "We have a genesis and combined output file from a previous deployment"
     cp /opt/contract-deploy/* /opt/zkevm/
+    pushd /opt/zkevm || exit 1
+    jq '.firstBatchData' combined.json > first-batch-config.json
+    popd || exit 1
     exit
 fi
 
@@ -94,34 +84,49 @@ echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
-echo_ts "Funding important accounts on l1"
+echo_ts "Funding important accounts on L1"
 fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
 fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
 fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
 fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
+fund_account_on_l1 "l1testing" "{{.zkevm_l2_l1testing_address}}"
 
 echo_ts "Setting up local zkevm-contracts repo for deployment"
 pushd /opt/zkevm-contracts || exit 1
-# setup a foundry toml in case we do a gas token or dac deployment
-printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
-
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# Set up the hardhat environment.
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
+# Set up a foundry project in case we do a gas token or dac deployment.
+printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
 # Deploy gas token
-# TODO in the future this should be configurable. I.e. we should be able to specify a token address that has already been deployed
-# {{if .zkevm_use_gas_token_contract}}
+# {{if .gas_token_enabled}}
+
+# {{if eq .gas_token_address ""}}
 echo_ts "Deploying gas token to L1"
 forge create \
+    --broadcast \
     --json \
     --rpc-url "{{.l1_rpc_url}}" \
     --mnemonic "{{.l1_preallocated_mnemonic}}" \
     contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-    --constructor-args  "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" > gasToken-erc20.json
+    --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+    > gasToken-erc20.json
+jq \
+    --slurpfile c gasToken-erc20.json \
+    '.gasTokenAddress = $c[0].deployedTo' \
+    /opt/contract-deploy/create_rollup_parameters.json \
+    > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# {{else}}
+echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
+jq \
+    --arg c "{{ .gas_token_address }}" \
+    '.gasTokenAddress = $c' \
+    /opt/contract-deploy/create_rollup_parameters.json \
+    > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# {{end}}
 
-# In this case, we'll configure the create rollup parameters to have a gas token
-jq --slurpfile c gasToken-erc20.json '.gasTokenAddress = $c[0].deployedTo' /opt/contract-deploy/create_rollup_parameters.json > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # {{end}}
 
 is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc
@@ -135,11 +140,15 @@ else
     cp /opt/zkevm/deploy_output.json /opt/zkevm-contracts/deployment/v2/
 fi
 
-echo_ts "Step 5: Creating Rollup/Validium"
-npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
-if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
-    echo_ts "The create_rollup_output.json file was not created after running createRollup"
-    exit 1
+# Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
+deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
+if [[ "$deploy_optimism_rollup" != "true" ]]; then
+    echo_ts "Step 5: Creating Rollup/Validium"
+    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
+    if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
+        echo_ts "The create_rollup_output.json file was not created after running createRollup"
+        exit 1
+    fi
 fi
 
 # Combine contract deploy files.
@@ -149,7 +158,13 @@ echo_ts "Combining contract deploy files"
 mkdir -p /opt/zkevm
 cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
-cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
+# Check create_rollup_output.json exists before copying it.
+# For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
+if [[ -e /opt/zkevm-contracts/deployment/v2/create_rollup_output.json ]]; then
+    cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
+else
+    echo "File /opt/zkevm-contracts/deployment/v2/create_rollup_output.json does not exist."
+fi
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
 popd || exit 1
 
@@ -157,12 +172,24 @@ echo_ts "Creating combined.json"
 pushd /opt/zkevm/ || exit 1
 
 cp genesis.json genesis.original.json
-jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
+# Check create_rollup_output.json exists before copying it.
+# For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
+if [[ -e create_rollup_output.json ]]; then
+    jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
+else
+    echo "File create_rollup_output.json does not exist. Copying deploy_output.json to combined.json."
+    cp deploy_output.json combined.json
+fi
 jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c.json; mv c.json combined.json
 
 # Add the L2 GER Proxy address in combined.json (for panoptichain).
 zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
+
+# {{if .gas_token_enabled}}
+jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
+# {{end}}
+
 
 # There are a bunch of fields that need to be renamed in order for the
 # older fork7 code to be compatible with some of the fork8
@@ -212,16 +239,29 @@ if ! output_json=$(jq "$jq_script" /opt/zkevm/genesis.json); then
 fi
 
 # Write the output JSON to a file
-if ! echo "$output_json" | jq . > dynamic-kurtosis-allocs.json; then
-    echo_ts "Error writing to file dynamic-kurtosis-allocs.json"
+if ! echo "$output_json" | jq . > "dynamic-{{.chain_name}}-allocs.json"; then
+    echo_ts "Error writing to file dynamic-{{.chain_name}}-allocs.json"
     exit 1
 fi
 
-echo_ts "Transformation complete. Output written to dynamic-kurtosis-allocs.json"
-jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > dynamic-kurtosis-conf.json
-batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
-jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' dynamic-kurtosis-conf.json > tmp_output.json
-mv tmp_output.json dynamic-kurtosis-conf.json
+echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
+if [[ -e create_rollup_output.json ]]; then
+    jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
+    batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
+    jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "dynamic-{{.chain_name}}-conf.json" > tmp_output.json
+    mv tmp_output.json "dynamic-{{.chain_name}}-conf.json"
+else
+    echo "Without create_rollup_output.json, there is no batch_timestamp available"
+    jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
+fi
+
+# zkevm.initial-batch.config
+jq '.firstBatchData' combined.json > first-batch-config.json
+
+if [[ ! -s "dynamic-{{.chain_name}}-conf.json" ]]; then
+    echo_ts "Error creating the dynamic kurtosis config"
+    exit 1
+fi
 
 # Configure contracts.
 
@@ -280,6 +320,25 @@ cast send \
     "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
 # {{end}}
 
+# Deploy deterministic proxy.
+# https://github.com/Arachnid/deterministic-deployment-proxy
+# You can find the `signer_address`, `transaction` and `deployer_address` by looking at the README.
+echo_ts "Deploying deterministic deployment proxy"
+signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
+transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
+deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
+cast send \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --mnemonic "{{.l1_preallocated_mnemonic}}" \
+    --value "0.01ether" \
+    "$signer_address"
+cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
+if [[ $(cast code --rpc-url "{{.l1_rpc_url}}" $deployer_address) == "0x" ]]; then
+    echo_ts "No code at deployer address: $deployer_address"
+    exit 1
+fi
+
+
 # If we've configured the l1 network with the minimal preset, we
 # should probably wait for the first finalized block. This isn't
 # strictly specific to minimal preset, but if we don't have "minimal"
@@ -287,9 +346,18 @@ cast send \
 # finalized block
 l1_preset="{{.l1_preset}}"
 if [[ $l1_preset == "minimal" ]]; then
-    wait_for_finalized_block;
+    # This might not be required, but it seems like the downstream
+    # processes are more reliable if we wait for all of the deployments to
+    # finalize before moving on
+    current_block_number="$(cast block-number --rpc-url '{{.l1_rpc_url}}')"
+    finalized_block_number=0
+    until [[ $finalized_block_number -gt $current_block_number ]]; do
+        sleep 5
+        finalized_block_number="$(cast block-number --rpc-url '{{.l1_rpc_url}}' finalized)"
+    done
 fi
 
 # The contract setup is done!
 touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
+
 

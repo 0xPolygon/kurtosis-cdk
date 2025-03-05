@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  KURTOSIS_VERSION: 0.90.1
+  KURTOSIS_VERSION: 1.4.2 # Should be aligned with .github/actions/setup-kurtosis-cdk/action.yml
 
 jobs:
   lint:
@@ -50,9 +50,9 @@ jobs:
         run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
 
       - name: Run shellcheck
-        run: find . -type f -name '*.sh' | sort | xargs -I {} shellcheck {}
+        run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck {}
 
-  check-test-combinations:
+  check-test-combinations-and-cdk-version-matrix:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,14 +62,14 @@ jobs:
           pip3 install yq
           yq --version
 
-      - name: Generate test combinations
+      - name: Generate test combinations and cdk version matrix
         working-directory: .github/tests
         run: ./combine-ymls.sh
-      
-      - name: Check if test combinations are up to date
+
+      - name: Check if test combinations and cdk version matrix are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Test combinations are not up to date. Please run \`./combine-ymls.sh\`."
+            echo "❌ Error: Test combinations and/or CDK version matrix are not up to date. Please run \`./combine-ymls.sh\`."
             git status --porcelain
             git diff
             exit 1

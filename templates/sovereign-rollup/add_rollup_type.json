@@ -1,0 +1,16 @@
+{
+    "consensusContract": "PolygonPessimisticConsensus",
+    "consensusContractAddress": "",
+    "polygonRollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
+    "verifierAddress": "0x0000000000000000000000000000000000000000",
+    "description": "Pessimistic Rollup Type",
+    "forkID": 12,
+    "timelockDelay": 0,
+    "timelockSalt": "",
+    "deployerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
+    "maxFeePerGas":"",
+    "maxPriorityFeePerGas":"",
+    "multiplierGas": "",
+    "genesisRoot": "0x433ba1f86d65cf39d003f7dec3c6dcdbf14b17c169fba89a16732b88254a3b1e",
+    "programVKey": "{{.verifier_program_vkey}}"
+}

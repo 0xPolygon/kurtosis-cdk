@@ -167,7 +167,7 @@ below to send a test transaction and to ensure that your network is
 progressing as expected.
 
 #+begin_src bash
-rpc_url=$(kurtosis port print cdk cdk-erigon-node-001 rpc)
+rpc_url=$(kurtosis port print cdk cdk-erigon-rpc-001 rpc)
 zkevm_l2_admin_private_key="$(yq '.args.zkevm_l2_admin_private_key' .github/tests/external-l1/deploy-cdk-to-sepolia.yml)" # You might have to change this value!
 
 cast rpc --rpc-url $rpc_url zkevm_batchNumber
@@ -318,4 +318,3 @@ changes. E.g. in [[https://geth.ethereum.org/docs/fundamentals/command-line-opti
 If you're not running your own node, you'll need to use an RPC
 provider that allows unprotected transactions. In the example for this
 guide, I've used [[https://www.alchemy.com/][Alchemy]].
-
