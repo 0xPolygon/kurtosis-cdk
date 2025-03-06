@@ -1271,21 +1271,12 @@ SettlementBackend = "agglayer"
 AggLayerTxTimeout = "600s"
 
 # ------------------------------------------------------------------------------
-# AggLayerGRpcURL is the gRPC URL of the agglayer itself
-# In the case of attaching multiple CDKs, the AgglayerGRpcURL
+# AggLayerURL is the RPC URL of the agglayer itself
+# In the case of attaching multiple CDKs, the AgglayerURL 
 # should always follow the first deployment_suffix "-001"
 # by default.
 # ------------------------------------------------------------------------------
-AggLayerGRpcURL = "http://agglayer:{{.agglayer_grpc_port}}"
-
-# ------------------------------------------------------------------------------
-# AggLayerReadRpcURL is the ReadRPC URL of the agglayer itself
-# In the case of attaching multiple CDKs, the AgglayerReadRpcURL
-# should always follow the first deployment_suffix "-001"
-# by default.
-# ------------------------------------------------------------------------------
-AggLayerReadRpcURL = "http://agglayer:{{.agglayer_readrpc_port}}"
-
+AggLayerURL = "http://agglayer:{{.agglayer_port}}"
 {{else}}
 # ------------------------------------------------------------------------------
 # SenderAddress represents the address of the trusted aggregator

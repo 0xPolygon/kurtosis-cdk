@@ -13,8 +13,7 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
-AggLayerGRpcURL="http://agglayer:{{.agglayer_grpc_port}}"
-AggLayerReadRpcURL="http://agglayer:{{.agglayer_readrpc_port}}"
+AggLayerURL="http://agglayer:{{.agglayer_port}}"
 
 ForkId = 12
 ContractVersions = "banana"
