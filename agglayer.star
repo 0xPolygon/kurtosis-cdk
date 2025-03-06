@@ -51,8 +51,8 @@ def run(plan, args, contract_setup_addresses):
     )
 
     (ports, public_ports) = get_agglayer_ports(args)
-    
-    debug_service = plan.add_service(
+
+    plan.add_service(
         name="debug-agglayer-config",
         config=ServiceConfig(
             image="alpine:3.18",
@@ -65,18 +65,10 @@ def run(plan, args, contract_setup_addresses):
                 ),
             },
             entrypoint=["sh", "-c"],
-            cmd=["cat /etc/zkevm/agglayer-config.toml"],
-        )
+            cmd=["cat /etc/zkevm/agglayer-config.toml && sleep 3600"],  # ✅ Keeps alive for inspection
+        ),
     )
 
-    # Capture the logs if you want to programmatically check them
-    _, stdout, stderr = debug_service.exec(["cat", "/etc/zkevm/agglayer-config.toml"])
-
-    plan.print("=== agglayer-config.toml (pre-start debug) ===")
-    plan.print(stdout)
-    if stderr:
-        plan.print(f"stderr: {stderr}")    
-    
     plan.add_service(
         name="agglayer",
         config=ServiceConfig(
