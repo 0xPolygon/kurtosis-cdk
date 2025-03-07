@@ -8,14 +8,14 @@ deployment_stages:
 optimism_package:
   chains:
     - participants:
-      - el_type: op-geth
-        cl_type: op-node
-        cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop"
-      # SetMaxDASize rpc method is not available in the current version of op-reth. 
+        - el_type: op-geth
+          cl_type: op-node
+          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop"
+      # SetMaxDASize rpc method is not available in the current version of op-reth.
       # - el_type: op-reth
       #   cl_type: op-node
       #   cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop"
-      # SetMaxDASize rpc method is not available in the current version of op-erigon. 
+      # SetMaxDASize rpc method is not available in the current version of op-erigon.
       # - el_type: op-erigon
       #   cl_type: op-node
       #   cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop"
@@ -23,8 +23,11 @@ optimism_package:
       # - el_type: op-nethermind
       #   cl_type: op-node
       #   cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop"
+      network_params:
+        name: "001"
+        network_id: 10101
   observability:
-      enabled: false
+    enabled: false
 args:
   verbosity: debug
   consensus_contract_type: pessimistic
