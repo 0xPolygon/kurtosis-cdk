@@ -1,6 +1,7 @@
 # OP Sovereign Rollup
 
 ## Table of Contents
+
 - [OP Sovereign Rollup](#op-sovereign-rollup)
   - [Table of Contents](#table-of-contents)
   - [Integration Details](#integration-details)
@@ -24,6 +25,7 @@
 ## Integration Details
 
 The OP Stack within Kurtosis CDK is implemented as a sovereign rollup. The deployment process follows this sequence:
+
 1. L1 infrastructure
 2. CDK/zkEVM components
 3. Agglayer infrastructure
@@ -60,7 +62,7 @@ The setup process consists of two main steps:
 1. **Create New Rollup Onchain**
    - Uses the script: [createNewRollup.ts](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v10.0.0-rc.1/tools/createNewRollup/createNewRollup.ts)
    - Configuration file: `create_new_rollup.json`
-   
+
    ```json
    {
      "type": "EOA",
@@ -96,7 +98,7 @@ The setup process consists of two main steps:
      - `GlobalExitRootManagerL2SovereignChain`
      - Associated proxies
    - Output saved in a file:
-   
+
    ```json
    {
      "sovereignRollupContract": "0xcC626369bD1ff281b22B2dfA71ce0B4776A16568",
@@ -127,8 +129,10 @@ The bridge deployment mirrors the CDK Erigon bridge setup. Key parameters are ad
 ## Running OP Rollup
 
 To deploy OP Rollup in isolation (without CDK Erigon Stack):
+
 1. Edit `input_parser.star`
 2. Set:
+
    ```starlark
    DEFAULT_DEPLOYMENT_STAGES = {
        "deploy_optimism_rollup": True,
@@ -145,11 +149,13 @@ To deploy OP Rollup in isolation (without CDK Erigon Stack):
 ## Running OP Succinct
 
 Run the following command:
+
 ```
 kurtosis run --enclave=cdk --args-file ./.github/tests/chains/op-succinct.yml .
 ```
 
 Key configuration requirements in `op-succinct.yml`:
+
 ```starlark
 DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_optimism_rollup": True,
@@ -195,6 +201,7 @@ DEFAULT_OP_STACK_ARGS = {
 ```
 
 Additional configurable parameters:
+
 ```
 op_succinct_proposer_span_proof: "50"  # Max blocks per span proof
 op_succinct_submission_interval: "100" # Minimum L2 block interval for checkpoints
@@ -205,6 +212,7 @@ op_succinct_submission_interval: "100" # Minimum L2 block interval for checkpoin
 Refer to [official docs](https://succinctlabs.github.io/op-succinct/quick-start/mock.html) for more details.
 
 Steps:
+
 1. Create `.env` file
 2. Deploy contracts using:
    - `DeployMockVerifier` (mock SP1 verifier)
@@ -220,11 +228,13 @@ Verify functionality with these methods:
 ### L2 Finalized Block Number
 
 Check if L2 block number increases:
+
 ```
-cast rpc --rpc-url $(kurtosis port print cdk op-cl-1-op-node-op-geth-op-kurtosis http) optimism_syncStatus | jq '.finalized_l2'
+cast rpc --rpc-url $(kurtosis port print cdk op-cl-1-op-node-op-geth-001 http) optimism_syncStatus | jq '.finalized_l2'
 ```
 
 Example output:
+
 ```json
 {
   "hash": "0x4fdc220679f2b7496570d63ec3a9fce79d410efb1ef1e951a895faab0b4bf5e8",
@@ -240,10 +250,13 @@ Example output:
 ```
 
 For OP-Succinct, check proposer logs:
+
 ```
 kurtosis service logs cdk op-succinct-proposer-001 -f
 ```
+
 Look for `L2FinalizedBlock` in logs:
+
 ```
 t=2025-02-26T05:04:45+0000 lvl=info msg="Proposer status" metrics="{L2UnsafeHeadBlock:373 L2FinalizedBlock:161 ...}"
 ```
@@ -253,6 +266,7 @@ Or use Succinct Explorer: `https://network.succinct.xyz/requester/<YOUR_SPN_ADDR
 ### E2E Bridge Scenario Tests
 
 #### L1 -> L2 Bridge
+
 ```
 l1_prefunded_mnemonic="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
 private_key=$(cast wallet private-key --mnemonic "$l1_prefunded_mnemonic")
@@ -267,12 +281,14 @@ polycli ulxly bridge asset \
 ```
 
 Verify balance:
+
 ```
 cast balance --ether --rpc-url $(kurtosis port print cdk op-el-1-op-geth-op-node-op-kurtosis rpc) $eth_address
 # Expected: 10.000000000000000000
 ```
 
 #### L2 -> L1 Bridge
+
 ```
 polycli ulxly bridge asset \
     --bridge-address 0x0ba8688239009E5748895b06D30556040b0866b5 \
@@ -284,11 +300,13 @@ polycli ulxly bridge asset \
 ```
 
 Check bridge service:
+
 ```
 curl $(kurtosis port print cdk sovereign-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
 ```
 
 Example output:
+
 ```json
 {
   "deposits": [
@@ -314,6 +332,7 @@ Example output:
 ```
 
 When `ready_for_claim` is `true`, claim:
+
 ```
 polycli ulxly claim asset \
     --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
@@ -326,6 +345,7 @@ polycli ulxly claim asset \
 ```
 
 Verify L1 balance:
+
 ```
 cast balance --ether --rpc-url http://$(kurtosis port print cdk el-1-geth-lighthouse rpc) 0xc0FFee0000000000000000000000000000000001
 # Expected: 0.000000001740546568
@@ -336,6 +356,7 @@ cast balance --ether --rpc-url http://$(kurtosis port print cdk el-1-geth-lighth
 ## Sovereign Bridging Sequence Diagram
 
 ### L1 -> L2 Sovereign Bridge Flow
+
 ```mermaid
 sequenceDiagram
     participant L1User as L1 User
@@ -362,6 +383,7 @@ sequenceDiagram
 ```
 
 ### L2 Sovereign -> L1 Bridge Flow
+
 ```mermaid
 sequenceDiagram
     participant L2User as L2 User
