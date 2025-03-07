@@ -1,6 +1,6 @@
 def run(plan, args, l1_op_contract_addresses):
     # Provide L1 OP addresses to the sovereign setup script as an environment variable.
-    l1_op_addresses = " ".join(
+    l1_op_addresses = ";".join(
         [l1_op_contract_addresses[key] for key in l1_op_contract_addresses]
     )
     plan.exec(
