@@ -1,5 +1,4 @@
 data_availability_package = import_module("./lib/data_availability.star")
-service_package = import_module("./lib/service.star")
 
 
 ARTIFACTS = [
@@ -92,9 +91,6 @@ def run(plan, args):
             }
         )
 
-    # Retrieve L1 OP addresses.
-    op_contract_addresses = service_package.get_op_contract_addresses(plan, args)
-
     artifacts = []
     for artifact_cfg in artifact_paths:
         template = read_file(src=artifact_cfg["file"])
@@ -104,7 +100,6 @@ def run(plan, args):
                 artifact_cfg["name"]: struct(
                     template=template,
                     data=args
-                    | op_contract_addresses
                     | {
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args

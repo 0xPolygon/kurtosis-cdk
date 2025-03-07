@@ -127,22 +127,20 @@ def get_op_succinct_env_vars(plan, args):
     return get_exec_recipe_result(result)
 
 
-def get_op_contract_addresses(plan, args):
-    op_deployer_configs_artifact = plan.get_files_artifact(name="op-deployer-configs")
-
-    proposer_address = _read_op_contract_address(
+def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
+    proposer_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "proposer", args["zkevm_rollup_chain_id"]
     )
-    batcher_address = _read_op_contract_address(
+    batcher_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "batcher", args["zkevm_rollup_chain_id"]
     )
-    sequencer_address = _read_op_contract_address(
+    sequencer_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "sequencer", args["zkevm_rollup_chain_id"]
     )
-    challenger_address = _read_op_contract_address(
+    challenger_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "challenger", args["zkevm_rollup_chain_id"]
     )
-    proxy_admin_address = _read_op_contract_address(
+    proxy_admin_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "proxy_admin", args["zkevm_rollup_chain_id"]
     )
     return {
@@ -154,7 +152,7 @@ def get_op_contract_addresses(plan, args):
     }
 
 
-def _read_op_contract_address(plan, op_deployer_configs_artifact, key, chain_id):
+def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, chain_id):
     result = plan.run_sh(
         description="Reading op-{} contract address".format(key),
         files={

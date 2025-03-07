@@ -1,13 +1,7 @@
 #!/bin/bash
 
 # Fund L1 OP addresses.
-addresses=(
-    "{{.op_proposer_address}}"
-    "{{.op_batcher_address}}"
-    "{{.op_sequencer_address}}"
-    "{{.op_challenger_address}}"
-    "{{.op_proxy_admin_address}}"
-)
+addresses=(${L1_OP_ADDRESSES})
 private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
 for address in "${addresses[@]}"; do
     cast send \

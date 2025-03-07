@@ -193,13 +193,26 @@ def run(plan, args={}):
         # Deploy OP Stack infrastructure
         plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
         import_module(optimism_package).run(plan, op_stack_args)
+
+        # Retrieve L1 OP contract addresses.
+        op_deployer_configs_artifact = plan.get_files_artifact(
+            name="op-deployer-configs",
+        )
+        l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
+            plan, args, op_deployer_configs_artifact
+        )
+
         # Deploy Sovereign contracts
         plan.print("Deploying sovereign contracts on OP Stack")
-        import_module(deploy_sovereign_contracts_package).run(plan, args)
+        import_module(deploy_sovereign_contracts_package).run(
+            plan, args, l1_op_contract_addresses
+        )
+
         # Extract Sovereign contract addresses
         sovereign_contract_setup_addresses = (
             service_package.get_sovereign_contract_setup_addresses(plan, args)
         )
+
         # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
