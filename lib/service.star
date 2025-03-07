@@ -141,7 +141,10 @@ def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
         plan, op_deployer_configs_artifact, "challenger", args["zkevm_rollup_chain_id"]
     )
     proxy_admin_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "proxy_admin", args["zkevm_rollup_chain_id"]
+        plan,
+        op_deployer_configs_artifact,
+        "l1ProxyAdmin",
+        args["zkevm_rollup_chain_id"],
     )
     return {
         "op_proposer_address": proposer_address,
