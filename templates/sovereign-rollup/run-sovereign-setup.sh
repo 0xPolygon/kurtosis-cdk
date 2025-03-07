@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Fund L1 OP addresses.
-addresses=(${L1_OP_ADDRESSES})
+addresses=("${L1_OP_ADDRESSES}")
 private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
 for address in "${addresses[@]}"; do
     echo "Funding ${address}"
