@@ -26,8 +26,6 @@ optimism_package:
       network_params:
         name: "001"
         network_id: 10101
-  observability:
-    enabled: false
 args:
   verbosity: debug
   consensus_contract_type: pessimistic
