@@ -140,7 +140,8 @@ def create_agglayer_config_artifact(
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                    "agglayer_port": args["agglayer_port"],
+                    "agglayer_grpc_port": args["agglayer_grpc_port"],
+                    "agglayer_readrpc_port": args["agglayer_readrpc_port"],
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
@@ -170,7 +171,8 @@ def get_agglayer_prover_ports(args):
 
 def get_agglayer_ports(args):
     ports = {
-        "agglayer": PortSpec(args["agglayer_port"], application_protocol="http"),
+        "aglr-grpc": PortSpec(args["agglayer_grpc_port"], application_protocol="http"),
+        "aglr-readrpc": PortSpec(args["agglayer_readrpc_port"], application_protocol="http"),
         "prometheus": PortSpec(
             args["agglayer_metrics_port"], application_protocol="http"
         ),
