@@ -1,5 +1,5 @@
 blockscout_package = import_module(
-    "github.com/xavier-romero/kurtosis-blockscout/main.star"
+    "github.com/xavier-romero/kurtosis-blockscout/main.star@9de7765a6c98c8c357f747ff953fdbc0e39ebc3d"
 )
 service_package = import_module("../../lib/service.star")
 

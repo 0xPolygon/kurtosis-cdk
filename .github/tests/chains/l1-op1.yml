@@ -7,7 +7,7 @@ optimism_package:
         name: "001"
       # additional_services: ["rollup-boost"]
   observability:
-    enabled: false
+    enabled: true
 
 args:
   zkevm_rollup_chain_id: 2151908

@@ -1,5 +1,6 @@
 data_availability_package = import_module("./lib/data_availability.star")
 
+
 ARTIFACTS = [
     {
         "name": "deploy_parameters.json",

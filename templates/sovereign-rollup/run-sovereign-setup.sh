@@ -1,29 +1,15 @@
 #!/bin/bash
 
 # Fund L1 OP addresses.
-    # batcher = '0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35'
-    # challenger = '0xf08f610d1956CAAAb34f18e9e0A122E389496529'
-    # l1ProxyAdminOwner = '0x8943545177806ED17B9F23F0a21ee5948eCaa776'
-    # l2ProxyAdminOwner = '0x8943545177806ED17B9F23F0a21ee5948eCaa776'
-    # proposer = '0xb0994E702b603df7191cd68E6544f99126135e34'
-    # systemConfigOwner = '0x8943545177806ED17B9F23F0a21ee5948eCaa776'
-    # unsafeBlockSigner = '0xbb900Cf56918A2639dAA90c3f7DC5DCD2f5B9935'
-addresses=(
-    "0xD3F2c5AFb2D76f5579F326b0cD7DA5F5a4126c35"
-    "0xf08f610d1956CAAAb34f18e9e0A122E389496529"
-    "0x8943545177806ED17B9F23F0a21ee5948eCaa776"
-    "0xb0994E702b603df7191cd68E6544f99126135e34"
-    "0xbb900Cf56918A2639dAA90c3f7DC5DCD2f5B9935"
-)
-
+IFS=';' read -ra addresses <<<"${L1_OP_ADDRESSES}"
 private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
-
 for address in "${addresses[@]}"; do
+    echo "Funding ${address}"
     cast send \
         --private-key "$private_key" \
         --rpc-url "{{.l1_rpc_url}}" \
         --value "{{.l2_funding_amount}}" \
-        "$address"
+        "${address}"
 done
 
 # Create New Rollup Step
@@ -61,7 +47,7 @@ else
 fi
 
 # Save Rollup Information to a file.
-cast call --json --rpc-url  "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
+cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >/opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"
@@ -75,8 +61,8 @@ rpc_url="{{.op_el_rpc_url}}"
 # This is the default prefunded account for the OP Network
 private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 
-cast send --legacy --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
-cast send --legacy --value "{{.l2_funding_amount}}"  --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
+cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
+cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
 cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtx_addr
 
 # Contract Deployment Step
@@ -85,22 +71,22 @@ cd /opt/zkevm-contracts || exit
 echo "[profile.default]
 src = 'contracts'
 out = 'out'
-libs = ['node_modules']" > foundry.toml
+libs = ['node_modules']" >foundry.toml
 
 echo "Building contracts with forge build"
 forge build contracts/v2/sovereignChains/BridgeL2SovereignChain.sol contracts/v2/sovereignChains/GlobalExitRootManagerL2SovereignChain.sol
 bridge_impl_nonce=$(cast nonce --rpc-url $rpc_url $bridge_admin_addr)
 bridge_impl_addr=$(cast compute-address --nonce "$bridge_impl_nonce" $bridge_admin_addr | sed 's/.*: //')
-ger_impl_addr=$(cast compute-address --nonce $((bridge_impl_nonce+1)) $bridge_admin_addr | sed 's/.*: //')
-ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+2)) $bridge_admin_addr | sed 's/.*: //')
-bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce+3)) $bridge_admin_addr | sed 's/.*: //')
+ger_impl_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 1)) $bridge_admin_addr | sed 's/.*: //')
+ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 2)) $bridge_admin_addr | sed 's/.*: //')
+bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 3)) $bridge_admin_addr | sed 's/.*: //')
 
 # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
-cast send --legacy  --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
-forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key BridgeL2SovereignChain
-forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args "$bridge_proxy_addr"
+cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
+forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key BridgeL2SovereignChain
+forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args "$bridge_proxy_addr"
 calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $aggoracle_addr)
-forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
+forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
 
 initNetworkID="{{.zkevm_rollup_id}}"
 initGasTokenAddress=$(cast az)
@@ -113,13 +99,13 @@ initSovereignWETHAddress=$(cast az)
 initSovereignWETHAddressIsNotMintable=false
 
 calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _polygonRollupManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initPolygonRollupManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
-forge create --legacy  --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
+forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
 
 # Save the contract addresses to the sovereign-rollup-out.json file
-jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
-jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
-jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
-jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json > /opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # Extract values from sovereign-rollup-out.json
 sovereignRollupContract=$(jq -r '.sovereignRollupContract' /opt/zkevm-contracts/sovereign-rollup-out.json)
@@ -141,32 +127,32 @@ bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' /opt/zkevm-contracts/sovereign-ro
 
 # Update existing fields and append new ones to combined.json
 jq --arg ger_proxy_addr "$ger_proxy_addr" \
-   --arg bridge_proxy_addr "$bridge_proxy_addr" \
-   --arg rollupTypeID "$rollupTypeID" \
-   --arg verifier "$verifier" \
-   --arg sovereignRollupContract "$sovereignRollupContract" \
-   --arg rollupChainID "$rollupChainID" \
-   --arg forkID "$forkID" \
-   --arg lastLocalExitRoot "$lastLocalExitRoot" \
-   --arg lastBatchSequenced "$lastBatchSequenced" \
-   --arg lastVerifiedBatch "$lastVerifiedBatch" \
-   --arg _legacyLastPendingState "$_legacyLastPendingState" \
-   --arg _legacyLastPendingStateConsolidated "$_legacyLastPendingStateConsolidated" \
-   --arg lastVerifiedBatchBeforeUpgrade "$lastVerifiedBatchBeforeUpgrade" \
-   --arg rollupVerifierType "$rollupVerifierType" \
-   '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr | 
-    .polygonZkEVML2BridgeAddress = $bridge_proxy_addr | 
-    .rollupTypeId = $rollupTypeID | 
-    .verifierAddress = $verifier | 
-    .rollupAddress = $sovereignRollupContract | 
-    .rollupChainID = $rollupChainID | 
-    .forkID = $forkID | 
-    .lastLocalExitRoot = $lastLocalExitRoot | 
-    .lastBatchSequenced = $lastBatchSequenced | 
-    .lastVerifiedBatch = $lastVerifiedBatch | 
-    ._legacyLastPendingState = $_legacyLastPendingState | 
-    ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated | 
-    .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade | 
+    --arg bridge_proxy_addr "$bridge_proxy_addr" \
+    --arg rollupTypeID "$rollupTypeID" \
+    --arg verifier "$verifier" \
+    --arg sovereignRollupContract "$sovereignRollupContract" \
+    --arg rollupChainID "$rollupChainID" \
+    --arg forkID "$forkID" \
+    --arg lastLocalExitRoot "$lastLocalExitRoot" \
+    --arg lastBatchSequenced "$lastBatchSequenced" \
+    --arg lastVerifiedBatch "$lastVerifiedBatch" \
+    --arg _legacyLastPendingState "$_legacyLastPendingState" \
+    --arg _legacyLastPendingStateConsolidated "$_legacyLastPendingStateConsolidated" \
+    --arg lastVerifiedBatchBeforeUpgrade "$lastVerifiedBatchBeforeUpgrade" \
+    --arg rollupVerifierType "$rollupVerifierType" \
+    '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr |
+    .polygonZkEVML2BridgeAddress = $bridge_proxy_addr |
+    .rollupTypeId = $rollupTypeID |
+    .verifierAddress = $verifier |
+    .rollupAddress = $sovereignRollupContract |
+    .rollupChainID = $rollupChainID |
+    .forkID = $forkID |
+    .lastLocalExitRoot = $lastLocalExitRoot |
+    .lastBatchSequenced = $lastBatchSequenced |
+    .lastVerifiedBatch = $lastVerifiedBatch |
+    ._legacyLastPendingState = $_legacyLastPendingState |
+    ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
+    .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
     .rollupVerifierType = $rollupVerifierType' \
-   "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" && \
-   mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+    "/opt/zkevm/combined{{.deployment_suffix}}.json" >"/opt/zkevm/combined{{.deployment_suffix}}.json.temp" &&
+    mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"

@@ -8,7 +8,7 @@ optimism_package:
     - network_params:
         name: "002"
   observability:
-    enabled: false
+    enabled: true
 
 args:
   zkevm_rollup_chain_id: 2151909

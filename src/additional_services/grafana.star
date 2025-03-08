@@ -1,6 +1,6 @@
 databases_package = import_module("../../databases.star")
 grafana_package = import_module(
-    "github.com/kurtosis-tech/grafana-package/main.star@6772a4e4ae07cf5256b8a10e466587b73119bab5"
+    "github.com/kurtosis-tech/grafana-package/main.star@cc66468b167d16c0fc7153980be5b67550be01be"
 )
 
 GRAFANA_VERSION = "11.1.4"
