@@ -51,6 +51,24 @@ def run(plan, args, contract_setup_addresses):
     )
 
     (ports, public_ports) = get_agglayer_ports(args)
+
+    plan.add_service(
+        name="debug-agglayer-config",
+        config=ServiceConfig(
+            image="alpine:3.18",
+            files={
+                "/etc/zkevm": Directory(
+                    artifact_names=[
+                        agglayer_config_artifact,
+                        agglayer_keystore_artifact,
+                    ]
+                ),
+            },
+            entrypoint=["sh", "-c"],
+            cmd=["cat /etc/zkevm/agglayer-config.toml && sleep 3600"],  # ✅ Keeps alive for inspection
+        ),
+    )
+
     plan.add_service(
         name="agglayer",
         config=ServiceConfig(
