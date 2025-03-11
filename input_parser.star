@@ -423,9 +423,6 @@ DEFAULT_OP_STACK_ARGS = {
             },
         },
     ],
-    "observability": {
-        "enabled": False,
-    },
 }
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
