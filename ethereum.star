@@ -3,7 +3,11 @@ ethereum_package = import_module(
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.12"
-LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.0"
+# There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
+# https://github.com/ethpandaops/ethereum-package/issues/899
+# The fix is not ideal for now since we're waiting on lighthouse to push a fix image.
+# https://github.com/ethpandaops/ethereum-package/pull/915
+LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:unstable"
 
 
 def run(plan, args):
