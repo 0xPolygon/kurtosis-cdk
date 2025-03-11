@@ -3,14 +3,14 @@ ethereum_package = import_module(
 )
 
 
-GETH_IMAGE = "ethereum/client-go:v1.15.5"
+GETH_IMAGE = "ethpandaops/geth:prague-devnet-6"
 
 # There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
 # https://github.com/ethpandaops/ethereum-package/issues/899
 # The fix is not ideal for now since we're waiting on lighthouse to push a fix image.
 # https://github.com/ethpandaops/ethereum-package/pull/915
-LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:unstable"
 # LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.1"
+LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:unstable"
 
 
 def run(plan, args):
@@ -64,6 +64,9 @@ def run(plan, args):
             # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
             "genesis_delay": 12,
         },
+        "ethereum_genesis_generator_params": {
+            "image": "ethpandaops/ethereum-genesis-generator:3.7.0",
+        },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
     }
@@ -76,19 +79,6 @@ def run(plan, args):
         # Note: The fulu fork epoch is set to a multiple of 256 to avoid the following warning in the CL node (lighthouse).
         # Mar 11 11:44:39.231 WARN Fork boundaries are not well aligned / multiples of 256, misaligned_forks: [(Fulu, Epoch(100000001))], info: This may cause issues as fork boundaries do not align with the start of sync committee period.
         l1_args["network_params"]["fulu_fork_epoch"] = 256
-
-        default_participant = l1_args["participants"][0]
-        # default_participant["el_image"] = "ethereum/client-go:v1.15.5"
-        default_participant["el_image"] = "ethpandaops/geth:prague-devnet-6"
-        # default_participant["cl_image"] = "sigp/lighthouse:v7.0.0-beta.2"
-        # default_participant["vc_image"] = "sigp/lighthouse:v7.0.0-beta.2"
-        default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
-        default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
-        l1_args["participants"][0] = default_participant
-
-        l1_args["ethereum_genesis_generator_params"] = {
-            "image": "ethpandaops/ethereum-genesis-generator:3.7.0",
-        }
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
