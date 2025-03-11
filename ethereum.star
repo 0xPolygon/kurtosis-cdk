@@ -1,9 +1,9 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@4.4.0"
+    "github.com/ethpandaops/ethereum-package/main.star@c3ecee8148068d5270d9e549d042066d2eb8aec0"
 )
 
-GETH_IMAGE = "ethereum/client-go:v1.14.12"
-LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.0"
+GETH_IMAGE = "ethereum/client-go:latest"
+LIGHTHOUSE_IMAGE = "sigp/lighthouse:latest-unstable"
 
 
 def run(plan, args):
