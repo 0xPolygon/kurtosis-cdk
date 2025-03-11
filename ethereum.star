@@ -57,9 +57,6 @@ def run(plan, args):
             # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
             "genesis_delay": 12,
         },
-        "ethereum_genesis_generator_params": {
-            "image": "ethpandaops/ethereum-genesis-generator:3.7.0",
-        },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
     }
@@ -79,6 +76,9 @@ def run(plan, args):
         default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
         default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
         l1_args["participants"][0] = default_participant
+        l1_args["ethereum_genesis_generator_params"] = {
+            "image": "ethpandaops/ethereum-genesis-generator:prague-devnet-6",
+        }
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
