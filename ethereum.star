@@ -1,9 +1,9 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@4.4.0"
+    "github.com/ethpandaops/ethereum-package/main.star@c3ecee8148068d5270d9e549d042066d2eb8aec0"  # 10/03/2025
 )
 
-GETH_IMAGE = "ethereum/client-go:v1.14.12"
-LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.0"
+GETH_IMAGE = "ethereum/client-go:v1.15.5"
+LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.1"
 
 
 def run(plan, args):
@@ -63,10 +63,6 @@ def run(plan, args):
 
     # Enable Pectra hardfork if needed.
     if args.get("pectra_enabled", False):
-        ethereum_package = import_module(
-            "github.com/ethpandaops/ethereum-package/main.star@c3ecee8148068d5270d9e549d042066d2eb8aec0"  # 10/03/2025
-        )
-
         # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
         #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
         l1_args["network_params"]["electra_fork_epoch"] = 1
@@ -75,10 +71,10 @@ def run(plan, args):
         l1_args["network_params"]["fulu_fork_epoch"] = 256
 
         default_participant = l1_args["participants"][0]
-        # default_participant["el_image"] = "ethereum/client-go:v1.15.2"
+        # default_participant["el_image"] = "ethereum/client-go:v1.15.5"
         default_participant["el_image"] = "ethpandaops/geth:prague-devnet-6"
-        # default_participant["cl_image"] = "sigp/lighthouse:v7.0.0-beta.0"
-        # default_participant["vc_image"] = "sigp/lighthouse:v7.0.0-beta.0"
+        # default_participant["cl_image"] = "sigp/lighthouse:v7.0.0-beta.2"
+        # default_participant["vc_image"] = "sigp/lighthouse:v7.0.0-beta.2"
         default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
         default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
         l1_args["participants"][0] = default_participant
