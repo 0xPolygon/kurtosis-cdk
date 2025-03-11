@@ -1,5 +1,5 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@c3ecee8148068d5270d9e549d042066d2eb8aec0"  # 10/03/2025
+    "github.com/ethpandaops/ethereum-package/main.star@4.4.0"
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.12"
@@ -63,6 +63,10 @@ def run(plan, args):
 
     # Enable Pectra hardfork if needed.
     if args.get("pectra_enabled", False):
+        ethereum_package = import_module(
+            "github.com/ethpandaops/ethereum-package/main.star@c3ecee8148068d5270d9e549d042066d2eb8aec0"  # 10/03/2025
+        )
+
         # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
         #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
         l1_args["network_params"]["electra_fork_epoch"] = 1
