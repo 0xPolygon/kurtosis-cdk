@@ -2,7 +2,6 @@ ethereum_package = import_module(
     "github.com/ethpandaops/ethereum-package/main.star@c3ecee8148068d5270d9e549d042066d2eb8aec0"  # 2025-03-10
 )
 
-
 GETH_IMAGE = "ethereum/client-go:v1.14.12"
 LIGHTHOUSE_IMAGE = "sigp/lighthouse:v6.0.0"
 
