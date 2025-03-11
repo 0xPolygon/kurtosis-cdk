@@ -77,7 +77,7 @@ def run(plan, args):
         default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
         l1_args["participants"][0] = default_participant
         l1_args["ethereum_genesis_generator_params"] = {
-            "image": "ethpandaops/ethereum-genesis-generator:prague-devnet-6",
+            "image": "ethpandaops/ethereum-genesis-generator:3.7.0",
         }
 
     l1 = ethereum_package.run(plan, l1_args)
