@@ -63,7 +63,11 @@ def run(plan, args):
 
     # Enable Pectra hardfork if needed.
     if args.get("pectra_enabled", False):
-        l1_args["network_params"]["electra_fork_epoch"] = 0
+        # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
+        #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
+        l1_args["network_params"]["electra_fork_epoch"] = 1
+        # Note: The fulu fork epoch is set to a multiple of 256 to avoid the following warning in the CL node (lighthouse).
+        # Mar 11 11:44:39.231 WARN Fork boundaries are not well aligned / multiples of 256, misaligned_forks: [(Fulu, Epoch(100000001))], info: This may cause issues as fork boundaries do not align with the start of sync committee period.
         l1_args["network_params"]["fulu_fork_epoch"] = 256
 
         default_participant = l1_args["participants"][0]
