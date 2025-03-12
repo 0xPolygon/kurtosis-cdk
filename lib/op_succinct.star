@@ -92,8 +92,12 @@ def create_op_succinct_proposer_service_config(
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
-            "MAX_CONCURRENT_PROOF_REQUESTS": args["op_succinct_max_concurrent_proof_requests"],
-            "MAX_CONCURRENT_WITNESS_GEN": args["op_succinct_max_concurrent_witness_gen"],
+            "MAX_CONCURRENT_PROOF_REQUESTS": args[
+                "op_succinct_max_concurrent_proof_requests"
+            ],
+            "MAX_CONCURRENT_WITNESS_GEN": args[
+                "op_succinct_max_concurrent_witness_gen"
+            ],
             "OP_SUCCINCT_SERVER_URL": "http://op-succinct-server"
             + args["deployment_suffix"]
             + ":"
