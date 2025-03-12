@@ -52,9 +52,11 @@ jobs:
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
       - name: Dump enclave
+        if: always()
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload enclave dump
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dump_run_without_args_${{ github.run_id }}
@@ -75,7 +77,7 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          files=$(ls -R ./.github/tests/combinations/*.yml)
+          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/pectra.yml)
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
@@ -157,15 +159,17 @@ jobs:
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-op-kurtosis http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
           else
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
 
       - name: Dump enclave
+        if: always()
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Generate archive name
+        if: always()
         run: |
           file_name=$(basename "${{ matrix.file_name }}" ".yml")
           archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
@@ -173,6 +177,7 @@ jobs:
           echo "Generated archive name: ${archive_name}"
 
       - name: Upload enclave dump
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARCHIVE_NAME }}
@@ -271,9 +276,11 @@ jobs:
           fi
 
       - name: Dump enclave
+        if: always()
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload enclave dump
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dump_additional_services_${{ github.run_id }}
@@ -317,9 +324,11 @@ jobs:
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
       - name: Dump enclave
+        if: always()
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
 
       - name: Upload enclave dump
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dump_deploy_to_external_l1_${{ github.run_id }}

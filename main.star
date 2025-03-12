@@ -12,10 +12,13 @@ databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 anvil_package = "./anvil.star"
-optimism_package = "github.com/ethpandaops/optimism-package/main.star@dad910ae88a3a20bb5cc6e1f9fd67a353964c0a7"
+optimism_package = "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
+create_sovereign_predeployed_genesis_package = (
+    "./create_sovereign_predeployed_genesis.star"
+)
 mitm_package = "./mitm.star"
 op_succinct_package = "./op_succinct.star"
 
@@ -96,6 +99,8 @@ def run(plan, args={}):
                 service_name="contracts" + args["deployment_suffix"],
                 src="/opt/zkevm/genesis.json",
             )
+    else:
+        import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
@@ -188,13 +193,26 @@ def run(plan, args={}):
         # Deploy OP Stack infrastructure
         plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
         import_module(optimism_package).run(plan, op_stack_args)
+
+        # Retrieve L1 OP contract addresses.
+        op_deployer_configs_artifact = plan.get_files_artifact(
+            name="op-deployer-configs",
+        )
+        l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
+            plan, args, op_deployer_configs_artifact
+        )
+
         # Deploy Sovereign contracts
         plan.print("Deploying sovereign contracts on OP Stack")
-        import_module(deploy_sovereign_contracts_package).run(plan, args)
+        import_module(deploy_sovereign_contracts_package).run(
+            plan, args, l1_op_contract_addresses
+        )
+
         # Extract Sovereign contract addresses
         sovereign_contract_setup_addresses = (
             service_package.get_sovereign_contract_setup_addresses(plan, args)
         )
+
         # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
