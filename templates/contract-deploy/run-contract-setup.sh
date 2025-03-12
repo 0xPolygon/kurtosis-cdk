@@ -145,6 +145,14 @@ deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
 if [[ "$deploy_optimism_rollup" != "true" ]]; then
     echo_ts "Step 5: Creating Rollup/Validium"
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
+    # Support for new output file format
+    if [[ $(echo deployment/v2/create_rollup_output_* | wc -w) -gt 1 ]]; then
+        echo_ts "There are multiple create rollup output files. We don't know how to handle this situation"
+        exit 1
+    fi
+    if [[ $(echo deployment/v2/create_rollup_output_* | wc -w) -eq 1 ]]; then
+        mv deployment/v2/create_rollup_output_* deployment/v2/create_rollup_output.json
+    fi
     if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
         echo_ts "The create_rollup_output.json file was not created after running createRollup"
         exit 1
