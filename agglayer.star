@@ -172,7 +172,9 @@ def get_agglayer_prover_ports(args):
 def get_agglayer_ports(args):
     ports = {
         "aglr-grpc": PortSpec(args["agglayer_grpc_port"], application_protocol="http"),
-        "aglr-readrpc": PortSpec(args["agglayer_readrpc_port"], application_protocol="http"),
+        "aglr-readrpc": PortSpec(
+            args["agglayer_readrpc_port"], application_protocol="http"
+        ),
         "prometheus": PortSpec(
             args["agglayer_metrics_port"], application_protocol="http"
         ),
