@@ -27,30 +27,37 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
     "deploy_cdk_erigon_node": True,
     # Deploy Optimism rollup.
+    # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
     "deploy_optimism_rollup": False,
+    # After deploying OP Stack, upgrade it to OP Succinct.
+    # Even mock-verifier deployments require an actual SPN network key.
+    "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.0.2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:main",  # https://github.com/agglayer/agglayer/tags
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.16-RC1",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "agglayer_image": "ghcr.io/agglayer/agglayer@sha256:5715855f2cc6834bd84a99a33937915164648547d21bfb55198948b0ae4e0fad",  # https://ghcr.io/agglayer/agglayer
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC10",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC12",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
-    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.11",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
+    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.13",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v0.0.4-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "ghcr.io/succinctlabs/op-succinct/succinct-proposer:sha-cb18ac0",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/succinctlabs/op-succinct/op-proposer:sha-cb18ac0",  # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
@@ -76,6 +83,8 @@ DEFAULT_PORTS = {
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
+    "op_succinct_server_port": 3000,
+    "op_succinct_proposer_port": 7300,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -215,6 +224,8 @@ DEFAULT_L1_ARGS = {
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 2,
+    # Enable the Electra hardfork.
+    "pectra_enabled": False,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
@@ -315,39 +326,14 @@ DEFAULT_ROLLUP_ARGS = {
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
-    # OP Stack RPC URL
-    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-op-kurtosis:8545",
-}
-
-# https://github.com/ethpandaops/optimism-package
-# The below OP params can be customized by specifically referring to an artifact or image.
-# If none is is provided, it will refer to the default images from the Optimism-Package repo.
-# https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
-DEFAULT_OP_STACK_ARGS = {
-    "chains": [
-        {
-            "participants": [
-                {
-                    "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
-                    "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
-                    "count": 1,
-                },
-            ],
-            # "batcher_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher",
-            # },
-            # "proposer_params": {
-            #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer",
-            # },
-        },
-    ],
-    # "op_contract_deployer_params": {
-    #     "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.7",
-    #     "l1_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    #     "l2_artifacts_locator": "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-9af7366a7102f51e8dbe451dcfa22971131d89e218915c91f420a164cc48be65.tar.gz",
-    # },
+    # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check() function.
+    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
+    # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check() function.
+    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-001:8547",
+    # If the OP Succinct will use the Network Prover or CPU(Mock) Prover
+    # true = mock
+    # false = network
+    "op_succinct_mock": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -384,7 +370,7 @@ DEFAULT_ARGS = (
         # Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
-        # - 'pessimistic': deploy with pessmistic consensus
+        # - 'pessimistic': deploy with pessimistic consensus
         "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
@@ -411,6 +397,35 @@ DEFAULT_ARGS = (
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
 
+# https://github.com/ethpandaops/optimism-package
+# The below OP params can be customized by specifically referring to an artifact or image.
+# If none is is provided, it will refer to the default images from the Optimism-Package repo.
+# https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
+DEFAULT_OP_STACK_ARGS = {
+    "chains": [
+        {
+            "participants": [
+                {
+                    # OP Rollup configuration
+                    "el_type": "op-geth",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
+                    "cl_type": "op-node",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "count": 1,
+                },
+            ],
+            "network_params": {
+                # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
+                # the "-" however adds another "-" to the Kurtosis deployment_suffix. So we are doing string manipulation to remove the "-"
+                "name": DEFAULT_ARGS.get("deployment_suffix")[1:],
+                "network_id": str(DEFAULT_ROLLUP_ARGS.get("zkevm_rollup_chain_id")),
+                # The blocktime on the OP network
+                "seconds_per_slot": 1,
+            },
+        },
+    ],
+}
+
 # A list of fork identifiers currently supported by Kurtosis CDK.
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
@@ -423,28 +438,15 @@ def parse_args(plan, user_args):
     op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
 
+    # Change some params if anvil set to make it work
+    # As it changes L1 config it needs to be run before other functions/checks
+    set_anvil_args(plan, args, user_args)
+
+    # Determine OP stack args.
+    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
+
     # Sanity check step for incompatible parameters
-    args_sanity_check(plan, deployment_stages, args, op_stack_args)
-
-    if args["anvil_state_file"] != None:
-        args["l1_engine"] = "anvil"
-
-    if args["l1_engine"] == "anvil":
-        # We override only is user did not provide explicit values
-        if not user_args.get("args", {}).get("l1_rpc_url"):
-            args["l1_rpc_url"] = (
-                "http://anvil"
-                + args["deployment_suffix"]
-                + ":"
-                + str(DEFAULT_PORTS.get("anvil_port"))
-            )
-        if not user_args.get("args", {}).get("l1_ws_url"):
-            args["l1_ws_url"] = (
-                "ws://anvil"
-                + args["deployment_suffix"]
-                + ":"
-                + str(DEFAULT_PORTS.get("anvil_port"))
-            )
+    args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -479,9 +481,6 @@ def parse_args(plan, user_args):
     if not args.get("use_dynamic_ports", True):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
-
-    # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
     if "assertoor" in args["l1_additional_services"]:
@@ -626,16 +625,87 @@ def get_op_stack_args(plan, args, op_stack_args):
     }
 
 
-# Helper function to compact together checks for incompatible parameters in input_parser.star
-def args_sanity_check(plan, deployment_stages, args, op_stack_args):
-    # Unsupported L1 engine check
-    if args["l1_engine"] != "geth":
-        if args["l1_engine"] != "anvil":
-            fail(
-                "Unsupported L1 engine: '{}', please use 'geth' or 'anvil'".format(
-                    args["l1_engine"]
-                )
+def set_anvil_args(plan, args, user_args):
+    if args["anvil_state_file"] != None:
+        if user_args.get("args", {}).get("l1_engine") != "anvil":
+            args["l1_engine"] = "anvil"
+            plan.print("Anvil state file detected - changing l1_engine to anvil")
+
+    if args["l1_engine"] == "anvil":
+        # We override only is user did not provide explicit values
+        if not user_args.get("args", {}).get("l1_rpc_url"):
+            args["l1_rpc_url"] = (
+                "http://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
             )
+        if not user_args.get("args", {}).get("l1_ws_url"):
+            args["l1_ws_url"] = (
+                "ws://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+        if not user_args.get("args", {}).get("l1_beacon_url"):
+            args["l1_beacon_url"] = (
+                "http://anvil"
+                + args["deployment_suffix"]
+                + ":"
+                + str(DEFAULT_PORTS.get("anvil_port"))
+            )
+
+
+# Helper function to compact together checks for incompatible parameters in input_parser.star
+def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
+    # Fix the op stack el rpc urls according to the deployment_suffix.
+    if (
+        args["op_el_rpc_url"]
+        != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+    ):
+        plan.print(
+            "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
+                args["op_el_rpc_url"], args["deployment_suffix"]
+            )
+        )
+        args["op_el_rpc_url"] = (
+            "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+        )
+    # Fix the op stack cl rpc urls according to the deployment_suffix.
+    if (
+        args["op_cl_rpc_url"]
+        != "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+    ):
+        plan.print(
+            "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
+                args["op_cl_rpc_url"], args["deployment_suffix"]
+            )
+        )
+        args["op_cl_rpc_url"] = (
+            "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+        )
+    # The optimism-package network_params is a frozen hash table, and is not modifiable during runtime.
+    # The check will return fail() instead of dynamically changing the network_params name.
+    if (
+        op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"]
+        != args["deployment_suffix"][1:]
+    ):
+        fail(
+            "op_stack_args network_params name is set to '{}', please change it to match deployment_suffix '{}'".format(
+                op_stack_args["optimism_package"]["chains"][0]["network_params"][
+                    "name"
+                ],
+                args["deployment_suffix"][1:],
+            )
+        )
+
+    # Unsupported L1 engine check
+    if args["l1_engine"] not in constants.L1_ENGINES:
+        fail(
+            "Unsupported L1 engine: '{}', please use one of {}".format(
+                args["l1_engine"], constants.L1_ENGINES
+            )
+        )
 
     # Gas token enabled and gas token address check
     if (
@@ -655,9 +725,27 @@ def args_sanity_check(plan, deployment_stages, args, op_stack_args):
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
-        if args.get("consensus_contract_type", "cdk-validium") != "pessimistic":
+        user_consensus = user_args.get("args", {}).get("consensus_contract_type")
+        if user_consensus and user_consensus != "pessimistic":
+            plan.print(
+                "consensus_contract_type was set to '{}', changing to pessimistic".format(
+                    user_consensus
+                )
+            )
+            args["consensus_contract_type"] = "pessimistic"
+
+    # If OP-Succinct is enabled, OP-Rollup must be enabled
+    if deployment_stages.get("deploy_op_succinct", False):
+        if deployment_stages.get("deploy_optimism_rollup", False) == False:
             fail(
-                "OP Stack rollup requires pessimistic consensus contract type. Change the consensus_contract_type parameter"
+                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
+            )
+        if (
+            args["agglayer_prover_sp1_key"] == None
+            or args["agglayer_prover_sp1_key"] == ""
+        ):
+            fail(
+                "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime

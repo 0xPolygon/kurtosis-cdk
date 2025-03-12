@@ -13,8 +13,8 @@ Port = "{{.sovereign_bridge_db.port}}"
 MaxConns = 20
 
 [Etherman]
-l1URL = "http://el-1-geth-lighthouse:8545"
-L2URLs = ["http://op-el-1-op-geth-op-node-op-kurtosis:8545"]
+l1URL = "{{.l1_rpc_url}}"
+L2URLs = ["{{.op_el_rpc_url}}"]
 
 [Synchronizer]
 SyncInterval = "5s"
@@ -57,3 +57,8 @@ PrivateKey = {Path = "/etc/zkevm/claimtx.keystore", Password = "{{.zkevm_l2_keys
 Enabled = true
 RetryInterval = "1s"
 RetryNumber = 10
+
+[Metrics]
+Enabled = true
+Host = "0.0.0.0"
+Port = "{{.zkevm_bridge_metrics_port}}"

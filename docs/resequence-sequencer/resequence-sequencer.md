@@ -39,7 +39,7 @@ kurtosis service stop cdk cdk-node-001
 ```
 
 #### Stop the sequencer
-The Erigon sequencer image in Kurtosis CDK is setup so that the `cdk-erigon` process can be killed without exitting the container. This allows changing the configuration of the sequencer more easily.
+The Erigon sequencer image in Kurtosis CDK is setup so that the `cdk-erigon` process can be killed without exiting the container. This allows changing the configuration of the sequencer more easily.
 
 ```bash
 # Send a SIGTRAP signal to the proc-runner process
@@ -48,7 +48,7 @@ kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGTRAP "proc-runner.
 kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGINT "cdk-erigon"" || true
 ```
 
-#### Geting the latest L1 verified batch
+#### Getting the latest L1 verified batch
 This can usually be done by querying the L1 explorer, but in a Kurtosis devnet environment, this can be done by querying the rollup manager contract.
 
 ```bash

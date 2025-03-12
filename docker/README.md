@@ -135,9 +135,3 @@ $ docker images --filter "reference=local/toolbox"
 REPOSITORY       TAG    IMAGE ID       CREATED         SIZE
 local/toolbox   local   3f85f026aaf9   2 seconds ago   448MB
 ```
-
-### Antithesis
-
-```bash
-docker build --tag kurtosis-cdk-antithesis --file antithesis.Dockerfile .
-```

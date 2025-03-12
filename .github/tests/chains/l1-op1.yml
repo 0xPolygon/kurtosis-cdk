@@ -1,0 +1,16 @@
+deployment_stages:
+  deploy_optimism_rollup: true
+
+optimism_package:
+  chains:
+    - network_params:
+        name: "001"
+      # additional_services: ["rollup-boost"]
+  observability:
+    enabled: true
+
+args:
+  zkevm_rollup_chain_id: 2151908
+  deployment_suffix: "-001"
+  zkevm_rollup_id: 1
+  consensus_contract_type: pessimistic

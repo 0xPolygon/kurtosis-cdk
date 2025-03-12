@@ -1,5 +1,6 @@
 data_availability_package = import_module("./lib/data_availability.star")
 
+
 ARTIFACTS = [
     {
         "name": "deploy_parameters.json",
@@ -34,8 +35,24 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/create_new_rollup.json",
     },
     {
+        "name": "add_rollup_type.json",
+        "file": "./templates/sovereign-rollup/add_rollup_type.json",
+    },
+    {
         "name": "sovereign-genesis.json",
         "file": "./templates/sovereign-rollup/genesis.json",
+    },
+    {
+        "name": "create-genesis-sovereign-params.json",
+        "file": "./templates/sovereign-rollup/create-genesis-sovereign-params.json",
+    },
+    {
+        "name": "create-predeployed-sovereign-genesis.sh",
+        "file": "./templates/sovereign-rollup/create-predeployed-sovereign-genesis.sh",
+    },
+    {
+        "name": "op-original-genesis.json",
+        "file": "./templates/sovereign-rollup/op-original-genesis.json",
     },
 ]
 

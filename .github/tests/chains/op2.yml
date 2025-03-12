@@ -1,0 +1,28 @@
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_optimism_rollup: true
+
+optimism_package:
+  chains:
+    - network_params:
+        name: "002"
+  observability:
+    enabled: true
+
+args:
+  zkevm_rollup_chain_id: 2151909
+  deployment_suffix: "-002"
+  zkevm_rollup_id: 2
+  consensus_contract_type: pessimistic
+  # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check().
+  op_el_rpc_url: "http://op-el-1-op-geth-op-node-002:8545"
+  # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check().
+  op_cl_rpc_url: "http://op-cl-1-op-node-op-geth-002:8547"
+
+  zkevm_l2_aggoracle_address: "0x8F43d25C7aA610A762AC59670b5FFf010a21DB5F"
+  zkevm_l2_aggoracle_private_key: "0x781a3735faba4bf257f3d97b641f66e29a3a89d74178eaeac2e44614b2e066a5"
+  zkevm_l2_sovereignadmin_address: "0x4C9fC4485ca332eAA1B0f621E6e7B5A1c336d3eE"
+  zkevm_l2_sovereignadmin_private_key: "0x719f7a806a2d34f22ed95b460e4fd2d983837e8f63980125adc809eab60151c1"
+  zkevm_l2_claimtx_address: "0xE607e623280218A667BED81d6996A6EA4a9CAD10"
+  zkevm_l2_claimtx_private_key: "0x9190ea534e5e84efb5f54fb67b7749ecdd9ba4e0c1ea36b1d6c60a34a27e57be"
