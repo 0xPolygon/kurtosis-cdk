@@ -107,6 +107,7 @@ def create_agglayer_prover_config_artifact(plan, args):
         },
     )
 
+
 def agglayer_version(args):
     if "agglayer_version" in args:
         return args["agglayer_version"]
@@ -114,6 +115,7 @@ def agglayer_version(args):
         return args["agglayer_image"].split(":")[1]
     else:
         return "latest"
+
 
 def create_agglayer_config_artifact(
     plan, args, agglayer_prover_url, contract_setup_addresses
@@ -179,7 +181,6 @@ def get_agglayer_prover_ports(args):
 
 def get_agglayer_ports(args):
     ports = {
-        "aglr-grpc": PortSpec(args["agglayer_grpc_port"], application_protocol="http"),
         "aglr-readrpc": PortSpec(
             args["agglayer_readrpc_port"], application_protocol="http"
         ),
@@ -188,6 +189,8 @@ def get_agglayer_ports(args):
         ),
     }
     if not agglayer_version(args).startswith("0.2."):
-        del ports["aglr-grpc"]
+        ports["aglr-grpc"] = PortSpec(
+            args["agglayer_grpc_port"], application_protocol="http"
+        )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)
