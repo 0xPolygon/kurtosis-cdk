@@ -417,6 +417,8 @@ DEFAULT_OP_STACK_ARGS = {
                 # the "-" however adds another "-" to the Kurtosis deployment_suffix. So we are doing string manipulation to remove the "-"
                 "name": DEFAULT_ARGS.get("deployment_suffix")[1:],
                 "network_id": str(DEFAULT_ROLLUP_ARGS.get("zkevm_rollup_chain_id")),
+                # The blocktime on the OP network
+                "seconds_per_slot": 1,
             },
         },
     ],
