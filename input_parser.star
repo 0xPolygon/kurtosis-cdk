@@ -659,10 +659,9 @@ def set_anvil_args(plan, args, user_args):
 # Helper function to compact together checks for incompatible parameters in input_parser.star
 def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # Fix the op stack el rpc urls according to the deployment_suffix.
-    if (
-        args["op_el_rpc_url"]
-        != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
-    ):
+    if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
+        "deployment_suffix"
+    ] + ":8545" and deployment_stages.get("deploy_op_stack", False):
         plan.print(
             "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
                 args["op_el_rpc_url"], args["deployment_suffix"]
@@ -672,10 +671,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
         )
     # Fix the op stack cl rpc urls according to the deployment_suffix.
-    if (
-        args["op_cl_rpc_url"]
-        != "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
-    ):
+    if args["op_cl_rpc_url"] != "http://op-cl-1-op-node-op-geth" + args[
+        "deployment_suffix"
+    ] + ":8547" and deployment_stages.get("deploy_op_stack", False):
         plan.print(
             "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
                 args["op_cl_rpc_url"], args["deployment_suffix"]
@@ -686,10 +684,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         )
     # The optimism-package network_params is a frozen hash table, and is not modifiable during runtime.
     # The check will return fail() instead of dynamically changing the network_params name.
-    if (
-        op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"]
-        != args["deployment_suffix"][1:]
-    ):
+    if op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"] != args[
+        "deployment_suffix"
+    ][1:] and deployment_stages.get("deploy_op_stack", False):
         fail(
             "op_stack_args network_params name is set to '{}', please change it to match deployment_suffix '{}'".format(
                 op_stack_args["optimism_package"]["chains"][0]["network_params"][
