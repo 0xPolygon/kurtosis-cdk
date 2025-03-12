@@ -4,6 +4,9 @@ deployment_stages:
   deploy_op_succinct: true
 
 args:
+  # Fix agglayer image to v0.2.x
+  # https://github.com/agglayer/agglayer/pkgs/container/agglayer/353418839
+  agglayer_image: "ghcr.io/agglayer/agglayer@sha256:5715855f2cc6834bd84a99a33937915164648547d21bfb55198948b0ae4e0fad"
   # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
   agglayer_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
@@ -19,11 +22,19 @@ args:
   op_succinct_proposer_span_proof: "50"
   # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
   op_succinct_submission_interval: "100"
+  # The maximum number of concurrent proof requests to send to the `op-succinct-server`
+  op_succinct_max_concurrent_proof_requests: "1"
+  # The maximum number of concurrent witness generation processes to run on the `op-succinct-server`
+  op_succinct_max_concurrent_witness_gen: "1"
   # Must match network_id field in network_params.network_id
   zkevm_rollup_chain_id: 2151908
   # The number following the "-" should be identical to network_params.name
   deployment_suffix: "-001"
   zkevm_rollup_id: 1
+  # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
+  # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
+  # Note this will noticeably increase the deployment time because of the increased L1 finality.
+  l1_seconds_per_slot: 12
 
 optimism_package:
   chains:
@@ -40,6 +51,7 @@ optimism_package:
       network_params:
         name: "001"
         network_id: "2151908"
+        seconds_per_slot: 1
   op_contract_deployer_params:
     image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.12"
     l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz"
