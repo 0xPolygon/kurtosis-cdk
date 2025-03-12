@@ -118,6 +118,13 @@ def create_agglayer_config_artifact(
         args["deployment_suffix"], args["sequencer_type"]
     )
 
+    if "agglayer_version" in args:
+        agglayer_version = args["agglayer_version"]
+    elif "agglayer_image" in args and ":" in args["agglayer_image"]:
+        agglayer_version = args["agglayer_image"].split(":")[1]
+    else:
+        agglayer_version = "latest"
+
     return plan.render_templates(
         name="agglayer-config-artifact",
         config={
@@ -140,6 +147,7 @@ def create_agglayer_config_artifact(
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "agglayer_version": agglayer_version,
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],
                     "agglayer_prover_entrypoint": agglayer_prover_url,

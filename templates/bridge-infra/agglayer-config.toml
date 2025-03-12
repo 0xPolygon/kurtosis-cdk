@@ -14,8 +14,12 @@ mock-verifier = {{.mock_verifier}}
 1 = "{{.zkevm_l2_sequencer_address}}"
 
 [rpc]
+{{if eq (slice 0 4 .agglayer_version) "0.2." }}
+port = {{.agglayer_port}}
+{{else}}
 grpc-port = {{.agglayer_grpc_port}}
 readrpc-port = {{.agglayer_readrpc_port}}
+{{end}}
 host = "0.0.0.0"
 request-timeout = 180
 # size is define in bytes e.g. 100 * 1024 * 1024
