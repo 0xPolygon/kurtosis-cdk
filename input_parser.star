@@ -40,7 +40,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.0.2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer@sha256:5715855f2cc6834bd84a99a33937915164648547d21bfb55198948b0ae4e0fad",  # https://ghcr.io/agglayer/agglayer
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.5",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -61,7 +61,8 @@ DEFAULT_IMAGES = {
 }
 
 DEFAULT_PORTS = {
-    "agglayer_port": 4444,
+    "agglayer_grpc_port": 4443,
+    "agglayer_readrpc_port": 4444,
     "agglayer_prover_port": 4445,
     "agglayer_metrics_port": 9092,
     "agglayer_prover_metrics_port": 9093,
@@ -321,8 +322,12 @@ DEFAULT_ROLLUP_ARGS = {
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
-    # The URL where the agglayer can be reached
-    "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
+    # The URL where the agglayer can be reached for gRPC
+    "agglayer_grpc_url": "http://agglayer:"
+    + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
+    # The URL where the agglayer can be reached for ReadRPC
+    "agglayer_readrpc_url": "http://agglayer:"
+    + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",

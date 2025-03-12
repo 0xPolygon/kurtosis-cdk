@@ -108,6 +108,15 @@ def create_agglayer_prover_config_artifact(plan, args):
     )
 
 
+def agglayer_version(args):
+    if "agglayer_version" in args:
+        return args["agglayer_version"]
+    elif "agglayer_image" in args and ":" in args["agglayer_image"]:
+        return args["agglayer_image"].split(":")[1]
+    else:
+        return "latest"
+
+
 def create_agglayer_config_artifact(
     plan, args, agglayer_prover_url, contract_setup_addresses
 ):
@@ -140,7 +149,9 @@ def create_agglayer_config_artifact(
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                    "agglayer_port": args["agglayer_port"],
+                    "agglayer_version": agglayer_version(args),
+                    "agglayer_grpc_port": args["agglayer_grpc_port"],
+                    "agglayer_readrpc_port": args["agglayer_readrpc_port"],
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
@@ -170,10 +181,16 @@ def get_agglayer_prover_ports(args):
 
 def get_agglayer_ports(args):
     ports = {
-        "agglayer": PortSpec(args["agglayer_port"], application_protocol="http"),
+        "aglr-readrpc": PortSpec(
+            args["agglayer_readrpc_port"], application_protocol="http"
+        ),
         "prometheus": PortSpec(
             args["agglayer_metrics_port"], application_protocol="http"
         ),
     }
+    if not agglayer_version(args).startswith("0.2."):
+        ports["aglr-grpc"] = PortSpec(
+            args["agglayer_grpc_port"], application_protocol="http"
+        )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)
