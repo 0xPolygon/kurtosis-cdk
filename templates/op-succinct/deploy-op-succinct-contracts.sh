@@ -32,6 +32,9 @@ L2OO_ADDRESS=""
 # false = network
 OP_SUCCINCT_MOCK="{{.op_succinct_mock}}"
 
+# Enable the integration with the Agglayer
+OP_SUCCINCT_AGGLAYER="{{.op_succinct_agglayer}}"
+
 # The RPC endpoint for the Succinct Prover Network
 NETWORK_RPC_URL="{{.agglayer_prover_network_url}}"
 EOF
