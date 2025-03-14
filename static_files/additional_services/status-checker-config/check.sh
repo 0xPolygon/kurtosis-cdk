@@ -10,7 +10,6 @@ previous_virtual_bn_idle_counter=0
 previous_verified_bn=0
 previous_verified_bn_idle_counter=0
 
-gas_price_factor=1
 while true; do
   # Monitor batches.
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] ZkEVM Batch No."
@@ -48,24 +47,5 @@ while true; do
     fi
   fi
 
-  # Send transactions to increase the number of batches.
-  gas_price=$(cast gas-price --rpc-url "{{.rpc_url}}")
-  gas_price=$(bc -l <<<"${gas_price} * ${gas_price_factor}" | sed 's/\..*//')
-  cast send \
-    --legacy \
-    --timeout 30 \
-    --gas-price "${gas_price}" \
-    --rpc-url "{{.rpc_url}}" \
-    --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-    --gas-limit 100000 \
-    --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
-  ret_code=$?
-  if [[ "${ret_code}" -eq 0 ]]; then
-    gas_price_factor=1
-  else
-    gas_price_factor=$(bc -l <<<"${gas_price_factor} * 1.5")
-  fi
-
-  # Waiting a few seconds before the next iteration.
   sleep 10
 done

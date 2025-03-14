@@ -11,7 +11,7 @@ def run(plan, args):
         config={
             "check.sh": struct(
                 template=read_file(
-                    src="../../static_files/additional_services/status-checker/check.sh",
+                    src="../../static_files/additional_services/status-checker-config/check.sh",
                 ),
                 data={
                     "rpc_url": l2_rpc_url,
