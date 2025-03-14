@@ -2,7 +2,7 @@
 
 L1_RPC="{{.l1_rpc_url}}"
 PRIVATE_KEY=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
-ETH_ADDRESS=$(cast wallet address --private-key $PRIVATE_KEY)
+ETH_ADDRESS=$(cast wallet address --private-key "$PRIVATE_KEY")
 
 # Create the .env file
 mkdir /tmp/sp1-contracts
@@ -12,7 +12,7 @@ git clone https://github.com/succinctlabs/sp1-contracts.git .
 forge install succinctlabs/sp1-contracts
 
 # Update Foundry.toml with the RPC_KURTOSIS
-sed -i '/scroll_sepolia = "${RPC_SCROLL_SEPOLIA}"/a kurtosis = "${RPC_KURTOSIS}"' /tmp/sp1-contracts/lib/sp1-contracts/contracts/foundry.toml
+sed -i "/scroll_sepolia = \"${RPC_SCROLL_SEPOLIA}\"/a kurtosis = \"${RPC_KURTOSIS}\"" /tmp/sp1-contracts/lib/sp1-contracts/contracts/foundry.toml
 
 # Create 271828.json Deployment artifact for Kurtosis devnet
 touch /tmp/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
@@ -47,6 +47,7 @@ EOF
 
 cd /tmp/sp1-contracts/lib/sp1-contracts/contracts || exit
 set -a
+# shellcheck disable=SC1091
 source .env
 set +a
 

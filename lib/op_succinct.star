@@ -42,10 +42,13 @@ def create_op_succinct_contract_deployer_service_config(
 
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
-def create_op_succinct_server_service_config(args, op_succinct_env_vars,):
+def create_op_succinct_server_service_config(
+    args,
+    op_succinct_env_vars,
+):
     op_succinct_name = "op-succinct-server" + args["deployment_suffix"]
     ports = get_op_succinct_server_ports(args)
-    
+
     # If we are using the network prover, we use the real verifier address
     if op_succinct_env_vars["op_succinct_mock"] == False:
         env_vars = {

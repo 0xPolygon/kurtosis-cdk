@@ -70,6 +70,7 @@ def op_succinct_proposer_run(plan, args, op_succinct_env_vars):
         description="Starting the op-succinct-proposer component",
     )
 
+
 def sp1_verifier_contracts_deployer_run(plan, args):
     service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
     plan.exec(
