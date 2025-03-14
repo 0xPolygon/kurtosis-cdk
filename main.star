@@ -23,16 +23,17 @@ op_succinct_package = "./op_succinct.star"
 
 # Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
+assertoor_package = "./src/additional_services/assertoor.star"
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
+bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
 erpc_package = "./src/additional_services/erpc.star"
 grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
+status_checker_package = "./src/additional_services/status_checker.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
-bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
-assertoor_package = "./src/additional_services/assertoor.star"
 
 
 def run(plan, args={}):
@@ -243,33 +244,38 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Launching additional services.
-    additional_services = args["additional_services"]
-
-    if "pless_zkevm_node" in additional_services:
-        plan.print("Launching permissionnless zkevm node")
-        # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)
-        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-        permissionless_node_args["deployment_suffix"] = (
-            "-pless" + args["deployment_suffix"]
-        )
-        import_module(pless_zkevm_node_package).run(
-            plan, permissionless_node_args, genesis_artifact
-        )
-        plan.print("Successfully launched permissionless zkevm node")
-        additional_services.remove("pless_zkevm_node")
-
     # TODO: cdk-erigon pless node
-
-    for index, additional_service in enumerate(additional_services):
+    for index, additional_service in enumerate(args["additional_services"]):
         if additional_service == "arpeggio":
             deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
+        elif additional_service == "assertoor":
+            deploy_additional_service(plan, "assertoor", assertoor_package, args)
         elif additional_service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
         elif additional_service == "blutgang":
             deploy_additional_service(plan, "blutgang", blutgang_package, args)
+        elif additional_service == "bridge_spammer":
+            deploy_additional_service(
+                plan,
+                "bridge_spammer",
+                bridge_spammer_package,
+                args,
+                contract_setup_addresses,
+            )
         elif additional_service == "erpc":
             deploy_additional_service(plan, "erpc", erpc_package, args)
+        elif additional_service == "pless_zkevm_node":
+            plan.print("Launching permissionnless zkevm node")
+            # Note that an additional suffix will be added to the permissionless services.
+            permissionless_node_args = dict(args)
+            permissionless_node_args["original_suffix"] = args["deployment_suffix"]
+            permissionless_node_args["deployment_suffix"] = (
+                "-pless" + args["deployment_suffix"]
+            )
+            import_module(pless_zkevm_node_package).run(
+                plan, permissionless_node_args, genesis_artifact
+            )
+            plan.print("Successfully launched permissionless zkevm node")
         elif additional_service == "prometheus_grafana":
             deploy_additional_service(
                 plan,
@@ -280,20 +286,14 @@ def run(plan, args={}):
             )
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
+        elif additional_service == "status_checker":
+            deploy_additional_service(
+                plan, "status_checker", status_checker_package, args
+            )
         elif additional_service == "tx_spammer":
             deploy_additional_service(
                 plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
             )
-        elif additional_service == "bridge_spammer":
-            deploy_additional_service(
-                plan,
-                "bridge_spammer",
-                bridge_spammer_package,
-                args,
-                contract_setup_addresses,
-            )
-        elif additional_service == "assertoor":
-            deploy_additional_service(plan, "assertoor", assertoor_package, args)
         else:
             fail("Invalid additional service: %s" % (additional_service))
 
