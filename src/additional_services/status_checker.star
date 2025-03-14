@@ -1,3 +1,6 @@
+constants = import_module("../../src/package_io/constants.star")
+
+
 def run(plan, args):
     l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
     l2_rpc_url = "http://{}:{}".format(
