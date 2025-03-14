@@ -380,13 +380,15 @@ DEFAULT_ARGS = (
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
+        # - assertoor
         # - blockscout
         # - blutgang
+        # - bridge_spammer
         # - erpc
         # - pless_zkevm_node
         # - prometheus_grafana
+        # - status_checker
         # - tx_spammer
-        # - bridge_spammer
         "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",

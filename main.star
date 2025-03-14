@@ -23,16 +23,17 @@ op_succinct_package = "./op_succinct.star"
 
 # Additional service packages.
 arpeggio_package = "./src/additional_services/arpeggio.star"
+assertoor_package = "./src/additional_services/assertoor.star"
 blockscout_package = "./src/additional_services/blockscout.star"
 blutgang_package = "./src/additional_services/blutgang.star"
+bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
 erpc_package = "./src/additional_services/erpc.star"
 grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
-bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
-assertoor_package = "./src/additional_services/assertoor.star"
+status_checker_package = "./src/additional_services/status_checker.star"
 
 
 def run(plan, args={}):
@@ -264,10 +265,20 @@ def run(plan, args={}):
     for index, additional_service in enumerate(additional_services):
         if additional_service == "arpeggio":
             deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
+        elif additional_service == "assertoor":
+            deploy_additional_service(plan, "assertoor", assertoor_package, args)
         elif additional_service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
         elif additional_service == "blutgang":
             deploy_additional_service(plan, "blutgang", blutgang_package, args)
+        elif additional_service == "bridge_spammer":
+            deploy_additional_service(
+                plan,
+                "bridge_spammer",
+                bridge_spammer_package,
+                args,
+                contract_setup_addresses,
+            )
         elif additional_service == "erpc":
             deploy_additional_service(plan, "erpc", erpc_package, args)
         elif additional_service == "prometheus_grafana":
@@ -280,20 +291,14 @@ def run(plan, args={}):
             )
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
+        elif additional_service == "status_checker":
+            deploy_additional_service(
+                plan, "status_checker", status_checker_package, args
+            )
         elif additional_service == "tx_spammer":
             deploy_additional_service(
                 plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
             )
-        elif additional_service == "bridge_spammer":
-            deploy_additional_service(
-                plan,
-                "bridge_spammer",
-                bridge_spammer_package,
-                args,
-                contract_setup_addresses,
-            )
-        elif additional_service == "assertoor":
-            deploy_additional_service(plan, "assertoor", assertoor_package, args)
         else:
             fail("Invalid additional service: %s" % (additional_service))
 
