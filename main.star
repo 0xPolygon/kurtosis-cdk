@@ -32,8 +32,8 @@ grafana_package = "./src/additional_services/grafana.star"
 panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
-tx_spammer_package = "./src/additional_services/tx_spammer.star"
 status_checker_package = "./src/additional_services/status_checker.star"
+tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
 def run(plan, args={}):
@@ -244,25 +244,8 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Launching additional services.
-    additional_services = args["additional_services"]
-
-    if "pless_zkevm_node" in additional_services:
-        plan.print("Launching permissionnless zkevm node")
-        # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)
-        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-        permissionless_node_args["deployment_suffix"] = (
-            "-pless" + args["deployment_suffix"]
-        )
-        import_module(pless_zkevm_node_package).run(
-            plan, permissionless_node_args, genesis_artifact
-        )
-        plan.print("Successfully launched permissionless zkevm node")
-        additional_services.remove("pless_zkevm_node")
-
     # TODO: cdk-erigon pless node
-
-    for index, additional_service in enumerate(additional_services):
+    for index, additional_service in enumerate(args["additional_services"]):
         if additional_service == "arpeggio":
             deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
         elif additional_service == "assertoor":
@@ -281,6 +264,18 @@ def run(plan, args={}):
             )
         elif additional_service == "erpc":
             deploy_additional_service(plan, "erpc", erpc_package, args)
+        elif additional_service == "pless_zkevm_node":
+            plan.print("Launching permissionnless zkevm node")
+            # Note that an additional suffix will be added to the permissionless services.
+            permissionless_node_args = dict(args)
+            permissionless_node_args["original_suffix"] = args["deployment_suffix"]
+            permissionless_node_args["deployment_suffix"] = (
+                "-pless" + args["deployment_suffix"]
+            )
+            import_module(pless_zkevm_node_package).run(
+                plan, permissionless_node_args, genesis_artifact
+            )
+            plan.print("Successfully launched permissionless zkevm node")
         elif additional_service == "prometheus_grafana":
             deploy_additional_service(
                 plan,
