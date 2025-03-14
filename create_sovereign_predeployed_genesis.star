@@ -1,7 +1,8 @@
 def run(plan, args):
+    service_name = "contracts" + args["deployment_suffix"]
     plan.exec(
         description="Creating sovereign predeployed Genesis for OP Stack",
-        service_name="contracts" + args["deployment_suffix"],
+        service_name=service_name,
         recipe=ExecRecipe(
             command=[
                 "/bin/sh",
@@ -11,4 +12,13 @@ def run(plan, args):
                 ),
             ]
         ),
+    )
+
+    allocs_file = "predeployed_allocs.json"
+
+    plan.store_service_files(
+        service_name=service_name,
+        name=allocs_file,
+        src="/opt/zkevm/" + allocs_file,
+        description="Storing {}".format(allocs_file),
     )

@@ -12,7 +12,6 @@ databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 anvil_package = "./anvil.star"
-optimism_package = "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
@@ -190,6 +189,7 @@ def run(plan, args={}):
 
     # Deploy an OP Stack rollup.
     if deployment_stages.get("deploy_optimism_rollup", False):
+        optimism_package = op_stack_args["source"]
         # Deploy OP Stack infrastructure
         plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
         import_module(optimism_package).run(plan, op_stack_args)
