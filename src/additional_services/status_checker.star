@@ -26,6 +26,6 @@ def run(plan, args):
             image=constants.TOOLBOX_IMAGE,
             files={"/opt/scripts": Directory(artifact_names=[check_script_artifact])},
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /opt/scripts/check.sh && /opt/scrpts/check.sh"],
+            cmd=["chmod +x /opt/scripts/check.sh && /opt/scripts/check.sh"],
         ),
     )
