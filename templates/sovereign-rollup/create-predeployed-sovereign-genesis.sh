@@ -37,33 +37,31 @@ else
     exit 1
 fi
 
->/tmp/create_op_genesis.py cat <<EOF
+>/tmp/create_op_allocs.py cat <<EOF
 import json
 
-genesis_orig = "/opt/contract-deploy/op-original-genesis.json"
 genesis_polygon = "/opt/zkevm/sovereign-predeployed-genesis.json"
-genesis_output = "/opt/zkevm/op-genesis.json"
+predeployed_allocs = "/opt/zkevm/predeployed_allocs.json"
 
-with open(genesis_orig, "r") as fg_orig:
-    genesis = json.load(fg_orig)
 with open(genesis_polygon, "r") as fg_polygon:
     genesis_polygon = json.load(fg_polygon)
 
+allocs = {}
 for item in genesis_polygon["genesis"]:
-    addr = item["address"][2:]
-    genesis["alloc"][addr] = {
+    addr = item["address"].lower()
+    allocs[addr] = {
         "balance": hex(int(item["balance"])),
     }
     if "nonce" in item:
-        genesis["alloc"][addr]["nonce"] = hex(int(item["nonce"]))
+        allocs[addr]["nonce"] = hex(int(item["nonce"]))
     if "bytecode" in item:
-        genesis["alloc"][addr]["code"] = item["bytecode"]
+        allocs[addr]["code"] = item["bytecode"]
     if "storage" in item:
-        genesis["alloc"][addr]["storage"] = item["storage"]
+        allocs[addr]["storage"] = item["storage"]
 
-with open(genesis_output, "w") as fg_output:
-    json.dump(genesis, fg_output, indent=4)
-    print(f"OP Genesis file saved: {genesis_output}")
+with open(predeployed_allocs, "w") as fg_output:
+    json.dump(allocs, fg_output, indent=4)
+    print(f"Predeployed Allocs file saved: {predeployed_allocs}")
 EOF
 
-python3 /tmp/create_op_genesis.py
+python3 /tmp/create_op_allocs.py
