@@ -18,6 +18,7 @@ while true; do
   echo "Trusted: ${trusted_bn}"
   if [[ "${trusted_bn}" -gt "${previous_trusted_bn}" ]]; then
     previous_trusted_bn="${trusted_bn}"
+    previous_trusted_bn_idle_counter=0
   else
     previous_trusted_bn_idle_counter=$((previous_trusted_bn_idle_counter + 1))
     if [[ "${previous_trusted_bn_idle_counter}" -ge 6 ]]; then
@@ -29,6 +30,7 @@ while true; do
   echo "Virtual: ${virtual_bn}"
   if [[ "${virtual_bn}" -gt "${previous_virtual_bn}" ]]; then
     previous_virtual_bn="${virtual_bn}"
+    previous_virtual_bn_idle_counter=0
   else
     previous_virtual_bn_idle_counter=$((previous_virtual_bn_idle_counter + 1))
     if [[ "${previous_virtual_bn_idle_counter}" -ge 6 ]]; then
@@ -40,6 +42,7 @@ while true; do
   echo "Verified: ${verified_bn}"
   if [[ "${verified_bn}" -gt "${previous_verified_bn}" ]]; then
     previous_verified_bn="${verified_bn}"
+    previous_verified_bn_idle_counter=0
   else
     previous_verified_bn_idle_counter=$((previous_verified_bn_idle_counter + 1))
     if [[ "${previous_verified_bn_idle_counter}" -ge 6 ]]; then
