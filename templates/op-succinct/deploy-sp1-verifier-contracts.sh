@@ -73,3 +73,8 @@ jq --arg addr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib
 # Append the addresses of SP1 Verifier Contracts into the op-succinct-env-vars.json file. This will be used by the OP-Succinct components to point to a real verifier.
 jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json /tmp/sp1_verifier_out.json > /opt/op-succinct/op-succinct-env-vars.json.tmp
 mv /opt/op-succinct/op-succinct-env-vars.json.tmp /opt/op-succinct/op-succinct-env-vars.json
+
+# Update the verifier address in the OPSuccinctL2OutputOracle contract
+SP1_VERIFIER_GATEWAY=$(jq '.SP1VERIFIERGATEWAY' /tmp/sp1_verifier_out.json -r)
+L2OO_ADDRESS=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
+cast send "$L2OO_ADDRESS" "updateVerifier(address)" "$SP1_VERIFIER_GATEWAY" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
