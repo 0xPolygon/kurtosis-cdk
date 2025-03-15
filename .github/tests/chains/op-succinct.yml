@@ -14,6 +14,8 @@ args:
   op_succinct_proposer_image: "jhkimqd/op-succinct-proposer:v0.0.5-agglayer" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
   # true = mock
   # false = network
+  # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devent.
+  # A mock verifier is used otherwise.
   op_succinct_mock: false
   # Enable the integration with the Agglayer
   op_succinct_agglayer: true
