@@ -380,13 +380,15 @@ DEFAULT_ARGS = (
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
+        # - assertoor
         # - blockscout
         # - blutgang
+        # - bridge_spammer
         # - erpc
         # - pless_zkevm_node
         # - prometheus_grafana
+        # - status_checker
         # - tx_spammer
-        # - bridge_spammer
         "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
@@ -407,6 +409,7 @@ DEFAULT_ARGS = (
 # If none is is provided, it will refer to the default images from the Optimism-Package repo.
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 DEFAULT_OP_STACK_ARGS = {
+    "source": "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
     "chains": [
         {
             "participants": [
@@ -598,9 +601,8 @@ def get_l2_rpc_name(deploy_cdk_erigon_node):
         return "zkevm-node-rpc"
 
 
-def get_op_stack_args(plan, args, op_stack_args):
-    if not op_stack_args:
-        op_stack_args = DEFAULT_OP_STACK_ARGS
+def get_op_stack_args(plan, args, user_op_stack_args):
+    op_stack_args = DEFAULT_OP_STACK_ARGS | user_op_stack_args
 
     l1_chain_id = str(args.get("l1_chain_id", ""))
     l1_rpc_url = args.get("l1_rpc_url", "")
@@ -617,7 +619,10 @@ def get_op_stack_args(plan, args, op_stack_args):
     )
     private_key = private_key_result.output
 
+    source = op_stack_args.pop("source")
+
     return {
+        "source": source,
         "optimism_package": op_stack_args,
         "external_l1_network_params": {
             "network_id": l1_chain_id,
