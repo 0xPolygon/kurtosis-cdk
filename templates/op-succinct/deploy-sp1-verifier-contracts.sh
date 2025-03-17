@@ -51,11 +51,14 @@ set -a
 source .env
 set +a
 
+# Change Verifier Hash in SP1Verifier contract
+sed -i 's/0x865350661abdacc425126316fdaa2a67a1dc087f03c31f5cdfdc6613f501f042/0x11b6a09d00000000000000000000000000000000000000000000000000000000/' /tmp/sp1-contracts/lib/sp1-contracts/contracts/src/v3.0.0-rc4/SP1VerifierPlonk.sol
+
 # Plonk Deployments
 # Deploy SP1 Verifier Gateway Plonk
 FOUNDRY_PROFILE=deploy forge script --legacy ./script/deploy/SP1VerifierGatewayPlonk.s.sol:SP1VerifierGatewayScript --private-key "$PRIVATE_KEY" --broadcast
 # Deploy SP1 Verifier Plonk contract
-FOUNDRY_PROFILE=deploy forge script ./script/deploy/v4.0.0-rc.3/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
+FOUNDRY_PROFILE=deploy forge script ./script/deploy/v3.0.0-rc4/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
 
 # Groth16 Deployments
 # Deploy SP1 Verifier Gateway Groth16
@@ -77,5 +80,14 @@ mv /opt/op-succinct/op-succinct-env-vars.json.tmp /opt/op-succinct/op-succinct-e
 
 # Update the verifier address in the OPSuccinctL2OutputOracle contract
 SP1_VERIFIER_GATEWAY=$(jq '.SP1VERIFIERGATEWAY' /tmp/sp1_verifier_out.json -r)
+SP1_VERIFIER=$(jq '.SP1VERIFIER' /tmp/sp1_verifier_out.json -r)
 L2OO_ADDRESS=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
-cast send "$L2OO_ADDRESS" "updateVerifier(address)" "$SP1_VERIFIER_GATEWAY" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
+cast send "$L2OO_ADDRESS" "updateVerifier(address)" "$SP1_VERIFIER" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
+
+# SPN Requester address
+SPN_REQUESTER_ETH_ADDRESS=$(cast wallet address --private-key "{{.agglayer_prover_sp1_key}}")
+# Fund the op-succinct-proposer which is the same address submitting requests to SPN
+# This will allow the op-succinct-proposer to submit L1 requests to call "Propose L2Output" on the OPSuccinctL2OutputOracle contract.
+cast send "$SPN_REQUESTER_ETH_ADDRESS" --private-key "{{.zkevm_l2_admin_private_key}}" --value 1ether --rpc-url "$L1_RPC"
+# Add that same SPN requester address to the OPSuccinctL2OOOracle contract as approved proposer
+cast send "$L2OO_ADDRESS" --private-key "$PRIVATE_KEY" "addProposer(address)" "$SPN_REQUESTER_ETH_ADDRESS" --rpc-url "$L1_RPC"
