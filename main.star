@@ -112,7 +112,9 @@ def run(plan, args={}):
     # Deploy the agglayer.
     if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
-        import_module(agglayer_package).run(plan, args, contract_setup_addresses)
+        import_module(agglayer_package).run(
+            plan, deployment_stages, args, contract_setup_addresses
+        )
     else:
         plan.print("Skipping the deployment of the agglayer")
 
