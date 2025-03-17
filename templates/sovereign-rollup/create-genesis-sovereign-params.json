@@ -8,14 +8,17 @@
     "sovereignWETHAddressIsNotMintable": false,
     "globalExitRootUpdater": "{{ .zkevm_l2_sovereignadmin_address }}",
     "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}",
-    "setPreMintAccount": true,
-    "preMintAccount": {
-        "balance": "1000000000000000000",
-        "address": "0x8576158a89648aA88B6036f47B8b74Fc0C2b5c66"
-    },
+    "setPreMintAccounts": true,
+    "preMintAccounts": [
+        {
+            "balance": "1000000000000000000",
+            "address": "0x8576158a89648aA88B6036f47B8b74Fc0C2b5c66"
+        }
+    ],
     "setTimelockParameters": true,
     "timelockParameters": {
         "adminAddress": "{{ .zkevm_l2_admin_address }}",
         "minDelay": 3600
-    }
+    },
+    "formatGenesis": "geth"
 }
