@@ -159,9 +159,13 @@ def create_agglayer_config_artifact(
                     "mock_verifier": args["agglayer_prover_primary_prover"]
                     == "mock-prover",
                     # op stack
-                    "deploy_optimism_rollup": deployment_stages.get("deploy_optimism_rollup", False),
+                    "deploy_optimism_rollup": deployment_stages.get(
+                        "deploy_optimism_rollup", False
+                    ),
                     "op_el_rpc_url": args["op_el_rpc_url"],
-                    "zkevm_l2_sovereignadmin_address": args["zkevm_l2_sovereignadmin_address"],
+                    "zkevm_l2_sovereignadmin_address": args[
+                        "zkevm_l2_sovereignadmin_address"
+                    ],
                 }
                 | contract_setup_addresses
                 | db_configs,
