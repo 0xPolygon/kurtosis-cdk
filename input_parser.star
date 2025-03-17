@@ -47,7 +47,7 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC12",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.13",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
