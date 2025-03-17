@@ -108,7 +108,7 @@ def run(plan, args, deployment_stages):
                             args
                         ),
                         "deploy_optimism_rollup": deployment_stages.get(
-                        "deploy_optimism_rollup", False
+                            "deploy_optimism_rollup", False
                         ),
                     },
                 )
