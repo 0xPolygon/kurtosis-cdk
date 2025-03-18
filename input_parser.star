@@ -70,7 +70,7 @@ DEFAULT_PORTS = {
     "agglayer_prover_port": 4445,
     "agglayer_prover_metrics_port": 9093,
     # aggkit-prover
-    "aggkit_prover_port": 4446,
+    "aggkit_prover_grpc_port": 4446,
     "aggkit_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
@@ -328,16 +328,19 @@ DEFAULT_ROLLUP_ARGS = {
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
+    # The URL where the agglayer can be reached for gRPC
+    "agglayer_grpc_url": "http://agglayer:"
+        + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
+    # The URL where the agglayer can be reached for ReadRPC
+    "agglayer_readrpc_url": "http://agglayer:"
+        + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "aggkit_prover_network_url": "https://rpc.production.succinct.xyz",
-    # The URL where the agglayer can be reached for gRPC
-    "agglayer_grpc_url": "http://agglayer:"
-    + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
-    # The URL where the agglayer can be reached for ReadRPC
-    "agglayer_readrpc_url": "http://agglayer:"
-    + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
+    # The URL where the aggkit-prover can be reached for gRPC
+    "aggkit_prover_grpc_url": "http://aggkit-prover:"
+        + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",

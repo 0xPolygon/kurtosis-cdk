@@ -12,9 +12,9 @@ prometheus-addr = "0.0.0.0:{{ .metrics_port }}"
 runtime-timeout = "5s"
 
 [aggchain-proof-service.aggchain-proof-builder]
-network-id = 0
+network-id = {{ .network_id }}
 
-[aggchain-proof-service.aggchain-proof-builder.primary-prover.network-prover]
+[aggchain-proof-service.aggchain-proof-builder.primary-prover.{{ .primary_prover }}]
 proving-timeout = "5m"
 
 [aggchain-proof-service.aggchain-proof-builder.proving-timeout]
@@ -23,21 +23,21 @@ nanos = 0
 
 [aggchain-proof-service.aggchain-proof-builder.contracts]
 l1-rpc-endpoint = "{{.l1_rpc_url}}"
-l2-execution-layer-rpc-endpoint = "{{ .l2_rpc_url }}"
-l2-consensus-layer-rpc-endpoint = "{{ .l2_consensus_rpc_url }}"
+l2-execution-layer-rpc-endpoint = "{{ .l2_el_rpc_url }}"
+l2-consensus-layer-rpc-endpoint = "{{ .l2_cl_rpc_url }}"
 polygon-rollup-manager = "{{ .rollup_manager_address }}"
-global-exit-root-manager-v2-sovereign-chain = "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+global-exit-root-manager-v2-sovereign-chain = "{{ .global_exit_root_address }}"
 
 [aggchain-proof-service.proposer-service]
 l1-rpc-endpoint = "{{ .l1_rpc_url }}"
 
 [aggchain-proof-service.proposer-service.client]
-proposer-endpoint = "http://proposer-mock-rpc:3000/"
+proposer-endpoint = "{{ .proposer_url }}"
 sp1-cluster-endpoint = "{{ .agglayer_prover_network_url }}"
 
 [aggchain-proof-service.proposer-service.client.proving-timeout]
 secs = 3600
 nanos = 0
 
-[primary-prover.network-prover]
+[primary-prover.{{ .primary_prover }}]
 proving-timeout = "5m"

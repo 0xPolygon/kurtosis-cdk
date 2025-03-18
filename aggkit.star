@@ -162,13 +162,27 @@ def create_aggkit_prover_config_artifact(plan, args):
                 template=aggkit_prover_config_template,
                 # TODO: Organize those args.
                 data={
-                    "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
                     # ports
                     "aggkit_prover_port": args["aggkit_prover_port"],
-                    "prometheus_port": args["aggkit_prover_metrics_port"],
+                    "metrics_port": args["aggkit_prover_metrics_port"],
                     # prover settings (fork12+)
                     "primary_prover": args["aggkit_prover_primary_prover"],
+                    # L1
+                    # TODO: Is it the right way of creating the L1_RPC_URL for aggkit related component ?
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "aggkit", args["l1_rpc_url"]
+                    ),
+                    # L2
+                    "l2_el_rpc_url": args["op_el_rpc_url"],
+                    "l2_cl_rpc_url": args["op_cl_rpc_url"],
+                    "rollup_manager_address": args["zkevm_rollup_manager_address"],
+                    "global_exit_root_address": args["zkevm_global_exit_root_address"],
+
+                    "proposer_url": args[""],
+                    "network_id": 1,
+                    "aggkit_prover_network_url": args["aggkit_prover_network_url"]
+
                 },
             )
         },
