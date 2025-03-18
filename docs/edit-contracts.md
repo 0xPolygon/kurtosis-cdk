@@ -193,8 +193,8 @@ index 5293da7..5e451b6 100644
 --- a/params.yml
 +++ b/params.yml
 @@ -55,7 +55,7 @@ args:
-   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
-   # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
+   cdk_da_image: 0xpolygon/cdk-data-availability:0.0.7
+   # cdk_da_image: 0xpolygon/cdk-data-availability:0.0.6
 
 -  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
 +  zkevm_contracts_image: local/zkevm-contracts:v6.0.0-rc.1-fork.9
