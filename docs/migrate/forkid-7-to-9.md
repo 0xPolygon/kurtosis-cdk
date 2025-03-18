@@ -28,8 +28,8 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
     -  zkevm_node_image: 0xpolygon/cdk-validium-node:0.6.4-cdk.2
     +  zkevm_node_image: 0xpolygon/cdk-validium-node:0.5.13-cdk.3
 
-    -  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
-    +  zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
+    -  cdk_da_image: 0xpolygon/cdk-data-availability:0.0.7
+    +  cdk_da_image: 0xpolygon/cdk-data-availability:0.0.6
 
     zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
     @@ -160,7 +160,7 @@ args:

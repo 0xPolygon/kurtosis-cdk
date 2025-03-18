@@ -38,7 +38,7 @@ index 5e39acd..ffd03fc 100644
    cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
 -  cdk_node_image: ghcr.io/0xpolygon/cdk:0.0.16
 +  cdk_node_image: local/cdk:0.0.16-fix
-   zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.9
+   cdk_da_image: 0xpolygon/cdk-data-availability:0.0.9
    zkevm_contracts_image: leovct/zkevm-contracts # the tag is automatically replaced by the value of /zkevm_rollup_fork_id/
 ```
 
