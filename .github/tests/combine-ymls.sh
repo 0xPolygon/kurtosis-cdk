@@ -94,7 +94,7 @@ for fork in "${forks[@]}"; do
                         },
                         data_availability: {
                             version: $da_version,
-                            source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/\($da_version)",
+                            source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v\($da_version)",
                         },
                         bridge_service: {
                             version: $bridge_version,
