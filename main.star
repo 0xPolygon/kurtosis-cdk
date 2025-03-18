@@ -206,7 +206,7 @@ def run(plan, args={}):
         # Deploy Sovereign contracts
         plan.print("Deploying sovereign contracts on OP Stack")
         import_module(deploy_sovereign_contracts_package).run(
-            plan, args, l1_op_contract_addresses
+            plan, args, l1_op_contract_addresses, op_stack_args["predeployed_contracts"]
         )
 
         # Extract Sovereign contract addresses
