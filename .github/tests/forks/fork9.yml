@@ -18,7 +18,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
 
   # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node
-  cdk_validium_node_image: ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10
+  cdk_validium_node_image: ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.9
 
   additional_services:
     - pless_zkevm_node
