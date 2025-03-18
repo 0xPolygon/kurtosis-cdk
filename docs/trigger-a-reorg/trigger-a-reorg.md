@@ -165,6 +165,6 @@ chain_reorg_executes 0
 
 ## Reorg a block including a zkEVM bridge deposit
 
-Now that we have learned how to trigger a reorg, let's delve into a potentially complex scenario for the CDK stack. What happens if a block containing a bridge deposit transaction gets reorged at at the L1 level? To explore this, we will replicate the previous setup with three nodes, one of which will be isolated. This isolated node will process bridge deposit transactions on its own fork. Then we would remove the network latencies and the first node would discard its fork, discarding the block containing the bridge deposit transaction. It would provide valuable insight into the behavior and implications within the CDK stack.
+Now that we have learned how to trigger a reorg, let's delve into a potentially complex scenario for the CDK stack. What happens if a block containing a bridge deposit transaction gets reorged at the L1 level? To explore this, we will replicate the previous setup with three nodes, one of which will be isolated. This isolated node will process bridge deposit transactions on its own fork. Then we would remove the network latencies and the first node would discard its fork, discarding the block containing the bridge deposit transaction. It would provide valuable insight into the behavior and implications within the CDK stack.
 
 TODO
