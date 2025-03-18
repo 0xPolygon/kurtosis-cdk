@@ -41,6 +41,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.0.2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.5",  # https://github.com/agglayer/agglayer/tags
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.1",  # https://github.com/agglayer/provers/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -61,11 +62,16 @@ DEFAULT_IMAGES = {
 }
 
 DEFAULT_PORTS = {
+    # agglayer-node
     "agglayer_grpc_port": 4443,
     "agglayer_readrpc_port": 4444,
-    "agglayer_prover_port": 4445,
     "agglayer_metrics_port": 9092,
+    # agglayer-prover
+    "agglayer_prover_port": 4445,
     "agglayer_prover_metrics_port": 9093,
+    # aggkit-prover
+    "aggkit_prover_port": 4446,
+    "aggkit_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
@@ -322,6 +328,10 @@ DEFAULT_ROLLUP_ARGS = {
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
+    # The type of primary prover to use in aggkit-prover.
+    "aggkit_prover_primary_prover": "mock-prover",
+    # If we're setting an sp1 key, we might want to specify a specific RPC url as well
+    "aggkit_prover_network_url": "https://rpc.production.succinct.xyz",
     # The URL where the agglayer can be reached for gRPC
     "agglayer_grpc_url": "http://agglayer:"
     + str(DEFAULT_PORTS.get("agglayer_grpc_port")),

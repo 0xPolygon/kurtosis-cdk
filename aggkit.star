@@ -5,6 +5,36 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 
 def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
+    # Create aggkit-prover
+    aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(plan, args)
+    (ports, public_ports) = get_aggkit_prover_ports(args)
+
+    prover_env_vars = {}
+
+    aggkit_prover = plan.add_service(
+        name="aggkit-prover",
+        config=ServiceConfig(
+            image=args["aggkit_prover_image"],
+            ports=ports,
+            public_ports=public_ports,
+            files={
+                "/etc/aggkit": Directory(
+                    artifact_names=[
+                        aggkit_prover_config_artifact,
+                    ]
+                ),
+            },
+            entrypoint=[
+                "/usr/local/bin/aggkit-prover",
+            ],
+            env_vars=prover_env_vars,
+            cmd=["run", "--config", "/etc/aggkit/aggkit-prover-config.toml"],
+        ),
+    )
+    aggkit_prover_url = "http://{}:{}".format(
+        aggkit_prover.ip_address, aggkit_prover.ports["api"].number
+    )
+
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
@@ -118,3 +148,41 @@ def create_bridge_config_artifact(
             )
         },
     )
+
+
+def create_aggkit_prover_config_artifact(plan, args):
+    aggkit_prover_config_template = read_file(
+        src="./templates/bridge-infra/aggkit-prover-config.toml"
+    )
+
+    return plan.render_templates(
+        name="aggkit-prover-artifact",
+        config={
+            "aggkit-prover-config.toml": struct(
+                template=aggkit_prover_config_template,
+                # TODO: Organize those args.
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "global_log_level": args["global_log_level"],
+                    # ports
+                    "aggkit_prover_port": args["aggkit_prover_port"],
+                    "prometheus_port": args["aggkit_prover_metrics_port"],
+                    # prover settings (fork12+)
+                    "primary_prover": args["aggkit_prover_primary_prover"],
+                },
+            )
+        },
+    )
+
+
+def get_aggkit_prover_ports(args):
+    ports = {
+        "grpc": PortSpec(args["aggkit_prover_port"], application_protocol="http"),
+        "metrics": PortSpec(
+            args["aggkit_prover_metrics_port"], application_protocol="http"
+        ),
+    }
+    public_ports = ports_package.get_public_ports(
+        ports, "aggkit_prover_start_port", args
+    )
+    return (ports, public_ports)
