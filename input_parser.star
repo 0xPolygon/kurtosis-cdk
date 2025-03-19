@@ -92,6 +92,7 @@ DEFAULT_PORTS = {
     "mitm_port": 8234,
     "op_succinct_server_port": 3000,
     "op_succinct_proposer_port": 7300,
+    "op_proposer_port": 8560,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -324,7 +325,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
+    "succinct_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
@@ -336,8 +337,6 @@ DEFAULT_ROLLUP_ARGS = {
         + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
-    # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "aggkit_prover_network_url": "https://rpc.production.succinct.xyz",
     # The URL where the aggkit-prover can be reached for gRPC
     "aggkit_prover_grpc_url": "http://aggkit-prover:"
         + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),

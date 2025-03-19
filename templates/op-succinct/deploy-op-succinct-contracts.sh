@@ -36,7 +36,7 @@ OP_SUCCINCT_MOCK="{{.op_succinct_mock}}"
 OP_SUCCINCT_AGGLAYER="{{.op_succinct_agglayer}}"
 
 # The RPC endpoint for the Succinct Prover Network
-NETWORK_RPC_URL="{{.agglayer_prover_network_url}}"
+NETWORK_RPC_URL="{{.succinct_prover_network_url}}"
 EOF
 
 # Deploy the mock-verifier and save the address to the verifier_address.out
