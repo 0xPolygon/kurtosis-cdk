@@ -1,5 +1,5 @@
 data_availability_package = import_module("./lib/data_availability.star")
-zkevm_dac_package = import_module("./lib/zkevm_dac.star")
+dac_package = import_module("./lib/dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
@@ -91,7 +91,7 @@ def run(plan, args, contract_setup_addresses):
         dac_config_artifact = create_dac_config_artifact(
             plan, args, db_configs, contract_setup_addresses
         )
-        dac_config = zkevm_dac_package.create_dac_service_config(
+        dac_config = dac_package.create_dac_service_config(
             args, dac_config_artifact, keystore_artifacts.dac
         )
         plan.add_services(
