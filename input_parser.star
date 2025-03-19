@@ -331,15 +331,15 @@ DEFAULT_ROLLUP_ARGS = {
     "agglayer_prover_primary_prover": "mock-prover",
     # The URL where the agglayer can be reached for gRPC
     "agglayer_grpc_url": "http://agglayer:"
-        + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
+    + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
     # The URL where the agglayer can be reached for ReadRPC
     "agglayer_readrpc_url": "http://agglayer:"
-        + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
+    + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
     # The URL where the aggkit-prover can be reached for gRPC
     "aggkit_prover_grpc_url": "http://aggkit-prover:"
-        + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
+    + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
