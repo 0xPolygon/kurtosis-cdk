@@ -7,7 +7,9 @@ ports_package = import_module("./src/package_io/ports.star")
 
 def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
     # Create aggkit-prover
-    aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses)
+    aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(
+        plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+    )
     (ports, public_ports) = get_aggkit_prover_ports(args)
 
     prover_env_vars = {
@@ -35,7 +37,10 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         ),
     )
     aggkit_prover_url = "http://{}:{}".format(
-        aggkit_prover.ip_address, aggkit_prover.ports["grpc"].number # TODO: Check whether "grpc" or "api" is the correct port. If api is correct, we need to add it below.
+        aggkit_prover.ip_address,
+        aggkit_prover.ports[
+            "grpc"
+        ].number,  # TODO: Check whether "grpc" or "api" is the correct port. If api is correct, we need to add it below.
     )
 
     db_configs = databases.get_db_configs(
