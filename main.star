@@ -60,7 +60,7 @@ def run(plan, args={}):
     contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
-        import_module(deploy_zkevm_contracts_package).run(plan, args)
+        import_module(deploy_zkevm_contracts_package).run(plan, args, deployment_stages)
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
         )
@@ -112,7 +112,9 @@ def run(plan, args={}):
     # Deploy the agglayer.
     if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
-        import_module(agglayer_package).run(plan, args, contract_setup_addresses)
+        import_module(agglayer_package).run(
+            plan, deployment_stages, args, contract_setup_addresses
+        )
     else:
         plan.print("Skipping the deployment of the agglayer")
 
@@ -230,6 +232,10 @@ def run(plan, args={}):
     if deployment_stages.get("deploy_op_succinct", False):
         plan.print("Deploying op-succinct contract deployer helper component")
         import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
+        plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
+        import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
+            plan, args
+        )
         plan.print("Extracting environment variables from the contract deployer")
         op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
         plan.print("Deploying op-succinct-server component")
