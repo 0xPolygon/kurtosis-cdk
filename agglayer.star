@@ -14,7 +14,7 @@ def run(plan, args, contract_setup_addresses):
         prover_env_vars["NETWORK_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
         # Keeping this for backward compatibility for now
         prover_env_vars["SP1_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
-        prover_env_vars["NETWORK_RPC_URL"] = args["succinct_prover_network_url"]
+        prover_env_vars["NETWORK_RPC_URL"] = args["agglayer_prover_network_url"]
 
     agglayer_prover = plan.add_service(
         name="agglayer-prover",

@@ -325,7 +325,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
     "agglayer_prover_sp1_key": None,
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "succinct_prover_network_url": "https://rpc.production.succinct.xyz",
+    "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",

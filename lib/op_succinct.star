@@ -54,7 +54,7 @@ def create_op_succinct_server_service_config(args, op_succinct_env_vars):
             "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
-            "NETWORK_RPC_URL": args["succinct_prover_network_url"],
+            "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
         },
     )
 
