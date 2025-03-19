@@ -158,7 +158,9 @@ def create_bridge_config_artifact(
     )
 
 
-def create_aggkit_prover_config_artifact(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
+def create_aggkit_prover_config_artifact(
+    plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+):
     aggkit_prover_config_template = read_file(
         src="./templates/bridge-infra/aggkit-prover-config.toml"
     )
@@ -184,8 +186,12 @@ def create_aggkit_prover_config_artifact(plan, args, contract_setup_addresses, s
                     # L2
                     "l2_el_rpc_url": args["op_el_rpc_url"],
                     "l2_cl_rpc_url": args["op_cl_rpc_url"],
-                    "rollup_manager_address": contract_setup_addresses["zkevm_rollup_manager_address"], # TODO: Check if it's the right address - is it the L1 rollup manager address ?
-                    "global_exit_root_address": sovereign_contract_setup_addresses["sovereign_ger_proxy_addr"], # TODO: Check if it's the right address - is it the L2 sovereign global exit root address ?
+                    "rollup_manager_address": contract_setup_addresses[
+                        "zkevm_rollup_manager_address"
+                    ],  # TODO: Check if it's the right address - is it the L1 rollup manager address ?
+                    "global_exit_root_address": sovereign_contract_setup_addresses[
+                        "sovereign_ger_proxy_addr"
+                    ],  # TODO: Check if it's the right address - is it the L2 sovereign global exit root address ?
                     # TODO: For op-succinct, agglayer/op-succinct is currently on the golang version. This might change if we move to the rust version.
                     "proposer_url": "http://op-succinct-proposer{}:{}".format(
                         args["deployment_suffix"], args["op_succinct_proposer_port"]
@@ -195,7 +201,7 @@ def create_aggkit_prover_config_artifact(plan, args, contract_setup_addresses, s
                     #     args["deployment_suffix"], args["op_proposer_port"]
                     # ),
                     "network_id": args["zkevm_rollup_id"],
-                    "agglayer_prover_network_url": args["agglayer_prover_network_url"]
+                    "agglayer_prover_network_url": args["agglayer_prover_network_url"],
 
                 },
             )
