@@ -79,6 +79,7 @@ jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json /tmp/sp1_verifier
 mv /opt/op-succinct/op-succinct-env-vars.json.tmp /opt/op-succinct/op-succinct-env-vars.json
 
 # Update the verifier address in the OPSuccinctL2OutputOracle contract
+# shellcheck disable=SC2034
 SP1_VERIFIER_GATEWAY=$(jq '.SP1VERIFIERGATEWAY' /tmp/sp1_verifier_out.json -r)
 SP1_VERIFIER=$(jq '.SP1VERIFIER' /tmp/sp1_verifier_out.json -r)
 L2OO_ADDRESS=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
