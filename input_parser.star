@@ -64,6 +64,7 @@ DEFAULT_PORTS = {
     "agglayer_grpc_port": 4443,
     "agglayer_readrpc_port": 4444,
     "agglayer_prover_port": 4445,
+    "agglayer_admin_port": 4446,
     "agglayer_metrics_port": 9092,
     "agglayer_prover_metrics_port": 9093,
     "prometheus_port": 9091,

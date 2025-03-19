@@ -152,6 +152,7 @@ def create_agglayer_config_artifact(
                     "agglayer_version": agglayer_version(args),
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],
+                    "agglayer_admin_port": args["agglayer_admin_port"],
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
@@ -200,5 +201,9 @@ def get_agglayer_ports(args):
         ports["aglr-grpc"] = PortSpec(
             args["agglayer_grpc_port"], application_protocol="http"
         )
+        if args["agglayer_admin_port"] != 0:
+            ports["aglr-admin"] = PortSpec(
+                args["agglayer_admin_port"], application_protocol="http"
+            )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)
