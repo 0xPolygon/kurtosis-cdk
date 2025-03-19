@@ -10,7 +10,9 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses)
     (ports, public_ports) = get_aggkit_prover_ports(args)
 
-    prover_env_vars = {}
+    prover_env_vars = {
+        "PROPOSER_NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
+    }
 
     aggkit_prover = plan.add_service(
         name="aggkit-prover",
