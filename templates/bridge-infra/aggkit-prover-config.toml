@@ -1,4 +1,4 @@
-grpc-endpoint = "127.0.0.1:{{ .aggkit_prover_port }}"
+grpc-endpoint = "127.0.0.1:{{ .aggkit_prover_grpc_port }}"
 
 [log]
 level = "{{ .global_log_level }}"
