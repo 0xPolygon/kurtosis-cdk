@@ -50,7 +50,7 @@ Follow the steps to verify all batches for upgrading.
 
 1. Start synchronizer's new version.
 
-2. Wait until synchornizer receives a fork id event (check table `state.fork_id`).
+2. Wait until synchronizer receives a fork id event (check table `state.fork_id`).
 
 3. Edit node config file (node v0.6.2 version):
 
