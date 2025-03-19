@@ -410,6 +410,7 @@ DEFAULT_ARGS = (
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 DEFAULT_OP_STACK_ARGS = {
     "source": "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
+    "predeployed_contracts": False,
     "chains": [
         {
             "participants": [
@@ -620,9 +621,11 @@ def get_op_stack_args(plan, args, user_op_stack_args):
     private_key = private_key_result.output
 
     source = op_stack_args.pop("source")
+    predeployed_contracts = op_stack_args.pop("predeployed_contracts")
 
     return {
         "source": source,
+        "predeployed_contracts": predeployed_contracts,
         "optimism_package": op_stack_args,
         "external_l1_network_params": {
             "network_id": l1_chain_id,
