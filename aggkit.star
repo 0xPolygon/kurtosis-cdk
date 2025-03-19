@@ -202,7 +202,6 @@ def create_aggkit_prover_config_artifact(
                     # ),
                     "network_id": args["zkevm_rollup_id"],
                     "agglayer_prover_network_url": args["agglayer_prover_network_url"],
-
                 },
             )
         },
