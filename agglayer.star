@@ -202,6 +202,8 @@ def get_agglayer_ports(args):
             args["agglayer_grpc_port"], application_protocol="http"
         )
     if args["agglayer_admin_port"] != 0:
-        ports["aglr-admin"] = PortSpec(args["agglayer_admin_port"], application_protocol="http")
+        ports["aglr-admin"] = PortSpec(
+            args["agglayer_admin_port"], application_protocol="http"
+        )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)
