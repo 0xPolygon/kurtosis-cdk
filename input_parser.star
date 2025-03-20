@@ -41,6 +41,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.1.0-beta4",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.5",  # https://github.com/agglayer/agglayer/tags
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.2",  # https://github.com/agglayer/provers/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
@@ -61,12 +62,17 @@ DEFAULT_IMAGES = {
 }
 
 DEFAULT_PORTS = {
+    # agglayer-node
     "agglayer_grpc_port": 4443,
     "agglayer_readrpc_port": 4444,
-    "agglayer_prover_port": 4445,
     "agglayer_admin_port": 4446,
     "agglayer_metrics_port": 9092,
+    # agglayer-prover
+    "agglayer_prover_port": 4445,
     "agglayer_prover_metrics_port": 9093,
+    # aggkit-prover
+    "aggkit_prover_grpc_port": 4446,
+    "aggkit_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
@@ -87,6 +93,7 @@ DEFAULT_PORTS = {
     "mitm_port": 8234,
     "op_succinct_server_port": 3000,
     "op_succinct_proposer_port": 7300,
+    "op_proposer_port": 8560,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -329,6 +336,11 @@ DEFAULT_ROLLUP_ARGS = {
     # The URL where the agglayer can be reached for ReadRPC
     "agglayer_readrpc_url": "http://agglayer:"
     + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
+    # The type of primary prover to use in aggkit-prover.
+    "aggkit_prover_primary_prover": "mock-prover",
+    # The URL where the aggkit-prover can be reached for gRPC
+    "aggkit_prover_grpc_url": "http://aggkit-prover:"
+    + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
@@ -367,6 +379,7 @@ DEFAULT_ARGS = (
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
         "global_log_level": "info",
+        "aggkit_prover_log_level": "info",
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
