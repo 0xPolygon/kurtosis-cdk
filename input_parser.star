@@ -790,9 +790,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # v10+ contracts do not support even the deployment of contracts on non-pessimistic consensus after introducition of AgglayerGateway.
     # TODO: think about a better way to handle this for future releases
     if "v10" in args["zkevm_contracts_image"]:
-        plan.print(
-            'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
-                args["consensus_contract_type"]
+        if args["consensus_contract_type"] != "pessimistic":
+            plan.print(
+                'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
+                    args["consensus_contract_type"]
+                )
             )
-        )
-        args["consensus_contract_type"] = "pessimistic"
+            args["consensus_contract_type"] = "pessimistic"

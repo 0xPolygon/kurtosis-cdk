@@ -160,4 +160,4 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
     mv "/opt/zkevm/combined.json.temp" "/opt/zkevm/combined.json"
 
 # Copy the updated combined.json to a new file with the deployment suffix
-cp /opt/zkevm/combined.json /opt/zkevm/combined{{.deployment_suffix}}.json
+cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"
