@@ -300,7 +300,7 @@ DEFAULT_ROLLUP_ARGS = {
     # If we're using pessimistic consensus and a real verifier, we'll
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
-    "verifier_program_vkey": "0x0062c685702e0582d900f3a19521270c92a58e2588230c4a5cf3b45103f4a512",
+    "verifier_program_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     "verifier_vkey_selector": "0x00010000",
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -786,8 +786,8 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
 
-    # Check if zkevm_contracts_image contains v10 in its tag. If so, set consensus_contract_type to pessimistic
-    # v10+ contracts do not support even the deployment of contracts on non-pessimistic consensus after introducition of AgglayerGateway.
+    # Check if zkevm_contracts_image contains v10 in its tag. Then check if the consensus_contract_type is pessimistic.
+    # v10+ contracts do not support the deployment of contracts on non-pessimistic consensus after introduction of AgglayerGateway.
     # TODO: think about a better way to handle this for future releases
     if "v10" in args["zkevm_contracts_image"]:
         if args["consensus_contract_type"] != "pessimistic":
