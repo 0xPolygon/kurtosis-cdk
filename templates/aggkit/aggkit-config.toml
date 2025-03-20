@@ -436,3 +436,20 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # Default: 0
 # ------------------------------------------------------------------------------
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
+
+
+[ClaimSponsor]
+DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
+Enabled = false
+SenderAddr = "{{.zkevm_l2_claimtx_address}}"
+BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
+
+[ClaimSponsor.EthTxManager]
+PrivateKeys = [
+    {Path = "/etc/aggkit/claimtx.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+]
+StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
+
+[ClaimSponsor.EthTxManager.Etherman]
+URL = "{{.op_el_rpc_url}}"
+L1ChainID = "{{.zkevm_rollup_chain_id}}"            

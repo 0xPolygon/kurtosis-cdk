@@ -46,9 +46,11 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC12",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    # TODO: Update the image to the official version.
+    "zkevm_bridge_service_image": "jhkimqd/bridge-service:ger-abi-fix",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    # TODO: Update the image to the official version.
+    "zkevm_contracts_image": "nulyjkdhthz/zkevm-contracts:v10.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.13",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -299,6 +301,8 @@ DEFAULT_ROLLUP_ARGS = {
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
     "verifier_program_vkey": "0x0062c685702e0582d900f3a19521270c92a58e2588230c4a5cf3b45103f4a512",
+    # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
+    "verifier_vkey_selector": "0x00010000",
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
@@ -324,7 +328,8 @@ DEFAULT_ROLLUP_ARGS = {
     # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
     "enable_normalcy": False,
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
-    "agglayer_prover_sp1_key": None,
+    # Replace with a valid SP1 key to use the SP1 Prover Network.
+    "agglayer_prover_sp1_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
