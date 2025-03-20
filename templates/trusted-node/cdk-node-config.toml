@@ -5,6 +5,7 @@ AggLayerURL="{{.agglayer_url}}"
 
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
+NetworkID = {{.zkevm_rollup_id}}
 
 {{if eq .zkevm_rollup_fork_id "12"}}
 ContractVersions = "banana"
@@ -66,4 +67,3 @@ Outputs = ["stderr"]
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
-
