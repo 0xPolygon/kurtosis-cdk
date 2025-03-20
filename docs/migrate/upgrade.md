@@ -16,9 +16,9 @@ Follow the steps to verify all batches for upgrading.
     2. Edit node config:
 
         1. `Sequencer.Finalizer.HaltOnBatchNumber = X+1`
-        2. `Sequencer.BatchMaxDeltaTimestamp = “120s” # 1800s`
+        2. `Sequencer.BatchMaxDeltaTimestamp = "120s" # 1800s`
         3. `SequenceSender.WaitPeriodSendSequence = "10s" # 60s`
-        4. `SequenceSender.LastBatchVirtualizationTimeMaxWaitPeriod = “30s” # 600s`
+        4. `SequenceSender.LastBatchVirtualizationTimeMaxWaitPeriod = "30s" # 600s`
 
     3. Restart sequencer, sequence-sender.
 
@@ -36,7 +36,7 @@ Follow the steps to verify all batches for upgrading.
 
     7. Edit node config to force the aggregator into sending the already aggregated proof ASAP:
 
-        `Aggregator.VerifyProofInterval = "5m”`. Then restart aggregator.
+        `Aggregator.VerifyProofInterval = "5m"`. Then restart aggregator.
 
     8. Wait until the proof is settled on-chain:
 
@@ -62,9 +62,9 @@ Follow the steps to verify all batches for upgrading.
 
 6. Edit new node config (restore previous values):
 
-    1. `Aggregator.VerifyProofInterval = "25m”` # restore previous value
-    2. `Sequencer.BatchMaxDeltaTimestamp = “1800s”`
-    3. `SequenceSender.WaitPeriodSendSequence = "60s”` # restore previous value
-    4. `SequenceSender.LastBatchVirtualizationTimeMaxWaitPeriod = “600s”` # restore previous value
+    1. `Aggregator.VerifyProofInterval = "25m"` # restore previous value
+    2. `Sequencer.BatchMaxDeltaTimestamp = "1800s"`
+    3. `SequenceSender.WaitPeriodSendSequence = "60s"` # restore previous value
+    4. `SequenceSender.LastBatchVirtualizationTimeMaxWaitPeriod = "600s"` # restore previous value
 
 7. Restart sequencer, sequence-sender, and aggregator.
