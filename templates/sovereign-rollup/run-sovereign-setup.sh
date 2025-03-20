@@ -17,8 +17,8 @@ cd /opt/zkevm-contracts || exit
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
-# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
+rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined.json")"
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
@@ -156,5 +156,8 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
     ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
     .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
     .rollupVerifierType = $rollupVerifierType' \
-    "/opt/zkevm/combined{{.deployment_suffix}}.json" >"/opt/zkevm/combined{{.deployment_suffix}}.json.temp" &&
-    mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+    "/opt/zkevm/combined.json" >"/opt/zkevm/combined.json.temp" &&
+    mv "/opt/zkevm/combined.json.temp" "/opt/zkevm/combined.json"
+
+# Copy the updated combined.json to a new file with the deployment suffix
+cp /opt/zkevm/combined.json /opt/zkevm/combined{{.deployment_suffix}}.json

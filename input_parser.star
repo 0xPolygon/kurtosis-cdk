@@ -785,3 +785,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             fail(
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
+
+    # For cdk-validium consensus_contract_type, programVKey should be 0x for PolygonValidiumEtrog consensus
+    if args["consensus_contract_type"] == "cdk-validium":
+        if args["verifier_program_vkey"] != "0x0000000000000000000000000000000000000000000000000000000000000000":
+            plan.print(
+                "For cdk-validium consensus_contract_type, programVKey should be 0x for PolygonValidiumEtrog consensus. Changing verifier_program_vkey to 0x0"
+            )
+            args["verifier_program_vkey"] = "0x0000000000000000000000000000000000000000000000000000000000000000"
