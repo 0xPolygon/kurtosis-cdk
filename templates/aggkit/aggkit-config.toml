@@ -177,7 +177,7 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # ------------------------------------------------------------------------------
 # AggSender will save the certificates to a file in this path
 # ------------------------------------------------------------------------------
-# SaveCertificatesToFilesPath = "/tmp"
+SaveCertificatesToFilesPath = "/tmp"
 
 # ------------------------------------------------------------------------------
 # MaxRetriesStoreCertificate is the maximum number of retries to store a certificate
