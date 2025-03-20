@@ -786,10 +786,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
 
-    # For cdk-validium consensus_contract_type, programVKey should be 0x for PolygonValidiumEtrog consensus
-    if args["consensus_contract_type"] == "cdk-validium":
-        if args["verifier_program_vkey"] != "0x0000000000000000000000000000000000000000000000000000000000000000":
-            plan.print(
-                "For cdk-validium consensus_contract_type, programVKey should be 0x for PolygonValidiumEtrog consensus. Changing verifier_program_vkey to 0x0"
+    # Check if zkevm_contracts_image contains v10 in its tag. If so, set consensus_contract_type to pessimistic
+    # v10+ contracts do not support even the deployment of contracts on non-pessimistic consensus after introducition of AgglayerGateway.
+    # TODO: think about a better way to handle this for future releases
+    if "v10" in args["zkevm_contracts_image"]:
+        plan.print(
+            'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
+                args["consensus_contract_type"]
             )
-            args["verifier_program_vkey"] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+        )
+        args["consensus_contract_type"] = "pessimistic"

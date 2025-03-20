@@ -19,5 +19,9 @@
     "test": true,
     "ppVKey": "{{.verifier_program_vkey}}",
     "ppVKeySelector": "{{.verifier_vkey_selector}}",
-    "realVerifier": {{.zkevm_use_real_verifier}}
+    "realVerifier": {{.zkevm_use_real_verifier}},
+    "defaultAdminAddress": "{{.zkevm_l2_admin_address}}",
+    "aggchainDefaultVKeyRoleAddress": "{{.zkevm_l2_admin_address}}",
+    "addRouteRoleAddress": "{{.zkevm_l2_admin_address}}",
+    "freezeRouteRoleAddress": "{{.zkevm_l2_admin_address}}"
 }
