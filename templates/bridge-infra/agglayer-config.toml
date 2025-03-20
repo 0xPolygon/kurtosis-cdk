@@ -7,19 +7,32 @@ mock-verifier = {{.mock_verifier}}
 {{end}}
 
 [full-node-rpcs]
+{{- if .deploy_optimism_rollup }}
+# OP Stack RPC
+1 = "{{.op_el_rpc_url}}"
+{{- else }}
 # TODO switch this to permissionless
 1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+{{- end }}
 
 [proof-signers]
+{{- if .deploy_optimism_rollup }}
+# OP Sovereign Admin Address
+1 = "{{.zkevm_l2_sovereignadmin_address}}"
+{{- else }}
 1 = "{{.zkevm_l2_sequencer_address}}"
+{{- end }}
 
 [rpc]
-{{if eq (slice .agglayer_version 0 4) "0.2." }}
+{{- if eq (slice .agglayer_version 0 4) "0.2." }}
 port = {{.agglayer_readrpc_port}}
-{{else}}
+{{- else }}
 grpc-port = {{.agglayer_grpc_port}}
 readrpc-port = {{.agglayer_readrpc_port}}
-{{end}}
+{{- end }}
+{{- if ne .agglayer_admin_port "0" }}
+admin-port = {{.agglayer_admin_port}}
+{{- end }}
 host = "0.0.0.0"
 request-timeout = 180
 # size is define in bytes e.g. 100 * 1024 * 1024

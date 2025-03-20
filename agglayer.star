@@ -2,7 +2,7 @@ databases_package = import_module("./databases.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, deployment_stages, args, contract_setup_addresses):
     # Create agglayer prover service.
     agglayer_prover_config_artifact = create_agglayer_prover_config_artifact(plan, args)
     (ports, public_ports) = get_agglayer_prover_ports(args)
@@ -42,7 +42,7 @@ def run(plan, args, contract_setup_addresses):
 
     # Deploy agglayer service.
     agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, agglayer_prover_url, contract_setup_addresses
+        plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
     )
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
@@ -118,7 +118,7 @@ def agglayer_version(args):
 
 
 def create_agglayer_config_artifact(
-    plan, args, agglayer_prover_url, contract_setup_addresses
+    plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
 ):
     agglayer_config_template = read_file(
         src="./templates/bridge-infra/agglayer-config.toml"
@@ -152,12 +152,21 @@ def create_agglayer_config_artifact(
                     "agglayer_version": agglayer_version(args),
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],
+                    "agglayer_admin_port": args["agglayer_admin_port"],
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
                     "mock_verifier": args["agglayer_prover_primary_prover"]
                     == "mock-prover",
+                    # op stack
+                    "deploy_optimism_rollup": deployment_stages.get(
+                        "deploy_optimism_rollup", False
+                    ),
+                    "op_el_rpc_url": args["op_el_rpc_url"],
+                    "zkevm_l2_sovereignadmin_address": args[
+                        "zkevm_l2_sovereignadmin_address"
+                    ],
                 }
                 | contract_setup_addresses
                 | db_configs,
@@ -192,5 +201,9 @@ def get_agglayer_ports(args):
         ports["aglr-grpc"] = PortSpec(
             args["agglayer_grpc_port"], application_protocol="http"
         )
+        if args["agglayer_admin_port"] != 0:
+            ports["aglr-admin"] = PortSpec(
+                args["agglayer_admin_port"], application_protocol="http"
+            )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)

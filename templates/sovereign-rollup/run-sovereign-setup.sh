@@ -71,7 +71,9 @@ cd /opt/zkevm-contracts || exit
 echo "[profile.default]
 src = 'contracts'
 out = 'out'
-libs = ['node_modules']" >foundry.toml
+libs = ['node_modules']
+optimizer = true
+optimizer_runs = 200" > foundry.toml
 
 echo "Building contracts with forge build"
 forge build contracts/v2/sovereignChains/BridgeL2SovereignChain.sol contracts/v2/sovereignChains/GlobalExitRootManagerL2SovereignChain.sol

@@ -61,7 +61,7 @@ ARTIFACTS = [
 ]
 
 
-def run(plan, args):
+def run(plan, args, deployment_stages):
     artifact_paths = list(ARTIFACTS)
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
@@ -110,6 +110,9 @@ def run(plan, args):
                         ),
                         "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
                             args
+                        ),
+                        "deploy_optimism_rollup": deployment_stages.get(
+                            "deploy_optimism_rollup", False
                         ),
                     },
                 )
