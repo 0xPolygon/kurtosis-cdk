@@ -437,19 +437,56 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # ------------------------------------------------------------------------------
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 
-
+# ==============================================================================
+#   ____ _        _    ___ __  __ ____  ____   ___  _   _ ____   ___  ____  
+#  / ___| |      / \  |_ _|  \/  / ___||  _ \ / _ \| \ | / ___| / _ \|  _ \ 
+# | |   | |     / _ \  | || |\/| \___ \| |_) | | | |  \| \___ \| | | | |_) |
+# | |___| |___ / ___ \ | || |  | |___) |  __/| |_| | |\  |___) | |_| |  _ < 
+#  \____|_____/_/   \_\___|_|  |_|____/|_|    \___/|_| \_|____/ \___/|_| \_\                                                                           
+# ==============================================================================
 [ClaimSponsor]
+# ------------------------------------------------------------------------------
+# Path of the DB
+# ------------------------------------------------------------------------------
 DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
+
+# ------------------------------------------------------------------------------
+# Enabled indicates if the sponsor should be run or not
+# ------------------------------------------------------------------------------
 Enabled = false
+
+# ------------------------------------------------------------------------------
+# SenderAddr is the address that will be used to send the claim txs
+# ------------------------------------------------------------------------------
 SenderAddr = "{{.zkevm_l2_claimtx_address}}"
+
+# ------------------------------------------------------------------------------
+# BridgeAddrL2 is the address of the bridge smart contract on L2
+# ------------------------------------------------------------------------------
 BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
 
 [ClaimSponsor.EthTxManager]
+# ------------------------------------------------------------------------------
+# PrivateKeys defines all the key store files that are going
+# to be read in order to provide the private keys to sign the L1 txs
+# ------------------------------------------------------------------------------
 PrivateKeys = [
     {Path = "/etc/aggkit/claimtx.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
+
+# ------------------------------------------------------------------------------
+# StoragePath is the path of the internal storage
+# ------------------------------------------------------------------------------
 StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
+# ------------------------------------------------------------------------------
+# URL is the URL of the Ethereum node for L2
+# ------------------------------------------------------------------------------
 URL = "{{.op_el_rpc_url}}"
+
+# ------------------------------------------------------------------------------
+# Needs to be set to be the sovereign L2 chain id
+# If set to 0, the chain ID will be fetched from the RPC endpoint
+# ------------------------------------------------------------------------------
 L1ChainID = "{{.zkevm_rollup_chain_id}}"            
