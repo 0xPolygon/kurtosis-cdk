@@ -282,6 +282,8 @@ DEFAULT_L2_ARGS = {
     "chain_name": "kurtosis",
     # Config name for OP stack rollup
     "sovereign_chain_name": "op-sovereign",
+    # The minimum interval at which checkpoints must be submitted. No high security assumptions.
+    "aggchain_submission_interval": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -300,6 +302,12 @@ DEFAULT_ROLLUP_ARGS = {
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
     "verifier_program_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
+    # FEP consensus requires programVKey === bytes32(0).
+    # "verifier_program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    # The aggchainVkeySelector maps verifier selectors to a specific ownedAggchainVKey
+    # mapping(bytes4 aggchainVKeySelector => bytes32 ownedAggchainVKey) public ownedAggchainVKeys.
+    # TODO: Check if this is the same value as the verifier_program_vkey.
+    "owned_aggchain_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     "verifier_vkey_selector": "0x00010000",
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -395,10 +403,13 @@ DEFAULT_ARGS = (
         # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
         "sequencer_type": "erigon",
         # The type of consensus contract to use.
-        # Options:
+        # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
+        # Aggchain Consensus Options:
+        # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
+        # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
         "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
@@ -758,14 +769,15 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
-        user_consensus = user_args.get("args", {}).get("consensus_contract_type")
-        if user_consensus and user_consensus != "pessimistic":
-            plan.print(
-                "consensus_contract_type was set to '{}', changing to pessimistic".format(
-                    user_consensus
+        if args["consensus_contract_type"] != "pessimistic":
+            if args["consensus_contract_type"] != "fep":
+                plan.print(
+                    "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
+                        args["consensus_contract_type"]
+                    )
                 )
-            )
-            args["consensus_contract_type"] = "pessimistic"
+                # TODO: should this be AggchainFEP instead?
+                args["consensus_contract_type"] = "pessimistic"
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
@@ -794,10 +806,25 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # v10+ contracts do not support the deployment of contracts on non-pessimistic consensus after introduction of AgglayerGateway.
     # TODO: think about a better way to handle this for future releases
     if "v10" in args["zkevm_contracts_image"]:
-        if args["consensus_contract_type"] != "pessimistic":
+        if (
+            args["consensus_contract_type"] == "cdk-validium"
+            or args["consensus_contract_type"] == "rollup"
+        ):
             plan.print(
                 'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
                     args["consensus_contract_type"]
                 )
             )
+            # TODO: should this be AggchainFEP instead?
             args["consensus_contract_type"] = "pessimistic"
+
+        # TODO: v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero. This conflicts with the requirement of AggchainFEP consensus. So the below won't work.
+        if args["consensus_contract_type"] == "fep":
+            plan.print(
+                "Current verifier_program_vkey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
+                    args["verifier_program_vkey"]
+                )
+            )
+            args[
+                "verifier_program_vkey"
+            ] = "0x0000000000000000000000000000000000000000000000000000000000000000"

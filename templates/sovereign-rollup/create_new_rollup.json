@@ -11,7 +11,6 @@
     "trustedSequencer": "{{ .zkevm_l2_sovereignadmin_address }}",
     "chainID": "{{ .zkevm_rollup_chain_id }}",
     "rollupAdminAddress": "{{ .zkevm_l2_sovereignadmin_address }}",
-    "consensusContractName": "PolygonPessimisticConsensus",
     "gasTokenAddress": "{{ .gas_token_address }}",
     "deployerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
     "maxFeePerGas": "",
@@ -28,5 +27,21 @@
         "sovereignWETHAddressIsNotMintable": false,
         "globalExitRootUpdater": "{{ .zkevm_l2_sovereignadmin_address }}",
         "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}"
+    },
+    "aggchainParams": {
+        "initParams": {
+            "l2BlockTime": "{{ .op_stack_seconds_per_slot }}",
+            "rollupConfigHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+            "startingOutputRoot" : "0x1111111111111111111111111111111111111111111111111111111111111111",
+            "startingBlockNumber": 100,
+            "startingTimestamp": 7000000,
+            "submissionInterval": "{{ .aggchain_submission_interval }}",
+            "aggchainManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+            "optimisticModeManager": "{{ .zkevm_l2_sovereignadmin_address }}"
+        },
+        "useDefaultGateway": true,
+        "ownedAggchainVKey": " {{ .owned_aggchain_vkey }} ",
+        "aggchainVKeySelector": "{{ .verifier_vkey_selector }}",
+        "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"
     }
 }
