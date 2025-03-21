@@ -4,7 +4,8 @@ ports_package = import_module("../src/package_io/ports.star")
 
 def create_cdk_node_service_config(
     args,
-    config_artifact,
+    cdk_node_config_artifact,
+    aggkit_config_artifact,
     genesis_artifact,
     keystore_artifact,
 ):
@@ -18,7 +19,8 @@ def create_cdk_node_service_config(
         files={
             "/etc/cdk": Directory(
                 artifact_names=[
-                    config_artifact,
+                    cdk_node_config_artifact,
+                    aggkit_config_artifact,
                     genesis_artifact,
                     keystore_artifact.aggregator,
                     keystore_artifact.sequencer,
@@ -95,4 +97,13 @@ def get_cdk_node_cmd(args):
             + "--save-config-path=/tmp/ "
             + "--components=aggsender"
         ]
+
+    if args["cdk_node_type"] == "aggkit":
+        service_command = [
+            "sleep 20 && aggkit run "
+            + "--cfg=/etc/cdk/aggkit.toml "
+            + "--save-config-path=/tmp/ "
+            + "--components=aggsender"
+        ]
+
     return service_command

@@ -101,14 +101,38 @@ def run(plan, args, contract_setup_addresses):
 
     if args["sequencer_type"] == "erigon":
         # Create the cdk node config.
-        node_config_template = read_file(
+        cdk_node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
         )
-        node_config_artifact = plan.render_templates(
+        cdk_node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
             config={
                 "cdk-node-config.toml": struct(
-                    template=node_config_template,
+                    template=cdk_node_config_template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "l1_rpc_url": args["mitm_rpc_url"].get(
+                            "cdk-node", args["l1_rpc_url"]
+                        ),
+                    }
+                    | db_configs
+                    | contract_setup_addresses,
+                )
+            },
+        )
+
+        # Create the aggkit config.
+        aggkit_config_template = read_file(
+            src="./templates/trusted-node/aggkit.toml.tmpl"
+        )
+        aggkit_config_artifact = plan.render_templates(
+            name="aggkit-config-artifact",
+            config={
+                "aggkit.toml": struct(
+                    template=aggkit_config_template,
                     data=args
                     | {
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
@@ -126,7 +150,7 @@ def run(plan, args, contract_setup_addresses):
 
         # Start the cdk components.
         cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
-            args, node_config_artifact, genesis_artifact, keystore_artifacts
+            args, cdk_node_config_artifact, aggkit_config_artifact, genesis_artifact, keystore_artifacts
         )
 
         plan.add_services(
