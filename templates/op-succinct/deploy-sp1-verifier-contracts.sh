@@ -64,29 +64,31 @@ sed -i 's/0xfeb5e54e3703b9aecfb0a650545bf1a8cc4b11eba14e48afa89a95dc0bd9c867/0x1
 # Deploy SP1 Verifier Gateway Plonk
 FOUNDRY_PROFILE=deploy forge script --legacy ./script/deploy/SP1VerifierGatewayPlonk.s.sol:SP1VerifierGatewayScript --private-key "$PRIVATE_KEY" --broadcast
 # Deploy SP1 Verifier Plonk contract
-FOUNDRY_PROFILE=deploy forge script ./script/deploy/v3.0.0-rc4/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
+FOUNDRY_PROFILE=deploy forge script ./script/deploy/v4.0.0-rc.3/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
 
-# Groth16 Deployments
-# Deploy SP1 Verifier Gateway Groth16
-FOUNDRY_PROFILE=deploy forge script --legacy ./script/deploy/SP1VerifierGatewayGroth16.s.sol:SP1VerifierGatewayScript --private-key "$PRIVATE_KEY" --broadcast
-# Deploy SP1 Verifier Groth16 contract
-FOUNDRY_PROFILE=deploy forge script ./script/deploy/v4.0.0-rc.3/SP1VerifierGroth16.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
+# TODO: Fix Groth16 Verifier Deployments.
+# # Groth16 Deployments - Since the deployments are made with CREATE2, the deployment will revert with EvmError: CreateCollision. So a different PRIVATE_KEY is used.
+# PRIVATE_KEY_GROTH16="{{.zkevm_l2_l1testing_private_key}}"
+# # Deploy SP1 Verifier Gateway Groth16
+# FOUNDRY_PROFILE=deploy forge script --legacy ./script/deploy/SP1VerifierGatewayGroth16.s.sol:SP1VerifierGatewayScript --private-key "$PRIVATE_KEY_GROTH16" --broadcast
+# # Deploy SP1 Verifier Groth16 contract
+# FOUNDRY_PROFILE=deploy forge script ./script/deploy/v4.0.0-rc.3/SP1VerifierGroth16.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY_GROTH16" --broadcast
 
 # Extract SP1 Verifier Gateway Plonk address
 jq -n --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayPlonk.s.sol/271828/run-latest.json)" \
-'{ "SP1VERIFIERGATEWAYPLONK": $gatewayaddr }' > /tmp/sp1_verifier_out.json
+'. + { "SP1_VERIFIER_GATEWAY_PLONK": $gatewayaddr }' > /tmp/sp1_verifier_out.json
 
 # Extract SP1 Verifier Plonk addresses
 jq --arg addr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierPlonk.s.sol/271828/run-latest.json)" \
-    '. + { "SP1VERIFIERPLONK": $addr }' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
+    '. + { "SP1_VERIFIER_PLONK": $addr }' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
 
-# Extract SP1 Verifier Gateway Groth16 address
-jq -n --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayGroth16.s.sol/271828/run-latest.json)" \
-'{ "SP1VERIFIERGATEWAYGROTH16": $gatewayaddr }' > /tmp/sp1_verifier_out.json
+# # Extract SP1 Verifier Gateway Groth16 address
+# jq --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayGroth16.s.sol/271828/run-latest.json)" \
+# '. + { "SP1_VERIFIER_GATEWAY_GROTH16": $gatewayaddr }' > /tmp/sp1_verifier_out.json
 
-# Extract SP1 Verifier Groth16 addresses
-jq --arg addr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGroth16.s.sol/271828/run-latest.json)" \
-    '. + { "SP1VERIFIERGROTH16": $addr }' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
+# # Extract SP1 Verifier Groth16 addresses
+# jq --arg addr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGroth16.s.sol/271828/run-latest.json)" \
+#     '. + { "SP1_VERIFIER_GROTH16": $addr }' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
 
 # Append the addresses of SP1 Verifier Contracts into the op-succinct-env-vars.json file. This will be used by the OP-Succinct components to point to a real verifier.
 jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json /tmp/sp1_verifier_out.json > /opt/op-succinct/op-succinct-env-vars.json.tmp
@@ -95,13 +97,13 @@ mv /opt/op-succinct/op-succinct-env-vars.json.tmp /opt/op-succinct/op-succinct-e
 # Update the verifier address in the OPSuccinctL2OutputOracle contract
 # TODO: Remove SC2034 shellcheck - unused variables once the specs are finalized.
 # shellcheck disable=SC2034
-SP1_VERIFIER_GATEWAY_PLONK=$(jq '.SP1VERIFIERGATEWAYPLONK' /tmp/sp1_verifier_out.json -r)
+SP1_VERIFIER_GATEWAY_PLONK=$(jq '.SP1_VERIFIER_GATEWAY_PLONK' /tmp/sp1_verifier_out.json -r)
 # shellcheck disable=SC2034
-SP1_VERIFIER_PLONK=$(jq '.SP1VERIFIERPLONK' /tmp/sp1_verifier_out.json -r)
+SP1_VERIFIER_PLONK=$(jq '.SP1_VERIFIER_PLONK' /tmp/sp1_verifier_out.json -r)
 # shellcheck disable=SC2034
-SP1_VERIFIER_GATEWAY_GROTH16=$(jq '.SP1VERIFIERGATEWAYGROTH16' /tmp/sp1_verifier_out.json -r)
+SP1_VERIFIER_GATEWAY_GROTH16=$(jq '.SP1_VERIFIER_GATEWAY_GROTH16' /tmp/sp1_verifier_out.json -r)
 # shellcheck disable=SC2034
-SP1_VERIFIER_GROTH16=$(jq '.SP1VERIFIERGROTH16' /tmp/sp1_verifier_out.json -r)
+SP1_VERIFIER_GROTH16=$(jq '.SP1_VERIFIER_GROTH16' /tmp/sp1_verifier_out.json -r)
 L2OO_ADDRESS=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
 cast send "$L2OO_ADDRESS" "updateVerifier(address)" "$SP1_VERIFIER_GROTH16" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
 
