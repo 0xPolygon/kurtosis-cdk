@@ -36,7 +36,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
             cmd=["run", "--config-path", "/etc/aggkit/aggkit-prover-config.toml"],
         ),
     )
-    aggkit_prover_url = "http://{}:{}".format(
+    aggkit_prover_url = "{}:{}".format(
         aggkit_prover.ip_address,
         aggkit_prover.ports[
             "grpc"
@@ -210,7 +210,7 @@ def create_aggkit_prover_config_artifact(
 
 def get_aggkit_prover_ports(args):
     ports = {
-        "grpc": PortSpec(args["aggkit_prover_grpc_port"], application_protocol="http"),
+        "grpc": PortSpec(args["aggkit_prover_grpc_port"], application_protocol="grpc"),
         "metrics": PortSpec(
             args["aggkit_prover_metrics_port"], application_protocol="http"
         ),
