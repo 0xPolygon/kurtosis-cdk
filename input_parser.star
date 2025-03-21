@@ -310,9 +310,14 @@ DEFAULT_ROLLUP_ARGS = {
     "gas_token_enabled": False,
     # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
     # If the address is empty, a contract will be deployed automatically.
-    # This value will also be used for sovereignWETHAddress parameter in the Sovereign rollup.
     # Default value is 0x0000000000000000000000000000000000000000
     "gas_token_address": "0x0000000000000000000000000000000000000000",
+    # The gas token origin network, to be used in BridgeL2SovereignChain.sol
+    "gas_token_network": 0,
+    # The sovereign WETH address, to be used in BridgeL2SovereignChain.sol
+    "sovereign_weth_address": "0x0000000000000000000000000000000000000000",
+    # Flag to indicate if the wrapped ETH is not mintable, to be used in BridgeL2SovereignChain.sol
+    "sovereign_weth_address_not_mintable": False,
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
     # ports.
