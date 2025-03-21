@@ -277,6 +277,8 @@ DEFAULT_L2_ARGS = {
 }
 
 DEFAULT_ROLLUP_ARGS = {
+    # CDK node program type: cdk-node or aggkit
+    "cdk_node_type": "cdk-node",
     # The keystore password.
     "zkevm_l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
     # The rollup network identifier.
