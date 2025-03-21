@@ -1,7 +1,7 @@
 {
     "realVerifier": "{{.zkevm_use_real_verifier}}",
-    "forkID": 12,
-    "programVKey": "{{.verifier_program_vkey}}",
+    "forkID": "{{.fork_id}}",
+    "programVKey": "{{.program_vkey}}",
     "description": "kurtosis-devnet - {{.chain_name}}",
     "adminZkEVM": "{{.zkevm_l2_admin_address}}",
     "consensusContract": "{{.zkevm_rollup_consensus}}",
@@ -32,7 +32,7 @@
         "initParams": {
             "l2BlockTime": "{{ .op_stack_seconds_per_slot }}",
             "rollupConfigHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
-            "startingOutputRoot" : "0x1111111111111111111111111111111111111111111111111111111111111111",
+            "startingOutputRoot": "0x1111111111111111111111111111111111111111111111111111111111111111",
             "startingBlockNumber": 100,
             "startingTimestamp": 7000000,
             "submissionInterval": "{{ .aggchain_submission_interval }}",
@@ -40,8 +40,8 @@
             "optimisticModeManager": "{{ .zkevm_l2_sovereignadmin_address }}"
         },
         "useDefaultGateway": true,
-        "ownedAggchainVKey": " {{ .owned_aggchain_vkey }} ",
-        "aggchainVKeySelector": "{{ .verifier_vkey_selector }}",
+        "initOwnedAggchainVKey": "{{ .owned_aggchain_vkey }}",
+        "initAggchainVKeyVersion": "{{ .aggchain_vkey_version }}",
         "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"
     }
 }

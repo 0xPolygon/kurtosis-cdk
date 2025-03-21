@@ -306,10 +306,15 @@ DEFAULT_ROLLUP_ARGS = {
     # "verifier_program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
     # The aggchainVkeySelector maps verifier selectors to a specific ownedAggchainVKey
     # mapping(bytes4 aggchainVKeySelector => bytes32 ownedAggchainVKey) public ownedAggchainVKeys.
-    # TODO: Check if this is the same value as the verifier_program_vkey.
     "owned_aggchain_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
+    # AggchainFEP consensus requires programVKey === bytes32(0).
+    "program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     "verifier_vkey_selector": "0x00010000",
+    # Initial aggchain selector
+    "aggchain_vkey_version": "0x0001",
+    # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
+    "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
@@ -818,13 +823,37 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             # TODO: should this be AggchainFEP instead?
             args["consensus_contract_type"] = "pessimistic"
 
-        # TODO: v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero. This conflicts with the requirement of AggchainFEP consensus. So the below won't work.
+        # TODO: v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero.
         if args["consensus_contract_type"] == "fep":
-            plan.print(
-                "Current verifier_program_vkey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
-                    args["verifier_program_vkey"]
+            if (
+                args["program_vkey"]
+                != "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ):
+                plan.print(
+                    "Current programVKey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
+                        args["program_vkey"]
+                    )
                 )
-            )
-            args[
-                "verifier_program_vkey"
-            ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+                args[
+                    "program_vkey"
+                ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+            if args["fork_id"] != 0:
+                plan.print(
+                    "Current fork_id is {}. AggchainFEP consensus requires fork_id == 0. Overwriting to equal 0".format(
+                        args["fork_id"]
+                    )
+                )
+                args["fork_id"] = 0
+
+        # v10+ contracts support pessimistic consensus - we will need to overwrite the zero program_vkey with non-zero verifier_program_vkey value.
+        if args["consensus_contract_type"] == "pessimistic":
+            if (
+                args["program_vkey"]
+                == "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ):
+                plan.print(
+                    "Current programVKey is {}. Pessimistic consensus VKey should take the value from verifier_program_vkey: {}. Overwriting programVKey with verifier_program_vkey.".format(
+                        args["program_vkey"], args["verifier_program_vkey"]
+                    )
+                )
+                args["program_vkey"] = args["verifier_program_vkey"]
