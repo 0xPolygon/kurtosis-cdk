@@ -13,7 +13,8 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
-AggLayerURL="{{.agglayer_readrpc_url}}"
+# AggLayerURL="{{.agglayer_readrpc_url}}"
+AggLayerURL="{{.agglayer_grpc_url}}"
 
 ForkId = 12
 ContractVersions = "banana"
@@ -154,6 +155,13 @@ Port = 5576
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
 AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+Mode="AggchainProof"
+AggchainProofURL="{{.aggkit_prover_grpc_url}}"
+CheckStatusCertificateInterval = "1s"
+
+[AggSender.MaxSubmitCertificateRate]
+NumRequests = 20
+Interval = "1m"
 
 # ------------------------------------------------------------------------------
 # URLRPCL2 is the URL of the L2 RPC node
