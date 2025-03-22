@@ -60,7 +60,9 @@ def run(plan, args={}):
     contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
-        import_module(deploy_zkevm_contracts_package).run(plan, args, deployment_stages)
+        import_module(deploy_zkevm_contracts_package).run(
+            plan, args, deployment_stages, op_stack_args
+        )
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
         )

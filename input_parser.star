@@ -39,15 +39,17 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.1.0-beta4",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.5",  # https://github.com/agglayer/agglayer/tags
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.2",  # https://github.com/agglayer/provers/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC12",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC14",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    # TODO: Update the image to the official version.
+    "zkevm_contracts_image": "nulyjkdhthz/zkevm-contracts:v10.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.13",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -61,12 +63,17 @@ DEFAULT_IMAGES = {
 }
 
 DEFAULT_PORTS = {
+    # agglayer-node
     "agglayer_grpc_port": 4443,
     "agglayer_readrpc_port": 4444,
-    "agglayer_prover_port": 4445,
     "agglayer_admin_port": 4446,
     "agglayer_metrics_port": 9092,
+    # agglayer-prover
+    "agglayer_prover_port": 4445,
     "agglayer_prover_metrics_port": 9093,
+    # aggkit-prover
+    "aggkit_prover_grpc_port": 4446,
+    "aggkit_prover_metrics_port": 9093,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
@@ -87,6 +94,7 @@ DEFAULT_PORTS = {
     "mitm_port": 8234,
     "op_succinct_server_port": 3000,
     "op_succinct_proposer_port": 7300,
+    "op_proposer_port": 8560,
 }
 
 DEFAULT_STATIC_PORTS = {
@@ -274,6 +282,8 @@ DEFAULT_L2_ARGS = {
     "chain_name": "kurtosis",
     # Config name for OP stack rollup
     "sovereign_chain_name": "op-sovereign",
+    # The minimum interval at which checkpoints must be submitted. No high security assumptions.
+    "aggchain_submission_interval": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -291,7 +301,20 @@ DEFAULT_ROLLUP_ARGS = {
     # If we're using pessimistic consensus and a real verifier, we'll
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
-    "verifier_program_vkey": "0x0062c685702e0582d900f3a19521270c92a58e2588230c4a5cf3b45103f4a512",
+    "verifier_program_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
+    # FEP consensus requires programVKey === bytes32(0).
+    # "verifier_program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    # The aggchainVkeySelector maps verifier selectors to a specific ownedAggchainVKey
+    # mapping(bytes4 aggchainVKeySelector => bytes32 ownedAggchainVKey) public ownedAggchainVKeys.
+    "owned_aggchain_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
+    # AggchainFEP consensus requires programVKey === bytes32(0).
+    "program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
+    "verifier_vkey_selector": "0x00010000",
+    # Initial aggchain selector
+    "aggchain_vkey_version": "0x0001",
+    # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
+    "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
@@ -300,9 +323,14 @@ DEFAULT_ROLLUP_ARGS = {
     "gas_token_enabled": False,
     # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
     # If the address is empty, a contract will be deployed automatically.
-    # This value will also be used for sovereignWETHAddress parameter in the Sovereign rollup.
     # Default value is 0x0000000000000000000000000000000000000000
     "gas_token_address": "0x0000000000000000000000000000000000000000",
+    # The gas token origin network, to be used in BridgeL2SovereignChain.sol
+    "gas_token_network": 0,
+    # The sovereign WETH address, to be used in BridgeL2SovereignChain.sol
+    "sovereign_weth_address": "0x0000000000000000000000000000000000000000",
+    # Flag to indicate if the wrapped ETH is not mintable, to be used in BridgeL2SovereignChain.sol
+    "sovereign_weth_address_not_mintable": False,
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
     # You can either use the default static ports defined in this file or specify your custom static
     # ports.
@@ -317,7 +345,8 @@ DEFAULT_ROLLUP_ARGS = {
     # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
     "enable_normalcy": False,
     # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
-    "agglayer_prover_sp1_key": None,
+    # Replace with a valid SP1 key to use the SP1 Prover Network.
+    "agglayer_prover_sp1_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
@@ -329,6 +358,11 @@ DEFAULT_ROLLUP_ARGS = {
     # The URL where the agglayer can be reached for ReadRPC
     "agglayer_readrpc_url": "http://agglayer:"
     + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
+    # The type of primary prover to use in aggkit-prover.
+    "aggkit_prover_primary_prover": "mock-prover",
+    # The URL where the aggkit-prover can be reached for gRPC
+    "aggkit_prover_grpc_url": "aggkit-prover:"
+    + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
@@ -367,16 +401,20 @@ DEFAULT_ARGS = (
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
         "global_log_level": "info",
+        "aggkit_prover_log_level": "info",
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
         # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
         "sequencer_type": "erigon",
         # The type of consensus contract to use.
-        # Options:
+        # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
         # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
+        # Aggchain Consensus Options:
+        # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
+        # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
         "consensus_contract_type": "cdk-validium",
         # Additional services to run alongside the network.
         # Options:
@@ -736,14 +774,15 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
-        user_consensus = user_args.get("args", {}).get("consensus_contract_type")
-        if user_consensus and user_consensus != "pessimistic":
-            plan.print(
-                "consensus_contract_type was set to '{}', changing to pessimistic".format(
-                    user_consensus
+        if args["consensus_contract_type"] != "pessimistic":
+            if args["consensus_contract_type"] != "fep":
+                plan.print(
+                    "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
+                        args["consensus_contract_type"]
+                    )
                 )
-            )
-            args["consensus_contract_type"] = "pessimistic"
+                # TODO: should this be AggchainFEP instead?
+                args["consensus_contract_type"] = "pessimistic"
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
@@ -767,3 +806,54 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             fail(
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
+
+    # Check if zkevm_contracts_image contains v10 in its tag. Then check if the consensus_contract_type is pessimistic.
+    # v10+ contracts do not support the deployment of contracts on non-pessimistic consensus after introduction of AgglayerGateway.
+    # TODO: think about a better way to handle this for future releases
+    if "v10" in args["zkevm_contracts_image"]:
+        if (
+            args["consensus_contract_type"] == "cdk-validium"
+            or args["consensus_contract_type"] == "rollup"
+        ):
+            plan.print(
+                'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
+                    args["consensus_contract_type"]
+                )
+            )
+            # TODO: should this be AggchainFEP instead?
+            args["consensus_contract_type"] = "pessimistic"
+
+        # TODO: v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero.
+        if args["consensus_contract_type"] == "fep":
+            if (
+                args["program_vkey"]
+                != "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ):
+                plan.print(
+                    "Current programVKey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
+                        args["program_vkey"]
+                    )
+                )
+                args[
+                    "program_vkey"
+                ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+            if args["fork_id"] != 0:
+                plan.print(
+                    "Current fork_id is {}. AggchainFEP consensus requires fork_id == 0. Overwriting to equal 0".format(
+                        args["fork_id"]
+                    )
+                )
+                args["fork_id"] = 0
+
+        # v10+ contracts support pessimistic consensus - we will need to overwrite the zero program_vkey with non-zero verifier_program_vkey value.
+        if args["consensus_contract_type"] == "pessimistic":
+            if (
+                args["program_vkey"]
+                == "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ):
+                plan.print(
+                    "Current programVKey is {}. Pessimistic consensus VKey should take the value from verifier_program_vkey: {}. Overwriting programVKey with verifier_program_vkey.".format(
+                        args["program_vkey"], args["verifier_program_vkey"]
+                    )
+                )
+                args["program_vkey"] = args["verifier_program_vkey"]

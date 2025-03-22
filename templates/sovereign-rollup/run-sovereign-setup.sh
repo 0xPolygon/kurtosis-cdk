@@ -17,8 +17,8 @@ cd /opt/zkevm-contracts || exit
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
-# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+# Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
+rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined.json")"
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
@@ -36,11 +36,6 @@ if [[ "$rollupTypeID" -eq 1 ]]; then
     cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 else
-    # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/tools/createNewRollup/createNewRollup.ts
-    # cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
-    # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
-    # npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
-
     # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
     cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
@@ -91,14 +86,14 @@ calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _gl
 forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
 
 initNetworkID="{{.zkevm_rollup_id}}"
-initGasTokenAddress=$(cast az)
-initGasTokenNetwork=0
+initGasTokenAddress="{{.gas_token_address}}"
+initGasTokenNetwork="{{.gas_token_network}}"
 initGlobalExitRootManager=$ger_proxy_addr
-initPolygonRollupManager=$(cast az)
+initPolygonRollupManager=$rollup_manager_addr
 initGasTokenMetadata=0x
 initBridgeManager=$bridge_admin_addr
-initSovereignWETHAddress=$(cast az)
-initSovereignWETHAddressIsNotMintable=false
+initSovereignWETHAddress="{{.sovereign_weth_address}}"
+initSovereignWETHAddressIsNotMintable="{{.sovereign_weth_address_not_mintable}}"
 
 calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _polygonRollupManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initPolygonRollupManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
 forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
@@ -156,5 +151,8 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
     ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
     .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
     .rollupVerifierType = $rollupVerifierType' \
-    "/opt/zkevm/combined{{.deployment_suffix}}.json" >"/opt/zkevm/combined{{.deployment_suffix}}.json.temp" &&
-    mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+    "/opt/zkevm/combined.json" >"/opt/zkevm/combined.json.temp" &&
+    mv "/opt/zkevm/combined.json.temp" "/opt/zkevm/combined.json"
+
+# Copy the updated combined.json to a new file with the deployment suffix
+cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"

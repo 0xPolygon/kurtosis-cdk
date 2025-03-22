@@ -103,6 +103,7 @@ def get_sovereign_contract_setup_addresses(plan, args):
     return get_exec_recipe_result(result)
 
 
+# TODO: Add Groth16 Verifiers once Groth16 deployments are added
 def get_op_succinct_env_vars(plan, args):
     extract = {
         "submission_interval": "fromjson | .SUBMISSION_INTERVAL",
@@ -110,9 +111,10 @@ def get_op_succinct_env_vars(plan, args):
         "l2oo_address": "fromjson | .L2OO_ADDRESS",
         "op_succinct_mock": "fromjson | .OP_SUCCINCT_MOCK",
         "op_succinct_agglayer": "fromjson | .OP_SUCCINCT_AGGLAYER",
+        "op_succinct_agg_proof_mode": "fromjson | .AGG_PROOF_MODE",
         "l1_preallocated_mnemonic": "fromjson | .PRIVATE_KEY",
-        "sp1_verifier_gateway_address": "fromjson | .SP1VERIFIERGATEWAY",
-        "sp1_verifier_address": "fromjson | .SP1VERIFIER",
+        "sp1_verifier_gateway_address": "fromjson | .SP1_VERIFIER_GATEWAY_PLONK",
+        "sp1_verifier_address": "fromjson | .SP1_VERIFIER_PLONK",
     }
 
     exec_recipe = ExecRecipe(

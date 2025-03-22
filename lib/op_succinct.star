@@ -63,6 +63,7 @@ def create_op_succinct_server_service_config(
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
             "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
+            "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
         }
     # For local prover, we use the mock verifier address
     else:
@@ -78,6 +79,7 @@ def create_op_succinct_server_service_config(
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
             "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
+            "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
         }
 
     op_succinct_server_service_config = ServiceConfig(
