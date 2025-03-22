@@ -255,7 +255,7 @@ SaveCertificatesToFilesPath = "/tmp"
 # ------------------------------------------------------------------------------
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
-# WaitPeriodNextGER = "100ms"
+WaitPeriodNextGER = "10s"
 
 [AggOracle.EVMSender]
 # ------------------------------------------------------------------------------
@@ -276,7 +276,7 @@ GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 # ------------------------------------------------------------------------------
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
-# WaitPeriodMonitorTx = 100ms
+WaitPeriodMonitorTx = "10s"
 
 [AggOracle.EVMSender.EthTxManager]
 # ------------------------------------------------------------------------------
