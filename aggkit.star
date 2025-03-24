@@ -95,7 +95,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         args, bridge_config_artifact, keystore_artifacts.claimtx
     )
     plan.add_service(
-        name="sovereign-bridge-service" + args["deployment_suffix"],
+        name="zkevm-bridge-service" + args["deployment_suffix"],
         config=bridge_service_config,
     )
 
@@ -127,10 +127,10 @@ def create_bridge_config_artifact(
     plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs
 ):
     bridge_config_template = read_file(
-        src="./templates/sovereign-rollup/sovereign-bridge-config.toml"
+        src="./templates/sovereign-rollup/bridge-config.toml"
     )
     return plan.render_templates(
-        name="sovereign-bridge-config-artifact",
+        name="bridge-config-artifact",
         config={
             "bridge-config.toml": struct(
                 template=bridge_config_template,

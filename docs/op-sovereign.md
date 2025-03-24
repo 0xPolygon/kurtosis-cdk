@@ -122,7 +122,7 @@ The setup process consists of two main steps:
 
 ### OP Sovereign Bridge Setup
 
-The bridge deployment mirrors the CDK Erigon bridge setup. Key parameters are adjusted as shown in the [reference config](https://github.com/0xPolygon/kurtosis-cdk/blob/v0.2.31/templates/sovereign-rollup/sovereign-bridge-config.toml). For a detailed end-to-end explanation, see [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram).
+The bridge deployment mirrors the CDK Erigon bridge setup. Key parameters are adjusted as shown in the [reference config](https://github.com/0xPolygon/kurtosis-cdk/blob/v0.2.31/templates/sovereign-rollup/bridge-config.toml). For a detailed end-to-end explanation, see [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram).
 
 ---
 
@@ -302,7 +302,7 @@ polycli ulxly bridge asset \
 Check bridge service:
 
 ```
-curl $(kurtosis port print cdk sovereign-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
+curl $(kurtosis port print cdk zkevm-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
 ```
 
 Example output:
@@ -336,7 +336,7 @@ When `ready_for_claim` is `true`, claim:
 ```
 polycli ulxly claim asset \
     --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
-    --bridge-service-url $(kurtosis port print cdk sovereign-bridge-service-001 rpc) \
+    --bridge-service-url $(kurtosis port print cdk zkevm-bridge-service-001 rpc) \
     --deposit-count 0 \
     --destination-address 0xc0FFee0000000000000000000000000000000001 \
     --deposit-network 2 \
