@@ -9,9 +9,9 @@ args:
   agglayer_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   agglayer_prover_primary_prover: "mock-prover"
   consensus_contract_type: pessimistic
-  op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.5-agglayer" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-  op_succinct_server_image: "jhkimqd/op-succinct-server:v0.0.5-agglayer" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-  op_succinct_proposer_image: "jhkimqd/op-succinct-proposer:v0.0.5-agglayer" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+  op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.6-agglayer" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+  op_succinct_server_image: "jhkimqd/op-succinct-server:v0.0.6-agglayer" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+  op_succinct_proposer_image: "jhkimqd/op-succinct-proposer:v0.0.6-agglayer" # https://github.com/succinctlabs/op-succinct/pkgs/container/op-succinct%2Fop-proposer
   # true = mock
   # false = network
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devent.
@@ -37,7 +37,7 @@ args:
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
-  l1_seconds_per_slot: 2
+  l1_seconds_per_slot: 12
 
 optimism_package:
   chains:
