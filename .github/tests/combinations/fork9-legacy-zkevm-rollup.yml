@@ -10,7 +10,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   cdk_validium_node_image: ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10
   additional_services:
-    - pless_zkevm_node
     - tx_spammer
+    - pless_zkevm_node
   consensus_contract_type: rollup
   sequencer_type: zkevm
