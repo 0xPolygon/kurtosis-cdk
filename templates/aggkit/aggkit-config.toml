@@ -155,7 +155,8 @@ Port = 5576
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
 AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-Mode="AggchainProof"
+# Mode="AggchainProof"
+Mode="PessimisticProof"
 AggchainProofURL="{{.aggkit_prover_grpc_url}}"
 CheckStatusCertificateInterval = "1s"
 
