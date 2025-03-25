@@ -84,7 +84,7 @@ def get_cdk_node_cmd(args):
     consensus_type = args.get("consensus_contract_type", "")
     components = args.get("components", "")
 
-    if binary == "aggkit":
+    if binary == "aggkit" and consensus_type == "pessimistic":
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
@@ -93,22 +93,13 @@ def get_cdk_node_cmd(args):
             + components
         ]
     elif binary == "cdk-node":
-        if consensus_type == "pessimistic":
-            service_command = [
-                "sleep 20 && cdk-node run "
-                + "--cfg=/etc/cdk/cdk-node-config.toml "
-                + "--custom-network-file=/etc/cdk/genesis.json "
-                + "--save-config-path=/tmp/ "
-                + "--components=aggsender"
-            ]
-        else:
-            service_command = [
-                "sleep 20 && cdk-node run "
-                + "--cfg=/etc/cdk/cdk-node-config.toml "
-                + "--custom-network-file=/etc/cdk/genesis.json "
-                + "--save-config-path=/tmp/ "
-                + "--components=sequence-sender,aggregator"
-            ]
+        service_command = [
+            "sleep 20 && cdk-node run "
+            + "--cfg=/etc/cdk/cdk-node-config.toml "
+            + "--custom-network-file=/etc/cdk/genesis.json "
+            + "--save-config-path=/tmp/ "
+            + "--components=sequence-sender,aggregator"
+        ]
     else:
         fail("Unsupported binary: {}".format(binary))
 
