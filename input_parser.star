@@ -1,5 +1,6 @@
 constants = import_module("./src/package_io/constants.star")
 dict = import_module("./src/package_io/dict.star")
+sanity_check = import_module("./src/package_io/sanity_check.star")
 
 # The deployment process is divided into various stages.
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
@@ -436,9 +437,6 @@ DEFAULT_OP_STACK_ARGS = {
     ],
 }
 
-# A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [9, 11, 12, 13]
-
 
 def parse_args(plan, user_args):
     # Merge the provided args with defaults.
@@ -456,7 +454,9 @@ def parse_args(plan, user_args):
     op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
     # Sanity check step for incompatible parameters
-    args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
+    sanity_check.args_sanity_check(
+        plan, deployment_stages, args, user_args, op_stack_args
+    )
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -471,14 +471,14 @@ def parse_args(plan, user_args):
 
     # Validation step.
     verbosity = args.get("verbosity", "")
-    validate_log_level("verbosity", verbosity)
+    sanity_check.validate_log_level("verbosity", verbosity)
 
     global_log_level = args.get("global_log_level", "")
-    validate_log_level("global log level", global_log_level)
+    sanity_check.validate_log_level("global log level", global_log_level)
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
-    (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
+    (fork_id, fork_name) = sanity_check.get_fork_id(zkevm_contracts_image)
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -522,78 +522,11 @@ def parse_args(plan, user_args):
     return (sorted_deployment_stages, sorted_args, sorted_op_stack_args)
 
 
-def validate_log_level(name, log_level):
-    if log_level not in (
-        constants.LOG_LEVEL.error,
-        constants.LOG_LEVEL.warn,
-        constants.LOG_LEVEL.info,
-        constants.LOG_LEVEL.debug,
-        constants.LOG_LEVEL.trace,
-    ):
-        fail(
-            "Unsupported {}: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
-                name,
-                log_level,
-                constants.LOG_LEVEL.error,
-                constants.LOG_LEVEL.warn,
-                constants.LOG_LEVEL.info,
-                constants.LOG_LEVEL.debug,
-                constants.LOG_LEVEL.trace,
-            )
-        )
-
-
-def get_fork_id(zkevm_contracts_image):
-    """
-    Extract the fork identifier and fork name from a zkevm contracts image name.
-
-    The zkevm contracts tags follow the convention:
-    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
-
-    Where:
-    - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
-    - <RC_NUMBER> is the release candidate number.
-    - <FORK_ID> is the fork identifier.
-    - -patch.<PATCH_NUMBER> is optional and represents the patch number.
-
-    Example:
-    - v8.0.0-rc.2-fork.12
-    - v7.0.0-rc.1-fork.10
-    - v7.0.0-rc.1-fork.11-patch.1
-    """
-    result = zkevm_contracts_image.split("-patch.")[0].split("-fork.")
-    if len(result) != 2:
-        fail(
-            "The zkevm contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
-                zkevm_contracts_image
-            )
-        )
-
-    fork_id = int(result[1])
-    if fork_id not in SUPPORTED_FORK_IDS:
-        fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
-
-    fork_name = "elderberry"
-    if fork_id >= 12:
-        fork_name = "banana"
-    # TODO: Add support for durian once released.
-
-    return (fork_id, fork_name)
-
-
 def get_sequencer_name(sequencer_type):
     if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
         return "cdk-erigon-sequencer"
     elif sequencer_type == constants.SEQUENCER_TYPE.ZKEVM:
         return "zkevm-node-sequencer"
-    else:
-        fail(
-            "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
-                sequencer_type,
-                constants.SEQUENCER_TYPE.CDK_ERIGON,
-                constants.SEQUENCER_TYPE.ZKEVM,
-            )
-        )
 
 
 def get_l2_rpc_name(deploy_cdk_erigon_node):
@@ -667,103 +600,4 @@ def set_anvil_args(plan, args, user_args):
                 + args["deployment_suffix"]
                 + ":"
                 + str(DEFAULT_PORTS.get("anvil_port"))
-            )
-
-
-# Helper function to compact together checks for incompatible parameters in input_parser.star
-def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
-    # Fix the op stack el rpc urls according to the deployment_suffix.
-    if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
-        "deployment_suffix"
-    ] + ":8545" and deployment_stages.get("deploy_op_stack", False):
-        plan.print(
-            "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
-                args["op_el_rpc_url"], args["deployment_suffix"]
-            )
-        )
-        args["op_el_rpc_url"] = (
-            "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
-        )
-    # Fix the op stack cl rpc urls according to the deployment_suffix.
-    if args["op_cl_rpc_url"] != "http://op-cl-1-op-node-op-geth" + args[
-        "deployment_suffix"
-    ] + ":8547" and deployment_stages.get("deploy_op_stack", False):
-        plan.print(
-            "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
-                args["op_cl_rpc_url"], args["deployment_suffix"]
-            )
-        )
-        args["op_cl_rpc_url"] = (
-            "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
-        )
-    # The optimism-package network_params is a frozen hash table, and is not modifiable during runtime.
-    # The check will return fail() instead of dynamically changing the network_params name.
-    if op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"] != args[
-        "deployment_suffix"
-    ][1:] and deployment_stages.get("deploy_op_stack", False):
-        fail(
-            "op_stack_args network_params name is set to '{}', please change it to match deployment_suffix '{}'".format(
-                op_stack_args["optimism_package"]["chains"][0]["network_params"][
-                    "name"
-                ],
-                args["deployment_suffix"][1:],
-            )
-        )
-
-    # Unsupported L1 engine check
-    if args["l1_engine"] not in constants.L1_ENGINES:
-        fail(
-            "Unsupported L1 engine: '{}', please use one of {}".format(
-                args["l1_engine"], constants.L1_ENGINES
-            )
-        )
-
-    # Gas token enabled and gas token address check
-    if (
-        not args.get("gas_token_enabled", False)
-        and args.get("gas_token_address", "0x0000000000000000000000000000000000000000")
-        != "0x0000000000000000000000000000000000000000"
-    ):
-        fail(
-            "Gas token address set to '{}' but gas token is not enabled".format(
-                args.get("gas_token_address", "")
-            )
-        )
-
-    # CDK Erigon normalcy and strict mode check
-    if args["enable_normalcy"] and args["erigon_strict_mode"]:
-        fail("normalcy and strict mode cannot be enabled together")
-
-    # OP rollup deploy_optimistic_rollup and consensus_contract_type check
-    if deployment_stages.get("deploy_optimism_rollup", False):
-        user_consensus = user_args.get("args", {}).get("consensus_contract_type")
-        if user_consensus and user_consensus != "pessimistic":
-            plan.print(
-                "consensus_contract_type was set to '{}', changing to pessimistic".format(
-                    user_consensus
-                )
-            )
-            args["consensus_contract_type"] = "pessimistic"
-
-    # If OP-Succinct is enabled, OP-Rollup must be enabled
-    if deployment_stages.get("deploy_op_succinct", False):
-        if deployment_stages.get("deploy_optimism_rollup", False) == False:
-            fail(
-                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
-            )
-        if (
-            args["agglayer_prover_sp1_key"] == None
-            or args["agglayer_prover_sp1_key"] == ""
-        ):
-            fail(
-                "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
-            )
-
-    # OP rollup check L1 blocktime >= L2 blocktime
-    if deployment_stages.get("deploy_optimism_rollup", False):
-        if (
-            args.get("l1_seconds_per_slot", 12) < 2
-        ):  # 2 seconds is the default blocktime for Optimism L2.
-            fail(
-                "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
