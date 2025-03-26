@@ -34,10 +34,8 @@ l1-rpc-endpoint = "{{ .l1_rpc_url }}"
 [aggchain-proof-service.proposer-service.client]
 proposer-endpoint = "{{ .proposer_url }}"
 sp1-cluster-endpoint = "{{ .agglayer_prover_network_url }}"
-
-[aggchain-proof-service.proposer-service.client.proving-timeout]
-secs = 3600
-nanos = 0
+request-timeout = 600
+proving-timeout = 3600
 
 [primary-prover.{{ .primary_prover }}]
 proving-timeout = "5m"

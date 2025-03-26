@@ -13,8 +13,9 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     (ports, public_ports) = get_aggkit_prover_ports(args)
 
     prover_env_vars = {
-        "PROPOSER_NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
-        "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
+        "PROPOSER_NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
+        "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
+        "RUST_LOG": "debug"
     }
 
     aggkit_prover = plan.add_service(
@@ -195,7 +196,7 @@ def create_aggkit_prover_config_artifact(
                     ],  # TODO: Check if it's the right address - is it the L2 sovereign global exit root address ?
                     # TODO: For op-succinct, agglayer/op-succinct is currently on the golang version. This might change if we move to the rust version.
                     "proposer_url": "http://op-succinct-proposer{}:{}".format(
-                        args["deployment_suffix"], args["op_succinct_proposer_port"]
+                        args["deployment_suffix"], args["op_succinct_proposer_rpc_port"]
                     ),
                     # TODO: For legacy op, this would be different - something like http://op-proposer-001:8560
                     # "proposer_url": "http://op-proposer{}:{}".format(

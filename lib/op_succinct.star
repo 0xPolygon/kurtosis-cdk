@@ -61,7 +61,7 @@ def create_op_succinct_server_service_config(
             "VERIFIER_ADDRESS": op_succinct_env_vars["sp1_verifier_gateway_address"],
             "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
+            "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
             "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
             "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
         }
@@ -77,7 +77,7 @@ def create_op_succinct_server_service_config(
             "VERIFIER_ADDRESS": op_succinct_env_vars["mock_verifier_address"],
             "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
+            "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
             "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
             "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
         }
@@ -114,7 +114,7 @@ def create_op_succinct_proposer_service_config(
             "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "OP_SUCCINCT_AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
+            "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
                 "op_succinct_max_concurrent_proof_requests"
@@ -140,7 +140,7 @@ def create_op_succinct_proposer_service_config(
             "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "OP_SUCCINCT_AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "NETWORK_PRIVATE_KEY": args["agglayer_prover_sp1_key"],
+            "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
                 "op_succinct_max_concurrent_proof_requests"
@@ -185,7 +185,12 @@ def get_op_succinct_server_ports(args):
 def get_op_succinct_proposer_ports(args):
     ports = {
         "metrics": PortSpec(
-            args["op_succinct_proposer_port"],
+            args["op_succinct_proposer_metrics_port"],
+            application_protocol="http",
+            wait=None,
+        ),
+        "rpc": PortSpec(
+            args["op_succinct_proposer_rpc_port"],
             application_protocol="http",
             wait=None,
         ),
