@@ -82,28 +82,40 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     if deployment_stages.get("deploy_optimism_rollup", False):
         if (
             args["op_el_rpc_url"]
-            != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+            != OP_PARAMS["participant_params"]["el_params"][0]
+            + args["deployment_suffix"]
+            + ":8545"
         ):
             plan.print(
-                "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
-                    args["op_el_rpc_url"], args["deployment_suffix"]
+                "op_el_rpc_url is set to '{}', changing to '{}{}:8545'".format(
+                    args["op_el_rpc_url"],
+                    OP_PARAMS["participant_params"]["el_params"][0],
+                    args["deployment_suffix"],
                 )
             )
             args["op_el_rpc_url"] = (
-                "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+                OP_PARAMS["participant_params"]["el_params"][0]
+                + args["deployment_suffix"]
+                + ":8545"
             )
         # Fix the op stack cl rpc urls according to the deployment_suffix.
         if (
             args["op_cl_rpc_url"]
-            != "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+            != OP_PARAMS["participant_params"]["cl_params"][0]
+            + args["deployment_suffix"]
+            + ":8547"
         ):
             plan.print(
-                "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
-                    args["op_cl_rpc_url"], args["deployment_suffix"]
+                "op_cl_rpc_url is set to '{}', changing to '{}{}:8547'".format(
+                    args["op_cl_rpc_url"],
+                    OP_PARAMS["participant_params"]["cl_params"][0],
+                    args["deployment_suffix"],
                 )
             )
             args["op_cl_rpc_url"] = (
-                "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+                OP_PARAMS["participant_params"]["cl_params"][0]
+                + args["deployment_suffix"]
+                + ":8547"
             )
         # The optimism-package network_params is a frozen hash table, and is not modifiable during runtime.
         # The check will return fail() instead of dynamically changing the network_params name.
