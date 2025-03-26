@@ -15,6 +15,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     prover_env_vars = {
         "PROPOSER_NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
         "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
+        "RUST_LOG": "debug"
     }
 
     aggkit_prover = plan.add_service(
