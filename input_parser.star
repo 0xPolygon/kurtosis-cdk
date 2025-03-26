@@ -799,10 +799,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
+    op_network_params = op_stack_args["optimism_package"]["chains"][0]["network_params"]
     if deployment_stages.get("deploy_optimism_rollup", False):
-        if (
-            args.get("l1_seconds_per_slot", 12) < 2
-        ):  # 2 seconds is the default blocktime for Optimism L2.
+        if args.get("l1_seconds_per_slot", 12) < op_network_params.get(
+            "seconds_per_slot", 1
+        ):
             fail(
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )

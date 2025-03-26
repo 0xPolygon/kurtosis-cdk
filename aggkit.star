@@ -13,6 +13,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     (ports, public_ports) = get_aggkit_prover_ports(args)
 
     prover_env_vars = {
+        "PROPOSER_NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
         "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
     }
 
