@@ -185,7 +185,12 @@ def get_op_succinct_server_ports(args):
 def get_op_succinct_proposer_ports(args):
     ports = {
         "metrics": PortSpec(
-            args["op_succinct_proposer_port"],
+            args["op_succinct_proposer_metrics_port"],
+            application_protocol="http",
+            wait=None,
+        ),
+        "rpc": PortSpec(
+            args["op_succinct_proposer_rpc_port"],
             application_protocol="http",
             wait=None,
         ),

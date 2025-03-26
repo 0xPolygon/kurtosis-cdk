@@ -93,7 +93,8 @@ DEFAULT_PORTS = {
     "anvil_port": 8545,
     "mitm_port": 8234,
     "op_succinct_server_port": 3000,
-    "op_succinct_proposer_port": 7300,
+    "op_succinct_proposer_metrics_port": 7300,
+    "op_succinct_proposer_rpc_port": 8545,
     "op_proposer_port": 8560,
 }
 
