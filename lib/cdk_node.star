@@ -80,7 +80,7 @@ def get_cdk_node_ports(args):
 
 
 def get_cdk_node_cmd(args):
-    binary = args.get("binary", "cdk-node") or "cdk-node"
+    binary = args.get("binary_name", "cdk-node") or "cdk-node"
     consensus_type = args.get("consensus_contract_type", "")
     components = args.get("components", "")
 
