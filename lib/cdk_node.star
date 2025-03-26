@@ -80,18 +80,27 @@ def get_cdk_node_ports(args):
 
 
 def get_cdk_node_cmd(args):
-    service_command = [
-        "sleep 20 && cdk-node run "
-        + "--cfg=/etc/cdk/cdk-node-config.toml "
-        + "--custom-network-file=/etc/cdk/genesis.json "
-        + "--components=sequence-sender,aggregator"
-    ]
+    binary = args.get("binary", "cdk-node") or "cdk-node"
+    consensus_type = args.get("consensus_contract_type", "")
+    components = args.get("components", "")
 
-    if args["consensus_contract_type"] == "pessimistic":
+    if binary == "aggkit" and consensus_type == "pessimistic":
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
             + "--save-config-path=/tmp/ "
-            + "--components=aggsender,bridge"
+            + "--components="
+            + components
         ]
+    elif binary == "cdk-node":
+        service_command = [
+            "sleep 20 && cdk-node run "
+            + "--cfg=/etc/cdk/cdk-node-config.toml "
+            + "--custom-network-file=/etc/cdk/genesis.json "
+            + "--save-config-path=/tmp/ "
+            + "--components=sequence-sender,aggregator"
+        ]
+    else:
+        fail("Unsupported binary: {}".format(binary))
+
     return service_command
