@@ -526,7 +526,8 @@ def parse_args(plan, user_args):
     sequencer_name = get_sequencer_name(sequencer_type)
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
-    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node)
+    deploy_op_node = deployment_stages.get("deploy_cdk_erigon_node", False)
+    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
@@ -637,11 +638,12 @@ def get_sequencer_name(sequencer_type):
         )
 
 
-def get_l2_rpc_name(deploy_cdk_erigon_node):
+def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
+    if deploy_op_node:
+        return "op-el-1-op-geth-op-node"
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
-    else:
-        return "zkevm-node-rpc"
+    return "zkevm-node-rpc"
 
 
 def get_op_stack_args(plan, args, user_op_stack_args):

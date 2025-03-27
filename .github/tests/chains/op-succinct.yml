@@ -39,6 +39,8 @@ args:
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+  additional_services:
+    - bridge_spammer
 
 optimism_package:
   chains:
