@@ -29,6 +29,236 @@ SEQUENCER_TYPES = [
     "zkevm",
 ]
 
+DEFAULT_DEPLOYMENT_STAGES = [
+    "deploy_l1",
+    "deploy_zkevm_contracts_on_l1",
+    "deploy_databases",
+    "deploy_cdk_central_environment",
+    "deploy_cdk_bridge_infra",
+    "deploy_cdk_bridge_ui",
+    "deploy_agglayer",
+    "deploy_cdk_erigon_node",
+    "deploy_optimism_rollup",
+    "deploy_op_succinct",
+    "deploy_l2_contracts",
+]
+
+DEFAULT_IMAGES = [
+    "aggkit_image",
+    "agglayer_image",
+    "cdk_erigon_node_image",
+    "cdk_node_image",
+    "cdk_validium_node_image",
+    "zkevm_bridge_proxy_image",
+    "zkevm_bridge_service_image",
+    "zkevm_bridge_ui_image",
+    "zkevm_da_image",
+    "zkevm_contracts_image",
+    "zkevm_node_image",
+    "zkevm_pool_manager_image",
+    "zkevm_prover_image",
+    "zkevm_sequence_sender_image",
+    "anvil_image",
+    "mitm_image",
+    "op_succinct_contract_deployer_image",
+    "op_succinct_server_image",
+    "op_succinct_proposer_image",
+]
+
+DEFAULT_PORTS = [
+    "agglayer_grpc_port",
+    "agglayer_readrpc_port",
+    "agglayer_prover_port",
+    "agglayer_admin_port",
+    "agglayer_metrics_port",
+    "agglayer_prover_metrics_port",
+    "prometheus_port",
+    "zkevm_aggregator_port",
+    "zkevm_bridge_grpc_port",
+    "zkevm_bridge_rpc_port",
+    "zkevm_bridge_ui_port",
+    "zkevm_bridge_metrics_port",
+    "zkevm_dac_port",
+    "zkevm_data_streamer_port",
+    "zkevm_executor_port",
+    "zkevm_hash_db_port",
+    "zkevm_pool_manager_port",
+    "zkevm_pprof_port",
+    "zkevm_rpc_http_port",
+    "zkevm_rpc_ws_port",
+    "zkevm_cdk_node_port",
+    "blockscout_frontend_port",
+    "anvil_port",
+    "mitm_port",
+    "op_succinct_server_port",
+    "op_succinct_proposer_port",
+]
+
+DEFAULT_STATIC_PORTS = [
+    ## L1 static ports (50000-50999).
+    "l1_el_start_port",
+    "l1_cl_start_port",
+    "l1_vc_start_port",
+    "l1_additional_services_start_port",
+    ## L2 static ports (51000-51999).
+    # Agglayer (51000-51099).
+    "agglayer_start_port",
+    "agglayer_prover_start_port",
+    # CDK node (51100-51199).
+    "cdk_node_start_port",
+    # Bridge services (51200-51299).
+    "zkevm_bridge_service_start_port",
+    "zkevm_bridge_ui_start_port",
+    "reverse_proxy_start_port",
+    # Databases (51300-51399).
+    "database_start_port",
+    "pless_database_start_port",
+    # Pool manager (51400-51499).
+    "zkevm_pool_manager_start_port",
+    # DAC (51500-51599).
+    "zkevm_dac_start_port",
+    # ZkEVM Provers (51600-51699).
+    "zkevm_prover_start_port",
+    "zkevm_executor_start_port",
+    "zkevm_stateless_executor_start_port",
+    # CDK erigon (51700-51799).
+    "cdk_erigon_sequencer_start_port",
+    "cdk_erigon_rpc_start_port",
+    # L2 additional services (52000-52999).
+    "arpeggio_start_port",
+    "blutgang_start_port",
+    "erpc_start_port",
+    "panoptichain_start_port",
+]
+
+DEFAULT_ACCOUNTS = [
+    "zkevm_l2_sequencer_address",
+    "zkevm_l2_sequencer_private_key",
+    "zkevm_l2_aggregator_address",
+    "zkevm_l2_aggregator_private_key",
+    "zkevm_l2_claimtxmanager_address",
+    "zkevm_l2_claimtxmanager_private_key",
+    "zkevm_l2_timelock_address",
+    "zkevm_l2_timelock_private_key",
+    "zkevm_l2_admin_address",
+    "zkevm_l2_admin_private_key",
+    "zkevm_l2_loadtest_address",
+    "zkevm_l2_loadtest_private_key",
+    "zkevm_l2_agglayer_address",
+    "zkevm_l2_agglayer_private_key",
+    "zkevm_l2_dac_address",
+    "zkevm_l2_dac_private_key",
+    "zkevm_l2_proofsigner_address",
+    "zkevm_l2_proofsigner_private_key",
+    "zkevm_l2_l1testing_address",
+    "zkevm_l2_l1testing_private_key",
+    "zkevm_l2_claimsponsor_address",
+    "zkevm_l2_claimsponsor_private_key",
+    "zkevm_l2_aggoracle_address",
+    "zkevm_l2_aggoracle_private_key",
+    "zkevm_l2_sovereignadmin_address",
+    "zkevm_l2_sovereignadmin_private_key",
+    "zkevm_l2_claimtx_address",
+    "zkevm_l2_claimtx_private_key",
+]
+
+DEFAULT_L1_ARGS = [
+    "l1_engine",
+    "l1_chain_id",
+    "l1_preallocated_mnemonic",
+    "l1_rpc_url",
+    "l1_ws_url",
+    "l1_beacon_url",
+    "l1_additional_services",
+    "l1_preset",
+    "l1_seconds_per_slot",
+    "pectra_enabled",
+    "l1_funding_amount",
+    "l1_participants_count",
+    "l1_deploy_lxly_bridge_and_call",
+    "l1_anvil_block_time",
+    "l1_anvil_slots_in_epoch",
+    "use_previously_deployed_contracts",
+    "erigon_datadir_archive",
+    "anvil_state_file",
+    "mitm_proxied_components",
+]
+
+MITM_PROXIED_COMPONENTS = [
+    "agglayer",
+    "aggkit",
+    "bridge",
+    "dac",
+    "erigon-sequencer",
+    "erigon-rpc",
+    "cdk-node",
+]
+
+DEFAULT_L2_ARGS = [
+    "l2_accounts_to_fund",
+    "l2_funding_amount",
+    "l2_deploy_deterministic_deployment_proxy",
+    "l2_deploy_lxly_bridge_and_call",
+    "chain_name",
+    "sovereign_chain_name",
+]
+
+DEFAULT_ROLLUP_ARGS = [
+    "zkevm_l2_keystore_password",
+    "zkevm_rollup_chain_id",
+    "zkevm_rollup_id",
+    "zkevm_use_real_verifier",
+    "verifier_program_vkey",
+    "erigon_strict_mode",
+    "gas_token_enabled",
+    "gas_token_address",
+    "use_dynamic_ports",
+    "enable_normalcy",
+    "agglayer_prover_sp1_key",
+    "agglayer_prover_network_url",
+    "agglayer_prover_primary_prover",
+    "agglayer_grpc_url",
+    "agglayer_readrpc_url",
+    "zkevm_path_rw_data",
+    "op_el_rpc_url",
+    "op_cl_rpc_url",
+    "op_succinct_mock",
+]
+
+DEFAULT_PLESS_ZKEVM_NODE_ARGS = [
+    "trusted_sequencer_node_uri",
+    "zkevm_aggregator_host",
+    "genesis_file",
+    "sovereign_genesis_file",
+]
+
+DEFAULT_ADDITIONAL_SERVICES_PARAMS = ["blockscout_params"]
+
+DEFAULT_ARGS = [
+    "deployment_suffix",
+    "verbosity",
+    "global_log_level",
+    "sequencer_type",
+    "consensus_contract_type",
+    "additional_services",
+    "polygon_zkevm_explorer",
+    "l1_explorer_url",
+]
+
+
+TOTAL_ARGS = (
+    DEFAULT_IMAGES
+    + DEFAULT_PORTS
+    + DEFAULT_STATIC_PORTS
+    + DEFAULT_ACCOUNTS
+    + DEFAULT_L1_ARGS
+    + DEFAULT_L2_ARGS
+    + DEFAULT_ROLLUP_ARGS
+    + DEFAULT_PLESS_ZKEVM_NODE_ARGS
+    + DEFAULT_ADDITIONAL_SERVICES_PARAMS
+    + DEFAULT_ARGS
+)
+
 
 def validate_log_level(name, log_level):
     if log_level not in LOG_LEVEL:
@@ -76,8 +306,16 @@ def get_fork_id(zkevm_contracts_image):
     return (fork_id, fork_name)
 
 
+def input_args_valid_check(plan, args):
+    for key in args:
+        if key not in TOTAL_ARGS:
+            fail("Unsupported parameter: '{}'".format(key))
+
+
 # Helper function to compact together checks for incompatible parameters in input_parser.star
 def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
+    input_args_valid_check(plan, args)
+
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if deployment_stages.get("deploy_optimism_rollup", False):
         if (
