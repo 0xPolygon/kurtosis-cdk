@@ -199,52 +199,39 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
 
-    # Check if zkevm_contracts_image contains v10 in its tag. Then check if the consensus_contract_type is pessimistic.
-    # v10+ contracts do not support the deployment of contracts on non-pessimistic consensus after introduction of AgglayerGateway.
     # TODO: think about a better way to handle this for future releases
-    # if "v10" in args["zkevm_contracts_image"]:
-    #     if (
-    #         args["consensus_contract_type"] == "cdk-validium"
-    #         or args["consensus_contract_type"] == "rollup"
-    #     ):
-    #         plan.print(
-    #             'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
-    #                 args["consensus_contract_type"]
-    #             )
-    #         )
-    #         # TODO: should this be AggchainFEP instead?
-    #         args["consensus_contract_type"] = "pessimistic"
     # TODO: v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero.
-    # if args["consensus_contract_type"] == "fep":
-    #     if (
-    #         args["program_vkey"]
-    #         != "0x0000000000000000000000000000000000000000000000000000000000000000"
-    #     ):
-    #         plan.print(
-    #             "Current programVKey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
-    #                 args["program_vkey"]
-    #             )
-    #         )
-    #         args[
-    #             "program_vkey"
-    #         ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
-    #     if args["fork_id"] != 0:
-    #         plan.print(
-    #             "Current fork_id is {}. AggchainFEP consensus requires fork_id == 0. Overwriting to equal 0".format(
-    #                 args["fork_id"]
-    #             )
-    #         )
-    #         args["fork_id"] = 0
+    if "v10" in args["zkevm_contracts_image"]:
+        if args["consensus_contract_type"] == "fep":
+            if (
+                args["program_vkey"]
+                != "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ):
+                plan.print(
+                    "Current programVKey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
+                        args["program_vkey"]
+                    )
+                )
+                args[
+                    "program_vkey"
+                ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+            if args["fork_id"] != 0:
+                plan.print(
+                    "Current fork_id is {}. AggchainFEP consensus requires fork_id == 0. Overwriting to equal 0".format(
+                        args["fork_id"]
+                    )
+                )
+                args["fork_id"] = 0
 
-    # # v10+ contracts support pessimistic consensus - we will need to overwrite the zero program_vkey with non-zero verifier_program_vkey value.
-    # if args["consensus_contract_type"] == "pessimistic":
-    #     if (
-    #         args["program_vkey"]
-    #         == "0x0000000000000000000000000000000000000000000000000000000000000000"
-    #     ):
-    #         plan.print(
-    #             "Current programVKey is {}. Pessimistic consensus VKey should take the value from verifier_program_vkey: {}. Overwriting programVKey with verifier_program_vkey.".format(
-    #                 args["program_vkey"], args["verifier_program_vkey"]
-    #             )
-    #         )
-    #         args["program_vkey"] = args["verifier_program_vkey"]
+        # v10+ contracts support pessimistic consensus - we will need to overwrite the zero program_vkey with non-zero verifier_program_vkey value.
+        if args["consensus_contract_type"] == "pessimistic":
+            if (
+                args["program_vkey"]
+                == "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ):
+                plan.print(
+                    "Current programVKey is {}. Pessimistic consensus VKey should take the value from verifier_program_vkey: {}. Overwriting programVKey with verifier_program_vkey.".format(
+                        args["program_vkey"], args["verifier_program_vkey"]
+                    )
+                )
+                args["program_vkey"] = args["verifier_program_vkey"]
