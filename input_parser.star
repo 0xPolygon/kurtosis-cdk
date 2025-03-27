@@ -308,7 +308,7 @@ DEFAULT_ROLLUP_ARGS = {
     # The aggchainVkeySelector maps verifier selectors to a specific ownedAggchainVKey
     # mapping(bytes4 aggchainVKeySelector => bytes32 ownedAggchainVKey) public ownedAggchainVKeys.
     "owned_aggchain_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
-    # AggchainFEP consensus requires programVKey === bytes32(0).
+    # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     "program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     "verifier_vkey_selector": "0x00010000",
@@ -815,26 +815,18 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # v10+ contracts do not support the deployment of contracts on non-pessimistic consensus after introduction of AgglayerGateway.
     # TODO: think about a better way to handle this for future releases
     if "v10" in args["zkevm_contracts_image"]:
+        # v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero.
         if (
-            args["consensus_contract_type"] == "cdk-validium"
+            args["consensus_contract_type"] == "fep"
+            or args["consensus_contract_type"] == "cdk-validium"
             or args["consensus_contract_type"] == "rollup"
         ):
-            plan.print(
-                'Current consensus_contract_type is {}. Overwriting consensus_contract_type to "pessimistic" for v10+ contracts, because it is the only supported consensus.'.format(
-                    args["consensus_contract_type"]
-                )
-            )
-            # TODO: should this be AggchainFEP instead?
-            args["consensus_contract_type"] = "pessimistic"
-
-        # TODO: v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero.
-        if args["consensus_contract_type"] == "fep":
             if (
                 args["program_vkey"]
                 != "0x0000000000000000000000000000000000000000000000000000000000000000"
             ):
                 plan.print(
-                    "Current programVKey is {}. AggchainFEP consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
+                    "Current programVKey is {}. AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
                         args["program_vkey"]
                     )
                 )
