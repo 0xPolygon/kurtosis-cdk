@@ -12,7 +12,7 @@
   env:
     IMAGE_NAME: leovct/op-succinct-contract-deployer
     RUST_VERSION: 1.84.1
-    FOUNDRY_VERSION: nightly
+    FOUNDRY_VERSION: stable
     OP_SUCCINCT_BRANCH: ${{ github.event.inputs.agglayer-op-succinct-commit }}
   
   jobs:
