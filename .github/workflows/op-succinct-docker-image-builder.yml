@@ -13,7 +13,6 @@
     IMAGE_NAME: leovct/op-succinct-contract-deployer
     RUST_VERSION: 1.84.1
     FOUNDRY_VERSION: stable
-    OP_SUCCINCT_BRANCH: ${{ github.event.inputs.agglayer-op-succinct-commit }}
   
   jobs:
     agglayer-op-succinct:
@@ -54,7 +53,7 @@
             build-args: |
               RUST_VERSION=${{ env.RUST_VERSION }}
               FOUNDRY_VERSION=${{ env.FOUNDRY_VERSION }}
-              OP_SUCCINCT_BRANCH=${{ env.OP_SUCCINCT_BRANCH }}
+              OP_SUCCINCT_BRANCH=${{ github.event.inputs.agglayer-op-succinct-commit }}
             push: true
             tags: ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.tag }}
             cache-from: type=gha
