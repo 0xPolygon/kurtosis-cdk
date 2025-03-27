@@ -26,6 +26,7 @@ optimism_package:
       network_params:
         name: "001"
         network_id: 10101
+        seconds_per_slot: 1
 args:
   verbosity: debug
   consensus_contract_type: pessimistic
