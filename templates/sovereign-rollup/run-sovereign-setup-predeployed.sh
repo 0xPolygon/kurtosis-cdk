@@ -81,10 +81,16 @@ cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private
 # ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 2)) $bridge_admin_addr | sed 's/.*: //')
 # bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 3)) $bridge_admin_addr | sed 's/.*: //')
 
-bridge_impl_addr=$(jq -r '.genesis[] | select(.contractName == "BridgeL2SovereignChain implementation") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
-bridge_proxy_addr=$(jq -r '.genesis[] | select(.contractName == "BridgeL2SovereignChain proxy") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
-ger_impl_addr=$(jq -r '.genesis[] | select(.contractName == "GlobalExitRootManagerL2SovereignChain implementation") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
-ger_proxy_addr=$(jq -r '.genesis[] | select(.contractName == "GlobalExitRootManagerL2SovereignChain proxy") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
+# It seems like the structure of the genesis output must have changed. This structure doesn't look like it makes sense anymore
+# bridge_impl_addr=$(jq -r '.genesis[] | select(.contractName == "BridgeL2SovereignChain implementation") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
+# bridge_proxy_addr=$(jq -r '.genesis[] | select(.contractName == "BridgeL2SovereignChain proxy") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
+# ger_impl_addr=$(jq -r '.genesis[] | select(.contractName == "GlobalExitRootManagerL2SovereignChain implementation") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
+# ger_proxy_addr=$(jq -r '.genesis[] | select(.contractName == "GlobalExitRootManagerL2SovereignChain proxy") | .address' /opt/zkevm/sovereign-predeployed-genesis.json)
+
+bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' /opt/zkevm/create-sovereign-genesis-output.json)
+bridge_proxy_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain proxy"]' /opt/zkevm/create-sovereign-genesis-output.json)
+ger_impl_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain implementation"]' /opt/zkevm/create-sovereign-genesis-output.json)
+ger_proxy_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain proxy"]' /opt/zkevm/create-sovereign-genesis-output.json)
 
 # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
 # cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
@@ -159,5 +165,6 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
     ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
     .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
     .rollupVerifierType = $rollupVerifierType' \
-    "/opt/zkevm/combined{{.deployment_suffix}}.json" >"/opt/zkevm/combined{{.deployment_suffix}}.json.temp" &&
-    mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+    "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp"
+
+mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"

@@ -73,7 +73,7 @@ if isinstance(items, dict):
         else:
             balance_value = int(balance)  # Assume decimal if not hex
         allocs[addr] = {"balance": hex(balance_value)}
-        
+
         # Handle nonce: ensure it's treated as a hex string
         if "nonce" in data:
             nonce = data["nonce"]
@@ -82,9 +82,11 @@ if isinstance(items, dict):
             else:
                 nonce_value = int(nonce)  # Assume decimal if not hex
             allocs[addr]["nonce"] = hex(nonce_value)
-        
+
         if "bytecode" in data:
             allocs[addr]["code"] = data["bytecode"]
+        if "code" in data:
+            allocs[addr]["code"] = data["code"]
         if "storage" in data:
             allocs[addr]["storage"] = data["storage"]
 elif isinstance(items, list):
@@ -99,7 +101,7 @@ elif isinstance(items, list):
         else:
             balance_value = int(balance)  # Assume decimal if not hex
         allocs[addr] = {"balance": hex(balance_value)}
-        
+
         # Handle nonce: ensure it's treated as a hex string
         if "nonce" in item:
             nonce = item["nonce"]
@@ -108,9 +110,11 @@ elif isinstance(items, list):
             else:
                 nonce_value = int(nonce)  # Assume decimal if not hex
             allocs[addr]["nonce"] = hex(nonce_value)
-        
+
         if "bytecode" in item:
             allocs[addr]["code"] = item["bytecode"]
+        if "code" in item:
+            allocs[addr]["code"] = item["code"]
         if "storage" in item:
             allocs[addr]["storage"] = item["storage"]
 else:

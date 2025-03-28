@@ -47,7 +47,12 @@ polycli ulxly bridge asset \
     --pretty-logs=false
 
 # Allow some time for bridge processing
-sleep 10
+current_block_number="$(cast block-number --rpc-url '{{.l1_rpc_url}}')"
+finalized_block_number=0
+until [[ $finalized_block_number -gt $current_block_number ]]; do
+    sleep 5
+    finalized_block_number="$(cast block-number --rpc-url '{{.l1_rpc_url}}' finalized)"
+done
 
 # Start depositing on L2
 while true; do
@@ -68,7 +73,7 @@ while true; do
     polycli ulxly bridge asset \
         --value "$(date +%s)" \
         --gas-limit "1250000" \
-        --bridge-address "{{.zkevm_bridge_address}}" \
+        --bridge-address "{{with .zkevm_bridge_l2_address}}{{.}}{{else}}{{.zkevm_bridge_address}}{{end}}" \
         --destination-address "$eth_address" \
         --destination-network 0 \
         --rpc-url "{{.l2_rpc_url}}" \
