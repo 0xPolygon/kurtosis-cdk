@@ -1,61 +1,60 @@
 ---
-# Workflow for automatically building and deploying docker images for kurtosis-cdk.
-name: OP-Succinct Docker Image Builder
-
-on:
-  workflow_dispatch:
-    inputs:
-      agglayer-op-succinct-commit:
-        description: The agglayer/op-succinct commit to build the image from
-        required: true
-
-env:
-  IMAGE_NAME: jhkimqd/op-succinct-contract-deployer
-  RUST_VERSION: 1.84.1
-  FOUNDRY_VERSION: nightly
-  OP_SUCCINCT_BRANCH: ${{ github.event.inputs.agglayer-op-succinct-commit }}
-
-jobs:
-  agglayer-op-succinct:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.IMAGE_BUILDER_DOCKERHUB_USERNAME }}
-          password: ${{ secrets.IMAGE_BUILDER_DOCKERHUB_TOKEN }}
-
-      - name: Determine tag
-        id: determine_tag
-        run: |
-          # Append the fork id to the image tag.
-          TAG=${{ github.event.inputs.agglayer-op-succinct-commit }}
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      - name: Check if image already exists
-        id: check_image
-        run: |
-          if docker manifest inspect ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.tag }} > /dev/null 2>&1; then
-            echo "Image already exists, skipping build."
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Image does not exist."
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build image and push to the Docker Hub
-        if: ${{ steps.check_image.outputs.exists == 'false' }}
-        uses: docker/build-push-action@v6
-        with:
-          context: docker
-          file: docker/op-succinct.Dockerfile
-          build-args: |
-            RUST_VERSION=${{ env.RUST_VERSION }}
-            FOUNDRY_VERSION=${{ env.FOUNDRY_VERSION }}
-            OP_SUCCINCT_BRANCH=${{ env.OP_SUCCINCT_BRANCH }}
-          push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  # Workflow for automatically building and deploying docker images for kurtosis-cdk.
+  name: OP-Succinct Docker Image Builder
+  
+  on:
+    workflow_dispatch:
+      inputs:
+        agglayer-op-succinct-commit:
+          description: The agglayer/op-succinct branch or commit to build the image from
+          required: true
+  
+  env:
+    IMAGE_NAME: leovct/op-succinct-contract-deployer
+    RUST_VERSION: 1.84.1
+    FOUNDRY_VERSION: stable
+  
+  jobs:
+    agglayer-op-succinct:
+      runs-on: ubuntu-latest
+      timeout-minutes: 30
+      steps:
+        - uses: actions/checkout@v4
+        - uses: docker/setup-buildx-action@v3
+        - uses: docker/login-action@v3
+          with:
+            username: ${{ secrets.IMAGE_BUILDER_DOCKERHUB_USERNAME }}
+            password: ${{ secrets.IMAGE_BUILDER_DOCKERHUB_TOKEN }}
+  
+        - name: Determine tag
+          id: determine_tag
+          run: |
+            # Append the fork id to the image tag.
+            TAG=${{ github.event.inputs.agglayer-op-succinct-commit }}
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+  
+        - name: Check if image already exists
+          id: check_image
+          run: |
+            if docker manifest inspect ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.tag }} > /dev/null 2>&1; then
+              echo "Image already exists, skipping build."
+              echo "exists=true" >> $GITHUB_OUTPUT
+            else
+              echo "Image does not exist."
+              echo "exists=false" >> $GITHUB_OUTPUT
+            fi
+  
+        - name: Build image and push to the Docker Hub
+          if: ${{ steps.check_image.outputs.exists == 'false' }}
+          uses: docker/build-push-action@v6
+          with:
+            context: docker
+            file: docker/op-succinct.Dockerfile
+            build-args: |
+              RUST_VERSION=${{ env.RUST_VERSION }}
+              FOUNDRY_VERSION=${{ env.FOUNDRY_VERSION }}
+              OP_SUCCINCT_BRANCH=${{ github.event.inputs.agglayer-op-succinct-commit }}
+            push: true
+            tags: ${{ env.IMAGE_NAME }}:${{ steps.determine_tag.outputs.tag }}
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
