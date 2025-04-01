@@ -29,18 +29,19 @@ Outputs = ["stderr"]
 [SyncDB]
 # Type of database to use (e.g., postgres)
 Database = "postgres"
-# Username for database authentication
-User = "{{.bridge_db.user}}"
-# Name of the database to connect to
-Name = "{{.bridge_db.name}}"
-# Password for the database user
-Password = "{{.bridge_db.password}}"
-# Host address of the database server
-Host = "{{.bridge_db.hostname}}"
-# Port number on which the database server is listening
-Port = "{{.bridge_db.port}}"
-# Maximum number of concurrent connections to the database
-MaxConns = 20
+    [SyncDB.PgStorage]
+    # Username for database authentication
+    User = "{{.bridge_db.user}}"
+    # Name of the database to connect to
+    Name = "{{.bridge_db.name}}"
+    # Password for the database user
+    Password = "{{.bridge_db.password}}"
+    # Host address of the database server
+    Host = "{{.bridge_db.hostname}}"
+    # Port number on which the database server is listening
+    Port = "{{.bridge_db.port}}"
+    # Maximum number of concurrent connections to the database
+    MaxConns = 20
 
 # Etherman Configuration
 # This section specifies the RPC URLs for interacting with Layer 1 and Layer 2's.
@@ -62,11 +63,8 @@ SyncChunkSize = 100
 ForceL2SyncChunk = true
 
 # Bridge Controller Configuration
-# This section contains settings for the bridge controller, including 
-# the storage type and merkle tree height parameter.
+# This section contains settings for the bridge controller, including merkle tree height parameter.
 [BridgeController]
-# Type of storage used by the bridge controller (e.g., postgres)
-Store = "postgres"
 # Height parameter specifies the height of the merkle tree used for the bridge.
 Height = 32
 
@@ -86,18 +84,19 @@ MaxPageLimit = 1000
     [BridgeServer.DB]
     # Type of database for the bridge server
     Database = "postgres"
-    # Database user for authentication
-    User = "{{.bridge_db.user}}"
-    # Database name for the bridge server
-    Name = "{{.bridge_db.name}}"
-    # Password for the database user
-    Password = "{{.bridge_db.password}}"
-    # Host address of the database server
-    Host = "{{.bridge_db.hostname}}"
-    # Port number for the database connection
-    Port = "{{.bridge_db.port}}"
-    # Maximum number of connections to the database for the bridge server
-    MaxConns = 20
+        [BridgeServer.DB.PgStorage]
+        # Database user for authentication
+        User = "{{.bridge_db.user}}"
+        # Database name for the bridge server
+        Name = "{{.bridge_db.name}}"
+        # Password for the database user
+        Password = "{{.bridge_db.password}}"
+        # Host address of the database server
+        Host = "{{.bridge_db.hostname}}"
+        # Port number for the database connection
+        Port = "{{.bridge_db.port}}"
+        # Maximum number of connections to the database for the bridge server
+        MaxConns = 20
 
 # Network Configuration
 # This section contains settings related to the network, including smart contract addresses and
