@@ -102,6 +102,7 @@ convert_env_to_json "/opt/op-succinct/.env" "/opt/op-succinct/op-succinct-env-va
 # just upgrade-oracle 2>&1 | tee /opt/op-succinct/upgrade-oracle.out
 
 # Contract addresses to extract from op-succinct-env-vars.json and check for bytecode
+# shellcheck disable=SC2034
 l1_contract_names=(
     "SP1_VERIFIER_GATEWAY_PLONK"
     "SP1_VERIFIER_PLONK"

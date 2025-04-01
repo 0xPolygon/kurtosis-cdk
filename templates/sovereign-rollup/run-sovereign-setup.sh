@@ -158,6 +158,7 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
 cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"
 
 # Contract addresses to extract from combined.json and check for bytecode
+# shellcheck disable=SC2034
 l1_contract_names=(
     "polygonRollupManagerAddress"
     "polygonZkEVMBridgeAddress"
@@ -170,6 +171,7 @@ l1_contract_names=(
     "rollupAddress"
 )
 
+# shellcheck disable=SC2034
 l2_contract_names=(
     "polygonZkEVML2BridgeAddress"
     "polygonZkEVMGlobalExitRootL2Address"
