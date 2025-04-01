@@ -243,6 +243,15 @@ def run(plan, args={}):
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
+        plan.print("Deploying L2OO for OP Succinct")
+        import_module(op_succinct_package).op_succinct_l2oo_deployer_run(
+            plan, args
+        )
+
+        plan.print("Extracting environment variables from the contract deployer")
+        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args) # we have to get this again because we've updated the L2OO
+        args=args|op_succinct_env_vars
+
         plan.print("Deploying op-succinct-server component")
         import_module(op_succinct_package).op_succinct_server_run(
             plan, args, op_succinct_env_vars

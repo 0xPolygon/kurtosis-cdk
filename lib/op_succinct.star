@@ -7,6 +7,10 @@ ARTIFACTS = [
         "name": "deploy-sp1-verifier-contracts.sh",
         "file": "../templates/op-succinct/deploy-sp1-verifier-contracts.sh",
     },
+    {
+        "name": "deploy-l2oo.sh",
+        "file": "../templates/op-succinct/deploy-l2oo.sh",
+    },
 ]
 
 
@@ -32,6 +36,7 @@ def create_op_succinct_contract_deployer_service_config(
                 artifact_names=[
                     artifacts[0],
                     artifacts[1],
+                    artifacts[2],
                 ],
             ),
         },

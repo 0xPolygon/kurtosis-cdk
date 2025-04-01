@@ -124,12 +124,3 @@ spn_requester_eth_address=$(cast wallet address --private-key "{{.agglayer_prove
 # This will allow the op-succinct-proposer to submit L1 requests to call "Propose L2Output" on the OPSuccinctL2OutputOracle contract.
 cast send "$spn_requester_eth_address" --private-key "$private_key" --value 1ether --rpc-url "$l1_rpc_url"
 
-# TODO since we don't have the L2OO, we might have to move this until later
-# Update the verifier address to the VerifierGateway contract address in the OPSuccinctL2OutputOracle contract
-l2oo_address=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
-if [[ $l2oo_address != "" ]]; then
-    cast send "$l2oo_address" "updateVerifier(address)" "$SP1_VERIFIER_GATEWAY_GROTH16" --private-key "$private_key" --rpc-url "$l1_rpc_url"
-
-    # Add that same SPN requester address to the OPSuccinctL2OOOracle contract as approved proposer
-    cast send "$l2oo_address" --private-key "$private_key" "addProposer(address)" "$spn_requester_eth_address" --rpc-url "$l1_rpc_url"
-fi

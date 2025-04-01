@@ -103,14 +103,6 @@ just deploy-mock-verifier 2> deploy-mock-verifier.out | grep -oP '0x[a-fA-F0-9]{
 # Update the VERIFIER_ADDRESS in the .env file with the output from the previous command
 sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/verifier_address.out)\"/" /opt/op-succinct/.env
 
-# TODO this step seems to depend on the consensus layer. We will need to move this I think.
-if [[ 1 == 0 ]]; then
-    # Deploy the deploy-oracle and save the address to the l2oo_address.out
-    just deploy-oracle 2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "L2OO_ADDRESS=\"{}\"" > /opt/op-succinct/l2oo_address.out
-    # Update the L2OO_ADDRESS in the .env file with the output from the previous command
-    sed -i "s/^L2OO_ADDRESS=.*$/L2OO_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/l2oo_address.out)\"/" /opt/op-succinct/.env
-fi
-
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.
 
