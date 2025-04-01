@@ -214,9 +214,9 @@ extract_addresses() {
 
 # Extract addresses
 # shellcheck disable=SC2128
-l1_contract_addresses=$(extract_addresses "$l1_contract_names" "$json_file")
+l1_contract_addresses=$(extract_addresses l1_contract_names "$json_file")
 # shellcheck disable=SC2128
-l2_contract_addresses=$(extract_addresses "$l2_contract_names" "$json_file")
+l2_contract_addresses=$(extract_addresses l2_contract_names "$json_file")
 
 check_deployed_contracts() {
     # shellcheck disable=SC2178
@@ -250,5 +250,5 @@ check_deployed_contracts() {
 }
 
 # Check deployed contracts
-# check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
-# check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
+check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
+check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"

@@ -135,7 +135,7 @@ extract_addresses() {
 
 # Extract addresses
 # shellcheck disable=SC2128
-l1_contract_addresses=$(extract_addresses "$l1_contract_names" "$json_file")
+l1_contract_addresses=$(extract_addresses l1_contract_names "$json_file")
 
 # Function to check if addresses have deployed bytecode
 check_deployed_contracts() {
@@ -165,4 +165,4 @@ check_deployed_contracts() {
 }
 
 # Check deployed contracts
-# check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
+check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
