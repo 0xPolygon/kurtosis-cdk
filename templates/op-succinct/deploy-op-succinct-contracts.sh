@@ -1,10 +1,53 @@
 #!/bin/bash
 # This script deploys the OP-Succinct contracts to the OP network.
+export FOUNDRY_DISABLE_NIGHTLY_WARNING=1
+
+wait_for_rpc_to_be_available() {
+    counter=0
+    max_retries=40
+    until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "$(cast az)" &> /dev/null; do
+        ((counter++))
+        echo_ts "Can't send L1 transfers yet... Retrying ($counter)..."
+        if [[ $counter -ge $max_retries ]]; then
+            echo_ts "Exceeded maximum retry attempts. Exiting."
+            exit 1
+        fi
+        sleep 5
+    done
+}
+
+function deploy_create2() {
+    signer_address="0x3fab184622dc19b6109349b94811493bf2a45362"
+    gas_cost="0.01ether"    transaction="0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"
+    deployer_address="0x4e59b44847b379578588920ca78fbf26c0b4956c"
+    deployer_code=$(cast code --rpc-url "{{.l1_rpc_url}}" "$deployer_address")
+
+    if [[ $deployer_code != "0x" ]]; then
+        return
+    fi
+
+    cast send \
+         --legacy \
+         --rpc-url "{{.l1_rpc_url}}" \
+         --mnemonic "{{.l1_preallocated_mnemonic}}" \
+         --value "$gas_cost" \
+         "$signer_address"
+    cast publish --rpc-url "{{.l1_rpc_url}}" "$transaction"
+    deployer_code=$(cast code --rpc-url "{{.l1_rpc_url}}" "$deployer_address")
+    if [[ $deployer_code == "0x" ]]; then
+        echo "The create2 deployer wasn't setup properly"
+        exit 1
+    fi
+}
+
+echo "Waiting for the L1 RPC to be available"
+wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
+deploy_create2
 
 private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
 
-export FOUNDRY_DISABLE_NIGHTLY_WARNING=1
 
+# TODO confirm if these environment variables are all needed.. Many aren't functional yet
 # Create the .env file
 cd /opt/op-succinct || exit
 touch /opt/op-succinct/.env
@@ -60,10 +103,13 @@ just deploy-mock-verifier 2> deploy-mock-verifier.out | grep -oP '0x[a-fA-F0-9]{
 # Update the VERIFIER_ADDRESS in the .env file with the output from the previous command
 sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/verifier_address.out)\"/" /opt/op-succinct/.env
 
-# Deploy the deploy-oracle and save the address to the l2oo_address.out
-just deploy-oracle  2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "L2OO_ADDRESS=\"{}\"" > /opt/op-succinct/l2oo_address.out
-# Update the L2OO_ADDRESS in the .env file with the output from the previous command
-sed -i "s/^L2OO_ADDRESS=.*$/L2OO_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/l2oo_address.out)\"/" /opt/op-succinct/.env
+# TODO this step seems to depend on the consensus layer. We will need to move this I think.
+if [[ 1 == 0 ]]; then
+    # Deploy the deploy-oracle and save the address to the l2oo_address.out
+    just deploy-oracle 2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "L2OO_ADDRESS=\"{}\"" > /opt/op-succinct/l2oo_address.out
+    # Update the L2OO_ADDRESS in the .env file with the output from the previous command
+    sed -i "s/^L2OO_ADDRESS=.*$/L2OO_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/l2oo_address.out)\"/" /opt/op-succinct/.env
+fi
 
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.

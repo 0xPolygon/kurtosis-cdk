@@ -1,14 +1,16 @@
 #!/bin/bash
 
-L1_RPC="{{.l1_rpc_url}}"
-PRIVATE_KEY=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
-ETH_ADDRESS=$(cast wallet address --private-key "$PRIVATE_KEY")
+export FOUNDRY_DISABLE_NIGHTLY_WARNING=1
+
+l1_rpc_url="{{.l1_rpc_url}}"
+private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
+eth_address=$(cast wallet address --private-key "$private_key")
 
 # Create the .env file
 mkdir /tmp/sp1-contracts
 cd /tmp/sp1-contracts || exit
 
-git clone https://github.com/succinctlabs/sp1-contracts.git .
+git clone https://github.com/succinctlabs/sp1-contracts.git . &> /dev/null
 forge install succinctlabs/sp1-contracts
 
 # Update Foundry.toml with the RPC_KURTOSIS
@@ -37,16 +39,16 @@ cat << EOF > /tmp/sp1-contracts/lib/sp1-contracts/contracts/.env
 CREATE2_SALT=0x0000000000000000000000000000000000000000000000000000000000000001
 
 ### The owner of the SP1 Verifier Gateway. This is the account that will be able to add and freeze routes.
-OWNER="$ETH_ADDRESS"
+OWNER="$eth_address"
 
 ### The chains to deploy to, specified by chain name (e.g. CHAINS=MAINNET,SEPOLIA,ARBITRUM_SEPOLIA)
 CHAINS=KURTOSIS
 
 ### RPCs for each chain ID
-RPC_KURTOSIS="$L1_RPC"
+RPC_KURTOSIS="$l1_rpc_url"
 
 ## Contract Deployer Private Key
-PRIVATE_KEY="$PRIVATE_KEY"
+PRIVATE_KEY="$private_key"
 EOF
 
 cd /tmp/sp1-contracts/lib/sp1-contracts/contracts || exit
@@ -59,9 +61,9 @@ set +a
 # TODO: Update the hash to the correct one once Provers are ready
 # Plonk Deployments
 # Deploy SP1 Verifier Gateway Plonk
-FOUNDRY_PROFILE=deploy forge script --legacy /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayPlonk.s.sol:SP1VerifierGatewayScript --private-key "$PRIVATE_KEY" --broadcast
+FOUNDRY_PROFILE=deploy forge script --legacy /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayPlonk.s.sol:SP1VerifierGatewayScript --private-key "$private_key" --broadcast
 # Deploy SP1 Verifier Plonk contract
-FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
+FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$private_key" --broadcast
 
 
 # TODO: Fix Groth16 Verifier Deployments.
@@ -69,16 +71,16 @@ FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contrac
 sed -i 's/0x0000000000000000000000000000000000000000000000000000000000000001/0x0000000000000000000000000000000000000000000000000000000000000002/' /tmp/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
 sed -i 's/0x0000000000000000000000000000000000000000000000000000000000000001/0x0000000000000000000000000000000000000000000000000000000000000002/' /tmp/sp1-contracts/lib/sp1-contracts/contracts/.env
 
-# Source the updated .env file 
+# Source the updated .env file
 set -a
 # shellcheck disable=SC1091
 source .env
 set +a
 
 # Deploy SP1 Verifier Gateway Groth16
-FOUNDRY_PROFILE=deploy forge script --legacy /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayGroth16.s.sol:SP1VerifierGatewayScript --private-key "$PRIVATE_KEY" --broadcast
+FOUNDRY_PROFILE=deploy forge script --legacy /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayGroth16.s.sol:SP1VerifierGatewayScript --private-key "$private_key" --broadcast
 # Deploy SP1 Verifier Groth16 contract
-FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierGroth16.s.sol:SP1VerifierScript --private-key "$PRIVATE_KEY" --broadcast
+FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierGroth16.s.sol:SP1VerifierScript --private-key "$private_key" --broadcast
 
 # Create initial JSON with Gateway Plonk address
 jq -n --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayPlonk.s.sol/271828/run-latest.json)" \
@@ -111,19 +113,23 @@ SP1_VERIFIER_GATEWAY_GROTH16=$(jq '.SP1_VERIFIER_GATEWAY_GROTH16' /tmp/sp1_verif
 SP1_VERIFIER_GROTH16=$(jq '.SP1_VERIFIER_GROTH16' /tmp/sp1_verifier_out.json -r)
 
 # Add Plonk verifier to Plonk SP1_VERIFIER_GATEWAY_PLONK
-cast send "$SP1_VERIFIER_GATEWAY_PLONK" "addRoute(address)" "$SP1_VERIFIER_PLONK" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
+cast send "$SP1_VERIFIER_GATEWAY_PLONK" "addRoute(address)" "$SP1_VERIFIER_PLONK" --private-key "$private_key" --rpc-url "$l1_rpc_url"
 
 # Add Groth16 verifier to Plonk SP1_VERIFIER_GATEWAY_GROTH16
-cast send "$SP1_VERIFIER_GATEWAY_GROTH16" "addRoute(address)" "$SP1_VERIFIER_GROTH16" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
-
-# Update the verifier address to the VerifierGateway contract address in the OPSuccinctL2OutputOracle contract
-L2OO_ADDRESS=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
-cast send "$L2OO_ADDRESS" "updateVerifier(address)" "$SP1_VERIFIER_GATEWAY_GROTH16" --private-key "$PRIVATE_KEY" --rpc-url "$L1_RPC"
+cast send "$SP1_VERIFIER_GATEWAY_GROTH16" "addRoute(address)" "$SP1_VERIFIER_GROTH16" --private-key "$private_key" --rpc-url "$l1_rpc_url"
 
 # SPN Requester address
-SPN_REQUESTER_ETH_ADDRESS=$(cast wallet address --private-key "{{.agglayer_prover_sp1_key}}")
+spn_requester_eth_address=$(cast wallet address --private-key "{{.agglayer_prover_sp1_key}}")
 # Fund the op-succinct-proposer. This address of the agglayer_prover_sp1_key - address submitting requests to SPN
 # This will allow the op-succinct-proposer to submit L1 requests to call "Propose L2Output" on the OPSuccinctL2OutputOracle contract.
-cast send "$SPN_REQUESTER_ETH_ADDRESS" --private-key "{{.zkevm_l2_admin_private_key}}" --value 1ether --rpc-url "$L1_RPC"
-# Add that same SPN requester address to the OPSuccinctL2OOOracle contract as approved proposer
-cast send "$L2OO_ADDRESS" --private-key "$PRIVATE_KEY" "addProposer(address)" "$SPN_REQUESTER_ETH_ADDRESS" --rpc-url "$L1_RPC"
+cast send "$spn_requester_eth_address" --private-key "$private_key" --value 1ether --rpc-url "$l1_rpc_url"
+
+# TODO since we don't have the L2OO, we might have to move this until later
+# Update the verifier address to the VerifierGateway contract address in the OPSuccinctL2OutputOracle contract
+l2oo_address=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
+if [[ $l2oo_address != "" ]]; then
+    cast send "$l2oo_address" "updateVerifier(address)" "$SP1_VERIFIER_GATEWAY_GROTH16" --private-key "$private_key" --rpc-url "$l1_rpc_url"
+
+    # Add that same SPN requester address to the OPSuccinctL2OOOracle contract as approved proposer
+    cast send "$l2oo_address" --private-key "$private_key" "addProposer(address)" "$spn_requester_eth_address" --rpc-url "$l1_rpc_url"
+fi

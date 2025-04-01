@@ -193,6 +193,8 @@ DEFAULT_L1_ARGS = {
     # b) be used to generate a CL genesis.ssz that has the children validator keys already
     # preregistered as validators
     "l1_preallocated_mnemonic": "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete",
+    # cast wallet private-key --mnemonic $l1_preallocated_mnemonic
+    "l1_preallocated_private_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # The L1 HTTP RPC endpoint.
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     # The L1 WS RPC endpoint.
