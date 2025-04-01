@@ -115,6 +115,8 @@ def get_op_succinct_env_vars(plan, args):
         "l1_preallocated_mnemonic": "fromjson | .PRIVATE_KEY",
         "sp1_verifier_gateway_address": "fromjson | .SP1_VERIFIER_GATEWAY_PLONK",
         "sp1_verifier_address": "fromjson | .SP1_VERIFIER_PLONK",
+        "sp1_starting_block_number": "fromjson | .STARTING_BLOCK_NUMBER",
+        "sp1_starting_timestamp": "fromjson | .STARTING_TIMESTAMP",
     }
 
     exec_recipe = ExecRecipe(

@@ -200,7 +200,7 @@ extract_addresses() {
     local -n keys_array=$1  # Reference to the input array
     local json_file=$2      # JSON file path
     local jq_filter=""
-    
+
     # Build the jq filter
     for key in "${keys_array[@]}"; do
         if [ -z "$jq_filter" ]; then
@@ -209,7 +209,7 @@ extract_addresses() {
             jq_filter="$jq_filter, .${key}"
         fi
     done
-    
+
     # Extract addresses using jq and return them
     jq -r "[$jq_filter][] | select(. != null)" "$json_file"
 }
@@ -224,22 +224,27 @@ check_deployed_contracts() {
     # shellcheck disable=SC2178
     local addresses=$1         # String of space-separated addresses
     local rpc_url=$2           # RPC URL for cast command
-        
+
     # shellcheck disable=SC2128
-    if [ -z "$addresses" ]; then
+    if [[ -z "$addresses" ]]; then
         echo "ERROR: No addresses provided to check"
         exit 1
     fi
-    
+
     for addr in $addresses; do
         # Get bytecode using cast code with specified RPC URL
         if ! bytecode=$(cast code "$addr" --rpc-url "$rpc_url" 2>/dev/null); then
             echo "Address: $addr - Error checking address (RPC: $rpc_url)"
             continue
         fi
-        
+
+        if [[ $addr == "0x0000000000000000000000000000000000000000" ]]; then
+            echo "Warning - The zero address was provide as one of the contracts"
+            continue
+        fi
+
         # Check if bytecode is non-zero
-        if [ "$bytecode" = "0x" ] || [ -z "$bytecode" ]; then
+        if [[ "$bytecode" == "0x" || -z "$bytecode" ]]; then
             echo "Address: $addr - MISSING BYTECODE AT CONTRACT ADDRESS"
             exit 1
         else

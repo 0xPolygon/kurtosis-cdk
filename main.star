@@ -207,10 +207,19 @@ def run(plan, args={}):
             plan, args, op_deployer_configs_artifact
         )
 
+        plan.print("Deploying op-succinct contract deployer helper component")
+        import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
+        plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
+        import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
+            plan, args
+        )
+        plan.print("Extracting environment variables from the contract deployer")
+        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+
         # Deploy Sovereign contracts
         plan.print("Deploying sovereign contracts on OP Stack")
         import_module(deploy_sovereign_contracts_package).run(
-            plan, args, l1_op_contract_addresses, op_stack_args["predeployed_contracts"]
+            plan, args|op_succinct_env_vars, l1_op_contract_addresses, op_stack_args["predeployed_contracts"]
         )
 
         # Extract Sovereign contract addresses
@@ -232,14 +241,6 @@ def run(plan, args={}):
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
-        plan.print("Deploying op-succinct contract deployer helper component")
-        import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
-        plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
-        import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
-            plan, args
-        )
-        plan.print("Extracting environment variables from the contract deployer")
-        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
         plan.print("Deploying op-succinct-server component")
         import_module(op_succinct_package).op_succinct_server_run(
             plan, args, op_succinct_env_vars
