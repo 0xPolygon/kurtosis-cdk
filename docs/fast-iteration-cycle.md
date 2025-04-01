@@ -1,6 +1,6 @@
 # Fast Iteration Cycle with Kurtosis
 
-[Kurtosis](https://github.com/kurtosis-tech/kurtosis/) is a fantastic tool for deploying blockchain devnets. It hides all the complexity of the setup and makes it easier to spin up reproducible and ephemeral devnets for testing purposes. However, as the stack evolves and the number of components skyrockets, it takes more and more time to deploy the CDK stack. Even minor configuration changes take up to ten minutes to reflect on the local devnet. This inefficiency is not developer-friendly and highlights the need for solutions to streamline the deployment process. We are actively addressing these issues, as improving the user experience is one of our main focus.
+[Kurtosis](https://github.com/kurtosis-tech/kurtosis/) is a fantastic tool for deploying blockchain devnets. It hides all the complexity of the setup and makes it easier to spin up reproducible and ephemeral devnets for testing purposes. However, as the stack evolves and the number of components skyrockets, it takes more and more time to deploy the CDK stack. Even minor configuration changes take up to ten minutes to reflect on the local devnet. This inefficiency is not developer-friendly and highlights the need for solutions to streamline the deployment process. We are actively addressing these issues, as improving the user experience is one of our main focuses.
 
 In the meantime, here are some tips and tricks that we have found to be quite effective to iterate faster with Kurtosis.
 
