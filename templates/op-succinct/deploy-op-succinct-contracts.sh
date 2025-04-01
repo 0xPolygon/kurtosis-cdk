@@ -100,3 +100,69 @@ convert_env_to_json "/opt/op-succinct/.env" "/opt/op-succinct/op-succinct-env-va
 # Call upgrade-oracle
 # cd /opt/op-succinct/contracts
 # just upgrade-oracle 2>&1 | tee /opt/op-succinct/upgrade-oracle.out
+
+# Contract addresses to extract from op-succinct-env-vars.json and check for bytecode
+l1_contract_names=(
+    "SP1_VERIFIER_GATEWAY_PLONK"
+    "SP1_VERIFIER_PLONK"
+    "SP1_VERIFIER_GATEWAY_GROTH16"
+    "SP1_VERIFIER_GROTH16"
+    "VERIFIER_ADDRESS"
+    "L2OO_ADDRESS"
+)
+
+# JSON file to extract addresses from
+json_file="op-succinct-env-vars.json"
+
+# Function to build jq filter and extract addresses
+extract_addresses() {
+    local -n keys_array=$1  # Reference to the input array
+    local json_file=$2      # JSON file path
+    local jq_filter=""
+    
+    # Build the jq filter
+    for key in "${keys_array[@]}"; do
+        if [ -z "$jq_filter" ]; then
+            jq_filter=".${key}"
+        else
+            jq_filter="$jq_filter, .${key}"
+        fi
+    done
+    
+    # Extract addresses using jq and return them
+    jq -r "[$jq_filter][] | select(. != null)" "$json_file"
+}
+
+# Extract addresses
+# shellcheck disable=SC2128
+l1_contract_addresses=$(extract_addresses "$l1_contract_names" "$json_file")
+
+# Function to check if addresses have deployed bytecode
+check_deployed_contracts() {
+    local addresses=$1         # String of space-separated addresses
+    local rpc_url=$2           # RPC URL for cast command
+        
+    if [ -z "$addresses" ]; then
+        echo "ERROR: No addresses provided to check"
+        exit 1
+    fi
+    
+    for addr in $addresses; do
+        if ! bytecode=$(cast code "$addr" --rpc-url "$rpc_url" 2>/dev/null); then
+            echo "Address: $addr - Error checking address (RPC: $rpc_url)"
+            continue
+        fi
+        
+        if [ "$bytecode" = "0x" ] || [ -z "$bytecode" ]; then
+            echo "Address: $addr - MISSING BYTECODE AT CONTRACT ADDRESS"
+            exit 1
+        else
+            byte_length=$(echo "$bytecode" | sed 's/^0x//' | wc -c)
+            byte_length=$((byte_length / 2))
+            echo "Address: $addr - DEPLOYED (bytecode length: $byte_length bytes)"
+        fi
+    done
+}
+
+# Check deployed contracts
+check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"

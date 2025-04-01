@@ -165,6 +165,90 @@ jq --arg ger_proxy_addr "$ger_proxy_addr" \
     ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
     .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
     .rollupVerifierType = $rollupVerifierType' \
-    "/opt/zkevm/combined{{.deployment_suffix}}.json" > "/opt/zkevm/combined{{.deployment_suffix}}.json.temp"
+    "/opt/zkevm/combined.json" > "/opt/zkevm/combined.json.temp"
 
-mv "/opt/zkevm/combined{{.deployment_suffix}}.json.temp" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+mv "/opt/zkevm/combined.json.temp" "/opt/zkevm/combined.json"
+
+# Copy the updated combined.json to a new file with the deployment suffix
+cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+
+# Contract addresses to extract from combined.json and check for bytecode
+l1_contract_names=(
+    "polygonRollupManagerAddress"
+    "polygonZkEVMBridgeAddress"
+    "polygonZkEVMGlobalExitRootAddress"
+    "aggLayerGatewayAddress"
+    "pessimisticVKeyRouteALGateway.verifier"
+    "polTokenAddress"
+    "zkEVMDeployerContract"
+    "timelockContractAddress"
+    "rollupAddress"
+)
+
+l2_contract_names=(
+    "polygonZkEVML2BridgeAddress"
+    "polygonZkEVMGlobalExitRootL2Address"
+)
+
+# JSON file to extract addresses from
+json_file="/opt/zkevm/combined.json"
+
+# Function to build jq filter and extract addresses
+extract_addresses() {
+    local -n keys_array=$1  # Reference to the input array
+    local json_file=$2      # JSON file path
+    local jq_filter=""
+    
+    # Build the jq filter
+    for key in "${keys_array[@]}"; do
+        if [ -z "$jq_filter" ]; then
+            jq_filter=".${key}"
+        else
+            jq_filter="$jq_filter, .${key}"
+        fi
+    done
+    
+    # Extract addresses using jq and return them
+    jq -r "[$jq_filter][] | select(. != null)" "$json_file"
+}
+
+# Extract addresses
+# shellcheck disable=SC2128
+l1_contract_addresses=$(extract_addresses "$l1_contract_names" "$json_file")
+# shellcheck disable=SC2128
+l2_contract_addresses=$(extract_addresses "$l2_contract_names" "$json_file")
+
+check_deployed_contracts() {
+    # shellcheck disable=SC2178
+    local addresses=$1         # String of space-separated addresses
+    local rpc_url=$2           # RPC URL for cast command
+        
+    # shellcheck disable=SC2128
+    if [ -z "$addresses" ]; then
+        echo "ERROR: No addresses provided to check"
+        exit 1
+    fi
+    
+    for addr in $addresses; do
+        # Get bytecode using cast code with specified RPC URL
+        if ! bytecode=$(cast code "$addr" --rpc-url "$rpc_url" 2>/dev/null); then
+            echo "Address: $addr - Error checking address (RPC: $rpc_url)"
+            continue
+        fi
+        
+        # Check if bytecode is non-zero
+        if [ "$bytecode" = "0x" ] || [ -z "$bytecode" ]; then
+            echo "Address: $addr - MISSING BYTECODE AT CONTRACT ADDRESS"
+            exit 1
+        else
+            # Get bytecode length removing 0x prefix and counting hex chars
+            byte_length=$(echo "$bytecode" | sed 's/^0x//' | wc -c)
+            byte_length=$((byte_length / 2))  # Convert hex chars to bytes
+            echo "Address: $addr - DEPLOYED (bytecode length: $byte_length bytes)"
+        fi
+    done
+}
+
+# Check deployed contracts
+check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
+check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
