@@ -90,9 +90,11 @@ EOF
 
 starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
 starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
-echo "STARTING_BLOCK_NUMBER=\"$starting_block_number\"" >> .env
-echo "STARTING_TIMESTAMP=\"$starting_timestamp\"" >> .env
-echo "" >> .env
+{
+  echo "STARTING_BLOCK_NUMBER=\"$starting_block_number\""
+  echo "STARTING_TIMESTAMP=\"$starting_timestamp\""
+  echo ""
+} >> .env
 
 # Print out the config for reference / debugging
 cat .env

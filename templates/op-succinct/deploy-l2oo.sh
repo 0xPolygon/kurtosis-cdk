@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 export FOUNDRY_DISABLE_NIGHTLY_WARNING=1
 
-private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
-
 pushd /opt/op-succinct || { echo "op-succinct directory doesn't exit"; exit 1; }
 
 set -a
-source .env
+# shellcheck disable=SC1091
+source /opt/op-succinct/.env
 set +a
 
 cat .env
@@ -17,9 +16,11 @@ just deploy-oracle 2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -
 sed -i "s/^L2OO_ADDRESS=.*$/L2OO_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/l2oo_address.out)\"/" /opt/op-succinct/.env
 
 set -a
-source .env
+# shellcheck disable=SC1091
+source /opt/op-succinct/.env
 set +a
 
+# shellcheck disable=SC2153
 jq --arg l2oo "$L2OO_ADDRESS" '.L2OO_ADDRESS = $l2oo' /opt/op-succinct/op-succinct-env-vars.json > /opt/op-succinct/op-succinct-env-vars.json.l2oo
 mv /opt/op-succinct/op-succinct-env-vars.json.l2oo /opt/op-succinct/op-succinct-env-vars.json
 
