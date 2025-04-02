@@ -51,10 +51,10 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
             "bridge-config.toml": struct(
                 template=bridge_config_template,
                 data={
-                    "sovereign_chain": False,
                     "global_log_level": args["global_log_level"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
+                    "require_sovereign_chain_contract": True,
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
