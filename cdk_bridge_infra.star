@@ -41,27 +41,30 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"
     )
+    l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
+    l2_rpc_url = "http://{}{}:{}".format(
+        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+    )
+    db = {"db": db_configs.get("bridge_db")}
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
             "bridge-config.toml": struct(
                 template=bridge_config_template,
                 data={
-                    "deployment_suffix": args["deployment_suffix"],
+                    "sovereign_chain": False,
                     "global_log_level": args["global_log_level"],
-                    "l1_rpc_url": args["mitm_rpc_url"].get(
-                        "bridge", args["l1_rpc_url"]
-                    ),
-                    "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    # rpc urls
+                    "l1_rpc_url": l1_rpc_url,
+                    "l2_rpc_url": l2_rpc_url,
                     # ports
-                    "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
-                    "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
-                    "zkevm_bridge_metrics_port": args["zkevm_bridge_metrics_port"],
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "grpc_port_number": args["zkevm_bridge_grpc_port"],
+                    "rpc_port_number": args["zkevm_bridge_rpc_port"],
+                    "metrics_port_number": args["zkevm_bridge_metrics_port"],
                 }
                 | contract_setup_addresses
-                | db_configs,
+                | db,
             )
         },
     )
