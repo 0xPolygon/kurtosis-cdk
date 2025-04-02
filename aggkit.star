@@ -74,9 +74,9 @@ def get_keystores_artifacts(plan, args):
         src="/opt/zkevm/sovereignadmin.keystore",
     )
     claimtx_keystore_artifact = plan.store_service_files(
-        name="claimtx-keystore",
+        name="claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimtx.keystore",
+        src="/opt/zkevm/claimtxmanager.keystore",
     )
     return struct(
         aggoracle=aggoracle_keystore_artifact,
