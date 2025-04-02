@@ -285,6 +285,7 @@ DEFAULT_L2_ARGS = {
     "chain_name": "kurtosis",
     # Config name for OP stack rollup
     "sovereign_chain_name": "op-sovereign",
+    # TODO this seems like it comes from the op-succinct setup... we can probably get rid of this input
     # The minimum interval at which checkpoints must be submitted. No high security assumptions.
     "aggchain_submission_interval": 1,
 }

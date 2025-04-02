@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Fund L1 OP addresses.
 IFS=';' read -ra addresses <<<"${L1_OP_ADDRESSES}"
@@ -13,17 +13,20 @@ for address in "${addresses[@]}"; do
 done
 
 # Create New Rollup Step
-cd /opt/zkevm-contracts || exit
+pushd /opt/zkevm-contracts || exit 1
 
 # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
-# It follows the same logic which exist in deploy-op-succinct-contracts.sh to populate these values.
-starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
-starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
-# Directly insert the values into the create_new_rollup.json file.
-sed -i \
-  -e "s/\"startingBlockNumber\": [^,}]*/\"startingBlockNumber\": $starting_block_number/" \
-  -e "s/\"startingTimestamp\": [^,}]*/\"startingTimestamp\": $starting_timestamp/" \
-  /opt/contract-deploy/create_new_rollup.json
+ts=$(date +%s)
+jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
+.aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
+.aggchainParams.initParams.rollupConfigHash = $l2[0].rollupConfigHash |
+.aggchainParams.initParams.startingOutputRoot = $l2[0].startingOutputRoot |
+.aggchainParams.initParams.startingTimestamp = $l2[0].startingTimestamp |
+.aggchainParams.initParams.startingBlockNumber = $l2[0].startingBlockNumber |
+.aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval
+' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup${ts}.json
+cp /opt/contract-deploy/create_new_rollup${ts}.json /opt/contract-deploy/create_new_rollup.json
+
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
@@ -31,33 +34,35 @@ sed -i \
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 
 # Replace rollupManagerAddress with the extracted address
-sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
+jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup${ts}.json
+cp /opt/contract-deploy/create_new_rollup${ts}.json /opt/contract-deploy/create_new_rollup.json
 
 # Replace polygonRollupManagerAddress with the extracted address
-sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
+jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' /opt/contract-deploy/add_rollup_type.json > /opt/contract-deploy/add_rollup_type${ts}.json
+cp /opt/contract-deploy/add_rollup_type${ts}.json /opt/contract-deploy/add_rollup_type.json
+jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' /opt/contract-deploy/add_rollup_type.json > /opt/contract-deploy/add_rollup_type${ts}.json
+cp /opt/contract-deploy/add_rollup_type${ts}.json /opt/contract-deploy/add_rollup_type.json
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
 # The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
-rollupTypeID="{{ .zkevm_rollup_id }}"
-if [[ "$rollupTypeID" -eq 1 ]]; then
-    # For the first rollup, we need use https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
-    echo "rollupID is 1. Running 4_createRollup.ts script"
-    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
-else
-    # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/tools/createNewRollup/createNewRollup.ts
-    # cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
-    # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
-    # npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 06_create_sovereign_rollup.out
 
-    # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
-    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
-fi
+cp /opt/contract-deploy/add_rollup_type.json /opt/zkevm-contracts/tools/addRollupType/add_rollup_type.json
+cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/addRollupType/genesis.json
+cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
+
+npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
+cp /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json /opt/zkevm/add_rollup_type_output.json
+rollup_type_id=$(jq -r '.rollupTypeID' /opt/zkevm/add_rollup_type_output.json)
+jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json > /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json.tmp
+mv /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json.tmp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+
+npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
+cp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json /opt/zkevm/create_rollup_output.json
 
 # Save Rollup Information to a file.
-cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >/opt/zkevm-contracts/sovereign-rollup-out.json
+cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.
 bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"

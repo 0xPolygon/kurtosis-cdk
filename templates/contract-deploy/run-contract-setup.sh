@@ -367,5 +367,3 @@ fi
 
 # The contract setup is done!
 touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
-
-

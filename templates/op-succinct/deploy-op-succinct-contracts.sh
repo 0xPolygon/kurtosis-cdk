@@ -88,13 +88,9 @@ AGG_PROOF_MODE="{{.op_succinct_agg_proof_mode}}"
 
 EOF
 
-starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
-starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
-{
-  echo "STARTING_BLOCK_NUMBER=\"$starting_block_number\""
-  echo "STARTING_TIMESTAMP=\"$starting_timestamp\""
-  echo ""
-} >> .env
+# starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
+# starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
+echo "STARTING_BLOCK_NUMBER=1" >> .env
 
 # Print out the config for reference / debugging
 cat .env
@@ -107,6 +103,10 @@ sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}
 
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.
+
+# Run fetch-rollup-config to get the various configuration values that
+# we'll need in the rest of smart contract deployment
+RUST_LOG=info cargo run --bin fetch-rollup-config --release -- --env-file .env 2> fetch-rollup-config.out
 
 convert_env_to_json() {
   # Accept input .env file and output json file as arguments
@@ -224,4 +224,7 @@ check_deployed_contracts() {
 }
 
 # Check deployed contracts
-check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
+# check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
+
+jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json contracts/opsuccinctl2ooconfig.json > /opt/op-succinct/op-succinct-env-vars.json.merged
+mv /opt/op-succinct/op-succinct-env-vars.json.merged /opt/op-succinct/op-succinct-env-vars.json

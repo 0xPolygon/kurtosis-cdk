@@ -5,6 +5,7 @@
     "description": "kurtosis-devnet - {{.chain_name}}",
     "adminZkEVM": "{{.zkevm_l2_admin_address}}",
     "consensusContract": "{{.zkevm_rollup_consensus}}",
+    "consensusContractName": "{{.zkevm_rollup_consensus}}",
     "type":"EOA",
     "trustedSequencerURL": "{{ .op_el_rpc_url }}",
     "networkName": "{{ .sovereign_chain_name }}",
@@ -20,6 +21,7 @@
     "timelockSalt": "",
     "rollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
     "rollupTypeId": 1,
+    "_comment": "TODO.. It sounds like isVanilliaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
     "isVanillaClient": true,
     "sovereignParams": {
         "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
@@ -30,12 +32,12 @@
     },
     "aggchainParams": {
         "initParams": {
-            "l2BlockTime": "{{ .op_stack_seconds_per_slot }}",
-            "rollupConfigHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
-            "startingOutputRoot": "0x1111111111111111111111111111111111111111111111111111111111111111",
-            "startingBlockNumber": {{ .sp1_starting_block_number }},
-            "startingTimestamp": {{ .sp1_starting_timestamp }},
-            "submissionInterval": "{{ .aggchain_submission_interval }}",
+            "l2BlockTime": "{{ .sp1_l2_block_time }}",
+            "rollupConfigHash": "{{.sp1_rollup_config_hash}}",
+            "startingOutputRoot": "{{.sp1_starting_output_root}}",
+            "startingBlockNumber": {{ with .sp1_starting_block_number }}{{ . }}{{ else }}null{{ end }},
+            "startingTimestamp": {{ with .sp1_starting_timestamp}}{{ . }}{{ else }}null{{ end }},
+            "submissionInterval": "{{ .sp1_submission_interval }}",
             "aggchainManager": "{{ .zkevm_l2_sovereignadmin_address }}",
             "optimisticModeManager": "{{ .zkevm_l2_sovereignadmin_address }}"
         },

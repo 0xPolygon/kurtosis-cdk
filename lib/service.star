@@ -2,30 +2,18 @@ data_availability_package = import_module("./data_availability.star")
 
 
 def get_contract_setup_addresses(plan, args, deployment_stages):
-    if deployment_stages.get("deploy_optimism_rollup", False):
-        # Deploying optimism rollup doesn't have .rollupAddress field. This should be removed.
-        extract = {
-            "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
-            "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
-            "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
-            "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
-            "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
-            "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
-            "pol_token_address": "fromjson | .polTokenAddress",
-            "zkevm_admin_address": "fromjson | .admin",
-        }
-    else:
-        extract = {
-            "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
-            "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
-            "zkevm_rollup_address": "fromjson | .rollupAddress",
-            "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
-            "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
-            "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
-            "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
-            "pol_token_address": "fromjson | .polTokenAddress",
-            "zkevm_admin_address": "fromjson | .admin",
-        }
+    extract = {
+        "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
+        "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "zkevm_rollup_address": "fromjson | .rollupAddress",
+        "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+        "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+        "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
+        "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+        "pol_token_address": "fromjson | .polTokenAddress",
+        "zkevm_admin_address": "fromjson | .admin",
+    }
+
     if data_availability_package.is_cdk_validium(args):
         extract[
             "polygon_data_committee_address"
@@ -114,8 +102,21 @@ def get_op_succinct_env_vars(plan, args):
         "op_succinct_agg_proof_mode": "fromjson | .AGG_PROOF_MODE",
         "sp1_verifier_gateway_address": "fromjson | .SP1_VERIFIER_GATEWAY_PLONK",
         "sp1_verifier_address": "fromjson | .SP1_VERIFIER_PLONK",
-        "sp1_starting_block_number": "fromjson | .STARTING_BLOCK_NUMBER",
-        "sp1_starting_timestamp": "fromjson | .STARTING_TIMESTAMP",
+        "sp1_starting_block_number": "fromjson | .startingBlockNumber",
+        "sp1_starting_timestamp": "fromjson | .startingTimestamp",
+        "sp1_challenger": "fromjson | .challenger",
+        "sp1_finalization_period": "fromjson | .finalizationPeriod",
+        "sp1_l2_block_time": "fromjson | .l2BlockTime",
+        "sp1_l2_output_oracle_impl": "fromjson | .opSuccinctL2OutputOracleImpl",
+        "sp1_owner": "fromjson | .owner",
+        "sp1_proposer": "fromjson | .proposer",
+        "sp1_rollup_config_hash": "fromjson | .rollupConfigHash",
+        "sp1_starting_output_root": "fromjson | .startingOutputRoot",
+        "sp1_submission_interval": "fromjson | .submissionInterval",
+        "sp1_verifier": "fromjson | .verifier",
+        "sp1_aggregation_vkey": "fromjson | .aggregationVkey",
+        "sp1_range_vkey_commitment": "fromjson | .rangeVkeyCommitment",
+        "sp1_proxy_admin": "fromjson | .proxyAdmin",
     }
 
     exec_recipe = ExecRecipe(
@@ -172,3 +173,37 @@ def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, chain_
         ),
     )
     return result.output
+
+def get_op_succinct_l2oo_config(plan, args):
+    extract = {
+        "sp1_challenger": "fromjson | .challenger",
+        "sp1_finalization_period": "fromjson | .finalizationPeriod",
+        "sp1_l2_block_time": "fromjson | .l2BlockTime",
+        "sp1_l2_output_oracle_impl": "fromjson | .opSuccinctL2OutputOracleImpl",
+        "sp1_owner": "fromjson | .owner",
+        "sp1_proposer": "fromjson | .proposer",
+        "sp1_rollup_config_hash": "fromjson | .rollupConfigHash",
+        "sp1_starting_block_number": "fromjson | .startingBlockNumber",
+        "sp1_starting_output_root": "fromjson | .startingOutputRoot",
+        "sp1_starting_timestamp": "fromjson | .startingTimestamp",
+        "sp1_submission_interval": "fromjson | .submissionInterval",
+        "sp1_verifier": "fromjson | .verifier",
+        "sp1_aggregation_vkey": "fromjson | .aggregationVkey",
+        "sp1_range_vkey_commitment": "fromjson | .rangeVkeyCommitment",
+        "sp1_proxy_admin": "fromjson | .proxyAdmin",
+    }
+
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat /opt/op-succinct/contracts/opsuccinctl2ooconfig.json"],
+        extract=extract,
+    )
+    service_name = "op-succinct-contract-deployer"
+    service_name += args["deployment_suffix"]
+    result = plan.exec(
+        description="Getting L2OO Config from from {} service".format(
+            service_name
+        ),
+        service_name=service_name,
+        recipe=exec_recipe,
+    )
+    return get_exec_recipe_result(result)

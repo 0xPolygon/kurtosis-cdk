@@ -56,26 +56,64 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of a local L1")
 
-    # Deploy zkevm contracts on L1.
+    # Deploy Contracts on L1.
     contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
-        if deployment_stages.get("deploy_op_succinct", False):
-            plan.print("Deploying op-succinct contract deployer helper component")
-            import_module(op_succinct_package).op_succinct_contract_deployer_run(
-                plan, args
-            )
-            plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
-            import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
-                plan, args
-            )
-            plan.print("Extracting environment variables from the contract deployer")
-            op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
-            args = args | op_succinct_env_vars
-
         plan.print("Deploying zkevm contracts on L1")
         import_module(deploy_zkevm_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
         )
+
+        if deployment_stages.get("deploy_optimism_rollup", False):
+            optimism_package = op_stack_args["source"]
+            import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
+
+            # Deploy OP Stack infrastructure
+            plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
+            import_module(optimism_package).run(plan, op_stack_args)
+
+            # Retrieve L1 OP contract addresses.
+            op_deployer_configs_artifact = plan.get_files_artifact(
+                name="op-deployer-configs",
+            )
+            l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
+                plan, args, op_deployer_configs_artifact
+            )
+
+            if deployment_stages.get("deploy_op_succinct", False):
+                plan.print("Deploying op-succinct contract deployer helper component")
+                import_module(op_succinct_package).op_succinct_contract_deployer_run(
+                    plan, args
+                )
+                plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
+                import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
+                    plan, args
+                )
+                plan.print("Extracting environment variables from the contract deployer")
+                op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+                args = args | op_succinct_env_vars
+
+                plan.print("Deploying L2OO for OP Succinct")
+                import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
+                l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
+                args = args | l2oo_vars
+
+            # Deploy Sovereign contracts (maybe a better name is creating soverign rollup)
+            # TODO rename this and understand what this does in the case where there are predeployed contracts
+            # TODO Call the create rollup script
+            plan.print("Deploying sovereign contracts on OP Stack")
+            import_module(deploy_sovereign_contracts_package).run(
+                plan, args, l1_op_contract_addresses, op_stack_args["predeployed_contracts"]
+            )
+
+            # Extract Sovereign contract addresses
+            sovereign_contract_setup_addresses = (
+                service_package.get_sovereign_contract_setup_addresses(plan, args)
+            )
+
+
+
+
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
         )
@@ -114,8 +152,6 @@ def run(plan, args={}):
                 service_name="contracts" + args["deployment_suffix"],
                 src="/opt/zkevm/genesis.json",
             )
-    else:
-        import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
@@ -205,33 +241,8 @@ def run(plan, args={}):
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Deploy an OP Stack rollup.
+    # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
-        optimism_package = op_stack_args["source"]
-        # Deploy OP Stack infrastructure
-        plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
-        import_module(optimism_package).run(plan, op_stack_args)
-
-        # Retrieve L1 OP contract addresses.
-        op_deployer_configs_artifact = plan.get_files_artifact(
-            name="op-deployer-configs",
-        )
-        l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
-            plan, args, op_deployer_configs_artifact
-        )
-
-        # Deploy Sovereign contracts
-        plan.print("Deploying sovereign contracts on OP Stack")
-        import_module(deploy_sovereign_contracts_package).run(
-            plan, args, l1_op_contract_addresses, op_stack_args["predeployed_contracts"]
-        )
-
-        # Extract Sovereign contract addresses
-        sovereign_contract_setup_addresses = (
-            service_package.get_sovereign_contract_setup_addresses(plan, args)
-        )
-
-        # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
         import_module(aggkit_package).run(
@@ -246,13 +257,10 @@ def run(plan, args={}):
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
-        plan.print("Deploying L2OO for OP Succinct")
-        import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
-
         plan.print("Extracting environment variables from the contract deployer")
         op_succinct_env_vars = service_package.get_op_succinct_env_vars(
             plan, args
-        )  # we have to get this again because we've updated the L2OO
+        )
         args = args | op_succinct_env_vars
 
         plan.print("Deploying op-succinct-server component")
@@ -261,7 +269,7 @@ def run(plan, args={}):
         )
         plan.print("Deploying op-succinct-proposer component")
         import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args, op_succinct_env_vars
+            plan, args|contract_setup_addresses, op_succinct_env_vars
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")
