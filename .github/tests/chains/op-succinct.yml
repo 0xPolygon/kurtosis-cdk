@@ -8,6 +8,7 @@ args:
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
   agglayer_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   agglayer_prover_primary_prover: "network-prover"
+  aggkit_prover_primary_prover: "network-prover"
   aggkit_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   consensus_contract_type: fep
   op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.9-agglayer" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
