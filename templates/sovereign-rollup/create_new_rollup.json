@@ -40,6 +40,8 @@
             "optimisticModeManager": "{{ .zkevm_l2_sovereignadmin_address }}"
         },
         "useDefaultGateway": true,
+        "ownedAggchainVKey": "{{ .owned_aggchain_vkey }}",
+        "aggchainVKeySelector": "{{ .aggchain_vkey_version }}",
         "initOwnedAggchainVKey": "{{ .owned_aggchain_vkey }}",
         "initAggchainVKeyVersion": "{{ .aggchain_vkey_version }}",
         "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"

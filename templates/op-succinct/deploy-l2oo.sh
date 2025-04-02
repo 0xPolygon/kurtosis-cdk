@@ -27,8 +27,10 @@ mv /opt/op-succinct/op-succinct-env-vars.json.l2oo /opt/op-succinct/op-succinct-
 # Update the verifier address to the VerifierGateway contract address in the OPSuccinctL2OutputOracle contract
 l2oo_address=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
 if [[ $l2oo_address != "" ]]; then
-    cast send "$l2oo_address" "updateVerifier(address)" "$SP1_VERIFIER_GATEWAY_GROTH16" --mnemonic "{{.l1_preallocated_mnemonic}}" --rpc-url "$l1_rpc_url"
+    sp1_verifier_gateway_groth16=$(jq '.SP1_VERIFIER_GATEWAY_GROTH16' /tmp/sp1_verifier_out.json -r)
+    cast send "$l2oo_address" "updateVerifier(address)" "$sp1_verifier_gateway_groth16" --mnemonic "{{.l1_preallocated_mnemonic}}" --rpc-url "{{.l1_rpc_url}}"
 
+    spn_requester_eth_address=$(cast wallet address --private-key "{{.agglayer_prover_sp1_key}}")
     # Add that same SPN requester address to the OPSuccinctL2OOOracle contract as approved proposer
-    cast send "$l2oo_address" "addProposer(address)" "$spn_requester_eth_address" --mnemonic "{{.l1_preallocated_mnemonic}}" --rpc-url "$l1_rpc_url"
+    cast send "$l2oo_address" "addProposer(address)" "$spn_requester_eth_address" --mnemonic "{{.l1_preallocated_mnemonic}}" --rpc-url "{{.l1_rpc_url}}"
 fi

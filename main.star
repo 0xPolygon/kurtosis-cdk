@@ -59,7 +59,7 @@ def run(plan, args={}):
     # Deploy zkevm contracts on L1.
     contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
-        if deployment_stages.get("deploy_optimism_rollup", False):
+        if deployment_stages.get("deploy_op_succinct", False):
             plan.print("Deploying op-succinct contract deployer helper component")
             import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
             plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
