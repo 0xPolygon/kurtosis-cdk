@@ -104,7 +104,7 @@ def create_bridge_config_artifact(
             "sovereign_ger_proxy_addr"
         ),
     }
-    db = {"db": db_configs.get("bridge_db")}
+    db = {"db": db_configs.get("sovereign_bridge_db")}
     return plan.render_templates(
         name="sovereign-bridge-config-artifact",
         config={
