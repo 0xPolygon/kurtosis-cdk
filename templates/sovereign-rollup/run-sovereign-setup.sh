@@ -15,6 +15,16 @@ done
 # Create New Rollup Step
 cd /opt/zkevm-contracts || exit
 
+# The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
+# It follows the same logic which exist in deploy-op-succinct-contracts.sh to populate these values.
+starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
+starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
+# Directly insert the values into the create_new_rollup.json file.
+sed -i \
+  -e "s/\"startingBlockNumber\": [^,}]*/\"startingBlockNumber\": $starting_block_number/" \
+  -e "s/\"startingTimestamp\": [^,}]*/\"startingTimestamp\": $starting_timestamp/" \
+  /opt/contract-deploy/create_new_rollup.json
+
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
@@ -217,6 +227,11 @@ check_deployed_contracts() {
             continue
         fi
         
+        if [[ $addr == "0x0000000000000000000000000000000000000000" ]]; then
+            echo "Warning - The zero address was provide as one of the contracts"
+            continue
+        fi
+
         # Check if bytecode is non-zero
         if [ "$bytecode" = "0x" ] || [ -z "$bytecode" ]; then
             echo "Address: $addr - MISSING BYTECODE AT CONTRACT ADDRESS"

@@ -29,6 +29,7 @@ def op_succinct_contract_deployer_run(plan, args):
         ),
     )
 
+
 def op_succinct_server_run(plan, args, op_succinct_env_vars):
     # Start the op-succinct-server component.
     op_succinct_server_configs = (
@@ -85,6 +86,8 @@ def sp1_verifier_contracts_deployer_run(plan, args):
             ]
         ),
     )
+
+
 def op_succinct_l2oo_deployer_run(plan, args):
     service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
     plan.exec(

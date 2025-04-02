@@ -5,7 +5,13 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 
-def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
+def run(
+    plan,
+    args,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+    deployment_stages,
+):
     # Create aggkit-prover
     aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(
         plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
@@ -92,6 +98,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
         db_configs,
+        deployment_stages,
     )
     bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
         args, bridge_config_artifact, keystore_artifacts.claimtx
@@ -126,10 +133,15 @@ def get_keystores_artifacts(plan, args):
 
 
 def create_bridge_config_artifact(
-    plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, db_configs
+    plan,
+    args,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+    db_configs,
+    deployment_stages,
 ):
     bridge_config_template = read_file(
-        src="./templates/sovereign-rollup/bridge-config.toml"
+        src="./templates/bridge-infra/bridge-config.toml"
     )
     return plan.render_templates(
         name="bridge-config-artifact",
@@ -151,10 +163,14 @@ def create_bridge_config_artifact(
                     "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "zkevm_bridge_metrics_port": args["zkevm_bridge_metrics_port"],
+                    "deploy_optimism_rollup": deployment_stages.get(
+                        "deploy_optimism_rollup", False
+                    ),
                 }
                 | contract_setup_addresses
                 | sovereign_contract_setup_addresses
-                | db_configs,
+                | db_configs
+                | deployment_stages,
             )
         },
     )

@@ -205,6 +205,11 @@ check_deployed_contracts() {
             continue
         fi
 
+        if [[ $addr == "0x0000000000000000000000000000000000000000" ]]; then
+            echo "Warning - The zero address was provide as one of the contracts"
+            continue
+        fi
+
         if [ "$bytecode" = "0x" ] || [ -z "$bytecode" ]; then
             echo "Address: $addr - MISSING BYTECODE AT CONTRACT ADDRESS"
             exit 1
