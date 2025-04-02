@@ -45,7 +45,6 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
-    db = {"db": db_configs.get("bridge_db")}
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -55,6 +54,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                     "sovereign_chain": False,
                     "global_log_level": args["global_log_level"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "db": db_configs.get("bridge_db"),
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
@@ -63,8 +63,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                     "rpc_port_number": args["zkevm_bridge_rpc_port"],
                     "metrics_port_number": args["zkevm_bridge_metrics_port"],
                 }
-                | contract_setup_addresses
-                | db,
+                | contract_setup_addresses,
             )
         },
     )
