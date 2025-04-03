@@ -6,15 +6,27 @@ TEST_RUNNER_IMAGE = "leovct/e2e:3fe0718"  # https://github.com/agglayer/e2e/pull
 def run(plan, args, contract_setup_addresses):
     private_key = args.get("zkevm_l2_admin_private_key")
 
-    # Note: Getting values this way is not clean at all.
     agglayer_rpc_url = args.get("agglayer_readrpc_url")
-    bridge_service = plan.get_service(
-        name="zkevm-bridge-service" + args.get("deployment_suffix")
-    )
-    bridge_service_url = "http://{}:{}".format(
-        bridge_service.name,
-        bridge_service.ports.get("rpc").number,
-    )
+
+    # Note: Getting values this way is not clean at all.
+    bridge_service_url = ""
+    for service in plan.get_services():
+        zkevm_bridge_service_name = "zkevm-brige-service{}".format(
+            args.get("deployment_suffix")
+        )
+        sovereign_bridge_service_name = "sovereign-bridge-service{}".format(
+            args.get("deployment_suffix")
+        )
+        if service.name == zkevm_bridge_service_name:
+            bridge_service_url = "http://{}:{}".format(
+                service.name,
+                service.ports.get("rpc").number,
+            )
+        elif service_name == sovereign_bridge_service_name:
+            bridge_service_url = "http://{}:{}".format(
+                service.name,
+                service.ports.get("rpc").number,
+            )
 
     l1_rpc_url = args.get("mitm_rpc_url").get("agglayer", args.get("l1_rpc_url"))
     l1_bridge_address = contract_setup_addresses.get("zkevm_bridge_address")
