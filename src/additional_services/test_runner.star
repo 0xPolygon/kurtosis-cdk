@@ -39,7 +39,7 @@ def run(plan, args, contract_setup_addresses):
         l2_bridge_address = contract_setup_addresses.get("sovereign_bridge_proxy_addr")
     else:
         # Bridge service url.
-        bridge_service_name = "zkevm-brige-service{}".format(
+        bridge_service_name = "zkevm-bridge-service{}".format(
             args.get("deployment_suffix")
         )
         bridge_service = plan.get_service(bridge_service_name)
