@@ -216,6 +216,7 @@ def run(plan, args={}):
         sovereign_contract_setup_addresses = (
             service_package.get_sovereign_contract_setup_addresses(plan, args)
         )
+        contract_setup_addresses.update(sovereign_contract_setup_addresses)
 
         # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
