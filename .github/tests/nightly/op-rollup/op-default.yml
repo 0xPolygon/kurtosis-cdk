@@ -1,0 +1,8 @@
+deployment_stages:
+  deploy_optimism_rollup: true
+
+args:
+  verbosity: debug
+  consensus_contract_type: pessimistic
+  additional_services:
+    - test_runner

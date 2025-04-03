@@ -69,11 +69,11 @@ def get_l2_rpc_url(plan, args):
     )
     return struct(
         http="http://{}:{}".format(
-            l2_rpc_service.ip_address,
+            l2_rpc_service.name,
             l2_rpc_service.ports["rpc"].number,
         ),
         ws="ws://{}:{}".format(
-            l2_rpc_service.ip_address,
+            l2_rpc_service.name,
             l2_rpc_service.ports["ws-rpc"].number,
         ),
     )

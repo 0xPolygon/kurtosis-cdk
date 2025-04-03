@@ -30,15 +30,15 @@ Outputs = ["stderr"]
 # Type of database to use (e.g., postgres)
 Database = "postgres"
 # Username for database authentication
-User = "{{.bridge_db.user}}"
+User = "{{.db.user}}"
 # Name of the database to connect to
-Name = "{{.bridge_db.name}}"
+Name = "{{.db.name}}"
 # Password for the database user
-Password = "{{.bridge_db.password}}"
+Password = "{{.db.password}}"
 # Host address of the database server
-Host = "{{.bridge_db.hostname}}"
+Host = "{{.db.hostname}}"
 # Port number on which the database server is listening
-Port = "{{.bridge_db.port}}"
+Port = "{{.db.port}}"
 # Maximum number of concurrent connections to the database
 MaxConns = 20
 
@@ -48,7 +48,7 @@ MaxConns = 20
 # URL for Layer 1 RPC endpoint to interact with the main blockchain
 l1URL = "{{.l1_rpc_url}}"
 # URLs for Layer 2 RPC endpoints
-L2URLs = ["http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"]
+L2URLs = ["{{.l2_rpc_url}}"]
 
 # Synchronization Settings
 # This section defines the parameters for synchronizing data, including 
@@ -75,9 +75,9 @@ Height = 32
 # ports for gRPC and HTTP communication, pagination limits, and database.
 [BridgeServer]
 # Port for gRPC communication with the bridge server
-GRPCPort = "{{.zkevm_bridge_grpc_port}}"
+GRPCPort = "{{.grpc_port_number}}"
 # Port for HTTP communication with the bridge server
-HTTPPort = "{{.zkevm_bridge_rpc_port}}"
+HTTPPort = "{{.rpc_port_number}}"
 # Default limit for paginated results returned by the server
 DefaultPageLimit = 25
 # Maximum limit for paginated results to prevent excessive data retrieval
@@ -87,15 +87,15 @@ MaxPageLimit = 1000
     # Type of database for the bridge server
     Database = "postgres"
     # Database user for authentication
-    User = "{{.bridge_db.user}}"
+    User = "{{.db.user}}"
     # Database name for the bridge server
-    Name = "{{.bridge_db.name}}"
+    Name = "{{.db.name}}"
     # Password for the database user
-    Password = "{{.bridge_db.password}}"
+    Password = "{{.db.password}}"
     # Host address of the database server
-    Host = "{{.bridge_db.hostname}}"
+    Host = "{{.db.hostname}}"
     # Port number for the database connection
-    Port = "{{.bridge_db.port}}"
+    Port = "{{.db.port}}"
     # Maximum number of connections to the database for the bridge server
     MaxConns = 20
 
@@ -116,7 +116,7 @@ PolygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 # List of Layer 2 Polygon bridge addresses. It must have the same length as L2URLs. e.g. If 5 networks need to be synced, the urls must be in this array.
 L2PolygonBridgeAddresses = ["{{.zkevm_bridge_l2_address}}"]
 # Flag indicating whether to require sovereign chain smcs or not. It must have the same length as L2PolygonBridgeAddresses
-RequireSovereignChainSmcs = [false]
+RequireSovereignChainSmcs = [{{.require_sovereign_chain_contract}}]
 # List of global exit root addresses for Layer 2. Same length as L2PolygonBridgeAddresses
 L2PolygonZkEVMGlobalExitRootAddresses = ["{{.zkevm_global_exit_root_l2_address}}"]
 
@@ -147,4 +147,4 @@ Enabled = true
 # Host address for the metrics
 Host = "0.0.0.0"
 # Port for the metrics
-Port = "{{.zkevm_bridge_metrics_port}}"
+Port = "{{.metrics_port_number}}"

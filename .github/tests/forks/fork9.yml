@@ -22,4 +22,5 @@ args:
 
   additional_services:
     - pless_zkevm_node
+    - test_runner
     - tx_spammer

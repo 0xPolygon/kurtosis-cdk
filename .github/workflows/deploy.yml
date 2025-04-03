@@ -19,7 +19,7 @@ env:
 jobs:
   run-without-args:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +51,12 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
+      - name: L1 to L2 bridge test
+        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+      
+      - name: L2 to L1 bridge test
+        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+
       - name: Dump enclave
         if: always()
         run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
@@ -77,14 +83,14 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/pectra.yml)
+          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/pectra.yml ./.github/tests/nightly/op-rollup/op-default.yml)
           matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -163,6 +169,12 @@ jobs:
           else
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
+
+      - name: L1 to L2 bridge test
+        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+      
+      - name: L2 to L1 bridge test
+        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
       - name: Dump enclave
         if: always()
