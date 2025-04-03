@@ -27,12 +27,12 @@ def run(plan, args, contract_setup_addresses):
                 service.name,
                 service.ports.get("rpc").number,
             )
-        elif service_name == sovereign_bridge_service_name:
+        elif service.name == sovereign_bridge_service_name:
             bridge_service_url = "http://{}:{}".format(
                 service.name,
                 service.ports.get("rpc").number,
             )
-        elif service_name == op_el_rpc_name:
+        elif service.name == op_el_rpc_name:
             l2_rpc_url = "http://{}:{}".format(
                 service.name,
                 service.ports.get("rpc").number,
