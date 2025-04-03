@@ -255,23 +255,19 @@ def run(plan, args={}):
     # TODO: cdk-erigon pless node
     for index, service in enumerate(args["additional_services"]):
         if service == "arpeggio":
-            deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
+            import_module(arpeggio_package).run(plan, args)
         elif service == "assertoor":
-            deploy_additional_service(plan, "assertoor", assertoor_package, args)
+            import_module(assertoor_package).run(plan, args)
         elif service == "blockscout":
-            deploy_additional_service(plan, "blockscout", blockscout_package, args)
+            import_module(blockscout_package).run(plan, args)
         elif service == "blutgang":
-            deploy_additional_service(plan, "blutgang", blutgang_package, args)
+            import_module(blutgang_package).run(plan, args)
         elif service == "bridge_spammer":
-            deploy_additional_service(
-                plan,
-                "bridge_spammer",
-                bridge_spammer_package,
-                args,
-                contract_setup_addresses,
+            import_module(bridge_spammer_package).run(
+                plan, args, contract_setup_addresses
             )
         elif service == "erpc":
-            deploy_additional_service(plan, "erpc", erpc_package, args)
+            import_module(erpc_package).run(plan, args)
         elif service == "pless_zkevm_node":
             plan.print("Launching permissionnless zkevm node")
             # Note that an additional suffix will be added to the permissionless services.
@@ -285,30 +281,24 @@ def run(plan, args={}):
             )
             plan.print("Successfully launched permissionless zkevm node")
         elif service == "prometheus_grafana":
-            deploy_additional_service(
-                plan,
-                "panoptichain",
-                panoptichain_package,
-                args,
-                contract_setup_addresses,
+            import_module(panoptichain_package).run(
+                plan, args, contract_setup_addresses
             )
-            deploy_additional_service(plan, "prometheus", prometheus_package, args)
-            deploy_additional_service(plan, "grafana", grafana_package, args)
+            import_module(prometheus_package).run(plan, args)
+            import_module(grafana_package).run(plan, args)
         elif service == "status_checker":
-            deploy_additional_service(
-                plan, "status_checker", status_checker_package, args
-            )
+            import_module(status_checker_package).run(plan, args)
         elif service == "test_runner":
-            args["deploy_optimism_rollup"] = deployment_stages.get(
-                "deploy_optimism_rollup", False
-            )
-            deploy_additional_service(
-                plan, "test_runner", test_runner_package, args, contract_setup_addresses
+            test_runner_args = args | {
+                "deploy_optimism_rollup": deployment_stages.get(
+                    "deploy_optimism_rollup", False
+                )
+            }
+            import_module(test_runner_package).run(
+                plan, test_runner_args, contract_setup_addresses
             )
         elif service == "tx_spammer":
-            deploy_additional_service(
-                plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
-            )
+            import_module(tx_spammer_package).run(plan, args, contract_setup_addresses)
         else:
             fail("Invalid additional service: %s" % (service))
 
@@ -356,13 +346,3 @@ def deploy_helper_service(plan, args):
             ]
         ),
     )
-
-
-def deploy_additional_service(plan, name, package, args, contract_setup_addresses={}):
-    plan.print("Launching %s" % name)
-    service_args = dict(args)
-    if contract_setup_addresses == {}:
-        import_module(package).run(plan, service_args)
-    else:
-        import_module(package).run(plan, service_args, contract_setup_addresses)
-    plan.print("Successfully launched %s" % name)
