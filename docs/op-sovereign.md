@@ -122,7 +122,7 @@ The setup process consists of two main steps:
 
 ### OP Sovereign Bridge Setup
 
-The bridge deployment mirrors the CDK Erigon bridge setup. Key parameters are adjusted as shown in the [reference config](https://github.com/0xPolygon/kurtosis-cdk/blob/v0.2.31/templates/sovereign-rollup/bridge-config.toml). For a detailed end-to-end explanation, see [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram).
+The bridge deployment mirrors the CDK Erigon bridge setup. For a detailed end-to-end explanation, see [Sovereign Bridging Sequence Diagram](#sovereign-bridging-sequence-diagram).
 
 ---
 

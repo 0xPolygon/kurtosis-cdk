@@ -121,9 +121,9 @@ def get_keystores_artifacts(plan, args):
         src="/opt/zkevm/sovereignadmin.keystore",
     )
     claimtx_keystore_artifact = plan.store_service_files(
-        name="claimtx-keystore",
+        name="claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimtx.keystore",
+        src="/opt/zkevm/claimtxmanager.keystore",
     )
     return struct(
         aggoracle=aggoracle_keystore_artifact,
@@ -143,34 +143,38 @@ def create_bridge_config_artifact(
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"
     )
+    l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
+    l2_rpc_url = args["op_el_rpc_url"]
+    contract_addresses = contract_setup_addresses | {
+        "zkevm_rollup_address": sovereign_contract_setup_addresses.get(
+            "sovereign_rollup_addr"
+        ),
+        "zkevm_bridge_l2_address": sovereign_contract_setup_addresses.get(
+            "sovereign_bridge_proxy_addr"
+        ),
+        "zkevm_global_exit_root_l2_address": sovereign_contract_setup_addresses.get(
+            "sovereign_ger_proxy_addr"
+        ),
+    }
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
             "bridge-config.toml": struct(
                 template=bridge_config_template,
                 data={
-                    "deployment_suffix": args["deployment_suffix"],
                     "global_log_level": args["global_log_level"],
-                    "l1_rpc_url": args["mitm_rpc_url"].get(
-                        "aggkit", args["l1_rpc_url"]
-                    ),
-                    "l2_rpc_name": args["l2_rpc_name"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    "op_el_rpc_url": args["op_el_rpc_url"],
-                    "op_cl_rpc_url": args["op_cl_rpc_url"],
+                    "db": db_configs.get("bridge_db"),
+                    "require_sovereign_chain_contract": True,
+                    # rpc urls
+                    "l1_rpc_url": l1_rpc_url,
+                    "l2_rpc_url": l2_rpc_url,
                     # ports
-                    "zkevm_bridge_grpc_port": args["zkevm_bridge_grpc_port"],
-                    "zkevm_bridge_rpc_port": args["zkevm_bridge_rpc_port"],
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                    "zkevm_bridge_metrics_port": args["zkevm_bridge_metrics_port"],
-                    "deploy_optimism_rollup": deployment_stages.get(
-                        "deploy_optimism_rollup", False
-                    ),
+                    "grpc_port_number": args["zkevm_bridge_grpc_port"],
+                    "rpc_port_number": args["zkevm_bridge_rpc_port"],
+                    "metrics_port_number": args["zkevm_bridge_metrics_port"],
                 }
-                | contract_setup_addresses
-                | sovereign_contract_setup_addresses
-                | db_configs
-                | deployment_stages,
+                | contract_addresses,
             )
         },
     )
