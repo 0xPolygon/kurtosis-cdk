@@ -33,6 +33,7 @@ panoptichain_package = "./src/additional_services/panoptichain.star"
 pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
 prometheus_package = "./src/additional_services/prometheus.star"
 status_checker_package = "./src/additional_services/status_checker.star"
+test_runner_package = "./src/additional_services/test_runner.star"
 tx_spammer_package = "./src/additional_services/tx_spammer.star"
 
 
@@ -295,6 +296,10 @@ def run(plan, args={}):
         elif additional_service == "status_checker":
             deploy_additional_service(
                 plan, "status_checker", status_checker_package, args
+            )
+        elif additional_services == "test_runner":
+            deploy_additional_service(
+                plan, "test_runner", test_runner_package, args, contract_setup_addresses
             )
         elif additional_service == "tx_spammer":
             deploy_additional_service(
