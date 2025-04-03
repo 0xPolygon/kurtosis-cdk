@@ -6,4 +6,3 @@ args:
   consensus_contract_type: pessimistic
   additional_services:
     - test_runner
-    - tx_spammer

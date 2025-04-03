@@ -298,6 +298,9 @@ def run(plan, args={}):
                 plan, "status_checker", status_checker_package, args
             )
         elif service == "test_runner":
+            args["deploy_optimism_rollup"] = deployment_stages.get(
+                "deploy_optimism_rollup", False
+            )
             deploy_additional_service(
                 plan, "test_runner", test_runner_package, args, contract_setup_addresses
             )

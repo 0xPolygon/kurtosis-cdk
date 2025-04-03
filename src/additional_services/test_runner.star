@@ -14,30 +14,38 @@ def run(plan, args, contract_setup_addresses):
     # Note: Getting values this way is not clean at all!!!
     bridge_service_url = ""
     l2_rpc_url = ""
-    zkevm_bridge_service_name = "zkevm-brige-service{}".format(
-        args.get("deployment_suffix")
-    )
-    sovereign_bridge_service_name = "sovereign-bridge-service{}".format(
-        args.get("deployment_suffix")
-    )
-    op_el_rpc_name = "op-el-1-op-geth-op-node{}".format(args.get("deployment_suffix"))
-    for service in plan.get_services():
-        if service.name == zkevm_bridge_service_name:
-            bridge_service_url = "http://{}:{}".format(
-                service.name,
-                service.ports.get("rpc").number,
-            )
-        elif service.name == sovereign_bridge_service_name:
-            bridge_service_url = "http://{}:{}".format(
-                service.name,
-                service.ports.get("rpc").number,
-            )
-        elif service.name == op_el_rpc_name:
-            l2_rpc_url = "http://{}:{}".format(
-                service.name,
-                service.ports.get("rpc").number,
-            )
-    if l2_rpc_url == "":
+    if args.get("deploy_optimism_rollup"):
+        # Bridge service url.
+        bridge_service_name = "sovereign-bridge-service{}".format(
+            args.get("deployment_suffix")
+        )
+        bridge_service = plan.get_service(bridge_service_name)
+        bridge_service_url = "http://{}:{}".format(
+            bridge_service.name,
+            bridge_service.ports.get("rpc").number,
+        )
+
+        # L2 rpc url.
+        op_el_rpc_name = "op-el-1-op-geth-op-node{}".format(
+            args.get("deployment_suffix")
+        )
+        op_el_rpc_service = plan.get_service(op_el_rpc_name)
+        l2_rpc_url = "http://{}:{}".format(
+            op_el_rpc_service.name,
+            op_el_rpc_service.ports.get("rpc").number,
+        )
+    else:
+        # Bridge service url.
+        bridge_service_name = "zkevm-brige-service{}".format(
+            args.get("deployment_suffix")
+        )
+        bridge_service = plan.get_service(bridge_service_name)
+        bridge_service_url = "http://{}:{}".format(
+            bridge_service.name,
+            bridge_service.ports.get("rpc").number,
+        )
+
+        # L2 rpc url.
         l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
 
     plan.add_service(
