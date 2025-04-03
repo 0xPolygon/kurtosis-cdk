@@ -252,16 +252,16 @@ def run(plan, args={}):
 
     # Launching additional services.
     # TODO: cdk-erigon pless node
-    for index, additional_service in enumerate(args["additional_services"]):
-        if additional_service == "arpeggio":
+    for index, service in enumerate(args["additional_services"]):
+        if service == "arpeggio":
             deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
-        elif additional_service == "assertoor":
+        elif service == "assertoor":
             deploy_additional_service(plan, "assertoor", assertoor_package, args)
-        elif additional_service == "blockscout":
+        elif service == "blockscout":
             deploy_additional_service(plan, "blockscout", blockscout_package, args)
-        elif additional_service == "blutgang":
+        elif service == "blutgang":
             deploy_additional_service(plan, "blutgang", blutgang_package, args)
-        elif additional_service == "bridge_spammer":
+        elif service == "bridge_spammer":
             deploy_additional_service(
                 plan,
                 "bridge_spammer",
@@ -269,9 +269,9 @@ def run(plan, args={}):
                 args,
                 contract_setup_addresses,
             )
-        elif additional_service == "erpc":
+        elif service == "erpc":
             deploy_additional_service(plan, "erpc", erpc_package, args)
-        elif additional_service == "pless_zkevm_node":
+        elif service == "pless_zkevm_node":
             plan.print("Launching permissionnless zkevm node")
             # Note that an additional suffix will be added to the permissionless services.
             permissionless_node_args = dict(args)
@@ -283,7 +283,7 @@ def run(plan, args={}):
                 plan, permissionless_node_args, genesis_artifact
             )
             plan.print("Successfully launched permissionless zkevm node")
-        elif additional_service == "prometheus_grafana":
+        elif service == "prometheus_grafana":
             deploy_additional_service(
                 plan,
                 "panoptichain",
@@ -293,20 +293,20 @@ def run(plan, args={}):
             )
             deploy_additional_service(plan, "prometheus", prometheus_package, args)
             deploy_additional_service(plan, "grafana", grafana_package, args)
-        elif additional_service == "status_checker":
+        elif service == "status_checker":
             deploy_additional_service(
                 plan, "status_checker", status_checker_package, args
             )
-        elif additional_services == "test_runner":
+        elif service == "test_runner":
             deploy_additional_service(
                 plan, "test_runner", test_runner_package, args, contract_setup_addresses
             )
-        elif additional_service == "tx_spammer":
+        elif service == "tx_spammer":
             deploy_additional_service(
                 plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
             )
         else:
-            fail("Invalid additional service: %s" % (additional_service))
+            fail("Invalid additional service: %s" % (service))
 
 
 def deploy_helper_service(plan, args):
