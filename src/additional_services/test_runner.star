@@ -8,11 +8,11 @@ def run(plan, args, contract_setup_addresses):
 
     agglayer_rpc_url = args.get("agglayer_readrpc_url")
     l1_rpc_url = args.get("mitm_rpc_url").get("agglayer", args.get("l1_rpc_url"))
+    l1_bridge_address = contract_setup_addresses.get("zkevm_bridge_address")
 
     # Note: Getting values this way is not clean at all!!!
     bridge_service_url = ""
     l2_rpc_url = ""
-    l1_bridge_address = ""
     l2_bridge_address = ""
     if args.get("deploy_optimism_rollup"):
         # Bridge service url.
@@ -35,8 +35,7 @@ def run(plan, args, contract_setup_addresses):
             op_el_rpc_service.ports.get("rpc").number,
         )
 
-        # Bridge contract addresses.
-        l1_bridge_address = contract_setup_addresses.get("sovereign_bridge_proxy_addr")
+        # L2 bridge contract address.
         l2_bridge_address = contract_setup_addresses.get("sovereign_bridge_proxy_addr")
     else:
         # Bridge service url.
@@ -52,8 +51,7 @@ def run(plan, args, contract_setup_addresses):
         # L2 rpc url.
         l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
 
-        # Bridge contract addresses.
-        l1_bridge_address = contract_setup_addresses.get("zkevm_bridge_address")
+        # 2L bridge contract address.
         l2_bridge_address = contract_setup_addresses.get("zkevm_bridge_l2_address")
 
     plan.add_service(
