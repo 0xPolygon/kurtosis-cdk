@@ -1,5 +1,6 @@
 hex = import_module("../hex/hex.star")
 service_package = import_module("../../lib/service.star")
+wallet_module = import_module("../wallet/wallet.star")
 
 TEST_RUNNER_IMAGE = "leovct/e2e:3fe0718"  # https://github.com/agglayer/e2e/pull/37
 

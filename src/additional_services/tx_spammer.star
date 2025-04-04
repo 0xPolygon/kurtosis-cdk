@@ -1,4 +1,5 @@
 constants = import_module("../../src/package_io/constants.star")
+wallet_module = import_module("../wallet/wallet.star")
 
 
 def run(plan, args, contract_setup_addresses):
