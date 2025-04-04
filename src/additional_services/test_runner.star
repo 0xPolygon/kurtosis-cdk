@@ -1,14 +1,11 @@
+hex = import_module("../hex/hex.star")
 service_package = import_module("../../lib/service.star")
 
 TEST_RUNNER_IMAGE = "leovct/e2e:3fe0718"  # https://github.com/agglayer/e2e/pull/37
 
 
 def run(plan, args, contract_setup_addresses):
-    private_key = args.get("zkevm_l2_admin_private_key")
-
-    agglayer_rpc_url = args.get("agglayer_readrpc_url")
     l1_rpc_url = args.get("mitm_rpc_url").get("agglayer", args.get("l1_rpc_url"))
-    l1_bridge_address = contract_setup_addresses.get("zkevm_bridge_address")
 
     # Note: Getting values this way is not clean at all!!!
     bridge_service_url = ""
@@ -54,6 +51,10 @@ def run(plan, args, contract_setup_addresses):
         # 2L bridge contract address.
         l2_bridge_address = contract_setup_addresses.get("zkevm_bridge_l2_address")
 
+    l1_private_key = hex.normalize(args.get("zkevm_l2_admin_private_key"))
+    l2_private_key = hex.normalize(
+        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    )
     plan.add_service(
         name="test-runner",
         config=ServiceConfig(
@@ -62,15 +63,15 @@ def run(plan, args, contract_setup_addresses):
                 # For now, we've only defined variables used by `tests/agglayer/bridges.bats`.
                 # https://github.com/agglayer/e2e/blob/jhilliard/gas-token-test/tests/agglayer/bridges.bats
                 # Agglayer and bridge.
-                "AGGLAYER_RPC_URL": agglayer_rpc_url,
+                "AGGLAYER_RPC_URL": args.get("agglayer_readrpc_url"),
                 "BRIDGE_SERVICE_URL": bridge_service_url,
                 "CLAIMTXMANAGER_ADDR": args.get("zkevm_l2_claimtxmanager_address"),
                 # L1.
-                "L1_PRIVATE_KEY": private_key,
+                "L1_PRIVATE_KEY": l1_private_key,
                 "L1_RPC_URL": l1_rpc_url,
-                "L1_BRIDGE_ADDR": l1_bridge_address,
+                "L1_BRIDGE_ADDR": contract_setup_addresses.get("zkevm_bridge_address"),
                 # L2.
-                "L2_PRIVATE_KEY": private_key,
+                "L2_PRIVATE_KEY": l2_private_key,
                 "L2_RPC_URL": l2_rpc_url,
                 "L2_BRIDGE_ADDR": l2_bridge_address,
             },
