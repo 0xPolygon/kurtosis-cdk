@@ -303,18 +303,17 @@ DEFAULT_ROLLUP_ARGS = {
     # If we're using pessimistic consensus and a real verifier, we'll
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
-    "verifier_program_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
-    # FEP consensus requires programVKey === bytes32(0).
-    # "verifier_program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    # The aggchainVkeySelector maps verifier selectors to a specific ownedAggchainVKey
-    # mapping(bytes4 aggchainVKeySelector => bytes32 ownedAggchainVKey) public ownedAggchainVKeys.
-    "owned_aggchain_vkey": "0x00ef49c487bbb8eacc6d910df2355b1c2c86dbdc593dbcebf85a393624d6ca86",
+    # TODO automate this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey`
+    "aggchain_vkey_hash": "0x9858d85f8e5a516096e7b752346e28086ca8eb20feda243c760a2c52996b405f",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
-    "program_vkey": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
+    "pp_vkey_hash": "0x003d9af8d979d3d1e767a757fbb8d5bf1784c34f79b7a172d8fbd2b6b3687453",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
-    "verifier_vkey_selector": "0x00010000",
+    # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
+    "pp_vkey_selector": "0x00000001",
     # Initial aggchain selector
-    "aggchain_vkey_version": "0x0001",
+    # TODO automate taking the first 2 bytes of this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey-selector`
+    "aggchain_vkey_version": "0x0000",
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -814,45 +813,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
 
-    # Check if zkevm_contracts_image contains v10 in its tag. Then check if the consensus_contract_type is pessimistic.
-    # v10+ contracts do not support the deployment of contracts on non-pessimistic consensus after introduction of AgglayerGateway.
-    # TODO: think about a better way to handle this for future releases
-    if "v10" in args["zkevm_contracts_image"]:
-        # v10+ contracts require deployment of AggLayerGateway which requires programVKey to be non-zero.
-        if (
-            args["consensus_contract_type"] == "fep"
-            or args["consensus_contract_type"] == "cdk-validium"
-            or args["consensus_contract_type"] == "rollup"
-        ):
-            if (
-                args["program_vkey"]
-                != "0x0000000000000000000000000000000000000000000000000000000000000000"
-            ):
-                plan.print(
-                    "Current programVKey is {}. AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0). Overwriting to equal bytes32(0)".format(
-                        args["program_vkey"]
-                    )
-                )
-                args[
-                    "program_vkey"
-                ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
-            if args["fork_id"] != 0:
-                plan.print(
-                    "Current fork_id is {}. AggchainFEP consensus requires fork_id == 0. Overwriting to equal 0".format(
-                        args["fork_id"]
-                    )
-                )
-                args["fork_id"] = 0
-
-        # v10+ contracts support pessimistic consensus - we will need to overwrite the zero program_vkey with non-zero verifier_program_vkey value.
-        if args["consensus_contract_type"] == "pessimistic":
-            if (
-                args["program_vkey"]
-                == "0x0000000000000000000000000000000000000000000000000000000000000000"
-            ):
-                plan.print(
-                    "Current programVKey is {}. Pessimistic consensus VKey should take the value from verifier_program_vkey: {}. Overwriting programVKey with verifier_program_vkey.".format(
-                        args["program_vkey"], args["verifier_program_vkey"]
-                    )
-                )
-                args["program_vkey"] = args["verifier_program_vkey"]
+    # FIXME - I've removed some code here that was doing some logic to
+    # update the vkeys depending on the consensus. We either need to
+    # have different vkeys depending on the context (e.g. if we're
+    # deploying the rollpu manager it needs to be set
+    # (VKeyCannotBeZero() 0x6745305e), but if we're creating an
+    # aggchainFEP it must not be set) or we can hard code to be
+    # 0x000...000 in the situations where we know it must be zero
