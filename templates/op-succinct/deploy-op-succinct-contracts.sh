@@ -49,7 +49,7 @@ private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}"
 
 # TODO confirm if these environment variables are all needed.. Many aren't functional yet
 # Create the .env file
-cd /opt/op-succinct || exit
+pushd /opt/op-succinct || exit 1
 touch /opt/op-succinct/.env
 cat << EOF > ./.env
 L1_RPC="{{.l1_rpc_url}}"

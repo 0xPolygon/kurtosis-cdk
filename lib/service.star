@@ -12,6 +12,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
+        "agglayer_gateway_address": "fromjson | .aggLayerGatewayAddress",
     }
 
     if data_availability_package.is_cdk_validium(args):
