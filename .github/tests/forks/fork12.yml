@@ -11,4 +11,5 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
 
   additional_services:
+    - test_runner
     - tx_spammer
