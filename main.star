@@ -65,11 +65,19 @@ def run(plan, args={}):
         )
 
         if deployment_stages.get("deploy_optimism_rollup", False):
-            optimism_package = op_stack_args["source"]
+            # Deploy Sovereign contracts (maybe a better name is creating soverign rollup)
+            # TODO rename this and understand what this does in the case where there are predeployed contracts
+            # TODO Call the create rollup script
+            plan.print("Creating new rollup type and creating rollup on L1")
+            import_module(deploy_sovereign_contracts_package).run(
+                plan, args, op_stack_args["predeployed_contracts"]
+            )
+
             import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
+            optimism_package = op_stack_args["source"]
             import_module(optimism_package).run(plan, op_stack_args)
 
             # Retrieve L1 OP contract addresses.
@@ -79,6 +87,11 @@ def run(plan, args={}):
             l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
                 plan, args, op_deployer_configs_artifact
             )
+
+            import_module(deploy_sovereign_contracts_package).fund_addresses(
+                plan, args, l1_op_contract_addresses
+            )
+
 
             if deployment_stages.get("deploy_op_succinct", False):
                 plan.print("Deploying op-succinct contract deployer helper component")
@@ -98,20 +111,15 @@ def run(plan, args={}):
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
-            # Deploy Sovereign contracts (maybe a better name is creating soverign rollup)
-            # TODO rename this and understand what this does in the case where there are predeployed contracts
-            # TODO Call the create rollup script
-            plan.print("Deploying sovereign contracts on OP Stack")
-            import_module(deploy_sovereign_contracts_package).run(
-                plan, args, l1_op_contract_addresses, op_stack_args["predeployed_contracts"]
+            # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
+            plan.print("Initializing rollup")
+            import_module(deploy_sovereign_contracts_package).init_rollup(
+                plan, args
             )
-
             # Extract Sovereign contract addresses
             sovereign_contract_setup_addresses = (
                 service_package.get_sovereign_contract_setup_addresses(plan, args)
             )
-
-
 
 
         contract_setup_addresses = service_package.get_contract_setup_addresses(

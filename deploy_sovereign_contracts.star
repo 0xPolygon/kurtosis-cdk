@@ -1,32 +1,44 @@
-def run(plan, args, l1_op_contract_addresses, predeployed_contracts=False):
-    # Provide L1 OP addresses to the sovereign setup script as an environment variable.
-    l1_op_addresses = ";".join(list(l1_op_contract_addresses.values()))
-
+def run(plan, args, predeployed_contracts=False):
     script = "/opt/contract-deploy/run-sovereign-setup.sh"
     if predeployed_contracts:
-        l2oo_config = get_l2_oo_config(plan, args)
-        plan.print(l2oo_config)
-        plan.exec(
-            description="Copying opsuccinctl2ooconfig.json to contracts image",
-            service_name="contracts" + args["deployment_suffix"],
-            recipe=ExecRecipe(
-                command=[
-                    "/bin/sh", "-c", "echo '" + l2oo_config + "' > /opt/contract-deploy/opsuccinctl2ooconfig.json",
-                ]
-            ),
-        )
-
         script = "/opt/contract-deploy/run-sovereign-setup-predeployed.sh"
 
     plan.exec(
-        description="Deploying sovereign contracts on OP Stack",
+        description="Creating rollup type and rollup on L1",
         service_name="contracts" + args["deployment_suffix"],
         recipe=ExecRecipe(
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && L1_OP_ADDRESSES='{1}' {0}".format(
-                    script, l1_op_addresses
+                "chmod +x {0} && {0}".format(
+                    script
+                ),
+            ]
+        ),
+    )
+def init_rollup(plan, args):
+    l2oo_config = get_l2_oo_config(plan, args)
+    plan.print(l2oo_config)
+    plan.exec(
+        description="Copying opsuccinctl2ooconfig.json to contracts image",
+        service_name="contracts" + args["deployment_suffix"],
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh", "-c", "echo '" + l2oo_config + "' > /opt/contract-deploy/opsuccinctl2ooconfig.json",
+            ]
+        ),
+    )
+    script = "/opt/contract-deploy/run-initialize-rollup.sh"
+
+    plan.exec(
+        description="Running rollup initialization",
+        service_name="contracts" + args["deployment_suffix"],
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
+                    script
                 ),
             ]
         ),
@@ -66,4 +78,23 @@ def get_l2_oo_config(plan, args):
         args["sp1_aggregation_vkey"],
         args["sp1_range_vkey_commitment"],
         args["sp1_proxy_admin"],
+    )
+
+def fund_addresses(plan, args, l1_op_contract_addresses):
+    # Provide L1 OP addresses to the sovereign setup script as an environment variable.
+    l1_op_addresses = ";".join(list(l1_op_contract_addresses.values()))
+
+    plan.exec(
+        description="Deploying sovereign contracts on OP Stack",
+        service_name="contracts" + args["deployment_suffix"],
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && L1_OP_ADDRESSES='{1}' {0}".format(
+                    "/opt/contract-deploy/fund-addresses.sh",
+                    l1_op_addresses,
+                ),
+            ]
+        ),
     )

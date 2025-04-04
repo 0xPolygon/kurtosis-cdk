@@ -1,18 +1,26 @@
 #!/bin/bash
 
-cd /opt/zkevm-contracts || exit
+pushd /opt/zkevm-contracts || exit 1
+
+# FIXME Just in case for now... ideally we don't need this but the base image is hacky right now
+git config --global --add safe.directory /opt/zkevm-contracts
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+rollup_id=$(jq -r '.rollupID' /opt/zkevm/create_rollup_output.json)
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
+jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
+mv /opt/contract-deploy/create-genesis-sovereign-params.json.tmp /opt/contract-deploy/create-genesis-sovereign-params.json
 
 # Required files to run the script
 cp /opt/contract-deploy/create-genesis-sovereign-params.json /opt/zkevm-contracts/tools/createSovereignGenesis/create-genesis-sovereign-params.json
-cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+# 2025-04-03 it's not clear which of these should be used at this point
+# cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
 
 # Run the script
 npx hardhat run ./tools/createSovereignGenesis/create-sovereign-genesis.ts --network localhost
