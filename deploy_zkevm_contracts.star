@@ -58,10 +58,18 @@ ARTIFACTS = [
         "name": "op-original-genesis.json",
         "file": "./templates/sovereign-rollup/op-original-genesis.json",
     },
+    {
+        "name": "fund-addresses.sh",
+        "file": "./templates/sovereign-rollup/fund-addresses.sh",
+    },
+    {
+        "name": "run-initialize-rollup.sh",
+        "file": "./templates/sovereign-rollup/run-initialize-rollup.sh",
+    },
 ]
 
 
-def run(plan, args, deployment_stages):
+def run(plan, args, deployment_stages, op_stack_args):
     artifact_paths = list(ARTIFACTS)
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
@@ -114,6 +122,9 @@ def run(plan, args, deployment_stages):
                         "deploy_optimism_rollup": deployment_stages.get(
                             "deploy_optimism_rollup", False
                         ),
+                        "op_stack_seconds_per_slot": op_stack_args["optimism_package"][
+                            "chains"
+                        ][0]["network_params"]["seconds_per_slot"],
                     },
                 )
             },

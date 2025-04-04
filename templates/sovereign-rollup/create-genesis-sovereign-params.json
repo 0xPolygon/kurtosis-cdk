@@ -6,7 +6,7 @@
     "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
     "sovereignWETHAddress": "{{ .gas_token_address }}",
     "sovereignWETHAddressIsNotMintable": false,
-    "globalExitRootUpdater": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "globalExitRootUpdater": "{{ .zkevm_l2_aggoracle_address }}",
     "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}",
     "setPreMintAccounts": true,
     "preMintAccounts": [
