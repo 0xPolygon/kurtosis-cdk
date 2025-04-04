@@ -51,10 +51,22 @@ def run(plan, args, contract_setup_addresses):
         # 2L bridge contract address.
         l2_bridge_address = contract_setup_addresses.get("zkevm_bridge_l2_address")
 
-    l1_private_key = hex.normalize(args.get("zkevm_l2_admin_private_key"))
-    l2_private_key = hex.normalize(
-        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    # Generate a new wallet and fund it on L1 and L2.
+    funder_private_key = args.get("zkevm_l2_admin_private_key")
+    wallet = wallet_module.new(plan)
+    wallet_module.fund(
+        plan,
+        address=wallet.address,
+        rpc_url=l1_rpc_url,
+        funder_private_key=funder_private_key,
     )
+    wallet_module.fund(
+        plan,
+        address=wallet.address,
+        rpc_url=l2_rpc_url,
+        funder_private_key=funder_private_key,
+    )
+
     plan.add_service(
         name="test-runner",
         config=ServiceConfig(
@@ -67,11 +79,11 @@ def run(plan, args, contract_setup_addresses):
                 "BRIDGE_SERVICE_URL": bridge_service_url,
                 "CLAIMTXMANAGER_ADDR": args.get("zkevm_l2_claimtxmanager_address"),
                 # L1.
-                "L1_PRIVATE_KEY": l1_private_key,
+                "L1_PRIVATE_KEY": wallet.private_key,
                 "L1_RPC_URL": l1_rpc_url,
                 "L1_BRIDGE_ADDR": contract_setup_addresses.get("zkevm_bridge_address"),
                 # L2.
-                "L2_PRIVATE_KEY": l2_private_key,
+                "L2_PRIVATE_KEY": wallet.private_key,
                 "L2_RPC_URL": l2_rpc_url,
                 "L2_BRIDGE_ADDR": l2_bridge_address,
             },
