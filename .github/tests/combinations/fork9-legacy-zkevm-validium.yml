@@ -10,8 +10,8 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   cdk_validium_node_image: 0xpolygon/cdk-validium-node:0.7.0-cdk
   additional_services:
+    - pless_zkevm_node
     - test_runner
     - tx_spammer
-    - pless_zkevm_node
   consensus_contract_type: cdk-validium
   sequencer_type: zkevm
