@@ -36,6 +36,7 @@ def run(plan, args, contract_setup_addresses):
                 ),
                 data={
                     "private_key": wallet.private_key,
+                    "address": wallet.address,
                     "l1_rpc_url": l1_rpc_url,
                     "l1_chain_id": args.get("l1_chain_id"),
                     "l2_rpc_url": l2_rpc_url,

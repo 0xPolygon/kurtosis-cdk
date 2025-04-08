@@ -13,7 +13,7 @@ while true; do
   echo "Sending a few transactions to the RPC..."
   polycli loadtest \
     --rpc-url "{{.rpc_url}}" \
-    --private-key "$private_key" \
+    --private-key "{{.private_key}}" \
     --legacy \
     --verbosity 700 \
     --mode t,2 \
@@ -25,7 +25,7 @@ while true; do
   echo "Making a few RPC calls..."
   polycli rpcfuzz \
     --rpc-url "{{.rpc_url}}" \
-    --private-key "$private_key" \
+    --private-key "{{.private_key}}" \
     --verbosity 700
 
   echo "Waiting 60 seconds before sending more transactions..."

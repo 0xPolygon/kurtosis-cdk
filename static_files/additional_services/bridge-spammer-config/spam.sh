@@ -11,10 +11,10 @@ polycli ulxly bridge asset \
     --value "$l1_wei_deposit_amount" \
     --gas-limit "1250000" \
     --bridge-address "{{.zkevm_bridge_address}}" \
-    --destination-address "$eth_address" \
+    --destination-address "{{.address}}" \
     --destination-network 1 \
     --rpc-url "{{.l1_rpc_url}}" \
-    --private-key "$private_key" \
+    --private-key "{{.private_key}}" \
     --chain-id "{{.l1_chain_id}}" \
     --pretty-logs=false
 
@@ -28,10 +28,10 @@ while true; do
         --value "$l2_wei_deposit_amount" \
         --gas-limit "1250000" \
         --bridge-address "{{.zkevm_bridge_address}}" \
-        --destination-address "$eth_address" \
+        --destination-address "{{.address}}" \
         --destination-network 0 \
         --rpc-url "{{.l2_rpc_url}}" \
-        --private-key "$private_key" \
+        --private-key "{{.private_key}}" \
         --chain-id "{{.zkevm_rollup_chain_id}}" \
         --pretty-logs=false
     sleep 1
