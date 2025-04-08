@@ -12,7 +12,7 @@ def new(plan):
 
     result = plan.run_sh(
         name="address-deriver",
-        description="Derive address from private key",
+        description="Deriving address from private key",
         image=constants.TOOLBOX_IMAGE,
         run="cast wallet address --private-key ${PRIVATE_KEY} | tr -d '\n'",
         env_vars={
