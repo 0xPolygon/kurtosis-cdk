@@ -6,7 +6,7 @@ def new(plan):
         name="private-key-generator",
         description="Generating a new private key",
         image=constants.TOOLBOX_IMAGE,
-        run="cast wallet new --json | jq -r '.[0].private_key'",
+        run="cast wallet new --json | jq --raw-output '.[0].private_key' | tr -d '\n'",
     )
     private_key = result.output
 
@@ -14,7 +14,7 @@ def new(plan):
         name="address-deriver",
         description="Derive address from private key",
         image=constants.TOOLBOX_IMAGE,
-        run="cast wallet address --private-key ${PRIVATE_KEY}",
+        run="cast wallet address --private-key ${PRIVATE_KEY} | tr -d '\n'",
         env_vars={
             "PRIVATE_KEY": private_key,
         },
@@ -30,9 +30,7 @@ def new(plan):
 def fund(plan, address, rpc_url, funder_private_key, value="50ether"):
     plan.run_sh(
         name="address-funder",
-        description="Funding address {} with {} on network {}".format(
-            address, value, rpc_url
-        ),
+        description="Funding address on network {}".format(rpc_url),
         image=constants.TOOLBOX_IMAGE,
         run="cast send --legacy --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --value ${VALUE} ${ADDRESS}",
         env_vars={
