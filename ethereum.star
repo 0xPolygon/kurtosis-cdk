@@ -73,12 +73,12 @@ def run(plan, args):
 
         # Use pectra ready client images.
         default_participant = l1_args["participants"][0]
-        default_participant["el_image"] = "ethpandaops/geth:prague-devnet-6"
-        default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
-        default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
+        default_participant["el_image"] = "ethereum/client-go:v1.15.7"
+        default_participant["cl_image"] = "sigp/lighthouse:v7.0.0-beta.5"
+        default_participant["vc_image"] = "sigp/lighthouse:v7.0.0-beta.5"
         l1_args["participants"][0] = default_participant
         l1_args["ethereum_genesis_generator_params"] = {
-            "image": "ethpandaops/ethereum-genesis-generator:3.7.0",
+            "image": "ethpandaops/ethereum-genesis-generator:4.0.2",
         }
 
     l1 = ethereum_package.run(plan, l1_args)
