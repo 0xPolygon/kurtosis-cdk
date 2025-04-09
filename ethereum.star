@@ -67,9 +67,14 @@ def run(plan, args):
 
     # Enable Pectra hardfork if needed.
     if args.get("pectra_enabled", False):
+        # https://github.com/ethpandaops/ethereum-package/blob/main/.github/tests/pectra-devnet-6.yaml.norun
         # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
         #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
         l1_args["network_params"]["electra_fork_epoch"] = 1
+        l1_args["network_params"]["min_validator_withdrawability_delay"] = 1
+        l1_args["network_params"]["shard_committee_period"] = 1
+        l1_args["network_params"]["churn_limit_quotient"] = 16
+        l1_args["network_params"]["genesis_delay"] = 240
 
         # Use pectra ready client images.
         default_participant = l1_args["participants"][0]
