@@ -22,6 +22,7 @@ def run(
         "PROPOSER_NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
         "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
         "RUST_LOG": "debug",
+        "RUST_BACKTRACE": "1",
     }
 
     aggkit_prover = plan.add_service(
