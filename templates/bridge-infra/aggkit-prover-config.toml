@@ -30,6 +30,7 @@ global-exit-root-manager-v2-sovereign-chain = "{{ .global_exit_root_address }}"
 
 [aggchain-proof-service.proposer-service]
 l1-rpc-endpoint = "{{ .l1_rpc_url }}"
+mock = true
 
 [aggchain-proof-service.proposer-service.client]
 proposer-endpoint = "{{ .proposer_url }}"
