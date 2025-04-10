@@ -107,6 +107,7 @@ sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}
 # Run fetch-rollup-config to get the various configuration values that
 # we'll need in the rest of smart contract deployment
 RUST_LOG=info cargo run --bin fetch-rollup-config --release -- --env-file .env 2> fetch-rollup-config.out
+# RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
 
 convert_env_to_json() {
   # Accept input .env file and output json file as arguments
