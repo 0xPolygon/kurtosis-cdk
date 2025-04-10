@@ -67,23 +67,20 @@ def run(plan, args):
 
     # Enable Pectra hardfork if needed.
     if args.get("pectra_enabled", False):
-        # For reference: https://github.com/ethpandaops/ethereum-package/blob/main/.github/tests/minimal-pectra-devnet-5.yaml.norun
+        # For reference: https://github.com/ethpandaops/ethereum-package/blob/main/.github/tests/pectra.yaml.norun
         # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
         #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
         l1_args["network_params"]["electra_fork_epoch"] = 1
+        l1_args["network_params"]["preset"] = "mainnet"
 
         # Use pectra ready client images.
         default_participant = l1_args["participants"][0]
         default_participant["el_type"] = "geth"
-        default_participant["el_image"] = "ethpandaops/geth:prague-devnet-5-a193537"
-        default_participant["cl_type"] = "prysm"
-        default_participant[
-            "cl_image"
-        ] = "ethpandaops/prysm-beacon-chain:devnet5-minimal-ae44429"
-        default_participant["vc_type"] = "prysm"
-        default_participant[
-            "vc_image"
-        ] = "ethpandaops/prysm-validator:devnet5-minimal-ae44429"
+        default_participant["el_image"] = "ethereum/client-go:v1.15.7"
+        default_participant["cl_type"] = "lighthouse"
+        default_participant["cl_image"] = "sigp/lighthouse:v7.0.0-beta.5"
+        default_participant["vc_type"] = "lighthouse"
+        default_participant["vc_image"] = "sigp/lighthouse:v7.0.0-beta.5"
         l1_args["participants"][0] = default_participant
 
     l1 = ethereum_package.run(plan, l1_args)
