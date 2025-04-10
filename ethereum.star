@@ -67,24 +67,24 @@ def run(plan, args):
 
     # Enable Pectra hardfork if needed.
     if args.get("pectra_enabled", False):
-        # https://github.com/ethpandaops/ethereum-package/blob/main/.github/tests/pectra-devnet-6.yaml.norun
+        # For reference: https://github.com/ethpandaops/ethereum-package/blob/main/.github/tests/minimal-pectra-devnet-5.yaml.norun
         # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
         #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
         l1_args["network_params"]["electra_fork_epoch"] = 1
-        l1_args["network_params"]["min_validator_withdrawability_delay"] = 1
-        l1_args["network_params"]["shard_committee_period"] = 1
-        l1_args["network_params"]["churn_limit_quotient"] = 16
-        l1_args["network_params"]["genesis_delay"] = 240
 
         # Use pectra ready client images.
         default_participant = l1_args["participants"][0]
-        default_participant["el_image"] = "ethereum/client-go:v1.15.7"
-        default_participant["cl_image"] = "sigp/lighthouse:v7.0.0-beta.5"
-        default_participant["vc_image"] = "sigp/lighthouse:v7.0.0-beta.5"
+        default_participant["el_type"] = "geth"
+        default_participant["el_image"] = "ethpandaops/geth:prague-devnet-5-a193537"
+        default_participant["cl_type"] = "prysm"
+        default_participant[
+            "cl_image"
+        ] = "ethpandaops/prysm-beacon-chain:devnet5-minimal-ae44429"
+        default_participant["vc_type"] = "prysm"
+        default_participant[
+            "vc_image"
+        ] = "ethpandaops/prysm-validator:devnet5-minimal-ae44429"
         l1_args["participants"][0] = default_participant
-        l1_args["ethereum_genesis_generator_params"] = {
-            "image": "ethpandaops/ethereum-genesis-generator:4.0.2",
-        }
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
