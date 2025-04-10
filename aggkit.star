@@ -19,11 +19,12 @@ def run(
     )
     (ports, public_ports) = get_aggkit_prover_ports(args)
 
-    
+
     prover_env_vars = {
         "PROPOSER_NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
         "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
         "RUST_LOG": "info,aggkit_prover=debug,prover=debug,aggchain=debug",
+        "RUST_BACKTRACE": "1",
     }
 
     aggkit_prover = plan.add_service(
