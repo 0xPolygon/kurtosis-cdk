@@ -7,18 +7,20 @@ args:
   # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
   agglayer_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
-  agglayer_prover_primary_prover: "network-prover"
-  aggkit_prover_primary_prover: "network-prover"
+  agglayer_prover_primary_prover: "mock-prover"
+  aggkit_prover_primary_prover: "mock-prover"
   aggkit_prover_sp1_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   consensus_contract_type: fep
-  op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.9-agglayer" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-  op_succinct_server_image: "ghcr.io/agglayer/op-succinct/succinct-proposer:v0.0.1" # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-  op_succinct_proposer_image: "ghcr.io/agglayer/op-succinct/op-proposer:v0.0.1" # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+  op_succinct_contract_deployer_image: "jhkimqd/op-succinct-contract-deployer:v0.0.9agglayer" # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+  op_succinct_server_image: "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.5-agglayer" # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+  op_succinct_proposer_image: "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.5-agglayer" # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+  aggkit_image: "goranethernal/aggkit:v0.0.2-beta9"
+  aggkit_prover_image: "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.10"
   # true = mock
   # false = network
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
   # A mock verifier is used otherwise.
-  op_succinct_mock: false
+  op_succinct_mock: true
   # Enable the integration with the Agglayer
   op_succinct_agglayer: true
   # Proof type. Must match the verifier gateway contract type. Options: "plonk", "groth16", "compressed", "core"
