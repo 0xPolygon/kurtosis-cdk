@@ -39,4 +39,4 @@ request-timeout = 600
 proving-timeout = 3600
 
 [primary-prover.{{ .primary_prover }}]
-proving-timeout = "5m"
+proving-timeout = "1h"
