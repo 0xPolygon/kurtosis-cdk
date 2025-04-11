@@ -49,7 +49,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC15",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC16",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     # TODO: Update the image to the official version.
     "zkevm_contracts_image": "nulyjkdhthz/zkevm-contracts:v10.0.0-rc.5-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
@@ -62,8 +62,8 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_contract_deployer_image": "leovct/op-succinct-contract-deployer:d923650",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
     # "op_succinct_contract_deployer_image": "nulyjkdhthz/op-succinct-contract-deployer:v0.0.4-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.5-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.5-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.7-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.7-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
