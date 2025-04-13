@@ -92,32 +92,31 @@ def get_sovereign_contract_setup_addresses(plan, args):
     return get_exec_recipe_result(result)
 
 
-# TODO: Add Groth16 Verifiers once Groth16 deployments are added
 def get_op_succinct_env_vars(plan, args):
     extract = {
-        "submission_interval": "fromjson | .SUBMISSION_INTERVAL",
-        "mock_verifier_address": "fromjson | .VERIFIER_ADDRESS",
-        "l2oo_address": "fromjson | .L2OO_ADDRESS",
-        "op_succinct_mock": "fromjson | .OP_SUCCINCT_MOCK",
-        "op_succinct_agglayer": "fromjson | .OP_SUCCINCT_AGGLAYER",
         "op_succinct_agg_proof_mode": "fromjson | .AGG_PROOF_MODE",
-        "sp1_verifier_gateway_address": "fromjson | .SP1_VERIFIER_GATEWAY_PLONK",
-        "sp1_verifier_address": "fromjson | .SP1_VERIFIER_PLONK",
-        "sp1_starting_block_number": "fromjson | .startingBlockNumber",
-        "sp1_starting_timestamp": "fromjson | .startingTimestamp",
+        "op_succinct_agglayer": "fromjson | .OP_SUCCINCT_AGGLAYER",
+        "op_succinct_mock": "fromjson | .OP_SUCCINCT_MOCK",
         "sp1_challenger": "fromjson | .challenger",
         "sp1_finalization_period": "fromjson | .finalizationPeriod",
         "sp1_l2_block_time": "fromjson | .l2BlockTime",
-        "sp1_l2_output_oracle_impl": "fromjson | .opSuccinctL2OutputOracleImpl",
         "sp1_owner": "fromjson | .owner",
         "sp1_proposer": "fromjson | .proposer",
-        "sp1_rollup_config_hash": "fromjson | .rollupConfigHash",
-        "sp1_starting_output_root": "fromjson | .startingOutputRoot",
-        "sp1_submission_interval": "fromjson | .submissionInterval",
-        "sp1_verifier": "fromjson | .verifier",
-        "sp1_aggregation_vkey": "fromjson | .aggregationVkey",
-        "sp1_range_vkey_commitment": "fromjson | .rangeVkeyCommitment",
         "sp1_proxy_admin": "fromjson | .proxyAdmin",
+        "sp1_submission_interval": "fromjson | .submissionInterval",
+        "submission_interval": "fromjson | .SUBMISSION_INTERVAL",
+        # "l2oo_address": "fromjson | .L2OO_ADDRESS",
+        # "mock_verifier_address": "fromjson | .VERIFIER_ADDRESS",
+        # "sp1_aggregation_vkey": "fromjson | .aggregationVkey",
+        # "sp1_l2_output_oracle_impl": "fromjson | .opSuccinctL2OutputOracleImpl",
+        # "sp1_range_vkey_commitment": "fromjson | .rangeVkeyCommitment",
+        # "sp1_rollup_config_hash": "fromjson | .rollupConfigHash",
+        # "sp1_starting_block_number": "fromjson | .startingBlockNumber",
+        # "sp1_starting_output_root": "fromjson | .startingOutputRoot",
+        # "sp1_starting_timestamp": "fromjson | .startingTimestamp",
+        # "sp1_verifier": "fromjson | .verifier",
+        # "sp1_verifier_address": "fromjson | .SP1_VERIFIER_PLONK",
+        # "sp1_verifier_gateway_address": "fromjson | .SP1_VERIFIER_GATEWAY_PLONK",
     }
 
     exec_recipe = ExecRecipe(

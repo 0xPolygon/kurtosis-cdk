@@ -10,8 +10,14 @@ set +a
 
 cat .env
 
+if false; then
 # Deploy the deploy-oracle and save the address to the l2oo_address.out
-just deploy-oracle 2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "L2OO_ADDRESS=\"{}\"" > /opt/op-succinct/l2oo_address.out
+    just deploy-oracle 2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "L2OO_ADDRESS=\"{}\"" > /opt/op-succinct/l2oo_address.out
+else
+    RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
+    source .env
+fi
+
 # Update the L2OO_ADDRESS in the .env file with the output from the previous command
 sed -i "s/^L2OO_ADDRESS=.*$/L2OO_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/l2oo_address.out)\"/" /opt/op-succinct/.env
 

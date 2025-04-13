@@ -45,7 +45,7 @@ def op_succinct_server_run(plan, args, op_succinct_env_vars):
 
 
 def op_succinct_proposer_run(plan, args, op_succinct_env_vars):
-    # Create the op-succinct config.
+    # FIXME... what is this point of this
     op_succinct_proposer_config_template = read_file(
         src="./templates/op-succinct/db/2151908/proofs.db"
     )
