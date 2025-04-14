@@ -50,7 +50,7 @@ args:
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
   #         "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
-  source: "github.com/xavier-romero/optimism-package/main.star@d09d841bd5528f4b29144cfc7ecba88a162427ce"
+  source: "github.com/xavier-romero/optimism-package/main.star@355b15efd61b603d2302478dd4b3ef74ccc6e462"
   predeployed_contracts: true
   chains:
     - participants:
@@ -62,7 +62,9 @@ optimism_package:
       batcher_params:
         image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher@sha256:a017bf0a1dbe88e770eb6979354a148534b36e58ea7bc2fd7ae01f5e90eb9ed3"
       proposer_params:
-        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer@sha256:1c6e0c0ac79b561652af1bd5df30f0fcca1490c3989ea0a15e7e18d823e96825"
+        enabled: false
+      challenger_params:
+        enabled: false
       network_params:
         name: "001"
         network_id: "2151908"
