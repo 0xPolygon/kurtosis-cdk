@@ -86,3 +86,20 @@ def sp1_verifier_contracts_deployer_run(plan, args):
             ]
         ),
     )
+
+
+def op_succinct_l2oo_deployer_run(plan, args):
+    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+    plan.exec(
+        description="Deploying L2OO Contract",
+        service_name=service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/bash",
+                "-c",
+                "cp /opt/scripts/deploy-l2oo.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                    "/opt/op-succinct/deploy-l2oo.sh"
+                ),
+            ]
+        ),
+    )
