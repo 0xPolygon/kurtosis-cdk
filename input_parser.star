@@ -20,7 +20,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy CDK bridge infrastructure.
     "deploy_cdk_bridge_infra": True,
     # Deploy CDK bridge UI.
-    "deploy_cdk_bridge_ui": True,
+    "deploy_cdk_bridge_ui": False,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # Deploy cdk-erigon node.
@@ -35,7 +35,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": False,
+    "deploy_l2_contracts": True,
 }
 
 DEFAULT_IMAGES = {
