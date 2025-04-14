@@ -35,7 +35,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": True,
+    "deploy_l2_contracts": False,
 }
 
 DEFAULT_IMAGES = {
