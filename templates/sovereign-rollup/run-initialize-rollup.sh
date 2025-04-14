@@ -247,3 +247,6 @@ check_deployed_contracts() {
 # Check deployed contracts
 check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
 check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
+
+# FIXME - Temporary work around to make sure the default aggkey is configured
+cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' /opt/zkevm/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.pp_vkey_selector}}" "{{.aggchain_vkey_hash}}" 

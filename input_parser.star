@@ -42,9 +42,9 @@ DEFAULT_IMAGES = {
     # "aggkit_image": "goranethernal/aggkit:v0.0.2-beta8",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     # "aggkit_image": "jestpol/aggkit:v0.0.2-beta9",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     # "aggkit_image": "arnaubennassar/aggkit:477acb6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta10",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.8",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.12",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta11",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.9",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.16",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
@@ -62,8 +62,8 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_contract_deployer_image": "leovct/op-succinct-contract-deployer:d923650",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
     # "op_succinct_contract_deployer_image": "nulyjkdhthz/op-succinct-contract-deployer:v0.0.4-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.7-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.7-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.10-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.10-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
@@ -308,10 +308,10 @@ DEFAULT_ROLLUP_ARGS = {
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
     # TODO automate this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey`
-    "aggchain_vkey_hash": "0x9858d85f8e5a516096e7b752346e28086ca8eb20feda243c760a2c52996b405f",
+    "aggchain_vkey_hash": "0x5b87dac72ccf74140a8f62eb556c537a49676c8509e6b18e0685eb4f0b879ecf",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "0x003d9af8d979d3d1e767a757fbb8d5bf1784c34f79b7a172d8fbd2b6b3687453",
+    "pp_vkey_hash": "0x00e26413014eeb40f272bc127cbed1866ce53b2b4d99be0f4d3d869d6d133fd9",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
     "pp_vkey_selector": "0x00000001",
@@ -502,6 +502,9 @@ def parse_args(plan, user_args):
 
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
+
+    # Check the aggchain_vkey_hash and pp_vkey_hash
+    check_vkeys(plan, args)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -824,3 +827,15 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # (VKeyCannotBeZero() 0x6745305e), but if we're creating an
     # aggchainFEP it must not be set) or we can hard code to be
     # 0x000...000 in the situations where we know it must be zero
+
+def check_vkeys(plan, args):
+    plan.run_sh(
+        run = "/bin/bash -c -- 'vkey=$(agglayer vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["pp_vkey_hash"]),
+        image = args["agglayer_image"],
+        description = "Asserting Agglayer VKey",
+    )
+    plan.run_sh(
+        run = "/bin/bash -c -- 'vkey=0x$(aggkit-prover vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["aggchain_vkey_hash"]),
+        image = args["aggkit_prover_image"],
+        description = "Asserting Aggkit Prover VKey",
+    )
