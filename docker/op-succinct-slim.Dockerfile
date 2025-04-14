@@ -3,6 +3,7 @@ LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy op-succinct contracts"
 
 # docker build --build-arg OP_SUCCINCT_BRANCH=v1.2.7-agglayer --build-arg RUST_VERSION=1.84.1 --build-arg FOUNDRY_VERSION=stable  --file op-succinct-slim.Dockerfile -t nulyjkdhthz/op-succinct-contract-deployer:v1.2.7-agglayer .
+# docker build --build-arg OP_SUCCINCT_BRANCH=v1.2.5-agglayer --build-arg RUST_VERSION=1.84.1 --build-arg FOUNDRY_VERSION=stable  --file op-succinct-slim.Dockerfile -t nulyjkdhthz/op-succinct-contract-deployer:v1.2.5-agglayer .
 
 # STEP 1: Install Foundry, Rust, and tools.
 ARG RUST_VERSION
