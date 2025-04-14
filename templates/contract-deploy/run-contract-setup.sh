@@ -100,8 +100,10 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 # Set up a foundry project in case we do a gas token or dac deployment.
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
-# {{if .gas_token_enabled}}
-# {{if eq .gas_token_address ""}}
+echo_ts "{{ .gas_token_enabled }} --------- {{ .gas_token_address }}"
+
+{{if .gas_token_enabled}}
+{{if eq .gas_token_address ""}}
 echo_ts "Deploying gas token to L1"
 forge create \
     --broadcast \
@@ -116,15 +118,15 @@ jq \
     '.gasTokenAddress = $c[0].deployedTo' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-# {{else}}
+{{else}}
 echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
 jq \
     --arg c "{{ .gas_token_address }}" \
     '.gasTokenAddress = $c' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-# {{end}}
-# {{end}}
+{{end}}
+{{end}}
 
 is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc
 if [[ ! -e /opt/zkevm/combined.json ]]; then
