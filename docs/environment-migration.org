@@ -34,8 +34,8 @@ Address:     0xd03C837B1C09Dc463E3dC7Efc337E38Fb01fC158
 Private key: 0x582fb4c16b0acd6c084d939ef1195a71205bd67621cd3ab78fd411c72938086f
 #+end_src
 
-We've got a new wallet to use as our admin. Let's try to udpate the
-admin for our rollup?
+We've got a new wallet to use as our admin. Let's try to update the
+admin for our rollup
 
 #+begin_src bash :exports both verbatim :results output code
 old_admin_pkey="0x0a32ff2b564f2aaef2edbccc0b17dd5e8b7c4095fb401656628e9d152c905436"
@@ -177,7 +177,7 @@ to                      0xEe4B418D20A13113eBeD4842b42C1412F31C1DD5
 
 
 Okay there should be a new DAC key for onchain
-verification. Unfortately, the application requires a keystore, so
+verification. Unfortunately, the application requires a keystore, so
 we'll need to wrangle private key into a keystore file.
 
 #+begin_src bash :exports both verbatim :results output code
@@ -267,9 +267,8 @@ kurtosis service start cdk-v1 zkevm-node-sequencer-001
 Now we can watch the logs of the sequencer to see when the sequencer
 will halt. At that point we should wait for the verified batch number
 to catch up. While we wait for that, we can start with some of the
-sequencer prep. We'll need a new sequencer and it will need some POL
-token associated with it.
-
+sequencer prep. A new sequencer must be deployed and funded with POL tokens 
+to allow it to participate in the protocol.
 
 #+begin_src bash :exports both verbatim :results output code
 cast wallet new

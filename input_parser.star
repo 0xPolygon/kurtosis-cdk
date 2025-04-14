@@ -20,7 +20,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy CDK bridge infrastructure.
     "deploy_cdk_bridge_infra": True,
     # Deploy CDK bridge UI.
-    "deploy_cdk_bridge_ui": True,
+    "deploy_cdk_bridge_ui": False,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # Deploy cdk-erigon node.
@@ -39,16 +39,16 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.0.2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer@sha256:5715855f2cc6834bd84a99a33937915164648547d21bfb55198948b0ae4e0fad",  # https://ghcr.io/agglayer/agglayer
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.1.0-beta4",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.5",  # https://github.com/agglayer/agglayer/tags
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.3-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
-    "cdk_validium_node_image": "0xpolygon/cdk-validium-node:0.7.0-cdk",  # https://hub.docker.com/r/0xpolygon/cdk-validium-node/tags
+    "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC12",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC16",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
-    "zkevm_da_image": "0xpolygon/cdk-data-availability:0.0.13",  # https://hub.docker.com/r/0xpolygon/cdk-data-availability/tags
+    "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
@@ -61,8 +61,10 @@ DEFAULT_IMAGES = {
 }
 
 DEFAULT_PORTS = {
-    "agglayer_port": 4444,
+    "agglayer_grpc_port": 4443,
+    "agglayer_readrpc_port": 4444,
     "agglayer_prover_port": 4445,
+    "agglayer_admin_port": 4446,
     "agglayer_metrics_port": 9092,
     "agglayer_prover_metrics_port": 9093,
     "prometheus_port": 9091,
@@ -128,7 +130,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor,aggoracle,sovereignadmin,claimtx",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor,aggoracle,sovereignadmin",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -168,8 +170,6 @@ DEFAULT_ACCOUNTS = {
     "zkevm_l2_aggoracle_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
     "zkevm_l2_sovereignadmin_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
     "zkevm_l2_sovereignadmin_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
-    "zkevm_l2_claimtx_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
-    "zkevm_l2_claimtx_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
 }
 
 DEFAULT_L1_ARGS = {
@@ -321,8 +321,12 @@ DEFAULT_ROLLUP_ARGS = {
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
-    # The URL where the agglayer can be reached
-    "agglayer_url": "http://agglayer:" + str(DEFAULT_PORTS.get("agglayer_port")),
+    # The URL where the agglayer can be reached for gRPC
+    "agglayer_grpc_url": "http://agglayer:"
+    + str(DEFAULT_PORTS.get("agglayer_grpc_port")),
+    # The URL where the agglayer can be reached for ReadRPC
+    "agglayer_readrpc_url": "http://agglayer:"
+    + str(DEFAULT_PORTS.get("agglayer_readrpc_port")),
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
@@ -375,13 +379,15 @@ DEFAULT_ARGS = (
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
+        # - assertoor
         # - blockscout
         # - blutgang
+        # - bridge_spammer
         # - erpc
         # - pless_zkevm_node
         # - prometheus_grafana
+        # - status_checker
         # - tx_spammer
-        # - bridge_spammer
         "additional_services": [],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
@@ -402,6 +408,8 @@ DEFAULT_ARGS = (
 # If none is is provided, it will refer to the default images from the Optimism-Package repo.
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 DEFAULT_OP_STACK_ARGS = {
+    "source": "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
+    "predeployed_contracts": False,
     "chains": [
         {
             "participants": [
@@ -593,9 +601,8 @@ def get_l2_rpc_name(deploy_cdk_erigon_node):
         return "zkevm-node-rpc"
 
 
-def get_op_stack_args(plan, args, op_stack_args):
-    if not op_stack_args:
-        op_stack_args = DEFAULT_OP_STACK_ARGS
+def get_op_stack_args(plan, args, user_op_stack_args):
+    op_stack_args = DEFAULT_OP_STACK_ARGS | user_op_stack_args
 
     l1_chain_id = str(args.get("l1_chain_id", ""))
     l1_rpc_url = args.get("l1_rpc_url", "")
@@ -612,7 +619,12 @@ def get_op_stack_args(plan, args, op_stack_args):
     )
     private_key = private_key_result.output
 
+    source = op_stack_args.pop("source")
+    predeployed_contracts = op_stack_args.pop("predeployed_contracts")
+
     return {
+        "source": source,
+        "predeployed_contracts": predeployed_contracts,
         "optimism_package": op_stack_args,
         "external_l1_network_params": {
             "network_id": l1_chain_id,

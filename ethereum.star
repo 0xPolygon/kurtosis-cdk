@@ -1,5 +1,5 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@83830d44823767af65eda7dfe6b26c87c536c4cf" # 8 Apr 2025
+    "github.com/ethpandaops/ethereum-package/main.star@1ad949f4f65a34f041bd90050ca407e370eee579"  # 2025-04-11
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.14.12"
@@ -77,9 +77,6 @@ def run(plan, args):
         default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
         default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
         l1_args["participants"][0] = default_participant
-        l1_args["ethereum_genesis_generator_params"] = {
-            "image": "ethpandaops/ethereum-genesis-generator:3.7.0",
-        }
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url

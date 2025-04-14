@@ -7,7 +7,7 @@ There are option to set MITM as the L1 endpoint for many components:
 - Bridge
 - DAC
 - Erigon Sequencer
-- Eirgon RPC
+- Erigon RPC
 - CDK-Node
 
 To do so, you have to set to True the desired component.
@@ -24,11 +24,11 @@ To do so, you have to set to True the desired component.
 
 With this, the component will send queries to MITM, and they will be forwarded to the real L1. You can modify ```/scripts/empty.py``` on the MITM service to achieve whatever you want.
 
-## L1 missbehaving
+## L1 misbehaving
 
-Several L1 missbehaving scenarios had been implemented with MITM and can be easily tested.
+Several L1 misbehaving scenarios had been implemented with MITM and can be easily tested.
 
-You can test them all by just executing this [existing script](/scripts/mitm/test_l1_failures.sh) (form the repo's root folder)
+You can test them all by just executing this [existing script](/scripts/mitm/test_l1_failures.sh) (from the repo's root folder)
 ```bash
 ./scripts/mitm/test_l1_failures.sh
 ```

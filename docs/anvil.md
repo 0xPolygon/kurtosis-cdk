@@ -90,7 +90,7 @@ This will perform the required steps to load the previous state, however, the se
 
 ```bash
 # Check cdk-erigon-sequencer logs until you see lines like this before proceeding.
-#  "L1 block sync recovery has completed!""
+#  "L1 block sync recovery has completed!"
 
 # Disable L1 recovery mode
 kurtosis service exec $ENCLAVE cdk-erigon-sequencer-001 \

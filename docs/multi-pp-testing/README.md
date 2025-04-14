@@ -1,7 +1,7 @@
 
 ```
 #!/bin/bash
-echo "dont run this!"
+echo "don't run this!"
 exit 1;
 ```
 
@@ -72,7 +72,7 @@ The third network here should use a mock verifier and should be different
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-003.json | jq -r '.verifierAddress') | sha256sum
 ```
 
-It's also worth while probably to confirm that the vkey matches!
+It's also worthwhile probably to confirm that the vkey matches!
 
 ```
 kurtosis service exec pp agglayer "agglayer vkey"
@@ -134,7 +134,7 @@ cast balance --ether --rpc-url $l2_fep_url $eth_address
 ```
 
 ## Initial Funding
-Let's fund the claim tx manager for both rollups. These address come
+Let's fund the claim tx manager for both rollups. These addresses come
 from the chain configurations (so either input_parser or the args
 file). The claim tx manager will automatically perform claims on our
 behalf for bridge assets
@@ -152,7 +152,7 @@ key for L1 bridge transfers
 cast send --value 100ether --rpc-url $l1_rpc_url --private-key $private_key $target_address
 ```
 
-Let's mint some POL token for testing purpsoes
+Let's mint some POL token for testing purposes
 
 ```
 cast send \

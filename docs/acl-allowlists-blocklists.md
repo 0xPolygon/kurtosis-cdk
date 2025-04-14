@@ -34,7 +34,7 @@ OPTIONS:
    --help, -h       show help
 ```
 
-The `acl mode` command sets the mode - allowlist, blokclist, or disabled within the network.
+The `acl mode` command sets the mode - allowlist, blocklist, or disabled within the network.
 
 - `disabled`: access lists are disabled. All addresses will be able to send transactions.
 - `allowlist`: allowlist is enabled. If address is not in the allowlist, it won't be able to send transactions (regular, contract deployment, or both).

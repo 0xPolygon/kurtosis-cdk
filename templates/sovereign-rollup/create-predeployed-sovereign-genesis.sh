@@ -37,33 +37,89 @@ else
     exit 1
 fi
 
->/tmp/create_op_genesis.py cat <<EOF
+>/tmp/create_op_allocs.py cat <<EOF
 import json
 
-genesis_orig = "/opt/contract-deploy/op-original-genesis.json"
 genesis_polygon = "/opt/zkevm/sovereign-predeployed-genesis.json"
-genesis_output = "/opt/zkevm/op-genesis.json"
+predeployed_allocs = "/opt/zkevm/predeployed_allocs.json"
 
-with open(genesis_orig, "r") as fg_orig:
-    genesis = json.load(fg_orig)
+# Load the genesis file
+import json
+
 with open(genesis_polygon, "r") as fg_polygon:
     genesis_polygon = json.load(fg_polygon)
 
-for item in genesis_polygon["genesis"]:
-    addr = item["address"][2:]
-    genesis["alloc"][addr] = {
-        "balance": hex(int(item["balance"])),
-    }
-    if "nonce" in item:
-        genesis["alloc"][addr]["nonce"] = hex(int(item["nonce"]))
-    if "bytecode" in item:
-        genesis["alloc"][addr]["code"] = item["bytecode"]
-    if "storage" in item:
-        genesis["alloc"][addr]["storage"] = item["storage"]
+allocs = {}
 
-with open(genesis_output, "w") as fg_output:
-    json.dump(genesis, fg_output, indent=4)
-    print(f"OP Genesis file saved: {genesis_output}")
+# Determine the correct part of the JSON to iterate over
+if "genesis" in genesis_polygon:
+    if isinstance(genesis_polygon["genesis"], list):
+        items = genesis_polygon["genesis"]
+    elif isinstance(genesis_polygon["genesis"], dict):
+        items = genesis_polygon["genesis"].get("alloc", {})
+    else:
+        raise ValueError("Unexpected structure in 'genesis' field")
+else:
+    items = genesis_polygon
+
+# Handle different possible structures
+if isinstance(items, dict):
+    for addr, data in items.items():
+        addr = addr.lower()
+        # Handle balance: ensure it's treated as a hex string
+        balance = data.get("balance", "0x0")
+        if isinstance(balance, str) and balance.startswith("0x"):
+            balance_value = int(balance, 16)
+        else:
+            balance_value = int(balance)  # Assume decimal if not hex
+        allocs[addr] = {"balance": hex(balance_value)}
+        
+        # Handle nonce: ensure it's treated as a hex string
+        if "nonce" in data:
+            nonce = data["nonce"]
+            if isinstance(nonce, str) and nonce.startswith("0x"):
+                nonce_value = int(nonce, 16)
+            else:
+                nonce_value = int(nonce)  # Assume decimal if not hex
+            allocs[addr]["nonce"] = hex(nonce_value)
+        
+        if "bytecode" in data:
+            allocs[addr]["code"] = data["bytecode"]
+        if "storage" in data:
+            allocs[addr]["storage"] = data["storage"]
+elif isinstance(items, list):
+    for item in items:
+        if not isinstance(item, dict) or "address" not in item:
+            continue
+        addr = item["address"].lower()
+        # Handle balance: ensure it's treated as a hex string
+        balance = item.get("balance", "0x0")
+        if isinstance(balance, str) and balance.startswith("0x"):
+            balance_value = int(balance, 16)
+        else:
+            balance_value = int(balance)  # Assume decimal if not hex
+        allocs[addr] = {"balance": hex(balance_value)}
+        
+        # Handle nonce: ensure it's treated as a hex string
+        if "nonce" in item:
+            nonce = item["nonce"]
+            if isinstance(nonce, str) and nonce.startswith("0x"):
+                nonce_value = int(nonce, 16)
+            else:
+                nonce_value = int(nonce)  # Assume decimal if not hex
+            allocs[addr]["nonce"] = hex(nonce_value)
+        
+        if "bytecode" in item:
+            allocs[addr]["code"] = item["bytecode"]
+        if "storage" in item:
+            allocs[addr]["storage"] = item["storage"]
+else:
+    raise ValueError("Unexpected JSON structure")
+
+# Write the output file
+with open(predeployed_allocs, "w") as fg_output:
+    json.dump(allocs, fg_output, indent=4)
+    print(f"Predeployed Allocs file saved: {predeployed_allocs}")
 EOF
 
-python3 /tmp/create_op_genesis.py
+python3 /tmp/create_op_allocs.py

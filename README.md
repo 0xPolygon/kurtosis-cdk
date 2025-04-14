@@ -22,7 +22,6 @@ Specifically, this package will deploy:
 - [License](#license)
 - [Contribution](#contribution)
 
-
 ## Supported Configurations
 
 The package is flexible and supports various configurations for deploying and testing the Polygon CDK stack.
@@ -386,19 +385,19 @@ kurtosis service start cdk cdk-erigon-sequencer-001
 6. Get a specific endpoint.
 
 ```bash
-kurtosis port print cdk cdk-erigon-node-001 http-rpc
+kurtosis port print cdk cdk-erigon-rpc-001 rpc
 ```
 
 7. Inspect a file artifact.
 
 ```bash
-kurtosis files inspect cdk cdk-erigon-node-config-artifact-sequencer config.yaml
+kurtosis files inspect cdk cdk-erigon-sequencer-config-artifact config.yaml
 ```
 
 8. Download a file artifact.
 
 ```bash
-kurtosis files download cdk cdk-erigon-node-config-artifact
+kurtosis files download cdk cdk-erigon-rpc-config-artifact
 ```
 
 </details>
