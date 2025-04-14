@@ -20,7 +20,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy CDK bridge infrastructure.
     "deploy_cdk_bridge_infra": True,
     # Deploy CDK bridge UI.
-    "deploy_cdk_bridge_ui": True,
+    "deploy_cdk_bridge_ui": False,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # Deploy cdk-erigon node.
