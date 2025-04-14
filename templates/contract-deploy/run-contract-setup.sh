@@ -100,8 +100,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 # Set up a foundry project in case we do a gas token or dac deployment.
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
-echo_ts "{{ .gas_token_enabled }} --------- {{ .gas_token_address }}"
-
+# Deploy gas token
 {{if .gas_token_enabled}}
 {{if eq .gas_token_address ""}}
 echo_ts "Deploying gas token to L1"
@@ -185,9 +184,9 @@ jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c
 zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
-# {{if .gas_token_enabled}}
+{{if .gas_token_enabled}}
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
-# {{end}}
+{{end}}
 
 
 # There are a bunch of fields that need to be renamed in order for the
