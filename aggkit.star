@@ -21,9 +21,10 @@ def run(
 
     
     prover_env_vars = {
-        "PROPOSER_NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
-        "NETWORK_PRIVATE_KEY": args["aggkit_prover_sp1_key"],
-        "RUST_LOG": "debug",
+        # TODO one of these values can be deprecated soon 2025-04-15
+        "PROPOSER_NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
+        "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
+        "RUST_LOG": "info,aggkit_prover=debug,prover=debug,aggchain=debug",
         "RUST_BACKTRACE": "1",
     }
 

@@ -169,7 +169,7 @@ DEFAULT_ARGS = (
 )
 
 DEFAULT_ROLLUP_ARGS = {
-    "agglayer_prover_sp1_key": <SPN_KEY>,
+    "sp1_prover_key": <SPN_KEY>,
 }
 
 DEFAULT_OP_STACK_ARGS = {

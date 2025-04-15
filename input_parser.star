@@ -42,8 +42,8 @@ DEFAULT_IMAGES = {
     # "aggkit_image": "goranethernal/aggkit:v0.0.2-beta8",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     # "aggkit_image": "jestpol/aggkit:v0.0.2-beta9",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     # "aggkit_image": "arnaubennassar/aggkit:477acb6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta12",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.11",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta13",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.13",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.17",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
@@ -348,11 +348,10 @@ DEFAULT_ROLLUP_ARGS = {
     # Set this to true to disable all special logics in hermez and only enable bridge update in pre-block execution
     # https://hackmd.io/@4cbvqzFdRBSWMHNeI8Wbwg/r1hKHp_S0
     "enable_normalcy": False,
-    # If the agglayer is going to be configured to use SP1 services, we'll need to provide an API Key
-    # Replace with a valid SP1 key to use the SP1 Prover Network.
-    "agglayer_prover_sp1_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
-    # SP1 key for the aggkit-prover.
-    "aggkit_prover_sp1_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    # If the agglayer/aggkit-prover is going to use the network
+    # prover, we'll need to provide an API Key Replace with a valid
+    # SP1 key to use the SP1 Prover Network.
+    "sp1_prover_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
     "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
@@ -802,11 +801,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
             )
         if (
-            args["agglayer_prover_sp1_key"] == None
-            or args["agglayer_prover_sp1_key"] == ""
+            args["sp1_prover_key"] == None
+            or args["sp1_prover_key"] == ""
         ):
             fail(
-                "OP Succinct requires a valid SPN key. Change the agglayer_prover_sp1_key"
+                "OP Succinct requires a valid SPN key. Change the sp1_prover_key"
             )
 
     # OP rollup check L1 blocktime >= L2 blocktime
