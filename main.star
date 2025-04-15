@@ -279,6 +279,12 @@ def run(plan, args={}):
         import_module(op_succinct_package).op_succinct_proposer_run(
             plan, args|contract_setup_addresses, op_succinct_env_vars
         )
+        # Stop the op-succinct-contract-deployer service after we're done using it.
+        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+        plan.stop_service(
+            name = service_name,
+            description = "Stopping the {0} service after finishing with the initial op-succinct setup.".format(service_name)  
+        )
     else:
         plan.print("Skipping the deployment of OP Succinct")
 
