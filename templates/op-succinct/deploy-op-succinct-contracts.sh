@@ -68,7 +68,7 @@ ETHERSCAN_API_KEY=""
 SUBMISSION_INTERVAL="{{.op_succinct_submission_interval}}"
 
 # Verifier address, to be set after mock verifier deployment
-VERIFIER_ADDRESS=""
+VERIFIER_ADDRESS="0x397A5f7f3dBd538f23DE225B51f532c34448dA9B"
 
 # Oracle address, to be set after deployment
 L2OO_ADDRESS=""
@@ -92,13 +92,6 @@ EOF
 # starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
 # starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
 echo "STARTING_BLOCK_NUMBER=1" >> .env
-
-# Deploy the mock-verifier and save the address to the verifier_address.out
-# This is a temporary solution until the verifier address is set in the .env file for polygon verifier contract
-# `fetch-rollup-config` needs the valid VERIFIER_ADDRESS set in the environment
-just deploy-mock-verifier 2> deploy-mock-verifier.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "VERIFIER_ADDRESS=\"{}\"" > /opt/op-succinct/verifier_address.out
-# Update the VERIFIER_ADDRESS in the .env file with the output from the previous command
-sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/verifier_address.out)\"/" .env
 
 
 # Print out the config for reference / debugging
