@@ -93,29 +93,26 @@ EOF
 # starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$starting_block_number")
 echo "STARTING_BLOCK_NUMBER=1" >> .env
 
+# Deploy the mock-verifier and save the address to the verifier_address.out
+# This is a temporary solution until the verifier address is set in the .env file for polygon verifier contract
+# `fetch-rollup-config` needs the valid VERIFIER_ADDRESS set in the environment
+just deploy-mock-verifier 2> deploy-mock-verifier.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "VERIFIER_ADDRESS=\"{}\"" > /opt/op-succinct/verifier_address.out
+# Update the VERIFIER_ADDRESS in the .env file with the output from the previous command
+sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/verifier_address.out)\"/" .env
+
+
 # Print out the config for reference / debugging
 cat .env
-
-# TODO confirm that this isn't used
-if false; then
-    # Deploy the mock-verifier and save the address to the verifier_address.out
-    just deploy-mock-verifier 2> deploy-mock-verifier.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "VERIFIER_ADDRESS=\"{}\"" > /opt/op-succinct/verifier_address.out
-
-    # Update the VERIFIER_ADDRESS in the .env file with the output from the previous command
-    sed -i "s/^VERIFIER_ADDRESS=.*$/VERIFIER_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/verifier_address.out)\"/" /opt/op-succinct/.env
-fi
 
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.
 
 # Run fetch-rollup-config to get the various configuration values that
 # we'll need in the rest of smart contract deployment
-if false; then
-    # Stop using cargo
-    RUST_LOG=info cargo run --bin fetch-rollup-config --release -- --env-file .env 2> fetch-rollup-config.out
-else
-    RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
-fi
+RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
+
+# Print out the rollup config for reference / debugging
+cat fetch-rollup-config.out
 
 convert_env_to_json() {
   # Accept input .env file and output json file as arguments

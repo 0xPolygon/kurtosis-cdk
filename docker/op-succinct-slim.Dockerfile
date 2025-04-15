@@ -2,7 +2,7 @@ FROM rust:slim-bookworm AS builder
 LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy op-succinct contracts"
 
-# docker build --build-arg OP_SUCCINCT_BRANCH=v1.2.10-agglayer --file op-succinct-slim.Dockerfile -t nulyjkdhthz/op-succinct-contract-deployer:v1.2.10-agglayer .
+# docker build --no-cache --build-arg OP_SUCCINCT_BRANCH=vcastellm/agglayer --file docker/op-succinct-slim.Dockerfile -t nulyjkdhthz/op-succinct-contract-deployer:local .
 
 # STEP 1: Install Foundry, Rust, and tools.
 ARG OP_SUCCINCT_BRANCH
