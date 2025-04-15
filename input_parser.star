@@ -307,10 +307,10 @@ DEFAULT_ROLLUP_ARGS = {
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
     # TODO automate this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey`
-    "aggchain_vkey_hash": "0x5b87dac72ccf74140a8f62eb556c537a49676c8509e6b18e0685eb4f0b879ecf",
+    "aggchain_vkey_hash": "",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7",
+    "pp_vkey_hash": "",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
     "pp_vkey_selector": "0x00000001",
@@ -502,7 +502,7 @@ def parse_args(plan, user_args):
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
     # Check the aggchain_vkey_hash and pp_vkey_hash
-    check_vkeys(plan, args)
+    check_or_set_vkeys(plan, args)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -826,14 +826,33 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # aggchainFEP it must not be set) or we can hard code to be
     # 0x000...000 in the situations where we know it must be zero
 
-def check_vkeys(plan, args):
-    plan.run_sh(
-        run = "/bin/bash -c -- 'vkey=$(agglayer vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["pp_vkey_hash"]),
-        image = args["agglayer_image"],
-        description = "Asserting Agglayer VKey",
-    )
-    plan.run_sh(
-        run = "/bin/bash -c -- 'vkey=0x$(aggkit-prover vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["aggchain_vkey_hash"]),
-        image = args["aggkit_prover_image"],
-        description = "Asserting Aggkit Prover VKey",
-    )
+def check_or_set_vkeys(plan, args):
+    if args["pp_vkey_hash"] == None or args["pp_vkey_hash"] == "":
+        result = plan.run_sh(
+            run = "echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
+            image = args["agglayer_image"],
+            description = "Retrieving Agglayer VKey",
+        )
+        args["pp_vkey_hash"] = result.output.strip()
+    else:
+        plan.run_sh(
+            run = "/bin/bash -c -- 'vkey=$(agglayer vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["pp_vkey_hash"]),
+            image = args["agglayer_image"],
+            description = "Asserting Agglayer VKey",
+        )
+
+    # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
+    if args["aggchain_vkey_hash"] == None or args["aggchain_vkey_hash"] == "":
+        result = plan.run_sh(
+            run = "echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
+            image = args["aggkit_prover_image"],
+            description = "Retrieving Aggkit Prover VKey",
+        )
+        args["aggchain_vkey_hash"] = result.output.strip()
+    else:
+        plan.run_sh(
+            run = "/bin/bash -c -- 'vkey=0x$(aggkit-prover vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["aggchain_vkey_hash"]),
+            image = args["aggkit_prover_image"],
+            description = "Asserting Aggkit Prover VKey",
+        )
+
