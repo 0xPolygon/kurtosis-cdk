@@ -10,34 +10,5 @@ set +a
 
 cat .env
 
-if false; then
-# Deploy the deploy-oracle and save the address to the l2oo_address.out
-    just deploy-oracle 2> deploy-oracle.out | grep -oP '0x[a-fA-F0-9]{40}' | xargs -I {} echo "L2OO_ADDRESS=\"{}\"" > /opt/op-succinct/l2oo_address.out
-else
-    RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
-    source .env
-fi
+RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
 
-# Update the L2OO_ADDRESS in the .env file with the output from the previous command
-sed -i "s/^L2OO_ADDRESS=.*$/L2OO_ADDRESS=\"$(grep -oP '0x[a-fA-F0-9]{40}' /opt/op-succinct/l2oo_address.out)\"/" /opt/op-succinct/.env
-
-set -a
-# shellcheck disable=SC1091
-source /opt/op-succinct/.env
-set +a
-
-# shellcheck disable=SC2153
-jq --arg l2oo "$L2OO_ADDRESS" '.L2OO_ADDRESS = $l2oo' /opt/op-succinct/op-succinct-env-vars.json > /opt/op-succinct/op-succinct-env-vars.json.l2oo
-mv /opt/op-succinct/op-succinct-env-vars.json.l2oo /opt/op-succinct/op-succinct-env-vars.json
-
-# TODO since we don't have the L2OO, we might have to move this until later
-# Update the verifier address to the VerifierGateway contract address in the OPSuccinctL2OutputOracle contract
-l2oo_address=$(jq '.L2OO_ADDRESS' /opt/op-succinct/op-succinct-env-vars.json -r)
-if [[ $l2oo_address != "" ]]; then
-    sp1_verifier_gateway_groth16=$(jq '.SP1_VERIFIER_GATEWAY_GROTH16' /tmp/sp1_verifier_out.json -r)
-    cast send "$l2oo_address" "updateVerifier(address)" "$sp1_verifier_gateway_groth16" --mnemonic "{{.l1_preallocated_mnemonic}}" --rpc-url "{{.l1_rpc_url}}"
-
-    spn_requester_eth_address=$(cast wallet address --private-key "{{.agglayer_prover_sp1_key}}")
-    # Add that same SPN requester address to the OPSuccinctL2OOOracle contract as approved proposer
-    cast send "$l2oo_address" "addProposer(address)" "$spn_requester_eth_address" --mnemonic "{{.l1_preallocated_mnemonic}}" --rpc-url "{{.l1_rpc_url}}"
-fi

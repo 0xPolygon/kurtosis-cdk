@@ -200,7 +200,7 @@ def get_op_succinct_l2oo_config(plan, args):
     service_name = "op-succinct-contract-deployer"
     service_name += args["deployment_suffix"]
     result = plan.exec(
-        description="Getting L2OO Config from from {} service".format(
+        description="Reading the opsuccinctl2ooconfig JSON file from {} service".format(
             service_name
         ),
         service_name=service_name,
