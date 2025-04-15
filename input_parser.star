@@ -60,10 +60,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "leovct/op-succinct-contract-deployer:d923650",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    # "op_succinct_contract_deployer_image": "nulyjkdhthz/op-succinct-contract-deployer:v0.0.4-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.10-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.10-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "op_succinct_contract_deployer_image": "atanmarko/op-succinct-contract-deployer:v1.2.11-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.11-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.11-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
