@@ -106,8 +106,8 @@ def run(plan, args={}):
                 op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
                 args = args | op_succinct_env_vars
 
-                plan.print("Deploying L2OO for OP Succinct")
-                import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
+                # plan.print("Deploying L2OO for OP Succinct")
+                # import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
