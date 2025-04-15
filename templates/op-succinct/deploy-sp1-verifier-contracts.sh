@@ -118,8 +118,8 @@ cast send "$SP1_VERIFIER_GATEWAY_PLONK" "addRoute(address)" "$SP1_VERIFIER_PLONK
 cast send "$SP1_VERIFIER_GATEWAY_GROTH16" "addRoute(address)" "$SP1_VERIFIER_GROTH16" --private-key "$private_key" --rpc-url "$l1_rpc_url"
 
 # SPN Requester address
-spn_requester_eth_address=$(cast wallet address --private-key "{{.agglayer_prover_sp1_key}}")
-# Fund the op-succinct-proposer. This address of the agglayer_prover_sp1_key - address submitting requests to SPN
+spn_requester_eth_address=$(cast wallet address --private-key "{{.sp1_prover_key}}")
+# Fund the op-succinct-proposer. This address of the sp1_prover_key - address submitting requests to SPN
 # This will allow the op-succinct-proposer to submit L1 requests to call "Propose L2Output" on the OPSuccinctL2OutputOracle contract.
 cast send "$spn_requester_eth_address" --private-key "$private_key" --value 1ether --rpc-url "$l1_rpc_url"
 

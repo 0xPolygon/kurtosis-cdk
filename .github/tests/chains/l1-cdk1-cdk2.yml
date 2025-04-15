@@ -10,7 +10,7 @@ deployment_stages:
   deploy_optimism_rollup: true
 
 args:
-  agglayer_prover_sp1_key: null
+  sp1_prover_key: null
   agglayer_prover_primary_prover: "mock-prover"
   consensus_contract_type: pessimistic
   erigon_strict_mode: false
