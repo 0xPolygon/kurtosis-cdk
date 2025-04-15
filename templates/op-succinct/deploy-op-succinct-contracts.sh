@@ -67,8 +67,8 @@ ETHERSCAN_API_KEY=""
 # Interval between submissions
 SUBMISSION_INTERVAL="{{.op_succinct_submission_interval}}"
 
-# Verifier address, to be set after mock verifier deployment
-VERIFIER_ADDRESS="0x397A5f7f3dBd538f23DE225B51f532c34448dA9B"
+# Verifier address, to be set after deployment
+VERIFIER_ADDRESS=""
 
 # Oracle address, to be set after deployment
 L2OO_ADDRESS=""
