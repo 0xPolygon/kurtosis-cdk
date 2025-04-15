@@ -42,9 +42,9 @@ DEFAULT_IMAGES = {
     # "aggkit_image": "goranethernal/aggkit:v0.0.2-beta8",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     # "aggkit_image": "jestpol/aggkit:v0.0.2-beta9",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     # "aggkit_image": "arnaubennassar/aggkit:477acb6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta11",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.9",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.16",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta13",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.11",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.17",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
@@ -60,10 +60,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "leovct/op-succinct-contract-deployer:d923650",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    # "op_succinct_contract_deployer_image": "nulyjkdhthz/op-succinct-contract-deployer:v0.0.4-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.10-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.10-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "op_succinct_contract_deployer_image": "atanmarko/op-succinct-contract-deployer:v1.2.11-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.11-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.11-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
@@ -311,7 +310,7 @@ DEFAULT_ROLLUP_ARGS = {
     "aggchain_vkey_hash": "0x5b87dac72ccf74140a8f62eb556c537a49676c8509e6b18e0685eb4f0b879ecf",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "0x00e26413014eeb40f272bc127cbed1866ce53b2b4d99be0f4d3d869d6d133fd9",
+    "pp_vkey_hash": "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
     "pp_vkey_selector": "0x00000001",

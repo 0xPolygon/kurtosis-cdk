@@ -98,16 +98,16 @@ def run(plan, args={}):
                 import_module(op_succinct_package).op_succinct_contract_deployer_run(
                     plan, args
                 )
-                plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
-                import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
-                    plan, args
-                )
+                # plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
+                # import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
+                #     plan, args
+                # )
                 plan.print("Extracting environment variables from the contract deployer")
                 op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
                 args = args | op_succinct_env_vars
 
-                plan.print("Deploying L2OO for OP Succinct")
-                import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
+                # plan.print("Deploying L2OO for OP Succinct")
+                # import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
@@ -278,6 +278,12 @@ def run(plan, args={}):
         plan.print("Deploying op-succinct-proposer component")
         import_module(op_succinct_package).op_succinct_proposer_run(
             plan, args|contract_setup_addresses, op_succinct_env_vars
+        )
+        # Stop the op-succinct-contract-deployer service after we're done using it.
+        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+        plan.stop_service(
+            name = service_name,
+            description = "Stopping the {0} service after finishing with the initial op-succinct setup.".format(service_name)  
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")
