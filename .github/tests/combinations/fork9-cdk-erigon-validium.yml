@@ -9,6 +9,7 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.3
   cdk_validium_node_image: ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10
   additional_services:
+    - test_runner
     - tx_spammer
   consensus_contract_type: cdk-validium
   sequencer_type: erigon

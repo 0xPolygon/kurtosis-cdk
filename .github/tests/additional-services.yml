@@ -10,4 +10,5 @@ args:
     # - pless_zkevm_node # zkevm-node doesn't support fork12.
     - prometheus_grafana
     - status_checker
+    - test_runner
     - tx_spammer
