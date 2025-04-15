@@ -7,20 +7,19 @@ private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}"
 eth_address=$(cast wallet address --private-key "$private_key")
 
 # Create the .env file
-mkdir /tmp/sp1-contracts
-cd /tmp/sp1-contracts || exit
+pushd /opt/sp1-contracts || exit 1
 
-git clone https://github.com/succinctlabs/sp1-contracts.git . &> /dev/null
+# FIXME - What exactly is this doing? It seems to require git
 forge install succinctlabs/sp1-contracts
 
 # Update Foundry.toml with the RPC_KURTOSIS
-sed -i "/scroll_sepolia = \"${RPC_SCROLL_SEPOLIA}\"/a kurtosis = \"${RPC_KURTOSIS}\"" /tmp/sp1-contracts/lib/sp1-contracts/contracts/foundry.toml
+sed -i "/scroll_sepolia = \"${RPC_SCROLL_SEPOLIA}\"/a kurtosis = \"${RPC_KURTOSIS}\"" /opt/sp1-contracts/lib/sp1-contracts/contracts/foundry.toml
 
 # Create 271828.json Deployment artifact for Kurtosis devnet. Referenced from https://github.com/succinctlabs/sp1-contracts/blob/v4.0.0/contracts/deployments/11155420.json
 # These addresses should be deterministic using CREATE2 deployments
 # TODO: Update the addresses once they are finalized
-touch /tmp/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
-cat << EOF > /tmp/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
+touch /opt/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
+cat << EOF > /opt/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
 {
   "CREATE2_SALT": "0x0000000000000000000000000000000000000000000000000000000000000001",
   "SP1_VERIFIER_GATEWAY_GROTH16": "0x397A5f7f3dBd538f23DE225B51f532c34448dA9B",
@@ -30,11 +29,11 @@ cat << EOF > /tmp/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.j
 }
 EOF
 
-cd /tmp/sp1-contracts/lib/sp1-contracts/contracts || exit
-touch /tmp/sp1-contracts/lib/sp1-contracts/contracts/.env
+pushd /opt/sp1-contracts/lib/sp1-contracts/contracts || exit 1
+touch /opt/sp1-contracts/lib/sp1-contracts/contracts/.env
 
 # Create .env file
-cat << EOF > /tmp/sp1-contracts/lib/sp1-contracts/contracts/.env
+cat << EOF > /opt/sp1-contracts/lib/sp1-contracts/contracts/.env
 ### Salt used to deploy the contracts. Recommended to use the same salt across different chains.
 CREATE2_SALT=0x0000000000000000000000000000000000000000000000000000000000000001
 
@@ -51,7 +50,7 @@ RPC_KURTOSIS="$l1_rpc_url"
 PRIVATE_KEY="$private_key"
 EOF
 
-cd /tmp/sp1-contracts/lib/sp1-contracts/contracts || exit
+pushd /opt/sp1-contracts/lib/sp1-contracts/contracts || exit 1
 set -a
 # shellcheck disable=SC1091
 source .env
@@ -61,15 +60,15 @@ set +a
 # TODO: Update the hash to the correct one once Provers are ready
 # Plonk Deployments
 # Deploy SP1 Verifier Gateway Plonk
-FOUNDRY_PROFILE=deploy forge script --legacy /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayPlonk.s.sol:SP1VerifierGatewayScript --private-key "$private_key" --broadcast
+FOUNDRY_PROFILE=deploy forge script --legacy /opt/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayPlonk.s.sol:SP1VerifierGatewayScript --private-key "$private_key" --broadcast
 # Deploy SP1 Verifier Plonk contract
-FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$private_key" --broadcast
+FOUNDRY_PROFILE=deploy forge script /opt/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierPlonk.s.sol:SP1VerifierScript --private-key "$private_key" --broadcast
 
 
 # TODO: Fix Groth16 Verifier Deployments.
 # Groth16 Deployments - Since the deployments are made with CREATE2, the deployment will revert with EvmError: CreateCollision. So the salt is changed.
-sed -i 's/0x0000000000000000000000000000000000000000000000000000000000000001/0x0000000000000000000000000000000000000000000000000000000000000002/' /tmp/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
-sed -i 's/0x0000000000000000000000000000000000000000000000000000000000000001/0x0000000000000000000000000000000000000000000000000000000000000002/' /tmp/sp1-contracts/lib/sp1-contracts/contracts/.env
+sed -i 's/0x0000000000000000000000000000000000000000000000000000000000000001/0x0000000000000000000000000000000000000000000000000000000000000002/' /opt/sp1-contracts/lib/sp1-contracts/contracts/deployments/271828.json
+sed -i 's/0x0000000000000000000000000000000000000000000000000000000000000001/0x0000000000000000000000000000000000000000000000000000000000000002/' /opt/sp1-contracts/lib/sp1-contracts/contracts/.env
 
 # Source the updated .env file
 set -a
@@ -78,24 +77,24 @@ source .env
 set +a
 
 # Deploy SP1 Verifier Gateway Groth16
-FOUNDRY_PROFILE=deploy forge script --legacy /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayGroth16.s.sol:SP1VerifierGatewayScript --private-key "$private_key" --broadcast
+FOUNDRY_PROFILE=deploy forge script --legacy /opt/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/SP1VerifierGatewayGroth16.s.sol:SP1VerifierGatewayScript --private-key "$private_key" --broadcast
 # Deploy SP1 Verifier Groth16 contract
-FOUNDRY_PROFILE=deploy forge script /tmp/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierGroth16.s.sol:SP1VerifierScript --private-key "$private_key" --broadcast
+FOUNDRY_PROFILE=deploy forge script /opt/sp1-contracts/lib/sp1-contracts/contracts/script/deploy/v4.0.0-rc.3/SP1VerifierGroth16.s.sol:SP1VerifierScript --private-key "$private_key" --broadcast
 
 # Create initial JSON with Gateway Plonk address
-jq -n --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayPlonk.s.sol/271828/run-latest.json)" \
+jq -n --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /opt/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayPlonk.s.sol/271828/run-latest.json)" \
 '{ "SP1_VERIFIER_GATEWAY_PLONK": $gatewayaddr }' > /tmp/sp1_verifier_out.json
 
 # Add SP1 Verifier Plonk address
-jq --arg addr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierPlonk.s.sol/271828/run-latest.json)" \
+jq --arg addr "$(jq -r '.transactions[0].contractAddress' /opt/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierPlonk.s.sol/271828/run-latest.json)" \
     '. + {"SP1_VERIFIER_PLONK": $addr}' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
 
 # Add SP1 Verifier Gateway Groth16 address
-jq --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayGroth16.s.sol/271828/run-latest.json)" \
+jq --arg gatewayaddr "$(jq -r '.transactions[0].contractAddress' /opt/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGatewayGroth16.s.sol/271828/run-latest.json)" \
     '. + {"SP1_VERIFIER_GATEWAY_GROTH16": $gatewayaddr}' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
 
 # Add SP1 Verifier Groth16 address
-jq --arg addr "$(jq -r '.transactions[0].contractAddress' /tmp/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGroth16.s.sol/271828/run-latest.json)" \
+jq --arg addr "$(jq -r '.transactions[0].contractAddress' /opt/sp1-contracts/lib/sp1-contracts/contracts/broadcast/SP1VerifierGroth16.s.sol/271828/run-latest.json)" \
     '. + {"SP1_VERIFIER_GROTH16": $addr}' /tmp/sp1_verifier_out.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/sp1_verifier_out.json
 
 # Merge with op-succinct-env-vars.json
