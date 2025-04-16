@@ -10,12 +10,12 @@ def run(plan, args, predeployed_contracts=False):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(
-                    script
-                ),
+                "chmod +x {0} && {0}".format(script),
             ]
         ),
     )
+
+
 def init_rollup(plan, args):
     l2oo_config = get_l2_oo_config(plan, args)
     plan.print(l2oo_config)
@@ -24,7 +24,11 @@ def init_rollup(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         recipe=ExecRecipe(
             command=[
-                "/bin/sh", "-c", "echo '" + l2oo_config + "' > /opt/contract-deploy/opsuccinctl2ooconfig.json",
+                "/bin/sh",
+                "-c",
+                "echo '"
+                + l2oo_config
+                + "' > /opt/contract-deploy/opsuccinctl2ooconfig.json",
             ]
         ),
     )
@@ -37,15 +41,14 @@ def init_rollup(plan, args):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(
-                    script
-                ),
+                "chmod +x {0} && {0}".format(script),
             ]
         ),
     )
 
+
 def get_l2_oo_config(plan, args):
-    return '''
+    return """
 {{
     "challenger": "{}",
     "finalizationPeriod": {},
@@ -62,7 +65,7 @@ def get_l2_oo_config(plan, args):
     "aggregationVkey": "{}",
     "rangeVkeyCommitment": "{}",
     "proxyAdmin": "{}"
-}}'''.format(
+}}""".format(
         args["sp1_challenger"],
         args["sp1_finalization_period"],
         args["sp1_l2_block_time"],
@@ -79,6 +82,7 @@ def get_l2_oo_config(plan, args):
         args["sp1_range_vkey_commitment"],
         args["sp1_proxy_admin"],
     )
+
 
 def fund_addresses(plan, args, l1_op_contract_addresses):
     # Provide L1 OP addresses to the sovereign setup script as an environment variable.

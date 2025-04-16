@@ -50,6 +50,7 @@ import json
 
 genesis_polygon = "/opt/zkevm/sovereign-predeployed-genesis.json"
 predeployed_allocs = "/opt/zkevm/predeployed_allocs.json"
+anvil_genesis_file = "/opt/zkevm/anvil_l2_genesis.json"
 
 # Load the genesis file
 import json
@@ -132,6 +133,31 @@ else:
 with open(predeployed_allocs, "w") as fg_output:
     json.dump(allocs, fg_output, indent=4)
     print(f"Predeployed Allocs file saved: {predeployed_allocs}")
+
+# Generate anvil genesis as well
+anvil_genesis = {
+  "config": {
+     "chainId": {{.zkevm_rollup_chain_id}},
+  },
+  "nonce": "0x42",
+  "timestamp": "0x0",
+  "extraData": "0xFF",
+  "gasLimit": "0x1c9c380",
+  "difficulty": "0x400000000",
+  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "stateRoot": "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+  "alloc": allocs,
+  "number": "0x0",
+  "gasUsed": "0x0",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+}
+
+# Write the output file
+with open(anvil_genesis_file, "w") as fg_output:
+    json.dump(anvil_genesis, fg_output, indent=4)
+    print(f"Anvil Genesis file saved: {anvil_genesis_file}")
+
 EOF
 
 python3 /tmp/create_op_allocs.py

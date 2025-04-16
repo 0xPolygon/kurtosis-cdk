@@ -50,7 +50,17 @@ def run(plan, args={}):
             "Deploying a local L1 (based on {})".format(args.get("l1_engine", "geth"))
         )
         if args.get("l1_engine", "geth") == "anvil":
-            import_module(anvil_package).run(plan, args)
+            anvil_config = {
+                "name": "anvil" + args["deployment_suffix"],
+                "image": args["anvil_image"],
+                "chain_id": args["l1_chain_id"],
+                "block_time": args.get("l1_anvil_block_time"),
+                "slots_in_epoch": args.get("l1_anvil_slots_in_epoch"),
+                "preallocated_mnemonic": args.get("l1_preallocated_mnemonic"),
+                "port": args["anvil_port"],
+                "state_file": args.get("anvil_state_file"),
+            }
+            import_module(anvil_package).run(plan, anvil_config)
         else:
             import_module(ethereum_package).run(plan, args)
     else:
@@ -64,7 +74,7 @@ def run(plan, args={}):
             plan, args, deployment_stages, op_stack_args
         )
 
-        if deployment_stages.get("deploy_optimism_rollup", False):
+        if deployment_stages.get("deploy_sovereign_rollup", False):
             # Deploy Sovereign contracts (maybe a better name is creating soverign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
@@ -74,24 +84,39 @@ def run(plan, args={}):
             )
 
             import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
+            if args.get("l2_engine") == "optimism":
+                # Deploy OP Stack infrastructure
+                plan.print(
+                    "Deploying an OP Stack rollup with args: " + str(op_stack_args)
+                )
+                optimism_package = op_stack_args["source"]
+                import_module(optimism_package).run(plan, op_stack_args)
 
-            # Deploy OP Stack infrastructure
-            plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
-            optimism_package = op_stack_args["source"]
-            import_module(optimism_package).run(plan, op_stack_args)
+                # Retrieve L1 OP contract addresses.
+                op_deployer_configs_artifact = plan.get_files_artifact(
+                    name="op-deployer-configs",
+                )
+                l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
+                    plan, args, op_deployer_configs_artifact
+                )
 
-            # Retrieve L1 OP contract addresses.
-            op_deployer_configs_artifact = plan.get_files_artifact(
-                name="op-deployer-configs",
-            )
-            l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
-                plan, args, op_deployer_configs_artifact
-            )
-
-            import_module(deploy_sovereign_contracts_package).fund_addresses(
-                plan, args, l1_op_contract_addresses
-            )
-
+                import_module(deploy_sovereign_contracts_package).fund_addresses(
+                    plan, args, l1_op_contract_addresses
+                )
+            elif args.get("l2_engine") == "anvil":
+                plan.print("Deploying Anvil as sovereing chain")
+                anvil_config = {
+                    "name": "anvil2" + args["deployment_suffix"],
+                    "image": args["anvil_image"],
+                    "chain_id": args["zkevm_rollup_chain_id"],
+                    "block_time": args.get("l1_anvil_block_time"),
+                    "slots_in_epoch": args.get("l1_anvil_slots_in_epoch"),
+                    "preallocated_mnemonic": "test test test test test test test test test test test junk",
+                    "port": args["anvil_port"],
+                    "state_file": False,
+                    "genesis_artifact_ref": "anvil_l2_genesis.json",
+                }
+                import_module(anvil_package).run(plan, anvil_config)
 
             if deployment_stages.get("deploy_op_succinct", False):
                 plan.print("Deploying op-succinct contract deployer helper component")
@@ -102,8 +127,12 @@ def run(plan, args={}):
                 # import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
                 #     plan, args
                 # )
-                plan.print("Extracting environment variables from the contract deployer")
-                op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+                plan.print(
+                    "Extracting environment variables from the contract deployer"
+                )
+                op_succinct_env_vars = service_package.get_op_succinct_env_vars(
+                    plan, args
+                )
                 args = args | op_succinct_env_vars
 
                 # plan.print("Deploying L2OO for OP Succinct")
@@ -113,14 +142,11 @@ def run(plan, args={}):
 
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
-            import_module(deploy_sovereign_contracts_package).init_rollup(
-                plan, args
-            )
+            import_module(deploy_sovereign_contracts_package).init_rollup(plan, args)
             # Extract Sovereign contract addresses
             sovereign_contract_setup_addresses = (
                 service_package.get_sovereign_contract_setup_addresses(plan, args)
             )
-
 
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
@@ -151,7 +177,7 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
-    if not deployment_stages.get("deploy_optimism_rollup", False):
+    if not deployment_stages.get("deploy_sovereign_rollup", False):
         genesis_artifact = ""
         if deployment_stages.get("deploy_cdk_central_environment", False):
             plan.print("Getting genesis file")
@@ -177,7 +203,7 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of the agglayer")
 
-    if not deployment_stages.get("deploy_optimism_rollup", False):
+    if not deployment_stages.get("deploy_sovereign_rollup", False):
         # Deploy cdk central/trusted environment.
         if deployment_stages.get("deploy_cdk_central_environment", False):
             # Deploy cdk-erigon sequencer node.
@@ -250,7 +276,7 @@ def run(plan, args={}):
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
     # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if deployment_stages.get("deploy_optimism_rollup", False):
+    if deployment_stages.get("deploy_sovereign_rollup", False):
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
         import_module(aggkit_package).run(
@@ -266,9 +292,7 @@ def run(plan, args={}):
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
         plan.print("Extracting environment variables from the contract deployer")
-        op_succinct_env_vars = service_package.get_op_succinct_env_vars(
-            plan, args
-        )
+        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
         args = args | op_succinct_env_vars
 
         plan.print("Deploying op-succinct-server component")
@@ -277,13 +301,15 @@ def run(plan, args={}):
         )
         plan.print("Deploying op-succinct-proposer component")
         import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args|contract_setup_addresses, op_succinct_env_vars
+            plan, args | contract_setup_addresses, op_succinct_env_vars
         )
         # Stop the op-succinct-contract-deployer service after we're done using it.
         service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
         plan.stop_service(
-            name = service_name,
-            description = "Stopping the {0} service after finishing with the initial op-succinct setup.".format(service_name)  
+            name=service_name,
+            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
+                service_name
+            ),
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")

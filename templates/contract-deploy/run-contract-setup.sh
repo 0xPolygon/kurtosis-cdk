@@ -142,8 +142,8 @@ else
 fi
 
 # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
-deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
-if [[ "$deploy_optimism_rollup" != "true" ]]; then
+deploy_sovereign_rollup="{{.deploy_sovereign_rollup}}"
+if [[ "$deploy_sovereign_rollup" != "true" ]]; then
     echo_ts "Step 5: Creating Rollup/Validium"
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
     # Support for new output file format
@@ -168,7 +168,7 @@ mkdir -p /opt/zkevm
 cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 # Check create_rollup_output.json exists before copying it.
-# For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
+# For the case of deploy_sovereign_rollup, create_rollup_output.json will not be created.
 if [[ -e /opt/zkevm-contracts/deployment/v2/create_rollup_output.json ]]; then
     cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 else
@@ -182,7 +182,7 @@ pushd /opt/zkevm/ || exit 1
 
 cp genesis.json genesis.original.json
 # Check create_rollup_output.json exists before copying it.
-# For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
+# For the case of deploy_sovereign_rollup, create_rollup_output.json will not be created.
 if [[ -e create_rollup_output.json ]]; then
     jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
 else

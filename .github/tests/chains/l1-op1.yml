@@ -1,5 +1,5 @@
 deployment_stages:
-  deploy_optimism_rollup: true
+  deploy_sovereign_rollup: true
 
 optimism_package:
   chains:
