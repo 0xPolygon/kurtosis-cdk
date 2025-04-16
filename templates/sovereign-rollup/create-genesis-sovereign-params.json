@@ -8,6 +8,7 @@
     "sovereignWETHAddressIsNotMintable": false,
     "globalExitRootUpdater": "{{ .zkevm_l2_aggoracle_address }}",
     "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "emergencyBridgePauser": "{{ .zkevm_l2_sovereignadmin_address }}",
     "setPreMintAccounts": true,
     "preMintAccounts": [
         {
