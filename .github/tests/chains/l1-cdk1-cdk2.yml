@@ -7,7 +7,7 @@
 # 4: cdk-erigon-sovereign (40404)
 deployment_stages:
   deploy_cdk_bridge_ui: false
-  deploy_optimism_rollup: true
+  deploy_sovereign_rollup: true
 
 args:
   sp1_prover_key: null

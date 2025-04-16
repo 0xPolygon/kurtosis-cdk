@@ -119,8 +119,8 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
                             args
                         ),
-                        "deploy_optimism_rollup": deployment_stages.get(
-                            "deploy_optimism_rollup", False
+                        "deploy_sovereign_rollup": deployment_stages.get(
+                            "deploy_sovereign_rollup", False
                         ),
                         "op_stack_seconds_per_slot": op_stack_args["optimism_package"][
                             "chains"

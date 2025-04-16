@@ -30,7 +30,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
-    "deploy_optimism_rollup": False,
+    "deploy_sovereign_rollup": False,
     # After deploying OP Stack, upgrade it to OP Succinct.
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
@@ -271,6 +271,7 @@ DEFAULT_L1_ARGS = {
 }
 
 DEFAULT_L2_ARGS = {
+    "l2_engine": "optimism",
     # The number of accounts to fund on L2. The accounts will be derived from:
     # polycli wallet inspect --mnemonic '{{.l1_preallocated_mnemonic}}'
     "l2_accounts_to_fund": 10,
@@ -531,8 +532,11 @@ def parse_args(plan, user_args):
     sequencer_name = get_sequencer_name(sequencer_type)
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
-    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
-    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
+    deploy_sovereign_rollup = deployment_stages.get("deploy_sovereign_rollup", False)
+    l2_engine = args.get("l2_engine")
+    l2_rpc_name = get_l2_rpc_name(
+        deploy_cdk_erigon_node, deploy_sovereign_rollup, l2_engine
+    )
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
@@ -643,9 +647,12 @@ def get_sequencer_name(sequencer_type):
         )
 
 
-def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
-    if deploy_op_node:
-        return "op-el-1-op-geth-op-node"
+def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_sovereign_rollup, l2_engine):
+    if deploy_sovereign_rollup:
+        if l2_engine == "optimism":
+            return "op-el-1-op-geth-op-node"
+        elif l2_engine == "anvil":
+            return "anvil2"
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
     return "zkevm-node-rpc"
@@ -721,17 +728,40 @@ def set_anvil_args(plan, args, user_args):
 # Helper function to compact together checks for incompatible parameters in input_parser.star
 def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # Fix the op stack el rpc urls according to the deployment_suffix.
-    if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
-        "deployment_suffix"
-    ] + ":8545" and deployment_stages.get("deploy_op_stack", False):
-        plan.print(
-            "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
-                args["op_el_rpc_url"], args["deployment_suffix"]
-            )
-        )
-        args["op_el_rpc_url"] = (
-            "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
-        )
+    if deployment_stages.get("deploy_sovereign_rollup"):
+        if args.get("l2_engine") == "optimism":
+            if (
+                args["op_el_rpc_url"]
+                != "http://op-el-1-op-geth-op-node"
+                + args["deployment_suffix"]
+                + ":8545"
+            ):
+                plan.print(
+                    "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
+                        args["op_el_rpc_url"], args["deployment_suffix"]
+                    )
+                )
+                args["op_el_rpc_url"] = (
+                    "http://op-el-1-op-geth-op-node"
+                    + args["deployment_suffix"]
+                    + ":8545"
+                )
+        elif args.get("l2_engine") == "anvil":
+            anvil_port = str(args["anvil_port"])
+            if (
+                args["op_el_rpc_url"]
+                != "http://anvil2" + args["deployment_suffix"] + ":" + anvil_port
+            ):
+                plan.print(
+                    "op_el_rpc_url is set to '{}', changing to 'http://anvil2{}:{}'".format(
+                        args["op_el_rpc_url"], args["deployment_suffix"], anvil_port
+                    )
+                )
+                args["op_el_rpc_url"] = (
+                    "http://anvil2" + args["deployment_suffix"] + ":" + anvil_port
+                )
+                args["op_cl_rpc_url"] = args["op_el_rpc_url"]
+
     # Fix the op stack cl rpc urls according to the deployment_suffix.
     if args["op_cl_rpc_url"] != "http://op-cl-1-op-node-op-geth" + args[
         "deployment_suffix"
@@ -783,34 +813,31 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         fail("normalcy and strict mode cannot be enabled together")
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
-    if deployment_stages.get("deploy_optimism_rollup", False):
-        if args["consensus_contract_type"] != "pessimistic":
-            if args["consensus_contract_type"] != "fep":
-                plan.print(
-                    "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
-                        args["consensus_contract_type"]
-                    )
+    if deployment_stages.get("deploy_sovereign_rollup", False):
+        if args["consensus_contract_type"] not in ("pessimistic", "fep"):
+            plan.print(
+                "Current consensus_contract_type is '{}', changing to pessimistic for Sovereign deployments.".format(
+                    args["consensus_contract_type"]
                 )
-                # TODO: should this be AggchainFEP instead?
-                args["consensus_contract_type"] = "pessimistic"
+            )
+            # TODO: should this be AggchainFEP instead?
+            args["consensus_contract_type"] = "pessimistic"
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
-        if deployment_stages.get("deploy_optimism_rollup", False) == False:
+        if deployment_stages.get("deploy_sovereign_rollup", False) == False:
             fail(
-                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
+                "OP Succinct requires OP Rollup to be enabled. Change the deploy_sovereign_rollup parameter"
             )
-        if (
-            args["sp1_prover_key"] == None
-            or args["sp1_prover_key"] == ""
-        ):
-            fail(
-                "OP Succinct requires a valid SPN key. Change the sp1_prover_key"
-            )
+        if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
+            fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")
 
     # OP rollup check L1 blocktime >= L2 blocktime
     op_network_params = op_stack_args["optimism_package"]["chains"][0]["network_params"]
-    if deployment_stages.get("deploy_optimism_rollup", False):
+    if (
+        deployment_stages.get("deploy_sovereign_rollup", False)
+        and args.get("l2_engine") == "optimism"
+    ):
         if args.get("l1_seconds_per_slot", 12) < op_network_params.get(
             "seconds_per_slot", 1
         ):
@@ -826,33 +853,37 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # aggchainFEP it must not be set) or we can hard code to be
     # 0x000...000 in the situations where we know it must be zero
 
+
 def check_or_set_vkeys(plan, args):
     if args["pp_vkey_hash"] == None or args["pp_vkey_hash"] == "":
         result = plan.run_sh(
-            run = "echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
-            image = args["agglayer_image"],
-            description = "Retrieving Agglayer VKey",
+            run="echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
+            image=args["agglayer_image"],
+            description="Retrieving Agglayer VKey",
         )
         args["pp_vkey_hash"] = result.output.strip()
     else:
         plan.run_sh(
-            run = "/bin/bash -c -- 'vkey=$(agglayer vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["pp_vkey_hash"]),
-            image = args["agglayer_image"],
-            description = "Asserting Agglayer VKey",
+            run='/bin/bash -c -- \'vkey=$(agglayer vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
+                args["pp_vkey_hash"]
+            ),
+            image=args["agglayer_image"],
+            description="Asserting Agglayer VKey",
         )
 
     # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
     if args["aggchain_vkey_hash"] == None or args["aggchain_vkey_hash"] == "":
         result = plan.run_sh(
-            run = "echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
-            image = args["aggkit_prover_image"],
-            description = "Retrieving Aggkit Prover VKey",
+            run="echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
+            image=args["aggkit_prover_image"],
+            description="Retrieving Aggkit Prover VKey",
         )
         args["aggchain_vkey_hash"] = result.output.strip()
     else:
         plan.run_sh(
-            run = "/bin/bash -c -- 'vkey=0x$(aggkit-prover vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["aggchain_vkey_hash"]),
-            image = args["aggkit_prover_image"],
-            description = "Asserting Aggkit Prover VKey",
+            run='/bin/bash -c -- \'vkey=0x$(aggkit-prover vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
+                args["aggchain_vkey_hash"]
+            ),
+            image=args["aggkit_prover_image"],
+            description="Asserting Aggkit Prover VKey",
         )
-

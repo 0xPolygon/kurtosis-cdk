@@ -16,7 +16,7 @@ deployment_stages:
   deploy_cdk_bridge_ui: false
   deploy_agglayer: false
   deploy_cdk_erigon_node: false
-  deploy_optimism_rollup: false
+  deploy_sovereign_rollup: false
   deploy_l2_contracts: false
 
 args:

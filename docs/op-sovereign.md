@@ -33,7 +33,7 @@ The OP Stack within Kurtosis CDK is implemented as a sovereign rollup. The deplo
 
 ### OP Sovereign Infrastructure Overview
 
-When `deploy_optimism_rollup` is set to `True`, the CDK Erigon infrastructure deployments are skipped, and the following components are deployed:
+When `deploy_sovereign_rollup` is set to `True`, the CDK Erigon infrastructure deployments are skipped, and the following components are deployed:
 
 - **L1 Infrastructure**: Execution and consensus clients
 - **zkEVM Contracts**: Deployed on L1, including:
@@ -135,7 +135,7 @@ To deploy OP Rollup in isolation (without CDK Erigon Stack):
 
    ```starlark
    DEFAULT_DEPLOYMENT_STAGES = {
-       "deploy_optimism_rollup": True,
+       "deploy_sovereign_rollup": True,
    }
    DEFAULT_ARGS = (
        {
@@ -158,7 +158,7 @@ Key configuration requirements in `op-succinct.yml`:
 
 ```starlark
 DEFAULT_DEPLOYMENT_STAGES = {
-    "deploy_optimism_rollup": True,
+    "deploy_sovereign_rollup": True,
     "deploy_op_succinct": True,
 }
 

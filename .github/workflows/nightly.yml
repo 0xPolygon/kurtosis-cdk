@@ -128,7 +128,7 @@ jobs:
 
       - name: Monitor OP rollup finalized blocks (OP CL RPC)
         run: |
-          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.deployment_stages.deploy_sovereign_rollup' ${{ matrix.file_name }})
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \

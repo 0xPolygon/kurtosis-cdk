@@ -95,7 +95,9 @@ def create_op_succinct_server_service_config(
 
     return {op_succinct_name: op_succinct_server_service_config}
 
+
 # curl -s --json '{"address":"0x414e9E227e4b589aF92200508aF5399576530E4e"}' $(kurtosis port print aggkit op-succinct-server-001 server)/validate_config | jq '.'
+
 
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
