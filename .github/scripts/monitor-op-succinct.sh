@@ -38,11 +38,13 @@ check_logs() {
 
 errors=0
 
+sleep 5
 # Check proposer logs
 if ! check_logs "op-succinct-proposer-001"; then
     errors=$((errors + 1))
 fi
 
+sleep 5
 # Check server logs
 if ! check_logs "op-succinct-server-001"; then
     errors=$((errors + 1))
