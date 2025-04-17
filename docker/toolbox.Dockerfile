@@ -1,7 +1,7 @@
 FROM golang:1.22 AS polycli-builder
 ARG POLYCLI_VERSION
 WORKDIR /opt/polygon-cli
-RUN git clone --branch ${POLYCLI_VERSION} https://github.com/maticnetwork/polygon-cli.git . \
+RUN git clone --branch ${POLYCLI_VERSION} https://github.com/0xPolygon/polygon-cli.git . \
   && make build
 
 

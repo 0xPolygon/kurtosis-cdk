@@ -1,130 +1,12 @@
-# The metric namespace. This means that all metrics will be prepended with
-# the namespace.
-namespace: "panoptichain"
-
-runner:
-  # The default interval the providers will poll on. If the provider interval is
-  # not set, this will be the default that is used. For example, if the interval
-  # is set to 30, the RPC providers will update every 30 seconds by default.
-  interval: 30
-
+# See https://github.com/0xPolygon/panoptichain/blob/main/config.yml for how to
+# configure this file.
 http:
-  # The port panoptichain will run on.
-  port: 9090
-
-  # The address panoptichain will run on. You may want to change this to
-  # "0.0.0.0" or "" if running in a container.
   address: "0.0.0.0"
 
-  # The path where you can see the Prometheus metrics. Using the values above,
-  # you'll be able to see the raw metrics at http://localhost:9090/metrics
-  path: "/metrics"
-
-# Providers are the main components that are fetching data. They handle all
-# state storage and requests to data sources. There are currently five types of
-# providers:
-#
-# - rpc
-# - heimdall
-# - sensor_network
-# - system
-# - hash_divergence
-#
-# Providers usually will have `name`, `label`, and `interval` field.
-#
-# The name field corresponds to the name of the network you're trying to
-# observe. These are the currently known networks. See ./network/network.go for
-# details.
-#
-# - "Polygon Mumbai"
-#	- "Heimdall Mumbai"
-# - "Polygon Mainnet"
-# - "Heimdall Mainnet"
-#	- "zkEVM Mainnet"
-# - "zkEVM Testnet"
-# - "zkEVM Cardona"
-# - "zkEVM Bali"
-# - "Ethereum"
-# - "Sepolia"
-# - "Goerli"
-#
-# If you wish to have a custom network name, you should define those in the
-# network section in this file.
-#
-# The label field helps differentiate providers that share the same network. For
-# example, two RPC providers may observe Ethereum, but from different RPC
-# endpoints. Here, it would be helpful to use the RPC url as the label to help
-# differentiate them.
-#
-# The interval field is used to override the runner.interval default.
 providers:
-  # The system provider captures data for the panoptichain level system metrics.
-  # Metrics such as panoptichain uptime are captured by this provider. See
-  # ./observer/system.go and ./provider/system.go for details.
   system:
     interval: 15
 
-  # RPC providers will fetch data from an Ethereum based RPC server. See
-  # ./provider/rpc.go and ./observer/rpc.go for implementation details.
-  #
-  # RPC providers also have certain contracts they can observe. The contract
-  # specific metrics they can observe are:
-  #
-  # - state_sync_receiver_address   (PoS)
-  # - state_sync_sender_address     (PoS)
-  # - checkpoint_address            (PoS)
-  #
-  # - global_exit_root_l2_address   (zkEVM)
-  # - zkevm_bridge_address          (zkEVM)
-  # - rollup_manager_address        (zkEVM)
-  #
-  # Some of these contracts are versioned contracts, which means they take in a
-  # version along with the contract address. This is because there are slight
-  # differences in the ABIs among versions.
-  #
-  # RPC providers also have the ability to specify configuration for the time to
-  # mine metric. It will periodically send transactions to the network and
-  # record how long they took to be included in a block. Here's an example RPC
-  # provider tailored for the time to mine metric.
-  #
-  # - name: "zkEVM Cardona"
-  #   url: "https://rpc.cardona.zkevm-rpc.com"
-  #
-  #   For your label, prepending it with something like `ttm` or `time to mine`
-  #   will help you differentiate the metrics among the other providers with the
-  #   same network.
-  #
-  #   label: "time-to-mine.zkevm-rpc.com"
-  #
-  #   Generally, you would use a higher interval than normal to prevent the
-  #   wallet funds from being drained too quickly.
-  #
-  #   interval: 150
-  #
-  #   time_to_mine:
-  #     sender: ""
-  #     sender_private_key: ""
-  #     receiver: ""
-  #     value: 10000000000000 # 0.00001 ether
-  #     gas_limit: 21000
-  #
-  #   The gas price factor specifies how much to multiply the gas price by.
-  #   This value will default to 1 if not set.
-  #
-  #     gas_price_factor: 3
-  #
-  #   Data is optional field where you can provide the transaction ABI-encoded
-  #   data if you wish.
-  #
-  #     data: ""
-  #
-  # RPC providers can query the balance of certain accounts. You can specify
-  # these accounts like so:
-  #
-  # accounts:
-  #   - "0x123"
-  #   - "0x..."
-  #
   rpc:
     - name: "L1"
       url: "{{.l1_rpc_url}}"
@@ -169,83 +51,13 @@ providers:
         - "{{.zkevm_l2_admin_address}}"
         - "{{.zkevm_l2_claimtxmanager_address}}"
 
-# Observers control what metrics will be recorded. Remove the observer from the
-# list to not track them, causing the metrics to be omitted from the metrics
-# endpoint. You can keep all observers enabled, it shouldn't cause any problems.
-# See ./observer/observer.go for the observer mapping.
-observers:
-  - "account_balances"
-  - "base_fee_per_gas"
-  - "block"
-  - "block_interval"
-  - "bogon_block"
-  - "bridge_event"
-  - "checkpoint"
-  - "claim_event"
-  - "deposit_counts"
-  - "double_sign"
-  - "empty_block"
-  - "exchange_rates"
-  - "exit_roots"
-  - "gas_limit"
-  - "gas_used"
-  - "hash_divergence"
-  - "heimdall_block_interval"
-  - "heimdall_checkpoint"
-  - "heimdall_height"
-  - "heimdall_missed_block_proposal"
-  - "heimdall_missed_checkpoint_proposal"
-  - "heimdall_missed_milestone_proposal"
-  - "heimdall_signature_count"
-  - "heimdall_total_transaction_count"
-  - "heimdall_transaction_count"
-  - "milestone"
-  - "missed_block_proposal"
-  - "refresh_state_time"
-  - "reorg"
-  - "sealed_out_of_turn"
-  - "sensor_block_events"
-  - "sensor_blocks"
-  - "sensor_bogon_block"
-  - "state_sync"
-  - "stolen_block"
-  - "system"
-  - "time_to_mine"
-  - "transaction_cost"
-  - "transaction_count"
-  - "transaction_gas_fee_cap"
-  - "transaction_gas_limit"
-  - "transaction_gas_price"
-  - "transaction_gas_tip_cap"
-  - "transaction_pool"
-  - "transaction_value"
-  - "trusted_batch"
-  - "uncles"
-  - "validator_wallet_balance"
-  - "zkevm_batches"
-  - "rollup_manager"
-  - "span"
-
-# Networks allows you to define custom networks. If defined here, you can use it
-# in the provider as the `name` field.
 networks:
   - name: "L1"
     chain_id: "{{.l1_chain_id}}"
 
   - name: "L2"
     chain_id: "{{.zkevm_rollup_chain_id}}"
+    polygon_zkevm: true
 
 logs:
-  # Pretty print logs. If running in production, you should probably set this to
-  # false. If false, it will print as JSON.
-  pretty: false
-
-  # Set the log level. The possible log levels are:
-  # - "trace"
-  # - "debug"
-  # - "info"
-  # - "warn"
-  # - "error"
-  # - "panic"
-  # - "fatal"
   verbosity: "{{.global_log_level}}"
