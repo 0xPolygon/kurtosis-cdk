@@ -800,13 +800,8 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             fail(
                 "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
             )
-        if (
-            args["sp1_prover_key"] == None
-            or args["sp1_prover_key"] == ""
-        ):
-            fail(
-                "OP Succinct requires a valid SPN key. Change the sp1_prover_key"
-            )
+        if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
+            fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")
 
     # OP rollup check L1 blocktime >= L2 blocktime
     op_network_params = op_stack_args["optimism_package"]["chains"][0]["network_params"]
@@ -826,33 +821,37 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # aggchainFEP it must not be set) or we can hard code to be
     # 0x000...000 in the situations where we know it must be zero
 
+
 def check_or_set_vkeys(plan, args):
     if args["pp_vkey_hash"] == None or args["pp_vkey_hash"] == "":
         result = plan.run_sh(
-            run = "echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
-            image = args["agglayer_image"],
-            description = "Retrieving Agglayer VKey",
+            run="echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
+            image=args["agglayer_image"],
+            description="Retrieving Agglayer VKey",
         )
         args["pp_vkey_hash"] = result.output.strip()
     else:
         plan.run_sh(
-            run = "/bin/bash -c -- 'vkey=$(agglayer vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["pp_vkey_hash"]),
-            image = args["agglayer_image"],
-            description = "Asserting Agglayer VKey",
+            run='/bin/bash -c -- \'vkey=$(agglayer vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
+                args["pp_vkey_hash"]
+            ),
+            image=args["agglayer_image"],
+            description="Asserting Agglayer VKey",
         )
 
     # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
     if args["aggchain_vkey_hash"] == None or args["aggchain_vkey_hash"] == "":
         result = plan.run_sh(
-            run = "echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
-            image = args["aggkit_prover_image"],
-            description = "Retrieving Aggkit Prover VKey",
+            run="echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
+            image=args["aggkit_prover_image"],
+            description="Retrieving Aggkit Prover VKey",
         )
         args["aggchain_vkey_hash"] = result.output.strip()
     else:
         plan.run_sh(
-            run = "/bin/bash -c -- 'vkey=0x$(aggkit-prover vkey); if [[ $vkey != \"{0}\" ]]; then echo \"expected {0} but got $vkey\"; exit 1; else echo lgtm; fi'".format(args["aggchain_vkey_hash"]),
-            image = args["aggkit_prover_image"],
-            description = "Asserting Aggkit Prover VKey",
+            run='/bin/bash -c -- \'vkey=0x$(aggkit-prover vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
+                args["aggchain_vkey_hash"]
+            ),
+            image=args["aggkit_prover_image"],
+            description="Asserting Aggkit Prover VKey",
         )
-

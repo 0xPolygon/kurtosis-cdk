@@ -10,12 +10,12 @@ def run(plan, args, predeployed_contracts=False):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(
-                    script
-                ),
+                "chmod +x {0} && {0}".format(script),
             ]
         ),
     )
+
+
 def init_rollup(plan, args, deployment_stages):
     if deployment_stages.get("deploy_op_succinct", False):
         l2oo_config = get_l2_oo_config(plan, args)
@@ -42,12 +42,11 @@ def init_rollup(plan, args, deployment_stages):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(
-                    script
-                ),
+                "chmod +x {0} && {0}".format(script),
             ]
         ),
     )
+
 
 def get_l2_oo_config(plan, args):
     return """
