@@ -92,7 +92,6 @@ def run(plan, args={}):
                 plan, args, l1_op_contract_addresses
             )
 
-
             if deployment_stages.get("deploy_op_succinct", False):
                 plan.print("Deploying op-succinct contract deployer helper component")
                 import_module(op_succinct_package).op_succinct_contract_deployer_run(
@@ -102,8 +101,12 @@ def run(plan, args={}):
                 # import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
                 #     plan, args
                 # )
-                plan.print("Extracting environment variables from the contract deployer")
-                op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+                plan.print(
+                    "Extracting environment variables from the contract deployer"
+                )
+                op_succinct_env_vars = service_package.get_op_succinct_env_vars(
+                    plan, args
+                )
                 args = args | op_succinct_env_vars
 
                 # plan.print("Deploying L2OO for OP Succinct")
@@ -114,13 +117,12 @@ def run(plan, args={}):
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
             import_module(deploy_sovereign_contracts_package).init_rollup(
-                plan, args
+                plan, args, deployment_stages
             )
             # Extract Sovereign contract addresses
             sovereign_contract_setup_addresses = (
                 service_package.get_sovereign_contract_setup_addresses(plan, args)
             )
-
 
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
@@ -266,9 +268,7 @@ def run(plan, args={}):
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
         plan.print("Extracting environment variables from the contract deployer")
-        op_succinct_env_vars = service_package.get_op_succinct_env_vars(
-            plan, args
-        )
+        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
         args = args | op_succinct_env_vars
 
         plan.print("Deploying op-succinct-server component")
@@ -277,13 +277,15 @@ def run(plan, args={}):
         )
         plan.print("Deploying op-succinct-proposer component")
         import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args|contract_setup_addresses, op_succinct_env_vars
+            plan, args | contract_setup_addresses, op_succinct_env_vars
         )
         # Stop the op-succinct-contract-deployer service after we're done using it.
         service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
         plan.stop_service(
-            name = service_name,
-            description = "Stopping the {0} service after finishing with the initial op-succinct setup.".format(service_name)  
+            name=service_name,
+            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
+                service_name
+            ),
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")

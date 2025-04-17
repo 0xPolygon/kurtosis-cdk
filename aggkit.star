@@ -12,14 +12,12 @@ def run(
     sovereign_contract_setup_addresses,
     deployment_stages,
 ):
-
     # Create aggkit-prover
     aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(
         plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
     )
     (ports, public_ports) = get_aggkit_prover_ports(args)
 
-    
     prover_env_vars = {
         # TODO one of these values can be deprecated soon 2025-04-15
         "PROPOSER_NETWORK_PRIVATE_KEY": args["sp1_prover_key"],

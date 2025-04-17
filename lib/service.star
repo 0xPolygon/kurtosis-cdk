@@ -174,6 +174,7 @@ def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, chain_
     )
     return result.output
 
+
 def get_op_succinct_l2oo_config(plan, args):
     extract = {
         "sp1_challenger": "fromjson | .challenger",
@@ -194,7 +195,11 @@ def get_op_succinct_l2oo_config(plan, args):
     }
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat /opt/op-succinct/contracts/opsuccinctl2ooconfig.json"],
+        command=[
+            "/bin/sh",
+            "-c",
+            "cat /opt/op-succinct/contracts/opsuccinctl2ooconfig.json",
+        ],
         extract=extract,
     )
     service_name = "op-succinct-contract-deployer"
