@@ -814,7 +814,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
 
     # Sanity checking and overwriting input parameters for cdk-validium consensus with supported inputs.
-    if args["consensus_contract_type"] == "cdk-validium":
+    if (
+        args["consensus_contract_type"] == "cdk-validium"
+        or args["consensus_contract_type"] == "rollup"
+    ):
         plan.print(
             "For '{}' consensus, the pp_vkey_hash value should be 0x0. Changing...".format(
                 args["consensus_contract_type"]
@@ -824,12 +827,15 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             "pp_vkey_hash"
         ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
-        plan.print(
-            "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
-                args["consensus_contract_type"]
+        if "v10" in args["zkevm_contracts_image"]:
+            plan.print(
+                "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
+                    args["consensus_contract_type"]
+                )
             )
-        )
-        args["zkevm_contracts_image"] = "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12"
+            args[
+                "zkevm_contracts_image"
+            ] = "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12"
 
     # FIXME - I've removed some code here that was doing some logic to
     # update the vkeys depending on the consensus. We either need to
