@@ -186,10 +186,6 @@ extract_addresses() {
     jq -r "[$jq_filter][] | select(. != null)" "$json_file"
 }
 
-# Extract addresses
-# shellcheck disable=SC2128
-l1_contract_addresses=$(extract_addresses l1_contract_names "$json_file")
-
 # Function to check if addresses have deployed bytecode
 check_deployed_contracts() {
     local addresses=$1         # String of space-separated addresses
@@ -221,6 +217,10 @@ check_deployed_contracts() {
         fi
     done
 }
+
+# Extract addresses
+# shellcheck disable=SC2128
+# l1_contract_addresses=$(extract_addresses l1_contract_names "$json_file")
 
 # Check deployed contracts
 # check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"

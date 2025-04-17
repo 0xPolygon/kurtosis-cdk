@@ -20,8 +20,8 @@ jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
 .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
 ' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/initialize_rollup.json
 
-jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup${ts}.json
-cp /opt/contract-deploy/initialize_rollup${ts}.json /opt/contract-deploy/initialize_rollup.json
+jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' /opt/contract-deploy/initialize_rollup.json > "/opt/contract-deploy/initialize_rollup${ts}".json
+cp "/opt/contract-deploy/initialize_rollup${ts}.json" /opt/contract-deploy/initialize_rollup.json
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
