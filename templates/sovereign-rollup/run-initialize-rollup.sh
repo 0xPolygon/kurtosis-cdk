@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-
+set -e
 # Initialize rollup
 pushd /opt/zkevm-contracts || exit 1
 
 ts=$(date +%s)
 # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
+deployOPSuccinct="{{ .deploy_op_succinct }}"
+if [[ $deployOPSuccinct == true ]]; then
+echo "Configuring OP Succinct setup..."
 jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
 .deployerPvtKey = .aggchainManagerPvtKey |
 .aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
@@ -33,8 +36,10 @@ mv /opt/contract-deploy/initialize_rollup.json.tmp /opt/contract-deploy/initiali
 cp /opt/contract-deploy/initialize_rollup.json /opt/zkevm-contracts/tools/initializeRollup/initialize_rollup.json
 
 npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
+fi
 
 # Save Rollup Information to a file.
+rollup_manager_addr=$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined.json)
 cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
 
 # These are some accounts that we want to fund for operations for running claims.

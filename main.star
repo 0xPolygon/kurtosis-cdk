@@ -114,7 +114,7 @@ def run(plan, args={}):
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
             import_module(deploy_sovereign_contracts_package).init_rollup(
-                plan, args
+                plan, args, deployment_stages
             )
             # Extract Sovereign contract addresses
             sovereign_contract_setup_addresses = (

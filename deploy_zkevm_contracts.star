@@ -116,6 +116,9 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
+                        "deploy_op_succinct": deployment_stages.get(
+                            "deploy_op_succinct", False
+                        ),
                         "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
                             args
                         ),
