@@ -1,5 +1,7 @@
 # See https://github.com/0xPolygon/panoptichain/blob/main/config.yml for how to
 # configure this file.
+http:
+  address: "0.0.0.0"
 
 providers:
   system:

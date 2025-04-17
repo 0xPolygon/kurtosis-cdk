@@ -31,10 +31,10 @@ def get_panoptichain_config(plan, args, contract_setup_addresses):
     # to mine provider will fail.
     panoptichain_data = {
         "l2_rpc_url": l2_rpc_url.http,
-        # cast wallet private-key "{{.l1_preallocated_mnemonic}}"
+        # cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}"
         "l1_sender_address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
         "l2_sender_address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
-        # cast wallet address --mnemonic "{{.l1_preallocated_mnemonic}}" | cut -c3-
+        # cast wallet private-key "{{.l1_preallocated_mnemonic}}" | cut -c3-
         "l1_sender_private_key": "bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
         "l2_sender_private_key": "bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
         # cast wallet address --mnemonic "code code code code code code code code code code code quality"
