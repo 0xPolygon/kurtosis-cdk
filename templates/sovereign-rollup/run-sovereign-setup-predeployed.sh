@@ -11,12 +11,12 @@ ts=$(date +%s)
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 
 # Replace rollupManagerAddress with the extracted address
-jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup${ts}.json
-cp /opt/contract-deploy/create_new_rollup${ts}.json /opt/contract-deploy/create_new_rollup.json
+jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' /opt/contract-deploy/create_new_rollup.json > "/opt/contract-deploy/create_new_rollup${ts}.json"
+cp "/opt/contract-deploy/create_new_rollup${ts}.json" /opt/contract-deploy/create_new_rollup.json
 
 # Replace polygonRollupManagerAddress with the extracted address
-jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' /opt/contract-deploy/add_rollup_type.json > /opt/contract-deploy/add_rollup_type${ts}.json
-cp /opt/contract-deploy/add_rollup_type${ts}.json /opt/contract-deploy/add_rollup_type.json
+jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' /opt/contract-deploy/add_rollup_type.json > "/opt/contract-deploy/add_rollup_type${ts}.json"
+cp "/opt/contract-deploy/add_rollup_type${ts}.json" /opt/contract-deploy/add_rollup_type.json
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
