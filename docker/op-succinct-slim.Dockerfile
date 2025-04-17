@@ -8,6 +8,8 @@ LABEL description="Helper image to deploy op-succinct contracts"
 ARG OP_SUCCINCT_BRANCH
 WORKDIR /opt
 
+# WARNING (DL3008): Pin versions in apt get install.
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
        curl \
@@ -22,27 +24,35 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
+# hadolint ignore=DL4006
 RUN curl -sL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
 
+# WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
+# hadolint ignore=DL4006
 RUN curl -sL https://foundry.paradigm.xyz | bash \
     && /root/.foundry/bin/foundryup  --install stable \
     && mv /root/.foundry/bin/* /usr/local/bin/
 
-RUN cd /opt \
-    && git clone https://github.com/succinctlabs/sp1-contracts.git
+WORKDIR /opt
+RUN git clone https://github.com/succinctlabs/sp1-contracts.git
 
 WORKDIR /opt/op-succinct
-
 RUN git clone https://github.com/agglayer/op-succinct.git . \
     && git checkout ${OP_SUCCINCT_BRANCH} \
     && git submodule update --init --recursive
 
-RUN cargo build --release
-# RUN find target/release -maxdepth 1 -type f -executable | xargs -I xxx cp xxx /usr/local/bin/
-RUN cp target/release/fetch-rollup-config /usr/local/bin/
-RUN cargo clean && rm -rf .git
+RUN cargo build --release \
+    && cp target/release/fetch-rollup-config /usr/local/bin/ \
+    && cargo clean && rm -rf .git
 
+# INFO (DL3049): Label `author` is missing.
+# INFO (DL3049): Label `description` is missing.
+# hadolint ignore=DL3049
 FROM rust:slim-bookworm
+# WARNING (DL3008): Pin versions in apt get install.
+# INFO (DL3009): Delete the apt-get lists after installing something
+# hadolint ignore=DL3008,DL3009
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         build-essential \
