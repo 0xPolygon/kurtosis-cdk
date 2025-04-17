@@ -24,7 +24,7 @@ KURTOSIS_PP_ARGS='{
         "gas_token_enabled": false,
         "zkevm_use_real_verifier": false,
         "enable_normalcy": true,
-        "agglayer_prover_sp1_key": "",
+        "sp1_prover_key": "",
         "agglayer_prover_primary_prover": "mock-prover",
         "sequencer_type": "erigon"
     }

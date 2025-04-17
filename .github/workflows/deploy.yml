@@ -44,10 +44,10 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor pessimistic consensus chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
-          ./monitor-cdk-chain.sh \
+          ./monitor-pessimistic-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
@@ -117,7 +117,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (Central RPC)
+      - name: Monitor pessimistic chain virtual batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
           if [[ "$result" == "pessimistic" ]]; then
@@ -136,7 +136,7 @@ jobs:
               exit 1
             fi
             echo "RPC name: $rpc_name"
-            ./.github/scripts/monitor-cdk-chain.sh \
+            ./.github/scripts/monitor-pessimistic-chain.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
               --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
           fi
@@ -213,10 +213,10 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor pessimistic chain virtual batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
-          ./monitor-cdk-chain.sh \
+          ./monitor-pessimistic-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
@@ -319,10 +319,10 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor pessimistic chain virtual batches (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
-          ./monitor-cdk-chain.sh \
+          ./monitor-pessimistic-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 

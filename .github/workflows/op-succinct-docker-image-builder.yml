@@ -6,7 +6,7 @@
     workflow_dispatch:
       inputs:
         agglayer-op-succinct-commit:
-          description: The agglayer/op-succinct branch or commit to build the image from
+          description: The agglayer/op-succinct commit to build the image from
           required: true
   
   env:
