@@ -22,10 +22,8 @@ def run(plan, args, contract_setup_addresses):
                     "l1_rpc_url": args["l1_rpc_url"],
                     "l1_chain_id": args["l1_chain_id"],
                     "zkevm_rollup_chain_id": args["zkevm_rollup_chain_id"],
-                    "zkevm_bridge_address": contract_setup_addresses[
-                        "zkevm_bridge_address"
-                    ],
-                },
+                }
+                | contract_setup_addresses,
             ),
         },
     )
