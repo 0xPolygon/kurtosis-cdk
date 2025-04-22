@@ -766,15 +766,15 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
         )
 
-    # Gas token enabled and gas token address check
-    if (
-        args.get("gas_token_enabled", False)
-        and args.get("gas_token_address", "0x0000000000000000000000000000000000000000")
-        != "0x0000000000000000000000000000000000000000"
+    # Gas token check
+    gas_token_address = args.get("gas_token_address", "")
+    if args.get("gas_token_enabled", False) and (
+        gas_token_address == ""
+        or gas_token_address == "0x0000000000000000000000000000000000000000"
     ):
         fail(
-            "Gas token address set to '{}' but gas token is not enabled".format(
-                args.get("gas_token_address", "")
+            "Gas token is enabled, but the gas token address is either empty or set to the zero address: '{}'.".format(
+                gas_token_address
             )
         )
 
