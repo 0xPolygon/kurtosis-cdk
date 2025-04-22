@@ -8,6 +8,7 @@ args:
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0-fork11
   additional_services:
+    - test_runner
     - tx_spammer
   consensus_contract_type: cdk-validium
   sequencer_type: erigon
