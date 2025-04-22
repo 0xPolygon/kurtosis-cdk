@@ -140,8 +140,8 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
+    genesis_artifact = ""
     if not deployment_stages.get("deploy_optimism_rollup", False):
-        genesis_artifact = ""
         if deployment_stages.get("deploy_cdk_central_environment", False):
             plan.print("Getting genesis file")
             genesis_artifact = plan.store_service_files(
