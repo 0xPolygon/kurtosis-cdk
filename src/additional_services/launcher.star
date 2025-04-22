@@ -14,7 +14,7 @@ test_runner = import_module("./test_runner.star")
 tx_spammer = import_module("./tx_spammer.star")
 
 
-def launch(plan, args, contract_setup_addresses, genesis_artifact):
+def launch(plan, args, contract_setup_addresses, deployment_stages, genesis_artifact):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.arpeggio:
             arpeggio.run(plan, args)
@@ -43,7 +43,7 @@ def launch(plan, args, contract_setup_addresses, genesis_artifact):
         elif svc == constants.ADDITIONAL_SERVICES.status_checker:
             status_checker.run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.test_runner:
-            test_runner.run(plan, args, contract_setup_addresses)
+            test_runner.run(plan, args, contract_setup_addresses, deployment_stages)
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             tx_spammer.run(plan, args, contract_setup_addresses)
         else:

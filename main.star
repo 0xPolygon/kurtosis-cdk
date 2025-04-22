@@ -278,7 +278,10 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy additional services.
-    additional_services.launch(plan, args, contract_setup_addresses, genesis_artifact)
+    # Note: we pass `deployment_stages` - this is a very bad practice...
+    additional_services.launch(
+        plan, args, contract_setup_addresses, deployment_stages, genesis_artifact
+    )
 
 
 def deploy_helper_service(plan, args):
