@@ -327,12 +327,11 @@ DEFAULT_ROLLUP_ARGS = {
     "gas_token_enabled": False,
     # The address of the L1 ERC20 contract that will be used as the gas token on the rollup.
     # If the address is empty, a contract will be deployed automatically.
-    # Default value is 0x0000000000000000000000000000000000000000
-    "gas_token_address": "0x0000000000000000000000000000000000000000",
+    "gas_token_address": constants.ZERO_ADDRESS,
     # The gas token origin network, to be used in BridgeL2SovereignChain.sol
     "gas_token_network": 0,
     # The sovereign WETH address, to be used in BridgeL2SovereignChain.sol
-    "sovereign_weth_address": "0x0000000000000000000000000000000000000000",
+    "sovereign_weth_address": constants.ZERO_ADDRESS,
     # Flag to indicate if the wrapped ETH is not mintable, to be used in BridgeL2SovereignChain.sol
     "sovereign_weth_address_not_mintable": False,
     # Set to true to use Kurtosis dynamic ports (default) and set to false to use static ports.
@@ -767,16 +766,19 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         )
 
     # Gas token check
-    gas_token_address = args.get("gas_token_address", "")
-    if args.get("gas_token_enabled", False) and (
-        gas_token_address == ""
-        or gas_token_address == "0x0000000000000000000000000000000000000000"
-    ):
-        fail(
-            "Gas token is enabled, but the gas token address is either empty or set to the zero address: '{}'.".format(
-                gas_token_address
+    if args.get("gas_token_enabled", False):
+        # Ensure gas token is not used with OP Rollup.
+        if deployment_stages.get("deploy_optimism_rollup", False):
+            fail("Gas token is not supported when deploying OP Rollup.")
+
+        # Validate the gas token address.
+        gas_token_address = args.get("gas_token_address", "")
+        if gas_token_address == constants.ZERO_ADDRESS or gas_token_address == "":
+            fail(
+                "Gas token is enabled, but the provided gas token address is either empty or set to the zero address: '{}'.".format(
+                    gas_token_address
+                )
             )
-        )
 
     # CDK Erigon normalcy and strict mode check
     if args["enable_normalcy"] and args["erigon_strict_mode"]:
