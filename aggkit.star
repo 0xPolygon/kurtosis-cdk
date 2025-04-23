@@ -1,3 +1,5 @@
+# Copilot: This is a Python-like file (.star / Starlark)
+
 data_availability_package = import_module("./lib/data_availability.star")
 aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./databases.star")
