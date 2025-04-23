@@ -1,4 +1,4 @@
-vkey_module = import_module("../src/vkey.star")
+vkey_module = import_module("../vkey.star")
 
 
 def get_vkey_and_selector(plan, image):
