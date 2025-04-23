@@ -874,6 +874,7 @@ def validate_vkeys(plan, args, deployment_stages):
             )
 
     # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
+    # Only validate the aggchain vkey if an OP rollup is deployed.
     if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
         validate_pp_vkey_with_binary(
             plan,
@@ -881,7 +882,6 @@ def validate_vkeys(plan, args, deployment_stages):
             agglayer_image=args.get("agglayer_image"),
         )
 
-        # Only validate the aggchain vkey if an OP rollup is deployed.
         if deployment_stages.get("deploy_optimism_rollup", False):
             validate_aggchain_vkey_with_binary(
                 plan,
@@ -889,7 +889,7 @@ def validate_vkeys(plan, args, deployment_stages):
                 aggkit_prover_image=args.get("aggkit_prover_image"),
             )
 
-    # For pessimistic and aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
+    # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
     if consensus_type in [
         constants.CONSENSUS_TYPE.ecdsa,
         constants.CONSENSUS_TYPE.fep,
