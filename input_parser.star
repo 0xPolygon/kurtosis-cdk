@@ -861,7 +861,7 @@ def check_or_set_vkeys(plan, args):
     # If the hash is set, we need to assert it.
     result = plan.run_sh(
         name="agglayer-vkey-getter",
-        description="Get agglayer vkey",
+        description="Getting agglayer vkey",
         image=args.get("agglayer_image"),
         run="agglayer vkey | tr -d '\n'",
     )
@@ -871,6 +871,7 @@ def check_or_set_vkeys(plan, args):
         args["pp_vkey_hash"] = agglayer_vkey
     else:
         plan.verify(
+            description="Verifying agglayer vkey",
             value=agglayer_vkey,
             assertion="==",
             target_value=pp_vkey_hash,
@@ -879,7 +880,7 @@ def check_or_set_vkeys(plan, args):
     # Validate aggchain vkey hash - same logic.
     result = plan.run_sh(
         name="aggkit-prover-vkey-getter",
-        description="Get aggkit prover vkey",
+        description="Getting aggkit prover vkey",
         image=args.get("aggkit_prover_image"),
         run="aggkit-prover vkey | tr -d '\n'",
     )
@@ -891,6 +892,7 @@ def check_or_set_vkeys(plan, args):
         args["aggchain_vkey_hash"] = aggkit_prover_vkey
     else:
         plan.verify(
+            description="Verifying aggkit prover vkey",
             value=aggkit_prover_vkey,
             assertion="==",
             target_value=aggchain_vkey_hash,
