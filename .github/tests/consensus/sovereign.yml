@@ -1,6 +1,7 @@
 # only supported by fork12 for now
 args:
   consensus_contract_type: pessimistic
+  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
   zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
   erigon_strict_mode: false
   gas_token_enabled: false

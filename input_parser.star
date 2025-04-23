@@ -310,7 +310,7 @@ DEFAULT_ROLLUP_ARGS = {
     "aggchain_vkey_hash": "",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "",
+    "pp_vkey_hash": constants.ZERO_HASH,
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
     "pp_vkey_selector": "0x00000001",
@@ -419,7 +419,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": "cdk-validium",
+        "consensus_contract_type": constants.CONSENSUS_TYPE.cdk_validium,
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
@@ -481,6 +481,14 @@ DEFAULT_OP_STACK_ARGS = {
 # A list of fork identifiers currently supported by Kurtosis CDK.
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
+VALID_CONSENSUS_TYPES = [
+    constants.CONSENSUS_TYPE.rollup,
+    constants.CONSENSUS_TYPE.cdk_validium,
+    constants.CONSENSUS_TYPE.pessimistic,
+    constants.CONSENSUS_TYPE.fep,
+    constants.CONSENSUS_TYPE.ecdsa,
+]
+
 
 def parse_args(plan, user_args):
     # Merge the provided args with defaults.
@@ -500,8 +508,8 @@ def parse_args(plan, user_args):
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
-    # Check the aggchain_vkey_hash and pp_vkey_hash
-    check_or_set_vkeys(plan, args)
+    validate_consensus_type(args.get("consensus_contract_type"))
+    validate_vkeys(plan, args, deployment_stages)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -786,7 +794,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
-        if args["consensus_contract_type"] != "pessimistic":
+        if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
             if args["consensus_contract_type"] != "fep":
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
@@ -794,7 +802,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                     )
                 )
                 # TODO: should this be AggchainFEP instead?
-                args["consensus_contract_type"] = "pessimistic"
+                args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
@@ -816,19 +824,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
 
     # Sanity checking and overwriting input parameters for cdk-validium consensus with supported inputs.
-    if (
-        args["consensus_contract_type"] == "cdk-validium"
-        or args["consensus_contract_type"] == "rollup"
-    ):
-        plan.print(
-            "For '{}' consensus, the pp_vkey_hash value should be 0x0. Changing...".format(
-                args["consensus_contract_type"]
-            )
-        )
-        args[
-            "pp_vkey_hash"
-        ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
-
+    consensus_contract_type = args.get("consensus_contract_type")
+    if consensus_contract_type in [
+        constants.CONSENSUS_TYPE.rollup,
+        constants.CONSENSUS_TYPE.cdk_validium,
+    ]:
         if "v10" in args["zkevm_contracts_image"]:
             plan.print(
                 "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
@@ -848,36 +848,90 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # 0x000...000 in the situations where we know it must be zero
 
 
-def check_or_set_vkeys(plan, args):
-    if args["pp_vkey_hash"] == None or args["pp_vkey_hash"] == "":
-        result = plan.run_sh(
-            run="echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
-            image=args["agglayer_image"],
-            description="Retrieving Agglayer VKey",
-        )
-        args["pp_vkey_hash"] = result.output.strip()
-    else:
-        plan.run_sh(
-            run='/bin/bash -c -- \'vkey=$(agglayer vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
-                args["pp_vkey_hash"]
-            ),
-            image=args["agglayer_image"],
-            description="Asserting Agglayer VKey",
+def validate_consensus_type(consensus_type):
+    if consensus_type not in VALID_CONSENSUS_TYPES:
+        fail(
+            'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
+                consensus_type, VALID_CONSENSUS_TYPES
+            )
         )
 
-    # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
-    if args["aggchain_vkey_hash"] == None or args["aggchain_vkey_hash"] == "":
-        result = plan.run_sh(
-            run="echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
-            image=args["aggkit_prover_image"],
-            description="Retrieving Aggkit Prover VKey",
+
+def validate_vkeys(plan, args, deployment_stages):
+    consensus_type = args.get("consensus_contract_type")
+
+    # For rollup and cdk-validium consensus, ensure the pp vkey is set to the zero hash.
+    if consensus_type in [
+        constants.CONSENSUS_TYPE.rollup,
+        constants.CONSENSUS_TYPE.cdk_validium,
+    ]:
+        pp_vkey = args.get("pp_vkey_hash")
+        if pp_vkey != constants.ZERO_HASH:
+            fail(
+                "For rollup and cdk-validium consensus, the pp_vkey_hash must be set to '{}', but got '{}'.".format(
+                    constants.ZERO_HASH, pp_vkey
+                )
+            )
+
+    # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
+    # Only validate the aggchain vkey if an OP rollup is deployed.
+    if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
+        validate_pp_vkey_with_binary(
+            plan,
+            pp_vkey=args.get("pp_vkey_hash"),
+            agglayer_image=args.get("agglayer_image"),
         )
-        args["aggchain_vkey_hash"] = result.output.strip()
-    else:
-        plan.run_sh(
-            run='/bin/bash -c -- \'vkey=0x$(aggkit-prover vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
-                args["aggchain_vkey_hash"]
-            ),
-            image=args["aggkit_prover_image"],
-            description="Asserting Aggkit Prover VKey",
+
+        if deployment_stages.get("deploy_optimism_rollup", False):
+            validate_aggchain_vkey_with_binary(
+                plan,
+                aggchain_vkey=args.get("aggchain_vkey_hash"),
+                aggkit_prover_image=args.get("aggkit_prover_image"),
+            )
+
+    # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
+    if consensus_type in [
+        constants.CONSENSUS_TYPE.ecdsa,
+        constants.CONSENSUS_TYPE.fep,
+    ]:
+        validate_pp_vkey_with_binary(
+            plan,
+            pp_vkey=args.get("pp_vkey_hash"),
+            agglayer_image=args.get("agglayer_image"),
         )
+        validate_aggchain_vkey_with_binary(
+            plan,
+            aggchain_vkey=args.get("aggchain_vkey_hash"),
+            aggkit_prover_image=args.get("aggkit_prover_image"),
+        )
+
+
+def validate_pp_vkey_with_binary(plan, pp_vkey, agglayer_image):
+    result = plan.run_sh(
+        name="agglayer-vkey-getter",
+        description="Getting agglayer vkey",
+        image=agglayer_image,
+        run="agglayer vkey | tr -d '\n'",
+    )
+    plan.verify(
+        description="Verifying agglayer vkey",
+        value=result.output,
+        assertion="==",
+        target_value=pp_vkey,
+    )
+
+
+def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image):
+    result = plan.run_sh(
+        name="aggkit-prover-vkey-getter",
+        description="Getting aggkit prover vkey",
+        image=aggkit_prover_image,
+        run="aggkit-prover vkey | tr -d '\n'",
+    )
+    plan.verify(
+        description="Verifying aggkit prover vkey",
+        # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
+        value="0x{}".format(result.output),
+        assertion="==",
+        target_value=aggchain_vkey,
+    )
