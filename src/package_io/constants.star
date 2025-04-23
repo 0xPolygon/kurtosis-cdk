@@ -6,7 +6,7 @@ LOG_LEVEL = struct(
     trace="trace",
 )
 
-CONSENSUS_CONTRACT_TYPE = struct(
+CONSENSUS_TYPE = struct(
     rollup="rollup",
     cdk_validium="cdk-validium",
     pessimistic="pessimistic",

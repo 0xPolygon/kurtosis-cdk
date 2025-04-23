@@ -39,7 +39,7 @@ def create_cdk_node_service_config(
 
 def get_cdk_node_ports(args):
     # We won't have an aggregator if we're in PP mode
-    if args["consensus_contract_type"] == constants.CONSENSUS_CONTRACT_TYPE.pessimistic:
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
         ports = {
             "rpc": PortSpec(
                 args["zkevm_cdk_node_port"],
@@ -88,7 +88,7 @@ def get_cdk_node_cmd(args):
         + "--components=sequence-sender,aggregator"
     ]
 
-    if args["consensus_contract_type"] == constants.CONSENSUS_CONTRACT_TYPE.pessimistic:
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
         service_command = [
             "sleep 20 && cdk-node run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
