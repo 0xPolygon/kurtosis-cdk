@@ -860,19 +860,26 @@ def validate_consensus_type(consensus_type):
 def validate_vkeys(plan, args):
     consensus_type = args.get("consensus_contract_type")
 
-    # For non-aggchain consensus, ensure the pp vkey is set to the zero hash.
+    # For rollup and cdk-validium consensus, ensure the pp vkey is set to the zero hash.
     if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
-        constants.CONSENSUS_TYPE.pessimistic,
     ]:
         pp_vkey = args.get("pp_vkey_hash")
         if pp_vkey != constants.ZERO_HASH:
             fail(
-                "For non-aggchain consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
+                "For rollup and cdk-validium consensus, the pp_vkey_hash must be set to '{}', but got '{}'.".format(
                     constants.ZERO_HASH, pp_vkey
                 )
             )
+
+    # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer image.
+    if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
+        validate_pp_vkey_with_binary(
+            plan,
+            pp_vkey=args.get("pp_vkey_hash"),
+            agglayer_image=args.get("agglayer_image"),
+        )
 
     # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
     if consensus_type in [
