@@ -1,8 +1,18 @@
 #!/bin/bash
 
 # Check if the dependencies are installed
-command -v yq >/dev/null 2>&1 && echo "yq is installed" || { echo "yq is not installed"; exit 1; }
-command -v poetry >/dev/null 2>&1 && echo "poetry is installed" || { echo "poetry is not installed"; exit 1; }
+if command -v yq >/dev/null 2>&1; then
+    echo "yq is installed"
+else
+    echo "yq is not installed"
+    exit 1
+fi
+if command -v poetry >/dev/null 2>&1; then
+    echo "poetry is installed"
+else
+    echo "poetry is not installed"
+    exit 1
+fi
 
 # Run kurtosis:
 kurtosis run --enclave cdk github.com/0xPolygon/kurtosis-cdk
@@ -17,6 +27,7 @@ kurtosis enclave stop cdk
 for quote_container in $containers ; do
     container=${quote_container//\"/}
     base_name=${container%%--*}
+    # shellcheck disable=SC2086
     docker container commit $container $base_name:test
 done
 
@@ -24,11 +35,11 @@ done
 if [[ ! -d "./docker-autocompose" ]]; then
     echo "docker-autocompose folder not found. Cloning the repo..."
     git clone git@github.com:Red5d/docker-autocompose.git
-    cd docker-autocompose
+    cd docker-autocompose || exit 99
     poetry install
 else
     echo "docker-autocompose folder found"
-    cd docker-autocompose
+    cd docker-autocompose || exit 99
 fi
 
 # Create docker compose file
@@ -39,6 +50,7 @@ for quote_container in $containers; do
     container_list="$container_list $container"
 done
 # Run the autocompose command with the dynamically built container list
+# shellcheck disable=SC2086
 poetry run autocompose $container_list > docker-compose.yml
 
 volumes=$(yq '.volumes | keys' docker-compose.yml | sed 's/^- //')
