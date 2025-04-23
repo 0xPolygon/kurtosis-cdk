@@ -9,7 +9,6 @@ args:
     - tx_spammer
   consensus_contract_type: pessimistic
   pp_vkey_hash: '0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7'
-  aggchain_vkey_hash: '0x1f3df68a258f9d6748b291dd35faf80065af7cc11ef8b5fc6db2a4d958ea62d2'
   erigon_strict_mode: false
   gas_token_enabled: false
   zkevm_use_real_verifier: false
