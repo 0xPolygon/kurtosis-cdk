@@ -497,24 +497,10 @@ def parse_args(plan, user_args):
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
-    validate_consensus_type(args.get("consensus_contract_type"))
+    _validate_consensus_type(args.get("consensus_contract_type"))
 
-    # Get vkeys.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
-    vkeys = vkey.get_vkeys(plan, args, deploy_optimism_rollup)
-    plan.print("Using the following vkeys: {}".format(vkeys))
-
-    if vkeys.agglayer:
-        if vkeys.agglayer.vkey:
-            args["pp_vkey_hash"] = vkeys.agglayer.vkey
-        if vkeys.agglayer.vkey_selector:
-            args["pp_vkey_selector"] = vkeys.agglayer.vkey_selector
-
-    if vkeys.aggchain:
-        if vkeys.aggchain.vkey:
-            args["aggkit_vkey_hash"] = vkeys.aggchain.vkey
-        if vkeys.aggchain.vkey_selector:
-            args["aggkit_vkey_selector"] = vkeys.aggchain.vkey_selector
+    _set_vkeys(plan, args, deploy_optimism_rollup)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -543,8 +529,7 @@ def parse_args(plan, user_args):
     sequencer_name = get_sequencer_name(sequencer_type)
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
-    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
-    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
+    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_optimism_rollup)
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
@@ -853,10 +838,23 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # 0x000...000 in the situations where we know it must be zero
 
 
-def validate_consensus_type(consensus_type):
+def _validate_consensus_type(consensus_type):
     if consensus_type not in VALID_CONSENSUS_TYPES:
         fail(
             'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
                 consensus_type, VALID_CONSENSUS_TYPES
             )
         )
+
+
+def _set_vkeys(plan, args, deploy_optimism_rollup):
+    vkeys = vkey.get_vkeys(plan, args, deploy_optimism_rollup)
+    plan.print("Using the following vkeys: {}".format(vkeys))
+
+    if vkeys.agglayer:
+        args["pp_vkey_hash"] = vkeys.agglayer.vkey
+        args["pp_vkey_selector"] = vkeys.agglayer.vkey_selector
+
+    if vkeys.aggchain:
+        args["aggkit_vkey_hash"] = vkeys.aggchain.vkey
+        args["aggkit_vkey_selector"] = vkeys.aggchain.vkey_selector
