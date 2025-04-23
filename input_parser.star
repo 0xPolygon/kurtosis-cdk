@@ -509,7 +509,7 @@ def parse_args(plan, user_args):
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
     validate_consensus_type(args.get("consensus_contract_type"))
-    validate_vkeys(plan, args)
+    validate_vkeys(plan, args, deployment_stages)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -857,7 +857,7 @@ def validate_consensus_type(consensus_type):
         )
 
 
-def validate_vkeys(plan, args):
+def validate_vkeys(plan, args, deployment_stages):
     consensus_type = args.get("consensus_contract_type")
 
     # For rollup and cdk-validium consensus, ensure the pp vkey is set to the zero hash.
