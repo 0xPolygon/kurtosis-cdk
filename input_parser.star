@@ -481,6 +481,14 @@ DEFAULT_OP_STACK_ARGS = {
 # A list of fork identifiers currently supported by Kurtosis CDK.
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
 
+VALID_CONSENSUS_TYPES = [
+    constants.CONSENSUS_TYPE.rollup,
+    constants.CONSENSUS_TYPE.cdk_validium,
+    constants.CONSENSUS_TYPE.pessimistic,
+    constants.CONSENSUS_TYPE.fep,
+    constants.CONSENSUS_TYPE.ecdsa,
+]
+
 
 def parse_args(plan, user_args):
     # Merge the provided args with defaults.
@@ -500,7 +508,7 @@ def parse_args(plan, user_args):
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
-    # Validate pp_vkey_hash and aggchain_vkey_hash.
+    validate_consensus_type(args.get("consensus_contract_type"))
     validate_vkeys(plan, args)
 
     # Setting mitm for each element set to true on mitm dict
@@ -838,6 +846,15 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # (VKeyCannotBeZero() 0x6745305e), but if we're creating an
     # aggchainFEP it must not be set) or we can hard code to be
     # 0x000...000 in the situations where we know it must be zero
+
+
+def validate_consensus_type(consensus_type):
+    if consensus_type not in VALID_CONSENSUS_TYPES:
+        fail(
+            'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
+                consensus_type, VALID_CONSENSUS_TYPES
+            )
+        )
 
 
 def validate_vkeys(plan, args):
