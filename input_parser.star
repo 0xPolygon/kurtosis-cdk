@@ -501,6 +501,7 @@ def parse_args(plan, user_args):
 
     # Get vkeys.
     vkeys = get_vkeys(plan, args, deployment_stages)
+    plan.print("Using the following vkeys: {}".format(vkeys))
     if vkeys.agglayer.vkey:
         args["pp_vkey_hash"] = vkeys.agglayer.vkey
     if vkeys.agglayer.vkey_selector:
