@@ -849,10 +849,11 @@ def validate_vkeys(plan, args):
         constants.CONSENSUS_TYPE.cdk_validium,
         constants.CONSENSUS_TYPE.pessimistic,
     ]:
-        if args.get("pp_vkey_hash") != constants.ZERO_HASH:
+        pp_vkey = args.get("pp_vkey_hash")
+        if pp_vkey != constants.ZERO_HASH:
             fail(
                 "For rollup or cdk-validium consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
-                    constants.ZERO_HASH, pp_vkey_hash
+                    constants.ZERO_HASH, pp_vkey
                 )
             )
 
