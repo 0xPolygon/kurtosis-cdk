@@ -866,6 +866,7 @@ def check_or_set_vkeys(plan, args):
         run="agglayer vkey | tr -d '\n'",
     )
     agglayer_vkey = result.output
+
     if pp_vkey_hash == "":
         args["pp_vkey_hash"] = agglayer_vkey
     else:
@@ -884,6 +885,8 @@ def check_or_set_vkeys(plan, args):
     )
     # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
     aggkit_prover_vkey = "0x{}".format(result.output)
+
+    aggchain_vkey_hash = args.get("aggchain_vkey_hash")
     if aggchain_vkey_hash == "":
         args["aggchain_vkey_hash"] = aggkit_prover_vkey
     else:
