@@ -500,8 +500,8 @@ def parse_args(plan, user_args):
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
-    # Check the aggchain_vkey_hash and pp_vkey_hash
-    check_or_set_vkeys(plan, args)
+    # Validate pp_vkey_hash and aggchain_vkey_hash.
+    validate_vkeys(plan, args)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -840,60 +840,65 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # 0x000...000 in the situations where we know it must be zero
 
 
-def check_or_set_vkeys(plan, args):
-    pp_vkey_hash = args.get("pp_vkey_hash")
+def validate_vkeys(plan, args):
+    consensus_type = args.get("consensus_contract_type")
 
-    # Validate pp vkey for rollup or cdk-validium consensus.
-    if args.get("consensus_contract_type") in [
+    # For non-aggchain consensus, ensure the pp vkey is set to the zero hash.
+    if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
+        constants.CONSENSUS_TYPE.pessimistic,
     ]:
-        if pp_vkey_hash != constants.ZERO_HASH:
+        if args.get("pp_vkey_hash") != constants.ZERO_HASH:
             fail(
                 "For rollup or cdk-validium consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
                     constants.ZERO_HASH, pp_vkey_hash
                 )
             )
-        return
 
-    # Validate pp vkey hash for other consensus types.
-    # If the hash is not set, we need to set it to the agglayer vkey hash.
-    # If the hash is set, we need to assert it.
+    # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
+    if consensus_type in [
+        constants.CONSENSUS_TYPE.ecdsa,
+        constants.CONSENSUS_TYPE.fep,
+    ]:
+        validate_pp_vkey_with_binary(
+            plan,
+            pp_vkey=args.get("pp_vkey_hash"),
+            agglayer_image=args.get("agglayer_image"),
+        )
+        validate_aggchain_vkey_with_binary(
+            plan,
+            aggchain_vkey=args.get("aggchain_vkey_hash"),
+            aggkit_prover_image=args.get("aggkit_prover_image"),
+        )
+
+
+def validate_pp_vkey_with_binary(plan, pp_vkey, agglayer_image):
     result = plan.run_sh(
         name="agglayer-vkey-getter",
         description="Getting agglayer vkey",
-        image=args.get("agglayer_image"),
+        image=agglayer_image,
         run="agglayer vkey | tr -d '\n'",
     )
-    agglayer_vkey = result.output
+    plan.verify(
+        description="Verifying agglayer vkey",
+        value=result.output,
+        assertion="==",
+        target_value=pp_vkey,
+    )
 
-    if pp_vkey_hash == "":
-        args["pp_vkey_hash"] = agglayer_vkey
-    else:
-        plan.verify(
-            description="Verifying agglayer vkey",
-            value=agglayer_vkey,
-            assertion="==",
-            target_value=pp_vkey_hash,
-        )
 
-    # Validate aggchain vkey hash - same logic.
+def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image):
     result = plan.run_sh(
         name="aggkit-prover-vkey-getter",
         description="Getting aggkit prover vkey",
-        image=args.get("aggkit_prover_image"),
+        image=aggkit_prover_image,
         run="aggkit-prover vkey | tr -d '\n'",
     )
-    # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
-    aggkit_prover_vkey = "0x{}".format(result.output)
-
-    aggchain_vkey_hash = args.get("aggchain_vkey_hash")
-    if aggchain_vkey_hash == "":
-        args["aggchain_vkey_hash"] = aggkit_prover_vkey
-    else:
-        plan.verify(
-            description="Verifying aggkit prover vkey",
-            value=aggkit_prover_vkey,
-            assertion="==",
-            target_value=aggchain_vkey_hash,
-        )
+    plan.verify(
+        description="Verifying aggkit prover vkey",
+        # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
+        value="0x{}".format(result.output),
+        assertion="==",
+        target_value=aggchain_vkey_hash,
+    )
