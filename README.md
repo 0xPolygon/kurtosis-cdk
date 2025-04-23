@@ -117,7 +117,7 @@ private_key="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 cast send --legacy --private-key "$private_key" --value 0.01ether 0x0000000000000000000000000000000000000000
 ```
 
-Okay, let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/maticnetwork/polygon-cli) installed.
+Okay, let’s send even more transactions... Note that this step will assume you have [polygon-cli](https://github.com/0xPolygon/polygon-cli) installed.
 
 ```bash
 polycli loadtest --rpc-url "$ETH_RPC_URL" --legacy --private-key "$private_key" --verbosity 700 --requests 50000 --rate-limit 50 --concurrency 5 --mode t

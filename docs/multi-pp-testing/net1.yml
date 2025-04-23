@@ -7,5 +7,5 @@ args:
   gas_token_enabled: false
   zkevm_use_real_verifier: true
   enable_normalcy: true
-  agglayer_prover_sp1_key: 0xsome_sp1_key
+  sp1_prover_key: 0xsome_sp1_key
 

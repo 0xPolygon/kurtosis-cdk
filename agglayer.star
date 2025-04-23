@@ -10,10 +10,10 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
     prover_env_vars = {}
 
     prover_env_vars["RUST_BACKTRACE"] = "1"
-    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
-        prover_env_vars["NETWORK_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
+    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
+        prover_env_vars["NETWORK_PRIVATE_KEY"] = args["sp1_prover_key"]
         # Keeping this for backward compatibility for now
-        prover_env_vars["SP1_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
+        prover_env_vars["SP1_PRIVATE_KEY"] = args["sp1_prover_key"]
         prover_env_vars["NETWORK_RPC_URL"] = args["agglayer_prover_network_url"]
 
     agglayer_prover = plan.add_service(
@@ -80,7 +80,7 @@ def create_agglayer_prover_config_artifact(plan, args):
 
     is_cpu_prover_enabled = "true"
     is_network_prover_enabled = "false"
-    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
+    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
         is_cpu_prover_enabled = "false"
         is_network_prover_enabled = "true"
 
@@ -199,11 +199,11 @@ def get_agglayer_ports(args):
     }
     if not agglayer_version(args).startswith("0.2."):
         ports["aglr-grpc"] = PortSpec(
-            args["agglayer_grpc_port"], application_protocol="http"
+            args["agglayer_grpc_port"], application_protocol="grpc"
         )
         if args["agglayer_admin_port"] != 0:
             ports["aglr-admin"] = PortSpec(
-                args["agglayer_admin_port"], application_protocol="http"
+                args["agglayer_admin_port"], application_protocol="grpc"
             )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)

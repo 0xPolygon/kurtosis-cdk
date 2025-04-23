@@ -169,7 +169,7 @@ DEFAULT_ARGS = (
 )
 
 DEFAULT_ROLLUP_ARGS = {
-    "agglayer_prover_sp1_key": <SPN_KEY>,
+    "sp1_prover_key": <SPN_KEY>,
 }
 
 DEFAULT_OP_STACK_ARGS = {
@@ -302,7 +302,7 @@ polycli ulxly bridge asset \
 Check bridge service:
 
 ```
-curl $(kurtosis port print cdk sovereign-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
+curl $(kurtosis port print cdk zkevm-bridge-service-001 rpc)/bridges/0xC0FFEE0000000000000000000000000000000001 | jq '.'
 ```
 
 Example output:
@@ -336,7 +336,7 @@ When `ready_for_claim` is `true`, claim:
 ```
 polycli ulxly claim asset \
     --bridge-address 0x83F138B325164b162b320F797b57f6f7E235ABAC \
-    --bridge-service-url $(kurtosis port print cdk sovereign-bridge-service-001 rpc) \
+    --bridge-service-url $(kurtosis port print cdk zkevm-bridge-service-001 rpc) \
     --deposit-count 0 \
     --destination-address 0xc0FFee0000000000000000000000000000000001 \
     --deposit-network 2 \
