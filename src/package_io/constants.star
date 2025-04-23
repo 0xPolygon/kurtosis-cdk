@@ -6,6 +6,14 @@ LOG_LEVEL = struct(
     trace="trace",
 )
 
+CONSENSUS_CONTRACT_TYPE = struct(
+    rollup="rollup",
+    cdk_validium="cdk-validium",
+    pessimistic="pessimistic",
+    ecdsa="ecdsa",
+    fep="fep",
+)
+
 SEQUENCER_TYPE = struct(
     CDK_ERIGON="erigon",
     ZKEVM="zkevm",

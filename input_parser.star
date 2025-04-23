@@ -419,7 +419,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": "cdk-validium",
+        "consensus_contract_type": constants.CONSENSUS_CONTRACT_TYPE.cdk_validium,
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
@@ -786,7 +786,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
-        if args["consensus_contract_type"] != "pessimistic":
+        if (
+            args["consensus_contract_type"]
+            != constants.CONSENSUS_CONTRACT_TYPE.pessimistic
+        ):
             if args["consensus_contract_type"] != "fep":
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
@@ -794,7 +797,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                     )
                 )
                 # TODO: should this be AggchainFEP instead?
-                args["consensus_contract_type"] = "pessimistic"
+                args[
+                    "consensus_contract_type"
+                ] = constants.CONSENSUS_CONTRACT_TYPE.pessimistic
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
@@ -816,10 +821,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
 
     # Sanity checking and overwriting input parameters for cdk-validium consensus with supported inputs.
-    if (
-        args["consensus_contract_type"] == "cdk-validium"
-        or args["consensus_contract_type"] == "rollup"
-    ):
+    consensus_contract_type = args.get("consensus_contract_type")
+    if consensus_contract_type in [
+        constants.CONSENSUS_CONTRACT_TYPE.rollup,
+        constants.CONSENSUS_CONTRACT_TYPE.cdk_validium,
+    ]:
         if "v10" in args["zkevm_contracts_image"]:
             plan.print(
                 "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
@@ -843,7 +849,10 @@ def check_or_set_vkeys(plan, args):
     pp_vkey_hash = args.get("pp_vkey_hash")
 
     # Validate pp vkey for rollup or cdk-validium consensus.
-    if args.get("consensus_contract_type") in ["rollup", "cdk-validium"]:
+    if args.get("consensus_contract_type") in [
+        constants.CONSENSUS_CONTRACT_TYPE.rollup,
+        constants.CONSENSUS_CONTRACT_TYPE.cdk_validium,
+    ]:
         if pp_vkey_hash != constants.ZERO_HASH:
             fail(
                 "Invalid pp_vkey_hash: For rollup or cdk-validium consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
