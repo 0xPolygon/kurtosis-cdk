@@ -2,7 +2,7 @@ aggchain = import_module("./src/aggchain/aggchain.star")
 agglayer = import_module("./src/agglayer/agglayer.star")
 constants = import_module("./src/package_io/constants.star")
 dict = import_module("./src/package_io/dict.star")
-vkey_module = import_module("./src/vkey.star")
+vkey = import_module("./src/vkey.star")
 
 # The deployment process is divided into various stages.
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
@@ -500,13 +500,16 @@ def parse_args(plan, user_args):
     validate_consensus_type(args.get("consensus_contract_type"))
 
     # Get vkeys.
-    vkeys = get_vkeys(plan, args, deployment_stages)
+    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
+    vkeys = vkey.get_vkeys(plan, args, deploy_optimism_rollup)
     plan.print("Using the following vkeys: {}".format(vkeys))
+
     if vkeys.agglayer:
         if vkeys.agglayer.vkey:
             args["pp_vkey_hash"] = vkeys.agglayer.vkey
         if vkeys.agglayer.vkey_selector:
             args["pp_vkey_selector"] = vkeys.agglayer.vkey_selector
+
     if vkeys.aggchain:
         if vkeys.aggchain.vkey:
             args["aggkit_vkey_hash"] = vkeys.aggchain.vkey
@@ -856,58 +859,4 @@ def validate_consensus_type(consensus_type):
             'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
                 consensus_type, VALID_CONSENSUS_TYPES
             )
-        )
-
-
-def get_vkeys(plan, args, deployment_stages):
-    consensus_type = args.get("consensus_contract_type")
-
-    # For rollup and cdk-validium consensus, ensure the pp vkey is set to the zero hash.
-    if consensus_type in [
-        constants.CONSENSUS_TYPE.rollup,
-        constants.CONSENSUS_TYPE.cdk_validium,
-    ]:
-        return struct(
-            agglayer=vkey_module.new_vkey_and_selector(
-                vkey=constants.ZERO_HASH,
-                vkey_selector=None,
-            ),
-            aggchain=None,
-        )
-
-    # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
-    # Only validate the aggchain vkey if an OP rollup is deployed.
-    if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
-        agglayer_vkey_and_selector = agglayer.get_vkey_and_selector(
-            plan, image=args.get("agglayer_image")
-        )
-
-        if deployment_stages.get("deploy_optimism_rollup", False):
-            aggchain_vkey_and_selector = aggchain.get_vkey_and_selector(
-                plan, image=args.get("aggkit_prover_image")
-            )
-            return struct(
-                agglayer=agglayer_vkey_and_selector,
-                aggchain=aggchain_vkey_and_selector,
-            )
-
-        return struct(
-            agglayer=agglayer_vkey_and_selector,
-            aggchain=None,
-        )
-
-    # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
-    if consensus_type in [
-        constants.CONSENSUS_TYPE.ecdsa,
-        constants.CONSENSUS_TYPE.fep,
-    ]:
-        agglayer_vkey_and_selector = agglayer.get_vkey_and_selector(
-            plan, image=args.get("agglayer_image")
-        )
-        aggchain_vkey_and_selector = aggchain.get_vkey_and_selector(
-            plan, image=args.get("aggkit_prover_image")
-        )
-        return struct(
-            agglayer=agglayer_vkey_and_selector,
-            aggchain=aggchain_vkey_and_selector,
         )
