@@ -850,7 +850,7 @@ def check_or_set_vkeys(plan, args):
     ]:
         if pp_vkey_hash != constants.ZERO_HASH:
             fail(
-                "Invalid pp_vkey_hash: For rollup or cdk-validium consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
+                "For rollup or cdk-validium consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
                     constants.ZERO_HASH, pp_vkey_hash
                 )
             )
@@ -859,39 +859,36 @@ def check_or_set_vkeys(plan, args):
     # Validate pp vkey hash for other consensus types.
     # If the hash is not set, we need to set it to the agglayer vkey hash.
     # If the hash is set, we need to assert it.
-    agglayer_image = args.get("agglayer_image")
+    result = plan.run_sh(
+        name="agglayer-vkey-getter",
+        description="Get agglayer vkey",
+        image=args.get("agglayer_image"),
+        run="agglayer vkey | tr -d '\n'",
+    )
+    agglayer_vkey = result.output
     if pp_vkey_hash == "":
-        result = plan.run_sh(
-            description="Retrieving agglayer vkey",
-            image=agglayer_image,
-            run="echo -n $(agglayer vkey)".format(pp_vkey_hash),
-        )
-        args["pp_vkey_hash"] = result.output.strip()
+        args["pp_vkey_hash"] = agglayer_vkey
     else:
-        plan.run_sh(
-            description="Asserting agglayer vkey",
-            image=agglayer_image,
-            run='/bin/bash -c -- \'vkey=$(agglayer vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
-                pp_vkey_hash
-            ),
+        plan.verify(
+            value=agglayer_vkey,
+            assertion="==",
+            target_value=pp_vkey_hash,
         )
 
     # Validate aggchain vkey hash - same logic.
+    result = plan.run_sh(
+        name="aggkit-prover-vkey-getter",
+        description="Get aggkit prover vkey",
+        image=args.get("aggkit_prover_image"),
+        run="aggkit-prover vkey | tr -d '\n'",
+    )
     # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
-    aggchain_vkey_hash = args.get("aggchain_vkey_hash")
-    aggkit_prover_image = args.get("aggkit_prover_image")
+    aggkit_prover_vkey = "0x{}".format(result.output)
     if aggchain_vkey_hash == "":
-        result = plan.run_sh(
-            description="Retrieving aggkit prover vkey",
-            image=aggkit_prover_image,
-            run="echo -n 0x$(aggkit-prover vkey)".format(aggchain_vkey_hash),
-        )
-        args["aggchain_vkey_hash"] = result.output.strip()
+        args["aggchain_vkey_hash"] = aggkit_prover_vkey
     else:
-        plan.run_sh(
-            description="Asserting aggkit prover vkey",
-            image=aggkit_prover_image,
-            run='/bin/bash -c -- \'vkey=0x$(aggkit-prover vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
-                aggchain_vkey_hash
-            ),
+        plan.verify(
+            value=aggkit_prover_vkey,
+            assertion="==",
+            target_value=aggchain_vkey_hash,
         )
