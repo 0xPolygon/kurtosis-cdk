@@ -918,5 +918,5 @@ def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image)
         # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
         value="0x{}".format(result.output),
         assertion="==",
-        target_value=aggchain_vkey_hash,
+        target_value=aggchain_vkey,
     )
