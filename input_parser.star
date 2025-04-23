@@ -820,15 +820,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         args["consensus_contract_type"] == "cdk-validium"
         or args["consensus_contract_type"] == "rollup"
     ):
-        plan.print(
-            "For '{}' consensus, the pp_vkey_hash value should be 0x0. Changing...".format(
-                args["consensus_contract_type"]
-            )
-        )
-        args[
-            "pp_vkey_hash"
-        ] = "0x0000000000000000000000000000000000000000000000000000000000000000"
-
         if "v10" in args["zkevm_contracts_image"]:
             plan.print(
                 "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
@@ -849,35 +840,54 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
 
 
 def check_or_set_vkeys(plan, args):
-    if args["pp_vkey_hash"] == None or args["pp_vkey_hash"] == "":
+    pp_vkey_hash = args.get("pp_vkey_hash")
+
+    # Validate pp vkey for rollup or cdk-validium consensus.
+    if args.get("consensus_contract_type") in ["rollup", "cdk-validium"]:
+        if pp_vkey_hash != constants.ZERO_HASH:
+            fail(
+                "Invalid pp_vkey_hash: For rollup or cdk-validium consensus, pp_vkey_hash must be set to '{}', but got '{}'.".format(
+                    constants.ZERO_HASH, pp_vkey_hash
+                )
+            )
+        return
+
+    # Validate pp vkey hash for other consensus types.
+    # If the hash is not set, we need to set it to the agglayer vkey hash.
+    # If the hash is set, we need to assert it.
+    agglayer_image = args.get("agglayer_image")
+    if pp_vkey_hash == "":
         result = plan.run_sh(
-            run="echo -n $(agglayer vkey)".format(args["pp_vkey_hash"]),
-            image=args["agglayer_image"],
-            description="Retrieving Agglayer VKey",
+            description="Retrieving agglayer vkey",
+            image=agglayer_image,
+            run="echo -n $(agglayer vkey)".format(pp_vkey_hash),
         )
         args["pp_vkey_hash"] = result.output.strip()
     else:
         plan.run_sh(
+            description="Asserting agglayer vkey",
+            image=agglayer_image,
             run='/bin/bash -c -- \'vkey=$(agglayer vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
-                args["pp_vkey_hash"]
+                pp_vkey_hash
             ),
-            image=args["agglayer_image"],
-            description="Asserting Agglayer VKey",
         )
 
+    # Validate aggchain vkey hash - same logic.
     # FIXME - at some point in the future, the aggchain vkey hash will probably come prefixed with 0x an we'll need to fix this
-    if args["aggchain_vkey_hash"] == None or args["aggchain_vkey_hash"] == "":
+    aggchain_vkey_hash = args.get("aggchain_vkey_hash")
+    aggkit_prover_image = args.get("aggkit_prover_image")
+    if aggchain_vkey_hash == "":
         result = plan.run_sh(
-            run="echo -n 0x$(aggkit-prover vkey)".format(args["aggchain_vkey_hash"]),
-            image=args["aggkit_prover_image"],
-            description="Retrieving Aggkit Prover VKey",
+            description="Retrieving aggkit prover vkey",
+            image=aggkit_prover_image,
+            run="echo -n 0x$(aggkit-prover vkey)".format(aggchain_vkey_hash),
         )
         args["aggchain_vkey_hash"] = result.output.strip()
     else:
         plan.run_sh(
+            description="Asserting aggkit prover vkey",
+            image=aggkit_prover_image,
             run='/bin/bash -c -- \'vkey=0x$(aggkit-prover vkey); if [[ $vkey != "{0}" ]]; then echo "expected {0} but got $vkey"; exit 1; else echo lgtm; fi\''.format(
-                args["aggchain_vkey_hash"]
+                aggchain_vkey_hash
             ),
-            image=args["aggkit_prover_image"],
-            description="Asserting Aggkit Prover VKey",
         )
