@@ -28,4 +28,4 @@ def _get_vkey_selector(plan, image):
         run="agglayer vkey-selector | tr -d '\n'",
     )
     # FIXME: At some point in the future, the agglayer vkey selector will probably come prefixed with 0x and we'll need to fix this.
-    return "0x{}".format(agglayer_vkey_selector_result.output)
+    return "0x{}".format(result.output)

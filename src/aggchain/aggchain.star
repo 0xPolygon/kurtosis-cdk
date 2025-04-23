@@ -18,7 +18,7 @@ def _get_vkey(plan, image):
         run="aggkit-prover vkey | tr -d '\n'",
     )
     #  FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
-    return "0x{}".format(aggkit_prover_vkey_result.output)
+    return "0x{}".format(result.output)
 
 
 def _get_vkey_selector(plan, image):
@@ -29,4 +29,4 @@ def _get_vkey_selector(plan, image):
         run="aggkit-prover vkey-selector | tr -d '\n'",
     )
     # FIXME: At some point in the future, the aggchain vkey selector will probably come prefixed with 0x and we'll need to fix this.
-    return "0x{}".format(aggkit_prover_vkey_result.output)
+    return "0x{}".format(result.output)
