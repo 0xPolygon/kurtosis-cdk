@@ -3,7 +3,7 @@ agglayer = import_module("./agglayer/agglayer.star")
 constants = import_module("./package_io/constants.star")
 
 
-def new_environment_vkeys(agglayer_vkey, aggchain_vkey=None):
+def new_vkeys(agglayer_vkey, aggchain_vkey=None):
     return struct(
         agglayer_vkey=agglayer_vkey,
         aggchain_vkey=aggchain_vkey,
@@ -19,23 +19,23 @@ def new_vkey_and_selector(vkey, vkey_selector=None):
 
 def get_vkeys(plan, args, deploy_optimism_rollup):
     consensus_handlers = {
-        constants.CONSENSUS_TYPE.rollup: lambda: new_environment_vkeys(
+        constants.CONSENSUS_TYPE.rollup: lambda: new_vkeys(
             agglayer_vkey=_get_agglayer_zero_vkey()
         ),
-        constants.CONSENSUS_TYPE.cdk_validium: lambda: new_environment_vkeys(
+        constants.CONSENSUS_TYPE.cdk_validium: lambda: new_vkeys(
             agglayer_vkey=_get_agglayer_zero_vkey()
         ),
-        constants.CONSENSUS_TYPE.pessimistic: lambda: new_environment_vkeys(
+        constants.CONSENSUS_TYPE.pessimistic: lambda: new_vkeys(
             agglayer_vkey=_get_agglayer_vkey(plan, args),
             aggchain_vkey=_get_aggchain_vkey(plan, args)
             if deploy_optimism_rollup
             else None,
         ),
-        constants.CONSENSUS_TYPE.ecdsa: lambda: new_environment_vkeys(
+        constants.CONSENSUS_TYPE.ecdsa: lambda: new_vkeys(
             agglayer_vkey=_get_agglayer_vkey(plan, args),
             aggchain_vkey=_get_aggchain_vkey(plan, args),
         ),
-        constants.CONSENSUS_TYPE.fep: lambda: new_environment_vkeys(
+        constants.CONSENSUS_TYPE.fep: lambda: new_vkeys(
             agglayer_vkey=_get_agglayer_vkey(plan, args),
             aggchain_vkey=_get_aggchain_vkey(plan, args),
         ),
