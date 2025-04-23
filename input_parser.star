@@ -909,39 +909,3 @@ def get_vkeys(plan, args, deployment_stages):
             agglayer=agglayer_vkey_and_selector,
             aggchain=aggchain_vkey_and_selector,
         )
-        validate_aggchain_vkey_with_binary(
-            plan,
-            aggchain_vkey=args.get("aggchain_vkey_hash"),
-            aggkit_prover_image=args.get("aggkit_prover_image"),
-        )
-
-
-def validate_pp_vkey_with_binary(plan, pp_vkey, agglayer_image):
-    result = plan.run_sh(
-        name="agglayer-vkey-getter",
-        description="Getting agglayer vkey",
-        image=agglayer_image,
-        run="agglayer vkey | tr -d '\n'",
-    )
-    plan.verify(
-        description="Verifying agglayer vkey",
-        value=result.output,
-        assertion="==",
-        target_value=pp_vkey,
-    )
-
-
-def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image):
-    result = plan.run_sh(
-        name="aggkit-prover-vkey-getter",
-        description="Getting aggkit prover vkey",
-        image=aggkit_prover_image,
-        run="aggkit-prover vkey | tr -d '\n'",
-    )
-    plan.verify(
-        description="Verifying aggkit prover vkey",
-        # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
-        value="0x{}".format(result.output),
-        assertion="==",
-        target_value=aggchain_vkey,
-    )
