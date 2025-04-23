@@ -47,9 +47,9 @@
         },
         "useDefaultGateway": true,
         "ownedAggchainVKey": "{{ .aggchain_vkey_hash }}",
-        "aggchainVKeySelector": "{{ .aggchain_vkey_version }}",
+        "aggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "initOwnedAggchainVKey": "{{ .aggchain_vkey_hash }}",
-        "initAggchainVKeyVersion": "{{ .aggchain_vkey_version }}",
+        "initAggchainVKeyVersion": "{{ .aggchain_vkey_selector }}",
         "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"
     }
 }
