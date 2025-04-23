@@ -12,6 +12,8 @@ args:
   aggkit_prover_primary_prover: "mock-prover"
   sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   consensus_contract_type: fep
+  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
+  aggchain_vkey_hash: "0x1f3df68a258f9d6748b291dd35faf80065af7cc11ef8b5fc6db2a4d958ea62d2"
   # true = mock
   # false = network
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
