@@ -502,14 +502,16 @@ def parse_args(plan, user_args):
     # Get vkeys.
     vkeys = get_vkeys(plan, args, deployment_stages)
     plan.print("Using the following vkeys: {}".format(vkeys))
-    if vkeys.agglayer.vkey:
-        args["pp_vkey_hash"] = vkeys.agglayer.vkey
-    if vkeys.agglayer.vkey_selector:
-        args["pp_vkey_selector"] = vkeys.agglayer.vkey_selector
-    if vkeys.aggchain.vkey:
-        args["aggkit_vkey_hash"] = vkeys.aggchain.vkey
-    if vkeys.aggchain.vkey_selector:
-        args["aggkit_vkey_selector"] = vkeys.aggchain.vkey_selector
+    if vkeys.agglayer:
+        if vkeys.agglayer.vkey:
+            args["pp_vkey_hash"] = vkeys.agglayer.vkey
+        if vkeys.agglayer.vkey_selector:
+            args["pp_vkey_selector"] = vkeys.agglayer.vkey_selector
+    if vkeys.aggchain:
+        if vkeys.aggchain.vkey:
+            args["aggkit_vkey_hash"] = vkeys.aggchain.vkey
+        if vkeys.aggchain.vkey_selector:
+            args["aggkit_vkey_selector"] = vkeys.aggchain.vkey_selector
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
