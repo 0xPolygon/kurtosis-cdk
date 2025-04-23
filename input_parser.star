@@ -1,5 +1,3 @@
-aggchain = import_module("./src/aggchain/aggchain.star")
-agglayer = import_module("./src/agglayer/agglayer.star")
 constants = import_module("./src/package_io/constants.star")
 dict = import_module("./src/package_io/dict.star")
 vkey = import_module("./src/vkey.star")
@@ -851,10 +849,10 @@ def _set_vkeys(plan, args, deploy_optimism_rollup):
     vkeys = vkey.get_vkeys(plan, args, deploy_optimism_rollup)
     plan.print("Using the following vkeys: {}".format(vkeys))
 
-    if vkeys.agglayer:
-        args["pp_vkey_hash"] = vkeys.agglayer.vkey
-        args["pp_vkey_selector"] = vkeys.agglayer.vkey_selector
+    if vkeys.agglayer_vkey:
+        args["pp_vkey_hash"] = vkeys.agglayer_vkey.vkey
+        args["pp_vkey_selector"] = vkeys.agglayer_vkey.vkey_selector
 
-    if vkeys.aggchain:
-        args["aggkit_vkey_hash"] = vkeys.aggchain.vkey
-        args["aggkit_vkey_selector"] = vkeys.aggchain.vkey_selector
+    if vkeys.aggchain_vkey:
+        args["aggkit_vkey_hash"] = vkeys.aggchain_vkey.vkey
+        args["aggkit_vkey_selector"] = vkeys.aggchain_vkey.vkey_selector

@@ -1,3 +1,5 @@
+aggchain = import_module("./aggchain/aggchain.star")
+agglayer = import_module("./agglayer/agglayer.star")
 constants = import_module("./package_io/constants.star")
 
 
