@@ -8,21 +8,18 @@ TEST_RUNNER_IMAGE = "leovct/e2e:454aadc"  # https://github.com/agglayer/e2e/comm
 def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
     l1_rpc_url = args.get("mitm_rpc_url").get("agglayer", args.get("l1_rpc_url"))
 
+    # Bridge service url.
+    bridge_service_name = "zkevm-bridge-service{}".format(args.get("deployment_suffix"))
+    bridge_service = plan.get_service(bridge_service_name)
+    bridge_service_url = "http://{}:{}".format(
+        bridge_service.name,
+        bridge_service.ports.get("rpc").number,
+    )
+
     # Note: Getting values this way is not clean at all!!!
-    bridge_service_url = ""
     l2_rpc_url = ""
     l2_bridge_address = ""
     if deploy_optimism_rollup:
-        # Bridge service url.
-        bridge_service_name = "sovereign-bridge-service{}".format(
-            args.get("deployment_suffix")
-        )
-        bridge_service = plan.get_service(bridge_service_name)
-        bridge_service_url = "http://{}:{}".format(
-            bridge_service.name,
-            bridge_service.ports.get("rpc").number,
-        )
-
         # L2 rpc url.
         op_el_rpc_name = "op-el-1-op-geth-op-node{}".format(
             args.get("deployment_suffix")
@@ -36,16 +33,6 @@ def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
         # L2 bridge contract address.
         l2_bridge_address = contract_setup_addresses.get("sovereign_bridge_proxy_addr")
     else:
-        # Bridge service url.
-        bridge_service_name = "zkevm-bridge-service{}".format(
-            args.get("deployment_suffix")
-        )
-        bridge_service = plan.get_service(bridge_service_name)
-        bridge_service_url = "http://{}:{}".format(
-            bridge_service.name,
-            bridge_service.ports.get("rpc").number,
-        )
-
         # L2 rpc url.
         l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
 
