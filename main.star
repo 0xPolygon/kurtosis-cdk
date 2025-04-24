@@ -280,7 +280,12 @@ def run(plan, args={}):
     # Deploy additional services.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     additional_services.launch(
-        plan, args, contract_setup_addresses, genesis_artifact, deploy_optimism_rollup
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        genesis_artifact,
+        deploy_optimism_rollup,
     )
 
 

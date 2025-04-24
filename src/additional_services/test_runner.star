@@ -5,13 +5,22 @@ wallet_module = import_module("../wallet/wallet.star")
 TEST_RUNNER_IMAGE = "leovct/e2e:454aadc"  # https://github.com/agglayer/e2e/commit/454aadcc4008a2e95b0888521d770149d60ec6c1
 
 
-def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
+def run(
+    plan,
+    args,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+    deploy_optimism_rollup,
+):
     # Get urls.
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
     bridge_service_url = _get_bridge_service_url(plan, args)
     l2_bridge_address = _get_l2_bridge_address(
-        plan, deploy_optimism_rollup, contract_setup_addresses
+        plan,
+        deploy_optimism_rollup,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
     )
 
     # Generate new wallet for the test runner.
@@ -63,13 +72,16 @@ def _get_bridge_service_url(plan, args):
     return service.ports["rpc"].url
 
 
-def _get_l2_bridge_address(plan, deploy_optimism_rollup, contract_setup_addresses):
+def _get_l2_bridge_address(
+    plan,
+    deploy_optimism_rollup,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+):
     if deploy_optimism_rollup:
-        return contract_setup_addresses.get("sovereign_bridge_proxy_addr")
+        return sovereign_contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
-    if "zkevm_bridge_l2_address" in contract_setup_addresses:
-        return contract_setup_addresses.get("zkevm_bridge_l2_address")
-    return contract_setup_addresses.get("zkevm_bridge_address")
+    return contract_setup_addresses.get("zkevm_bridge_l2_address")
 
 
 def _generate_new_funded_l1_l2_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
