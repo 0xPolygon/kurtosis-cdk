@@ -38,7 +38,7 @@ echo "L1_RPC_URL: $L1_RPC_URL"
 echo "L2_CHAIN_ID: $L2_CHAIN_ID"
 echo "L2_RPC_URL: $L2_RPC_URL"
 echo "L1_BRIDGE_ADDRESS: $L1_BRIDGE_ADDRESS"
-echp "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
+echo "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
 
 # Derive address from private key.
 eth_address=$(cast wallet address --private-key "$PRIVATE_KEY")
