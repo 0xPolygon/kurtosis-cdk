@@ -17,7 +17,7 @@ def run(plan, args, contract_setup_addresses):
 
     # Generate new wallet for the bridge spammer.
     funder_private_key = args.get("zkevm_l2_admin_private_key")
-    wallet = _generate_new_funded_wallet(
+    wallet = _generate_new_funded_l1_l2_wallet(
         plan, funder_private_key, l1_rpc_url, l2_rpc_url
     )
 
@@ -72,8 +72,7 @@ def _get_l2_rpc_url(plan, args):
     return service.ports["rpc"].url
 
 
-def _generate_new_funded_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
-    # Generate a new wallet and fund it on L1 and L2.
+def _generate_new_funded_l1_l2_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
     wallet = wallet_module.new(plan)
     wallet_module.fund(
         plan,

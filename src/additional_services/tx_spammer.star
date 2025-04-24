@@ -16,9 +16,7 @@ def run(plan, args, contract_setup_addresses):
 
     # Generate new wallet for the tx spammer.
     funder_private_key = args.get("zkevm_l2_admin_private_key")
-    wallet = _generate_new_funded_wallet(
-        plan, funder_private_key, l1_rpc_url, l2_rpc_url
-    )
+    wallet = _generate_new_funded_l1_wallet(plan, funder_private_key, l2_rpc_url)
 
     # Start the tx spammer.
     tx_spammer_config_artifact = plan.upload_files(
@@ -50,15 +48,8 @@ def _get_l2_rpc_url(plan, args):
     return service.ports["rpc"].url
 
 
-def _generate_new_funded_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
-    # Generate a new wallet and fund it on L1 and L2.
+def _generate_new_funded_l1_wallet(plan, funder_private_key, l2_rpc_url):
     wallet = wallet_module.new(plan)
-    wallet_module.fund(
-        plan,
-        address=wallet.address,
-        rpc_url=l1_rpc_url,
-        funder_private_key=funder_private_key,
-    )
     wallet_module.fund(
         plan,
         address=wallet.address,
