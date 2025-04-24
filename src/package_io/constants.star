@@ -1,3 +1,16 @@
+ADDITIONAL_SERVICES = struct(
+    arpeggio="arpeggio",
+    assertoor="assertoor",
+    blockscout="blockscout",
+    blutgang="blutgang",
+    bridge_spammer="bridge_spammer",
+    erpc="erpc",
+    observability="observability",
+    pless_zkevm_node="pless_zkevm_node",
+    status_checker="status_checker",
+    tx_spammer="tx_spammer",
+)
+
 LOG_LEVEL = struct(
     error="error",
     warn="warn",

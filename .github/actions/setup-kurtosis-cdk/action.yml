@@ -6,11 +6,11 @@ inputs:
   kurtosis-version:
     description: The version of kurtosis
     required: false
-    default: 1.4.2 # Should be aligned with .github/workflows/lint.yml
+    default: 1.7.2
   foundry-version:
     description: The version of foundry
     required: false
-    default: nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 # https://github.com/foundry-rs/foundry/releases/tag/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76 - 2024-11-29
+    default: v1.0.0
 
 runs:
   using: "composite"
