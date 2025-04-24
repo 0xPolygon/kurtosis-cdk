@@ -780,6 +780,19 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
         )
 
+    # Check args[zkevm_rollup_chain_id] and op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"] are equal.
+    if str(args["zkevm_rollup_chain_id"]) != str(
+        op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"]
+    ) and deployment_stages.get("deploy_op_stack", False):
+        fail(
+            "op_stack_args network_params network_id is set to '{}', please change it to match zkevm_rollup_chain_id '{}'".format(
+                op_stack_args["optimism_package"]["chains"][0]["network_params"][
+                    "network_id"
+                ],
+                args["zkevm_rollup_chain_id"],
+            )
+        )
+
     # Unsupported L1 engine check
     if args["l1_engine"] not in constants.L1_ENGINES:
         fail(
