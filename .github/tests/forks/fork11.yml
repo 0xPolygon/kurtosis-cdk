@@ -16,6 +16,3 @@ args:
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags?name=fork11
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0-fork11
-
-  additional_services:
-    - tx_spammer
