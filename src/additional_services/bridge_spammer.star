@@ -21,6 +21,15 @@ def run(plan, args, contract_setup_addresses):
         plan, funder_private_key, l1_rpc_url, l2_rpc_url
     )
 
+    # Fund the l2 claim tx manager address.
+    wallet_module.fund(
+        plan,
+        address=args.get("zkevm_l2_claimtxmanager_address"),
+        rpc_url=l2_rpc_url,
+        funder_private_key=funder_private_key,
+        value="10ether",
+    )
+
     # Start the bridge spammer.
     bridge_spammer_config_artifact = plan.upload_files(
         src="{}/{}".format(TEMPLATES_FOLDER_PATH, SCRIPT_NAME),
@@ -44,9 +53,6 @@ def run(plan, args, contract_setup_addresses):
                 "L2_CHAIN_ID": str(args.get("zkevm_rollup_chain_id")),
                 "L2_RPC_URL": l2_rpc_url,
                 # addresses
-                "L2_CLAIM_TX_MANAGER_ADDRESS": args.get(
-                    "zkevm_l2_claimtxmanager_address"
-                ),
                 "L1_BRIDGE_ADDRESS": contract_setup_addresses.get(
                     "zkevm_bridge_address"
                 ),
