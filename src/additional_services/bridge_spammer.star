@@ -42,10 +42,10 @@ def run(plan, args, contract_setup_addresses):
             env_vars={
                 "PRIVATE_KEY": wallet.private_key,
                 # l1
-                "L1_CHAIN_ID": args.get("l1_chain_id"),
+                "L1_CHAIN_ID": str(args.get("l1_chain_id")),
                 "L1_RPC_URL": l1_rpc_url,
                 # l2
-                "L2_CHAIN_ID": args.get("zkevm_rollup_chain_id"),
+                "L2_CHAIN_ID": str(args.get("zkevm_rollup_chain_id")),
                 "L2_RPC_URL": l2_rpc_url,
                 # addresses
                 "L2_CLAIM_TX_MANAGER_ADDRESS": args.get(
@@ -71,7 +71,7 @@ def run(plan, args, contract_setup_addresses):
 def _get_l2_rpc_url(plan, args):
     service_name = args.get("l2_rpc_name") + args.get("deployment_suffix")
     service = plan.get_service(service_name)
-    return service.get("rpc")
+    return service.ports["rpc"].url
 
 
 def _generate_new_funded_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
