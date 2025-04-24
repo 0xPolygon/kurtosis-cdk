@@ -63,11 +63,11 @@ polycli ulxly bridge asset \
     --pretty-logs=false
 
 # Allow some time for bridge processing.
-current_block_number="$(cast block-number --rpc-url $L1_RPC_URL)"
+current_block_number="$(cast block-number --rpc-url "$L1_RPC_URL")"
 finalized_block_number=0
 until [[ "$finalized_block_number" -gt "$current_block_number" ]]; do
     sleep 5
-    finalized_block_number="$(cast block-number --rpc-url $L1_RPC_URL finalized)"
+    finalized_block_number="$(cast block-number --rpc-url "$L1_RPC_URL" finalized)"
 done
 
 # Start depositing on L2.
