@@ -67,7 +67,9 @@ def _get_l2_bridge_address(plan, deploy_optimism_rollup, contract_setup_addresse
     if deploy_optimism_rollup:
         return contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
-    return contract_setup_addresses.get("zkevm_bridge_l2_address")
+    if "zkevm_bridge_l2_address" in contract_setup_addresses:
+        return contract_setup_addresses.get("zkevm_bridge_l2_address")
+    return contract_setup_addresses.get("zkevm_bridge_address")
 
 
 def _generate_new_funded_l1_l2_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
