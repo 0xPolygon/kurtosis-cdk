@@ -51,9 +51,11 @@ echo "eth_address: $eth_address"
 
 # Fund claimtx manager.
 # TODO: This step should not be part of the spammer script, it should be done elsewhere.
+echo "Funding the claim tx manager"
 cast send --legacy --rpc-url "$L2_RPC_URL" --private-key "$PRIVATE_KEY" --value "10ether" "$L2_CLAIM_TX_MANAGER_ADDRESS"
 
 # Deposit on L1 to avoid negative balance.
+echo "Depositing on L1 to avoid negative balances"
 polycli ulxly bridge asset \
     --value "1000000000000000000" \
     --gas-limit "1250000" \
