@@ -45,6 +45,7 @@ def run(plan, args={}):
 
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
+    sovereign_contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
         import_module(deploy_zkevm_contracts_package).run(
