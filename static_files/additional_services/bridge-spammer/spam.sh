@@ -24,10 +24,6 @@ if [[ -z "${L2_RPC_URL}" ]]; then
   echo "Error: L2_RPC_URL environment variable is not set"
   exit 1
 fi
-if [[ -z "${L2_CLAIM_TX_MANAGER_ADDRESS}" ]]; then
-  echo "Error: L2_CLAIM_TX_MANAGER_ADDRESS environment variable is not set"
-  exit 1
-fi
 if [[ -z "${L1_BRIDGE_ADDRESS}" ]]; then
   echo "Error: L1_BRIDGE_ADDRESS environment variable is not set"
   exit 1
@@ -41,7 +37,6 @@ echo "L1_CHAIN_ID: $L1_CHAIN_ID"
 echo "L1_RPC_URL: $L1_RPC_URL"
 echo "L2_CHAIN_ID: $L2_CHAIN_ID"
 echo "L2_RPC_URL: $L2_RPC_URL"
-echo "L2_CLAIM_TX_MANAGER_ADDRESS: $L2_CLAIM_TX_MANAGER_ADDRESS"
 echo "L1_BRIDGE_ADDRESS: $L1_BRIDGE_ADDRESS"
 echp "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
 
