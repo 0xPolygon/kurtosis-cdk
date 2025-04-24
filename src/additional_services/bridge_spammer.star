@@ -2,14 +2,12 @@ constants = import_module("../../src/package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
 # The folder where bridge spammer template files are stored in the repository.
-BRIDGE_SPAMMER_TEMPLATES_FOLDER_PATH = (
-    "../../static_files/additional_services/bridge-spammer"
-)
+TEMPLATES_FOLDER_PATH = "../../static_files/additional_services/bridge-spammer"
 # The name of the bridge spammer script.
-BRIDGE_SPAMMER_SCRIPT_NAME = "spam.sh"
+SCRIPT_NAME = "spam.sh"
 
 # The folder where bridge spammer scripts are stored inside the service.
-BRIDGE_SPAMMER_SCRIPT_FOLDER_PATH = "/opt/scripts"
+SCRIPT_FOLDER_PATH = "/opt/scripts"
 
 
 def run(plan, args, contract_setup_addresses):
@@ -25,17 +23,15 @@ def run(plan, args, contract_setup_addresses):
 
     # Start the bridge spammer.
     bridge_spammer_config_artifact = plan.upload_files(
-        src="{}/{}".format(
-            BRIDGE_SPAMMER_TEMPLATES_FOLDER_PATH, BRIDGE_SPAMMER_SCRIPT_NAME
-        ),
+        src="{}/{}".format(TEMPLATES_FOLDER_PATH, SCRIPT_NAME),
         name="bridge-spammer-script",
     )
     plan.add_service(
-        name="bridge-spammer" + args["deployment_suffix"],
+        name="bridge-spammer" + args.get("deployment_suffix"),
         config=ServiceConfig(
             image=constants.TOOLBOX_IMAGE,
             files={
-                BRIDGE_SPAMMER_SCRIPT_FOLDER_PATH: Directory(
+                SCRIPT_FOLDER_PATH: Directory(
                     artifact_names=[bridge_spammer_config_artifact]
                 ),
             },
@@ -59,11 +55,7 @@ def run(plan, args, contract_setup_addresses):
                 ),
             },
             entrypoint=["bash", "-c"],
-            cmd=[
-                "chmod +x {0}/{1} && {0}/{1}".format(
-                    BRIDGE_SPAMMER_SCRIPT_FOLDER_PATH, BRIDGE_SPAMMER_SCRIPT_NAME
-                )
-            ],
+            cmd=["chmod +x {0}/{1} && {0}/{1}".format(SCRIPT_FOLDER_PATH, SCRIPT_NAME)],
         ),
     )
 
