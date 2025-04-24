@@ -1,11 +1,11 @@
 #!/bin/bash
-# This script simulates blockchain activity by sending bridges.
+# This script simulates blockchain activity by perfoming L1 to L2 and L2 to L1 bridges.
 set -e
 
 eth_address=$(cast wallet address --private-key "$PRIVATE_KEY")
 
 # Fund claimtx manager.
-cast send --legacy --rpc-url "$L2_RPC_URL" --private-key "$PRIVATE_KEY" --value "10ether" "$L2_CLAIM_TX_MANAGER_ADDRESS}}"
+cast send --legacy --rpc-url "$L2_RPC_URL" --private-key "$PRIVATE_KEY" --value "10ether" "$L2_CLAIM_TX_MANAGER_ADDRESS"
 
 # Deposit on L1 to avoid negative balance.
 polycli ulxly bridge asset \
@@ -19,17 +19,17 @@ polycli ulxly bridge asset \
     --chain-id "$L1_CHAIN_ID" \
     --pretty-logs=false
 
-# Allow some time for bridge processing
+# Allow some time for bridge processing.
 current_block_number="$(cast block-number --rpc-url $L1_RPC_URL)"
 finalized_block_number=0
-until [[ $finalized_block_number -gt $current_block_number ]]; do
+until [[ "$finalized_block_number" -gt "$current_block_number" ]]; do
     sleep 5
     finalized_block_number="$(cast block-number --rpc-url $L1_RPC_URL finalized)"
 done
 
-# Start depositing on L2
+# Start depositing on L2.
 while true; do
-    echo "Running L1-to-L2 Bridge"
+    echo "Bridging from L1 to L2"
     polycli ulxly bridge asset \
         --value "$(date +%s)" \
         --gas-limit "1250000" \
@@ -42,7 +42,7 @@ while true; do
         --pretty-logs=false
     sleep 1
 
-    echo "Running L2-to-L1 Bridge"
+    echo "Bridging from L2 to L1"
     polycli ulxly bridge asset \
         --value "$(date +%s)" \
         --gas-limit "1250000" \

@@ -3,7 +3,7 @@ wallet_module = import_module("../wallet/wallet.star")
 
 
 BRIDGE_SPAMMER_SCRIPT_FILE_PATH = (
-    "../../static_files/additional_services/bridge-spammer-config/spam.sh"
+    "../../static_files/additional_services/bridge-spammer/spam.sh"
 )
 
 
