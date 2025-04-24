@@ -1,10 +1,15 @@
 constants = import_module("../../src/package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-
-BRIDGE_SPAMMER_SCRIPT_FILE_PATH = (
-    "../../static_files/additional_services/bridge-spammer/spam.sh"
+# The folder where bridge spammer template files are stored in the repository.
+BRIDGE_SPAMMER_TEMPLATES_FOLDER_PATH = (
+    "../../static_files/additional_services/bridge-spammer"
 )
+# The name of the bridge spammer script.
+BRIDGE_SPAMMER_SCRIPT_NAME = "spam.sh"
+
+# The folder where bridge spammer scripts are stored inside the service.
+BRIDGE_SPAMMER_SCRIPT_FOLDER_PATH = "/opt/scripts"
 
 
 def run(plan, args, contract_setup_addresses):
@@ -20,7 +25,9 @@ def run(plan, args, contract_setup_addresses):
 
     # Start the bridge spammer.
     bridge_spammer_config_artifact = plan.upload_files(
-        src=BRIDGE_SPAMMER_SCRIPT_FILE_PATH,
+        src="{}/{}".format(
+            BRIDGE_SPAMMER_TEMPLATES_FOLDER_PATH, BRIDGE_SPAMMER_SCRIPT_NAME
+        ),
         name="bridge-spammer-script",
     )
     plan.add_service(
@@ -28,15 +35,16 @@ def run(plan, args, contract_setup_addresses):
         config=ServiceConfig(
             image=constants.TOOLBOX_IMAGE,
             files={
-                "/opt/scripts": Directory(
+                BRIDGE_SPAMMER_SCRIPT_FOLDER_PATH: Directory(
                     artifact_names=[bridge_spammer_config_artifact]
                 ),
             },
             env_vars={
                 "PRIVATE_KEY": wallet.private_key,
-                # rpc urls and chain ids
+                # l1
                 "L1_CHAIN_ID": args.get("l1_chain_id"),
                 "L1_RPC_URL": l1_rpc_url,
+                # l2
                 "L2_CHAIN_ID": args.get("zkevm_rollup_chain_id"),
                 "L2_RPC_URL": l2_rpc_url,
                 # addresses
@@ -51,7 +59,11 @@ def run(plan, args, contract_setup_addresses):
                 ),
             },
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /opt/scripts/spam.sh && /opt/scripts/spam.sh"],
+            cmd=[
+                "chmod +x {0}/{1} && {0}/{1}".format(
+                    BRIDGE_SPAMMER_SCRIPT_FOLDER_PATH, BRIDGE_SPAMMER_SCRIPT_NAME
+                )
+            ],
         ),
     )
 
