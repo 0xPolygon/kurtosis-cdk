@@ -169,7 +169,8 @@ def create_op_succinct_proposer_service_config(
         image=args["op_succinct_proposer_image"],
         ports=ports,
         files={
-            "/usr/local/bin/dbdata/2151908": Directory(
+            "/usr/local/bin/dbdata/"
+            + str(args["zkevm_rollup_chain_id"]): Directory(
                 artifact_names=[
                     db_artifact,
                 ],

@@ -32,6 +32,7 @@ args:
   # The maximum number of concurrent witness generation processes to run on the `op-succinct-server`
   op_succinct_max_concurrent_witness_gen: "1"
   # Must match network_id field in network_params.network_id
+  # When changing the chain_id, the proofs.db file under /templates/op-succinct/db/{chain_id}/proofs.db must also be remapped to the new chain_id.
   zkevm_rollup_chain_id: 2151908
   # The number following the "-" should be identical to network_params.name
   deployment_suffix: "-001"
@@ -62,7 +63,9 @@ optimism_package:
       challenger_params:
         enabled: false
       network_params:
+        # This value must be equal to args["deployment_suffix"][1:]
         name: "001"
+        # This value must be equal to args["zkevm_rollup_chain_id"]
         network_id: "2151908"
         seconds_per_slot: 1
   op_contract_deployer_params:
