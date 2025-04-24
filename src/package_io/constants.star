@@ -8,6 +8,7 @@ ADDITIONAL_SERVICES = struct(
     observability="observability",
     pless_zkevm_node="pless_zkevm_node",
     status_checker="status_checker",
+    test_runner="test_runner",
     tx_spammer="tx_spammer",
 )
 

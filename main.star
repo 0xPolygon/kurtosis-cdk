@@ -278,7 +278,10 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy additional services.
-    additional_services.launch(plan, args, contract_setup_addresses, genesis_artifact)
+    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
+    additional_services.launch(
+        plan, args, contract_setup_addresses, genesis_artifact, deploy_optimism_rollup
+    )
 
 
 def deploy_helper_service(plan, args):
