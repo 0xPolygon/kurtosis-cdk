@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euxo pipefail
+
 # This script simulates blockchain activity by perfoming L1 to L2 and L2 to L1 bridges.
-set -e
 
 # Checking environment variables.
 if [[ -z "${PRIVATE_KEY}" ]]; then
