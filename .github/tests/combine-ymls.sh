@@ -63,9 +63,7 @@ for fork in "${forks[@]}"; do
 
             output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_cons.yml"
             echo "# This file has been generated automatically." >"$output_file"
-            # Note:
-            # - Test runner and tx spammer additional services are added by default.
-            # - The combination of fork9 with cdk-erigon sequencer and cdk-validium as pless node does not work.
+            # The combination of fork9 with cdk-erigon sequencer and cdk-validium as pless node does not work.
             # It only works for cdk-validium-node 0.7.x (not for 0.6.x).
             # For reference: https://github.com/0xPolygonHermez/cdk-erigon/issues/1832
             if [[ "$base_fork" == "fork9" && ("$base_cons" == "rollup" || ("$base_cons" == "validium" && "$base_comp" != "cdk-erigon")) ]]; then
