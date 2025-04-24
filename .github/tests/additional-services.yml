@@ -3,11 +3,12 @@ args:
   additional_services:
     - arpeggio
     # - assertoor
-    # - blockscout # blockscout experiences Out of Memory (OOM) termination when deployed inside github runners.
+    # - blockscout # The service experiences Out of Memory (OOM) termination when deployed inside github runners.
     - blutgang
     - bridge_spammer
     - erpc
+    - observability
     # - pless_zkevm_node # zkevm-node doesn't support fork12.
-    - prometheus_grafana
     - status_checker
+    - test_runner
     - tx_spammer

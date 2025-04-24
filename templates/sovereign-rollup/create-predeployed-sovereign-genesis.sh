@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 pushd /opt/zkevm-contracts || exit 1
 
@@ -9,7 +10,8 @@ git config --global --add safe.directory /opt/zkevm-contracts
 # So a manual extraction of polygonRollupManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
-rollup_id=$(jq -r '.rollupID' /opt/zkevm/create_rollup_output.json)
+chainID="$(jq -r '.chainID' "/opt/zkevm/create_rollup_parameters.json")"
+rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
@@ -21,6 +23,10 @@ cp /opt/contract-deploy/create-genesis-sovereign-params.json /opt/zkevm-contract
 # 2025-04-03 it's not clear which of these should be used at this point
 # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+
+# Remove all existing output files if they exist
+find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' -exec rm {} +
+find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' -exec rm {} +
 
 # Run the script
 npx hardhat run ./tools/createSovereignGenesis/create-sovereign-genesis.ts --network localhost

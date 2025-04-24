@@ -142,7 +142,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor,aggoracle,sovereignadmin",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -174,14 +174,12 @@ DEFAULT_ACCOUNTS = {
     # l1testing
     "zkevm_l2_l1testing_address": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
     "zkevm_l2_l1testing_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
-    # claimsponsor
-    "zkevm_l2_claimsponsor_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-    "zkevm_l2_claimsponsor_private_key": "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-    # AggKit Addresses
-    "zkevm_l2_aggoracle_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
-    "zkevm_l2_aggoracle_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
-    "zkevm_l2_sovereignadmin_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
-    "zkevm_l2_sovereignadmin_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
+    # aggoracle
+    "zkevm_l2_aggoracle_address": "0x0b68058E5b2592b1f472AdFe106305295A332A7C",
+    "zkevm_l2_aggoracle_private_key": "0x6d1d3ef5765cf34176d42276edd7a479ed5dc8dbf35182dfdb12e8aafe0a4919",
+    # sovereignadmin
+    "zkevm_l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
+    "zkevm_l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
 }
 
 DEFAULT_L1_ARGS = {
@@ -428,8 +426,8 @@ DEFAULT_ARGS = (
         # - blutgang
         # - bridge_spammer
         # - erpc
+        # - observability
         # - pless_zkevm_node
-        # - prometheus_grafana
         # - status_checker
         # - tx_spammer
         "additional_services": [],
@@ -477,6 +475,11 @@ DEFAULT_OP_STACK_ARGS = {
         },
     ],
 }
+
+VALID_ADDITIONAL_SERVICES = [
+    getattr(constants.ADDITIONAL_SERVICES, field)
+    for field in dir(constants.ADDITIONAL_SERVICES)
+]
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
@@ -528,6 +531,8 @@ def parse_args(plan, user_args):
 
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
+
+    validate_additional_services(args.get("additional_services", []))
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
@@ -595,6 +600,16 @@ def validate_log_level(name, log_level):
                 constants.LOG_LEVEL.trace,
             )
         )
+
+
+def validate_additional_services(additional_services):
+    for svc in additional_services:
+        if svc not in VALID_ADDITIONAL_SERVICES:
+            fail(
+                "Unsupported additional service: '{}', please use one of: '{}'".format(
+                    svc, VALID_ADDITIONAL_SERVICES
+                )
+            )
 
 
 def get_fork_id(zkevm_contracts_image):
@@ -762,6 +777,19 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                     "name"
                 ],
                 args["deployment_suffix"][1:],
+            )
+        )
+
+    # Check args[zkevm_rollup_chain_id] and op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"] are equal.
+    if str(args["zkevm_rollup_chain_id"]) != str(
+        op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"]
+    ) and deployment_stages.get("deploy_op_stack", False):
+        fail(
+            "op_stack_args network_params network_id is set to '{}', please change it to match zkevm_rollup_chain_id '{}'".format(
+                op_stack_args["optimism_package"]["chains"][0]["network_params"][
+                    "network_id"
+                ],
+                args["zkevm_rollup_chain_id"],
             )
         )
 
