@@ -2,37 +2,15 @@
 # This script simulates blockchain activity by sending bridges.
 set -e
 
-claimtx_value="10ether"
-spammer_value="50ether"
-
-l2_admin_private_key="{{.zkevm_l2_admin_private_key}}"
-l2_admin_balance=$(cast balance --rpc-url "{{.l2_rpc_url}}" "$(cast wallet address --private-key "$l2_admin_private_key")")
-if [[ $l2_admin_balance -eq 0 ]]; then
-    l2_admin_private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
-fi
-
+eth_address=$(cast wallet address --private-key "{{.private_key}}")
 
 # Fund claimtx manager
 cast send \
     --legacy \
     --rpc-url "{{.l2_rpc_url}}" \
-    --private-key "$l2_admin_private_key" \
-    --value "$claimtx_value" \
+    --private-key "{{.private_key}}" \
+    --value "10ether" \
     "{{.zkevm_l2_claimtxmanager_address}}"
-
-# Create and fund test account
-cast wallet new --json | jq '.[0]' | tee .spam.wallet.json
-
-eth_address="$(jq -r '.address' .spam.wallet.json)"
-private_key="$(jq -r '.private_key' .spam.wallet.json)"
-
-until cast send --legacy --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" --value "$spammer_value" "$eth_address"; do
-  echo "Attempting to fund a test account on L1 for the bridge spammer"
-done
-
-until cast send --legacy --private-key "$l2_admin_private_key" --rpc-url "{{.l2_rpc_url}}" --value "$spammer_value" "$eth_address"; do
-  echo "Attempting to fund a test account on L2 for the bridge spammer"
-done
 
 # Deposit on L1 to avoid negative balance
 polycli ulxly bridge asset \
@@ -42,7 +20,7 @@ polycli ulxly bridge asset \
     --destination-address "$eth_address" \
     --destination-network 1 \
     --rpc-url "{{.l1_rpc_url}}" \
-    --private-key "$private_key" \
+    --private-key "{{.private_key}}" \
     --chain-id "{{.l1_chain_id}}" \
     --pretty-logs=false
 
@@ -64,7 +42,7 @@ while true; do
         --destination-address "$eth_address" \
         --destination-network 1 \
         --rpc-url "{{.l1_rpc_url}}" \
-        --private-key "$private_key" \
+        --private-key "{{.private_key}}" \
         --chain-id "{{.l1_chain_id}}" \
         --pretty-logs=false
     sleep 1
@@ -77,7 +55,7 @@ while true; do
         --destination-address "$eth_address" \
         --destination-network 0 \
         --rpc-url "{{.l2_rpc_url}}" \
-        --private-key "$private_key" \
+        --private-key "{{.private_key}}" \
         --chain-id "{{.zkevm_rollup_chain_id}}" \
         --pretty-logs=false
     sleep 1
