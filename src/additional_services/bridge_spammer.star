@@ -69,6 +69,8 @@ def run(plan, args, contract_setup_addresses):
 def _get_l2_rpc_url(plan, args):
     service_name = args.get("l2_rpc_name") + args.get("deployment_suffix")
     service = plan.get_service(service_name)
+    if "rpc" not in service.ports:
+        fail("The 'rpc' port of the l2 rpc service is not available.")
     return service.ports["rpc"].url
 
 
