@@ -426,8 +426,8 @@ DEFAULT_ARGS = (
         # - blutgang
         # - bridge_spammer
         # - erpc
+        # - observability
         # - pless_zkevm_node
-        # - prometheus_grafana
         # - status_checker
         # - tx_spammer
         "additional_services": [],
@@ -475,6 +475,11 @@ DEFAULT_OP_STACK_ARGS = {
         },
     ],
 }
+
+VALID_ADDITIONAL_SERVICES = [
+    getattr(constants.ADDITIONAL_SERVICES, field)
+    for field in dir(constants.ADDITIONAL_SERVICES)
+]
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
 SUPPORTED_FORK_IDS = [9, 11, 12, 13]
@@ -526,6 +531,8 @@ def parse_args(plan, user_args):
 
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
+
+    validate_additional_services(args.get("additional_services", []))
 
     # Determine fork id from the zkevm contracts image tag.
     zkevm_contracts_image = args.get("zkevm_contracts_image", "")
@@ -593,6 +600,16 @@ def validate_log_level(name, log_level):
                 constants.LOG_LEVEL.trace,
             )
         )
+
+
+def validate_additional_services(additional_services):
+    for svc in additional_services:
+        if svc not in VALID_ADDITIONAL_SERVICES:
+            fail(
+                "Unsupported additional service: '{}', please use one of: '{}'".format(
+                    svc, VALID_ADDITIONAL_SERVICES
+                )
+            )
 
 
 def get_fork_id(zkevm_contracts_image):
