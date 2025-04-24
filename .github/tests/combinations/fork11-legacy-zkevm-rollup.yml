@@ -10,6 +10,3 @@ args:
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0-fork11
   consensus_contract_type: rollup
   sequencer_type: zkevm
-  additional_services:
-    - test_runner
-    - tx_spammer

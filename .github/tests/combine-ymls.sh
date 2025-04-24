@@ -69,9 +69,9 @@ for fork in "${forks[@]}"; do
             # It only works for cdk-validium-node 0.7.x (not for 0.6.x).
             # For reference: https://github.com/0xPolygonHermez/cdk-erigon/issues/1832
             if [[ "$base_fork" == "fork9" && ("$base_cons" == "rollup" || ("$base_cons" == "validium" && "$base_comp" != "cdk-erigon")) ]]; then
-                yq --slurp '.[0] * .[1] * .[2] | .args.additional_services += ["pless_zkevm_node", "test_runner", "tx_spammer"]' "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
+                yq --slurp '.[0] * .[1] * .[2] | .args.additional_services += ["pless_zkevm_node"]' "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
             else
-                yq --slurp '.[0] * .[1] * .[2] | .args.additional_services += ["test_runner", "tx_spammer"]' "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
+                yq --slurp '.[0] * .[1] * .[2]' "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
             fi
             echo "- $output_file"
 

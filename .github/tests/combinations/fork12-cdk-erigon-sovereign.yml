@@ -14,6 +14,3 @@ args:
   sp1_prover_key: ''
   agglayer_prover_primary_prover: mock-prover
   sequencer_type: erigon
-  additional_services:
-    - test_runner
-    - tx_spammer
