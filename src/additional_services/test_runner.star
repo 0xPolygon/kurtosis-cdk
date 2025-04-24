@@ -5,14 +5,14 @@ wallet_module = import_module("../wallet/wallet.star")
 TEST_RUNNER_IMAGE = "leovct/e2e:454aadc"  # https://github.com/agglayer/e2e/commit/454aadcc4008a2e95b0888521d770149d60ec6c1
 
 
-def run(plan, args, contract_setup_addresses, deployment_stages):
+def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
     l1_rpc_url = args.get("mitm_rpc_url").get("agglayer", args.get("l1_rpc_url"))
 
     # Note: Getting values this way is not clean at all!!!
     bridge_service_url = ""
     l2_rpc_url = ""
     l2_bridge_address = ""
-    if deployment_stages.get("deploy_optimism_rollup"):
+    if deploy_optimism_rollup:
         # Bridge service url.
         bridge_service_name = "sovereign-bridge-service{}".format(
             args.get("deployment_suffix")
