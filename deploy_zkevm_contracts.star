@@ -243,7 +243,7 @@ def get_agglayer_vkeys(plan, args):
         constants.CONSENSUS_TYPE.fep,
     ]:
         agglayer_image = args.get("agglayer_image")
-        pp_vkey_hash = get_aggchain_vkey_hash(plan, image=agglayer_image)
+        pp_vkey_hash = get_agglayer_vkey_hash(plan, image=agglayer_image)
         pp_vkey_selector = get_agglayer_vkey_selector(plan, image=agglayer_image)
 
     return (pp_vkey_hash, pp_vkey_selector)
