@@ -105,11 +105,15 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
 
     # Get vkeys.
-    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     (pp_vkey, pp_vkey_selector) = get_agglayer_vkeys(plan, args)
+    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     (aggchain_vkey_hash, aggchain_vkey_version) = get_aggchain_vkeys(
         plan, args, deploy_optimism_rollup
     )
+    plan.print("pp_vkey: {}".format(pp_vkey))
+    plan.print("pp_vkey_selector: {}".format(pp_vkey_selector))
+    plan.print("aggchain_vkey_hash: {}".format(aggchain_vkey_hash))
+    plan.print("aggchain_vkey_version: {}".format(aggchain_vkey_version))
 
     artifacts = []
     for artifact_cfg in artifact_paths:
