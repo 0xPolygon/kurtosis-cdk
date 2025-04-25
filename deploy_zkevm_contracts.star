@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 
 
@@ -103,6 +104,13 @@ def run(plan, args, deployment_stages, op_stack_args):
             }
         )
 
+    # Get vkeys.
+    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
+    (pp_vkey, pp_vkey_selector) = get_agglayer_vkeys(plan, args)
+    (aggchain_vkey_hash, aggchain_vkey_version) = get_aggchain_vkeys(
+        plan, args, deploy_optimism_rollup
+    )
+
     artifacts = []
     for artifact_cfg in artifact_paths:
         template = read_file(src=artifact_cfg["file"])
@@ -128,6 +136,11 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "op_stack_seconds_per_slot": op_stack_args["optimism_package"][
                             "chains"
                         ][0]["network_params"]["seconds_per_slot"],
+                        # vkeys
+                        "pp_vkey": pp_vkey,
+                        "pp_vkey_selector": pp_vkey_selector,
+                        "aggchain_vkey_hash": aggchain_vkey_hash,
+                        "aggchain_vkey_version": aggchain_vkey_version,
                     },
                 )
             },
@@ -211,3 +224,89 @@ def run(plan, args, deployment_stages, op_stack_args):
             ]
         ),
     )
+
+
+def get_agglayer_vkeys(plan, args):
+    # The pp vkey and pp vkey selector are used by the 3_deployContracts script that performs
+    # the initial setup of the rollup manager.
+    pp_vkey = constants.ZERO_HASH
+    pp_vkey_selector = "0x00000001"
+
+    consensus_type = args.get("consensus_contract_type")
+    if consensus_type in [
+        constants.CONSENSUS_TYPE.pessimistic,
+        constants.CONSENSUS_TYPE.ecdsa,
+        constants.CONSENSUS_TYPE.fep,
+    ]:
+        agglayer_image = args.get("agglayer_image")
+        pp_vkey = get_agglayer_vkey(plan, image=agglayer_image)
+        pp_vkey_selector = get_agglayer_vkey_selector(plan, image=agglayer_image)
+
+    return (pp_vkey, pp_vkey_selector)
+
+
+def get_agglayer_vkey(plan, image):
+    result = plan.run_sh(
+        name="agglayer-vkey-getter",
+        description="Getting agglayer vkey",
+        image=image,
+        run="agglayer vkey | tr -d '\n'",
+    )
+    return result.output
+
+
+def get_agglayer_vkey_selector(plan, image):
+    result = plan.run_sh(
+        name="agglayer-vkey-selector-getter",
+        description="Getting agglayer vkey selector",
+        image=image,
+        run="agglayer vkey-selector | tr -d '\n'",
+    )
+    # FIXME: The agglayer vkey selector may include a 0x prefix in the future and we'll need to fix thi
+    return "0x{}".format(result.output)
+
+
+def get_aggchain_vkeys(plan, args, deploy_optimism_rollup):
+    # The aggchain vkey and aggchain vkey version are used to initialize a new sovereign rollup.
+    aggchain_vkey = None
+    aggchain_vkey_version = None
+
+    consensus_type = args.get("consensus_contract_type")
+    if (
+        consensus_type
+        in [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.CONSENSUS_TYPE.ecdsa,
+            constants.CONSENSUS_TYPE.fep,
+        ]
+        and deploy_optimism_rollup
+    ):
+        aggkit_prover_image = args.get("aggkit_prover_image")
+        aggchain_vkey = get_aggkit_prover_vkey(plan, image=aggkit_prover_image)
+        aggchain_vkey_version = get_aggkit_prover_vkey_selector(
+            plan, image=aggkit_prover_image
+        )
+
+    return (aggchain_vkey, aggchain_vkey_version)
+
+
+def get_aggkit_prover_vkey(plan, image):
+    result = plan.run_sh(
+        name="aggkit-prover-vkey-getter",
+        description="Getting aggkit prover vkey",
+        image=image,
+        run="aggkit-prover vkey | tr -d '\n'",
+    )
+    # FIXME: The aggchain vkey may include a 0x prefix in the future and we'll need to fix this.
+    return "0x{}".format(result.output)
+
+
+def get_aggkit_prover_vkey_selector(plan, image):
+    result = plan.run_sh(
+        name="aggkit-prover-vkey-selector-getter",
+        description="Getting aggkit prover vkey selector",
+        image=image,
+        run="aggkit-prover vkey-selector | tr -d '\n'",
+    )
+    # FIXME: The aggchain vkey selector may include a 0x prefix in the future and we'll need to fix thi
+    return "0x{}".format(result.output)
