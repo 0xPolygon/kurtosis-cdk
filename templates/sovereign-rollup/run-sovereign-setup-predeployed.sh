@@ -31,8 +31,8 @@ cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/create
 cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/addRollupType/genesis.json
 cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/createNewRollup/genesis.json
 
-deployOPSuccinct="{{ .deploy_op_succinct }}"
-if [[ $deployOPSuccinct == true ]]; then
+consensusContractType="{{ .consensus_contract_type }}"
+if [[ $consensusContractType == "fep" ]]; then
 npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
 cp /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json /opt/zkevm/add_rollup_type_output.json
 rollup_type_id=$(jq -r '.rollupTypeID' /opt/zkevm/add_rollup_type_output.json)
