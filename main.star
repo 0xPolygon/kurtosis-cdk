@@ -237,6 +237,27 @@ def run(plan, args={}):
             )
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
+            
+    # Deploy OP Succinct.
+    if deployment_stages.get("deploy_op_succinct", False):
+        plan.print("Extracting environment variables from the contract deployer")
+        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+        args = args | op_succinct_env_vars
+
+        plan.print("Deploying op-succinct-proposer component")
+        import_module(op_succinct_package).op_succinct_proposer_run(
+            plan, args | contract_setup_addresses, op_succinct_env_vars
+        )
+        # Stop the op-succinct-contract-deployer service after we're done using it.
+        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+        plan.stop_service(
+            name=service_name,
+            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
+                service_name
+            ),
+        )
+    else:
+        plan.print("Skipping the deployment of OP Succinct")            
 
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
@@ -251,31 +272,6 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of an Optimism rollup")
-
-    # Deploy OP Succinct.
-    if deployment_stages.get("deploy_op_succinct", False):
-        plan.print("Extracting environment variables from the contract deployer")
-        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
-        args = args | op_succinct_env_vars
-
-        plan.print("Deploying op-succinct-server component")
-        import_module(op_succinct_package).op_succinct_server_run(
-            plan, args, op_succinct_env_vars
-        )
-        plan.print("Deploying op-succinct-proposer component")
-        import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args | contract_setup_addresses, op_succinct_env_vars
-        )
-        # Stop the op-succinct-contract-deployer service after we're done using it.
-        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-        plan.stop_service(
-            name=service_name,
-            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
-                service_name
-            ),
-        )
-    else:
-        plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy additional services.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)

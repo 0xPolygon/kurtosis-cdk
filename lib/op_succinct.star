@@ -45,57 +45,6 @@ def create_op_succinct_contract_deployer_service_config(
     return {op_succinct_name: op_succinct_contract_deployer_service_config}
 
 
-# The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
-# NETWORK_PRIVATE_KEY must be from user input
-def create_op_succinct_server_service_config(
-    args,
-    op_succinct_env_vars,
-):
-    op_succinct_name = "op-succinct-server" + args["deployment_suffix"]
-    ports = get_op_succinct_server_ports(args)
-
-    # If we are using the network prover, we use the real verifier address
-    if op_succinct_env_vars["op_succinct_mock"] == False:
-        env_vars = {
-            "L1_RPC": args["l1_rpc_url"],
-            "L1_BEACON_RPC": args["l1_beacon_url"],
-            "L2_RPC": args["op_el_rpc_url"],
-            "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["l1_preallocated_private_key"],
-            "ETHERSCAN_API_KEY": "",
-            # "VERIFIER_ADDRESS": op_succinct_env_vars["sp1_verifier_gateway_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
-            "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
-            "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
-        }
-    # For local prover, we use the mock verifier address
-    else:
-        env_vars = {
-            "L1_RPC": args["l1_rpc_url"],
-            "L1_BEACON_RPC": args["l1_beacon_url"],
-            "L2_RPC": args["op_el_rpc_url"],
-            "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["l1_preallocated_private_key"],
-            "ETHERSCAN_API_KEY": "",
-            # "VERIFIER_ADDRESS": op_succinct_env_vars["mock_verifier_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
-            "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
-            "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
-        }
-
-    op_succinct_server_service_config = ServiceConfig(
-        image=args["op_succinct_server_image"],
-        ports=ports,
-        env_vars=env_vars,
-    )
-
-    return {op_succinct_name: op_succinct_server_service_config}
-
-
 # curl -s --json '{"address":"0x414e9E227e4b589aF92200508aF5399576530E4e"}' $(kurtosis port print aggkit op-succinct-server-001 server)/validate_config | jq '.'
 
 
@@ -135,6 +84,10 @@ def create_op_succinct_proposer_service_config(
             + args["deployment_suffix"]
             + ":"
             + str(args["op_succinct_server_port"]),
+            "RANGE_PROOF_INTERVAL": args["op_succinct_range_proof_interval"],
+            "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
+            + args["deployment_suffix"]
+            + ":5432/op_succinct_db",
         }
     # For local prover, we use the mock verifier address
     else:
@@ -163,6 +116,10 @@ def create_op_succinct_proposer_service_config(
             + args["deployment_suffix"]
             + ":"
             + str(args["op_succinct_server_port"]),
+            "RANGE_PROOF_INTERVAL": args["op_succinct_range_proof_interval"],
+            "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
+            + args["deployment_suffix"]
+            + ":5432/op_succinct_db",            
         }
 
     op_succinct_proposer_service_config = ServiceConfig(
