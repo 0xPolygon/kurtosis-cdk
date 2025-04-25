@@ -227,7 +227,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 
 
 def get_agglayer_vkeys(plan, args):
-    # The pp vkey and pp vkey selector are used by the 3_deployContracts script that performs
+    # The pp vkey hash and pp vkey selector are used by the 3_deployContracts script that performs
     # the initial setup of the rollup manager.
     pp_vkey_hash = constants.ZERO_HASH
     pp_vkey_selector = "0x00000001"
