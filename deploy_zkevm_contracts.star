@@ -105,12 +105,12 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
 
     # Get vkeys.
-    (pp_vkey, pp_vkey_selector) = get_agglayer_vkeys(plan, args)
+    (pp_vkey_hash, pp_vkey_selector) = get_agglayer_vkeys(plan, args)
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     (aggchain_vkey_hash, aggchain_vkey_version) = get_aggchain_vkeys(
         plan, args, deploy_optimism_rollup
     )
-    plan.print("pp_vkey: {}".format(pp_vkey))
+    plan.print("pp_vkey_hash: {}".format(pp_vkey_hash))
     plan.print("pp_vkey_selector: {}".format(pp_vkey_selector))
     plan.print("aggchain_vkey_hash: {}".format(aggchain_vkey_hash))
     plan.print("aggchain_vkey_version: {}".format(aggchain_vkey_version))
@@ -141,7 +141,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                             "chains"
                         ][0]["network_params"]["seconds_per_slot"],
                         # vkeys
-                        "pp_vkey": pp_vkey,
+                        "pp_vkey_hash": pp_vkey_hash,
                         "pp_vkey_selector": pp_vkey_selector,
                         "aggchain_vkey_hash": aggchain_vkey_hash,
                         "aggchain_vkey_version": aggchain_vkey_version,
@@ -233,7 +233,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 def get_agglayer_vkeys(plan, args):
     # The pp vkey and pp vkey selector are used by the 3_deployContracts script that performs
     # the initial setup of the rollup manager.
-    pp_vkey = constants.ZERO_HASH
+    pp_vkey_hash = constants.ZERO_HASH
     pp_vkey_selector = "0x00000001"
 
     consensus_type = args.get("consensus_contract_type")
@@ -243,16 +243,16 @@ def get_agglayer_vkeys(plan, args):
         constants.CONSENSUS_TYPE.fep,
     ]:
         agglayer_image = args.get("agglayer_image")
-        pp_vkey = get_agglayer_vkey(plan, image=agglayer_image)
+        pp_vkey_hash = get_aggchain_vkey_hash(plan, image=agglayer_image)
         pp_vkey_selector = get_agglayer_vkey_selector(plan, image=agglayer_image)
 
-    return (pp_vkey, pp_vkey_selector)
+    return (pp_vkey_hash, pp_vkey_selector)
 
 
-def get_agglayer_vkey(plan, image):
+def get_agglayer_vkey_hash(plan, image):
     result = plan.run_sh(
-        name="agglayer-vkey-getter",
-        description="Getting agglayer vkey",
+        name="agglayer-vkey-hash-getter",
+        description="Getting agglayer vkey hash",
         image=image,
         run="agglayer vkey | tr -d '\n'",
     )
