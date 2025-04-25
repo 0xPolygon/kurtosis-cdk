@@ -110,10 +110,6 @@ def run(plan, args, deployment_stages, op_stack_args):
     (aggchain_vkey_hash, aggchain_vkey_version) = get_aggchain_vkeys(
         plan, args, deploy_optimism_rollup
     )
-    plan.print("pp_vkey_hash: {}".format(pp_vkey_hash))
-    plan.print("pp_vkey_selector: {}".format(pp_vkey_selector))
-    plan.print("aggchain_vkey_hash: {}".format(aggchain_vkey_hash))
-    plan.print("aggchain_vkey_version: {}".format(aggchain_vkey_version))
 
     artifacts = []
     for artifact_cfg in artifact_paths:
