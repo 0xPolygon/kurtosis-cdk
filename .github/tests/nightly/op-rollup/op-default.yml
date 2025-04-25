@@ -13,6 +13,8 @@ args:
   # Valid values are: "network-prover", "mock-prover"
   agglayer_prover_primary_prover: mock-prover
   aggkit_prover_primary_prover: mock-prover
+  additional_services:
+    - bridge_spammer
 
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235

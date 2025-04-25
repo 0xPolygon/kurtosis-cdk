@@ -6,7 +6,7 @@ deployment_stages:
 args:
   # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-  sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31" # XXX: Replace with an active key
+  sp1_prover_key: "0x64c2fa307ae9cc8726ddf779f82bfb8cd68cced9ccb6e8a8d7e5538ee7ad7aa8"
   # Valid values are: "network-prover", "mock-prover"
   agglayer_prover_primary_prover: "network-prover"
   # Valid values are: "network-prover", "mock-prover"
@@ -24,7 +24,7 @@ args:
   # Proof type. Must match the verifier gateway contract type. Options: "plonk", "groth16", "compressed", "core"
   op_succinct_agg_proof_mode: "compressed"
   # The maximum number of blocks to include in each span proof. For chains with high throughput, you need to decrease this value.
-  op_succinct_proposer_span_proof: "60"
+  op_succinct_proposer_span_proof: "1800"
   # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
   op_succinct_submission_interval: "1"
   # The maximum number of concurrent proof requests to send to the `op-succinct-server`
@@ -39,14 +39,16 @@ args:
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
-  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+  l1_seconds_per_slot: 12
   additional_services:
     - bridge_spammer
+  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
+  aggchain_vkey_hash: "0x1f3df68a258f9d6748b291dd35faf80065af7cc11ef8b5fc6db2a4d958ea62d2"
 
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
   #         "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
-  source: "github.com/xavier-romero/optimism-package/main.star@355b15efd61b603d2302478dd4b3ef74ccc6e462"
+  source: "github.com/praetoriansentry/optimism-package/main.star@c43b6a7b01885d274eb45e9e6035e0b92c8c94d1"
   predeployed_contracts: true
   chains:
     - participants:
@@ -57,6 +59,7 @@ optimism_package:
           count: 1
       batcher_params:
         image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher@sha256:a017bf0a1dbe88e770eb6979354a148534b36e58ea7bc2fd7ae01f5e90eb9ed3"
+        max_channel_duration: 50 # 50 blocks @ 12 sec => 10 minutes per blob
       proposer_params:
         enabled: false
       challenger_params:
