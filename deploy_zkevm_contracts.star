@@ -267,8 +267,8 @@ def get_agglayer_vkey_selector(plan, image):
 
 
 def get_aggchain_vkeys(plan, args, deploy_optimism_rollup):
-    # The aggchain vkey and aggchain vkey version are used to initialize a new sovereign rollup.
-    aggchain_vkey = None
+    # The aggchain vkey hash and aggchain vkey version are used to initialize a new sovereign rollup.
+    aggchain_vkey_hash = None
     aggchain_vkey_version = None
 
     consensus_type = args.get("consensus_contract_type")
@@ -282,31 +282,31 @@ def get_aggchain_vkeys(plan, args, deploy_optimism_rollup):
         and deploy_optimism_rollup
     ):
         aggkit_prover_image = args.get("aggkit_prover_image")
-        aggchain_vkey = get_aggkit_prover_vkey(plan, image=aggkit_prover_image)
-        aggchain_vkey_version = get_aggkit_prover_vkey_selector(
+        aggchain_vkey_hash = get_aggchain_vkey_hash(plan, image=aggkit_prover_image)
+        aggchain_vkey_version = get_aggchain_vkey_version(
             plan, image=aggkit_prover_image
         )
 
-    return (aggchain_vkey, aggchain_vkey_version)
+    return (aggchain_vkey_hash, aggchain_vkey_version)
 
 
-def get_aggkit_prover_vkey(plan, image):
+def get_aggchain_vkey_hash(plan, image):
     result = plan.run_sh(
-        name="aggkit-prover-vkey-getter",
-        description="Getting aggkit prover vkey",
+        name="aggchain-vkey-hash-getter",
+        description="Getting aggchain vkey hash",
         image=image,
         run="aggkit-prover vkey | tr -d '\n'",
     )
-    # FIXME: The aggchain vkey may include a 0x prefix in the future and we'll need to fix this.
+    # FIXME: The aggchain vkey hash may include a 0x prefix in the future and we'll need to fix this.
     return "0x{}".format(result.output)
 
 
-def get_aggkit_prover_vkey_selector(plan, image):
+def get_aggchain_vkey_version(plan, image):
     result = plan.run_sh(
-        name="aggkit-prover-vkey-selector-getter",
-        description="Getting aggkit prover vkey selector",
+        name="aggchain-vkey-version-getter",
+        description="Getting aggchain vkey version",
         image=image,
         run="aggkit-prover vkey-selector | tr -d '\n'",
     )
-    # FIXME: The aggchain vkey selector may include a 0x prefix in the future and we'll need to fix thi
+    # FIXME: The aggchain vkey version may include a 0x prefix in the future and we'll need to fix this.
     return "0x{}".format(result.output)
