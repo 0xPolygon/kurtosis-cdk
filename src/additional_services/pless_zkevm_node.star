@@ -4,6 +4,8 @@ databases_package = import_module("../../databases.star")
 
 
 def run(plan, args, genesis_artifact):
+    plan.print("Launching permissionnless zkevm node")
+
     # Start dbs.
     databases_package.run_pless_zkevm(plan, args)
     db_config = databases_package.get_pless_zkevm_db_configs(args["original_suffix"])
@@ -56,3 +58,4 @@ def run(plan, args, genesis_artifact):
     plan.add_services(
         configs=rpc_config,
     )
+    plan.print("Successfully launched permissionless zkevm node")

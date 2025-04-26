@@ -1,6 +1,0 @@
-deployment_stages:
-  deploy_optimism_rollup: true
-
-args:
-  verbosity: debug
-  consensus_contract_type: pessimistic

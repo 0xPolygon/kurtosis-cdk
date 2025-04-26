@@ -1276,7 +1276,7 @@ AggLayerTxTimeout = "600s"
 # should always follow the first deployment_suffix "-001"
 # by default.
 # ------------------------------------------------------------------------------
-AggLayerURL = "http://agglayer:{{.agglayer_port}}"
+AggLayerURL = "{{.agglayer_readrpc_url}}"
 {{else}}
 # ------------------------------------------------------------------------------
 # SenderAddress represents the address of the trusted aggregator

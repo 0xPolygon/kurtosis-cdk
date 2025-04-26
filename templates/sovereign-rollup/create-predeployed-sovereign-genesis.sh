@@ -1,18 +1,32 @@
 #!/bin/bash
+set -e
 
-cd /opt/zkevm-contracts || exit
+pushd /opt/zkevm-contracts || exit 1
+
+# FIXME Just in case for now... ideally we don't need this but the base image is hacky right now
+git config --global --add safe.directory /opt/zkevm-contracts
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+chainID="$(jq -r '.chainID' "/opt/zkevm/create_rollup_parameters.json")"
+rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
+jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
+mv /opt/contract-deploy/create-genesis-sovereign-params.json.tmp /opt/contract-deploy/create-genesis-sovereign-params.json
 
 # Required files to run the script
 cp /opt/contract-deploy/create-genesis-sovereign-params.json /opt/zkevm-contracts/tools/createSovereignGenesis/create-genesis-sovereign-params.json
-cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+# 2025-04-03 it's not clear which of these should be used at this point
+# cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+
+# Remove all existing output files if they exist
+find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' -exec rm {} +
+find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' -exec rm {} +
 
 # Run the script
 npx hardhat run ./tools/createSovereignGenesis/create-sovereign-genesis.ts --network localhost
@@ -37,33 +51,93 @@ else
     exit 1
 fi
 
->/tmp/create_op_genesis.py cat <<EOF
+>/tmp/create_op_allocs.py cat <<EOF
 import json
 
-genesis_orig = "/opt/contract-deploy/op-original-genesis.json"
 genesis_polygon = "/opt/zkevm/sovereign-predeployed-genesis.json"
-genesis_output = "/opt/zkevm/op-genesis.json"
+predeployed_allocs = "/opt/zkevm/predeployed_allocs.json"
 
-with open(genesis_orig, "r") as fg_orig:
-    genesis = json.load(fg_orig)
+# Load the genesis file
+import json
+
 with open(genesis_polygon, "r") as fg_polygon:
     genesis_polygon = json.load(fg_polygon)
 
-for item in genesis_polygon["genesis"]:
-    addr = item["address"][2:]
-    genesis["alloc"][addr] = {
-        "balance": hex(int(item["balance"])),
-    }
-    if "nonce" in item:
-        genesis["alloc"][addr]["nonce"] = hex(int(item["nonce"]))
-    if "bytecode" in item:
-        genesis["alloc"][addr]["code"] = item["bytecode"]
-    if "storage" in item:
-        genesis["alloc"][addr]["storage"] = item["storage"]
+allocs = {}
 
-with open(genesis_output, "w") as fg_output:
-    json.dump(genesis, fg_output, indent=4)
-    print(f"OP Genesis file saved: {genesis_output}")
+# Determine the correct part of the JSON to iterate over
+if "genesis" in genesis_polygon:
+    if isinstance(genesis_polygon["genesis"], list):
+        items = genesis_polygon["genesis"]
+    elif isinstance(genesis_polygon["genesis"], dict):
+        items = genesis_polygon["genesis"].get("alloc", {})
+    else:
+        raise ValueError("Unexpected structure in 'genesis' field")
+else:
+    items = genesis_polygon
+
+# Handle different possible structures
+if isinstance(items, dict):
+    for addr, data in items.items():
+        addr = addr.lower()
+        # Handle balance: ensure it's treated as a hex string
+        balance = data.get("balance", "0x0")
+        if isinstance(balance, str) and balance.startswith("0x"):
+            balance_value = int(balance, 16)
+        else:
+            balance_value = int(balance)  # Assume decimal if not hex
+        allocs[addr] = {"balance": hex(balance_value)}
+
+        # Handle nonce: ensure it's treated as a hex string
+        if "nonce" in data:
+            nonce = data["nonce"]
+            if isinstance(nonce, str) and nonce.startswith("0x"):
+                nonce_value = int(nonce, 16)
+            else:
+                nonce_value = int(nonce)  # Assume decimal if not hex
+            allocs[addr]["nonce"] = hex(nonce_value)
+
+        if "bytecode" in data:
+            allocs[addr]["code"] = data["bytecode"]
+        if "code" in data:
+            allocs[addr]["code"] = data["code"]
+        if "storage" in data:
+            allocs[addr]["storage"] = data["storage"]
+elif isinstance(items, list):
+    for item in items:
+        if not isinstance(item, dict) or "address" not in item:
+            continue
+        addr = item["address"].lower()
+        # Handle balance: ensure it's treated as a hex string
+        balance = item.get("balance", "0x0")
+        if isinstance(balance, str) and balance.startswith("0x"):
+            balance_value = int(balance, 16)
+        else:
+            balance_value = int(balance)  # Assume decimal if not hex
+        allocs[addr] = {"balance": hex(balance_value)}
+
+        # Handle nonce: ensure it's treated as a hex string
+        if "nonce" in item:
+            nonce = item["nonce"]
+            if isinstance(nonce, str) and nonce.startswith("0x"):
+                nonce_value = int(nonce, 16)
+            else:
+                nonce_value = int(nonce)  # Assume decimal if not hex
+            allocs[addr]["nonce"] = hex(nonce_value)
+
+        if "bytecode" in item:
+            allocs[addr]["code"] = item["bytecode"]
+        if "code" in item:
+            allocs[addr]["code"] = item["code"]
+        if "storage" in item:
+            allocs[addr]["storage"] = item["storage"]
+else:
+    raise ValueError("Unexpected JSON structure")
+
+# Write the output file
+with open(predeployed_allocs, "w") as fg_output:
+    json.dump(allocs, fg_output, indent=4)
+    print(f"Predeployed Allocs file saved: {predeployed_allocs}")
 EOF
 
-python3 /tmp/create_op_genesis.py
+python3 /tmp/create_op_allocs.py
