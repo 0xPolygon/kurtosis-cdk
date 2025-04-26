@@ -10,15 +10,15 @@ concurrency:
   group: lint-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  KURTOSIS_VERSION: 1.4.2 # Should be aligned with .github/actions/setup-kurtosis-cdk/action.yml
-
 jobs:
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
 
       # Install linters
       - name: Install kurtosis

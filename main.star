@@ -3,6 +3,7 @@ input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
 
 # Main service packages.
+additional_services = import_module("./src/additional_services/launcher.star")
 agglayer_package = "./agglayer.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
@@ -12,7 +13,6 @@ databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
 ethereum_package = "./ethereum.star"
 anvil_package = "./anvil.star"
-optimism_package = "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
@@ -21,19 +21,6 @@ create_sovereign_predeployed_genesis_package = (
 )
 mitm_package = "./mitm.star"
 op_succinct_package = "./op_succinct.star"
-
-# Additional service packages.
-arpeggio_package = "./src/additional_services/arpeggio.star"
-blockscout_package = "./src/additional_services/blockscout.star"
-blutgang_package = "./src/additional_services/blutgang.star"
-erpc_package = "./src/additional_services/erpc.star"
-grafana_package = "./src/additional_services/grafana.star"
-panoptichain_package = "./src/additional_services/panoptichain.star"
-pless_zkevm_node_package = "./src/additional_services/pless_zkevm_node.star"
-prometheus_package = "./src/additional_services/prometheus.star"
-tx_spammer_package = "./src/additional_services/tx_spammer.star"
-bridge_spammer_package = "./src/additional_services/bridge_spammer.star"
-assertoor_package = "./src/additional_services/assertoor.star"
 
 
 def run(plan, args={}):
@@ -56,11 +43,74 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of a local L1")
 
-    # Deploy zkevm contracts on L1.
+    # Deploy Contracts on L1.
     contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
-        import_module(deploy_zkevm_contracts_package).run(plan, args)
+        import_module(deploy_zkevm_contracts_package).run(
+            plan, args, deployment_stages, op_stack_args
+        )
+
+        if deployment_stages.get("deploy_optimism_rollup", False):
+            # Deploy Sovereign contracts (maybe a better name is creating soverign rollup)
+            # TODO rename this and understand what this does in the case where there are predeployed contracts
+            # TODO Call the create rollup script
+            plan.print("Creating new rollup type and creating rollup on L1")
+            import_module(deploy_sovereign_contracts_package).run(
+                plan, args, op_stack_args["predeployed_contracts"]
+            )
+
+            import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
+
+            # Deploy OP Stack infrastructure
+            plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
+            optimism_package = op_stack_args["source"]
+            import_module(optimism_package).run(plan, op_stack_args)
+
+            # Retrieve L1 OP contract addresses.
+            op_deployer_configs_artifact = plan.get_files_artifact(
+                name="op-deployer-configs",
+            )
+            l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
+                plan, args, op_deployer_configs_artifact
+            )
+
+            import_module(deploy_sovereign_contracts_package).fund_addresses(
+                plan, args, l1_op_contract_addresses
+            )
+
+            if deployment_stages.get("deploy_op_succinct", False):
+                plan.print("Deploying op-succinct contract deployer helper component")
+                import_module(op_succinct_package).op_succinct_contract_deployer_run(
+                    plan, args
+                )
+                # plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
+                # import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
+                #     plan, args
+                # )
+                plan.print(
+                    "Extracting environment variables from the contract deployer"
+                )
+                op_succinct_env_vars = service_package.get_op_succinct_env_vars(
+                    plan, args
+                )
+                args = args | op_succinct_env_vars
+
+                # plan.print("Deploying L2OO for OP Succinct")
+                # import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
+                l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
+                args = args | l2oo_vars
+
+            # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
+            plan.print("Initializing rollup")
+            import_module(deploy_sovereign_contracts_package).init_rollup(
+                plan, args, deployment_stages
+            )
+            # Extract Sovereign contract addresses
+            sovereign_contract_setup_addresses = (
+                service_package.get_sovereign_contract_setup_addresses(plan, args)
+            )
+
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
         )
@@ -90,8 +140,8 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of databases")
 
     # Get the genesis file.
+    genesis_artifact = ""
     if not deployment_stages.get("deploy_optimism_rollup", False):
-        genesis_artifact = ""
         if deployment_stages.get("deploy_cdk_central_environment", False):
             plan.print("Getting genesis file")
             genesis_artifact = plan.store_service_files(
@@ -99,8 +149,6 @@ def run(plan, args={}):
                 service_name="contracts" + args["deployment_suffix"],
                 src="/opt/zkevm/genesis.json",
             )
-    else:
-        import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
@@ -112,7 +160,9 @@ def run(plan, args={}):
     # Deploy the agglayer.
     if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
-        import_module(agglayer_package).run(plan, args, contract_setup_addresses)
+        import_module(agglayer_package).run(
+            plan, deployment_stages, args, contract_setup_addresses
+        )
     else:
         plan.print("Skipping the deployment of the agglayer")
 
@@ -188,32 +238,8 @@ def run(plan, args={}):
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Deploy an OP Stack rollup.
+    # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
-        # Deploy OP Stack infrastructure
-        plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
-        import_module(optimism_package).run(plan, op_stack_args)
-
-        # Retrieve L1 OP contract addresses.
-        op_deployer_configs_artifact = plan.get_files_artifact(
-            name="op-deployer-configs",
-        )
-        l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
-            plan, args, op_deployer_configs_artifact
-        )
-
-        # Deploy Sovereign contracts
-        plan.print("Deploying sovereign contracts on OP Stack")
-        import_module(deploy_sovereign_contracts_package).run(
-            plan, args, l1_op_contract_addresses
-        )
-
-        # Extract Sovereign contract addresses
-        sovereign_contract_setup_addresses = (
-            service_package.get_sovereign_contract_setup_addresses(plan, args)
-        )
-
-        # Deploy AggKit infrastructure + Dedicated Bridge Service
         plan.print("Deploying AggKit infrastructure")
         central_environment_args = dict(args)
         import_module(aggkit_package).run(
@@ -221,81 +247,41 @@ def run(plan, args={}):
             central_environment_args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
+            deployment_stages,
         )
     else:
         plan.print("Skipping the deployment of an Optimism rollup")
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
-        plan.print("Deploying op-succinct contract deployer helper component")
-        import_module(op_succinct_package).op_succinct_contract_deployer_run(plan, args)
         plan.print("Extracting environment variables from the contract deployer")
         op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
+        args = args | op_succinct_env_vars
+
         plan.print("Deploying op-succinct-server component")
         import_module(op_succinct_package).op_succinct_server_run(
             plan, args, op_succinct_env_vars
         )
         plan.print("Deploying op-succinct-proposer component")
         import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args, op_succinct_env_vars
+            plan, args | contract_setup_addresses, op_succinct_env_vars
+        )
+        # Stop the op-succinct-contract-deployer service after we're done using it.
+        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
+        plan.stop_service(
+            name=service_name,
+            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
+                service_name
+            ),
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")
 
-    # Launching additional services.
-    additional_services = args["additional_services"]
-
-    if "pless_zkevm_node" in additional_services:
-        plan.print("Launching permissionnless zkevm node")
-        # Note that an additional suffix will be added to the permissionless services.
-        permissionless_node_args = dict(args)
-        permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-        permissionless_node_args["deployment_suffix"] = (
-            "-pless" + args["deployment_suffix"]
-        )
-        import_module(pless_zkevm_node_package).run(
-            plan, permissionless_node_args, genesis_artifact
-        )
-        plan.print("Successfully launched permissionless zkevm node")
-        additional_services.remove("pless_zkevm_node")
-
-    # TODO: cdk-erigon pless node
-
-    for index, additional_service in enumerate(additional_services):
-        if additional_service == "arpeggio":
-            deploy_additional_service(plan, "arpeggio", arpeggio_package, args)
-        elif additional_service == "blockscout":
-            deploy_additional_service(plan, "blockscout", blockscout_package, args)
-        elif additional_service == "blutgang":
-            deploy_additional_service(plan, "blutgang", blutgang_package, args)
-        elif additional_service == "erpc":
-            deploy_additional_service(plan, "erpc", erpc_package, args)
-        elif additional_service == "prometheus_grafana":
-            deploy_additional_service(
-                plan,
-                "panoptichain",
-                panoptichain_package,
-                args,
-                contract_setup_addresses,
-            )
-            deploy_additional_service(plan, "prometheus", prometheus_package, args)
-            deploy_additional_service(plan, "grafana", grafana_package, args)
-        elif additional_service == "tx_spammer":
-            deploy_additional_service(
-                plan, "tx_spammer", tx_spammer_package, args, contract_setup_addresses
-            )
-        elif additional_service == "bridge_spammer":
-            deploy_additional_service(
-                plan,
-                "bridge_spammer",
-                bridge_spammer_package,
-                args,
-                contract_setup_addresses,
-            )
-        elif additional_service == "assertoor":
-            deploy_additional_service(plan, "assertoor", assertoor_package, args)
-        else:
-            fail("Invalid additional service: %s" % (additional_service))
+    # Deploy additional services.
+    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
+    additional_services.launch(
+        plan, args, contract_setup_addresses, genesis_artifact, deploy_optimism_rollup
+    )
 
 
 def deploy_helper_service(plan, args):
@@ -341,13 +327,3 @@ def deploy_helper_service(plan, args):
             ]
         ),
     )
-
-
-def deploy_additional_service(plan, name, package, args, contract_setup_addresses={}):
-    plan.print("Launching %s" % name)
-    service_args = dict(args)
-    if contract_setup_addresses == {}:
-        import_module(package).run(plan, service_args)
-    else:
-        import_module(package).run(plan, service_args, contract_setup_addresses)
-    plan.print("Successfully launched %s" % name)

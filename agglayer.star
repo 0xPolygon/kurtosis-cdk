@@ -2,7 +2,7 @@ databases_package = import_module("./databases.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, deployment_stages, args, contract_setup_addresses):
     # Create agglayer prover service.
     agglayer_prover_config_artifact = create_agglayer_prover_config_artifact(plan, args)
     (ports, public_ports) = get_agglayer_prover_ports(args)
@@ -10,10 +10,10 @@ def run(plan, args, contract_setup_addresses):
     prover_env_vars = {}
 
     prover_env_vars["RUST_BACKTRACE"] = "1"
-    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
-        prover_env_vars["NETWORK_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
+    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
+        prover_env_vars["NETWORK_PRIVATE_KEY"] = args["sp1_prover_key"]
         # Keeping this for backward compatibility for now
-        prover_env_vars["SP1_PRIVATE_KEY"] = args["agglayer_prover_sp1_key"]
+        prover_env_vars["SP1_PRIVATE_KEY"] = args["sp1_prover_key"]
         prover_env_vars["NETWORK_RPC_URL"] = args["agglayer_prover_network_url"]
 
     agglayer_prover = plan.add_service(
@@ -42,7 +42,7 @@ def run(plan, args, contract_setup_addresses):
 
     # Deploy agglayer service.
     agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, args, agglayer_prover_url, contract_setup_addresses
+        plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
     )
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
@@ -80,7 +80,7 @@ def create_agglayer_prover_config_artifact(plan, args):
 
     is_cpu_prover_enabled = "true"
     is_network_prover_enabled = "false"
-    if "agglayer_prover_sp1_key" in args and args["agglayer_prover_sp1_key"] != None:
+    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
         is_cpu_prover_enabled = "false"
         is_network_prover_enabled = "true"
 
@@ -108,8 +108,17 @@ def create_agglayer_prover_config_artifact(plan, args):
     )
 
 
+def agglayer_version(args):
+    if "agglayer_version" in args:
+        return args["agglayer_version"]
+    elif "agglayer_image" in args and ":" in args["agglayer_image"]:
+        return args["agglayer_image"].split(":")[1]
+    else:
+        return "latest"
+
+
 def create_agglayer_config_artifact(
-    plan, args, agglayer_prover_url, contract_setup_addresses
+    plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
 ):
     agglayer_config_template = read_file(
         src="./templates/bridge-infra/agglayer-config.toml"
@@ -140,13 +149,24 @@ def create_agglayer_config_artifact(
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
-                    "agglayer_port": args["agglayer_port"],
+                    "agglayer_version": agglayer_version(args),
+                    "agglayer_grpc_port": args["agglayer_grpc_port"],
+                    "agglayer_readrpc_port": args["agglayer_readrpc_port"],
+                    "agglayer_admin_port": args["agglayer_admin_port"],
                     "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
                     "mock_verifier": args["agglayer_prover_primary_prover"]
                     == "mock-prover",
+                    # op stack
+                    "deploy_optimism_rollup": deployment_stages.get(
+                        "deploy_optimism_rollup", False
+                    ),
+                    "op_el_rpc_url": args["op_el_rpc_url"],
+                    "zkevm_l2_sovereignadmin_address": args[
+                        "zkevm_l2_sovereignadmin_address"
+                    ],
                 }
                 | contract_setup_addresses
                 | db_configs,
@@ -170,10 +190,20 @@ def get_agglayer_prover_ports(args):
 
 def get_agglayer_ports(args):
     ports = {
-        "agglayer": PortSpec(args["agglayer_port"], application_protocol="http"),
+        "aglr-readrpc": PortSpec(
+            args["agglayer_readrpc_port"], application_protocol="http"
+        ),
         "prometheus": PortSpec(
             args["agglayer_metrics_port"], application_protocol="http"
         ),
     }
+    if not agglayer_version(args).startswith("0.2."):
+        ports["aglr-grpc"] = PortSpec(
+            args["agglayer_grpc_port"], application_protocol="grpc"
+        )
+        if args["agglayer_admin_port"] != 0:
+            ports["aglr-admin"] = PortSpec(
+                args["agglayer_admin_port"], application_protocol="grpc"
+            )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)

@@ -90,6 +90,7 @@ fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
 fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
 fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
 fund_account_on_l1 "l1testing" "{{.zkevm_l2_l1testing_address}}"
+fund_account_on_l1 "sovereignadmin" "{{.zkevm_l2_sovereignadmin_address}}"
 
 echo_ts "Setting up local zkevm-contracts repo for deployment"
 pushd /opt/zkevm-contracts || exit 1
@@ -101,8 +102,9 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
 # Deploy gas token
-{{if .gas_token_enabled}}
-{{if eq .gas_token_address ""}}
+# shellcheck disable=SC1054,SC1072,SC1083
+{{ if .gas_token_enabled }}
+{{ if eq .gas_token_address "" }}
 echo_ts "Deploying gas token to L1"
 forge create \
     --broadcast \
@@ -117,15 +119,16 @@ jq \
     '.gasTokenAddress = $c[0].deployedTo' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-{{else}}
+# shellcheck disable=SC1073,SC1009
+{{ else }}
 echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
 jq \
     --arg c "{{ .gas_token_address }}" \
     '.gasTokenAddress = $c' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-{{end}}
-{{end}}
+{{ end }}
+{{ end }}
 
 is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc
 if [[ ! -e /opt/zkevm/combined.json ]]; then
@@ -143,6 +146,14 @@ deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
 if [[ "$deploy_optimism_rollup" != "true" ]]; then
     echo_ts "Step 5: Creating Rollup/Validium"
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
+    # Support for new output file format
+    if [[ $(echo deployment/v2/create_rollup_output_* | wc -w) -gt 1 ]]; then
+        echo_ts "There are multiple create rollup output files. We don't know how to handle this situation"
+        exit 1
+    fi
+    if [[ $(echo deployment/v2/create_rollup_output_* | wc -w) -eq 1 ]]; then
+        mv deployment/v2/create_rollup_output_* deployment/v2/create_rollup_output.json
+    fi
     if [[ ! -e deployment/v2/create_rollup_output.json ]]; then
         echo_ts "The create_rollup_output.json file was not created after running createRollup"
         exit 1
@@ -184,9 +195,9 @@ jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c
 zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
-{{if .gas_token_enabled}}
+{{ if .gas_token_enabled }}
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
-{{end}}
+{{ end }}
 
 
 # There are a bunch of fields that need to be renamed in order for the
@@ -357,5 +368,3 @@ fi
 
 # The contract setup is done!
 touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
-
-

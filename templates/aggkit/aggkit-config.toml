@@ -1,19 +1,19 @@
 # ==============================================================================
-#     _    ____  ____ _  _____ _____ 
+#     _    ____  ____ _  _____ _____
 #    / \  / ___|/ ___| |/ /_ _|_   _|
-#   / _ \| |  _| |  _| ' / | |  | |  
-#  / ___ \ |_| | |_| | . \ | |  | |  
-# /_/   \_\____|\____|_|\_\___| |_|  
+#   / _ \| |  _| |  _| ' / | |  | |
+#  / ___ \ |_| | |_| | . \ | |  | |
+# /_/   \_\____|\____|_|\_\___| |_|
 #
 # This is a reference config file used by the Kurtosis CDK Testing
 # setup. The values here should work, but are necessarily meant for
-# production environments. DYOR                              
+# production environments. DYOR
 # The below configs are the default mandatory parameters to be used.
 
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
-AggLayerURL="http://agglayer:{{.agglayer_port}}"
+AggLayerURL="{{.agglayer_grpc_url}}"
 
 ForkId = 12
 ContractVersions = "banana"
@@ -40,12 +40,12 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 # ------------------------------------------------------------------------------
 
 # ==============================================================================
-#  _     _  ____ ___  _   _ _____ ___ ____ 
+#  _     _  ____ ___  _   _ _____ ___ ____
 # | |   / |/ ___/ _ \| \ | |  ___|_ _/ ___|
-# | |   | | |  | | | |  \| | |_   | | |  _ 
+# | |   | | |  | | | |  \| | |_   | | |  _
 # | |___| | |__| |_| | |\  |  _|  | | |_| |
 # |_____|_|\____\___/|_| \_|_|   |___\____|
-#                                          
+#
 # ------------------------------------------------------------------------------
 [L1Config]
 # ------------------------------------------------------------------------------
@@ -74,12 +74,12 @@ polTokenAddress = "{{.pol_token_address}}"
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 
 # ==============================================================================
-#  _     ____   ____ ___  _   _ _____ ___ ____ 
+#  _     ____   ____ ___  _   _ _____ ___ ____
 # | |   |___ \ / ___/ _ \| \ | |  ___|_ _/ ___|
-# | |     __) | |  | | | |  \| | |_   | | |  _ 
+# | |     __) | |  | | | |  \| | |_   | | |  _
 # | |___ / __/| |__| |_| | |\  |  _|  | | |_| |
 # |_____|_____|\____\___/|_| \_|_|   |___\____|
-#                                              
+#
 # ------------------------------------------------------------------------------
 [L2Config]
 # ------------------------------------------------------------------------------
@@ -138,12 +138,12 @@ Port = 5576
 
 
 # ==============================================================================
-#     _    ____  ____ ____  _____ _   _ ____  _____ ____  
-#    / \  / ___|/ ___/ ___|| ____| \ | |  _ \| ____|  _ \ 
+#     _    ____  ____ ____  _____ _   _ ____  _____ ____
+#    / \  / ___|/ ___/ ___|| ____| \ | |  _ \| ____|  _ \
 #   / _ \| |  _| |  _\___ \|  _| |  \| | | | |  _| | |_) |
-#  / ___ \ |_| | |_| |___) | |___| |\  | |_| | |___|  _ < 
+#  / ___ \ |_| | |_| |___) | |___| |\  | |_| | |___|  _ <
 # /_/   \_\____|\____|____/|_____|_| \_|____/|_____|_| \_\
-#                                                        
+#
 # ------------------------------------------------------------------------------
 [AggSender]
 # ------------------------------------------------------------------------------
@@ -155,6 +155,18 @@ Port = 5576
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
 AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+AggchainProofURL="{{.aggkit_prover_grpc_url}}"
+CheckStatusCertificateInterval = "1s"
+
+# {{if eq .consensus_contract_type "pessimistic"}}
+Mode="PessimisticProof"
+# {{else}}
+Mode="AggchainProof"
+# {{end}}
+
+[AggSender.MaxSubmitCertificateRate]
+NumRequests = 20
+Interval = "1m"
 
 # ------------------------------------------------------------------------------
 # URLRPCL2 is the URL of the L2 RPC node
@@ -178,7 +190,7 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # ------------------------------------------------------------------------------
 # AggSender will save the certificates to a file in this path
 # ------------------------------------------------------------------------------
-# SaveCertificatesToFilesPath = "/tmp"
+SaveCertificatesToFilesPath = "/tmp"
 
 # ------------------------------------------------------------------------------
 # MaxRetriesStoreCertificate is the maximum number of retries to store a certificate
@@ -198,7 +210,7 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # KeepCertificatesHistory = false
 
 # ------------------------------------------------------------------------------
-# MaxCertSize is the maximum size of the certificate 
+# MaxCertSize is the maximum size of the certificate
 # i.e (the emitted certificate cannot be bigger that this size)
 # 0 is infinite
 # ------------------------------------------------------------------------------
@@ -221,12 +233,12 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # EnableRPC = false
 
 # ==============================================================================
-#     _    ____  ____  ___  ____      _    ____ _     _____ 
+#     _    ____  ____  ___  ____      _    ____ _     _____
 #    / \  / ___|/ ___|/ _ \|  _ \    / \  / ___| |   | ____|
-#   / _ \| |  _| |  _| | | | |_) |  / _ \| |   | |   |  _|  
-#  / ___ \ |_| | |_| | |_| |  _ <  / ___ \ |___| |___| |___ 
-# /_/   \_\____|\____|\___/|_| \_\/_/   \_\____|_____|_____|                                                           
-#                                                        
+#   / _ \| |  _| |  _| | | | |_) |  / _ \| |   | |   |  _|
+#  / ___ \ |_| | |_| | |_| |  _ <  / ___ \ |___| |___| |___
+# /_/   \_\____|\____|\___/|_| \_\/_/   \_\____|_____|_____|
+#
 # ------------------------------------------------------------------------------
 [AggOracle]
 # ------------------------------------------------------------------------------
@@ -243,12 +255,12 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 # BlockFinality indicates which finality follows AggLayer accepted values are:
 # LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
 # ------------------------------------------------------------------------------
-# BlockFinality = 0
+# BlockFinality = "LatestBlock"
 
 # ------------------------------------------------------------------------------
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
-# WaitPeriodNextGER = "100ms"
+WaitPeriodNextGER = "10s"
 
 [AggOracle.EVMSender]
 # ------------------------------------------------------------------------------
@@ -269,7 +281,7 @@ GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 # ------------------------------------------------------------------------------
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
-# WaitPeriodMonitorTx = 100ms
+WaitPeriodMonitorTx = "10s"
 
 [AggOracle.EVMSender.EthTxManager]
 # ------------------------------------------------------------------------------
@@ -308,7 +320,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 # GasPriceMarginFactor is used to multiply the suggested gas price provided by the network
 # in order to allow a different gas price to be set for all the transactions and making it
 # easier to have the txs prioritized in the pool, default value is 1.
-# 
+#
 # example:
 # suggested gas price: 100
 # GasPriceMarginFactor: 1
@@ -326,13 +338,13 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 # If the gas price provided by the network and adjusted by the GasPriceMarginFactor
 # is greater than this configuration, transaction will have its gas price set to
 # the value configured in this config as the limit.
-# 
+#
 # example:
 # suggested gas price: 100
 # gas price margin factor: 20%
 # max gas price limit: 150
 # tx gas price = 120
-# 
+#
 # suggested gas price: 100
 # gas price margin factor: 20%
 # max gas price limit: 110
@@ -359,7 +371,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 # SafeStatusL1NumberOfBlocks = 5
 
 # ------------------------------------------------------------------------------
-# FinalizedStatusL1NumberOfBlocks overwrites the number of blocks to 
+# FinalizedStatusL1NumberOfBlocks overwrites the number of blocks to
 # consider a tx as finalized overwriting the default value provided by the network
 # 0 means that the default value will be used
 # ------------------------------------------------------------------------------
@@ -372,13 +384,13 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 L1ChainID = "{{.zkevm_rollup_chain_id}}"
 
 # ==============================================================================
-#  ____  ____  ___ ____   ____ _____ _     ____  ______   ___   _  ____ 
+#  ____  ____  ___ ____   ____ _____ _     ____  ______   ___   _  ____
 # | __ )|  _ \|_ _|  _ \ / ___| ____| |   |___ \/ ___\ \ / / \ | |/ ___|
-# |  _ \| |_) || || | | | |  _|  _| | |     __) \___ \\ V /|  \| | |    
-# | |_) |  _ < | || |_| | |_| | |___| |___ / __/ ___) || | | |\  | |___ 
+# |  _ \| |_) || || | | | |  _|  _| | |     __) \___ \\ V /|  \| | |
+# | |_) |  _ < | || |_| | |_| | |___| |___ / __/ ___) || | | |\  | |___
 # |____/|_| \_\___|____/ \____|_____|_____|_____|____/ |_| |_| \_|\____|
 
-# ------------------------------------------------------------------------------                                  
+# ------------------------------------------------------------------------------
 [BridgeL2Sync]
 # ------------------------------------------------------------------------------
 # BridgeAddr is the address of the sovereign bridge contract on L2
@@ -424,10 +436,10 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # WaitForNewBlocksPeriod = "3s"
 
 # ==============================================================================
-#  _     _ ___ _   _ _____ ___ _____ ____  _____ _____ ______   ___   _  ____ 
+#  _     _ ___ _   _ _____ ___ _____ ____  _____ _____ ______   ___   _  ____
 # | |   / |_ _| \ | |  ___/ _ \_   _|  _ \| ____| ____/ ___\ \ / / \ | |/ ___|
-# | |   | || ||  \| | |_ | | | || | | |_) |  _| |  _| \___ \\ V /|  \| | |    
-# | |___| || || |\  |  _|| |_| || | |  _ <| |___| |___ ___) || | | |\  | |___ 
+# | |   | || ||  \| | |_ | | | || | | |_) |  _| |  _| \___ \\ V /|  \| | |
+# | |___| || || |\  |  _|| |_| || | |  _ <| |___| |___ ___) || | | |\  | |___
 # |_____|_|___|_| \_|_|   \___/ |_| |_| \_\_____|_____|____/ |_| |_| \_|\____|
 #
 # ------------------------------------------------------------------------------
@@ -437,3 +449,57 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # Default: 0
 # ------------------------------------------------------------------------------
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
+
+# ==============================================================================
+#   ____ _        _    ___ __  __ ____  ____   ___  _   _ ____   ___  ____
+#  / ___| |      / \  |_ _|  \/  / ___||  _ \ / _ \| \ | / ___| / _ \|  _ \
+# | |   | |     / _ \  | || |\/| \___ \| |_) | | | |  \| \___ \| | | | |_) |
+# | |___| |___ / ___ \ | || |  | |___) |  __/| |_| | |\  |___) | |_| |  _ <
+#  \____|_____/_/   \_\___|_|  |_|____/|_|    \___/|_| \_|____/ \___/|_| \_\
+# ==============================================================================
+[ClaimSponsor]
+# ------------------------------------------------------------------------------
+# Path of the DB
+# ------------------------------------------------------------------------------
+DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
+
+# ------------------------------------------------------------------------------
+# Enabled indicates if the sponsor should be run or not
+# ------------------------------------------------------------------------------
+Enabled = false
+
+# ------------------------------------------------------------------------------
+# SenderAddr is the address that will be used to send the claim txs
+# ------------------------------------------------------------------------------
+SenderAddr = "{{.zkevm_l2_claimtxmanager_address}}"
+
+# ------------------------------------------------------------------------------
+# BridgeAddrL2 is the address of the bridge smart contract on L2
+# ------------------------------------------------------------------------------
+BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
+
+[ClaimSponsor.EthTxManager]
+# ------------------------------------------------------------------------------
+# PrivateKeys defines all the key store files that are going
+# to be read in order to provide the private keys to sign the L1 txs
+# ------------------------------------------------------------------------------
+PrivateKeys = [
+    {Path = "/etc/aggkit/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+]
+
+# ------------------------------------------------------------------------------
+# StoragePath is the path of the internal storage
+# ------------------------------------------------------------------------------
+StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
+
+[ClaimSponsor.EthTxManager.Etherman]
+# ------------------------------------------------------------------------------
+# URL is the URL of the Ethereum node for L2
+# ------------------------------------------------------------------------------
+URL = "{{.op_el_rpc_url}}"
+
+# ------------------------------------------------------------------------------
+# Needs to be set to be the sovereign L2 chain id
+# If set to 0, the chain ID will be fetched from the RPC endpoint
+# ------------------------------------------------------------------------------
+L1ChainID = "{{.zkevm_rollup_chain_id}}"

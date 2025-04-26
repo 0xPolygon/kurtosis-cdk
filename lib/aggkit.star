@@ -50,9 +50,9 @@ def get_aggkit_ports(args):
 
 def get_aggkit_cmd(args):
     service_command = [
-        "sleep 20 && aggkit run "
+        "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
         + "--cfg=/etc/aggkit/config.toml "
-        + "--components=aggsender,aggoracle"
+        + "--components=aggsender,aggoracle,bridge"
     ]
 
     return service_command
