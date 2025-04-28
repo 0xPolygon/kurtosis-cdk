@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MATRIX_VERSION_FILE="matrix.yml"
+MATRIX_VERSION_FILE="matrix.yml.norun"
 MATRIX_VERSION_README="../../../CDK_VERSION_MATRIX.MD"
 
 # Extracts the base file name from a full path, removing the directory path and the .yml extension.
