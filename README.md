@@ -41,7 +41,7 @@ The table provided illustrates the different combinations of sequencers and sequ
 | Legacy sequencer with new zkevm stack | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-sequence-sender](https://github.com/0xPolygonHermez/zkevm-sequence-sender) + [zkevm-aggregator](https://github.com/0xPolygonHermez/zkevm-aggregator) | ❌ (WIP)                                                                                                 |
 | Legacy zkevm stack                    | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node) | [zkevm-node](https://github.com/0xPolygonHermez/zkevm-node)                                                                                                 | ✅                                                                                                       |
 
-To understand how to configure Kurtosis for these use cases, refer to the [documentation](.github/tests/README.md) and review the test files located in the `.github/tests/` directory.
+To understand how to configure Kurtosis for these use cases, refer to the [documentation](.github/tests/combinations/README.md) and review the test files located in the `.github/tests/` directory.
 
 ## Getting Started
 

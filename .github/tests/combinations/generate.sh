@@ -1,8 +1,7 @@
 #!/bin/bash
 
-COMBINATIONS_FOLDER="combinations"
 MATRIX_VERSION_FILE="matrix.yml"
-MATRIX_VERSION_README="../../CDK_VERSION_MATRIX.MD"
+MATRIX_VERSION_README="../../../CDK_VERSION_MATRIX.MD"
 
 # Extracts the base file name from a full path, removing the directory path and the .yml extension.
 # e.g. get_file_name "forks/fork10.yml" should return "fork10".
@@ -32,13 +31,12 @@ forks=(forks/*.yml)
 consensus=(consensus/*.yml)
 components=(components/*.yml)
 
-default_erigon_version="$(grep -E "cdk_erigon_node_image.*hermeznetwork/cdk-erigon" ../../input_parser.star | sed 's#.*hermeznetwork/cdk-erigon:\([^"]*\).*#\1#')"
-default_bridge_version="$(grep -E "zkevm_bridge_service_image.*hermeznetwork" ../../input_parser.star | sed 's#.*hermeznetwork/zkevm-bridge-service:\([^"]*\).*#\1#')"
-default_da_version="$(grep -E "zkevm_da_image.*0xpolygon" ../../input_parser.star | sed 's#.*0xpolygon/cdk-data-availability:\([^"]*\).*#\1#')"
+default_erigon_version="$(grep -E "cdk_erigon_node_image.*hermeznetwork/cdk-erigon" ../../../input_parser.star | sed 's#.*hermeznetwork/cdk-erigon:\([^"]*\).*#\1#')"
+default_bridge_version="$(grep -E "zkevm_bridge_service_image.*hermeznetwork" ../../../input_parser.star | sed 's#.*hermeznetwork/zkevm-bridge-service:\([^"]*\).*#\1#')"
+default_da_version="$(grep -E "zkevm_da_image.*0xpolygon" ../../../input_parser.star | sed 's#.*0xpolygon/cdk-data-availability:\([^"]*\).*#\1#')"
 
 # Nested loops to create all combinations.
 echo "Creating combinations..."
-mkdir -p "$COMBINATIONS_FOLDER"
 for fork in "${forks[@]}"; do
     for cons in "${consensus[@]}"; do
         for comp in "${components[@]}"; do
@@ -61,7 +59,7 @@ for fork in "${forks[@]}"; do
                 continue
             fi
 
-            output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_cons.yml"
+            output_file="$base_fork-$base_comp-$base_cons.yml"
             echo "# This file has been generated automatically." >"$output_file"
             # The combination of fork9 with cdk-erigon sequencer and cdk-validium as pless node does not work.
             # It only works for cdk-validium-node 0.7.x (not for 0.6.x).
