@@ -9,6 +9,9 @@ on:
         description: The agglayer/op-succinct commit to build the image from
         required: true
 
+permissions:
+  contents: read
+
 env:
   IMAGE_NAME: leovct/op-succinct-contract-deployer
   RUST_VERSION: 1.84.1

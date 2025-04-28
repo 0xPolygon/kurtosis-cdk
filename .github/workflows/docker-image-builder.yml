@@ -12,6 +12,9 @@ on:
         description: The version for the patch (e.g., 1, 2 or a string)
         required: false
 
+permissions:
+  contents: read
+
 env:
   IMAGE_NAME: leovct/zkevm-contracts
   POLYCLI_VERSION: v0.1.77

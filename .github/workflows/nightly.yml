@@ -6,6 +6,10 @@ on:
     - cron: 0 6 * * * # Run this workflow every day at 6 AM Paris time (UTC+2).
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: write
+
 concurrency:
   group: nightly-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
