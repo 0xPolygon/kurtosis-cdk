@@ -10,12 +10,12 @@ The script combines configuration files from three categories:
 
 It then creates new `.yml` files that represent each unique combination of these configurations.
 
-To run it, you can simply use: `./combine-ymls.sh`.
+To run it, you can simply use: `./generate.sh`.
 
 Here is an example:
 
 ```bash
-$ ./combine-ymls.sh
+$ ./generate.sh
 Creating combinations...
 - combinations/fork11-cdk-erigon-rollup.yml
 - combinations/fork11-legacy-zkevm-rollup.yml

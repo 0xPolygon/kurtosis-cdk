@@ -21,7 +21,7 @@ jobs:
 
       - name: Generate test combinations
         working-directory: .github/tests
-        run: ./combine-ymls.sh
+        run: ./generate.sh
 
       - id: set-matrix
         run: |
@@ -57,10 +57,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Generate test combinations
-        working-directory: .github/tests
-        run: ./combine-ymls.sh
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false .

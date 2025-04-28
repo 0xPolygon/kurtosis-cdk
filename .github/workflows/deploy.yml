@@ -71,7 +71,7 @@ jobs:
 
       - name: Generate test combinations
         working-directory: .github/tests
-        run: ./combine-ymls.sh
+        run: ./generate.sh
 
       - id: set-matrix
         run: |

@@ -64,12 +64,12 @@ jobs:
 
       - name: Generate test combinations and cdk version matrix
         working-directory: .github/tests
-        run: ./combine-ymls.sh
+        run: ./generate.sh
 
       - name: Check if test combinations and cdk version matrix are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Test combinations and/or CDK version matrix are not up to date. Please run \`./combine-ymls.sh\`."
+            echo "❌ Error: Test combinations and/or CDK version matrix are not up to date. Please run \`./generate.sh\`."
             git status --porcelain
             git diff
             exit 1
