@@ -2,7 +2,7 @@ hex = import_module("../hex/hex.star")
 service_package = import_module("../../lib/service.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-TEST_RUNNER_IMAGE = "leovct/e2e:454aadc"  # https://github.com/agglayer/e2e/commit/454aadcc4008a2e95b0888521d770149d60ec6c1
+TEST_RUNNER_IMAGE = "leovct/e2e:5a5073d"
 
 
 def run(
