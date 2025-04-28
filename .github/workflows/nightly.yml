@@ -44,7 +44,7 @@ jobs:
         run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -166,7 +166,7 @@ jobs:
         run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -248,7 +248,7 @@ jobs:
         run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -294,7 +294,7 @@ jobs:
         run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
