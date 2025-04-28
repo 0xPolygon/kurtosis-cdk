@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate test combinations
-        working-directory: .github/tests
+        working-directory: .github/tests/combinations
         run: ./generate.sh
 
       - id: set-matrix
