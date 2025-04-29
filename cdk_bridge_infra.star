@@ -1,5 +1,6 @@
-zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
+constants = import_module("./src/package_io/constants.star")
 databases = import_module("./databases.star")
+zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 
 def run(plan, args, contract_setup_addresses, deploy_bridge_ui=True):
@@ -52,7 +53,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
         or consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa
         or consensus_contract_type == constants.CONSENSUS_TYPE.fep
     )
-    
+
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
