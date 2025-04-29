@@ -102,6 +102,7 @@ cat .env
 
 # Run fetch-rollup-config to get the various configuration values that
 # we'll need in the rest of smart contract deployment
+touch .git
 RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
 
 # Print out the rollup config for reference / debugging

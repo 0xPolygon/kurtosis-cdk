@@ -4,10 +4,6 @@ ARTIFACTS = [
         "file": "../templates/op-succinct/deploy-op-succinct-contracts.sh",
     },
     {
-        "name": "deploy-sp1-verifier-contracts.sh",
-        "file": "../templates/op-succinct/deploy-sp1-verifier-contracts.sh",
-    },
-    {
         "name": "deploy-l2oo.sh",
         "file": "../templates/op-succinct/deploy-l2oo.sh",
     },
@@ -36,7 +32,6 @@ def create_op_succinct_contract_deployer_service_config(
                 artifact_names=[
                     artifacts[0],
                     artifacts[1],
-                    artifacts[2],
                 ],
             ),
         },
@@ -137,18 +132,6 @@ def create_op_succinct_proposer_service_config(
     )
 
     return {op_succinct_name: op_succinct_proposer_service_config}
-
-
-def get_op_succinct_server_ports(args):
-    ports = {
-        "server": PortSpec(
-            args["op_succinct_server_port"],
-            application_protocol="http",
-            wait=None,
-        ),
-    }
-
-    return ports
 
 
 def get_op_succinct_proposer_ports(args):

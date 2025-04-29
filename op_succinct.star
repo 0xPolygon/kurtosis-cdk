@@ -61,23 +61,6 @@ def op_succinct_proposer_run(plan, args, op_succinct_env_vars):
     )
 
 
-def sp1_verifier_contracts_deployer_run(plan, args):
-    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-    plan.exec(
-        description="Deploying SP1 Verifier Contracts for OP Succinct",
-        service_name=service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/bash",
-                "-c",
-                "cp /opt/scripts/deploy-sp1-verifier-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/deploy-sp1-verifier-contracts.sh"
-                ),
-            ]
-        ),
-    )
-
-
 def op_succinct_l2oo_deployer_run(plan, args):
     service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
     plan.exec(
