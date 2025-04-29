@@ -255,11 +255,6 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of OP Succinct")     
 
-    plan.run_sh(
-        description="Sleeping",
-        run="sleep 20",
-    )
-
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
         plan.print("Deploying AggKit infrastructure")
