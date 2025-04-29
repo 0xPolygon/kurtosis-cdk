@@ -45,6 +45,14 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
+
+    consensus_contract_type = args["consensus_contract_type"]
+    require_sovereign_chain_contract = (
+        consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic
+        or consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa
+        or consensus_contract_type == constants.CONSENSUS_TYPE.fep
+    )
+    
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -54,7 +62,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                     "global_log_level": args["global_log_level"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
-                    "require_sovereign_chain_contract": True,
+                    "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
