@@ -67,7 +67,7 @@ def create_op_succinct_proposer_service_config(
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "GRPC_ADDRESS": "[::]:50051",
+            "GRPC_ADDRESS": "0.0.0.0:50051",
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
@@ -96,7 +96,7 @@ def create_op_succinct_proposer_service_config(
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "GRPC_ADDRESS": "[::]:50051",
+            "GRPC_ADDRESS": "0.0.0.0:50051",
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[

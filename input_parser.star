@@ -44,7 +44,7 @@ DEFAULT_IMAGES = {
     # "aggkit_image": "arnaubennassar/aggkit:477acb6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "aggkit_image": "goranethernal/aggkit:v0.0.2-beta15",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.16",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "atanmarko/aggkit-prover:0.1.0-rc.21",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "aggkit_prover_image": "atanmarko/aggkit-prover:0.1.0-rc.22",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
@@ -957,7 +957,7 @@ def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image)
     plan.verify(
         description="Verifying aggkit prover vkey",
         # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
-        value="0x{}".format(result.output),
+        value="{}".format(result.output),
         assertion="==",
         target_value=aggchain_vkey,
     )
