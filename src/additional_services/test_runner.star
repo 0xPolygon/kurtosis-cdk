@@ -2,7 +2,7 @@ hex = import_module("../hex/hex.star")
 service_package = import_module("../../lib/service.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-TEST_RUNNER_IMAGE = "leovct/e2e:5a5073d"
+TEST_RUNNER_IMAGE = "leovct/e2e:be038b8"
 
 
 def run(
@@ -49,6 +49,9 @@ def run(
                 "L2_PRIVATE_KEY": wallet.private_key,
                 "L2_RPC_URL": l2_rpc_url,
                 "L2_BRIDGE_ADDR": l2_bridge_address,
+                # Other parameters.
+                "CLAIM_WAIT_DURATION": "10m",  # default: 10m
+                "TX_RECEIPT_TIMEOUT_SECONDS": "120",  # default: 60s
             },
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
