@@ -7,7 +7,6 @@ def run(
     plan,
     args,
     contract_setup_addresses,
-    deployment_stages,
     deploy_bridge_ui=True,
     deploy_optimism_rollup=False,
 ):
