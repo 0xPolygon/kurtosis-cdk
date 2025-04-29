@@ -76,10 +76,6 @@ def create_op_succinct_proposer_service_config(
             "MAX_CONCURRENT_WITNESS_GEN": args[
                 "op_succinct_max_concurrent_witness_gen"
             ],
-            "OP_SUCCINCT_SERVER_URL": "http://op-succinct-server"
-            + args["deployment_suffix"]
-            + ":"
-            + str(args["op_succinct_server_port"]),
             "RANGE_PROOF_INTERVAL": args["op_succinct_range_proof_interval"],
             "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
             + args["deployment_suffix"]
@@ -109,14 +105,10 @@ def create_op_succinct_proposer_service_config(
             "MAX_CONCURRENT_WITNESS_GEN": args[
                 "op_succinct_max_concurrent_witness_gen"
             ],
-            "OP_SUCCINCT_SERVER_URL": "http://op-succinct-server"
-            + args["deployment_suffix"]
-            + ":"
-            + str(args["op_succinct_server_port"]),
             "RANGE_PROOF_INTERVAL": args["op_succinct_range_proof_interval"],
             "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
             + args["deployment_suffix"]
-            + ":5432/op_succinct_db",            
+            + ":5432/op_succinct_db",
         }
 
     op_succinct_proposer_service_config = ServiceConfig(
@@ -140,11 +132,6 @@ def get_op_succinct_proposer_ports(args):
     ports = {
         "metrics": PortSpec(
             args["op_succinct_proposer_metrics_port"],
-            application_protocol="http",
-            wait=None,
-        ),
-        "rpc": PortSpec(
-            args["op_succinct_proposer_rpc_port"],
             application_protocol="http",
             wait=None,
         ),
