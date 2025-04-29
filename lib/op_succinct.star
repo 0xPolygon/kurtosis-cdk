@@ -66,7 +66,8 @@ def create_op_succinct_proposer_service_config(
             # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "OP_SUCCINCT_AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
+            "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
+            # "GRPC_ADDRESS": "http://agglayer:4443", # FIXME
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
@@ -98,7 +99,8 @@ def create_op_succinct_proposer_service_config(
             # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "OP_SUCCINCT_AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
+            "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
+            # "GRPC_ADDRESS": "http://agglayer:4443", # FIXME
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
@@ -143,6 +145,11 @@ def get_op_succinct_proposer_ports(args):
         ),
         "rpc": PortSpec(
             args["op_succinct_proposer_rpc_port"],
+            application_protocol="http",
+            wait=None,
+        ),
+        "grpc": PortSpec(
+            args["op_succinct_proposer_grpc_port"],
             application_protocol="http",
             wait=None,
         ),
