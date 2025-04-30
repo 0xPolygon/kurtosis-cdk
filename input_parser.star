@@ -451,7 +451,7 @@ DEFAULT_ARGS = (
 # If none is is provided, it will refer to the default images from the Optimism-Package repo.
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 DEFAULT_OP_STACK_ARGS = {
-    "source": "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
+    "source": "github.com/ethpandaops/optimism-package/main.star@4865da2e322228a618f8a85d03e2606db17b1fbe",
     "predeployed_contracts": False,
     "chains": [
         {
@@ -545,7 +545,11 @@ def parse_args(plan, user_args):
 
     deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
     deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
-    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
+    l2_rpc_name = get_l2_rpc_name(
+        deploy_cdk_erigon_node,
+        deploy_op_node,
+        zkevm_rollup_chain_id=args.get("zkevm_rollup_chain_id"),
+    )
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
@@ -666,9 +670,9 @@ def get_sequencer_name(sequencer_type):
         )
 
 
-def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
+def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node, zkevm_rollup_chain_id):
     if deploy_op_node:
-        return "op-el-1-op-geth-op-node"
+        return "op-el-{}-op-geth-op-node".format(zkevm_rollup_chain_id)
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
     return "zkevm-node-rpc"
