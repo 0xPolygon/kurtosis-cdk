@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        file_name: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
+        file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,10 +60,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Generate test combinations
-        working-directory: .github/tests
-        run: ./combine-ymls.sh
 
       - name: Add test runner and tx spammer to the args file
         run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
@@ -122,7 +118,7 @@ jobs:
           if [[ "$result" == "pessimistic" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
-            result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file_name }})
+            result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
             if [[ "$result" == "true" ]]; then
               ./.github/scripts/monitor-cdk-chain.sh \
                 --enclave ${{ env.ENCLAVE_NAME }} \
