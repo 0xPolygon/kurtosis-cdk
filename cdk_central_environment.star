@@ -197,4 +197,4 @@ def get_agglayer_version(plan, args):
     elif "0.2" in args["agglayer_image"]:
         return "0.2"
     else:
-        return args["agglayer_image"]
+        return "0.2"
