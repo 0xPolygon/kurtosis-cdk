@@ -69,14 +69,6 @@ echo
 start_time=$(date +%s)
 end_time=$((start_time + timeout))
 
-# Transfer funds to zkevm_l2_l1testing_address to use to send transactions to avoid "nonce too low" issues on zkevm_l2_admin_address
-cast send \
-  --legacy \
-  --rpc-url "$rpc_url" \
-  --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-  --value 100ether \
-  0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046
-
 # Main loop to monitor batch verification.
 gas_price_factor=1
 while true; do
@@ -113,6 +105,7 @@ while true; do
 
   gas_price=$(cast gas-price --rpc-url "$rpc_url")
   gas_price=$(bc -l <<< "$gas_price * $gas_price_factor" | sed 's/\..*//')
+  nonce=$(cast nonce 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 --rpc-url "$rpc_url")
 
   echo "Sending a transaction to increase the batch number..."
   cast send \
@@ -120,8 +113,9 @@ while true; do
     --timeout 30 \
     --gas-price "$gas_price" \
     --rpc-url "$rpc_url" \
-    --private-key "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59" \
+    --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     --gas-limit 100000 \
+    --nonce "$nonce" \
     --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
   ret_code=$?
   if [[ $ret_code -eq 0 ]]; then
