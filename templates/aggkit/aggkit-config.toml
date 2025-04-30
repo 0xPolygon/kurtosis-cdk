@@ -13,7 +13,6 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
-# AggLayerURL="{{.agglayer_readrpc_url}}"
 AggLayerURL="{{.agglayer_grpc_url}}"
 
 ForkId = 12
