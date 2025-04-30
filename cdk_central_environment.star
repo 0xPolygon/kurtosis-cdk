@@ -101,6 +101,7 @@ def run(plan, args, contract_setup_addresses):
         )
 
     if args["sequencer_type"] == "erigon":
+        agglayer_version = get_agglayer_version(plan, args)
         # Create the cdk node config.
         node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
@@ -118,6 +119,7 @@ def run(plan, args, contract_setup_addresses):
                         "l1_rpc_url": args["mitm_rpc_url"].get(
                             "cdk-node", args["l1_rpc_url"]
                         ),
+                        "agglayer_version": agglayer_version,
                     }
                     | db_configs
                     | contract_setup_addresses,
@@ -186,3 +188,13 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
             )
         },
     )
+
+
+# Function to allow cdk-node-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on agglayer image version.
+def get_agglayer_version(plan, args):
+    if "0.3" in args["agglayer_image"]:
+        return "0.3"
+    elif "0.2" in args["agglayer_image"]:
+        return "0.2"
+    else:
+        return args["agglayer_image"]

@@ -1,8 +1,13 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+{{- if eq .agglayer_version "0.3" }}
+AggLayerURL="{{.agglayer_grpc_url}}"
+{{- else if eq .agglayer_version "0.2" }}
 AggLayerURL="{{.agglayer_readrpc_url}}"
-
+{{- else }}
+AggLayerURL="{{.agglayer_readrpc_url}}"
+{{- end }}
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
 NetworkID = {{.zkevm_rollup_id}}
