@@ -40,9 +40,6 @@ def create_op_succinct_contract_deployer_service_config(
     return {op_succinct_name: op_succinct_contract_deployer_service_config}
 
 
-# curl -s --json '{"address":"0x414e9E227e4b589aF92200508aF5399576530E4e"}' $(kurtosis port print aggkit op-succinct-server-001 server)/validate_config | jq '.'
-
-
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
@@ -63,11 +60,10 @@ def create_op_succinct_proposer_service_config(
             "PRIVATE_KEY": args["l1_preallocated_private_key"],
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "GRPC_ADDRESS": "0.0.0.0:" + str(args["op_succinct_proposer_grpc_port"]),
+            "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"], # agglayer/op-succinct specific.
+            "GRPC_ADDRESS": "0.0.0.0:" + str(args["op_succinct_proposer_grpc_port"]), # agglayer/op-succinct specific.
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
@@ -80,6 +76,9 @@ def create_op_succinct_proposer_service_config(
             "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
             + args["deployment_suffix"]
             + ":5432/op_succinct_db",
+            # "DGF_ADDRESS": "", # Address of the DisputeGameFactory contract. Note: If set, the proposer will create a dispute game with the DisputeGameFactory, rather than the OPSuccinctL2OutputOracle. Compatible with OptimismPortal2.
+            # "LOOP_INTERVAL": 60, # Default: 60. The interval (in seconds) between each iteration of the OP Succinct service.
+            # "SAFE_DB_FALLBACK": False, # Default: false. Whether to fallback to timestamp-based L1 head estimation even though SafeDB is not activated for op-node. When false, proposer will panic if SafeDB is not available. It is by default false since using the fallback mechanism will result in higher proving cost.
         }
     # For local prover, we use the mock verifier address
     else:
@@ -90,13 +89,11 @@ def create_op_succinct_proposer_service_config(
             "L2_NODE_RPC": args["op_cl_rpc_url"],
             "PRIVATE_KEY": args["l1_preallocated_private_key"],
             "ETHERSCAN_API_KEY": "",
-            # "VERIFIER_ADDRESS": op_succinct_env_vars["mock_verifier_address"],
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "GRPC_ADDRESS": "0.0.0.0:" + str(args["op_succinct_proposer_grpc_port"]),
+            "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"], # agglayer/op-succinct specific.
+            "GRPC_ADDRESS": "0.0.0.0:" + str(args["op_succinct_proposer_grpc_port"]), # agglayer/op-succinct specific.
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
             "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
@@ -109,6 +106,9 @@ def create_op_succinct_proposer_service_config(
             "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
             + args["deployment_suffix"]
             + ":5432/op_succinct_db",
+            # "DGF_ADDRESS": "", # Address of the DisputeGameFactory contract. Note: If set, the proposer will create a dispute game with the DisputeGameFactory, rather than the OPSuccinctL2OutputOracle. Compatible with OptimismPortal2.
+            # "LOOP_INTERVAL": 60, # Default: 60. The interval (in seconds) between each iteration of the OP Succinct service.
+            # "SAFE_DB_FALLBACK": False, # Default: false. Whether to fallback to timestamp-based L1 head estimation even though SafeDB is not activated for op-node. When false, proposer will panic if SafeDB is not available. It is by default false since using the fallback mechanism will result in higher proving cost.
         }
 
     op_succinct_proposer_service_config = ServiceConfig(

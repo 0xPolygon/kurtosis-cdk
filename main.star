@@ -233,7 +233,7 @@ def run(plan, args={}):
             )
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
-            
+
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
         plan.print("Extracting environment variables from the contract deployer")
@@ -253,7 +253,7 @@ def run(plan, args={}):
             ),
         )
     else:
-        plan.print("Skipping the deployment of OP Succinct")     
+        plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
