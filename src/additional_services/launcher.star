@@ -2,7 +2,12 @@ constants = import_module("../package_io/constants.star")
 
 
 def launch(
-    plan, args, contract_setup_addresses, genesis_artifact, deploy_optimism_rollup=False
+    plan,
+    args,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+    genesis_artifact,
+    deploy_optimism_rollup=False,
 ):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.arpeggio:
@@ -39,7 +44,11 @@ def launch(
             import_module("./status_checker.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.test_runner:
             import_module("./test_runner.star").run(
-                plan, args, contract_setup_addresses, deploy_optimism_rollup
+                plan,
+                args,
+                contract_setup_addresses,
+                sovereign_contract_setup_addresses,
+                deploy_optimism_rollup,
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args, contract_setup_addresses)
