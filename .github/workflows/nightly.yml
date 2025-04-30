@@ -25,9 +25,12 @@ jobs:
 
       - id: set-matrix
         run: |
-          files=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|anvil|gas-token|pless-zkevm-node")
-          matrix=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|anvil|gas-token|pless-zkevm-node")
+          matrix=$(echo "${file_paths}" | while read -r file_path; do
+            file_name=$(basename -s ".yml" "$file_path")
+            echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
+          done | jq -s -c '.')
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
 
   run-with-args:
     needs: list-ymls
@@ -66,14 +69,14 @@ jobs:
         run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
 
       - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file_name }} --show-enclave-inspect=false .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Verify static ports
         run: |
-          if [[ ${{ matrix.file_name }} == "./.github/tests/static-ports/default-static-ports.yml" ]]; then
+          if [[ ${{ matrix.file.name }} == "default-static-ports" ]]; then
             echo "Making sure public ports start by a 5 as defined by the static ports in the input_parser.star file."
 
             ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
@@ -91,11 +94,11 @@ jobs:
 
       - name: Monitor CDK chain verified batches (Central RPC)
         run: |
-          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
           if [[ "$result" == "pessimistic" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
-            sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file_name }})
+            sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
             rpc_name=""
             if [[ "$sequencer_type" == "erigon" ]]; then
               rpc_name="cdk-erigon-rpc-001"
@@ -115,7 +118,7 @@ jobs:
 
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
-          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
           if [[ "$result" == "pessimistic" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
@@ -131,7 +134,7 @@ jobs:
 
       - name: Monitor OP rollup finalized blocks (OP CL RPC)
         run: |
-          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file_name }})
+          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file.path }})
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
@@ -153,8 +156,7 @@ jobs:
       - name: Generate archive name
         if: ${{ !cancelled() }}
         run: |
-          file_name=$(basename "${{ matrix.file_name }}" ".yml")
-          archive_name="dump_run_with_args_${file_name}_${{ github.run_id }}"
+          archive_name="dump_run_with_args_${{ matrix.file.name }}_${{ github.run_id }}"
           echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
           echo "Generated archive name: ${archive_name}"
 
