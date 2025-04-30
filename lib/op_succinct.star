@@ -60,6 +60,7 @@ def create_op_succinct_proposer_service_config(
             "PRIVATE_KEY": args["l1_preallocated_private_key"],
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
+            "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"], # agglayer/op-succinct specific.
@@ -90,6 +91,7 @@ def create_op_succinct_proposer_service_config(
             "PRIVATE_KEY": args["l1_preallocated_private_key"],
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
+            "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
             "L2OO_ADDRESS": args["zkevm_rollup_address"],
             "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
             "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"], # agglayer/op-succinct specific.
