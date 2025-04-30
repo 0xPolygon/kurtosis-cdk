@@ -13,7 +13,7 @@ concurrency:
 jobs:
   list-ymls:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 2
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -32,7 +32,7 @@ jobs:
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -167,7 +167,7 @@ jobs:
 
   pre-deployed-gas-token:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -256,7 +256,7 @@ jobs:
 
   deploy-to-anvil-l1:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
