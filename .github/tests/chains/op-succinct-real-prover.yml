@@ -24,7 +24,7 @@ args:
   # Enable the integration with the Agglayer
   op_succinct_agglayer: true
   # Proof type. Must match the verifier gateway contract type. Options: "plonk", "groth16", "compressed", "core"
-  op_succinct_agg_proof_mode: "plonk"
+  op_succinct_agg_proof_mode: "compressed"
   # The maximum number of blocks to include in each span proof. For chains with high throughput, you need to decrease this value.
   op_succinct_proposer_span_proof: "60"
   # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
