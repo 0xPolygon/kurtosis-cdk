@@ -86,7 +86,7 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/op-geth.yml)
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/op/op-geth.yml ./.github/tests/op/op-succinct.yml)
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "$file_path")
             echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
