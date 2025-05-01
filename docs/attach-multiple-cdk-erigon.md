@@ -15,11 +15,11 @@ kurtosis run --enclave=cdk --args-file=./.github/tests/chains/cdk2.yml .
 The above command will use `cdk2.yml` as the input params which have a few tweaked parameters to attach to the existing Agglayer service. After running the above additional deployment command, the `agglayer-config.toml` needs to be edited to settle the signed transactions from the rollups.
 
 ```bash
-# Replace [full-node-rpcs] section
-kurtosis service exec cdk agglayer "sed -i '/\[full-node-rpcs\]/,/^\[/c\\[full-node-rpcs\]\\n# RPC of the first rollup node\\n1 = \"http://cdk-erigon-rpc-001:8123\"\\n# RPC of the second rollup node\\n2 = \"http://cdk-erigon-rpc-002:8123\"\\n' /etc/zkevm/agglayer-config.toml"
+# Use sed to replace the [full-node-rpcs] section
+kurtosis service exec cdk agglayer "sed -i '/^\[full-node-rpcs\]/a 2 = \"http://cdk-erigon-rpc-002:8123\"' /etc/zkevm/agglayer-config.toml"
 
-# Replace [proof-signers] section
-kurtosis service exec cdk agglayer "sed -i '/# Sequencer address for first rollup/,/1 = \"0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed\"/d; /^\[rpc\]/i\\[proof-signers\]\\n# Sequencer address for first rollup\\n1 = \"0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed\"\\n# Sequencer address for second rollup\\n2 = \"0xA670342930242407b9984e467353044f8472055e\"\\n\\n' /etc/zkevm/agglayer-config.toml"
+# Use sed to replace the [proof-signers] section
+kurtosis service exec cdk agglayer "sed -i '/^\[proof-signers\]/a 2 = \"0xA670342930242407b9984e467353044f8472055e\"' /etc/zkevm/agglayer-config.toml"
 ```
 
 The `agglayer-config.toml` file should be changed as follows:

@@ -9,10 +9,7 @@ args:
   zkevm_rollup_chain_id: 20202
   zkevm_rollup_id: 2
 
-  erigon_strict_mode: false
   gas_token_enabled: false
-  # zkevm_use_real_verifier: true
-  enable_normalcy: true
   
   # The following accounts have been generated using the following command:
   # polycli wallet inspect --mnemonic 'bless share truly shadow primary sun relief border van gallery stairs edit reflect gentle athlete main device smile response rescue mirror floor say people' --addresses 9 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
