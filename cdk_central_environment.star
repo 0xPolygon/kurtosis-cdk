@@ -194,7 +194,5 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
 def get_agglayer_version(plan, args):
     if "0.3" in args["agglayer_image"]:
         return "0.3"
-    elif "0.2" in args["agglayer_image"]:
-        return "0.2"
     else:
         return "0.2"
