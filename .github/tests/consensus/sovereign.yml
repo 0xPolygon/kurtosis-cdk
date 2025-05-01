@@ -1,12 +1,13 @@
 # only supported by fork12 for now
 args:
   consensus_contract_type: pessimistic
+
+  zkevm_contracts_image: jhkimqd/zkevm-contracts:v10.0.0-rc.6-fork.12
   pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12
+  sp1_prover_key: ""
+  agglayer_prover_primary_prover: mock-prover # network-prover (using SP1 network)
+
   erigon_strict_mode: false
   gas_token_enabled: false
   zkevm_use_real_verifier: false
   enable_normalcy: true
-  sp1_prover_key: ""
-  agglayer_prover_primary_prover: mock-prover # use mock-prover as primary executor
-  # agglayer_prover_primary_prover: network-prover # use network-prover as primary executor (using SP1 network)
