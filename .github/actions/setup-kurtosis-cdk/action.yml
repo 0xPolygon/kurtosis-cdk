@@ -16,7 +16,7 @@ runs:
   using: "composite"
   steps:
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -41,6 +41,6 @@ runs:
         yq --version
 
     - name: Install foundry
-      uses: foundry-rs/foundry-toolchain@v1
+      uses: foundry-rs/foundry-toolchain@de808b1eea699e761c404bda44ba8f21aba30b2c # v1.3.1
       with:
         version: ${{ inputs.foundry-version }}
