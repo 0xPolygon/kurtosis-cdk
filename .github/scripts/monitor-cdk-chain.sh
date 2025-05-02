@@ -105,6 +105,7 @@ while true; do
 
   gas_price=$(cast gas-price --rpc-url "$rpc_url")
   gas_price=$(bc -l <<< "$gas_price * $gas_price_factor" | sed 's/\..*//')
+  nonce=$(cast nonce 0xE34aaF64b29273B7D567FCFc40544c014EEe9970 --rpc-url "$rpc_url")
 
   echo "Sending a transaction to increase the batch number..."
   cast send \
@@ -114,6 +115,7 @@ while true; do
     --rpc-url "$rpc_url" \
     --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     --gas-limit 100000 \
+    --nonce "$nonce" \
     --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
   ret_code=$?
   if [[ $ret_code -eq 0 ]]; then
