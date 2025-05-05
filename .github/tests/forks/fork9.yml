@@ -19,6 +19,3 @@ args:
 
   # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
   cdk_validium_node_image: ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10
-
-  additional_services:
-    - tx_spammer

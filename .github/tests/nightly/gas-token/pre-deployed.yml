@@ -1,3 +1,6 @@
+deployment_stages:
+  deploy_l1: false
+
 args:
   verbosity: debug
   gas_token_enabled: true
