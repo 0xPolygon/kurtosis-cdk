@@ -194,7 +194,10 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
 # On aggkit/cdk-node point of view, only the agglayer_image version is important. Both services can work with both grpc/readrpc and this depends on the agglayer version.
 # On Kurtosis point of view, we are checking whether the cdk-node or the aggkit node is being used to filter the grpc/readrpc.
 def get_agglayer_endpoint(plan, args, deployment_stages):
-    if "0.3" in args["agglayer_image"] and args.get("binary_name") == constants.AGGKIT_BINARY_NAME:
+    if (
+        "0.3" in args["agglayer_image"]
+        and args.get("binary_name") == constants.AGGKIT_BINARY_NAME
+    ):
         return "grpc"
     elif deployment_stages["deploy_optimism_rollup"]:
         return "grpc"
