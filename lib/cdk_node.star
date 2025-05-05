@@ -100,7 +100,10 @@ def get_cdk_node_cmd(args):
             + "--components=aggsender"
         ]
 
-    if binary == constants.AGGKIT_BINARY and consensus_type == constants.CONSENSUS_TYPE.pessimistic:
+    if (
+        binary == constants.AGGKIT_BINARY
+        and consensus_type == constants.CONSENSUS_TYPE.pessimistic
+    ):
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
