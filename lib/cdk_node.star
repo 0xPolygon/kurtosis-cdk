@@ -80,10 +80,6 @@ def get_cdk_node_ports(args):
 
 
 def get_cdk_node_cmd(args):
-    binary = args.get("binary_name", "cdk-node")
-    consensus_type = args.get("consensus_contract_type")
-    components = args.get("components")
-
     service_command = [
         "sleep 20 && cdk-node run "
         + "--cfg=/etc/cdk/cdk-node-config.toml "
@@ -98,18 +94,6 @@ def get_cdk_node_cmd(args):
             + "--custom-network-file=/etc/cdk/genesis.json "
             + "--save-config-path=/tmp/ "
             + "--components=aggsender"
-        ]
-
-    if (
-        binary == constants.AGGKIT_BINARY
-        and consensus_type == constants.CONSENSUS_TYPE.pessimistic
-    ):
-        service_command = [
-            "sleep 20 && aggkit run "
-            + "--cfg=/etc/cdk/cdk-node-config.toml "
-            + "--save-config-path=/tmp/ "
-            + "--components="
-            + components
         ]
 
     return service_command
