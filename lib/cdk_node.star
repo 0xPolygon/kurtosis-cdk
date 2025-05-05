@@ -96,7 +96,7 @@ def get_cdk_node_cmd(args):
             + "--components=aggsender"
         ]
 
-    if args["aggkit_image"] != "":
+    if args["binary_name"] == constants.AGGKIT_BINARY_NAME:
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
