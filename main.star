@@ -170,6 +170,7 @@ def run(plan, args={}):
     if not deployment_stages.get("deploy_optimism_rollup", False):
         # Deploy cdk central/trusted environment.
         if deployment_stages.get("deploy_cdk_central_environment", False):
+            args = args | deployment_stages
             # Deploy cdk-erigon sequencer node.
             if args["sequencer_type"] == "erigon":
                 plan.print("Deploying cdk-erigon sequencer")
