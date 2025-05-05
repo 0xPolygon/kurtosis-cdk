@@ -5,7 +5,7 @@ http:
 
 providers:
   system:
-    interval: 15
+    interval: 15s
 
   rpc:
     - name: "L1"
