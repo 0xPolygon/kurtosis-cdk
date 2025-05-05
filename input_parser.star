@@ -672,7 +672,7 @@ def get_sequencer_name(sequencer_type):
 
 def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node, zkevm_rollup_chain_id):
     if deploy_op_node:
-        return "op-el-{}-op-geth-op-node".format(zkevm_rollup_chain_id)
+        return "op-el-1-op-geth-op-node"
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
     return "zkevm-node-rpc"
