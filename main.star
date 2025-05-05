@@ -212,10 +212,9 @@ def run(plan, args={}):
                 plan.print("Skipping the deployment of cdk-erigon node")
 
             plan.print("Deploying cdk central/trusted environment")
-            central_environment_args = dict(args)
-            central_environment_args["genesis_artifact"] = genesis_artifact
+            args["genesis_artifact"] = genesis_artifact
             import_module(cdk_central_environment_package).run(
-                plan, central_environment_args, contract_setup_addresses
+                plan, args, deployment_stages, contract_setup_addresses
             )
 
             # Deploy contracts on L2.
@@ -245,10 +244,9 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
         plan.print("Deploying AggKit infrastructure")
-        central_environment_args = dict(args)
         import_module(aggkit_package).run(
             plan,
-            central_environment_args,
+            args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
             deployment_stages,
