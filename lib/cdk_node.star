@@ -4,6 +4,7 @@ ports_package = import_module("../src/package_io/ports.star")
 
 AGGKIT_BINARY_NAME = "aggkit"
 
+
 def create_cdk_node_service_config(
     args,
     config_artifact,
