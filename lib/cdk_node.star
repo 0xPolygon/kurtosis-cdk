@@ -96,4 +96,12 @@ def get_cdk_node_cmd(args):
             + "--components=aggsender"
         ]
 
+    if args["aggkit_image"] != "":
+        service_command = [
+            "sleep 20 && aggkit run "
+            + "--cfg=/etc/cdk/cdk-node-config.toml "
+            + "--save-config-path=/tmp/ "
+            + "--components=aggsender,bridge"
+        ]
+
     return service_command
