@@ -13,7 +13,9 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
-# AggLayerURL="{{.agglayer_readrpc_url}}"
+# {{if eq .consensus_contract_type "fep"}}
+L2RPC = "{ Mode= \"op\", URL= \"{{.op_el_rpc_url}}\", opnodeurl= \"{{.op_cl_rpc_url}}\" }"
+# {{end}}
 AggLayerURL="{{.agglayer_grpc_url}}"
 
 ForkId = 12
@@ -396,7 +398,6 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # BridgeAddr is the address of the sovereign bridge contract on L2
 # ------------------------------------------------------------------------------
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
-
 # ------------------------------------------------------------------------------
 # DBPath path of the sqlite db
 # ------------------------------------------------------------------------------
@@ -406,7 +407,7 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # BlockFinality indicates the status of the blocks that will be queried to sync
 # LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
 # ------------------------------------------------------------------------------
-# BlockFinality = "LatestBlock"
+BlockFinality = "FinalizedBlock"
 
 # ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.
