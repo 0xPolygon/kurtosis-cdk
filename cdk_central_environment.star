@@ -195,5 +195,7 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
 def get_agglayer_endpoint(plan, args):
     if args["deploy_optimism_rollup"]:
         return "grpc"
+    elif "0.3" in args["agglayer_image"]:
+        return "grpc"
     else:
         return "readrpc"
