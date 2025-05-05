@@ -80,6 +80,8 @@ def get_cdk_node_ports(args):
 
 
 def get_cdk_node_cmd(args):
+    binary_name = args.get("binary_name")
+
     service_command = [
         "sleep 20 && cdk-node run "
         + "--cfg=/etc/cdk/cdk-node-config.toml "
@@ -96,7 +98,7 @@ def get_cdk_node_cmd(args):
             + "--components=aggsender"
         ]
 
-    if args["binary_name"] == constants.AGGKIT_BINARY_NAME:
+    if binary_name == constants.AGGKIT_BINARY_NAME:
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
