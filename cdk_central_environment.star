@@ -196,7 +196,7 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
 def get_agglayer_endpoint(plan, args, deployment_stages):
     if (
         "0.3" in args["agglayer_image"]
-        and args.get("binary_name") == constants.AGGKIT_BINARY_NAME
+        and args.get("binary_name") == AGGKIT_BINARY_NAME
     ):
         return "grpc"
     elif deployment_stages["deploy_optimism_rollup"]:

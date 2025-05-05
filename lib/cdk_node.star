@@ -2,6 +2,7 @@ constants = import_module("../src/package_io/constants.star")
 data_availability_package = import_module("./data_availability.star")
 ports_package = import_module("../src/package_io/ports.star")
 
+AGGKIT_BINARY_NAME = "aggkit"
 
 def create_cdk_node_service_config(
     args,
@@ -98,7 +99,7 @@ def get_cdk_node_cmd(args):
             + "--components=aggsender"
         ]
 
-    if binary_name == constants.AGGKIT_BINARY_NAME:
+    if binary_name == AGGKIT_BINARY_NAME:
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
