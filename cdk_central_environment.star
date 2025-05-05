@@ -191,7 +191,7 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
 
 
 # Function to allow cdk-node-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
-# Using args["agglayer_image"] to filter will not work, because the agglayer endpoint depends on whether the cdk-node or the aggkit-node is being used, not the agglayer version. 
+# Using args["agglayer_image"] to filter will not work, because the agglayer endpoint depends on whether the cdk-node or the aggkit-node is being used, not the agglayer version.
 def get_agglayer_version(plan, args):
     if args["deploy_optimism_rollup"]:
         return "0.3"
