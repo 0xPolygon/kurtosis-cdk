@@ -9,7 +9,7 @@
     "type":"EOA",
     "trustedSequencerURL": "{{ .op_el_rpc_url }}",
     "networkName": "{{ .sovereign_chain_name }}",
-    "trustedSequencer": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "trustedSequencer": "{{ .zkevm_l2_sequencer_address }}",
     "chainID": "{{ .zkevm_rollup_chain_id }}",
     "rollupAdminAddress": "{{ .zkevm_l2_sovereignadmin_address }}",
     "gasTokenAddress": "{{ .gas_token_address }}",
