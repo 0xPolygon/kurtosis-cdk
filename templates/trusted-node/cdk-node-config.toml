@@ -1,10 +1,14 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+{{- if eq .agglayer_endpoint "grpc" }}
+AggLayerURL="{{.agglayer_grpc_url}}"
+{{- else }}
 AggLayerURL="{{.agglayer_readrpc_url}}"
-
+{{- end }}
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
+NetworkID = {{.zkevm_rollup_id}}
 
 {{if eq .zkevm_rollup_fork_id "12"}}
 ContractVersions = "banana"
@@ -66,4 +70,3 @@ Outputs = ["stderr"]
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
-

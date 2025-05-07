@@ -8,7 +8,7 @@ cdk_node_package = import_module("./lib/cdk_node.star")
 databases = import_module("./databases.star")
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, args, deployment_stages, contract_setup_addresses):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
@@ -101,6 +101,7 @@ def run(plan, args, contract_setup_addresses):
         )
 
     if args["sequencer_type"] == "erigon":
+        agglayer_endpoint = get_agglayer_endpoint(plan, args, deployment_stages)
         # Create the cdk node config.
         node_config_template = read_file(
             src="./templates/trusted-node/cdk-node-config.toml"
@@ -118,6 +119,7 @@ def run(plan, args, contract_setup_addresses):
                         "l1_rpc_url": args["mitm_rpc_url"].get(
                             "cdk-node", args["l1_rpc_url"]
                         ),
+                        "agglayer_endpoint": agglayer_endpoint,
                     }
                     | db_configs
                     | contract_setup_addresses,
@@ -186,3 +188,18 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
             )
         },
     )
+
+
+# Function to allow cdk-node-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
+# On aggkit/cdk-node point of view, only the agglayer_image version is important. Both services can work with both grpc/readrpc and this depends on the agglayer version.
+# On Kurtosis point of view, we are checking whether the cdk-node or the aggkit node is being used to filter the grpc/readrpc.
+def get_agglayer_endpoint(plan, args, deployment_stages):
+    if (
+        "0.3" in args["agglayer_image"]
+        and args.get("binary_name") == cdk_node_package.AGGKIT_BINARY_NAME
+    ):
+        return "grpc"
+    elif deployment_stages["deploy_optimism_rollup"]:
+        return "grpc"
+    else:
+        return "readrpc"
