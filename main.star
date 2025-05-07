@@ -45,6 +45,7 @@ def run(plan, args={}):
 
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
+    sovereign_contract_setup_addresses = {}
     if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
         plan.print("Deploying zkevm contracts on L1")
         import_module(deploy_zkevm_contracts_package).run(
@@ -211,10 +212,9 @@ def run(plan, args={}):
                 plan.print("Skipping the deployment of cdk-erigon node")
 
             plan.print("Deploying cdk central/trusted environment")
-            central_environment_args = dict(args)
-            central_environment_args["genesis_artifact"] = genesis_artifact
+            args["genesis_artifact"] = genesis_artifact
             import_module(cdk_central_environment_package).run(
-                plan, central_environment_args, contract_setup_addresses
+                plan, args, deployment_stages, contract_setup_addresses
             )
 
             # Deploy contracts on L2.
@@ -233,7 +233,10 @@ def run(plan, args={}):
                 plan,
                 args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
                 contract_setup_addresses,
-                deployment_stages.get("deploy_cdk_bridge_ui", True),
+                deploy_bridge_ui=deployment_stages.get("deploy_cdk_bridge_ui", True),
+                deploy_optimism_rollup=deployment_stages.get(
+                    "deploy_optimism_rollup", False
+                ),
             )
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
@@ -241,10 +244,9 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
         plan.print("Deploying AggKit infrastructure")
-        central_environment_args = dict(args)
         import_module(aggkit_package).run(
             plan,
-            central_environment_args,
+            args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
             deployment_stages,
@@ -280,7 +282,12 @@ def run(plan, args={}):
     # Deploy additional services.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     additional_services.launch(
-        plan, args, contract_setup_addresses, genesis_artifact, deploy_optimism_rollup
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        genesis_artifact,
+        deploy_optimism_rollup,
     )
 
 

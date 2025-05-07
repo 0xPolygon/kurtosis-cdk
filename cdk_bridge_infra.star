@@ -1,15 +1,26 @@
-zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
+constants = import_module("./src/package_io/constants.star")
 databases = import_module("./databases.star")
+zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 
-def run(plan, args, contract_setup_addresses, deploy_bridge_ui=True):
+def run(
+    plan,
+    args,
+    contract_setup_addresses,
+    deploy_bridge_ui=True,
+    deploy_optimism_rollup=False,
+):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
 
     # Start the bridge service.
     bridge_config_artifact = create_bridge_config_artifact(
-        plan, args, contract_setup_addresses, db_configs
+        plan,
+        args,
+        contract_setup_addresses,
+        db_configs,
+        deploy_optimism_rollup,
     )
     claimtx_keystore_artifact = plan.store_service_files(
         name="claimtxmanager-keystore",
@@ -37,7 +48,9 @@ def run(plan, args, contract_setup_addresses, deploy_bridge_ui=True):
             zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
-def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
+def create_bridge_config_artifact(
+    plan, args, contract_setup_addresses, db_configs, deploy_optimism_rollup
+):
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"
     )
@@ -45,6 +58,17 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
+
+    consensus_contract_type = args["consensus_contract_type"]
+    require_sovereign_chain_contract = (
+        (
+            consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic
+            and deploy_optimism_rollup
+        )
+        or consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa
+        or consensus_contract_type == constants.CONSENSUS_TYPE.fep
+    )
+
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -54,7 +78,7 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                     "global_log_level": args["global_log_level"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
-                    "require_sovereign_chain_contract": True,
+                    "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,

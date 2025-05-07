@@ -52,7 +52,7 @@ def get_aggkit_cmd(args):
     service_command = [
         "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
         + "--cfg=/etc/aggkit/config.toml "
-        + "--components=aggsender,aggoracle"
+        + "--components=aggsender,aggoracle,bridge"
     ]
 
     return service_command
