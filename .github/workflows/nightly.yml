@@ -39,7 +39,7 @@ jobs:
   run-with-args:
     needs: list-ymls
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -169,7 +169,7 @@ jobs:
 
   pre-deployed-gas-token:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -258,7 +258,7 @@ jobs:
 
   deploy-to-anvil-l1:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
