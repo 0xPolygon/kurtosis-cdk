@@ -24,8 +24,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate test combinations
-        working-directory: .github/tests
-        run: ./combine-ymls.sh
+        working-directory: .github/tests/combinations
+        run: ./generate.sh
 
       - id: set-matrix
         run: |
@@ -64,9 +64,6 @@ jobs:
 
       - name: Install Kurtosis CDK tools
         uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Add test runner and tx spammer to the args file
-        run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --show-enclave-inspect=false .
