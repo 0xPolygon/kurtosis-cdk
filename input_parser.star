@@ -793,15 +793,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         if deployment_stages.get("deploy_optimism_rollup", False):
             fail("Gas token is not supported when deploying OP Rollup.")
 
-        # Validate the gas token address.
-        gas_token_address = args.get("gas_token_address", "")
-        if gas_token_address == constants.ZERO_ADDRESS or gas_token_address == "":
-            fail(
-                "Gas token is enabled, but the provided gas token address is either empty or set to the zero address: '{}'.".format(
-                    gas_token_address
-                )
-            )
-
     # CDK Erigon normalcy and strict mode check
     if args["enable_normalcy"] and args["erigon_strict_mode"]:
         fail("normalcy and strict mode cannot be enabled together")
