@@ -60,6 +60,7 @@ def run(
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
     # Create the cdk aggoracle config.
+    agglayer_endpoint = get_agglayer_endpoint(plan, args)
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
@@ -69,6 +70,7 @@ def run(
                 data=args
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                    "agglayer_endpoint": agglayer_endpoint,
                 }
                 | db_configs
                 | contract_setup_addresses
@@ -244,3 +246,14 @@ def get_aggkit_prover_ports(args):
         ports, "aggkit_prover_start_port", args
     )
     return (ports, public_ports)
+
+
+# Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
+# v0.2.0 aggkit is only for PP, and v0.3.0 aggkit is for FEP.
+def get_agglayer_endpoint(plan, args):
+    if args["consensus_contract_type"] == "fep":
+        return "grpc"
+    elif args["consensus_contract_type"] == "pessimistic":
+        return "readrpc"
+    else:
+        return "readrpc"

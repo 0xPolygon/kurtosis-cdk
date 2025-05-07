@@ -13,14 +13,16 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
+{{- if eq .agglayer_endpoint "grpc" }}
+AggLayerURL="{{.agglayer_grpc_url}}"
+{{- else }}
 L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
-#AggLayerURL="{{.agglayer_grpc_url}}"
 AggLayerURL="{{.agglayer_readrpc_url}}"
+{{- end }}
 
 ForkId = 12
 ContractVersions = "banana"
 IsValidiumMode = false
-NetworkID = {{.zkevm_rollup_id}}
 NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
