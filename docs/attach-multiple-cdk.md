@@ -1,4 +1,6 @@
-# Attach Multiple CDK-Erigon to the Agglayer
+# Attach Multiple Networks to Agglayer
+
+## Attach Multiple CDK-Erigon to the Agglayer
 
 First have a running devnet:
 
@@ -50,4 +52,21 @@ Make sure to set the correct env vars as the test setup, and then run:
 
 ```bash
 bats tests/lxly/lxly.bats
+```
+
+## Attach Multiple PP CDK-OP-Geth to the Agglayer
+
+First, run a PP OP-Geth network:
+```bash
+kurtosis run --enclave=cdk --args-file=./.github/tests/nightly/op-rollup/op-default.yml .
+```
+
+Then simply run another PP OP-Geth network in the same enclave:
+```bash
+kurtosis run --enclave=cdk --args-file=./.github/tests/chains/op2.yml .
+```
+
+Adjust the enclave name, contract addresses, and service namings, and then test with the e2e repo:
+```bash
+bats tests/agglayer/bridges.bats
 ```
