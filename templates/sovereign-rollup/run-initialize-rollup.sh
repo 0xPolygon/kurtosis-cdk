@@ -5,8 +5,8 @@ pushd /opt/zkevm-contracts || exit 1
 
 ts=$(date +%s)
 # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
-deployOPSuccinct="{{ .deploy_op_succinct }}"
-if [[ $deployOPSuccinct == true ]]; then
+consensusContractType="{{ .consensus_contract_type }}"
+if [[ $consensusContractType == "fep" ]]; then
 echo "Configuring OP Succinct setup..."
 jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
 .deployerPvtKey = .aggchainManagerPvtKey |
