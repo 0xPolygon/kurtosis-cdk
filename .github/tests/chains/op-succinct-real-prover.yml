@@ -55,12 +55,12 @@ optimism_package:
   chains:
     - participants:
         - el_type: op-geth
-          el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth@sha256:8cad527a982e929f80fca539e612c59ccb503fc076b86ce1f4ebeefb112dee03"
+          el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.1"
           cl_type: op-node
-          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node@sha256:207943c6ca92a203e5c2f7908769023c76d2304060c8d8c4cfbd469b7fbaaf0d"
+          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.2"
           count: 1
       batcher_params:
-        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher@sha256:a017bf0a1dbe88e770eb6979354a148534b36e58ea7bc2fd7ae01f5e90eb9ed3"
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0"
       proposer_params:
         enabled: false
       challenger_params:
