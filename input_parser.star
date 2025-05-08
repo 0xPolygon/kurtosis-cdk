@@ -312,7 +312,7 @@ DEFAULT_ROLLUP_ARGS = {
     "pp_vkey_selector": "0x00000001",
     # Initial aggchain selector
     # TODO automate taking the first 2 bytes of this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey-selector`
-    "aggchain_vkey_version": "0x00000001",
+    "aggchain_vkey_selector": "0x00000001",
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
