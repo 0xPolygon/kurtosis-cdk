@@ -25,8 +25,6 @@ args:
   op_succinct_agglayer: true
   # Proof type. Must match the verifier gateway contract type. Options: "plonk", "groth16", "compressed", "core"
   op_succinct_agg_proof_mode: "compressed"
-  # The maximum number of blocks to include in each span proof. For chains with high throughput, you need to decrease this value.
-  op_succinct_proposer_span_proof: "60"
   # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
   op_succinct_submission_interval: "1"
   # The maximum number of concurrent proof requests to send to the `op-succinct-server`
@@ -39,18 +37,18 @@ args:
   deployment_suffix: "-001"
   zkevm_rollup_id: 1
   # Size of the range proof.
-  op_succinct_range_proof_interval: "5"
+  op_succinct_range_proof_interval: "1800"
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
-  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+  l1_seconds_per_slot: 12
   additional_services:
     - bridge_spammer
 
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
   #         "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
-  source: "github.com/xavier-romero/optimism-package/main.star@355b15efd61b603d2302478dd4b3ef74ccc6e462"
+  source: "github.com/agglayer/optimism-package/main.star@a330112d04d022ea46f9113b704caa845053a84a"
   predeployed_contracts: true
   chains:
     - participants:
@@ -61,6 +59,7 @@ optimism_package:
           count: 1
       batcher_params:
         image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0"
+        max_channel_duration: 50 # 50 blocks @ 12 sec => 10 minutes per blob
       proposer_params:
         enabled: false
       challenger_params:

@@ -57,7 +57,7 @@ def create_op_succinct_proposer_service_config(
             "L1_BEACON_RPC": args["l1_beacon_url"],
             "L2_RPC": args["op_el_rpc_url"],
             "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["zkevm_l2_sequencer_private_key"],
+            # "PRIVATE_KEY": args["zkevm_l2_sequencer_private_key"],
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
             "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
@@ -66,7 +66,6 @@ def create_op_succinct_proposer_service_config(
             "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"], # agglayer/op-succinct specific.
             "GRPC_ADDRESS": "0.0.0.0:" + str(args["op_succinct_proposer_grpc_port"]), # agglayer/op-succinct specific.
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
                 "op_succinct_max_concurrent_proof_requests"
             ],
@@ -89,7 +88,7 @@ def create_op_succinct_proposer_service_config(
             "L1_BEACON_RPC": args["l1_beacon_url"],
             "L2_RPC": args["op_el_rpc_url"],
             "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["zkevm_l2_sequencer_private_key"],
+            # "PRIVATE_KEY": args["zkevm_l2_sequencer_private_key"],
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
             "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
@@ -98,7 +97,6 @@ def create_op_succinct_proposer_service_config(
             "AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"], # agglayer/op-succinct specific.
             "GRPC_ADDRESS": "0.0.0.0:" + str(args["op_succinct_proposer_grpc_port"]), # agglayer/op-succinct specific.
             "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
             "MAX_CONCURRENT_PROOF_REQUESTS": args[
                 "op_succinct_max_concurrent_proof_requests"
             ],
