@@ -13,7 +13,7 @@ args:
   sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   consensus_contract_type: fep
   pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  aggchain_vkey_hash: "0x6121599560c1f31810609c7e2f8949a5750a666d4b08c08147ff33822cb83e60"
+  aggchain_vkey_hash: "0x2e1061045949ba9e43324bfa58dc554b43f51b45538a62e91c83cf8e0c5d3617"
   aggkit_prover_image: "ghcr.io/agglayer/aggkit-prover:feat-rust-proposer"
   # op_succinct_proposer_image: "ghcr.io/agglayer/op-succinct/op-succinct:v2.1.6-agglayer"
 
