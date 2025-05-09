@@ -50,6 +50,7 @@ def create_op_succinct_proposer_service_config(
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
 
+    # TODO understand why the PRIVATE_KEY needs to be set and if it actually need to be the sequencer key... The value 0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458 is made up just to ensure that the value isn't needed
     # If we are using the network prover, we use the real verifier address
     if op_succinct_env_vars["op_succinct_mock"] == False:
         env_vars = {
@@ -57,7 +58,7 @@ def create_op_succinct_proposer_service_config(
             "L1_BEACON_RPC": args["l1_beacon_url"],
             "L2_RPC": args["op_el_rpc_url"],
             "L2_NODE_RPC": args["op_cl_rpc_url"],
-            # "PRIVATE_KEY": args["zkevm_l2_sequencer_private_key"],
+            "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
             "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
@@ -88,7 +89,7 @@ def create_op_succinct_proposer_service_config(
             "L1_BEACON_RPC": args["l1_beacon_url"],
             "L2_RPC": args["op_el_rpc_url"],
             "L2_NODE_RPC": args["op_cl_rpc_url"],
-            # "PRIVATE_KEY": args["zkevm_l2_sequencer_private_key"],
+            "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
             "ETHERSCAN_API_KEY": "",
             "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
             "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
