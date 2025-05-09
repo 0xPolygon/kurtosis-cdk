@@ -45,25 +45,22 @@ echo "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 deploy_create2
 
-private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
-
 
 # TODO confirm if these environment variables are all needed.. Many aren't functional yet
 # Create the .env file
 pushd /opt/op-succinct || exit 1
 touch /opt/op-succinct/.env
 cat << EOF > ./.env
+# Mandatory .env parameters
 L1_RPC="{{.l1_rpc_url}}"
 L1_BEACON_RPC="{{.l1_beacon_url}}"
 L2_RPC="{{.op_el_rpc_url}}"
 L2_NODE_RPC="{{.op_cl_rpc_url}}"
-
-# Private key of the prefunded OP Stack address
-PRIVATE_KEY="$private_key"
-
-# API key for Etherscan
+# PRIVATE_KEY="" # This value is only used in just deploy-oracle step, which is skipped in agglayer/op-succinct.
 ETHERSCAN_API_KEY=""
 
+# Below parameters are not mandatory for the .env file itself. This is required specific to Kurtosis logic.
+# We need to know some parameters to spin up CDK services before the OP-Succinct services are up.
 # Interval between submissions
 SUBMISSION_INTERVAL="{{.op_succinct_submission_interval}}"
 
@@ -86,7 +83,6 @@ NETWORK_RPC_URL="{{.agglayer_prover_network_url}}"
 
 # Proof type. Must match the verifier gateway contract type. Options: "plonk" or "groth16"
 AGG_PROOF_MODE="{{.op_succinct_agg_proof_mode}}"
-
 EOF
 
 # starting_block_number=$(cast block-number --rpc-url "{{.l1_rpc_url}}")
