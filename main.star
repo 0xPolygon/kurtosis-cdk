@@ -261,14 +261,22 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
         plan.print("Deploying AggKit infrastructure")
-        central_environment_args = dict(args)
         import_module(aggkit_package).run(
             plan,
-            central_environment_args,
+            args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
             deployment_stages,
         )
+
+        # Deploy observability after all OP services, including OP-Succinct is deployed.
+        prometheus_package = import_module("./src/additional_services/prometheus.star")
+        plan.print("Deploying Prometheus Package")
+        prometheus_package.run(plan, args)
+        grafana_package = import_module("./src/additional_services/grafana.star")
+        plan.print("Deploying Grafana Package")
+        grafana_package.run(plan, args)
+
     else:
         plan.print("Skipping the deployment of an Optimism rollup")
 
