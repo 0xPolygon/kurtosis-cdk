@@ -151,7 +151,7 @@ To deploy OP Rollup in isolation (without CDK Erigon Stack):
 Run the following command:
 
 ```
-kurtosis run --enclave=cdk --args-file ./.github/tests/chains/op-succinct.yml .
+kurtosis run --enclave=cdk --args-file ./.github/tests/op/op-succinct.yml .
 ```
 
 Key configuration requirements in `op-succinct.yml`:
