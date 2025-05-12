@@ -104,7 +104,7 @@ def create_op_succinct_proposer_service_config(
 
 def get_op_succinct_proposer_ports(args):
     ports = {
-        "metrics": PortSpec(
+        "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],
             application_protocol="http",
             wait="5m",
