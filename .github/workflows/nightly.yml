@@ -29,7 +29,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|anvil|gas-token|pless-zkevm-node")
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml ./.github/tests/chains/op-succinct.yml | grep -Ev "sovereign|anvil|gas-token|pless-zkevm-node")
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "$file_path")
             echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
@@ -95,8 +95,8 @@ jobs:
       - name: Monitor CDK chain verified batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
+          if [[ "$result" == "pessimistic" ||  "$result" == "fep" ]]; then
+            echo "Skipping block verification as consensus is pessimistic or fep."
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
             rpc_name=""
@@ -119,8 +119,8 @@ jobs:
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
+          if [[ "$result" == "pessimistic" ||  "$result" == "fep" ]]; then
+            echo "Skipping block verification as consensus is pessimistic or fep."
           else
             result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
             if [[ "$result" == "true" ]]; then
