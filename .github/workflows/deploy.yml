@@ -373,7 +373,7 @@ jobs:
           name: dump_deploy_to_external_l1_${{ github.run_id }}
           path: ./dump
 
-  cdk-op-geth-succinct:
+  run-with-cdk-op-geth-succinct:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -398,7 +398,7 @@ jobs:
         uses: ./.github/actions/setup-kurtosis-cdk
 
       - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chain/op-succinct.yml --show-enclave-inspect=false .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --show-enclave-inspect=false .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
