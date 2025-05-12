@@ -112,7 +112,7 @@ def get_op_succinct_proposer_ports(args):
         "grpc": PortSpec(
             args["op_succinct_proposer_grpc_port"],
             application_protocol="http",
-            wait="20s",
+            wait="10m",
         ),
     }
 

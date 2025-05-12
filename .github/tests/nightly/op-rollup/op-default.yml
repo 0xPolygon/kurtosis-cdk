@@ -6,8 +6,7 @@ args:
   consensus_contract_type: pessimistic
   zkevm_rollup_chain_id: 2151908
   pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  aggchain_vkey_hash: "0x2e1061045949ba9e43324bfa58dc554b43f51b45538a62e91c83cf8e0c5d3617"
-  aggkit_prover_image: "ghcr.io/agglayer/aggkit-prover:feat-rust-proposer"
+  aggchain_vkey_hash: "1f3df68a258f9d6748b291dd35faf80065af7cc11ef8b5fc6db2a4d958ea62d2"
   # Arbitrary key for the SP1 prover. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
   sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
