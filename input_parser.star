@@ -427,8 +427,9 @@ DEFAULT_ARGS = (
         # - observability
         # - pless_zkevm_node
         # - status_checker
+        # - test_runner
         # - tx_spammer
-        "additional_services": [],
+        "additional_services": [constants.ADDITIONAL_SERVICES.test_runner],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
@@ -804,15 +805,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         # Ensure gas token is not used with OP Rollup.
         if deployment_stages.get("deploy_optimism_rollup", False):
             fail("Gas token is not supported when deploying OP Rollup.")
-
-        # Validate the gas token address.
-        gas_token_address = args.get("gas_token_address", "")
-        if gas_token_address == constants.ZERO_ADDRESS or gas_token_address == "":
-            fail(
-                "Gas token is enabled, but the provided gas token address is either empty or set to the zero address: '{}'.".format(
-                    gas_token_address
-                )
-            )
 
     # CDK Erigon normalcy and strict mode check
     if args["enable_normalcy"] and args["erigon_strict_mode"]:
