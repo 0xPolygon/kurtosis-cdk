@@ -51,8 +51,8 @@ def run(
                 "L2_RPC_URL": l2_rpc_url,
                 "L2_BRIDGE_ADDR": l2_bridge_address,
                 # Other parameters.
-                "CLAIM_WAIT_DURATION": "10m",  # default: 10m
-                "TX_RECEIPT_TIMEOUT_SECONDS": "600",  # default: 60
+                "CLAIM_WAIT_DURATION": "15m",  # default: 10m
+                "TX_RECEIPT_TIMEOUT_SECONDS": "900",  # default: 60
             },
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
