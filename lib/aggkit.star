@@ -9,7 +9,7 @@ def create_aggkit_cdk_service_config(
     aggkit_name = "aggkit" + args["deployment_suffix"]
     (ports, public_ports) = get_aggkit_ports(args)
     service_command = get_aggkit_cmd(args)
-    cdk_aggoracle_service_config = ServiceConfig(
+    aggkit_cdk_service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
         public_ports=public_ports,
@@ -25,7 +25,7 @@ def create_aggkit_cdk_service_config(
         cmd=service_command,
     )
 
-    return {aggkit_name: cdk_aggoracle_service_config}
+    return {aggkit_name: aggkit_cdk_service_config}
 
 
 def create_aggkit_service_config(
