@@ -12,46 +12,50 @@ def run(
     sovereign_contract_setup_addresses,
     deployment_stages,
 ):
-    # Create aggkit-prover
-    aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(
-        plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
-    )
-    (ports, public_ports) = get_aggkit_prover_ports(args)
+    if (
+        deployment_stages.get("deploy_op_succinct", False)
+        and args["consensus_contract_type"] != "pessimistic"
+    ):
+        # Create aggkit-prover
+        aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(
+            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+        )
+        (ports, public_ports) = get_aggkit_prover_ports(args)
 
-    prover_env_vars = {
-        # TODO one of these values can be deprecated soon 2025-04-15
-        "PROPOSER_NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-        "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-        "RUST_LOG": "info,aggkit_prover=debug,prover=debug,aggchain=debug",
-        "RUST_BACKTRACE": "1",
-    }
+        prover_env_vars = {
+            # TODO one of these values can be deprecated soon 2025-04-15
+            "PROPOSER_NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
+            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
+            "RUST_LOG": "info,aggkit_prover=debug,prover=debug,aggchain=debug",
+            "RUST_BACKTRACE": "1",
+        }
 
-    aggkit_prover = plan.add_service(
-        name="aggkit-prover",
-        config=ServiceConfig(
-            image=args["aggkit_prover_image"],
-            ports=ports,
-            public_ports=public_ports,
-            files={
-                "/etc/aggkit": Directory(
-                    artifact_names=[
-                        aggkit_prover_config_artifact,
-                    ]
-                ),
-            },
-            entrypoint=[
-                "/usr/local/bin/aggkit-prover",
-            ],
-            env_vars=prover_env_vars,
-            cmd=["run", "--config-path", "/etc/aggkit/aggkit-prover-config.toml"],
-        ),
-    )
-    aggkit_prover_url = "{}:{}".format(
-        aggkit_prover.ip_address,
-        aggkit_prover.ports[
-            "grpc"
-        ].number,  # TODO: Check whether "grpc" or "api" is the correct port. If api is correct, we need to add it below.
-    )
+        aggkit_prover = plan.add_service(
+            name="aggkit-prover",
+            config=ServiceConfig(
+                image=args["aggkit_prover_image"],
+                ports=ports,
+                public_ports=public_ports,
+                files={
+                    "/etc/aggkit": Directory(
+                        artifact_names=[
+                            aggkit_prover_config_artifact,
+                        ]
+                    ),
+                },
+                entrypoint=[
+                    "/usr/local/bin/aggkit-prover",
+                ],
+                env_vars=prover_env_vars,
+                cmd=["run", "--config-path", "/etc/aggkit/aggkit-prover-config.toml"],
+            ),
+        )
+        aggkit_prover_url = "{}:{}".format(
+            aggkit_prover.ip_address,
+            aggkit_prover.ports[
+                "grpc"
+            ].number,  # TODO: Check whether "grpc" or "api" is the correct port. If api is correct, we need to add it below.
+        )
 
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
@@ -59,7 +63,7 @@ def run(
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Create the cdk aggoracle config.
+    # Create the aggkit config.
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
@@ -218,7 +222,8 @@ def create_aggkit_prover_config_artifact(
                     ],  # TODO: Check if it's the right address - is it the L2 sovereign global exit root address ?
                     # TODO: For op-succinct, agglayer/op-succinct is currently on the golang version. This might change if we move to the rust version.
                     "proposer_url": "http://op-succinct-proposer{}:{}".format(
-                        args["deployment_suffix"], args["op_succinct_proposer_rpc_port"]
+                        args["deployment_suffix"],
+                        args["op_succinct_proposer_grpc_port"],
                     ),
                     # TODO: For legacy op, this would be different - something like http://op-proposer-001:8560
                     # "proposer_url": "http://op-proposer{}:{}".format(

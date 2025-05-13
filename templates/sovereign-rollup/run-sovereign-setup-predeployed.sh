@@ -33,12 +33,14 @@ cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/c
 
 deployOPSuccinct="{{ .deploy_op_succinct }}"
 if [[ $deployOPSuccinct == true ]]; then
+rm /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json
 npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
 cp /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json /opt/zkevm/add_rollup_type_output.json
 rollup_type_id=$(jq -r '.rollupTypeID' /opt/zkevm/add_rollup_type_output.json)
 jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json > /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json.tmp
 mv /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json.tmp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
 
+rm /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json
 npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
 cp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json /opt/zkevm/create_rollup_output.json
 else

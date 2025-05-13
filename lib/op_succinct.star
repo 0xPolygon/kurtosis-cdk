@@ -4,10 +4,6 @@ ARTIFACTS = [
         "file": "../templates/op-succinct/deploy-op-succinct-contracts.sh",
     },
     {
-        "name": "deploy-sp1-verifier-contracts.sh",
-        "file": "../templates/op-succinct/deploy-sp1-verifier-contracts.sh",
-    },
-    {
         "name": "deploy-l2oo.sh",
         "file": "../templates/op-succinct/deploy-l2oo.sh",
     },
@@ -36,67 +32,12 @@ def create_op_succinct_contract_deployer_service_config(
                 artifact_names=[
                     artifacts[0],
                     artifacts[1],
-                    artifacts[2],
                 ],
             ),
         },
     )
 
     return {op_succinct_name: op_succinct_contract_deployer_service_config}
-
-
-# The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
-# NETWORK_PRIVATE_KEY must be from user input
-def create_op_succinct_server_service_config(
-    args,
-    op_succinct_env_vars,
-):
-    op_succinct_name = "op-succinct-server" + args["deployment_suffix"]
-    ports = get_op_succinct_server_ports(args)
-
-    # If we are using the network prover, we use the real verifier address
-    if op_succinct_env_vars["op_succinct_mock"] == False:
-        env_vars = {
-            "L1_RPC": args["l1_rpc_url"],
-            "L1_BEACON_RPC": args["l1_beacon_url"],
-            "L2_RPC": args["op_el_rpc_url"],
-            "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["l1_preallocated_private_key"],
-            "ETHERSCAN_API_KEY": "",
-            # "VERIFIER_ADDRESS": op_succinct_env_vars["sp1_verifier_gateway_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
-            "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
-            "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
-        }
-    # For local prover, we use the mock verifier address
-    else:
-        env_vars = {
-            "L1_RPC": args["l1_rpc_url"],
-            "L1_BEACON_RPC": args["l1_beacon_url"],
-            "L2_RPC": args["op_el_rpc_url"],
-            "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["l1_preallocated_private_key"],
-            "ETHERSCAN_API_KEY": "",
-            # "VERIFIER_ADDRESS": op_succinct_env_vars["mock_verifier_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
-            "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
-            "AGG_PROOF_MODE": op_succinct_env_vars["op_succinct_agg_proof_mode"],
-        }
-
-    op_succinct_server_service_config = ServiceConfig(
-        image=args["op_succinct_server_image"],
-        ports=ports,
-        env_vars=env_vars,
-    )
-
-    return {op_succinct_name: op_succinct_server_service_config}
-
-
-# curl -s --json '{"address":"0x414e9E227e4b589aF92200508aF5399576530E4e"}' $(kurtosis port print aggkit op-succinct-server-001 server)/validate_config | jq '.'
 
 
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
@@ -109,61 +50,40 @@ def create_op_succinct_proposer_service_config(
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
 
-    # If we are using the network prover, we use the real verifier address
-    if op_succinct_env_vars["op_succinct_mock"] == False:
-        env_vars = {
-            "L1_RPC": args["l1_rpc_url"],
-            "L1_BEACON_RPC": args["l1_beacon_url"],
-            "L2_RPC": args["op_el_rpc_url"],
-            "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["l1_preallocated_private_key"],
-            "ETHERSCAN_API_KEY": "",
-            "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
-            "L2OO_ADDRESS": args["zkevm_rollup_address"],
-            "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "OP_SUCCINCT_AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
-            "MAX_CONCURRENT_PROOF_REQUESTS": args[
-                "op_succinct_max_concurrent_proof_requests"
-            ],
-            "MAX_CONCURRENT_WITNESS_GEN": args[
-                "op_succinct_max_concurrent_witness_gen"
-            ],
-            "OP_SUCCINCT_SERVER_URL": "http://op-succinct-server"
-            + args["deployment_suffix"]
-            + ":"
-            + str(args["op_succinct_server_port"]),
-        }
-    # For local prover, we use the mock verifier address
-    else:
-        env_vars = {
-            "L1_RPC": args["l1_rpc_url"],
-            "L1_BEACON_RPC": args["l1_beacon_url"],
-            "L2_RPC": args["op_el_rpc_url"],
-            "L2_NODE_RPC": args["op_cl_rpc_url"],
-            "PRIVATE_KEY": args["l1_preallocated_private_key"],
-            "ETHERSCAN_API_KEY": "",
-            # "VERIFIER_ADDRESS": op_succinct_env_vars["mock_verifier_address"],
-            "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
-            # "L2OO_ADDRESS": op_succinct_env_vars["l2oo_address"],
-            "L2OO_ADDRESS": args["zkevm_rollup_address"],
-            "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-            "OP_SUCCINCT_AGGLAYER": op_succinct_env_vars["op_succinct_agglayer"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "MAX_BLOCK_RANGE_PER_SPAN_PROOF": args["op_succinct_proposer_span_proof"],
-            "MAX_CONCURRENT_PROOF_REQUESTS": args[
-                "op_succinct_max_concurrent_proof_requests"
-            ],
-            "MAX_CONCURRENT_WITNESS_GEN": args[
-                "op_succinct_max_concurrent_witness_gen"
-            ],
-            "OP_SUCCINCT_SERVER_URL": "http://op-succinct-server"
-            + args["deployment_suffix"]
-            + ":"
-            + str(args["op_succinct_server_port"]),
-        }
+    # TODO understand why the PRIVATE_KEY needs to be set and if it actually need to be the sequencer key... The value 0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458 is made up just to ensure that the value isn't needed
+    env_vars = {
+        "L1_RPC": args["l1_rpc_url"],
+        "L1_BEACON_RPC": args["l1_beacon_url"],
+        "L2_RPC": args["op_el_rpc_url"],
+        "L2_NODE_RPC": args["op_cl_rpc_url"],
+        "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
+        "ETHERSCAN_API_KEY": "",
+        "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
+        "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
+        "L2OO_ADDRESS": args["zkevm_rollup_address"],
+        "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
+        "AGGLAYER": op_succinct_env_vars[
+            "op_succinct_agglayer"
+        ],  # agglayer/op-succinct specific.
+        "GRPC_ADDRESS": "0.0.0.0:"
+        + str(args["op_succinct_proposer_grpc_port"]),  # agglayer/op-succinct specific.
+        "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
+        "MAX_CONCURRENT_PROOF_REQUESTS": args[
+            "op_succinct_max_concurrent_proof_requests"
+        ],
+        "MAX_CONCURRENT_WITNESS_GEN": args["op_succinct_max_concurrent_witness_gen"],
+        "RANGE_PROOF_INTERVAL": args["op_succinct_range_proof_interval"],
+        "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
+        + args["deployment_suffix"]
+        + ":5432/op_succinct_db",
+        "PROVER_ADDRESS": args["zkevm_l2_sequencer_address"],
+        "METRICS_PORT": str(args["op_succinct_proposer_metrics_port"]),
+        # "DGF_ADDRESS": "", # Address of the DisputeGameFactory contract. Note: If set, the proposer will create a dispute game with the DisputeGameFactory, rather than the OPSuccinctL2OutputOracle. Compatible with OptimismPortal2.
+        # "LOOP_INTERVAL": 60, # Default: 60. The interval (in seconds) between each iteration of the OP Succinct service.
+        # "SAFE_DB_FALLBACK": False, # Default: false. Whether to fallback to timestamp-based L1 head estimation even though SafeDB is not activated for op-node. When false, proposer will panic if SafeDB is not available. It is by default false since using the fallback mechanism will result in higher proving cost.
+        # "SIGNER_URL": "", # URL for the Web3Signer. Note: This takes precedence over the `PRIVATE_KEY` environment variable.
+        # "SIGNER_ADDRESS": "", # Address of the account that will be posting output roots to L1. Note: Only set this if the signer is a Web3Signer. Note: Required if `SIGNER_URL` is set.
+    }
 
     op_succinct_proposer_service_config = ServiceConfig(
         image=args["op_succinct_proposer_image"],
@@ -182,29 +102,17 @@ def create_op_succinct_proposer_service_config(
     return {op_succinct_name: op_succinct_proposer_service_config}
 
 
-def get_op_succinct_server_ports(args):
-    ports = {
-        "server": PortSpec(
-            args["op_succinct_server_port"],
-            application_protocol="http",
-            wait="5m",
-        ),
-    }
-
-    return ports
-
-
 def get_op_succinct_proposer_ports(args):
     ports = {
-        "metrics": PortSpec(
+        "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],
             application_protocol="http",
             wait="5m",
         ),
-        "rpc": PortSpec(
-            args["op_succinct_proposer_rpc_port"],
+        "grpc": PortSpec(
+            args["op_succinct_proposer_grpc_port"],
             application_protocol="http",
-            wait="5m",
+            wait="10m",
         ),
     }
 

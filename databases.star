@@ -90,7 +90,22 @@ CDK_ERIGON_DBS = {
     }
 }
 
-DATABASES = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS | CDK_ERIGON_DBS
+# Databases required for op-succinct proposer.
+OP_SUCCINCT_PROPOSER_DBS = {
+    "op_succinct_db": {
+        "name": "op_succinct_db",
+        "user": "op_succinct_user",
+        "password": "op_succinct_password",
+    }
+}
+
+DATABASES = (
+    CENTRAL_ENV_DBS
+    | PROVER_DB
+    | ZKEVM_NODE_DBS
+    | CDK_ERIGON_DBS
+    | OP_SUCCINCT_PROPOSER_DBS
+)
 
 
 def run(plan, args):
@@ -102,7 +117,7 @@ def run(plan, args):
 def get_db_configs(suffix, sequencer_type):
     dbs = None
     if sequencer_type == "erigon":
-        dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS
+        dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS | OP_SUCCINCT_PROPOSER_DBS
     elif sequencer_type == "zkevm":
         dbs = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS
     else:
