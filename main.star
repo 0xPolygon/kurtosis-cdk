@@ -269,8 +269,12 @@ def run(plan, args={}):
             deployment_stages,
         )
 
-        if op_stack_args["optimism_package"]["observability"]["enabled"] == False and deployment_stages.get("deploy_op_succinct", False):
-            prometheus_package = import_module("./src/additional_services/prometheus.star")
+        if op_stack_args["optimism_package"]["observability"][
+            "enabled"
+        ] == False and deployment_stages.get("deploy_op_succinct", False):
+            prometheus_package = import_module(
+                "./src/additional_services/prometheus.star"
+            )
             plan.print("Deploying Kurtosis CDK Prometheus Package")
             prometheus_package.run(plan, args)
             grafana_package = import_module("./src/additional_services/grafana.star")
