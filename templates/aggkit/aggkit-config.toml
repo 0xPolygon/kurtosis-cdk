@@ -21,7 +21,7 @@ IsValidiumMode = false
 NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
-L2Coinbase =  "{{.zkevm_l2_sovereignadmin_address}}"
+L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 
