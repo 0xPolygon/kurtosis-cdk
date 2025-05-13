@@ -43,7 +43,12 @@ def get_cdk_node_ports(args):
     if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
         ports = {
             "rpc": PortSpec(
-                args["zkevm_cdk_node_port"],
+                args["cdk_node_rpc_port"],
+                application_protocol="http",
+                wait=None,
+            ),
+            "rest": PortSpec(
+                args["cdk_node_rest_api_port"],
                 application_protocol="http",
                 wait=None,
             ),
@@ -71,7 +76,12 @@ def get_cdk_node_ports(args):
             wait=aggregator_wait,
         ),
         "rpc": PortSpec(
-            args["zkevm_cdk_node_port"],
+            args["cdk_node_rpc_port"],
+            application_protocol="http",
+            wait=None,
+        ),
+        "rest": PortSpec(
+            args["cdk_node_rest_api_port"],
             application_protocol="http",
             wait=None,
         ),
