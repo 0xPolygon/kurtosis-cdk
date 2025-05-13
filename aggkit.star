@@ -5,6 +5,47 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 
+def run_aggkit_cdk_node(
+    plan,
+    args,
+    contract_setup_addresses,
+    deployment_stages,
+):
+
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
+
+    # Create the cdk aggoracle config.
+    aggkit_config_template = read_file(src="./templates/aggkit/aggkit-cdk-config.toml")
+    aggkit_config_artifact = plan.render_templates(
+        name="cdk-aggoracle-config-artifact",
+        config={
+            "config.toml": struct(
+                template=aggkit_config_template,
+                data=args
+                | {
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                }
+                | db_configs
+                | contract_setup_addresses,
+            )
+        },
+    )
+
+    keystore_artifacts = get_keystores_artifacts(plan, args)
+
+    # Start the aggoracle components.
+    aggkit_configs = aggkit_package.create_aggkit_cdk_service_config(
+        args, aggkit_config_artifact, keystore_artifacts
+    )
+
+    plan.add_services(
+        configs=aggkit_configs,
+        description="Starting the cdk aggkit components",
+    )
+
+
 def run(
     plan,
     args,
@@ -127,10 +168,16 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimtxmanager.keystore",
     )
+    sequencer_keystore_artifact = plan.store_service_files(
+        name="aggkit-sequencer-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/sequencer.keystore",
+    )
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         claimtx=claimtx_keystore_artifact,
+        sequencer=sequencer_keystore_artifact,
     )
 
 
