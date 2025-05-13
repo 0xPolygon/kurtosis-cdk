@@ -50,7 +50,7 @@ args:
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
   #         "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
-  source: "github.com/xavier-romero/optimism-package/main.star@355b15efd61b603d2302478dd4b3ef74ccc6e462"
+  source: "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e"
   predeployed_contracts: true
   chains:
     - participants:
@@ -72,9 +72,10 @@ optimism_package:
         network_id: "2151908"
         seconds_per_slot: 1
   op_contract_deployer_params:
-    # image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.12"
-    image: "xavierromero/op-deployer:20250314"
-    l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz"
-    l2_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz"
+    image: "jhkimqd/op-deployer:v0.4.0-rc.2" # https://github.com/jhkimqd/optimism/tree/op-deployer/v0.4.0-rc.2-cdk
+    l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
+    l2_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
   observability:
-    enabled: true
+    # true = op-stack observability WITHOUT op-succinct
+    # false = kurtosis-cdk observability WITH op-succinct
+    enabled: false
