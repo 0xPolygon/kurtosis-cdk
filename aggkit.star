@@ -11,7 +11,6 @@ def run_aggkit_cdk_node(
     contract_setup_addresses,
     deployment_stages,
 ):
-
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )

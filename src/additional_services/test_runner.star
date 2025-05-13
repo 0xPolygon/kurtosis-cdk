@@ -78,6 +78,7 @@ def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
     else:
         return ""
 
+
 def _get_l2_bridge_address(
     plan,
     deploy_optimism_rollup,

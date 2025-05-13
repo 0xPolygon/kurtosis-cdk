@@ -15,10 +15,7 @@ def create_aggkit_cdk_service_config(
         public_ports=public_ports,
         files={
             "/etc/aggkit": Directory(
-                artifact_names=[
-                    config_artifact,
-                    keystore_artifact.sequencer
-                ],
+                artifact_names=[config_artifact, keystore_artifact.sequencer],
             ),
             "/data": Directory(
                 artifact_names=[],

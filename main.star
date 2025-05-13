@@ -235,7 +235,7 @@ def run(plan, args={}):
             import_module(deploy_l2_contracts_package).run(
                 plan, args, deploy_l2_contracts
             )
-            
+
         else:
             plan.print("Skipping the deployment of cdk central/trusted environment")
 
@@ -294,9 +294,7 @@ def run(plan, args={}):
 
     # Deploy additional services.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
-    deploy_cdk_bridge_infra = deployment_stages.get(
-        "deploy_cdk_bridge_infra", False
-    )
+    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra", False)
     additional_services.launch(
         plan,
         args,
