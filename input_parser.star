@@ -44,7 +44,7 @@ DEFAULT_IMAGES = {
     # "aggkit_image": "arnaubennassar/aggkit:477acb6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "aggkit_image": "goranethernal/aggkit:v0.0.2-beta15",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.16",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.20",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.22",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
@@ -52,7 +52,7 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC16",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     # TODO: Update the image to the official version.
-    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.0.0-rc.6-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-rc.1-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -60,9 +60,8 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_contract_deployer_image": "atanmarko/op-succinct-contract-deployer:v1.2.11-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
-    "op_succinct_server_image": "ghcr.io/agglayer/op-succinct/succinct-proposer:v1.2.12-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fsuccinct-proposer
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-proposer:v1.2.12-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v2.1.3-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.1.6-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
 }
 
 DEFAULT_PORTS = {
@@ -95,9 +94,8 @@ DEFAULT_PORTS = {
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
-    "op_succinct_server_port": 3000,
-    "op_succinct_proposer_metrics_port": 7300,
-    "op_succinct_proposer_rpc_port": 8545,
+    "op_succinct_proposer_metrics_port": 8080,
+    "op_succinct_proposer_grpc_port": 50051,
     "op_proposer_port": 8560,
 }
 
@@ -314,7 +312,7 @@ DEFAULT_ROLLUP_ARGS = {
     "pp_vkey_selector": "0x00000001",
     # Initial aggchain selector
     # TODO automate taking the first 2 bytes of this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey-selector`
-    "aggchain_vkey_version": "0x0000",
+    "aggchain_vkey_selector": "0x00000001",
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -951,7 +949,7 @@ def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image)
     plan.verify(
         description="Verifying aggkit prover vkey",
         # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
-        value="0x{}".format(result.output),
+        value="{}".format(result.output),
         assertion="==",
         target_value=aggchain_vkey,
     )
