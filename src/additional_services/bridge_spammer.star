@@ -10,7 +10,7 @@ SCRIPT_NAME = "spam.sh"
 SCRIPT_FOLDER_PATH = "/opt/scripts"
 
 
-def run(plan, args, contract_setup_addresses, deploy_cdk_bridge_infra):
+def run(plan, args, contract_setup_addresses):
     # Get rpc urls.
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)

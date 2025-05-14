@@ -21,7 +21,7 @@ def launch(
             import_module("./blutgang.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
             import_module("./bridge_spammer.star").run(
-                plan, args, contract_setup_addresses, deploy_cdk_bridge_infra
+                plan, args, contract_setup_addresses
             )
         elif svc == constants.ADDITIONAL_SERVICES.erpc:
             import_module("./erpc.star").run(plan, args)
