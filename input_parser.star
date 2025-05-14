@@ -39,10 +39,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    # "aggkit_image": "goranethernal/aggkit:v0.0.2-beta8",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    # "aggkit_image": "jestpol/aggkit:v0.0.2-beta9",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    # "aggkit_image": "arnaubennassar/aggkit:477acb6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "aggkit_image": "goranethernal/aggkit:v0.0.2-beta15",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.3.0-beta2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.16",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.22",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
@@ -76,6 +73,7 @@ DEFAULT_PORTS = {
     # aggkit-prover
     "aggkit_prover_grpc_port": 4446,
     "aggkit_prover_metrics_port": 9093,
+    "aggkit_pprof_port": 6060,
     "prometheus_port": 9091,
     "zkevm_aggregator_port": 50081,
     "zkevm_bridge_grpc_port": 9090,
@@ -363,6 +361,8 @@ DEFAULT_ROLLUP_ARGS = {
     # The URL where the aggkit-prover can be reached for gRPC
     "aggkit_prover_grpc_url": "aggkit-prover:"
     + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
+    # Enable aggkit pprof profiling
+    "aggkit_pprof_enabled": True,
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp/",
