@@ -48,7 +48,7 @@ def get_cdk_node_ports(args):
                 wait=None,
             ),
             "rest": PortSpec(
-                args["cdk_node_rest_api_port"],
+                args["aggkit_node_rest_api_port"],
                 application_protocol="http",
                 wait=None,
             ),
@@ -81,7 +81,7 @@ def get_cdk_node_ports(args):
             wait=None,
         ),
         "rest": PortSpec(
-            args["cdk_node_rest_api_port"],
+            args["aggkit_node_rest_api_port"],
             application_protocol="http",
             wait=None,
         ),

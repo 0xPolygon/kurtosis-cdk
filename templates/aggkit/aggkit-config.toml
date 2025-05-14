@@ -149,7 +149,7 @@ Port = "{{.cdk_node_rpc_port}}"
 # Port will configure the port that the REST API HTTP server will
 # listen on
 # ------------------------------------------------------------------------------
-Port = "{{.cdk_node_rest_api_port}}"
+Port = "{{.aggkit_node_rest_api_port}}"
 
 # ==============================================================================
 #     _    ____  ____ ____  _____ _   _ ____  _____ ____
