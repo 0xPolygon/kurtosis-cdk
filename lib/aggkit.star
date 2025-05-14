@@ -63,14 +63,29 @@ def create_aggkit_service_config(
 
 
 def get_aggkit_ports(args):
-    ports = {
-        "rpc": PortSpec(
-            args["zkevm_cdk_node_port"],
-            application_protocol="http",
-            wait=None,
-        ),
-    }
-
+    # Only enable the Aggkit pprof port when "aggkit_pprof_enabled" is True.
+    # This prevents deployment failures when "aggkit_pprof_enabled" is set to False.
+    if args["aggkit_pprof_enabled"] == True:
+        ports = {
+            "rpc": PortSpec(
+                args["zkevm_cdk_node_port"],
+                application_protocol="http",
+                wait=None,
+            ),
+            "pprof": PortSpec(
+                args["aggkit_pprof_port"],
+                application_protocol="http",
+                wait=None,
+            ),
+        }
+    else:
+        ports = {
+            "rpc": PortSpec(
+                args["zkevm_cdk_node_port"],
+                application_protocol="http",
+                wait=None,
+            ),
+        }
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
     return (ports, public_ports)
 

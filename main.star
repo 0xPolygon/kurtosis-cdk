@@ -85,10 +85,6 @@ def run(plan, args={}):
                 import_module(op_succinct_package).op_succinct_contract_deployer_run(
                     plan, args
                 )
-                # plan.print("Deploying SP1 Verifier Contracts for OP Succinct")
-                # import_module(op_succinct_package).sp1_verifier_contracts_deployer_run(
-                #     plan, args
-                # )
                 plan.print(
                     "Extracting environment variables from the contract deployer"
                 )
@@ -254,29 +250,12 @@ def run(plan, args={}):
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if deployment_stages.get("deploy_optimism_rollup", False):
-        plan.print("Deploying AggKit infrastructure")
-        import_module(aggkit_package).run(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            deployment_stages,
-        )
-    else:
-        plan.print("Skipping the deployment of an Optimism rollup")
-
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
         plan.print("Extracting environment variables from the contract deployer")
         op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
         args = args | op_succinct_env_vars
 
-        plan.print("Deploying op-succinct-server component")
-        import_module(op_succinct_package).op_succinct_server_run(
-            plan, args, op_succinct_env_vars
-        )
         plan.print("Deploying op-succinct-proposer component")
         import_module(op_succinct_package).op_succinct_proposer_run(
             plan, args | contract_setup_addresses, op_succinct_env_vars
@@ -291,6 +270,34 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")
+
+    # Deploy AggKit infrastructure + Dedicated Bridge Service
+    if deployment_stages.get("deploy_optimism_rollup", False):
+        plan.print("Deploying AggKit infrastructure")
+        import_module(aggkit_package).run(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            deployment_stages,
+        )
+
+        if op_stack_args["optimism_package"]["observability"][
+            "enabled"
+        ] == False and deployment_stages.get("deploy_op_succinct", False):
+            prometheus_package = import_module(
+                "./src/additional_services/prometheus.star"
+            )
+            plan.print("Deploying Kurtosis CDK Prometheus Package")
+            prometheus_package.run(plan, args)
+            grafana_package = import_module("./src/additional_services/grafana.star")
+            plan.print("Deploying Kurtosis CDK Grafana Package")
+            grafana_package.run(plan, args)
+        else:
+            plan.print("Skipping the deployment of Kurtosis CDK observability")
+
+    else:
+        plan.print("Skipping the deployment of an Optimism rollup")
 
     # Deploy additional services.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
