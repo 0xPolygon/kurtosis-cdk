@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
