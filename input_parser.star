@@ -304,7 +304,8 @@ DEFAULT_ROLLUP_ARGS = {
     "aggchain_vkey_hash": "",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": constants.ZERO_HASH,
+    "pp_vkey_hash": "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7",
+    "program_vkey": constants.ZERO_HASH,
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
     "pp_vkey_selector": "0x00000001",
@@ -410,7 +411,7 @@ DEFAULT_ARGS = (
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
-        # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
+        # - 'cdk_validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
@@ -841,22 +842,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
             )
 
-    # Sanity checking and overwriting input parameters for cdk-validium consensus with supported inputs.
-    consensus_contract_type = args.get("consensus_contract_type")
-    if consensus_contract_type in [
-        constants.CONSENSUS_TYPE.rollup,
-        constants.CONSENSUS_TYPE.cdk_validium,
-    ]:
-        if "v10" in args["zkevm_contracts_image"]:
-            plan.print(
-                "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
-                    args["consensus_contract_type"]
-                )
-            )
-            args[
-                "zkevm_contracts_image"
-            ] = "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12"
-
     # FIXME - I've removed some code here that was doing some logic to
     # update the vkeys depending on the consensus. We either need to
     # have different vkeys depending on the context (e.g. if we're
@@ -878,22 +863,11 @@ def validate_consensus_type(consensus_type):
 def validate_vkeys(plan, args, deployment_stages):
     consensus_type = args.get("consensus_contract_type")
 
-    # For rollup and cdk-validium consensus, ensure the pp vkey is set to the zero hash.
-    if consensus_type in [
-        constants.CONSENSUS_TYPE.rollup,
-        constants.CONSENSUS_TYPE.cdk_validium,
-    ]:
-        pp_vkey = args.get("pp_vkey_hash")
-        if pp_vkey != constants.ZERO_HASH:
-            fail(
-                "For rollup and cdk-validium consensus, the pp_vkey_hash must be set to '{}', but got '{}'.".format(
-                    constants.ZERO_HASH, pp_vkey
-                )
-            )
-
     # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
     # Only validate the aggchain vkey if an OP rollup is deployed.
     if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
+        pp_vkey = args.get("pp_vkey_hash")
+        args["program_vkey"] = pp_vkey  # Update the value
         validate_pp_vkey_with_binary(
             plan,
             pp_vkey=args.get("pp_vkey_hash"),
