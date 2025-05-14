@@ -9,7 +9,7 @@
     "type":"EOA",
     "trustedSequencerURL": "{{ .op_el_rpc_url }}",
     "networkName": "{{ .sovereign_chain_name }}",
-    "trustedSequencer": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "trustedSequencer": "{{ .zkevm_l2_sequencer_address }}",
     "chainID": "{{ .zkevm_rollup_chain_id }}",
     "rollupAdminAddress": "{{ .zkevm_l2_sovereignadmin_address }}",
     "gasTokenAddress": "{{ .gas_token_address }}",
@@ -22,6 +22,7 @@
     "timelockSalt": "",
     "rollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
     "rollupTypeId": 1,
+    "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}",
     "_comment": "TODO.. It sounds like isVanilliaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
     "isVanillaClient": false,
     "sovereignParams": {
@@ -47,9 +48,9 @@
         },
         "useDefaultGateway": true,
         "ownedAggchainVKey": "{{ .aggchain_vkey_hash }}",
-        "aggchainVKeySelector": "{{ .aggchain_vkey_version }}",
+        "aggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "initOwnedAggchainVKey": "{{ .aggchain_vkey_hash }}",
-        "initAggchainVKeyVersion": "{{ .aggchain_vkey_version }}",
+        "initAggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"
     }
 }

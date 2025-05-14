@@ -203,7 +203,7 @@ DEFAULT_OP_STACK_ARGS = {
 Additional configurable parameters:
 
 ```
-op_succinct_proposer_span_proof: "50"  # Max blocks per span proof
+op_succinct_range_proof_interval: "60" # The number of blocks to include in each range proof.
 op_succinct_submission_interval: "100" # Minimum L2 block interval for checkpoints
 ```
 
