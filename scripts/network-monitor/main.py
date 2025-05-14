@@ -1,5 +1,4 @@
 import importlib
-import logging
 import configparser
 import subprocess
 import threading
@@ -8,6 +7,8 @@ from pathlib import Path
 import argparse
 from dataclasses import dataclass
 from typing import Dict
+from loguru import logger
+import sys
 
 
 @dataclass
@@ -19,16 +20,24 @@ class CheckConfig:
 @dataclass
 class Config:
     enabled_by_default: bool
+    pretty_logs: bool
     interval: int
     checks_dir: Path
     checks: Dict[str, CheckConfig]
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
+def load_logger(pretty_logs: bool):
+    logger.remove()
+    logger.add(
+        sys.stderr,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+        "<level>{message}</level> | "
+        "<level>{extra}</level>",
+        colorize=True,
+        serialize=not pretty_logs,
+    )
 
 
 def load_config(config_path: Path) -> Config:
@@ -37,6 +46,7 @@ def load_config(config_path: Path) -> Config:
 
     default_section = parser["default"]
     enabled_by_default = default_section.getboolean("enabled_by_default", fallback=True)
+    pretty_logs = default_section.getboolean("pretty_logs", fallback=True)
     interval = default_section.getint("interval", fallback=30)
     default_checks_dir = Path(__file__).resolve().parent / "checks"
     checks_dir = Path(
@@ -53,6 +63,7 @@ def load_config(config_path: Path) -> Config:
 
     return Config(
         enabled_by_default=enabled_by_default,
+        pretty_logs=pretty_logs,
         interval=interval,
         checks_dir=checks_dir,
         checks=checks,
@@ -67,28 +78,26 @@ def discover_checks(checks_dir: Path):
     ]
 
 
+@logger.catch
 def run_check(path: Path):
     try:
-        match path.suffix:
-            case ".py":
-                mod = importlib.import_module(f"{path.parent.name}.{path.stem}")
-                ok = mod.main()
-            case ".sh":
-                proc = subprocess.run(
-                    ["bash", str(path)], capture_output=True, text=True
-                )
-                ok = proc.returncode == 0
-                stdout = proc.stdout.strip()
-                stderr = proc.stderr.strip()
-                output = "\n".join(filter(None, [stdout, stderr]))
-                if output:
-                    logging.debug(f"{path.name}: {output}")
-            case _:
-                ok = False
-                logging.error(f"{path.name}: Unsupported file type {path.suffix}")
+        if path.suffix == ".py":
+            mod = importlib.import_module(f"{path.parent.name}.{path.stem}")
+            ok = mod.main()
+        elif path.suffix == ".sh":
+            proc = subprocess.run(["bash", str(path)], capture_output=True, text=True)
+            ok = proc.returncode == 0
+            stdout = proc.stdout.strip()
+            stderr = proc.stderr.strip()
+            output = "\n".join(filter(None, [stdout, stderr]))
+            if output:
+                logger.bind(check=path.name).debug(output)
+        else:
+            ok = False
+            logger.bind(check=path.name).error(f"Unsupported file type {path.suffix}")
         return (path.name, ok)
     except Exception as e:
-        logging.error(f"{path.name}: Exception occurred: {e}")
+        logger.bind(check=path.name).exception(f"Exception occurred: {e}")
         return (path.name, False)
 
 
@@ -96,7 +105,7 @@ def run_check_loop(path: Path, interval: int):
     while True:
         name, ok = run_check(path)
         status = "✅" if ok else "❌"
-        logging.info(f"{name}: {status}")
+        logger.bind(check=name).info(status)
         time.sleep(interval)
 
 
@@ -113,11 +122,12 @@ def main():
     args = parser.parse_args()
 
     config = load_config(args.config)
+    load_logger(config.pretty_logs)
 
     checks = discover_checks(config.checks_dir)
 
     if not checks:
-        logging.warning(f"No checks found in {config.checks_dir}")
+        logger.warning(f"No checks found in {config.checks_dir}")
         return
 
     threads = []
@@ -133,7 +143,7 @@ def main():
         )
 
         if not check_conf.enabled:
-            logging.debug(f"{check_name} is disabled, skipping")
+            logger.debug(f"{check_name} is disabled, skipping")
             continue
 
         thread = threading.Thread(
@@ -146,7 +156,7 @@ def main():
         for thread in threads:
             thread.join()
     except KeyboardInterrupt:
-        logging.info("Stopping...")
+        logger.info("Stopping...")
 
 
 if __name__ == "__main__":
