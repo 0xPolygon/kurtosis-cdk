@@ -71,7 +71,7 @@ def run(
         }
 
         aggkit_prover = plan.add_service(
-            name="aggkit-prover",
+            name="aggkit-prover" + args["deployment_suffix"],
             config=ServiceConfig(
                 image=args["aggkit_prover_image"],
                 ports=ports,
