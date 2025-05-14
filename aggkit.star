@@ -51,6 +51,7 @@ def run(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
     deployment_stages,
+    deploy_cdk_bridge_infra,
 ):
     if (
         deployment_stages.get("deploy_op_succinct", False)
@@ -138,21 +139,22 @@ def run(
     )
 
     # Start the bridge service.
-    bridge_config_artifact = create_bridge_config_artifact(
-        plan,
-        args,
-        contract_setup_addresses,
-        sovereign_contract_setup_addresses,
-        db_configs,
-        deployment_stages,
-    )
-    bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-        args, bridge_config_artifact, keystore_artifacts.claimtx
-    )
-    plan.add_service(
-        name="zkevm-bridge-service" + args["deployment_suffix"],
-        config=bridge_service_config,
-    )
+    if deploy_cdk_bridge_infra:
+        bridge_config_artifact = create_bridge_config_artifact(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            db_configs,
+            deployment_stages,
+        )
+        bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
+            args, bridge_config_artifact, keystore_artifacts.claimtx
+        )
+        plan.add_service(
+            name="zkevm-bridge-service" + args["deployment_suffix"],
+            config=bridge_service_config,
+        )
 
 
 def get_keystores_artifacts(plan, args):
