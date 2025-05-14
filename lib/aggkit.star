@@ -39,7 +39,7 @@ def create_aggkit_service_config(
 def get_aggkit_ports(args):
     ports = {
         "rpc": PortSpec(
-            args.get("zkevm_cdk_node_port"),
+            args["cdk_node_rpc_port"],
             application_protocol="http",
             wait=None,
         ),
