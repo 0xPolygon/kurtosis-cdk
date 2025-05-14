@@ -68,6 +68,9 @@ jobs:
       - name: Add test runner and tx spammer to the args file
         run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
 
+      - name: Display args file content
+        run: cat ${{ matrix.file.path }}
+
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --show-enclave-inspect=false .
 
