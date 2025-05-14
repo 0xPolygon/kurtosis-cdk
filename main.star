@@ -281,7 +281,7 @@ def run(plan, args={}):
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
             deployment_stages,
-            deploy_cdk_bridge_infra
+            deploy_cdk_bridge_infra,
         )
 
         if op_stack_args["optimism_package"]["observability"][
