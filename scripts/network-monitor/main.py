@@ -35,7 +35,7 @@ def load_logger(pretty_logs: bool):
         "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
         "<level>{message}</level> | "
         "<level>{extra}</level>",
-        colorize=True,
+        colorize=pretty_logs,
         serialize=not pretty_logs,
     )
 
