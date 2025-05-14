@@ -68,11 +68,11 @@ This image contains all the npm dependencies and zkevm contracts compiled for a 
 Build the `zkevm-contracts` image.
 
 ```bash
-version="v8.0.0-rc.4-fork.12"
+version="v10.0.0-rc.4-fork.12"
 docker build . \
   --tag local/zkevm-contracts:$version \
   --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
-  --build-arg POLYCLI_VERSION="v0.1.73" \
+  --build-arg POLYCLI_VERSION="v0.1.78" \
   --build-arg FOUNDRY_VERSION=stable \
   --file zkevm-contracts.Dockerfile
 ```

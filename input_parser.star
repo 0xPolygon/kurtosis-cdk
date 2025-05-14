@@ -49,7 +49,9 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC16",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     # TODO: Update the image to the official version.
-    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-rc.1-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    # "zkevm_contracts_image": "leovct/zkevm-contracts:v10.0.0-rc.4-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    # based on https://github.com/leovct/agglayer-contracts/tree/test-v10.0.0-rc.4
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.0.0-rc.4.1-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -842,20 +844,20 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
 
     # Sanity checking and overwriting input parameters for cdk-validium consensus with supported inputs.
-    consensus_contract_type = args.get("consensus_contract_type")
-    if consensus_contract_type in [
-        constants.CONSENSUS_TYPE.rollup,
-        constants.CONSENSUS_TYPE.cdk_validium,
-    ]:
-        if "v10" in args["zkevm_contracts_image"]:
-            plan.print(
-                "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
-                    args["consensus_contract_type"]
-                )
-            )
-            args[
-                "zkevm_contracts_image"
-            ] = "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12"
+    # consensus_contract_type = args.get("consensus_contract_type")
+    # if consensus_contract_type in [
+    #     constants.CONSENSUS_TYPE.rollup,
+    #     constants.CONSENSUS_TYPE.cdk_validium,
+    # ]:
+    #     if "v10" in args["zkevm_contracts_image"]:
+    #         plan.print(
+    #             "For '{}' consensus, the zkevm_contracts_image should be \"leovct/zkevm-contracts:v10.0.0-rc.3-fork.12\". Changing...".format(
+    #                 args["consensus_contract_type"]
+    #             )
+    #         )
+    #         args[
+    #             "zkevm_contracts_image"
+    #         ] = "leovct/zkevm-contracts:v10.0.0-rc.3-fork.12"
 
     # FIXME - I've removed some code here that was doing some logic to
     # update the vkeys depending on the consensus. We either need to

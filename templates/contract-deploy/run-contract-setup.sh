@@ -53,6 +53,7 @@ deploy_rollup_manager() {
     echo_ts "Step 3: Deploying PolygonZKEVMDeployer"
     npx hardhat run deployment/v2/2_deployPolygonZKEVMDeployer.ts --network localhost 2>&1 | tee 03_zkevm_deployer.out
 
+    # This is where the deployment fails.
     echo_ts "Step 4: Deploying contracts"
     npx hardhat run deployment/v2/3_deployContracts.ts --network localhost 2>&1 | tee 04_deploy_contracts.out
     if [[ ! -e deployment/v2/deploy_output.json ]]; then
