@@ -410,7 +410,7 @@ DEFAULT_ARGS = (
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
-        # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
+        # - 'cdk_validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
