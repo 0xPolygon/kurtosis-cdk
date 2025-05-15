@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare the environment
+      - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
@@ -91,7 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare the environment
+      - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
@@ -176,7 +176,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare the environment
+      - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
@@ -266,7 +266,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare the environment
+      - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
@@ -310,7 +310,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare the environment
+      - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
