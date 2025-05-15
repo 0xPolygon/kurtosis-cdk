@@ -270,7 +270,7 @@ jobs:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Deploy L1 chain
+      - name: Deploy local L1 chain
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
 
       - name: Deploy to local L1 chain
