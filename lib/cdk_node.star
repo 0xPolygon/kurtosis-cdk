@@ -39,43 +39,28 @@ def create_cdk_node_service_config(
 
 
 def get_cdk_node_ports(args):
-    # We won't have an aggregator if we're in PP mode
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
-        ports = {
-            "rpc": PortSpec(
-                args["zkevm_cdk_node_port"],
-                application_protocol="http",
-                wait=None,
-            ),
-        }
-        public_ports = ports_package.get_public_ports(
-            ports, "cdk_node_start_port", args
-        )
-        return (ports, public_ports)
-
-    # In the case where we have pre deployed contract, the cdk node
-    # can go through a syncing process that takes a long time and
-    # might exceed the start up time
-    aggregator_wait = "2m"
-    if (
-        "use_previously_deployed_contracts" in args
-        and args["use_previously_deployed_contracts"]
-    ):
-        aggregator_wait = None
-
-    # FEP requires the aggregator
     ports = {
-        "aggregator": PortSpec(
-            args["zkevm_aggregator_port"],
-            application_protocol="grpc",
-            wait=aggregator_wait,
-        ),
         "rpc": PortSpec(
-            args["zkevm_cdk_node_port"],
+            args.get("zkevm_cdk_node_port"),
             application_protocol="http",
             wait=None,
         ),
     }
+
+    # Non-pessimistic rollups require an aggregator.
+    if args.get("consensus_contract_type") != constants.CONSENSUS_TYPE.pessimistic:
+        # Determine the wait time for the aggregator.
+        # If using pre-deployed contracts, the cdk node can go through a syncing process
+        # that takes a long time and might exceed the start up time.
+        aggregator_wait = "2m"
+        if args.get("use_previously_deployed_contracts"):
+            aggregator_wait = None
+
+        ports["aggregator"] = PortSpec(
+            args.get("zkevm_aggregator_port"),
+            application_protocol="grpc",
+            wait=aggregator_wait,
+        )
 
     public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
     return (ports, public_ports)
