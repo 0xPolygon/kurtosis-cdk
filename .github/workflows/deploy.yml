@@ -26,6 +26,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
@@ -91,6 +94,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Add test runner and tx spammer to the args file
         run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
@@ -182,6 +188,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
@@ -271,6 +280,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Deploy L1 chain
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
@@ -314,6 +326,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --show-enclave-inspect=false .
