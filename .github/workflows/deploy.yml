@@ -193,7 +193,7 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
-      - name: Verify Arpeggio RPC
+      - name: Verify arpeggio rpc
         run: |
           result=$(yq '.args.additional_services | contains(["arpeggio"])' ./.github/tests/additional-services.yml)
           if [ "$result" = "true" ]; then
@@ -202,7 +202,7 @@ jobs:
             echo "Arpeggio is not deployed."
           fi
 
-      - name: Verify Blutgang RPC
+      - name: Verify blutgang rpc
         run: |
           result=$(yq '.args.additional_services | contains(["blutgang"])' ./.github/tests/additional-services.yml)
           if [ "$result" = "true" ]; then
@@ -211,7 +211,7 @@ jobs:
             echo "Blutgang is not deployed."
           fi
 
-      - name: Verify erpc RPC
+      - name: Verify erpc rpc
         run: |
           result=$(yq '.args.additional_services | contains(["erpc"])' ./.github/tests/additional-services.yml)
           if [ "$result" = "true" ]; then
@@ -229,7 +229,7 @@ jobs:
             echo "Permissionless zkevm-node is not deployed."
           fi
 
-      - name: Verify that Prometheus collects Panoptichain metrics
+      - name: Verify that prometheus collects panoptichain metrics
         run: |
           result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ./.github/tests/additional-services.yml)
           if [ "$result" = "true" ]; then
