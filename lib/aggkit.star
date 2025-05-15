@@ -39,12 +39,12 @@ def create_aggkit_service_config(
 def get_aggkit_ports(args):
     ports = {
         "rpc": PortSpec(
-            args["cdk_node_rpc_port"],
+            args.get("cdk_node_rpc_port"),
             application_protocol="http",
             wait=None,
         ),
         "rest": PortSpec(
-            args["aggkit_node_rest_api_port"],
+            args.get("aggkit_node_rest_api_port"),
             application_protocol="http",
             wait=None,
         ),
