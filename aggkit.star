@@ -15,13 +15,13 @@ def run_aggkit_cdk_node(
         args["deployment_suffix"], args["sequencer_type"]
     )
 
-    # Create the cdk aggoracle config.
-    aggkit_config_template = read_file(src="./templates/aggkit/aggkit-cdk-config.toml")
+    # Create the aggkit cdk config.
+    aggkit_cdk_config_template = read_file(src="./templates/aggkit/aggkit-cdk-config.toml")
     aggkit_config_artifact = plan.render_templates(
-        name="cdk-aggoracle-config-artifact",
+        name="aggkit-cdk-config-artifact",
         config={
             "config.toml": struct(
-                template=aggkit_config_template,
+                template=aggkit_cdk_config_template,
                 data=args
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
@@ -34,7 +34,7 @@ def run_aggkit_cdk_node(
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Start the aggoracle components.
+    # Start the components.
     aggkit_configs = aggkit_package.create_aggkit_cdk_service_config(
         args, aggkit_config_artifact, keystore_artifacts
     )
