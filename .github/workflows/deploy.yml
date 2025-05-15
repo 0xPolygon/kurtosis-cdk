@@ -45,7 +45,7 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
-      - name: Run tests
+      - name: Run bridge tests
         run: |
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
@@ -156,7 +156,7 @@ jobs:
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
 
-      - name: Run tests
+      - name: Run bridge tests
         run: |
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
@@ -289,7 +289,7 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
-      - name: Run tests
+      - name: Run bridge tests
         run: |
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
@@ -331,7 +331,7 @@ jobs:
             echo "No errors found in logs."
           fi
 
-      - name: Run tests
+      - name: Run bridge tests
         run: |
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
