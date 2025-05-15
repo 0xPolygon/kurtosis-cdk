@@ -82,7 +82,9 @@ def run(plan, args={}):
 
             if deployment_stages.get("deploy_op_succinct", False):
                 # Run the op-succinct-proposer service and fetch-rollup-config binary
-                plan.print("Deploying op-succinct-proposer component and running fetch-rollup-config binary")
+                plan.print(
+                    "Deploying op-succinct-proposer component and running fetch-rollup-config binary"
+                )
                 op_succinct_package.op_succinct_proposer_service_setup(
                     plan, args | contract_setup_addresses
                 )

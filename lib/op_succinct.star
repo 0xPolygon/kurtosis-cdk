@@ -22,7 +22,7 @@ def create_op_succinct_proposer_service_config(
             config={artifact_cfg["name"]: struct(template=template, data=args)},
         )
         artifacts.append(artifact)
-        
+
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
 
@@ -34,11 +34,15 @@ def create_op_succinct_proposer_service_config(
         "L2_NODE_RPC": args["op_cl_rpc_url"],
         "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
         "ETHERSCAN_API_KEY": "",
-        "VERIFIER_ADDRESS": "0xf22E2B040B639180557745F47aB97dFA95B1e22a", # TODO fix this to be dynamic
+        "VERIFIER_ADDRESS": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",  # TODO fix this to be dynamic
         "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
         "L2OO_ADDRESS": "0x414e9E227e4b589aF92200508aF5399576530E4e",  # TODO fix this to be dynamic
-        "OP_SUCCINCT_MOCK": str(args["op_succinct_mock"]).lower(), # TODO this should be a boolean
-        "AGGLAYER": str(args["op_succinct_agglayer"]).lower(),  # agglayer/op-succinct specific. TODO this should be a boolean
+        "OP_SUCCINCT_MOCK": str(
+            args["op_succinct_mock"]
+        ).lower(),  # TODO this should be a boolean
+        "AGGLAYER": str(
+            args["op_succinct_agglayer"]
+        ).lower(),  # agglayer/op-succinct specific. TODO this should be a boolean
         "GRPC_ADDRESS": "0.0.0.0:"
         + str(args["op_succinct_proposer_grpc_port"]),  # agglayer/op-succinct specific.
         "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
@@ -92,7 +96,7 @@ def get_op_succinct_proposer_ports(args):
         ),
         "grpc": PortSpec(
             args["op_succinct_proposer_grpc_port"],
-            application_protocol="http",
+            application_protocol="grpc",
             wait=None,
         ),
     }

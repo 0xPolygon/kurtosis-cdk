@@ -32,7 +32,7 @@ def op_succinct_proposer_service_setup(plan, args):
     )
 
     service_name = "op-succinct-proposer" + args["deployment_suffix"]
-    
+
     # Run deploy-op-succinct-contracts.sh script within op-succinct-proposer.
     plan.exec(
         description="Deploying op-succinct contracts",
@@ -48,32 +48,9 @@ def op_succinct_proposer_service_setup(plan, args):
         ),
     )
 
+
 def op_succinct_proposer_run_binary(plan, args):
     service_name = "op-succinct-proposer" + args["deployment_suffix"]
-
-    # # Convert the OP_SUCCINCT_MOCK, AGGLAYER string env variables into boolean.
-    # plan.exec(
-        # description="Running validity-proposer binary",
-    #     service_name=service_name,
-    #     recipe=ExecRecipe(
-    #         command=[
-    #             "/bin/bash",
-    #             "-c",
-    #             # Log raw values
-    #             'echo "Raw OP_SUCCINCT_MOCK=$OP_SUCCINCT_MOCK, AGGLAYER=$AGGLAYER" && ' +
-    #             # Enable case-insensitive matching
-    #             'shopt -s nocasematch; ' +
-    #             # Convert OP_SUCCINCT_MOCK to true/false
-    #             'if [[ "$OP_SUCCINCT_MOCK" == "true" ]]; then export OP_SUCCINCT_MOCK=true; else export OP_SUCCINCT_MOCK=false; fi && ' +
-    #             # Convert AGGLAYER to true/false
-    #             'if [[ "$AGGLAYER" == "true" ]]; then export AGGLAYER=true; else export AGGLAYER=false; fi && ' +
-    #             # Log transformed values
-    #             'echo "Transformed OP_SUCCINCT_MOCK=$OP_SUCCINCT_MOCK, AGGLAYER=$AGGLAYER" && ' +
-    #             # Run validity-proposer and capture output
-    #             '/usr/local/bin/validity-proposer 2>&1'
-    #         ]
-    #     ),
-    # )
 
     # Run the validity-proposer binary.
     plan.exec(
@@ -83,7 +60,14 @@ def op_succinct_proposer_run_binary(plan, args):
             command=[
                 "/bin/bash",
                 "-c",
-                "/usr/local/bin/validity-proposer"
+                "nohup /usr/local/bin/validity-proposer > /var/log/validity-proposer.log 2>&1 &",
             ]
         ),
+    )
+
+    # TODO add timeout for the op-succinct-proposer endpoints to be live.
+    plan.exec(
+        description="Add timeout for op-succinct-proposer...",
+        service_name=service_name,
+        recipe=ExecRecipe(command=["/bin/bash", "-c", "sleep 30s"]),
     )
