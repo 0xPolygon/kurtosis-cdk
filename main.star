@@ -1,6 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
+op_succinct_package = import_module("./op_succinct.star")
 
 # Main service packages.
 additional_services = import_module("./src/additional_services/launcher.star")
@@ -20,7 +21,6 @@ create_sovereign_predeployed_genesis_package = (
     "./create_sovereign_predeployed_genesis.star"
 )
 mitm_package = "./mitm.star"
-op_succinct_package = "./op_succinct.star"
 
 
 def run(plan, args={}):
@@ -81,20 +81,17 @@ def run(plan, args={}):
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
-                plan.print("Deploying op-succinct contract deployer helper component")
-                import_module(op_succinct_package).op_succinct_contract_deployer_run(
-                    plan, args
+                # Run the op-succinct-proposer service and fetch-rollup-config binary
+                plan.print("Deploying op-succinct-proposer component and running fetch-rollup-config binary")
+                op_succinct_package.op_succinct_proposer_service_setup(
+                    plan, args | contract_setup_addresses
                 )
-                plan.print(
-                    "Extracting environment variables from the contract deployer"
-                )
+                plan.print("Extracting environment variables for op-succinct")
                 op_succinct_env_vars = service_package.get_op_succinct_env_vars(
                     plan, args
                 )
                 args = args | op_succinct_env_vars
 
-                # plan.print("Deploying L2OO for OP Succinct")
-                # import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
@@ -239,22 +236,9 @@ def run(plan, args={}):
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
-        plan.print("Extracting environment variables from the contract deployer")
-        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
-        args = args | op_succinct_env_vars
-
-        plan.print("Deploying op-succinct-proposer component")
-        import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args | contract_setup_addresses, op_succinct_env_vars
-        )
-        # Stop the op-succinct-contract-deployer service after we're done using it.
-        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-        plan.stop_service(
-            name=service_name,
-            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
-                service_name
-            ),
-        )
+        # Run the validity-proposer binary
+        plan.print("Running the op-succinct-proposer validity-proposer binary")
+        op_succinct_package.op_succinct_proposer_run_binary(plan, args)
     else:
         plan.print("Skipping the deployment of OP Succinct")
 

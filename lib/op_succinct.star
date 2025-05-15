@@ -3,16 +3,15 @@ ARTIFACTS = [
         "name": "deploy-op-succinct-contracts.sh",
         "file": "../templates/op-succinct/deploy-op-succinct-contracts.sh",
     },
-    {
-        "name": "deploy-l2oo.sh",
-        "file": "../templates/op-succinct/deploy-l2oo.sh",
-    },
 ]
 
 
-def create_op_succinct_contract_deployer_service_config(
+# The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
+# NETWORK_PRIVATE_KEY must be from user input
+def create_op_succinct_proposer_service_config(
     plan,
     args,
+    db_artifact,
 ):
     artifact_paths = list(ARTIFACTS)
     artifacts = []
@@ -23,30 +22,7 @@ def create_op_succinct_contract_deployer_service_config(
             config={artifact_cfg["name"]: struct(template=template, data=args)},
         )
         artifacts.append(artifact)
-
-    op_succinct_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-    op_succinct_contract_deployer_service_config = ServiceConfig(
-        image=args["op_succinct_contract_deployer_image"],
-        files={
-            "/opt/scripts/": Directory(
-                artifact_names=[
-                    artifacts[0],
-                    artifacts[1],
-                ],
-            ),
-        },
-    )
-
-    return {op_succinct_name: op_succinct_contract_deployer_service_config}
-
-
-# The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
-# NETWORK_PRIVATE_KEY must be from user input
-def create_op_succinct_proposer_service_config(
-    args,
-    op_succinct_env_vars,
-    db_artifact,
-):
+        
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
 
@@ -58,13 +34,11 @@ def create_op_succinct_proposer_service_config(
         "L2_NODE_RPC": args["op_cl_rpc_url"],
         "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
         "ETHERSCAN_API_KEY": "",
-        "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
+        "VERIFIER_ADDRESS": "0xf22E2B040B639180557745F47aB97dFA95B1e22a", # TODO fix this to be dynamic
         "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
-        "L2OO_ADDRESS": args["zkevm_rollup_address"],
-        "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-        "AGGLAYER": op_succinct_env_vars[
-            "op_succinct_agglayer"
-        ],  # agglayer/op-succinct specific.
+        "L2OO_ADDRESS": "0x414e9E227e4b589aF92200508aF5399576530E4e",  # TODO fix this to be dynamic
+        "OP_SUCCINCT_MOCK": str(args["op_succinct_mock"]).lower(), # TODO this should be a boolean
+        "AGGLAYER": str(args["op_succinct_agglayer"]).lower(),  # agglayer/op-succinct specific. TODO this should be a boolean
         "GRPC_ADDRESS": "0.0.0.0:"
         + str(args["op_succinct_proposer_grpc_port"]),  # agglayer/op-succinct specific.
         "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
@@ -89,6 +63,11 @@ def create_op_succinct_proposer_service_config(
         image=args["op_succinct_proposer_image"],
         ports=ports,
         files={
+            "/opt/scripts/": Directory(
+                artifact_names=[
+                    artifacts[0],
+                ],
+            ),
             "/usr/local/bin/dbdata/"
             + str(args["zkevm_rollup_chain_id"]): Directory(
                 artifact_names=[
@@ -103,16 +82,18 @@ def create_op_succinct_proposer_service_config(
 
 
 def get_op_succinct_proposer_ports(args):
+    # TODO "wait=None" is a hack to bypass the port checks.
+    # The ports will need to be opened, but will only be used later on when the validity-proposer binary runs.
     ports = {
         "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],
             application_protocol="http",
-            wait="5m",
+            wait=None,
         ),
         "grpc": PortSpec(
             args["op_succinct_proposer_grpc_port"],
             application_protocol="http",
-            wait="10m",
+            wait=None,
         ),
     }
 
