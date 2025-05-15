@@ -362,7 +362,7 @@ DEFAULT_ROLLUP_ARGS = {
     # The type of primary prover to use in aggkit-prover.
     "aggkit_prover_primary_prover": "mock-prover",
     # The URL where the aggkit-prover can be reached for gRPC
-    "aggkit_prover_grpc_url": "aggkit-prover" + args["deployment_suffix"] + ":" +
+    "aggkit_prover_grpc_url": "aggkit-prover-001:"
     + str(DEFAULT_PORTS.get("aggkit_prover_grpc_port")),
     # Enable aggkit pprof profiling
     "aggkit_pprof_enabled": True,
