@@ -4,7 +4,7 @@ DATA_AVAILABILITY_MODES = struct(
     # In rollup mode, transaction data is stored on-chain on L1.
     rollup="rollup",
     # In cdk-validium mode, transaction data is stored off-chain using the CDK DA layer and a DAC.
-    cdk_validium="cdk-validium",
+    cdk_validium="cdk_validium",
     # In pessimistic mode, the contracts don't require full execution proofs. Instead we use the PP to ensure the integrity of bridging
     pessimistic="pessimistic",
 )

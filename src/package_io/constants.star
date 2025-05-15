@@ -22,7 +22,7 @@ LOG_LEVEL = struct(
 
 CONSENSUS_TYPE = struct(
     rollup="rollup",
-    cdk_validium="cdk-validium",
+    cdk_validium="cdk_validium",
     pessimistic="pessimistic",
     ecdsa="ecdsa",
     fep="fep",
