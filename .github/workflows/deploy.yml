@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare the environment
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -50,16 +51,11 @@ jobs:
       - name: Run L2 to L1 bridge test
         run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
-      - name: Dump enclave
+      - name: Post kurtosis run
         if: always()
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: dump_run_without_args_${{ github.run_id }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
   list-ymls:
     runs-on: ubuntu-latest
@@ -94,6 +90,7 @@ jobs:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare the environment
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -166,29 +163,19 @@ jobs:
       - name: Run L2 to L1 bridge test
         run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
-      - name: Dump enclave
+      - name: Post kurtosis run
         if: always()
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Generate archive name
-        if: always()
-        run: |
-          archive_name="dump_run_with_args_${{ matrix.file.name }}_${{ github.run_id }}"
-          echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
-          echo "Generated archive name: ${archive_name}"
-
-      - name: Upload enclave dump
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: ${{ env.ARCHIVE_NAME }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: ${{ matrix.file.name }}
 
   additional-services:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare the environment
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -266,22 +253,19 @@ jobs:
             echo "Prometheus is not deployed."
           fi
 
-      - name: Dump enclave
+      - name: Post kurtosis run
         if: always()
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: dump_additional_services_${{ github.run_id }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: additional-services
 
   deploy-to-external-l1:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare the environment
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -313,22 +297,19 @@ jobs:
       - name: Run L2 to L1 bridge test
         run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
-      - name: Dump enclave
+      - name: Post kurtosis run
         if: always()
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: dump_deploy_to_external_l1_${{ github.run_id }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: deploy-to-external-l1
 
   run-with-cdk-op-geth-succinct:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare the environment
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -353,13 +334,9 @@ jobs:
             echo "No errors found in logs."
           fi
 
-      - name: Dump enclave
+      - name: Post kurtosis run
         if: always()
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: dump_cdk_op_geth_succinct${{ github.run_id }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: cdk-op-geth-succinct
