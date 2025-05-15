@@ -25,12 +25,13 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/kurtosis-pre-run
+      - name: Prepare the environment
+        uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Run Starlark
+      - name: Run starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
 
       - name: Inspect enclave
@@ -42,7 +43,7 @@ jobs:
           ./monitor-pessimistic-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
-      
+
       - name: Run L1 to L2 bridge test
         run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
 
@@ -93,7 +94,8 @@ jobs:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/kurtosis-pre-run
+      - name: Prepare the environment
+        uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
@@ -101,7 +103,7 @@ jobs:
       - name: Add test runner and tx spammer to the args file
         run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
 
-      - name: Run Starlark
+      - name: Run starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --show-enclave-inspect=false .
 
       - name: Inspect enclave
@@ -187,12 +189,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/kurtosis-pre-run
+      - name: Prepare the environment
+        uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Run Starlark
+      - name: Run starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
 
       - name: Inspect enclave
@@ -279,7 +282,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/kurtosis-pre-run
+      - name: Prepare the environment
+        uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
@@ -325,12 +329,13 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/kurtosis-pre-run
+      - name: Prepare the environment
+        uses: ./.github/actions/kurtosis-pre-run
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Run Starlark
+      - name: Run starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --show-enclave-inspect=false .
 
       - name: Inspect enclave
@@ -357,4 +362,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dump_cdk_op_geth_succinct${{ github.run_id }}
-          path: ./dump         
+          path: ./dump
