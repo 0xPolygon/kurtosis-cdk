@@ -2,7 +2,6 @@
 args:
   consensus_contract_type: pessimistic
 
-  zkevm_contracts_image: jhkimqd/zkevm-contracts:v10.0.0-rc.6-fork.12
   pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
   sp1_prover_key: ""
   agglayer_prover_primary_prover: mock-prover # network-prover (using SP1 network)
