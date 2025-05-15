@@ -16,7 +16,9 @@ def run_aggkit_cdk_node(
     )
 
     # Create the aggkit cdk config.
-    aggkit_cdk_config_template = read_file(src="./templates/aggkit/aggkit-cdk-config.toml")
+    aggkit_cdk_config_template = read_file(
+        src="./templates/aggkit/aggkit-cdk-config.toml"
+    )
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-cdk-config-artifact",
         config={
