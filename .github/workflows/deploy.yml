@@ -1,7 +1,4 @@
----
-# Basic deployment workflow.
-# Note that more advanced use cases are tested in the nightly workflow.
-name: Deploy
+name: deploy
 
 on:
   pull_request:
