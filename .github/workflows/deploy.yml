@@ -375,3 +375,58 @@ jobs:
         with:
           name: dump_deploy_to_external_l1_${{ github.run_id }}
           path: ./dump
+
+  run-with-cdk-op-geth-succinct:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # This step will only execute if the necessary secrets are available, preventing failures
+        # on pull requests from forked repositories.
+        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Install Kurtosis CDK tools
+        uses: ./.github/actions/setup-kurtosis-cdk
+      
+      - name: Display args file content
+        run: cat ./.github/tests/chains/op-succinct.yml
+
+      - name: Run Starlark
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --show-enclave-inspect=false .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Check for error logs in op-succinct-proposer service
+        working-directory: .github/scripts
+        run: |
+          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} op-succinct-proposer-001 2>&1)
+          echo "$LOGS"
+          if echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
+            echo "Errors found in container logs!"
+            exit 1  # Fail the workflow if errors are found
+          else
+            echo "No errors found in logs."
+          fi
+      - name: Dump enclave
+        if: always()
+        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
+
+      - name: Upload enclave dump
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump_cdk_op_geth_succinct${{ github.run_id }}
+          path: ./dump
