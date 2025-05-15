@@ -268,23 +268,8 @@ def run(plan, args={}):
             sovereign_contract_setup_addresses,
             deployment_stages,
         )
-
-        if op_stack_args["optimism_package"]["observability"][
-            "enabled"
-        ] == False and deployment_stages.get("deploy_op_succinct", False):
-            prometheus_package = import_module(
-                "./src/additional_services/prometheus.star"
-            )
-            plan.print("Deploying Kurtosis CDK Prometheus Package")
-            prometheus_package.run(plan, args)
-            grafana_package = import_module("./src/additional_services/grafana.star")
-            plan.print("Deploying Kurtosis CDK Grafana Package")
-            grafana_package.run(plan, args)
-        else:
-            plan.print("Skipping the deployment of Kurtosis CDK observability")
-
     else:
-        plan.print("Skipping the deployment of an Optimism rollup")
+        plan.print("Skipping the deployment of aggkit infrastructure")
 
     # Deploy additional services.
     deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
