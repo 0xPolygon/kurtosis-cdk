@@ -21,7 +21,7 @@ IsValidiumMode = false
 NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
-L2Coinbase =  "{{.zkevm_l2_sovereignadmin_address}}"
+L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 
@@ -172,11 +172,11 @@ AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = 
 AggchainProofURL="{{.aggkit_prover_grpc_url}}"
 CheckStatusCertificateInterval = "1s"
 
-# {{if eq .consensus_contract_type "pessimistic"}}
+{{- if eq .consensus_contract_type "pessimistic"}}
 Mode="PessimisticProof"
-# {{else}}
+{{- else}}
 Mode="AggchainProof"
-# {{end}}
+{{- end}}
 
 [AggSender.MaxSubmitCertificateRate]
 NumRequests = 20
@@ -403,7 +403,6 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # |  _ \| |_) || || | | | |  _|  _| | |     __) \___ \\ V /|  \| | |
 # | |_) |  _ < | || |_| | |_| | |___| |___ / __/ ___) || | | |\  | |___
 # |____/|_| \_\___|____/ \____|_____|_____|_____|____/ |_| |_| \_|\____|
-
 # ------------------------------------------------------------------------------
 [BridgeL2Sync]
 # ------------------------------------------------------------------------------
@@ -470,7 +469,7 @@ InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 # | |   | |     / _ \  | || |\/| \___ \| |_) | | | |  \| \___ \| | | | |_) |
 # | |___| |___ / ___ \ | || |  | |___) |  __/| |_| | |\  |___) | |_| |  _ <
 #  \____|_____/_/   \_\___|_|  |_|____/|_|    \___/|_| \_|____/ \___/|_| \_\
-# ==============================================================================
+# ------------------------------------------------------------------------------
 [ClaimSponsor]
 # ------------------------------------------------------------------------------
 # Path of the DB
@@ -517,3 +516,31 @@ URL = "{{.op_el_rpc_url}}"
 # If set to 0, the chain ID will be fetched from the RPC endpoint
 # ------------------------------------------------------------------------------
 L1ChainID = "{{.zkevm_rollup_chain_id}}"
+
+
+# ==============================================================================
+#  ____             __ _ _ _             
+# |  _ \ _ __ ___  / _(_) (_)_ __   __ _ 
+# | |_) | '__/ _ \| |_| | | | '_ \ / _` |
+# |  __/| | | (_) |  _| | | | | | | (_| |
+# |_|   |_|  \___/|_| |_|_|_|_| |_|\__, |
+#                                  |___/ 
+# ------------------------------------------------------------------------------
+[Profiling]
+# ------------------------------------------------------------------------------
+# ProfilingHost is the address to bind the profiling server
+# Default: "localhost"
+# ------------------------------------------------------------------------------
+ProfilingHost = "0.0.0.0"
+
+# ------------------------------------------------------------------------------
+# ProfilingPort is the port to bind the profiling server
+# Default: 6060
+# ------------------------------------------------------------------------------
+ProfilingPort = {{.aggkit_pprof_port}}
+
+# ------------------------------------------------------------------------------
+# ProfilingEnabled is the flag to enable/disable the profiling server
+# Default: false
+# ------------------------------------------------------------------------------
+ProfilingEnabled = {{.aggkit_pprof_enabled}}

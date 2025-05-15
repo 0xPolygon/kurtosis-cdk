@@ -96,7 +96,7 @@ def get_sovereign_contract_setup_addresses(plan, args):
 def get_op_succinct_env_vars(plan, args):
     extract = {
         "op_succinct_agg_proof_mode": "fromjson | .AGG_PROOF_MODE",
-        "op_succinct_agglayer": "fromjson | .OP_SUCCINCT_AGGLAYER",
+        "op_succinct_agglayer": "fromjson | .AGGLAYER",
         "op_succinct_mock": "fromjson | .OP_SUCCINCT_MOCK",
         "sp1_challenger": "fromjson | .challenger",
         "sp1_finalization_period": "fromjson | .finalizationPeriod",

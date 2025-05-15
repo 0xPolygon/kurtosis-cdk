@@ -6,7 +6,7 @@ args:
   consensus_contract_type: pessimistic
   zkevm_rollup_chain_id: 2151908
   pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  aggchain_vkey_hash: "0x1f3df68a258f9d6748b291dd35faf80065af7cc11ef8b5fc6db2a4d958ea62d2"
+  aggchain_vkey_hash: "0x2e1061045949ba9e43324bfa58dc554b43f51b45538a62e91c83cf8e0c5d3617"
   # Arbitrary key for the SP1 prover. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
   sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
@@ -17,27 +17,26 @@ args:
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
   # source: github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90
-  source: github.com/xavier-romero/optimism-package/main.star@d09d841bd5528f4b29144cfc7ecba88a162427ce
+  source: "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e"
   predeployed_contracts: true
   chains:
     - participants:
         - el_type: op-geth
-          el_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth@sha256:8cad527a982e929f80fca539e612c59ccb503fc076b86ce1f4ebeefb112dee03
+          el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.1"
           cl_type: op-node
-          cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node@sha256:207943c6ca92a203e5c2f7908769023c76d2304060c8d8c4cfbd469b7fbaaf0d
+          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.2"
           count: 1
       batcher_params:
-        image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher@sha256:a017bf0a1dbe88e770eb6979354a148534b36e58ea7bc2fd7ae01f5e90eb9ed3
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0"
       proposer_params:
-        image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer@sha256:1c6e0c0ac79b561652af1bd5df30f0fcca1490c3989ea0a15e7e18d823e96825
+        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0"
       network_params:
         name: "001"
         network_id: "2151908"
         seconds_per_slot: 1
   op_contract_deployer_params:
-    # image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.12
-    image: xavierromero/op-deployer:20250314
-    l1_artifacts_locator: https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz
-    l2_artifacts_locator: https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-fffcbb0ebf7f83311791534a41e65ef90df47797f9ca8f86941452f597f7128c.tar.gz
+    image: "jhkimqd/op-deployer:v0.4.0-rc.2" # https://github.com/jhkimqd/optimism/tree/op-deployer/v0.4.0-rc.2-cdk
+    l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
+    l2_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
   observability:
     enabled: true

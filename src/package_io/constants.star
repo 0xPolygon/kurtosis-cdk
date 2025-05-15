@@ -22,7 +22,7 @@ LOG_LEVEL = struct(
 
 CONSENSUS_TYPE = struct(
     rollup="rollup",
-    cdk_validium="cdk-validium",
+    cdk_validium="cdk_validium",
     pessimistic="pessimistic",
     ecdsa="ecdsa",
     fep="fep",
@@ -39,6 +39,3 @@ L1_ENGINES = ("geth", "anvil")
 
 # Standard zero address in Ethereum.
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
-
-# 256-bit zero hash.
-ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
