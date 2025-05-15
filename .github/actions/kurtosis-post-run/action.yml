@@ -20,7 +20,7 @@ runs:
       id: archive-name
       shell: bash
       run: |
-        archive_name="kurtosis_cdk_dump_${{ github.run_id }"
+        archive_name="kurtosis_cdk_dump_${{ github.run_id }}"
         if [[ -z "${{ inputs.args_filename }}" ]]; then
           archive_name+="_without_args"
         else
