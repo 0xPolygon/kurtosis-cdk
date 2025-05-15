@@ -1,5 +1,7 @@
+constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 
+BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
 ARTIFACTS = [
     {
@@ -103,6 +105,16 @@ def run(plan, args, deployment_stages, op_stack_args):
             }
         )
 
+    # Set program vkey based on the consensus type.
+    # For non pessimistic consensus types, we use the bytes32 zero hash.
+    # For pessimistic consensus types, we use the pessimistic vkey hash.
+    program_vkey = args.get("pp_vkey_hash")
+    if args.get("consensus_contract_type") in [
+        constants.CONSENSUS_TYPE.rollup,
+        constants.CONSENSUS_TYPE.cdk_validium,
+    ]:
+        program_vkey = BYTES32_ZERO_HASH
+
     artifacts = []
     for artifact_cfg in artifact_paths:
         template = read_file(src=artifact_cfg["file"])
@@ -128,6 +140,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "op_stack_seconds_per_slot": op_stack_args["optimism_package"][
                             "chains"
                         ][0]["network_params"]["seconds_per_slot"],
+                        "program_vkey": program_vkey,
                     },
                 )
             },
