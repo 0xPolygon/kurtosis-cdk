@@ -16,30 +16,16 @@ concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  ENCLAVE_NAME: cdk
+
 jobs:
   run-without-args:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - uses: ./.github/actions/kurtosis-pre-run
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --show-enclave-inspect=false .
@@ -104,24 +90,7 @@ jobs:
         file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - uses: ./.github/actions/kurtosis-pre-run
 
       - name: Add test runner and tx spammer to the args file
         run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
@@ -212,24 +181,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - uses: ./.github/actions/kurtosis-pre-run
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --show-enclave-inspect=false .
@@ -318,24 +270,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - uses: ./.github/actions/kurtosis-pre-run
 
       - name: Deploy L1 chain
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
@@ -378,24 +313,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+      - uses: ./.github/actions/kurtosis-pre-run
 
       - name: Run Starlark
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --show-enclave-inspect=false .
