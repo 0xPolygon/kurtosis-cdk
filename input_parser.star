@@ -49,7 +49,10 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC16",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     # TODO: Update the image to the official version.
-    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-rc.1-fork.12",  # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags
+    # This image has been built using the following branch: https://github.com/leovct/agglayer-contracts/tree/v10.1.0-rc.3-devtools
+    # It includes two fixes, one for proxiedTokensManager param and another one for bridge initialize call.
+    # It is not an official release made by the contracts team, thus we label it as a "devtools" image.
+    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.1.0-rc.3-devtools-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -305,7 +308,6 @@ DEFAULT_ROLLUP_ARGS = {
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
     "pp_vkey_hash": "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7",
-    "program_vkey": constants.ZERO_HASH,
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
     "pp_vkey_selector": "0x00000001",
@@ -411,7 +413,7 @@ DEFAULT_ARGS = (
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
-        # - 'cdk_validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
+        # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
@@ -866,8 +868,6 @@ def validate_vkeys(plan, args, deployment_stages):
     # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
     # Only validate the aggchain vkey if an OP rollup is deployed.
     if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
-        pp_vkey = args.get("pp_vkey_hash")
-        args["program_vkey"] = pp_vkey  # Update the value
         validate_pp_vkey_with_binary(
             plan,
             pp_vkey=args.get("pp_vkey_hash"),
