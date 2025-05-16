@@ -15,7 +15,9 @@ def run(
     # Get urls.
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
-    bridge_service_url = _get_bridge_service_url(plan, args, deployment_stages.get("deploy_cdk_bridge_infra"))
+    bridge_service_url = _get_bridge_service_url(
+        plan, args, deployment_stages.get("deploy_cdk_bridge_infra")
+    )
     l2_bridge_address = _get_l2_bridge_address(
         plan,
         deployment_stages.get("deploy_optimism_rollup"),
