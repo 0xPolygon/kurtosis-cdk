@@ -379,7 +379,7 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
-    "aggkit_components": "aggsender,aggoracle,bridge"
+    "aggkit_components": "aggsender,aggoracle,bridge",
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
