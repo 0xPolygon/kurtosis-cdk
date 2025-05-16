@@ -293,7 +293,7 @@ def run(plan, args={}):
         sovereign_contract_setup_addresses,
         genesis_artifact,
         deploy_optimism_rollup,
-        deploy_cdk_bridge_infra,
+        deployment_stages.get("deploy_cdk_bridge_infra", False),
     )
 
 
