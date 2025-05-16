@@ -62,6 +62,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v2.1.3-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.1.6-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "test_runner_image": "leovct/e2e:78df008-cdk",
 }
 
 DEFAULT_PORTS = {
