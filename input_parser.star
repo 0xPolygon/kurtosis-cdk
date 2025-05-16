@@ -36,6 +36,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
+    # Deploy aggkit node in parallel to cdk node.
+    "deploy_aggkit_node": False,
 }
 
 DEFAULT_IMAGES = {
@@ -62,6 +64,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_contract_deployer_image": "jhkimqd/op-succinct-contract-deployer:v2.1.3-agglayer",  # https://hub.docker.com/r/jhkimqd/op-succinct-contract-deployer
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.1.6-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "test_runner_image": "leovct/e2e:78df008-cdk",
 }
 
 DEFAULT_PORTS = {
@@ -377,6 +380,7 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
+    "aggkit_components": "aggsender,aggoracle,bridge",
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
