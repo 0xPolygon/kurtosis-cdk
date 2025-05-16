@@ -53,7 +53,6 @@ def run(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
     deployment_stages,
-    deploy_cdk_bridge_infra,
 ):
     if (
         deployment_stages.get("deploy_op_succinct", False)
@@ -141,7 +140,7 @@ def run(
     )
 
     # Start the bridge service.
-    if deploy_cdk_bridge_infra:
+    if deployment_stages.get("deploy_cdk_bridge_infra"):
         bridge_config_artifact = create_bridge_config_artifact(
             plan,
             args,

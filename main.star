@@ -271,7 +271,6 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of OP Succinct")
 
-    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra", False)
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
         plan.print("Deploying AggKit infrastructure")
@@ -281,7 +280,6 @@ def run(plan, args={}):
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
             deployment_stages,
-            deploy_cdk_bridge_infra,
         )
 
         if op_stack_args["optimism_package"]["observability"][
