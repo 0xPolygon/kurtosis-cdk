@@ -30,5 +30,5 @@ args:
     - bridge_spammer
 
 optimism_package:
-  bservability:
+  observability:
     enabled: false
