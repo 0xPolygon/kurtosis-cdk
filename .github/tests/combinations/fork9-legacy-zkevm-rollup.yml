@@ -2,6 +2,8 @@
 deployment_stages:
   deploy_l2_contracts: true
   deploy_cdk_erigon_node: false
+  deploy_optimism_rollup: false
+  deploy_op_succinct: false
 args:
   verbosity: debug
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19

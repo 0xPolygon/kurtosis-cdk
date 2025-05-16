@@ -1,6 +1,8 @@
 # This file has been generated automatically.
 deployment_stages:
   deploy_l2_contracts: true
+  deploy_optimism_rollup: false
+  deploy_op_succinct: false
 args:
   verbosity: debug
   zkevm_contracts_image: leovct/zkevm-contracts:v10.1.0-rc.3-devtools-fork.12
