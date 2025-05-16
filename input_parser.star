@@ -60,7 +60,9 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_proposer_image": "agglayer/op-succinct:fetch-rollup-config",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    # TODO: Replace with official image
+    "op_succinct_proposer_image": "jhkimqd/op-succinct:fetch-rollup-config",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "test_runner_image": "leovct/e2e:78df008-cdk",
 }
 
 DEFAULT_PORTS = {
