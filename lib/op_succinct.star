@@ -16,15 +16,11 @@ def create_op_succinct_proposer_service_config(
         "L2_NODE_RPC": args["op_cl_rpc_url"],
         "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
         "ETHERSCAN_API_KEY": "",
-        "VERIFIER_ADDRESS": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",  # TODO fix this to be dynamic
+        "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
         "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
-        "L2OO_ADDRESS": "0x414e9E227e4b589aF92200508aF5399576530E4e",  # TODO fix this to be dynamic
-        "OP_SUCCINCT_MOCK": str(
-            args["op_succinct_mock"]
-        ).lower(),  # TODO this should be a boolean
-        "AGGLAYER": str(
-            args["op_succinct_agglayer"]
-        ).lower(),  # agglayer/op-succinct specific. TODO this should be a boolean
+        "L2OO_ADDRESS": args["zkevm_rollup_address"],
+        "OP_SUCCINCT_MOCK": args["op_succinct_mock"],
+        "AGGLAYER": args["op_succinct_agglayer"],  # agglayer/op-succinct specific.
         "GRPC_ADDRESS": "0.0.0.0:"
         + str(args["op_succinct_proposer_grpc_port"]),  # agglayer/op-succinct specific.
         "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
@@ -63,8 +59,6 @@ def create_op_succinct_proposer_service_config(
 
 
 def get_op_succinct_proposer_ports(args):
-    # TODO "wait=None" is a hack to bypass the port checks.
-    # The ports will need to be opened, but will only be used later on when the validity-proposer binary runs.
     ports = {
         "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],

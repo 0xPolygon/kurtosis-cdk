@@ -47,7 +47,7 @@ def run(plan, args={}):
     if deployment_stages.get("deploy_op_succinct", False):
         # Temporarily run op-succinct-proposer service and fetch-rollup-config binary
         # The extract binary will be passed into the contracts-001 service
-        op_succinct_package.extract_fetch_rollup_config(plan,args)
+        op_succinct_package.extract_fetch_rollup_config(plan, args)
 
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
@@ -252,7 +252,9 @@ def run(plan, args={}):
     if deployment_stages.get("deploy_op_succinct", False):
         # Run op-succinct-proposer service
         plan.print("Running the op-succinct-proposer service")
-        op_succinct_package.op_succinct_proposer_run(plan, args)
+        op_succinct_package.op_succinct_proposer_run(
+            plan, args | contract_setup_addresses
+        )
     else:
         plan.print("Skipping the deployment of OP Succinct")
 
