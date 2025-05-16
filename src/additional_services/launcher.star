@@ -7,8 +7,7 @@ def launch(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
     genesis_artifact,
-    deploy_optimism_rollup=False,
-    deploy_cdk_bridge_infra=True,
+    deployment_stages,
 ):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.arpeggio:
@@ -49,8 +48,7 @@ def launch(
                 args,
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
-                deploy_optimism_rollup,
-                deploy_cdk_bridge_infra,
+                deployment_stages,
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args, contract_setup_addresses)

@@ -223,7 +223,7 @@ def run(plan, args={}):
                     deployment_stages,
                 )
             else:
-                plan.print("Skipping the deployment of an Optimism rollup")
+                plan.print("Skipping the deployment of aggkit infrastructure")
 
             # Deploy contracts on L2.
             plan.print("Deploying contracts on L2")
@@ -285,15 +285,13 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of aggkit infrastructure")
 
     # Deploy additional services.
-    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     additional_services.launch(
         plan,
         args,
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
         genesis_artifact,
-        deploy_optimism_rollup,
-        deployment_stages.get("deploy_cdk_bridge_infra", False),
+        deployment_stages,
     )
 
 
