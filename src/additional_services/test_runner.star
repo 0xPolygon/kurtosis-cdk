@@ -2,8 +2,6 @@ hex = import_module("../hex/hex.star")
 service_package = import_module("../../lib/service.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-TEST_RUNNER_IMAGE = "leovct/e2e:be038b8"
-
 
 def run(
     plan,
@@ -35,7 +33,7 @@ def run(
     plan.add_service(
         name="test-runner",
         config=ServiceConfig(
-            image=TEST_RUNNER_IMAGE,
+            image=args.get("test_runner_image"),
             env_vars={
                 # For now, we've only defined variables used by `tests/agglayer/bridges.bats`.
                 # https://github.com/agglayer/e2e/blob/jhilliard/gas-token-test/tests/agglayer/bridges.bats
