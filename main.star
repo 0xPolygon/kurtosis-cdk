@@ -43,6 +43,12 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of a local L1")
 
+    # Extract the fetch-rollup-config binary before starting contracts-001 service.
+    if deployment_stages.get("deploy_op_succinct", False):
+        # Temporarily run op-succinct-proposer service and fetch-rollup-config binary
+        # The extract binary will be passed into the contracts-001 service
+        op_succinct_package.extract_fetch_rollup_config(plan,args)
+
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
@@ -81,19 +87,25 @@ def run(plan, args={}):
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
-                # Run the op-succinct-proposer service and fetch-rollup-config binary
-                plan.print(
-                    "Deploying op-succinct-proposer component and running fetch-rollup-config binary"
-                )
-                op_succinct_package.op_succinct_proposer_service_setup(
-                    plan, args | contract_setup_addresses
+                # Run deploy-op-succinct-contracts.sh script in the contracts-001 service
+                plan.exec(
+                    description="Deploying op-succinct contracts",
+                    service_name="contracts" + args["deployment_suffix"],
+                    recipe=ExecRecipe(
+                        command=[
+                            "/bin/bash",
+                            "-c",
+                            "cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                                "/opt/op-succinct/deploy-op-succinct-contracts.sh"
+                            ),
+                        ]
+                    ),
                 )
                 plan.print("Extracting environment variables for op-succinct")
                 op_succinct_env_vars = service_package.get_op_succinct_env_vars(
                     plan, args
                 )
                 args = args | op_succinct_env_vars
-
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
@@ -238,9 +250,9 @@ def run(plan, args={}):
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
-        # Run the validity-proposer binary
-        plan.print("Running the op-succinct-proposer validity-proposer binary")
-        op_succinct_package.op_succinct_proposer_run_binary(plan, args)
+        # Run op-succinct-proposer service
+        plan.print("Running the op-succinct-proposer service")
+        op_succinct_package.op_succinct_proposer_run(plan, args)
     else:
         plan.print("Skipping the deployment of OP Succinct")
 

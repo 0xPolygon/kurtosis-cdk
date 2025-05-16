@@ -1,7 +1,7 @@
 op_succinct_package = import_module("./lib/op_succinct.star")
 
 
-def op_succinct_proposer_service_setup(plan, args):
+def op_succinct_proposer_run(plan, args):
     # FIXME... what is this point of this.. I think we can use a script to do this and we can avoid the weird hard coded chain id
     # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
 
@@ -31,43 +31,32 @@ def op_succinct_proposer_service_setup(plan, args):
         description="Starting the op-succinct-proposer component",
     )
 
-    service_name = "op-succinct-proposer" + args["deployment_suffix"]
 
-    # Run deploy-op-succinct-contracts.sh script within op-succinct-proposer.
-    plan.exec(
-        description="Deploying op-succinct contracts",
-        service_name=service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/bash",
-                "-c",
-                "mkdir /opt/op-succinct && cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/deploy-op-succinct-contracts.sh"
-                ),
-            ]
-        ),
+def extract_fetch_rollup_config(plan, args):
+    # Add a temporary service using the op-succinct-proposer image
+    temp_service_name = "temp-op-succinct-proposer"
+
+    service_config = ServiceConfig(
+        image=args["op_succinct_proposer_image"],
+        cmd=["sleep", "infinity"],  # Keep container running
+    )
+    
+    plan.add_service(
+        name=temp_service_name,
+        config=service_config,
+        description="Creating temporary service to extract fetch-rollup-config"
     )
 
-
-def op_succinct_proposer_run_binary(plan, args):
-    service_name = "op-succinct-proposer" + args["deployment_suffix"]
-
-    # Run the validity-proposer binary.
-    plan.exec(
-        description="Running validity-proposer binary",
-        service_name=service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/bash",
-                "-c",
-                "nohup /usr/local/bin/validity-proposer > /var/log/validity-proposer.log 2>&1 &",
-            ]
-        ),
+    # Copy the binary from the service to the local machine
+    plan.store_service_files(
+        service_name=temp_service_name,
+        src="/usr/local/bin/fetch-rollup-config",
+        name = "fetch-rollup-config",
+        description="Copying fetch-rollup-config binary to files artifact"
     )
 
-    # TODO add timeout for the op-succinct-proposer endpoints to be live.
-    plan.exec(
-        description="Add timeout for op-succinct-proposer...",
-        service_name=service_name,
-        recipe=ExecRecipe(command=["/bin/bash", "-c", "sleep 30s"]),
+    # Remove the temporary service
+    plan.remove_service(
+        name=temp_service_name,
+        description="Removing temporary op-succinct-proposer service"
     )

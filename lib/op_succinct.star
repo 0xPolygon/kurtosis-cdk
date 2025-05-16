@@ -1,11 +1,3 @@
-ARTIFACTS = [
-    {
-        "name": "deploy-op-succinct-contracts.sh",
-        "file": "../templates/op-succinct/deploy-op-succinct-contracts.sh",
-    },
-]
-
-
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
@@ -13,16 +5,6 @@ def create_op_succinct_proposer_service_config(
     args,
     db_artifact,
 ):
-    artifact_paths = list(ARTIFACTS)
-    artifacts = []
-    for artifact_cfg in artifact_paths:
-        template = read_file(src=artifact_cfg["file"])
-        artifact = plan.render_templates(
-            name=artifact_cfg["name"],
-            config={artifact_cfg["name"]: struct(template=template, data=args)},
-        )
-        artifacts.append(artifact)
-
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
 
@@ -67,11 +49,6 @@ def create_op_succinct_proposer_service_config(
         image=args["op_succinct_proposer_image"],
         ports=ports,
         files={
-            "/opt/scripts/": Directory(
-                artifact_names=[
-                    artifacts[0],
-                ],
-            ),
             "/usr/local/bin/dbdata/"
             + str(args["zkevm_rollup_chain_id"]): Directory(
                 artifact_names=[
@@ -92,12 +69,12 @@ def get_op_succinct_proposer_ports(args):
         "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],
             application_protocol="http",
-            wait=None,
+            wait="60s",
         ),
         "grpc": PortSpec(
             args["op_succinct_proposer_grpc_port"],
             application_protocol="grpc",
-            wait=None,
+            wait="60s",
         ),
     }
 
