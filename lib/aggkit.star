@@ -1,6 +1,33 @@
 ports_package = import_module("../src/package_io/ports.star")
 
 
+def create_aggkit_cdk_service_config(
+    args,
+    config_artifact,
+    keystore_artifact,
+):
+    aggkit_name = "aggkit" + args["deployment_suffix"]
+    (ports, public_ports) = get_aggkit_ports(args)
+    service_command = get_aggkit_cmd(args)
+    aggkit_cdk_service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/aggkit": Directory(
+                artifact_names=[config_artifact, keystore_artifact.sequencer],
+            ),
+            "/data": Directory(
+                artifact_names=[],
+            ),
+        },
+        entrypoint=["sh", "-c"],
+        cmd=service_command,
+    )
+
+    return {aggkit_name: aggkit_cdk_service_config}
+
+
 def create_aggkit_service_config(
     args,
     config_artifact,
@@ -65,6 +92,7 @@ def get_aggkit_cmd(args):
     service_command = [
         "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
         + "--cfg=/etc/aggkit/config.toml "
-        + "--components=aggsender,aggoracle,bridge"
+        + "--components="
+        + args.get("aggkit_components")
     ]
     return service_command

@@ -36,6 +36,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
+    # Deploy aggkit node in parallel to cdk node.
+    "deploy_aggkit_node": False,
 }
 
 DEFAULT_IMAGES = {
@@ -363,6 +365,7 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
+    "aggkit_components": "aggsender,aggoracle,bridge",
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
