@@ -35,7 +35,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor pessimistic consensus chain (CDK Erigon Permissionless RPC)
+      - name: Monitor rollup
         working-directory: .github/scripts
         run: |
           ./monitor-pessimistic-chain.sh \
@@ -279,12 +279,12 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor pessimistic chain virtual batches (CDK Erigon Permissionless RPC)
+      - name: Monitor rollup
         working-directory: .github/scripts
         run: |
           ./monitor-pessimistic-chain.sh \
             --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
 
       - name: Run bridge tests
         run: |
