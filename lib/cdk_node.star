@@ -41,7 +41,12 @@ def create_cdk_node_service_config(
 def get_cdk_node_ports(args):
     ports = {
         "rpc": PortSpec(
-            args.get("zkevm_cdk_node_port"),
+            args.get("cdk_node_rpc_port"),
+            application_protocol="http",
+            wait=None,
+        ),
+        "rest": PortSpec(
+            args.get("aggkit_node_rest_api_port"),
             application_protocol="http",
             wait=None,
         ),

@@ -36,6 +36,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
+    # Deploy aggkit node in parallel to cdk node.
+    "deploy_aggkit_node": False,
 }
 
 DEFAULT_IMAGES = {
@@ -92,7 +94,8 @@ DEFAULT_PORTS = {
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
-    "zkevm_cdk_node_port": 5576,
+    "cdk_node_rpc_port": 5576,
+    "aggkit_node_rest_api_port": 5577,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
@@ -377,6 +380,7 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
+    "aggkit_components": "aggsender,aggoracle,bridge",
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {

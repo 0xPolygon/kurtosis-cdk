@@ -1,11 +1,7 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
-{{- if eq .agglayer_endpoint "grpc" }}
 AggLayerURL="{{.agglayer_grpc_url}}"
-{{- else }}
-AggLayerURL="{{.agglayer_readrpc_url}}"
-{{- end }}
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
 NetworkID = {{.zkevm_rollup_id}}
@@ -21,10 +17,10 @@ ContractVersions = "elderberry"
 {{end}}
 
 L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
-SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
+SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
-AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
+AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/aggkit/aggregator.keystore"}}"
 AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"   
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
@@ -50,21 +46,6 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 Environment = "development" # "production" or "development"
 Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
-
-[Aggregator]
-        Port = "{{.zkevm_aggregator_port}}"
-        RetryTime = "30s"
-        VerifyProofInterval = "10s"
-        GasOffset = 150000
-        SettlementBackend = "agglayer"
-        [Aggregator.DB]
-                Name = "{{.aggregator_db.name}}"
-                User = "{{.aggregator_db.user}}"
-                Password = "{{.aggregator_db.password}}"
-                Host = "{{.aggregator_db.hostname}}"
-                Port = "{{.aggregator_db.port}}"
-                EnableLog = false
-                MaxConns = 200
        
 [AggSender]
 CertificateSendInterval = "1m"
