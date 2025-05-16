@@ -1,36 +1,7 @@
 op_succinct_package = import_module("./lib/op_succinct.star")
 
 
-def op_succinct_contract_deployer_run(plan, args):
-    # Start the op-succinct contract deployer helper component.
-    op_succinct_contract_deployer_configs = (
-        op_succinct_package.create_op_succinct_contract_deployer_service_config(
-            plan, args
-        )
-    )
-
-    plan.add_services(
-        configs=op_succinct_contract_deployer_configs,
-        description="Starting the op-succinct contract deployer helper component",
-    )
-
-    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-    plan.exec(
-        description="Deploying op-succinct contracts",
-        service_name=service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/bash",
-                "-c",
-                "cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/deploy-op-succinct-contracts.sh"
-                ),
-            ]
-        ),
-    )
-
-
-def op_succinct_proposer_run(plan, args, op_succinct_env_vars):
+def op_succinct_proposer_run(plan, args):
     # FIXME... what is this point of this.. I think we can use a script to do this and we can avoid the weird hard coded chain id
     # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
 
@@ -51,7 +22,7 @@ def op_succinct_proposer_run(plan, args, op_succinct_env_vars):
     # Start the op-succinct-proposer component.
     op_succinct_proposer_configs = (
         op_succinct_package.create_op_succinct_proposer_service_config(
-            args, op_succinct_env_vars, op_succinct_proposer_config_artifact
+            plan, args, op_succinct_proposer_config_artifact
         )
     )
 
@@ -61,18 +32,31 @@ def op_succinct_proposer_run(plan, args, op_succinct_env_vars):
     )
 
 
-def op_succinct_l2oo_deployer_run(plan, args):
-    service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-    plan.exec(
-        description="Deploying L2OO Contract",
-        service_name=service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/bash",
-                "-c",
-                "cp /opt/scripts/deploy-l2oo.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/deploy-l2oo.sh"
-                ),
-            ]
-        ),
+def extract_fetch_rollup_config(plan, args):
+    # Add a temporary service using the op-succinct-proposer image
+    temp_service_name = "temp-op-succinct-proposer"
+
+    service_config = ServiceConfig(
+        image=args["op_succinct_proposer_image"],
+        cmd=["sleep", "infinity"],  # Keep container running
+    )
+
+    plan.add_service(
+        name=temp_service_name,
+        config=service_config,
+        description="Creating temporary service to extract fetch-rollup-config",
+    )
+
+    # Copy the binary from the service to the local machine
+    plan.store_service_files(
+        service_name=temp_service_name,
+        src="/usr/local/bin/fetch-rollup-config",
+        name="fetch-rollup-config",
+        description="Copying fetch-rollup-config binary to files artifact",
+    )
+
+    # Remove the temporary service
+    plan.remove_service(
+        name=temp_service_name,
+        description="Removing temporary op-succinct-proposer service",
     )
