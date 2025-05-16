@@ -205,7 +205,7 @@ jobs:
         run: |
           result=$(yq '.args.additional_services | contains(["erpc"])' ./.github/tests/additional-services.yml)
           if [ "$result" = "true" ]; then
-            cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/10101"
+            cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/2151908"
           else
             echo "ERPC is not deployed."
           fi
