@@ -20,15 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
       # Install linters
       - name: Install kurtosis
         run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
-          sudo apt install kurtosis-cli=${{ env.KURTOSIS_VERSION }}
+          sudo apt install kurtosis-cli
           kurtosis analytics disable
 
       - name: Install yamllint
