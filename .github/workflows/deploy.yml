@@ -38,9 +38,9 @@ jobs:
       - name: Monitor pessimistic consensus chain (CDK Erigon Permissionless RPC)
         working-directory: .github/scripts
         run: |
-          ./monitor-pessimistic-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
 
       - name: Run bridge tests
         run: |
