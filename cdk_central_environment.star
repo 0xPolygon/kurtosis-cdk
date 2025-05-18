@@ -159,11 +159,17 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/dac.keystore",
     )
+    claimtxmanager_keystore_artifact = plan.store_service_files(
+        name="claimtxmanag-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/claimtxmanager.keystore",
+    )
     return struct(
         sequencer=sequencer_keystore_artifact,
         aggregator=aggregator_keystore_artifact,
         proofsigner=proofsigner_keystore_artifact,
         dac=dac_keystore_artifact,
+        claimtxmanager=claimtxmanager_keystore_artifact,
     )
 
 
