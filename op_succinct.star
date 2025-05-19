@@ -41,22 +41,15 @@ def extract_fetch_rollup_config(plan, args):
         cmd=["sleep", "infinity"],  # Keep container running
     )
 
-    plan.add_service(
-        name=temp_service_name,
-        config=service_config,
-        description="Creating temporary service to extract fetch-rollup-config",
-    )
-
-    # Copy the binary from the service to the local machine
-    plan.store_service_files(
-        service_name=temp_service_name,
-        src="/usr/local/bin/fetch-rollup-config",
-        name="fetch-rollup-config",
-        description="Copying fetch-rollup-config binary to files artifact",
-    )
-
-    # Remove the temporary service
-    plan.remove_service(
-        name=temp_service_name,
-        description="Removing temporary op-succinct-proposer service",
+    plan.run_sh(
+        run="echo copying fetch-rollup-config binary to files artifact...",
+        image=args["op_succinct_proposer_image"],
+        store=[
+            StoreSpec(
+                src="/usr/local/bin/fetch-rollup-config",
+                name="fetch-rollup-config",
+            )
+        ],
+        wait=None,
+        description="Extract fetch-rollup-config from the op-succinct-proposer image to files artifact",
     )
