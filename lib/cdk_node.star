@@ -25,7 +25,7 @@ def create_cdk_node_service_config(
                     genesis_artifact,
                     keystore_artifact.aggregator,
                     keystore_artifact.sequencer,
-                    keystore_artifact.claimtxmanager,
+                    keystore_artifact.claim_sponsor,
                 ],
             ),
             "/data": Directory(

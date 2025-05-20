@@ -18,7 +18,7 @@ def create_aggkit_cdk_service_config(
                 artifact_names=[
                     config_artifact,
                     keystore_artifact.sequencer,
-                    keystore_artifact.claimtx,
+                    keystore_artifact.claim_sponsor,
                 ],
             ),
             "/data": Directory(
