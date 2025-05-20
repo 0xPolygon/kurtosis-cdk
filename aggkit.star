@@ -63,7 +63,8 @@ def run(
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Create the aggkit config.
+    # Create the cdk aggoracle config.
+    agglayer_endpoint = get_agglayer_endpoint(plan, args)
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
