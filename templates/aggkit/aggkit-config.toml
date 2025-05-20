@@ -13,11 +13,16 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
 L2URL="{{.op_el_rpc_url}}"
+# Check if agglayer grpc or readrpc should be used for AggLayerURL
 {{- if eq .agglayer_endpoint "grpc" }}
 AggLayerURL="{{.agglayer_grpc_url}}"
-L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
 {{- else }}
 AggLayerURL="{{.agglayer_readrpc_url}}"
+{{- end }}
+
+# Check if "op" mode should be used for L2RPC
+{{- if .deploy_optimism_rollup }}
+L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
 {{- end }}
 
 ForkId = 12

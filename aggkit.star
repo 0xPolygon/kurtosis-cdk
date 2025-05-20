@@ -254,11 +254,11 @@ def get_aggkit_prover_ports(args):
 
 
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
-# v0.2.0 aggkit is only for PP, and v0.3.0 aggkit is for FEP.
+# v0.2.0 aggkit only supports readrpc, and v0.3.0 aggkit supports grpc.
 def get_agglayer_endpoint(plan, args):
-    if args["consensus_contract_type"] == "fep":
+    if "0.3" in args["aggkit_image"]:
         return "grpc"
-    elif args["consensus_contract_type"] == "pessimistic":
+    elif "0.2" in args["aggkit_image"]:
         return "readrpc"
     else:
         return "readrpc"
