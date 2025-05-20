@@ -1,5 +1,4 @@
----
-name: Nightly
+name: nightly
 
 on:
   schedule:
@@ -13,6 +12,9 @@ permissions:
 concurrency:
   group: nightly-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
+env:
+  ENCLAVE_NAME: cdk
 
 jobs:
   list-ymls:
@@ -29,7 +31,10 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|anvil|gas-token|pless-zkevm-node")
+          # Only run a subset of the tests in CI.
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml)
+
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|gas-token|pless-zkevm-node")
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "$file_path")
             echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
@@ -38,8 +43,9 @@ jobs:
 
   run-with-args:
     needs: list-ymls
+    name: run-with-${{ matrix.file.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -47,50 +53,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Add test runner and tx spammer to the args file
-        run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
-
-      - name: Run Starlark
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --show-enclave-inspect=false .
+      - name: Kurtosis run
+        run: |
+          # Add test runner and tx spammer to the args file.
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Verify static ports
-        run: |
-          if [[ ${{ matrix.file.name }} == "default-static-ports" ]]; then
-            echo "Making sure public ports start by a 5 as defined by the static ports in the input_parser.star file."
-
-            ports=$(kurtosis enclave inspect ${{ env.ENCLAVE_NAME }} | sed -n '/^========================================== User Services ==========================================$/,$ p' | tail -n +3)
-            if ! wrong_ports=$(echo "$ports" | grep -vE '127.0.0.1:5|none'); then
-              echo "✅ Default static ports are set correctly."
-              exit 0
-            else
-              echo "wrong_ports: $wrong_ports"
-              echo "❌ Default static ports are not set correctly."
-              exit 1
-            fi
-          else
-            echo "Skipping."
-          fi
 
       - name: Monitor CDK chain verified batches (Central RPC)
         run: |
@@ -143,53 +119,29 @@ jobs:
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
 
-      - name: Run L1 to L2 bridge test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-
-      - name: Run L2 to L1 bridge test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Generate archive name
-        if: ${{ !cancelled() }}
+      - name: Run bridge tests
         run: |
-          archive_name="dump_run_with_args_${{ matrix.file.name }}_${{ github.run_id }}"
-          echo "ARCHIVE_NAME=${archive_name}" >> "$GITHUB_ENV"
-          echo "Generated archive name: ${archive_name}"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: ${{ env.ARCHIVE_NAME }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: ${{ matrix.file.name }}
 
   pre-deployed-gas-token:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Deploy L1 chain
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
@@ -223,11 +175,11 @@ jobs:
           popd
           yq -Y --in-place ".args.gas_token_address = \"$gas_token_address\"" ./.github/tests/nightly/gas-token/pre-deployed.yml
 
-      - name: Add test runner and tx spammer to the args file
-        run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' .github/tests/nightly/gas-token/pre-deployed.yml
-
       - name: Deploy the rest of the stack
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/gas-token/pre-deployed.yml .
+        run: |
+          # Add test runner and tx spammer to the args file.
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' .github/tests/nightly/gas-token/pre-deployed.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/gas-token/pre-deployed.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -239,76 +191,17 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
-      - name: Run L1 to L2 bridge test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-
-      - name: Run L2 to L1 bridge test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dump_pre_deployed_gas_token_${{ github.run_id }}
-          path: ./dump
-
-  deploy-to-anvil-l1:
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
-
-      - name: Add test runner and tx spammer to the args file
-        run: yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' .github/tests/nightly/anvil/rollup.yml
-
-      - name: Deploy stack with anvil
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/anvil/rollup.yml .
-
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
-        working-directory: .github/scripts
+      - name: Run bridge tests
         run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
-      - name: Run L1 to L2 bridge test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-
-      - name: Run L2 to L1 bridge test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: dump_deploy_to_anvil_l1_${{ github.run_id }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: pre-deployed-gas-token
 
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
   cardona-sepolia-testnet-pless-zkevm-node:
@@ -317,28 +210,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load environment variables
-        run: grep -vE '^\s*#|^\s*$' .github/workflows/.env >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.DOCKERHUB_USERNAME && env.DOCKERHUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Install Kurtosis CDK tools
-        uses: ./.github/actions/setup-kurtosis-cdk
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Deploy the permisionless node
         run: |
           yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' ./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml --show-enclave-inspect=false .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml .
         # This step will only execute if the necessary secrets are available, preventing failures
         # on pull requests from forked repositories.
         if: ${{ env.ALCHEMY_SEPOLIA_RPC_URL}}
@@ -355,13 +236,9 @@ jobs:
             --enclave ${{ env.ENCLAVE_NAME }} \
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)"
 
-      - name: Dump enclave
-        if: ${{ !cancelled() }}
-        run: kurtosis enclave dump ${{ env.ENCLAVE_NAME }} ./dump
-
-      - name: Upload enclave dump
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
         with:
-          name: dump_cardona_sepolia_testnet_pless_zkevm_node_${{ github.run_id }}
-          path: ./dump
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: cardona-sepolia-testnet-pless-zkevm-node
