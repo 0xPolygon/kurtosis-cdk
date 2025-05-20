@@ -59,7 +59,7 @@ BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
 
 [ClaimSponsor.EthTxManager]
 PrivateKeys = [
-    {Path = "/etc/cdk/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/aggkit/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
 StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
 
