@@ -52,7 +52,7 @@ DEFAULT_IMAGES = {
     # This image has been built using the following branch: https://github.com/leovct/agglayer-contracts/tree/v10.1.0-rc.3-devtools
     # It includes two fixes, one for proxiedTokensManager param and another one for bridge initialize call.
     # It is not an official release made by the contracts team, thus we label it as a "devtools" image.
-    "zkevm_contracts_image": "leovct/zkevm-contracts:v10.1.0-rc.3-devtools-fork.12",
+    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-rc.5-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
