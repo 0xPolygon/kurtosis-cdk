@@ -160,7 +160,7 @@ def get_keystores_artifacts(plan, args):
         src="/opt/zkevm/dac.keystore",
     )
     claim_sponsor_keystore_artifact = plan.store_service_files(
-        name="claimsponsor-keystore",
+        name="claimsponsor-keystore-cdk",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimsponsor.keystore",
     )
