@@ -131,7 +131,11 @@ def run(
 
     # Start the aggoracle components.
     aggkit_configs = aggkit_package.create_aggkit_service_config(
-        plan, args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
+        plan,
+        args,
+        aggkit_config_artifact,
+        sovereign_genesis_artifact,
+        keystore_artifacts,
     )
 
     plan.add_services(

@@ -1,5 +1,6 @@
 ports_package = import_module("../src/package_io/ports.star")
 
+
 def log_claim_sponsor_warning(plan, args):
     if args.get("enable_aggkit_claim_sponsor", False):
         components = args.get("aggkit_components", [])
@@ -7,6 +8,7 @@ def log_claim_sponsor_warning(plan, args):
             plan.print(
                 "⚠️  WARNING: Claim sponsor is enabled, but 'bridge' is not included in aggkit components — the claim sponsor feature will be disabled."
             )
+
 
 def create_aggkit_cdk_service_config(
     plan,
