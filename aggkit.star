@@ -38,7 +38,7 @@ def run_aggkit_cdk_node(
 
     # Start the components.
     aggkit_configs = aggkit_package.create_aggkit_cdk_service_config(
-        args, aggkit_config_artifact, keystore_artifacts
+        plan, args, aggkit_config_artifact, keystore_artifacts
     )
 
     plan.add_services(
@@ -131,7 +131,7 @@ def run(
 
     # Start the aggoracle components.
     aggkit_configs = aggkit_package.create_aggkit_service_config(
-        args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
+        plan, args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
     )
 
     plan.add_services(
