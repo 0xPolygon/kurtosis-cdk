@@ -67,6 +67,9 @@ account_nonce="$(cast nonce --rpc-url "$l2_rpc_url" "$eth_address")"
 echo_ts "Funding bridge autoclaimer account on l2"
 fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
 
+echo_ts "Funding claim sponsor account on l2"
+fund_account_on_l2 "{{.zkevm_l2_claimsponsor_address}}"
+
 # Only fund the claim tx manager address if l2 contracts are not being deployed.
 if [[ "$1" != "true" ]]; then
     exit
