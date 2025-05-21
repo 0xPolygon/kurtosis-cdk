@@ -40,7 +40,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.3.0-beta6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.20",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.21",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.28",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
