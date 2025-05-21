@@ -16,7 +16,7 @@ args:
   aggchain_vkey_hash: "0x1e82b1193be48c5c6ba14dda2bcc29ab4d3dc3a2379198ac1f8571040d0a7a4d"
   aggkit_prover_image: "atanmarko/aggkit-prover:0.1.0-rc.29"
   op_succinct_proposer_image: "ghcr.io/agglayer/op-succinct/op-succinct:v2.2.0-agglayer"
-  op_succinct_contract_deployer_image: "vcastellm/op-succinct-contract-deployer:latest"
+  op_succinct_contract_deployer_image: "vcastellm/op-succinct-contract-deployer:v2.2.0-agglayer"
   # true = mock
   # false = network
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
