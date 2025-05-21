@@ -8,8 +8,8 @@ args:
   deployment_suffix: "-002"
   zkevm_rollup_id: 2
   consensus_contract_type: pessimistic
-  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  aggchain_vkey_hash: "0x1f3df68a258f9d6748b291dd35faf80065af7cc11ef8b5fc6db2a4d958ea62d2"
+  pp_vkey_hash: "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
+  aggchain_vkey_hash: "0x6b649aca1ba2be1e509a1cce39f7f0a1601bfcf90f0a27104970669c22df59d5"
   # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check().
   op_el_rpc_url: "http://op-el-1-op-geth-op-node-002:8545"
   # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check().
