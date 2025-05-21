@@ -479,7 +479,7 @@ DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
 # ------------------------------------------------------------------------------
 # Enabled indicates if the sponsor should be run or not
 # ------------------------------------------------------------------------------
-Enabled = true
+Enabled = "{{.enable_aggkit_claim_sponsor}}"
 
 # ------------------------------------------------------------------------------
 # SenderAddr is the address that will be used to send the claim txs
