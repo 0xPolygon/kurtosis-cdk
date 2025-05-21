@@ -9,7 +9,7 @@ args:
   zkevm_rollup_id: 2
   consensus_contract_type: pessimistic
   pp_vkey_hash: "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
-  aggchain_vkey_hash: "0x6b649aca1ba2be1e509a1cce39f7f0a1601bfcf90f0a27104970669c22df59d5"
+  aggchain_vkey_hash: "0x1e82b1193be48c5c6ba14dda2bcc29ab4d3dc3a2379198ac1f8571040d0a7a4d"
   # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check().
   op_el_rpc_url: "http://op-el-1-op-geth-op-node-002:8545"
   # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check().
