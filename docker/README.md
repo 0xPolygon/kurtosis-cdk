@@ -124,6 +124,7 @@ Build the `toolbox` image.
 docker build . \
   --tag local/toolbox:local \
   --build-arg POLYCLI_VERSION="v0.1.73" \
+  --build-arg STATUS_CHECKER_VERSION="v0.1.0" \
   --build-arg FOUNDRY_VERSION=stable \
   --file toolbox.Dockerfile
 ```
