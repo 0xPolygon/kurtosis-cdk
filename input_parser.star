@@ -137,6 +137,7 @@ DEFAULT_STATIC_PORTS = {
         "blutgang_start_port": 52010,
         "erpc_start_port": 52020,
         "panoptichain_start_port": 52030,
+        "status_checker_start_port": 52040,
     }
 }
 
