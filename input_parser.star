@@ -40,8 +40,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.3.0-beta2",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.16",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.22",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.20",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.27",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
@@ -308,13 +308,13 @@ DEFAULT_ROLLUP_ARGS = {
     "aggchain_vkey_hash": "",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7",
+    "pp_vkey_hash": "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be",
     # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
-    "pp_vkey_selector": "0x00000001",
+    "pp_vkey_selector": "0x00000002",
     # Initial aggchain selector
     # TODO automate taking the first 2 bytes of this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey-selector`
-    "aggchain_vkey_selector": "0x00000001",
+    "aggchain_vkey_selector": "0x00010001",
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -922,8 +922,7 @@ def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image)
     )
     plan.verify(
         description="Verifying aggkit prover vkey",
-        # FIXME: At some point in the future, the aggchain vkey hash will probably come prefixed with 0x and we'll need to fix this.
-        value="{}".format(result.output),
+        value=result.output,
         assertion="==",
         target_value=aggchain_vkey,
     )
