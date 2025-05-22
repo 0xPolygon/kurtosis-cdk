@@ -5,8 +5,8 @@ args:
   verbosity: debug
   consensus_contract_type: pessimistic
   zkevm_rollup_chain_id: 2151908
-  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  aggchain_vkey_hash: "0x2e1061045949ba9e43324bfa58dc554b43f51b45538a62e91c83cf8e0c5d3617"
+  pp_vkey_hash: "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
+  aggchain_vkey_hash: "0x6b649aca1ba2be1e509a1cce39f7f0a1601bfcf90f0a27104970669c22df59d5"
   # Arbitrary key for the SP1 prover. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
   sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
