@@ -3,12 +3,13 @@
 state_file="./virtual.env"
 error=0
 
+# shellcheck source=/dev/null
 [[ -f "$state_file" ]] && source "$state_file"
 
 previous_virtual_bn="${previous_virtual_bn:-0}"
 previous_virtual_bn_idle_counter="${previous_virtual_bn_idle_counter:-0}"
 
-virtual_bn="$(cast to-dec "$(cast rpc --rpc-url $L2_RPC_URL zkevm_virtualBatchNumber | sed 's/\"//g')")"
+virtual_bn="$(cast to-dec "$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_virtualBatchNumber | sed 's/\"//g')")"
 echo "[Virtual] Batch Number: ${virtual_bn}"
 
 if [[ "$virtual_bn" -gt "$previous_virtual_bn" ]]; then

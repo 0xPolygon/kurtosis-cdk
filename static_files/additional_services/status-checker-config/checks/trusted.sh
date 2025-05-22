@@ -3,12 +3,13 @@
 state_file="./trusted.env"
 error=0
 
+# shellcheck source=/dev/null
 [[ -f "$state_file" ]] && source "$state_file"
 
 previous_trusted_bn="${previous_trusted_bn:-0}"
 previous_trusted_bn_idle_counter="${previous_trusted_bn_idle_counter:-0}"
 
-trusted_bn="$(cast to-dec "$(cast rpc --rpc-url $L2_RPC_URL zkevm_batchNumber | sed 's/\"//g')")"
+trusted_bn="$(cast to-dec "$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_batchNumber | sed 's/\"//g')")"
 echo "[Trusted] Batch Number: ${trusted_bn}"
 
 if [[ "$trusted_bn" -gt "$previous_trusted_bn" ]]; then
