@@ -35,7 +35,7 @@ def run(plan, args):
     plan.add_service(
         name="status-checker" + args["deployment_suffix"],
         config=ServiceConfig(
-            image="minhdvu/status-checker",
+            image=constants.TOOLBOX_IMAGE,
             files={
                 "/etc/status-checker": Directory(
                     artifact_names=[status_checker_config_artifact]
