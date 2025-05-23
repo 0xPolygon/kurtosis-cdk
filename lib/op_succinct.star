@@ -1,50 +1,8 @@
-ARTIFACTS = [
-    {
-        "name": "deploy-op-succinct-contracts.sh",
-        "file": "../templates/op-succinct/deploy-op-succinct-contracts.sh",
-    },
-    {
-        "name": "deploy-l2oo.sh",
-        "file": "../templates/op-succinct/deploy-l2oo.sh",
-    },
-]
-
-
-def create_op_succinct_contract_deployer_service_config(
-    plan,
-    args,
-):
-    artifact_paths = list(ARTIFACTS)
-    artifacts = []
-    for artifact_cfg in artifact_paths:
-        template = read_file(src=artifact_cfg["file"])
-        artifact = plan.render_templates(
-            name=artifact_cfg["name"],
-            config={artifact_cfg["name"]: struct(template=template, data=args)},
-        )
-        artifacts.append(artifact)
-
-    op_succinct_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-    op_succinct_contract_deployer_service_config = ServiceConfig(
-        image=args["op_succinct_contract_deployer_image"],
-        files={
-            "/opt/scripts/": Directory(
-                artifact_names=[
-                    artifacts[0],
-                    artifacts[1],
-                ],
-            ),
-        },
-    )
-
-    return {op_succinct_name: op_succinct_contract_deployer_service_config}
-
-
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
+    plan,
     args,
-    op_succinct_env_vars,
     db_artifact,
 ):
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
@@ -61,10 +19,8 @@ def create_op_succinct_proposer_service_config(
         "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
         "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
         "L2OO_ADDRESS": args["zkevm_rollup_address"],
-        "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-        "AGGLAYER": op_succinct_env_vars[
-            "op_succinct_agglayer"
-        ],  # agglayer/op-succinct specific.
+        "OP_SUCCINCT_MOCK": args["op_succinct_mock"],
+        "AGGLAYER": args["op_succinct_agglayer"],  # agglayer/op-succinct specific.
         "GRPC_ADDRESS": "0.0.0.0:"
         + str(args["op_succinct_proposer_grpc_port"]),  # agglayer/op-succinct specific.
         "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
@@ -110,12 +66,12 @@ def get_op_succinct_proposer_ports(args):
         "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],
             application_protocol="http",
-            wait="5m",
+            wait="60s",
         ),
         "grpc": PortSpec(
             args["op_succinct_proposer_grpc_port"],
             application_protocol="grpc",
-            wait="10m",
+            wait="60s",
         ),
     }
 
