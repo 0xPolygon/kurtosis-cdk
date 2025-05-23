@@ -298,7 +298,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
 
-  run-with-cdk-op-geth-succinct:
+  run-with-op-succinct:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -337,3 +337,70 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: cdk-op-geth-succinct
+
+  run-with-e2e-pp-to-fep-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout kurtosis-cdk repository
+        uses: actions/checkout@v4
+
+      - name: Checkout agglayer/e2e repository
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          ref: jihwan/v0.4.4-pp-to-fep
+          path: e2e
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+      
+      - name: Install docker compose
+        run: |
+          # Install Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Run agglayer/e2e pp-to-fep scenario test (Mock Prover)
+        env:
+          MOCK_MODE: true
+          ENCLAVE_NAME: ${{ env.ENCLAVE_NAME }}
+        working-directory: e2e/scenarios/pp-to-fep-migration
+        run: |
+          export MOCK_MODE=${{ env.MOCK_MODE }}
+          export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }}
+          ./run.sh
+          if [[ $? -eq 0 ]]; then
+            echo "No errors detected in run.sh execution."
+          else
+            echo "Error: run.sh failed with exit code $?"
+            exit 1
+          fi
+      
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Check for error logs in op-succinct-proposer service
+        working-directory: e2e/scenarios/pp-to-fep-migration
+        run: |
+          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} op-succinct-proposer-001 2>&1)
+          echo "$LOGS"
+          if [[ -z "$LOGS" ]]; then
+            echo "Error: No logs found for op-succinct-proposer service! Service may not be functioning."
+            exit 1  # Fail the workflow if logs are empty
+          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
+            echo "Errors found in container logs!"
+            exit 1  # Fail the workflow if errors are found
+          else
+            echo "No errors found in logs."
+          fi
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: e2e-pp-to-fep
