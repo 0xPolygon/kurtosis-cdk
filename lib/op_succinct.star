@@ -1,50 +1,8 @@
-ARTIFACTS = [
-    {
-        "name": "deploy-op-succinct-contracts.sh",
-        "file": "../templates/op-succinct/deploy-op-succinct-contracts.sh",
-    },
-    {
-        "name": "deploy-l2oo.sh",
-        "file": "../templates/op-succinct/deploy-l2oo.sh",
-    },
-]
-
-
-def create_op_succinct_contract_deployer_service_config(
-    plan,
-    args,
-):
-    artifact_paths = list(ARTIFACTS)
-    artifacts = []
-    for artifact_cfg in artifact_paths:
-        template = read_file(src=artifact_cfg["file"])
-        artifact = plan.render_templates(
-            name=artifact_cfg["name"],
-            config={artifact_cfg["name"]: struct(template=template, data=args)},
-        )
-        artifacts.append(artifact)
-
-    op_succinct_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-    op_succinct_contract_deployer_service_config = ServiceConfig(
-        image=args["op_succinct_contract_deployer_image"],
-        files={
-            "/opt/scripts/": Directory(
-                artifact_names=[
-                    artifacts[0],
-                    artifacts[1],
-                ],
-            ),
-        },
-    )
-
-    return {op_succinct_name: op_succinct_contract_deployer_service_config}
-
-
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
+    plan,
     args,
-    op_succinct_env_vars,
     db_artifact,
 ):
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
@@ -61,10 +19,8 @@ def create_op_succinct_proposer_service_config(
         "VERIFIER_ADDRESS": args["agglayer_gateway_address"],
         "AGG_PROOF_MODE": args["op_succinct_agg_proof_mode"],
         "L2OO_ADDRESS": args["zkevm_rollup_address"],
-        "OP_SUCCINCT_MOCK": op_succinct_env_vars["op_succinct_mock"],
-        "AGGLAYER": op_succinct_env_vars[
-            "op_succinct_agglayer"
-        ],  # agglayer/op-succinct specific.
+        "OP_SUCCINCT_MOCK": args["op_succinct_mock"],
+        "AGGLAYER": args["op_succinct_agglayer"],  # agglayer/op-succinct specific.
         "GRPC_ADDRESS": "0.0.0.0:"
         + str(args["op_succinct_proposer_grpc_port"]),  # agglayer/op-succinct specific.
         "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
@@ -83,6 +39,9 @@ def create_op_succinct_proposer_service_config(
         # "SAFE_DB_FALLBACK": False, # Default: false. Whether to fallback to timestamp-based L1 head estimation even though SafeDB is not activated for op-node. When false, proposer will panic if SafeDB is not available. It is by default false since using the fallback mechanism will result in higher proving cost.
         # "SIGNER_URL": "", # URL for the Web3Signer. Note: This takes precedence over the `PRIVATE_KEY` environment variable.
         # "SIGNER_ADDRESS": "", # Address of the account that will be posting output roots to L1. Note: Only set this if the signer is a Web3Signer. Note: Required if `SIGNER_URL` is set.
+        "RUST_LOG": args[
+            "global_log_level"
+        ],  # Kurtosis CDK specific. Required to see logs in the op-succinct-proposer after https://github.com/agglayer/op-succinct/commit/892085405a65a2b1c245beca3dcb9d9f5626af0e commit
     }
 
     op_succinct_proposer_service_config = ServiceConfig(
@@ -107,12 +66,12 @@ def get_op_succinct_proposer_ports(args):
         "prometheus": PortSpec(
             args["op_succinct_proposer_metrics_port"],
             application_protocol="http",
-            wait="5m",
+            wait="60s",
         ),
         "grpc": PortSpec(
             args["op_succinct_proposer_grpc_port"],
             application_protocol="grpc",
-            wait="10m",
+            wait="60s",
         ),
     }
 

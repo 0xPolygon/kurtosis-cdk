@@ -298,7 +298,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
 
-  run-with-cdk-op-geth-succinct:
+  run-with-op-succinct:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -321,7 +321,10 @@ jobs:
         run: |
           LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} op-succinct-proposer-001 2>&1)
           echo "$LOGS"
-          if echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
+          if [[ -z "$LOGS" ]]; then
+            echo "Error: No logs found for op-succinct-proposer service! Service may not be functioning."
+            exit 1  # Fail the workflow if logs are empty
+          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
             echo "Errors found in container logs!"
             exit 1  # Fail the workflow if errors are found
           else
