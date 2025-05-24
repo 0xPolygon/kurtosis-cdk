@@ -131,11 +131,25 @@ Outputs = ["stderr"]
 # ------------------------------------------------------------------------------
 [RPC]
 # ------------------------------------------------------------------------------
-# Port will configure the port that the data streamer server will
+# Port will configure the port that the JSON RPC server will
 # listen on
 # ------------------------------------------------------------------------------
-Port = 5576
+Port = "{{.cdk_node_rpc_port}}"
 
+# ==============================================================================
+#  ____  _____ ____ _____ 
+# |  _ \| ____/ ___|_   _|
+# | |_) |  _| \___ \ | |  
+# |  _ <| |___ ___) || |  
+# |_| \_\_____|____/ |_|  
+#                         
+# ------------------------------------------------------------------------------
+[REST]
+# ------------------------------------------------------------------------------
+# Port will configure the port that the REST API HTTP server will
+# listen on
+# ------------------------------------------------------------------------------
+Port = "{{.aggkit_node_rest_api_port}}"
 
 # ==============================================================================
 #     _    ____  ____ ____  _____ _   _ ____  _____ ____
@@ -465,12 +479,12 @@ DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
 # ------------------------------------------------------------------------------
 # Enabled indicates if the sponsor should be run or not
 # ------------------------------------------------------------------------------
-Enabled = false
+Enabled = "{{.enable_aggkit_claim_sponsor}}"
 
 # ------------------------------------------------------------------------------
 # SenderAddr is the address that will be used to send the claim txs
 # ------------------------------------------------------------------------------
-SenderAddr = "{{.zkevm_l2_claimtxmanager_address}}"
+SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
 
 # ------------------------------------------------------------------------------
 # BridgeAddrL2 is the address of the bridge smart contract on L2
@@ -483,7 +497,7 @@ BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
 PrivateKeys = [
-    {Path = "/etc/aggkit/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
 
 # ------------------------------------------------------------------------------
