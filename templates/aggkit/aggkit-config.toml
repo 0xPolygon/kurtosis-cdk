@@ -369,7 +369,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 # ------------------------------------------------------------------------------
 # StoragePath is the path of the internal storage
 # ------------------------------------------------------------------------------
-# StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-aggoracle.sqlite"
+# StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-aggoracle.sqlite"
 
 # ------------------------------------------------------------------------------
 # ReadPendingL1Txs is a flag to enable the reading of pending L1 txs
@@ -413,7 +413,7 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # ------------------------------------------------------------------------------
 # DBPath path of the sqlite db
 # ------------------------------------------------------------------------------
-# DBPath = "{{.zkevm_path_rw_data}}bridgel2sync.sqlite"
+# DBPath = "{{.zkevm_path_rw_data}}/bridgel2sync.sqlite"
 
 # ------------------------------------------------------------------------------
 # BlockFinality indicates the status of the blocks that will be queried to sync
@@ -474,7 +474,7 @@ InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 # ------------------------------------------------------------------------------
 # Path of the DB
 # ------------------------------------------------------------------------------
-DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
+DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 
 # ------------------------------------------------------------------------------
 # Enabled indicates if the sponsor should be run or not
@@ -503,7 +503,7 @@ PrivateKeys = [
 # ------------------------------------------------------------------------------
 # StoragePath is the path of the internal storage
 # ------------------------------------------------------------------------------
-StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
+StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
 # ------------------------------------------------------------------------------

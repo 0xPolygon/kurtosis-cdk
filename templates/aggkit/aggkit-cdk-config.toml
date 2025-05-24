@@ -52,7 +52,7 @@ CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
 
 [ClaimSponsor]
-DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
+DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 Enabled = "{{.enable_aggkit_claim_sponsor}}"
 SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
 BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
