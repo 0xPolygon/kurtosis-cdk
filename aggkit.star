@@ -174,7 +174,7 @@ def get_keystores_artifacts(plan, args):
         src="/opt/zkevm/sovereignadmin.keystore",
     )
     claimtx_keystore_artifact = plan.store_service_files(
-        name="claimtxmanager-keystore",
+        name="aggkit-claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimtxmanager.keystore",
     )
