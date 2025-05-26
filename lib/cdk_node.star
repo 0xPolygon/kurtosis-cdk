@@ -87,7 +87,7 @@ def get_cdk_node_cmd(args):
             "sleep 20 && cdk-node run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
             + "--custom-network-file=/etc/cdk/genesis.json "
-            + "--save-config-path=/tmp/ "
+            + "--save-config-path=/tmp "
             + "--components=aggsender"
         ]
 
@@ -95,7 +95,7 @@ def get_cdk_node_cmd(args):
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
-            + "--save-config-path=/tmp/ "
+            + "--save-config-path=/tmp "
             + "--components=aggsender,bridge"
         ]
 
