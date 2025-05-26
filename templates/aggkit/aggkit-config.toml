@@ -21,7 +21,7 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 {{- end }}
 
 # Check if "op" mode should be used for L2RPC
-{{- if .deploy_optimism_rollup }}
+{{- if and .deploy_optimism_rollup (ne .consensus_contract_type "fep") }}
 L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
 {{- end }}
 
