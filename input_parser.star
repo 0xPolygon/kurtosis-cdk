@@ -359,7 +359,7 @@ DEFAULT_ROLLUP_ARGS = {
     "aggkit_pprof_enabled": True,
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
-    "zkevm_path_rw_data": "/tmp/",
+    "zkevm_path_rw_data": "/tmp",
     # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check() function.
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
     # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check() function.
