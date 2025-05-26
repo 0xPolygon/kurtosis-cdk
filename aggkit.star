@@ -72,6 +72,7 @@ def run(
             "config.toml": struct(
                 template=aggkit_config_template,
                 data=args
+                | deployment_stages
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                     "agglayer_endpoint": agglayer_endpoint,
