@@ -7,9 +7,7 @@ def op_succinct_proposer_run(plan, args):
 
     # Start the op-succinct-proposer component.
     op_succinct_proposer_configs = (
-        op_succinct_package.create_op_succinct_proposer_service_config(
-            args
-        )
+        op_succinct_package.create_op_succinct_proposer_service_config(args)
     )
 
     plan.add_services(
