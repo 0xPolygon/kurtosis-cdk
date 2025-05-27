@@ -147,16 +147,48 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
         artifacts.append(artifact)
 
+    # Base files artifacts to mount regardless of deployment type
+    files = {
+        "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
+        "/opt/contract-deploy/": Directory(artifact_names=artifacts),
+    }
+    # Create op-succinct artifacts
+    if deployment_stages.get("deploy_op_succinct", False):
+        fetch_rollup_config_artifact = plan.get_files_artifact(
+            name="fetch-rollup-config",
+            description="Get fetch-rollup-config files artifact",
+        )
+        deploy_op_succinct_contract_artifact = plan.render_templates(
+            name="deploy-op-succinct-contracts.sh",
+            config={
+                "deploy-op-succinct-contracts.sh": struct(
+                    template=read_file(
+                        src="./templates/op-succinct/deploy-op-succinct-contracts.sh"
+                    ),
+                    data=args,
+                ),
+            },
+            description="Create deploy_op_succinct_contract files artifact",
+        )
+        # Mount op-succinct specific artifacts
+        files["/opt/op-succinct/"] = Directory(
+            artifact_names=[fetch_rollup_config_artifact]
+        )
+        files["/opt/scripts/"] = Directory(
+            artifact_names=[deploy_op_succinct_contract_artifact]
+        )
+        service_files = files
+    else:
+        # No op-succinct specific artifacts mounted
+        service_files = files
+
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
     plan.add_service(
         name=contracts_service_name,
         config=ServiceConfig(
             image=args["zkevm_contracts_image"],
-            files={
-                "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
-                "/opt/contract-deploy/": Directory(artifact_names=artifacts),
-            },
+            files=service_files,
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
