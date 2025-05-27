@@ -152,8 +152,7 @@ Outputs = ["stderr"]
 # ------------------------------------------------------------------------------
 [RPC]
 # ------------------------------------------------------------------------------
-# Port will configure the port that the JSON RPC server will
-# listen on
+# Port will configure the port that the JSON RPC server will listen on
 # ------------------------------------------------------------------------------
 Port = "{{.cdk_node_rpc_port}}"
 
