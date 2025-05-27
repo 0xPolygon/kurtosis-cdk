@@ -1,6 +1,7 @@
-constants = import_module("../../src/package_io/constants.star")
 ports_package = import_module("../package_io/ports.star")
 
+# https://github.com/0xPolygon/status-checker/releases
+STATUS_CHECKER_IMAGE = "ghcr.io/0xpolygon/status-checker:v0.1.1"
 
 def run(plan, args):
     l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
@@ -35,7 +36,7 @@ def run(plan, args):
     plan.add_service(
         name="status-checker" + args["deployment_suffix"],
         config=ServiceConfig(
-            image=constants.TOOLBOX_IMAGE,
+            image=STATUS_CHECKER_IMAGE,
             files={
                 "/etc/status-checker": Directory(
                     artifact_names=[status_checker_config_artifact]

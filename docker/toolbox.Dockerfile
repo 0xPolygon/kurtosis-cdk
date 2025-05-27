@@ -4,12 +4,6 @@ WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/0xPolygon/polygon-cli.git . \
   && make build
 
-FROM golang:1.24 AS status-checker-builder
-ARG STATUS_CHECKER_VERSION
-WORKDIR /opt/status-checker
-RUN git clone --branch ${STATUS_CHECKER_VERSION} https://github.com/0xPolygon/status-checker.git . \
-  && go build -o out/status-checker main.go
-
 FROM ubuntu:24.04
 ARG FOUNDRY_VERSION
 LABEL author="devtools@polygon.technology"
@@ -17,7 +11,6 @@ LABEL description="Blockchain toolbox"
 
 COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
-COPY --from=status-checker-builder /opt/status-checker/out/status-checker /usr/bin/status-checker
 
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL3013): Pin versions in pip.
