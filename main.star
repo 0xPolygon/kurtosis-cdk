@@ -1,6 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
+op_succinct_package = import_module("./op_succinct.star")
 
 # Main service packages.
 additional_services = import_module("./src/additional_services/launcher.star")
@@ -20,7 +21,6 @@ create_sovereign_predeployed_genesis_package = (
     "./create_sovereign_predeployed_genesis.star"
 )
 mitm_package = "./mitm.star"
-op_succinct_package = "./op_succinct.star"
 
 
 def run(plan, args={}):
@@ -42,6 +42,12 @@ def run(plan, args={}):
             import_module(ethereum_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
+
+    # Extract the fetch-rollup-config binary before starting contracts-001 service.
+    if deployment_stages.get("deploy_op_succinct", False):
+        # Temporarily run op-succinct-proposer service and fetch-rollup-config binary
+        # The extract binary will be passed into the contracts-001 service
+        op_succinct_package.extract_fetch_rollup_config(plan, args)
 
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
@@ -81,20 +87,25 @@ def run(plan, args={}):
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
-                plan.print("Deploying op-succinct contract deployer helper component")
-                import_module(op_succinct_package).op_succinct_contract_deployer_run(
-                    plan, args
+                # Run deploy-op-succinct-contracts.sh script in the contracts-001 service
+                plan.exec(
+                    description="Deploying op-succinct contracts",
+                    service_name="contracts" + args["deployment_suffix"],
+                    recipe=ExecRecipe(
+                        command=[
+                            "/bin/bash",
+                            "-c",
+                            "cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                                "/opt/op-succinct/deploy-op-succinct-contracts.sh"
+                            ),
+                        ]
+                    ),
                 )
-                plan.print(
-                    "Extracting environment variables from the contract deployer"
-                )
+                plan.print("Extracting environment variables for op-succinct")
                 op_succinct_env_vars = service_package.get_op_succinct_env_vars(
                     plan, args
                 )
                 args = args | op_succinct_env_vars
-
-                # plan.print("Deploying L2OO for OP Succinct")
-                # import_module(op_succinct_package).op_succinct_l2oo_deployer_run(plan, args)
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
@@ -252,21 +263,10 @@ def run(plan, args={}):
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
-        plan.print("Extracting environment variables from the contract deployer")
-        op_succinct_env_vars = service_package.get_op_succinct_env_vars(plan, args)
-        args = args | op_succinct_env_vars
-
-        plan.print("Deploying op-succinct-proposer component")
-        import_module(op_succinct_package).op_succinct_proposer_run(
-            plan, args | contract_setup_addresses, op_succinct_env_vars
-        )
-        # Stop the op-succinct-contract-deployer service after we're done using it.
-        service_name = "op-succinct-contract-deployer" + args["deployment_suffix"]
-        plan.stop_service(
-            name=service_name,
-            description="Stopping the {0} service after finishing with the initial op-succinct setup.".format(
-                service_name
-            ),
+        # Run op-succinct-proposer service
+        plan.print("Running the op-succinct-proposer service")
+        op_succinct_package.op_succinct_proposer_run(
+            plan, args | contract_setup_addresses
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")
