@@ -8,9 +8,9 @@ wait_for_rpc_to_be_available() {
     max_retries=40
     until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "$(cast az)" &> /dev/null; do
         ((counter++))
-        echo_ts "Can't send L1 transfers yet... Retrying ($counter)..."
+        echo "Can't send L1 transfers yet... Retrying ($counter)..."
         if [[ $counter -ge $max_retries ]]; then
-            echo_ts "Exceeded maximum retry attempts. Exiting."
+            echo "Exceeded maximum retry attempts. Exiting."
             exit 1
         fi
         sleep 5
@@ -98,6 +98,7 @@ cat .env
 
 # Run fetch-rollup-config to get the various configuration values that
 # we'll need in the rest of smart contract deployment
+mv /opt/op-succinct/fetch-rollup-config /usr/local/bin/
 touch .git
 RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
 
