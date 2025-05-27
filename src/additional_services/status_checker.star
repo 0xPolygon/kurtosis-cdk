@@ -3,6 +3,7 @@ ports_package = import_module("../package_io/ports.star")
 # https://github.com/0xPolygon/status-checker/releases
 STATUS_CHECKER_IMAGE = "ghcr.io/0xpolygon/status-checker:v0.1.1"
 
+
 def run(plan, args):
     l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
     l2_rpc_url = "http://{}:{}".format(
