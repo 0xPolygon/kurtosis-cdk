@@ -46,6 +46,9 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 Environment = "development" # "production" or "development"
 Level = "{{.global_log_level}}"
 Outputs = ["stderr"]
+
+[REST]
+Port = "{{.aggkit_node_rest_api_port}}"
        
 [AggSender]
 CertificateSendInterval = "1m"
