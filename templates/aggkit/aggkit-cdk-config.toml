@@ -61,7 +61,7 @@ BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
 PrivateKeys = [
     {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
-StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
+StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
 URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
