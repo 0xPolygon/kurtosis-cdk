@@ -304,7 +304,7 @@ DEFAULT_ROLLUP_ARGS = {
     # need to know which vkey to use. This value is tightly coupled to
     # the agglayer version that's being used
     # TODO automate this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey`
-    "aggchain_vkey_hash": "0x2e1061045949ba9e43324bfa58dc554b43f51b45538a62e91c83cf8e0c5d3617",
+    "aggchain_vkey_hash": "0x1e82b1193be48c5c6ba14dda2bcc29ab4d3dc3a2379198ac1f8571040d0a7a4d",
     # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
     # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
     "pp_vkey_hash": "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be",
