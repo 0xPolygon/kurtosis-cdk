@@ -1,7 +1,7 @@
 ports_package = import_module("../package_io/ports.star")
 
 # https://github.com/0xPolygon/status-checker/releases
-STATUS_CHECKER_IMAGE = "ghcr.io/0xpolygon/status-checker:v0.1.1"
+STATUS_CHECKER_IMAGE = "ghcr.io/0xpolygon/status-checker:v0.2.2"
 
 
 def run(plan, args):

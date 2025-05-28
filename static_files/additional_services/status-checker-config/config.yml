@@ -7,3 +7,4 @@ logs:
   level: trace
 checks_dir: /opt/status-checker/checks
 modify_permissions: true
+antithesis: true
