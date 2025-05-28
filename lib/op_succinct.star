@@ -1,9 +1,7 @@
 # The VERIFIER_ADDRESS, L2OO_ADDRESS will need to be dynamically parsed from the output of the contract deployer
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
-    plan,
     args,
-    db_artifact,
 ):
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
@@ -47,14 +45,6 @@ def create_op_succinct_proposer_service_config(
     op_succinct_proposer_service_config = ServiceConfig(
         image=args["op_succinct_proposer_image"],
         ports=ports,
-        files={
-            "/usr/local/bin/dbdata/"
-            + str(args["zkevm_rollup_chain_id"]): Directory(
-                artifact_names=[
-                    db_artifact,
-                ],
-            ),
-        },
         env_vars=env_vars,
     )
 
