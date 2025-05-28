@@ -12,8 +12,8 @@ args:
   # Valid values are: "network-prover", "mock-prover"
   aggkit_prover_primary_prover: "network-prover"
   consensus_contract_type: fep
-  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
-  aggchain_vkey_hash: "0x2e1061045949ba9e43324bfa58dc554b43f51b45538a62e91c83cf8e0c5d3617"
+  pp_vkey_hash: "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
+  aggchain_vkey_hash: "0x1e82b1193be48c5c6ba14dda2bcc29ab4d3dc3a2379198ac1f8571040d0a7a4d"
   # aggkit_prover_image: "ghcr.io/agglayer/aggkit-prover:feat-rust-proposer"
   # false = network
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.

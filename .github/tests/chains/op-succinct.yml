@@ -4,7 +4,6 @@ deployment_stages:
 
 args:
   consensus_contract_type: fep
-
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
   # A mock verifier is used otherwise.
   op_succinct_mock: true

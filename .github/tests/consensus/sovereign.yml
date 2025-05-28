@@ -2,7 +2,7 @@
 args:
   consensus_contract_type: pessimistic
 
-  pp_vkey_hash: "0x00d6e4bdab9cac75a50d58262bb4e60b3107a6b61131ccdff649576c624b6fb7"
+  pp_vkey_hash: "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
   sp1_prover_key: ""
   agglayer_prover_primary_prover: mock-prover # network-prover (using SP1 network)
 
