@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import subprocess
@@ -27,7 +28,7 @@ class CodeBlock:
         try:
             return int(self.tags.get("timeout", DEFAULT_TIMEOUT_SECONDS))
         except ValueError:
-            print(
+            logger.warning(
                 f"Invalid timeout value in block #{self.index}. Using default.")
             return DEFAULT_TIMEOUT_SECONDS
 
@@ -46,7 +47,7 @@ class MarkdownDocument:
 
         metadata, content = self._parse_frontmatter(content)
         if metadata.get("validate", True) is False:
-            print("Skipping validation.")
+            logger.info("Skipping validation.")
             return
 
         self.code_blocks = self._extract_code_blocks(content)
@@ -59,7 +60,7 @@ class MarkdownDocument:
                     metadata = yaml.safe_load(parts[1])
                     return metadata or {}, parts[2]
                 except yaml.YAMLError:
-                    print("Warning: Failed to parse frontmatter")
+                    logger.warning("Failed to parse frontmatter")
         return {}, content
 
     def _extract_code_blocks(self, content):
@@ -106,7 +107,7 @@ class ContainerRunner:
             self.container_id = self._start_container()
 
         try:
-            print("Container ID:", self.container_id)
+            logger.debug(f"Container ID: {self.container_id}")
             result = subprocess.run(
                 ["docker", "exec", self.container_id, "/bin/bash", "-c", script],
                 stdout=subprocess.PIPE,
@@ -135,11 +136,10 @@ class CodeExecutor:
         self.runner = runner
 
     def run(self, block: CodeBlock):
-        print(f"\nExecuting code block #{block.index} ({block.language}):")
-        if block.description:
-            print(f"Description: {block.description}")
+        logger.info(
+            f"▶️ Block id={block.index} description={block.description or 'N/A'}")
         if block.should_skip():
-            print("Code block skipped.")
+            logger.info("🚫 Code block skipped.")
             return
 
         if block.language == "bash":
@@ -149,41 +149,46 @@ class CodeExecutor:
                     timeout=block.timeout,
                     environment=block.environment
                 )
-                print("Output:")
-                print(output)
+                logger.info(f"Output:\n{output}")
             except subprocess.TimeoutExpired as e:
-                print(f"❌ Timeout exceeded: {block.timeout}s")
-                print("Partial output (if any):")
-                print(e.stdout or "")
+                logger.error(
+                    f"Timeout exceeded: {block.timeout}s.\nPartial output (if any):\n{e.stdout or ''}")
                 sys.exit(1)
             except subprocess.CalledProcessError as e:
-                print(f"❌ Error (exit code {e.returncode}):")
-                print(e.stderr)
+                logger.error(f"Error (exit code {e.returncode}):\n{e.stderr}")
                 sys.exit(1)
         else:
-            print(f"Unsupported language: {block.language}")
+            logger.warning(f"Unsupported language: {block.language}")
 
 
 def main(filepath):
-    print(f"Parsing markdown file: '{filepath}'.")
+    logger.info(f"Parsing markdown file: '{filepath}'")
     doc = MarkdownDocument(filepath)
     doc.parse()
     if not doc.code_blocks:
         return
-    print(f"Extracted {len(doc.code_blocks)} code blocks.")
+    logger.debug(f"Extracted {len(doc.code_blocks)} code blocks.")
 
     runner = ContainerRunner()
     executor = CodeExecutor(runner)
     for block in doc.code_blocks:
         executor.run(block)
 
-    print("✅ All code blocks have been processed.")
+    logger.info("All code blocks have been processed.")
     runner.cleanup()
 
 
 if __name__ == "__main__":
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(levelname)s: %(message)s"
+    )
+    logger = logging.getLogger(__name__)
+
+    # Show usage if no arguments are provided.
     if len(sys.argv) != 2:
-        print("Usage: python3 mdparser.py <markdown_file>")
+        logger.error("Usage: python3 mdparser.py <markdown_file>")
         sys.exit(1)
 
     main(sys.argv[1])
