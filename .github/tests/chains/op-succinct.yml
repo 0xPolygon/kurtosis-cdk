@@ -1,21 +1,9 @@
 # This args-file deploys the OP Succinct chain.
 deployment_stages:
-  deploy_optimism_rollup: true
   deploy_op_succinct: true
 
 args:
-  # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
-  # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-  # Valid values are: "network-prover", "mock-prover"
-  agglayer_prover_primary_prover: "mock-prover"
-  # Valid values are: "network-prover", "mock-prover"
-  aggkit_prover_primary_prover: "mock-prover"
-  sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"
   consensus_contract_type: fep
-  pp_vkey_hash: "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
-  aggchain_vkey_hash: "0x1e82b1193be48c5c6ba14dda2bcc29ab4d3dc3a2379198ac1f8571040d0a7a4d"
-  # true = mock
-  # false = network
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
   # A mock verifier is used otherwise.
   op_succinct_mock: true
@@ -29,50 +17,17 @@ args:
   op_succinct_max_concurrent_proof_requests: "1"
   # The maximum number of concurrent witness generation processes to run on the `op-succinct-server`
   op_succinct_max_concurrent_witness_gen: "1"
-  # Must match network_id field in network_params.network_id
-  # When changing the chain_id, the proofs.db file under /templates/op-succinct/db/{chain_id}/proofs.db must also be remapped to the new chain_id.
-  zkevm_rollup_chain_id: 2151908
-  # The number following the "-" should be identical to network_params.name
-  deployment_suffix: "-001"
-  zkevm_rollup_id: 1
   # Size of the range proof.
   op_succinct_range_proof_interval: "60"
+
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+
   additional_services:
     - bridge_spammer
 
 optimism_package:
-  # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
-  #         "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
-  source: "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e"
-  predeployed_contracts: true
-  chains:
-    - participants:
-        - el_type: op-geth
-          el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.1"
-          cl_type: op-node
-          cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.2"
-          count: 1
-      batcher_params:
-        image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0"
-      proposer_params:
-        enabled: false
-      challenger_params:
-        enabled: false
-      network_params:
-        # This value must be equal to args["deployment_suffix"][1:]
-        name: "001"
-        # This value must be equal to args["zkevm_rollup_chain_id"]
-        network_id: "2151908"
-        seconds_per_slot: 1
-  op_contract_deployer_params:
-    image: "jhkimqd/op-deployer:v0.4.0-rc.2" # https://github.com/jhkimqd/optimism/tree/op-deployer/v0.4.0-rc.2-cdk
-    l1_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
-    l2_artifacts_locator: "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
   observability:
-    # true = op-stack observability WITHOUT op-succinct
-    # false = kurtosis-cdk observability WITH op-succinct
     enabled: false

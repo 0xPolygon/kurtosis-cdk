@@ -73,7 +73,7 @@ end_time=$((start_time + timeout))
 # Main loop to monitor block finalization.
 while true; do
   # Check if there are any stopped services.
-  stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED)"
+  stopped_services="$(kurtosis enclave inspect "$enclave" | grep STOPPED | grep -v op-succinct-contract-deployer)"
   if [[ -n "$stopped_services" ]]; then
     echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
     echo "$stopped_services"
