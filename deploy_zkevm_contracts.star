@@ -147,11 +147,12 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
         artifacts.append(artifact)
 
-    # Base files artifacts to mount regardless of deployment type
+    # Base file artifacts to mount regardless of deployment type
     files = {
         "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
         "/opt/contract-deploy/": Directory(artifact_names=artifacts),
     }
+
     # Create op-succinct artifacts
     if deployment_stages.get("deploy_op_succinct", False):
         fetch_rollup_config_artifact = plan.get_files_artifact(
@@ -177,10 +178,6 @@ def run(plan, args, deployment_stages, op_stack_args):
         files["/opt/scripts/"] = Directory(
             artifact_names=[deploy_op_succinct_contract_artifact]
         )
-        service_files = files
-    else:
-        # No op-succinct specific artifacts mounted
-        service_files = files
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
@@ -188,7 +185,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         name=contracts_service_name,
         config=ServiceConfig(
             image=args["zkevm_contracts_image"],
-            files=service_files,
+            files=files,
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
