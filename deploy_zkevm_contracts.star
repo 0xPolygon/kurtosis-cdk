@@ -112,9 +112,9 @@ def run(plan, args, deployment_stages, op_stack_args):
     pp_vkey_hash = agglayer_vkey.get_hash(plan, agglayer_image)
     pp_vkey_selector = agglayer_vkey.get_selector(plan, agglayer_image)
 
-    aggkit_image = args.get("aggkit_image")
-    aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_image)
-    aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_image)
+    aggkit_prover_image = args.get("aggkit_prover_image")
+    aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
+    aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
 
     # Set program vkey based on the consensus type.
     # For non pessimistic consensus types, we use the bytes32 zero hash.
