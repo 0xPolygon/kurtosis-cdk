@@ -54,19 +54,27 @@ def get_exec_recipe_result(result):
 
 # Return the HTTP and WS URLs of the L2 RPC service.
 def get_l2_rpc_url(plan, args):
-    l2_rpc_service = plan.get_service(
-        name=args["l2_rpc_name"] + args["deployment_suffix"]
-    )
-    return struct(
-        http="http://{}:{}".format(
-            l2_rpc_service.ip_address,
-            l2_rpc_service.ports["rpc"].number,
-        ),
-        ws="ws://{}:{}".format(
-            l2_rpc_service.ip_address,
-            l2_rpc_service.ports["ws-rpc"].number,
-        ),
-    )
+    service = plan.get_service(name=args["l2_rpc_name"] + args["deployment_suffix"])
+
+    # Get L2 rpc http url.
+    http_url = ""
+    if "rpc" in service.ports:
+        http_url = "http://{}:{}".format(
+            service.ip_address, service.ports["rpc"].number
+        )
+    else:
+        plan.print("No rpc port found for service: '{}'".format(service.name))
+
+    # Get L2 rpc ws url.
+    ws_url = ""
+    if "ws-rpc" in service.ports:
+        ws_url = "ws://{}:{}".format(service.ip_address, service.ports["ws-rpc"].number)
+    elif "ws" in service.ports:
+        ws_url = "ws://{}:{}".format(service.ip_address, service.ports["ws"].number)
+    else:
+        plan.print("No ws rpc port found for service: '{}'".format(service.name))
+
+    return struct(http=http_url, ws=ws_url)
 
 
 def get_sovereign_contract_setup_addresses(plan, args):
