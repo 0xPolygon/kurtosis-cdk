@@ -11,6 +11,7 @@ deployment_stages:
   deploy_cdk_bridge_ui: false
 
 args:
+  zkevm_contracts_image: "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12"
   deployment_suffix: "-004"
   zkevm_rollup_chain_id: 40404
   zkevm_rollup_id: 4
