@@ -1,5 +1,6 @@
 ports_package = import_module("../package_io/ports.star")
 
+
 def run(plan, args):
     l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
     l2_rpc_url = "http://{}:{}".format(
