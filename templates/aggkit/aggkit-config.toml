@@ -193,7 +193,6 @@ AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.z
 {{- else}}
 AggSenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 {{- end}}
-AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 CheckStatusCertificateInterval = "1s"
 
 {{- if eq .consensus_contract_type "pessimistic"}}
@@ -208,6 +207,11 @@ TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.z
 OpNodeURL = "{{.op_cl_rpc_url}}"
 {{- end}}
 
+[AggSender.AggkitProverClient]
+# ------------------------------------------------------------------------------
+# URL is the URL of the Aggkit Prover gRPC server
+# ------------------------------------------------------------------------------
+URL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
 [AggSender.MaxSubmitCertificateRate]
 NumRequests = 20
