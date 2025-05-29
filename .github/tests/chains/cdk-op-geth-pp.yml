@@ -1,0 +1,35 @@
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_optimism_rollup: true
+
+optimism_package:
+  chains:
+    - network_params:
+        name: "002"
+  observability:
+    enabled: true
+
+args:
+  zkevm_contracts_image: "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12"
+  zkevm_rollup_chain_id: 2151909
+  deployment_suffix: "-002"
+  zkevm_rollup_id: 2
+  consensus_contract_type: pessimistic
+  # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check().
+  op_el_rpc_url: "http://op-el-1-op-geth-op-node-002:8545"
+  # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check().
+  op_cl_rpc_url: "http://op-cl-1-op-node-op-geth-002:8547"
+
+  # polycli wallet inspect --mnemonic 'typical fork speak hunt desk pond join opera broom welcome twist bicycle' --addresses 3 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("aggoracle,sovereignadmin,claimtx",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: " $1 ""; print "zkevm_l2_" roles[NR] "_private_key: 0x" $2 "\n"}'
+  # aggoracle
+  zkevm_l2_aggoracle_address: "0xD01BD50A4305348eA4ea7300Da49F2C0Ef0e383E"
+  zkevm_l2_aggoracle_private_key: "0xe0a64d8e11d1cb6f18075ed5505e375409ae40a3ce783e41487d82eacc001c5b"
+
+  # sovereignadmin
+  zkevm_l2_sovereignadmin_address: "0xA7AFcbD26aa0FE0047BB4018e5c027B19E70D015"
+  zkevm_l2_sovereignadmin_private_key: "0x506dd271074883b3014054de84a47d442cabff6e9d79b50725cb0c66e3422fe5"
+
+  # claimtx
+  zkevm_l2_claimtx_address: "0x99e73731E5f6A6bB29AFD5e38D047Ce9Cc10C684"
+  zkevm_l2_claimtx_private_key: "0xffc2b6e4a1d4a3ba7f48d738ce4652b16e9d189b69ab2249fff0c0de594fe469"
