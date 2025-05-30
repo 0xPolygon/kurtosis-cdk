@@ -30,7 +30,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
-    "deploy_optimism_rollup": False,
+    "deploy_optimism_rollup": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
@@ -64,6 +64,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.2.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
     "test_runner_image": "leovct/e2e:78df008-cdk",
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.3",  # https://github.com/0xPolygon/status-checker/releases
 }
 
 DEFAULT_PORTS = {
@@ -139,6 +140,7 @@ DEFAULT_STATIC_PORTS = {
         "blutgang_start_port": 52010,
         "erpc_start_port": 52020,
         "panoptichain_start_port": 52030,
+        "status_checker_start_port": 52040,
     }
 }
 
@@ -298,7 +300,7 @@ DEFAULT_ROLLUP_ARGS = {
     # The keystore password.
     "zkevm_l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
     # The rollup network identifier.
-    "zkevm_rollup_chain_id": 10101,
+    "zkevm_rollup_chain_id": 2151908,
     # The unique identifier for the rollup within the RollupManager contract.
     # This setting sets the rollup as the first rollup.
     "zkevm_rollup_id": 1,
@@ -306,20 +308,6 @@ DEFAULT_ROLLUP_ARGS = {
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
     "zkevm_use_real_verifier": False,
-    # If we're using pessimistic consensus and a real verifier, we'll
-    # need to know which vkey to use. This value is tightly coupled to
-    # the agglayer version that's being used
-    # TODO automate this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey`
-    "aggchain_vkey_hash": "",
-    # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
-    # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be",
-    # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
-    # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
-    "pp_vkey_selector": "0x00000002",
-    # Initial aggchain selector
-    # TODO automate taking the first 2 bytes of this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey-selector`
-    "aggchain_vkey_selector": "0x00010001",
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -427,7 +415,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": constants.CONSENSUS_TYPE.cdk_validium,
+        "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
@@ -460,21 +448,28 @@ DEFAULT_ARGS = (
 # The below OP params can be customized by specifically referring to an artifact or image.
 # If none is is provided, it will refer to the default images from the Optimism-Package repo.
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
+OP_ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
 DEFAULT_OP_STACK_ARGS = {
-    "source": "github.com/ethpandaops/optimism-package/main.star@884f4eb813884c4c8e5deead6ca4e0c54b85da90",
-    "predeployed_contracts": False,
+    "source": "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e",
+    "predeployed_contracts": True,
     "chains": [
         {
             "participants": [
                 {
                     # OP Rollup configuration
                     "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101500.0-rc.3",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.1",
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.11.0-rc.2",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.2",
                     "count": 1,
                 },
             ],
+            "batcher_params": {
+                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0",
+            },
+            "proposer_params": {
+                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
+            },
             "network_params": {
                 # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
                 # the "-" however adds another "-" to the Kurtosis deployment_suffix. So we are doing string manipulation to remove the "-"
@@ -485,6 +480,14 @@ DEFAULT_OP_STACK_ARGS = {
             },
         },
     ],
+    "op_contract_deployer_params": {
+        "image": "jhkimqd/op-deployer:v0.4.0-rc.2",
+        "l1_artifacts_locator": OP_ARTIFACTS_LOCATOR,
+        "l2_artifacts_locator": OP_ARTIFACTS_LOCATOR,
+    },
+    "observability": {
+        "enabled": False,
+    },
 }
 
 VALID_ADDITIONAL_SERVICES = [
@@ -523,7 +526,6 @@ def parse_args(plan, user_args):
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
     validate_consensus_type(args.get("consensus_contract_type"))
-    validate_vkeys(plan, args, deployment_stages)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -869,69 +871,3 @@ def validate_consensus_type(consensus_type):
                 consensus_type, VALID_CONSENSUS_TYPES
             )
         )
-
-
-def validate_vkeys(plan, args, deployment_stages):
-    consensus_type = args.get("consensus_contract_type")
-
-    # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
-    # Only validate the aggchain vkey if an OP rollup is deployed.
-    if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
-        validate_pp_vkey_with_binary(
-            plan,
-            pp_vkey=args.get("pp_vkey_hash"),
-            agglayer_image=args.get("agglayer_image"),
-        )
-
-        if deployment_stages.get("deploy_optimism_rollup", False):
-            validate_aggchain_vkey_with_binary(
-                plan,
-                aggchain_vkey=args.get("aggchain_vkey_hash"),
-                aggkit_prover_image=args.get("aggkit_prover_image"),
-            )
-
-    # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
-    if consensus_type in [
-        constants.CONSENSUS_TYPE.ecdsa,
-        constants.CONSENSUS_TYPE.fep,
-    ]:
-        validate_pp_vkey_with_binary(
-            plan,
-            pp_vkey=args.get("pp_vkey_hash"),
-            agglayer_image=args.get("agglayer_image"),
-        )
-        validate_aggchain_vkey_with_binary(
-            plan,
-            aggchain_vkey=args.get("aggchain_vkey_hash"),
-            aggkit_prover_image=args.get("aggkit_prover_image"),
-        )
-
-
-def validate_pp_vkey_with_binary(plan, pp_vkey, agglayer_image):
-    result = plan.run_sh(
-        name="agglayer-vkey-getter",
-        description="Getting agglayer vkey",
-        image=agglayer_image,
-        run="agglayer vkey | tr -d '\n'",
-    )
-    plan.verify(
-        description="Verifying agglayer vkey",
-        value=result.output,
-        assertion="==",
-        target_value=pp_vkey,
-    )
-
-
-def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image):
-    result = plan.run_sh(
-        name="aggkit-prover-vkey-getter",
-        description="Getting aggkit prover vkey",
-        image=aggkit_prover_image,
-        run="aggkit-prover vkey | tr -d '\n'",
-    )
-    plan.verify(
-        description="Verifying aggkit prover vkey",
-        value=result.output,
-        assertion="==",
-        target_value=aggchain_vkey,
-    )

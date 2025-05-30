@@ -1,0 +1,10 @@
+# See https://github.com/0xPolygon/status-checker/blob/main/config.yml for how to
+# configure this file.
+
+enabled_by_default: true
+interval: 10s
+logs:
+  level: trace
+checks_dir: /opt/status-checker/checks
+modify_permissions: true
+antithesis: true
