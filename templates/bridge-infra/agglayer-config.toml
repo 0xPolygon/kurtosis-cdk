@@ -58,7 +58,7 @@ settlement-timeout = 1200
 level = "debug"
 {{- if .jaeger_otlp_tracing }}
 outputs = ["otlp"]
-otlp-agent = "http://jaeger:4317"
+otlp-agent = "http://jaeger{{.deployment_suffix}}:4317"
 otlp-service-name = "agglayer"
 {{- else }}
 outputs = ["stderr"]
