@@ -238,7 +238,7 @@ DEFAULT_L1_ARGS = {
     # Default: 12
     "l1_seconds_per_slot": 2,
     # Enable the Electra hardfork.
-    "pectra_enabled": False,
+    "pectra_enabled": True,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
