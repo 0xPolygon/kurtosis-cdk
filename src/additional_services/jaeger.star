@@ -15,7 +15,6 @@ def run(plan, args):
             ports=ports,
             public_ports=public_ports,
             env_vars=jaeger_env_vars,
-            cmd=["run", "--config-path", "/etc/aggkit/aggkit-prover-config.toml"],
         )
     )
 
