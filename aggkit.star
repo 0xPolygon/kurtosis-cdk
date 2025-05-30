@@ -63,7 +63,8 @@ def run(
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Create the aggkit config.
+    # Create the cdk aggoracle config.
+    agglayer_endpoint = get_agglayer_endpoint(plan, args)
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="cdk-aggoracle-config-artifact",
@@ -71,8 +72,10 @@ def run(
             "config.toml": struct(
                 template=aggkit_config_template,
                 data=args
+                | deployment_stages
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                    "agglayer_endpoint": agglayer_endpoint,
                 }
                 | db_configs
                 | contract_setup_addresses
@@ -249,3 +252,14 @@ def get_aggkit_prover_ports(args):
         ports, "aggkit_prover_start_port", args
     )
     return (ports, public_ports)
+
+
+# Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
+# v0.2.0 aggkit only supports readrpc, and v0.3.0 aggkit supports grpc.
+def get_agglayer_endpoint(plan, args):
+    if "0.3" in args["aggkit_image"]:
+        return "grpc"
+    elif "0.2" in args["aggkit_image"]:
+        return "readrpc"
+    else:
+        return "readrpc"
