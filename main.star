@@ -78,12 +78,21 @@ def run(plan, args={}):
             op_deployer_configs_artifact = plan.get_files_artifact(
                 name="op-deployer-configs",
             )
+
+            # Fund OP Addresses on L1
             l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
                 plan, args, op_deployer_configs_artifact
             )
 
             import_module(deploy_sovereign_contracts_package).fund_addresses(
-                plan, args, l1_op_contract_addresses
+                plan, args, l1_op_contract_addresses, args["l1_rpc_url"]
+            )
+
+            # Fund Kurtosis addresses on OP L2
+            l2_kurtosis_addresses = service_package.get_kurtosis_addresses(args)
+
+            import_module(deploy_sovereign_contracts_package).fund_addresses(
+                plan, args, l2_kurtosis_addresses, args["op_el_rpc_url"]
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
