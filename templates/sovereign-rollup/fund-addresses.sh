@@ -25,8 +25,7 @@ IFS=';' read -ra addresses <<<"$ADDRESSES_TO_FUND"
 # Set private key based on RPC_URL
 if [[ "$RPC_URL" == "http://op-el-1-op-geth-op-node-001:8545" ]]; then
     # Default optimism-package preallocated mnemonic
-    private_key=$(cast wallet private-key --mnemonic "test test test test test test test test test test test junk" 2>/dev/null)
-    if [[ $? -ne 0 ]] || [[ -z "$private_key" ]]; then
+    if ! private_key=$(cast wallet private-key --mnemonic "test test test test test test test test test test test junk" 2>/dev/null) || [[ -z "$private_key" ]]; then
         echo "Error: Failed to derive private key from mnemonic."
         exit 1
     fi
@@ -35,8 +34,7 @@ else
         echo "Error: L1_PREALLOCATED_MNEMONIC environment variable is not set for non-default RPC."
         exit 1
     fi
-    private_key=$(cast wallet private-key --mnemonic "$L1_PREALLOCATED_MNEMONIC" 2>/dev/null)
-    if [[ $? -ne 0 ]] || [[ -z "$private_key" ]]; then
+    if ! private_key=$(cast wallet private-key --mnemonic "$L1_PREALLOCATED_MNEMONIC" 2>/dev/null) || [[ -z "$private_key" ]]; then
         echo "Error: Failed to derive private key from mnemonic."
         exit 1
     fi
@@ -51,12 +49,11 @@ for address in "${addresses[@]}"; do
     fi
 
     echo "Funding $address with $L2_FUNDING_AMOUNT"
-    cast send \
+    if ! cast send \
         --private-key "$private_key" \
         --rpc-url "$RPC_URL" \
         --value "$L2_FUNDING_AMOUNT" \
-        "$address" >/dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
+        "$address" >/dev/null 2>&1; then
         echo "Error: Failed to fund $address"
     else
         echo "Successfully funded $address"
