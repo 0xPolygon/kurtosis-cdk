@@ -5,6 +5,7 @@ ADDITIONAL_SERVICES = struct(
     blutgang="blutgang",
     bridge_spammer="bridge_spammer",
     erpc="erpc",
+    jaeger="jaeger",
     observability="observability",
     pless_zkevm_node="pless_zkevm_node",
     status_checker="status_checker",

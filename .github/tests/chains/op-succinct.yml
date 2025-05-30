@@ -28,7 +28,7 @@ args:
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
 
   # To enable otlp tracing, set this to true and add `jaeger` as additional service
-  jaeger-otlp-tracing: true
+  jaeger_otlp_tracing: true
   
 
   additional_services:

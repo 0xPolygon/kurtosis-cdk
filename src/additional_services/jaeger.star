@@ -1,12 +1,12 @@
-
+ports_package = import_module("../package_io/ports.star")
 
 def run(plan, args):
 
-        (ports, public_ports) = get_jaeger_ports(args)
+    (ports, public_ports) = get_jaeger_ports(args)
 
-        jaeger_env_vars = {
-            "COLLECTOR_OTLP_ENABLED": "true",
-        }
+    jaeger_env_vars = {
+        "COLLECTOR_OTLP_ENABLED": "true",
+    }
 
     plan.add_service(
         name="jaeger" + args.get("deployment_suffix"),
@@ -22,30 +22,27 @@ def run(plan, args):
 
 def get_jaeger_ports(args):
     ports = {
+        "udpreceiver": PortSpec(
+            6831, application_protocol="udp"
+        ),
+        "otlpgrpc": PortSpec(
+            4317, application_protocol="http"
+        ),
+        "otlphttp": PortSpec(
+            4318, application_protocol="http"
+        ),
+        "pprofext": PortSpec(
+            1888, application_protocol="tcp"
+        ),
+        "prometheus1": PortSpec(
+            8888, application_protocol="tcp"
+        ),
+        "prometheus2": PortSpec(
+            8889, application_protocol="tcp"
+        ),   
         "dashboard": PortSpec(
-            "16686", application_protocol="http"
-        ),
-        "udp_receiver": PortSpec(
-            "6831", application_protocol="udp"
-        ),
-        "otlp_grpc_receiver": PortSpec(
-            "4317", application_protocol="http"
-        ),
-        "otlp_http_receiver": PortSpec(
-            "4318", application_protocol="http"
-        ),
-        "pprof_extension": PortSpec(
-            "1888", application_protocol="tcp"
-        ),
-        "pprof_extension": PortSpec(
-            "1888", application_protocol="tcp"
-        ),
-        "prometheus_metrcis_from_collector": PortSpec(
-            "8888", application_protocol="tcp"
-        ),
-        "prometheus_exporter_metrics": PortSpec(
-            "8889", application_protocol="tcp"
-        ),        
+            16686, application_protocol="http"
+        ),     
     }
     exported_ports = {
         "dashboard": ports["dashboard"]

@@ -24,6 +24,8 @@ def launch(
             )
         elif svc == constants.ADDITIONAL_SERVICES.erpc:
             import_module("./erpc.star").run(plan, args)
+        elif svc == constants.ADDITIONAL_SERVICES.jaeger:
+            import_module("./jaeger.star").run(plan, args)                        
         elif svc == constants.ADDITIONAL_SERVICES.pless_zkevm_node:
             # Note that an additional suffix will be added to the permissionless services.
             permissionless_node_args = dict(args)
@@ -52,7 +54,5 @@ def launch(
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args, contract_setup_addresses)
-        elif svc == constants.ADDITIONAL_SERVICES.jaeger:
-            import_module("./jaeger.star").run(plan, args)            
         else:
             fail("Invalid additional service: %s" % (svc))
