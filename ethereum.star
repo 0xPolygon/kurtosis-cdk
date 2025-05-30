@@ -1,13 +1,13 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@1ad949f4f65a34f041bd90050ca407e370eee579"  # 2025-04-11
+    "github.com/ethpandaops/ethereum-package/main.star@197cdf84cbcc713f46bb37c4af84c4a0cf1854ff"  # 2025-05-28
 )
 
-GETH_IMAGE = "ethereum/client-go:v1.14.12"
+GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
 # https://github.com/ethpandaops/ethereum-package/issues/899
 # The fix is not ideal for now since we're waiting on lighthouse to push a fix image.
 # https://github.com/ethpandaops/ethereum-package/pull/915
-LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:unstable"
+LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable"
 
 
 def run(plan, args):
@@ -73,7 +73,7 @@ def run(plan, args):
 
         # Use pectra ready client images.
         default_participant = l1_args["participants"][0]
-        default_participant["el_image"] = "ethpandaops/geth:prague-devnet-6"
+        default_participant["el_image"] = "ethereum/client-go:v1.15.11"
         default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
         default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
         l1_args["participants"][0] = default_participant
