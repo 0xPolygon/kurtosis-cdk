@@ -131,11 +131,24 @@ Outputs = ["stderr"]
 # ------------------------------------------------------------------------------
 [RPC]
 # ------------------------------------------------------------------------------
-# Port will configure the port that the data streamer server will
+# Port will configure the port that the JSON RPC server will listen on
+# ------------------------------------------------------------------------------
+Port = "{{.cdk_node_rpc_port}}"
+
+# ==============================================================================
+#  ____  _____ ____ _____ 
+# |  _ \| ____/ ___|_   _|
+# | |_) |  _| \___ \ | |  
+# |  _ <| |___ ___) || |  
+# |_| \_\_____|____/ |_|  
+#                         
+# ------------------------------------------------------------------------------
+[REST]
+# ------------------------------------------------------------------------------
+# Port will configure the port that the REST API HTTP server will
 # listen on
 # ------------------------------------------------------------------------------
-Port = 5576
-
+Port = "{{.aggkit_node_rest_api_port}}"
 
 # ==============================================================================
 #     _    ____  ____ ____  _____ _   _ ____  _____ ____
@@ -155,7 +168,6 @@ Port = 5576
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
 AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 CheckStatusCertificateInterval = "1s"
 
 {{- if eq .consensus_contract_type "pessimistic"}}
@@ -163,6 +175,12 @@ Mode="PessimisticProof"
 {{- else}}
 Mode="AggchainProof"
 {{- end}}
+
+[AggSender.AggkitProverClient]
+# ------------------------------------------------------------------------------
+# URL is the URL of the Aggkit Prover gRPC server
+# ------------------------------------------------------------------------------
+URL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
 [AggSender.MaxSubmitCertificateRate]
 NumRequests = 20
@@ -355,7 +373,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2
 # ------------------------------------------------------------------------------
 # StoragePath is the path of the internal storage
 # ------------------------------------------------------------------------------
-# StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-aggoracle.sqlite"
+# StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-aggoracle.sqlite"
 
 # ------------------------------------------------------------------------------
 # ReadPendingL1Txs is a flag to enable the reading of pending L1 txs
@@ -399,7 +417,7 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 # ------------------------------------------------------------------------------
 # DBPath path of the sqlite db
 # ------------------------------------------------------------------------------
-# DBPath = "{{.zkevm_path_rw_data}}bridgel2sync.sqlite"
+# DBPath = "{{.zkevm_path_rw_data}}/bridgel2sync.sqlite"
 
 # ------------------------------------------------------------------------------
 # BlockFinality indicates the status of the blocks that will be queried to sync
@@ -460,17 +478,17 @@ InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 # ------------------------------------------------------------------------------
 # Path of the DB
 # ------------------------------------------------------------------------------
-DBPath = "{{.zkevm_path_rw_data}}claimsponsor.sqlite"
+DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 
 # ------------------------------------------------------------------------------
 # Enabled indicates if the sponsor should be run or not
 # ------------------------------------------------------------------------------
-Enabled = false
+Enabled = "{{.enable_aggkit_claim_sponsor}}"
 
 # ------------------------------------------------------------------------------
 # SenderAddr is the address that will be used to send the claim txs
 # ------------------------------------------------------------------------------
-SenderAddr = "{{.zkevm_l2_claimtxmanager_address}}"
+SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
 
 # ------------------------------------------------------------------------------
 # BridgeAddrL2 is the address of the bridge smart contract on L2
@@ -483,13 +501,13 @@ BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
 PrivateKeys = [
-    {Path = "/etc/aggkit/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
 ]
 
 # ------------------------------------------------------------------------------
 # StoragePath is the path of the internal storage
 # ------------------------------------------------------------------------------
-StoragePath = "{{.zkevm_path_rw_data}}ethtxmanager-claimsponsor.sqlite"
+StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
 # ------------------------------------------------------------------------------
