@@ -52,5 +52,7 @@ def launch(
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args, contract_setup_addresses)
+        elif svc == constants.ADDITIONAL_SERVICES.jaeger:
+            import_module("./jaeger.star").run(plan, args)            
         else:
             fail("Invalid additional service: %s" % (svc))

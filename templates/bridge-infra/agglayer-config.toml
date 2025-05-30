@@ -56,7 +56,13 @@ settlement-timeout = 1200
 # level = "{{.global_log_level}}"
 # we want debug visibility here for now
 level = "debug"
+{{- if .jaeger_otlp_tracing }}
+outputs = ["otlp"]
+otlp-agent = "http://jaeger:4317"
+otlp-service-name = "agglayer"
+{{- else }}
 outputs = ["stderr"]
+{{- end }}
 format = "json"
 
 [auth.local]

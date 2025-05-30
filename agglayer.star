@@ -167,6 +167,7 @@ def create_agglayer_config_artifact(
                     "zkevm_l2_sovereignadmin_address": args[
                         "zkevm_l2_sovereignadmin_address"
                     ],
+                    "jaeger_otlp_tracing": args["jaeger_otlp_tracing"]
                 }
                 | contract_setup_addresses
                 | db_configs,
