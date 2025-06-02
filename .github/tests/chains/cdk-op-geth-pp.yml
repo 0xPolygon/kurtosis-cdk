@@ -12,7 +12,7 @@ optimism_package:
 
 args:
   zkevm_contracts_image: "leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12"
-  zkevm_rollup_chain_id: 2151909
+  zkevm_rollup_chain_id: 2151908
   deployment_suffix: "-002"
   zkevm_rollup_id: 2
   consensus_contract_type: pessimistic
