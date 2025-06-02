@@ -19,9 +19,6 @@ if [[ -z "$L2_FUNDING_AMOUNT" ]]; then
     exit 1
 fi
 
-# Fund addresses
-IFS=';' read -ra addresses <<<"$ADDRESSES_TO_FUND"
-
 # Set private key based on RPC_URL
 if [[ "$RPC_URL" == "http://op-el-1-op-geth-op-node-001:8545" ]]; then
     # Default optimism-package preallocated mnemonic
@@ -39,6 +36,9 @@ else
         exit 1
     fi
 fi
+
+# Fund addresses
+IFS=';' read -ra addresses <<<"$ADDRESSES_TO_FUND"
 
 # Validate addresses and fund them
 for address in "${addresses[@]}"; do
