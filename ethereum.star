@@ -60,23 +60,14 @@ def run(plan, args):
             # GENESIS_DELAY, Default: 12
             # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
             "genesis_delay": 12,
+            # Enable the Electra hardfork.
+            # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
+            #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
+            "electra_fork_epoch": 1,
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
     }
-
-    # Enable Pectra hardfork if needed.
-    if args.get("pectra_enabled", False):
-        # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
-        #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
-        l1_args["network_params"]["electra_fork_epoch"] = 1
-
-        # Use pectra ready client images.
-        default_participant = l1_args["participants"][0]
-        default_participant["el_image"] = "ethereum/client-go:v1.15.11"
-        default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
-        default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
-        l1_args["participants"][0] = default_participant
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
