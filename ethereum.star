@@ -1,13 +1,13 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@1ad949f4f65a34f041bd90050ca407e370eee579"  # 2025-04-11
+    "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
 )
 
-GETH_IMAGE = "ethereum/client-go:v1.14.12"
+GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
 # https://github.com/ethpandaops/ethereum-package/issues/899
 # The fix is not ideal for now since we're waiting on lighthouse to push a fix image.
 # https://github.com/ethpandaops/ethereum-package/pull/915
-LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:unstable"
+LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
 
 def run(plan, args):
@@ -60,23 +60,14 @@ def run(plan, args):
             # GENESIS_DELAY, Default: 12
             # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
             "genesis_delay": 12,
+            # Enable the Electra hardfork.
+            # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
+            #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
+            "electra_fork_epoch": 1,
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
     }
-
-    # Enable Pectra hardfork if needed.
-    if args.get("pectra_enabled", False):
-        # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
-        #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
-        l1_args["network_params"]["electra_fork_epoch"] = 1
-
-        # Use pectra ready client images.
-        default_participant = l1_args["participants"][0]
-        default_participant["el_image"] = "ethpandaops/geth:prague-devnet-6"
-        default_participant["cl_image"] = "ethpandaops/lighthouse:unstable"
-        default_participant["vc_image"] = "ethpandaops/lighthouse:unstable"
-        l1_args["participants"][0] = default_participant
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
