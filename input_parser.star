@@ -62,6 +62,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.2.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
     "test_runner_image": "leovct/e2e:78df008-cdk",
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.3",  # https://github.com/0xPolygon/status-checker/releases
 }
 
 DEFAULT_PORTS = {
@@ -136,6 +137,7 @@ DEFAULT_STATIC_PORTS = {
         "blutgang_start_port": 52010,
         "erpc_start_port": 52020,
         "panoptichain_start_port": 52030,
+        "status_checker_start_port": 52040,
     }
 }
 
@@ -300,20 +302,6 @@ DEFAULT_ROLLUP_ARGS = {
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
     "zkevm_use_real_verifier": False,
-    # If we're using pessimistic consensus and a real verifier, we'll
-    # need to know which vkey to use. This value is tightly coupled to
-    # the agglayer version that's being used
-    # TODO automate this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey`
-    "aggchain_vkey_hash": "0x1e82b1193be48c5c6ba14dda2bcc29ab4d3dc3a2379198ac1f8571040d0a7a4d",
-    # AggchainFEP, PolygonValidiumEtrog, PolygonZkEVMEtrog consensus requires programVKey === bytes32(0).
-    # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey`
-    "pp_vkey_hash": "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be",
-    # The 4 bytes selector to add to the pessimistic verification keys (AggLayerGateway)
-    # TODO automate this `docker run -it ghcr.io/agglayer/agglayer:0.3.0-rc.7 agglayer vkey-selector`
-    "pp_vkey_selector": "0x00000002",
-    # Initial aggchain selector
-    # TODO automate taking the first 2 bytes of this `docker run -it ghcr.io/agglayer/aggkit-prover:0.1.0-rc.8 aggkit-prover vkey-selector`
-    "aggchain_vkey_selector": "0x00010001",
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
@@ -528,7 +516,6 @@ def parse_args(plan, user_args):
     args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
 
     validate_consensus_type(args.get("consensus_contract_type"))
-    validate_vkeys(plan, args, deployment_stages)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -874,69 +861,3 @@ def validate_consensus_type(consensus_type):
                 consensus_type, VALID_CONSENSUS_TYPES
             )
         )
-
-
-def validate_vkeys(plan, args, deployment_stages):
-    consensus_type = args.get("consensus_contract_type")
-
-    # For pessimistic consensus, ensure the pp vkey matches the value returned by the agglayer binary.
-    # Only validate the aggchain vkey if an OP rollup is deployed.
-    if consensus_type == constants.CONSENSUS_TYPE.pessimistic:
-        validate_pp_vkey_with_binary(
-            plan,
-            pp_vkey=args.get("pp_vkey_hash"),
-            agglayer_image=args.get("agglayer_image"),
-        )
-
-        if deployment_stages.get("deploy_optimism_rollup", False):
-            validate_aggchain_vkey_with_binary(
-                plan,
-                aggchain_vkey=args.get("aggchain_vkey_hash"),
-                aggkit_prover_image=args.get("aggkit_prover_image"),
-            )
-
-    # For aggchain consensus, ensure the vkeys match the expected values returned by the binaries.
-    if consensus_type in [
-        constants.CONSENSUS_TYPE.ecdsa,
-        constants.CONSENSUS_TYPE.fep,
-    ]:
-        validate_pp_vkey_with_binary(
-            plan,
-            pp_vkey=args.get("pp_vkey_hash"),
-            agglayer_image=args.get("agglayer_image"),
-        )
-        validate_aggchain_vkey_with_binary(
-            plan,
-            aggchain_vkey=args.get("aggchain_vkey_hash"),
-            aggkit_prover_image=args.get("aggkit_prover_image"),
-        )
-
-
-def validate_pp_vkey_with_binary(plan, pp_vkey, agglayer_image):
-    result = plan.run_sh(
-        name="agglayer-vkey-getter",
-        description="Getting agglayer vkey",
-        image=agglayer_image,
-        run="agglayer vkey | tr -d '\n'",
-    )
-    plan.verify(
-        description="Verifying agglayer vkey",
-        value=result.output,
-        assertion="==",
-        target_value=pp_vkey,
-    )
-
-
-def validate_aggchain_vkey_with_binary(plan, aggchain_vkey, aggkit_prover_image):
-    result = plan.run_sh(
-        name="aggkit-prover-vkey-getter",
-        description="Getting aggkit prover vkey",
-        image=aggkit_prover_image,
-        run="aggkit-prover vkey | tr -d '\n'",
-    )
-    plan.verify(
-        description="Verifying aggkit prover vkey",
-        value=result.output,
-        assertion="==",
-        target_value=aggchain_vkey,
-    )
