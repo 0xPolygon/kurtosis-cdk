@@ -7,7 +7,7 @@ GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # https://github.com/ethpandaops/ethereum-package/issues/899
 # The fix is not ideal for now since we're waiting on lighthouse to push a fix image.
 # https://github.com/ethpandaops/ethereum-package/pull/915
-LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable"
+LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
 
 def run(plan, args):
