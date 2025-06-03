@@ -85,21 +85,37 @@ def get_l2_oo_config(plan, args):
     )
 
 
-def fund_addresses(plan, args, l1_op_contract_addresses):
+def fund_addresses(plan, args, contract_addresses, rpc_url):
     # Provide L1 OP addresses to the sovereign setup script as an environment variable.
-    l1_op_addresses = ";".join(list(l1_op_contract_addresses.values()))
+    contract_addresses_to_fund = ";".join(
+        [contract_addresses[key] for key in contract_addresses]
+    )
+    env_vars = {
+        "ADDRESSES_TO_FUND": contract_addresses_to_fund,
+        "RPC_URL": rpc_url,
+        "L2_FUNDING_AMOUNT": args.get("l2_funding_amount", "0.1ether"),
+    }
+
+    # Only set L1_PREALLOCATED_MNEMONIC if provided and not using the default RPC
+    if (
+        rpc_url != "http://op-el-1-op-geth-op-node-001:8545"
+        and "l1_preallocated_mnemonic" in args
+    ):
+        env_vars["L1_PREALLOCATED_MNEMONIC"] = args["l1_preallocated_mnemonic"]
+
+    # Build env_string with double quotes around values to handle semicolons
+    env_string = " ".join(['{}="{}"'.format(key, env_vars[key]) for key in env_vars])
+    command = [
+        "/bin/bash",
+        "-c",
+        "chmod +x {0} && {1} {0}".format(
+            "/opt/contract-deploy/fund-addresses.sh",
+            env_string,
+        ),
+    ]
 
     plan.exec(
         description="Deploying sovereign contracts on OP Stack",
         service_name="contracts" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && L1_OP_ADDRESSES='{1}' {0}".format(
-                    "/opt/contract-deploy/fund-addresses.sh",
-                    l1_op_addresses,
-                ),
-            ]
-        ),
+        recipe=ExecRecipe(command=command),
     )

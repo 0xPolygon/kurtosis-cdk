@@ -2,6 +2,7 @@ constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
 op_succinct_package = import_module("./op_succinct.star")
+deploy_sovereign_contracts_package = import_module("./deploy_sovereign_contracts.star")
 
 # Main service packages.
 additional_services = import_module("./src/additional_services/launcher.star")
@@ -16,7 +17,6 @@ ethereum_package = "./ethereum.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
-deploy_sovereign_contracts_package = "./deploy_sovereign_contracts.star"
 create_sovereign_predeployed_genesis_package = (
     "./create_sovereign_predeployed_genesis.star"
 )
@@ -63,7 +63,7 @@ def run(plan, args={}):
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
             plan.print("Creating new rollup type and creating rollup on L1")
-            import_module(deploy_sovereign_contracts_package).run(
+            deploy_sovereign_contracts_package.run(
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
@@ -78,12 +78,21 @@ def run(plan, args={}):
             op_deployer_configs_artifact = plan.get_files_artifact(
                 name="op-deployer-configs",
             )
+
+            # Fund OP Addresses on L1
             l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
                 plan, args, op_deployer_configs_artifact
             )
 
-            import_module(deploy_sovereign_contracts_package).fund_addresses(
-                plan, args, l1_op_contract_addresses
+            deploy_sovereign_contracts_package.fund_addresses(
+                plan, args, l1_op_contract_addresses, args["l1_rpc_url"]
+            )
+
+            # Fund Kurtosis addresses on OP L2
+            l2_kurtosis_addresses = service_package.get_kurtosis_addresses(args)
+
+            deploy_sovereign_contracts_package.fund_addresses(
+                plan, args, l2_kurtosis_addresses, args["op_el_rpc_url"]
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
@@ -111,7 +120,7 @@ def run(plan, args={}):
 
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
-            import_module(deploy_sovereign_contracts_package).init_rollup(
+            deploy_sovereign_contracts_package.init_rollup(
                 plan, args, deployment_stages
             )
             # Extract Sovereign contract addresses
