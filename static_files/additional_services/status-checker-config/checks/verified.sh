@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+
+if [[ "$CONSENSUS_CONTRACT_TYPE" != "rollup" && "$CONSENSUS_CONTRACT_TYPE" != "cdk_validium" ]]; then
+  echo "Skipping check, consensus must be either rollup or cdk_validium"
+  exit 0
+fi
+
 state_file="./verified.env"
 error=0
 

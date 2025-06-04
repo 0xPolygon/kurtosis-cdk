@@ -45,6 +45,10 @@ def run(plan, args):
             },
             ports=ports,
             public_ports=public_ports,
-            env_vars={"L2_RPC_URL": l2_rpc_url},
+            env_vars={
+                "L1_RPC_URL": args.get("l1_rpc_url"),
+                "L2_RPC_URL": l2_rpc_url,
+                "CONSENSUS_CONTRACT_TYPE": args.get("consensus_contract_type"),
+            },
         ),
     )
