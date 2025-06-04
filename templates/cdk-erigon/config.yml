@@ -458,7 +458,7 @@ zkevm.l1-cache-port: 6969
 # NOTE: This flag should be renamed `zkevm.rollup-id`.
 # https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: 1 (zkEVM mainnet)
-zkevm.l1-rollup-id: 1 # ethereum
+zkevm.l1-rollup-id: {{.zkevm_rollup_id}}
 
 # Define the number of blocks to scan when querying for verifications and sequences.
 # Larger ranges may be more efficient but could increase query time and resource usage.
