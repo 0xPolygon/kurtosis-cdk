@@ -255,7 +255,7 @@ fi
 echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
 if [[ -e create_rollup_output.json ]]; then
     jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
-    batch_timestamp=$(jq '.firstBatchData.timestamp' combined-001.json)
+    batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
     jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "dynamic-{{.chain_name}}-conf.json" > tmp_output.json
     mv tmp_output.json "dynamic-{{.chain_name}}-conf.json"
 else
