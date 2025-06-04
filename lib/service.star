@@ -21,6 +21,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
             "zkevm_rollup_address": "fromjson | .rollupAddress",
             "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
             "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+            "zkevm_rollup_block_number": "fromjson | .createRollupBlockNumber",
             "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
             "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
             "pol_token_address": "fromjson | .polTokenAddress",
