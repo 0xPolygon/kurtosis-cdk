@@ -45,7 +45,7 @@ args:
 
   # Test images
   agglayer_image: "atanmarko/agglayer:upgrade-sp1-5"
-  aggkit_prover_image: "atanmarko/aggkit-prover:upgrade-sp1-5"
+  aggkit_prover_image: "ghcr.io/agglayer/aggkit-prover:feat-upgrade-sp1-5"
   # op-succinct image v2.3.0-agglayer
   op_succinct_proposer_image: "ghcr.io/agglayer/op-succinct/op-succinct:sha-07159a5"
 
