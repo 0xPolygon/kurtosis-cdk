@@ -13,8 +13,6 @@ rollup_id=1
 rollup_data_json=$(cast call --json --rpc-url "$L1_RPC_URL" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
 rollup_contract=$(echo "$rollup_data_json" | jq -r '.[0]')
 
-echo $rollup_data_json
-
 # Ensure that no more than $last_n_events batches sequenced can be processed
 # within the status-checker check interval.
 last_n_events=10
