@@ -35,7 +35,7 @@ args:
   deployment_suffix: "-001"
   zkevm_rollup_id: 1
   # Size of the range proof.
-  op_succinct_range_proof_interval: "120"
+  op_succinct_range_proof_interval: "1800"
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
@@ -43,11 +43,6 @@ args:
   additional_services:
     - bridge_spammer
 
-  # Test images
-  agglayer_image: "atanmarko/agglayer:upgrade-sp1-5"
-  aggkit_prover_image: "ghcr.io/agglayer/aggkit-prover:feat-upgrade-sp1-5"
-  # op-succinct image v2.3.0-agglayer
-  op_succinct_proposer_image: "ghcr.io/agglayer/op-succinct/op-succinct:sha-07159a5"
 
 optimism_package:
   # We need this for pre-deployed allocs https://github.com/ethpandaops/optimism-package/compare/main...xavier-romero:optimism-package:main#diff-c479a5b20e37b19a976045939f01e8a6deb6a062a147e08b81049469d512d00cR235
