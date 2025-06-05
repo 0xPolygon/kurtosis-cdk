@@ -6,9 +6,9 @@
 check_consensus() {
   for consensus in "$@"; do
     if [[ "$CONSENSUS_CONTRACT_TYPE" == "$consensus" ]]; then
-      return 0
+      return 1
     fi
   done
   echo "Skipping check, consensus must be one of: $*"
-  return 1
+  return 0
 }
