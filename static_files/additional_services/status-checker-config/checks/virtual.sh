@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-if [[ "$CONSENSUS_CONTRACT_TYPE" != "rollup" && "$CONSENSUS_CONTRACT_TYPE" != "cdk_validium" ]]; then
-  echo "Skipping check, consensus must be either rollup or cdk_validium"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+
+if check_consensus rollup cdk_validium; then
   exit 0
 fi
 

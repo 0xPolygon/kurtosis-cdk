@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
+
 set -euo pipefail
 
-if [[ "$CONSENSUS_CONTRACT_TYPE" != "rollup" && "$CONSENSUS_CONTRACT_TYPE" != "cdk_validium" ]]; then
-  echo "Skipping check, consensus must be either rollup or cdk_validium"
+if check_consensus rollup cdk_validium; then
   exit 0
 fi
 
@@ -17,14 +18,7 @@ rollup_contract=$(echo "$rollup_data_json" | jq -r '.[0]')
 # within the status-checker check interval.
 last_n_events=10
 
-hex_to_dec() {
-  while read -r hex; do
-    hex="${hex#0x}" # strip `0x` if present
-    echo $((16#$hex))
-  done
-}
-
-virtual_batch_number=$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_virtualBatchNumber | jq -r | hex_to_dec)
+virtual_batch_number=$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_virtualBatchNumber | jq -r | cast to-dec)
 
 events=$(
   cast logs "SequenceBatches(uint64,bytes32)" \
@@ -36,7 +30,7 @@ events=$(
 # Iterate over the sequence batches events because sometimes the batch number is
 # is greater than the virtual batch.
 while IFS= read -r hex; do
-  batch_number=$(printf "%s\n" "$hex" | hex_to_dec)
+  batch_number=$(printf "%s\n" "$hex" | cast to-dec)
 
   if [ "$batch_number" -gt "$virtual_batch_number" ]; then
     continue
@@ -45,10 +39,10 @@ while IFS= read -r hex; do
   vb_json=$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_getBatchByNumber "$batch_number")
   block_hash=$(echo "$vb_json" | jq -r '.blocks[-1]')
   tx_hash=$(echo "$vb_json" | jq -r '.sendSequencesTxHash')
-  batch_ts=$(echo "$vb_json" | jq -r '.timestamp' | hex_to_dec)
+  batch_ts=$(echo "$vb_json" | jq -r '.timestamp' | cast to-dec)
 
   vb_block_json=$(cast block --json --rpc-url "$L2_RPC_URL" "$block_hash")
-  block_ts=$(echo "$vb_block_json" | jq -r '.timestamp' | hex_to_dec)
+  block_ts=$(echo "$vb_block_json" | jq -r '.timestamp' | cast to-dec)
 
   tx_json=$(cast tx --json --rpc-url "$L1_RPC_URL" "$tx_hash")
   input_data=$(echo "$tx_json" | jq -r '.input')
