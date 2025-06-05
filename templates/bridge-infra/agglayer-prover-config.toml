@@ -1,6 +1,6 @@
 grpc-endpoint = "0.0.0.0:{{ .agglayer_prover_port }}"
 max-concurrency-limit = 100
-max-request-duration = 300
+max-request-duration = 900
 max-buffered-queries = 100
 
 [log]
@@ -13,17 +13,15 @@ format = "json"
 [telemetry]
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
-{{if or (eq .zkevm_rollup_fork_id "9") (eq .zkevm_rollup_fork_id "11")}}
 [cpu-prover]
-enabled = {{.is_cpu_prover_enabled}}
+enabled = false
 max-concurrency-limit = 100
 proving-timeout = 900
 
 [network-prover]
-enabled = {{.is_network_prover_enabled}}
-{{else}}
+enabled = true
+
 [primary-prover.{{.primary_prover}}]
-{{end}}
 proving-timeout = 900
 
 [grpc]
