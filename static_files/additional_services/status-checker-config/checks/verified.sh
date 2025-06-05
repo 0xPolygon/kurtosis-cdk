@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck source=./lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
 if check_consensus rollup cdk_validium; then
