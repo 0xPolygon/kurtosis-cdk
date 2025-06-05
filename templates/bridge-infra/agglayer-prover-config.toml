@@ -1,6 +1,6 @@
 grpc-endpoint = "0.0.0.0:{{ .agglayer_prover_port }}"
 max-concurrency-limit = 100
-max-request-duration = 900
+max-request-duration = "30m"
 max-buffered-queries = 100
 
 [log]
@@ -16,13 +16,15 @@ prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 [cpu-prover]
 enabled = false
 max-concurrency-limit = 100
-proving-timeout = 900
+proving-timeout = 1800
 
 [network-prover]
 enabled = true
+max-concurrency-limit = 100
+proving-timeout = 1800
 
 [primary-prover.{{.primary_prover}}]
-proving-timeout = 900
+proving-timeout = 1800
 
 [grpc]
 # size is define in bytes e.g. 100 * 1024 * 1024
