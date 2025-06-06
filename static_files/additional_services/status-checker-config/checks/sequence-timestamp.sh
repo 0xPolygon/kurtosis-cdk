@@ -5,9 +5,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
 set -euo pipefail
 
-if ! is_consensus rollup cdk_validium; then
-  exit 0
-fi
+check_consensus rollup cdk_validium
 
 sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
 rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
