@@ -5,7 +5,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
 set -euo pipefail
 
-if check_consensus rollup cdk_validium; then
+if ! is_consensus rollup cdk_validium; then
   exit 0
 fi
 
@@ -48,14 +48,14 @@ while IFS= read -r hex; do
   tx_json=$(cast tx --json --rpc-url "$L1_RPC_URL" "$tx_hash")
   input_data=$(echo "$tx_json" | jq -r '.input')
 
-  if [[ "$CONSENSUS_CONTRACT_TYPE" == "rollup" ]]; then
+  if is_consensus rollup; then
     seq_ts=$(
       cast cdd --json \
         "sequenceBatches((bytes,bytes32,uint64,bytes32)[],uint32,uint64,bytes32,address)" \
         "$input_data" \
         | jq -r '.[2]'
     )
-  elif [[ "$CONSENSUS_CONTRACT_TYPE" == "cdk_validium" ]]; then
+  elif is_consensus cdk_validium; then
     seq_ts=$(
       cast cdd --json \
         "sequenceBatchesValidium((bytes32,bytes32,uint64,bytes32)[],uint32,uint64,bytes32,address,bytes)" \

@@ -3,12 +3,12 @@
 # checks. It does NOT include a shebang so that the status-checker skips
 # executing this file directly.
 
-check_consensus() {
+is_consensus() {
   for consensus in "$@"; do
     if [[ "$CONSENSUS_CONTRACT_TYPE" == "$consensus" ]]; then
-      return 1
+      return 0
     fi
   done
   echo "Skipping check, consensus must be one of: $*"
-  return 0
+  return 1
 }

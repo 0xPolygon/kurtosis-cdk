@@ -3,7 +3,7 @@
 # shellcheck source=static_files/additional_services/status-checker-config/checks/lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
-if check_consensus rollup cdk_validium; then
+if ! is_consensus rollup cdk_validium; then
   exit 0
 fi
 
