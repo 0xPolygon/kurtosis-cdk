@@ -134,10 +134,16 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimtxmanager.keystore",
     )
+    sequencer_keystore_artifact = plan.store_service_files(
+        name="sequencer-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/sequencer.keystore",
+    )
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         claimtx=claimtx_keystore_artifact,
+        sequencer=sequencer_keystore_artifact,
     )
 
 
@@ -258,6 +264,8 @@ def get_aggkit_prover_ports(args):
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 aggkit supports grpc.
 def get_agglayer_endpoint(plan, args):
     if "0.3" in args["aggkit_image"]:
+        return "grpc"
+    if args["consensus_contract_type"] == "fep":
         return "grpc"
     elif "0.2" in args["aggkit_image"]:
         return "readrpc"

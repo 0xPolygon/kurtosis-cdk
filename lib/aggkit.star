@@ -22,6 +22,7 @@ def create_aggkit_service_config(
                     keystore_artifact.aggoracle,
                     keystore_artifact.sovereignadmin,
                     keystore_artifact.claimtx,
+                    keystore_artifact.sequencer,
                 ],
             ),
             "/data": Directory(

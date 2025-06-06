@@ -21,9 +21,13 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 {{- end }}
 
 # Check if "op" mode should be used for L2RPC
-{{- if and .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") }}
+{{- if and .deploy_optimism_rollup (eq .consensus_contract_type "fep") }}
 L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
 {{- end}}
+
+# TODO should this only be assigned with AggchainFEP + OP mode?
+OpNodeURL = "{{.op_cl_rpc_url}}"
+AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
 ForkId = 12
 ContractVersions = "banana"
@@ -32,12 +36,13 @@ NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
 L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
-SequencerPrivateKeyPath = ""
-SequencerPrivateKeyPassword  = ""
+SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
+SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+# TrustedSequencerKey = "{Method =  \"local\", Path = \"/etc/aggkit/sequencer.keystore\", Password = \"{{.zkevm_l2_keystore_password}}\"}"
 
-AggregatorPrivateKeyPath = ""
-AggregatorPrivateKeyPassword  = ""
-SenderProofToL1Addr = ""
+AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
+AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 RPCURL = "{{.op_el_rpc_url}}"
@@ -164,7 +169,7 @@ Port = 5576
 # ------------------------------------------------------------------------------
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
-AggsenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+AggsenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 CheckStatusCertificateInterval = "1s"
 
@@ -173,6 +178,10 @@ Mode="PessimisticProof"
 {{- else}}
 Mode="AggchainProof"
 {{- end}}
+
+[AggSender.OptimisticModeConfig]
+TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+OpNodeURL = "{{.op_cl_rpc_url}}"
 
 [AggSender.MaxSubmitCertificateRate]
 NumRequests = 20
