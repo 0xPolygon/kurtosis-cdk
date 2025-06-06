@@ -25,6 +25,7 @@ def create_cdk_node_service_config(
                     genesis_artifact,
                     keystore_artifact.aggregator,
                     keystore_artifact.sequencer,
+                    keystore_artifact.claim_sponsor,
                 ],
             ),
             "/data": Directory(
@@ -41,7 +42,12 @@ def create_cdk_node_service_config(
 def get_cdk_node_ports(args):
     ports = {
         "rpc": PortSpec(
-            args.get("zkevm_cdk_node_port"),
+            args.get("cdk_node_rpc_port"),
+            application_protocol="http",
+            wait=None,
+        ),
+        "rest": PortSpec(
+            args.get("aggkit_node_rest_api_port"),
             application_protocol="http",
             wait=None,
         ),
@@ -81,7 +87,7 @@ def get_cdk_node_cmd(args):
             "sleep 20 && cdk-node run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
             + "--custom-network-file=/etc/cdk/genesis.json "
-            + "--save-config-path=/tmp/ "
+            + "--save-config-path=/tmp "
             + "--components=aggsender"
         ]
 
@@ -89,7 +95,7 @@ def get_cdk_node_cmd(args):
         service_command = [
             "sleep 20 && aggkit run "
             + "--cfg=/etc/cdk/cdk-node-config.toml "
-            + "--save-config-path=/tmp/ "
+            + "--save-config-path=/tmp "
             + "--components=aggsender,bridge"
         ]
 
