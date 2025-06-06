@@ -191,6 +191,7 @@ Mode="AggchainProof"
 # URL is the URL of the Aggkit Prover gRPC server
 # ------------------------------------------------------------------------------
 URL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
+UseTLS = false
 
 [AggSender.MaxSubmitCertificateRate]
 NumRequests = 20
