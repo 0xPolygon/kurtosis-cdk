@@ -42,6 +42,8 @@ def run(plan, args):
                 "/opt/status-checker/checks": Directory(
                     artifact_names=[status_checker_checks_artifact]
                 ),
+                # Mount this directory to have have access to contract addresses.
+                "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
             },
             ports=ports,
             public_ports=public_ports,

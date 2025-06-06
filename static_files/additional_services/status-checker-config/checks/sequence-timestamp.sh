@@ -3,22 +3,13 @@
 # shellcheck source=static_files/additional_services/status-checker-config/checks/lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
-set -euo pipefail
-
 check_consensus rollup cdk_validium
-
-sig_rollup_id_to_data='rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)'
-rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
-rollup_id=1
-rollup_data_json=$(cast call --json --rpc-url "$L1_RPC_URL" "$rollup_manager_addr" "$sig_rollup_id_to_data" "$rollup_id")
-rollup_contract=$(echo "$rollup_data_json" | jq -r '.[0]')
 
 # Ensure that no more than $last_n_events batches sequenced can be processed
 # within the status-checker check interval.
 last_n_events=10
-
+rollup_contract=$(jq -r '.rollupAddress' /opt/zkevm/combined.json)
 virtual_batch_number=$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_virtualBatchNumber | jq -r | cast to-dec)
-
 events=$(
   cast logs "SequenceBatches(uint64,bytes32)" \
     --rpc-url "$L1_RPC_URL" \
