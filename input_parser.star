@@ -38,6 +38,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_l2_contracts": False,
     # Deploy aggkit node in parallel to cdk node.
     "deploy_aggkit_node": False,
+    # Deploy additional services.
+    "deploy_additional_services": False,
 }
 
 DEFAULT_IMAGES = {

@@ -294,14 +294,18 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of aggkit infrastructure")
 
     # Deploy additional services.
-    additional_services.launch(
-        plan,
-        args,
-        contract_setup_addresses,
-        sovereign_contract_setup_addresses,
-        genesis_artifact,
-        deployment_stages,
-    )
+    if deployment_stages.get("deploy_additional_services", False):
+        plan.print("Deploying additional services")
+        additional_services.launch(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            genesis_artifact,
+            deployment_stages,
+        )
+    else:
+        plan.print("Skipping the deployment of additional services")
 
 
 def deploy_helper_service(plan, args):
