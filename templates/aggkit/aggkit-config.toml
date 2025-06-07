@@ -25,23 +25,15 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
 {{- end}}
 
-ForkId = 12
-ContractVersions = "banana"
-IsValidiumMode = false
 NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
-L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
-SequencerPrivateKeyPath = ""
-SequencerPrivateKeyPassword  = ""
+AggSenderPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
+AggSenderPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
-AggregatorPrivateKeyPath = ""
-AggregatorPrivateKeyPassword  = ""
-SenderProofToL1Addr = ""
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 RPCURL = "{{.op_el_rpc_url}}"
-WitnessURL = ""
 
 # These values can be overriden directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
@@ -58,6 +50,11 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 #
 # ------------------------------------------------------------------------------
 [L1Config]
+# ------------------------------------------------------------------------------
+# URL is the L1 network url
+# ------------------------------------------------------------------------------
+URL = "{{.l1_rpc_url}}"
+
 # ------------------------------------------------------------------------------
 # L1 chain id
 # ------------------------------------------------------------------------------
