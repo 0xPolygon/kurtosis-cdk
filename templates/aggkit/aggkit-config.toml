@@ -28,8 +28,8 @@ L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rp
 NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
-AggSenderPrivateKeyPath = ""
-AggSenderPrivateKeyPassword  = ""
+AggSenderPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
+AggSenderPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
