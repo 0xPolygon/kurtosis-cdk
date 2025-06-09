@@ -265,7 +265,7 @@ def get_aggkit_prover_ports(args):
 def get_agglayer_endpoint(plan, args):
     if "0.3" in args["aggkit_image"]:
         return "grpc"
-    if args["consensus_contract_type"] == "fep":
+    elif args["consensus_contract_type"] == "fep":
         return "grpc"
     elif "0.2" in args["aggkit_image"]:
         return "readrpc"
