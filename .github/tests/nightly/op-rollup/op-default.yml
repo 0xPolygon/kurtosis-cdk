@@ -1,9 +1,0 @@
-deployment_stages:
-  deploy_optimism_rollup: true
-
-args:
-  consensus_contract_type: pessimistic
-
-optimism_package:
-  observability:
-    enabled: true

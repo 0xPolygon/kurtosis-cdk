@@ -32,7 +32,7 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml)
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml)
 
           file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|gas-token|pless-zkevm-node")
           matrix=$(echo "${file_paths}" | while read -r file_path; do
