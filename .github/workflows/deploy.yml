@@ -10,8 +10,8 @@ permissions:
   actions: write
 
 concurrency:
-  group: deploy-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 env:
   ENCLAVE_NAME: cdk
