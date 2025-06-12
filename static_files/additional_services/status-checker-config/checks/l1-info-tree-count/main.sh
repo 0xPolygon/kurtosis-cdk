@@ -54,7 +54,7 @@ while IFS= read -r hex; do
   indexes=$(go run main.go "$batch_l2_data" | jq -r '.Blocks[] | .IndexL1InfoTree')
 
   while IFS= read -r index; do
-    if (( index >= $l1_info_tree_leaf_count )); then
+    if (( index >= "$l1_info_tree_leaf_count" )); then
       echo "ERROR: IndexL1InfoTree is >= L1InfoTreeLeafCount index=$index count=$l1_info_tree_leaf_count batch_number=$batch_number"
       exit 1
     fi
