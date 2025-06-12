@@ -1,6 +1,6 @@
 module github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/status-checker-config/checks/l1-info-tree-count
 
-go 1.24.2
+go 1.22.2
 
 require (
 	github.com/0xPolygonHermez/zkevm-node v0.6.5
