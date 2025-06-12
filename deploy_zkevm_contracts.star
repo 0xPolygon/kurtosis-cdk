@@ -15,8 +15,12 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
     {
-        "name": "run-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-contract-setup.sh",
+        "name": "run-l1-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l1-contract-setup.sh",
+    },
+    {
+        "name": "run-l1-2-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l1-2-contract-setup.sh",
     },
     {
         "name": "create-keystores.sh",
@@ -110,7 +114,13 @@ def run(plan, args, deployment_stages, op_stack_args):
     # Retrieve vkeys and vkey selectors from the binaries.
     agglayer_image = args.get("agglayer_image")
     pp_vkey_hash = agglayer_vkey.get_hash(plan, agglayer_image)
+    plan.print(
+        "Agglayer vkey hash: {}".format(pp_vkey_hash),
+    )
     pp_vkey_selector = agglayer_vkey.get_selector(plan, agglayer_image)
+    plan.print(
+        "Agglayer vkey selector: {}".format(pp_vkey_selector),
+    )
 
     aggkit_prover_image = args.get("aggkit_prover_image")
     aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
@@ -210,15 +220,71 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
     # Deploy contracts.
+    if args.get("custom_genesis") == True:
+        plan.print("Skipping L1 smc deployment as custom genesis is set to true...")
+        # We need to create the combined.json file
+        plan.exec(
+            description="Creating combined file",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    r"""cat >/opt/zkevm/combined.json <<'EOF'
+{
+  "polygonRollupManagerAddress": "0xFB054898a55bB49513D1BA8e0FB949Ea3D9B4153",
+  "polygonZkEVMBridgeAddress":   "0x927aa8656B3a541617Ef3fBa4A2AB71320dc7fD7",
+  "polygonZkEVMGlobalExitRootAddress": "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
+  "aggLayerGatewayAddress":      "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "pessimisticVKeyRouteALGateway": {
+    "pessimisticVKeySelector": "0x00000002",
+    "verifier":                "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+    "pessimisticVKey":         "0x00e60517ac96bf6255d81083269e72c14ad006e5f336f852f7ee3efb91b966be"
+  },
+  "polTokenAddress":            "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "zkEVMDeployerContract":      "0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99",
+  "deployerAddress":            "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "timelockContractAddress":    "0x3D4C5989214ca3CDFf9e62778cDD56a94a05348D",
+  "deploymentRollupManagerBlockNumber": 0,
+  "upgradeToULxLyBlockNumber":          0,
+  "admin":                 "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "trustedAggregator":      "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+  "proxyAdminAddress":      "0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c",
+  "salt":                   "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "polygonZkEVML2BridgeAddress":        "",
+  "polygonZkEVMGlobalExitRootL2Address": "",
+  "bridgeGenBlockNumber":               null
+}
+EOF"""
+                ]
+            ),
+        )
+    else:
+        plan.print("Deploying L1 smc...")
+        plan.exec(
+            description="Deploying contracts on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-l1-contract-setup.sh"
+                    ),
+                ]
+            ),
+        )
+
+    plan.print("Deploying rollup smc on L1...")
     plan.exec(
-        description="Deploying zkevm contracts on L1",
+        description="Deploying rollup smc on L1",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[
                 "/bin/sh",
                 "-c",
                 "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/run-contract-setup.sh"
+                    "/opt/contract-deploy/run-l1-2-contract-setup.sh"
                 ),
             ]
         ),

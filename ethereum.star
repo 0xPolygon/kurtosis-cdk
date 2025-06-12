@@ -1,6 +1,9 @@
 ethereum_package = import_module(
     "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
 )
+fork_ethereum_package = import_module(
+    "github.com/ARR552/ethereum-package/main.star@9c124df80702c1e6095b3e1545e960391bc30e79"
+)
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
@@ -11,6 +14,12 @@ LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
 
 def run(plan, args):
+    if args.get("custom_genesis") == True:
+        plan.print("Custom genesis is enabled, using the forked ethereum package.")
+        package = fork_ethereum_package
+    else:
+        plan.print("Custom genesis is disabled, using the default ethereum package.")
+        package = ethereum_package
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
         "participants": [
@@ -69,7 +78,7 @@ def run(plan, args):
         "port_publisher": port_publisher,
     }
 
-    l1 = ethereum_package.run(plan, l1_args)
+    l1 = package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
     _wait_for_l1_startup(plan, cl_rpc_url)
 
