@@ -44,12 +44,12 @@ def get_cdk_node_ports(args):
     if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
         ports = {
             "rpc": PortSpec(
-                args["cdk_node_rpc_port"],
+                args.get("cdk_node_rpc_port"),
                 application_protocol="http",
                 wait=None,
             ),
             "rest": PortSpec(
-                args["aggkit_node_rest_api_port"],
+                args.get("aggkit_node_rest_api_port"),
                 application_protocol="http",
                 wait=None,
             ),
