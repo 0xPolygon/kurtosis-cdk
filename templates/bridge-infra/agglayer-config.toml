@@ -15,15 +15,6 @@ mock-verifier = {{.mock_verifier}}
 1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 {{- end }}
 
-[proof-signers]
-# OP Sovereign Admin Address
-{{- if and .deploy_optimism_rollup (ne .consensus_contract_type "fep") }}
-# OP Sovereign Admin Address
-1 = "{{.zkevm_l2_sovereignadmin_address}}"
-{{- else }}
-1 = "{{.zkevm_l2_sequencer_address}}"
-{{- end }}
-
 [rpc]
 {{- if eq (slice .agglayer_version 0 4) "0.2." }}
 port = {{.agglayer_readrpc_port}}
