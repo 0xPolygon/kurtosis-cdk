@@ -316,6 +316,8 @@ def get_aggkit_prover_ports(args):
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
 def get_agglayer_endpoint(plan, args):
+    if "local" in args["aggkit_image"]:
+        return "grpc"
     # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.4.0-beta1" -> "0.4.0-beta1")
     version_str = args["aggkit_image"].split(":")[-1]  # Get "0.4.0-beta1"
     # Remove any suffix like "-beta1"
@@ -323,7 +325,7 @@ def get_agglayer_endpoint(plan, args):
     # Convert to float for major.minor comparison (e.g., "0.4.0" -> 0.4)
     version = float(".".join(version_clean.split(".")[:2]))
 
-    if version >= 0.3 or "local" in version_str:
+    if version >= 0.3:
         return "grpc"
     else:
         return "readrpc"
