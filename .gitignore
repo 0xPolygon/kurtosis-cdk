@@ -16,8 +16,6 @@ node_modules/
 **/.DS_Store
 *.iml
 temp_dir/
-package-lock.json
-package.json
 params.yml
 
 # prod values
