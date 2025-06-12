@@ -78,9 +78,9 @@ Let's send even more transactions using [polycli](https://github.com/0xPolygon/p
 We will use `polycli loadtest` to perform ether transactions and transfer ERC20 tokens between random accounts, as well as execute UniswapV3 swaps. The tool will automatically deploy ERC20 contracts along with the complete [UniswapV3 contract suite](https://docs.uniswap.org/contracts/v3/overview).
 
 ```bash
-polycli loadtest --rpc-url $ETH_RPC_URL --private-key $pk --legacy --verbosity 700 --requests 500 --rate-limit 50 --concurrency 5 --mode t
-polycli loadtest --rpc-url $ETH_RPC_URL --private-key $pk --legacy --verbosity 700 --requests 500 --rate-limit 10 --mode 2
-polycli loadtest --rpc-url $ETH_RPC_URL --private-key $pk --legacy --verbosity 700 --requests 500 --rate-limit 3  --mode uniswapv3
+polycli loadtest --private-key $pk --legacy --verbosity 700 --mode t --requests 500 --rate-limit 50 --concurrency 5
+polycli loadtest --private-key $pk --legacy --verbosity 700 --mode 2 --requests 500 --rate-limit 10
+polycli loadtest --private-key $pk --legacy --verbosity 700 --mode uniswapv3 --requests 500 --rate-limit 3
 ```
 
 ## Check the Logs
@@ -98,18 +98,6 @@ In other cases, if you see an error, you might want to get a shell in the servic
 ```bash
 kurtosis service shell cdk agglayer
 ```
-
-## Check the Status of the System
-
-One of the most common ways to check the status of the system is to make sure that batches are going through the normal progression of [trusted, virtual, and verified](https://docs.polygon.technology/cdk/concepts/transaction-finality/).
-
-```bash
-cast rpc zkevm_batchNumber
-cast rpc zkevm_virtualBatchNumber
-cast rpc zkevm_verifiedBatchNumber
-```
-
-If the number of verified batches is increasing, then it means the system works properly!
 
 ## Bridge Ether
 
