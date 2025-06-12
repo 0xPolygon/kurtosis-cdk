@@ -42,9 +42,15 @@ def run(plan, args):
                 "/opt/status-checker/checks": Directory(
                     artifact_names=[status_checker_checks_artifact]
                 ),
+                # Mount this directory to have have access to contract addresses.
+                "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
             },
             ports=ports,
             public_ports=public_ports,
-            env_vars={"L2_RPC_URL": l2_rpc_url},
+            env_vars={
+                "L1_RPC_URL": args.get("l1_rpc_url"),
+                "L2_RPC_URL": l2_rpc_url,
+                "CONSENSUS_CONTRACT_TYPE": args.get("consensus_contract_type"),
+            },
         ),
     )

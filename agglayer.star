@@ -167,6 +167,7 @@ def create_agglayer_config_artifact(
                     "zkevm_l2_sovereignadmin_address": args[
                         "zkevm_l2_sovereignadmin_address"
                     ],
+                    "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | contract_setup_addresses
                 | db_configs,
