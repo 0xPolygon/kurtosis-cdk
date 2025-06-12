@@ -16,9 +16,9 @@ mock-verifier = {{.mock_verifier}}
 {{- end }}
 
 [proof-signers]
-# OP Sovereign Admin Address
-{{- if and .deploy_optimism_rollup (ne .consensus_contract_type "fep") }}
-# OP Sovereign Admin Address
+{{- if and .deploy_optimism_rollup (eq .consensus_contract_type "fep") }}
+1 = "{{.zkevm_l2_sequencer_address}}"
+{{- else if .deploy_optimism_rollup }}
 1 = "{{.zkevm_l2_sovereignadmin_address}}"
 {{- else }}
 1 = "{{.zkevm_l2_sequencer_address}}"
