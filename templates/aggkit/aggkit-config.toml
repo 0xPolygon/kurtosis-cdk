@@ -31,8 +31,13 @@ AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.ag
 NetworkID = {{.zkevm_rollup_id}}
 
 # This is the admin account for now
+{{- if .deploy_optimism_rollup }}
+SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
+SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+{{- else }}
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
+{{- end}}
 
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
