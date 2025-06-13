@@ -5,6 +5,48 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 
+def run_aggkit_cdk_node(
+    plan,
+    args,
+    contract_setup_addresses,
+    deployment_stages,
+):
+    db_configs = databases.get_db_configs(
+        args["deployment_suffix"], args["sequencer_type"]
+    )
+
+    # Create the aggkit cdk config.
+    aggkit_cdk_config_template = read_file(
+        src="./templates/aggkit/aggkit-cdk-config.toml"
+    )
+    aggkit_config_artifact = plan.render_templates(
+        name="aggkit-cdk-config-artifact",
+        config={
+            "config.toml": struct(
+                template=aggkit_cdk_config_template,
+                data=args
+                | {
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                }
+                | db_configs
+                | contract_setup_addresses,
+            )
+        },
+    )
+
+    keystore_artifacts = get_keystores_artifacts(plan, args)
+
+    # Start the components.
+    aggkit_configs = aggkit_package.create_aggkit_cdk_service_config(
+        plan, args, aggkit_config_artifact, keystore_artifacts
+    )
+
+    plan.add_services(
+        configs=aggkit_configs,
+        description="Starting the cdk aggkit components",
+    )
+
+
 def run(
     plan,
     args,
@@ -92,7 +134,11 @@ def run(
 
     # Start the aggoracle components.
     aggkit_configs = aggkit_package.create_aggkit_service_config(
-        args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
+        plan,
+        args,
+        aggkit_config_artifact,
+        sovereign_genesis_artifact,
+        keystore_artifacts,
     )
 
     plan.add_services(
@@ -101,21 +147,22 @@ def run(
     )
 
     # Start the bridge service.
-    bridge_config_artifact = create_bridge_config_artifact(
-        plan,
-        args,
-        contract_setup_addresses,
-        sovereign_contract_setup_addresses,
-        db_configs,
-        deployment_stages,
-    )
-    bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-        args, bridge_config_artifact, keystore_artifacts.claimtx
-    )
-    plan.add_service(
-        name="zkevm-bridge-service" + args["deployment_suffix"],
-        config=bridge_service_config,
-    )
+    if deployment_stages.get("deploy_cdk_bridge_infra"):
+        bridge_config_artifact = create_bridge_config_artifact(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            db_configs,
+            deployment_stages,
+        )
+        bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
+            args, bridge_config_artifact, keystore_artifacts.claimtx
+        )
+        plan.add_service(
+            name="zkevm-bridge-service" + args["deployment_suffix"],
+            config=bridge_service_config,
+        )
 
 
 def get_keystores_artifacts(plan, args):
@@ -130,20 +177,26 @@ def get_keystores_artifacts(plan, args):
         src="/opt/zkevm/sovereignadmin.keystore",
     )
     claimtx_keystore_artifact = plan.store_service_files(
-        name="claimtxmanager-keystore",
+        name="aggkit-claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimtxmanager.keystore",
     )
     sequencer_keystore_artifact = plan.store_service_files(
-        name="sequencer-keystore",
+        name="aggkit-sequencer-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/sequencer.keystore",
+    )
+    claim_sponsor_keystore_artifact = plan.store_service_files(
+        name="claimsponsor-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/claimsponsor.keystore",
     )
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         claimtx=claimtx_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
+        claim_sponsor=claim_sponsor_keystore_artifact,
     )
 
 
@@ -261,8 +314,10 @@ def get_aggkit_prover_ports(args):
 
 
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
-# v0.2.0 aggkit only supports readrpc, and v0.3.0 aggkit supports grpc.
+# v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
 def get_agglayer_endpoint(plan, args):
+    if "local" in args["aggkit_image"]:
+        return "grpc"
     # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.4.0-beta1" -> "0.4.0-beta1")
     version_str = args["aggkit_image"].split(":")[-1]  # Get "0.4.0-beta1"
     # Remove any suffix like "-beta1"
