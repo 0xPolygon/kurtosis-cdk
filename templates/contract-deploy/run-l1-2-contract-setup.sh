@@ -44,6 +44,7 @@ echo_ts "L1 RPC is now available"
 
 # Set up the hardhat environment. It needs to be executed even in custom genesis mode
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
+cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 
 create_genesis
 
