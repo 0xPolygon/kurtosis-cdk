@@ -3,17 +3,17 @@ input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
 op_succinct_package = import_module("./op_succinct.star")
 deploy_sovereign_contracts_package = import_module("./deploy_sovereign_contracts.star")
+aggkit_package = import_module("./aggkit.star")
+ethereum_package = import_module("./ethereum.star")
 
 # Main service packages.
 additional_services = import_module("./src/additional_services/launcher.star")
 agglayer_package = "./agglayer.star"
 cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
-aggkit_package = "./aggkit.star"
 cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
 deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
-ethereum_package = "./ethereum.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
@@ -39,12 +39,14 @@ def run(plan, args={}):
         if args.get("l1_engine", "geth") == "anvil":
             import_module(anvil_package).run(plan, args)
         else:
-            import_module(ethereum_package).run(plan, args)
+            ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 
     # Extract the fetch-rollup-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
+        # Extract genesis to feed into evm-sketch-genesis
+        ethereum_package.extract_genesis_json(plan)
         # Temporarily run op-succinct-proposer service and fetch-rollup-config binary
         # The extract binary will be passed into the contracts-001 service
         op_succinct_package.extract_fetch_rollup_config(plan, args)
@@ -117,6 +119,20 @@ def run(plan, args={}):
                 args = args | op_succinct_env_vars
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
+                # Parse .config section of L1 geth genesis for evm-sketch-genesis input
+                plan.exec(
+                    description="Parsing .config section of L1 geth genesis for evm-sketch-genesis input",
+                    service_name="contracts" + args["deployment_suffix"],
+                    recipe=ExecRecipe(
+                        command=[
+                            "/bin/bash",
+                            "-c",
+                            "cp /opt/scripts/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                                "/opt/op-succinct/parse-evm-sketch-genesis.sh"
+                            ),
+                        ]
+                    ),
+                )
 
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
@@ -270,7 +286,7 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False):
         plan.print("Deploying AggKit infrastructure")
-        import_module(aggkit_package).run(
+        aggkit_package.run(
             plan,
             args,
             contract_setup_addresses,

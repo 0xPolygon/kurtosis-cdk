@@ -117,3 +117,12 @@ def _wait_for_l1_startup(plan, cl_rpc_url):
         ),
         wait="5m",
     )
+
+
+def extract_genesis_json(plan):
+    l1_geth_genesis = plan.store_service_files(
+        service_name="el-1-geth-lighthouse",
+        name="l1_geth_genesis.json",
+        src="/network-configs/genesis.json",
+        description="Storing genesis.json for evm-sketch-genesis field in aggkit-prover.",
+    )
