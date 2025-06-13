@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-set -euxo pipefail
+set -uxo pipefail
 
 # This script simulates blockchain activity by perfoming L1 to L2 and L2 to L1 bridges.
+
+# Function to handle errors and continue execution.
+handle_error() {
+  echo "An error occurred. Continuing execution..."
+}
+trap handle_error ERR
 
 # Checking environment variables.
 if [[ -z "${PRIVATE_KEY}" ]]; then
