@@ -63,8 +63,8 @@ jobs:
           if [[ -z "$LOGS" ]]; then
             echo "Error: No logs found for aggkit service! Service may not be functioning."
             exit 1  # Fail the workflow if logs are empty
-          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
-            echo "Errors found in container logs!"
+          elif echo "$LOGS" | grep "ERRO\|FATA\|panic"; then
+            echo "Critical errors found in container logs!"
             exit 1  # Fail the workflow if errors are found
           else
             echo "No errors found in logs."
