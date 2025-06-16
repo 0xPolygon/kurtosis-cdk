@@ -27,7 +27,3 @@ args:
 
   additional_services:
     - bridge_spammer
-
-optimism_package:
-  observability:
-    enabled: false
