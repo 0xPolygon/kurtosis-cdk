@@ -7,7 +7,9 @@ def run(plan, args):
         l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
     )
 
-    sequencer_service = plan.get_service(args["sequencer_name"] + args["deployment_suffix"])
+    sequencer_service = plan.get_service(
+        args["sequencer_name"] + args["deployment_suffix"]
+    )
     sequencer_rpc_url = "http://{}:{}".format(
         sequencer_service.ip_address, sequencer_service.ports["rpc"].number
     )
