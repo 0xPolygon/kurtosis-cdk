@@ -44,7 +44,8 @@ check_batch() {
   eval "${prev_batch_number}=\${${prev_batch_number}:-0}"
   eval "${prev_idle_counter}=\${${prev_idle_counter}:-0}"
 
-  local batch_number="$(cast to-dec "$(cast rpc --rpc-url "$SEQUENCER_RPC_URL" "$rpc_method" | sed 's/\"//g')")"
+  local batch_number
+  batch_number="$(cast to-dec "$(cast rpc --rpc-url "$SEQUENCER_RPC_URL" "$rpc_method" | sed 's/\"//g')")"
   echo "${name^} Batch Number: $batch_number"
 
   if (( batch_number > ${!prev_batch_number} )); then
