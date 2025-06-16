@@ -84,7 +84,7 @@ def get_sequencer_rpc_url(plan, args):
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
     ]:
-        return
+        return ""
 
     sequencer_service = plan.get_service(
         args["sequencer_name"] + args["deployment_suffix"]
