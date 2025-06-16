@@ -29,7 +29,7 @@ check_consensus() {
 # check_batch checks if a batch is stuck.
 check_batch() {
   local name="$1"             # e.g. "trusted", "verified", or "virtual"
-  local rpc_method="$2"       # e.g. "zkevm_batchNumber" or "zkevm_verifiedBatchNumber"
+  local rpc_method="$2"       # e.g. "zkevm_batchNumber", "zkevm_verifiedBatchNumber", or "zkevm_virtualBatchNumber"
   local threshold="${3:-12}"  # idle threshold (default: 12)
 
   local state_file="./$name.env"
