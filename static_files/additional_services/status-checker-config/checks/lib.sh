@@ -25,3 +25,43 @@ check_consensus() {
     exit 0
   fi
 }
+
+# check_batch checks if a batch is stuck.
+check_batch() {
+  local name="$1"             # e.g. "trusted", "verified", or "virtual"
+  local rpc_method="$2"       # e.g. "zkevm_batchNumber" or "zkevm_verifiedBatchNumber"
+  local threshold="${3:-12}"  # idle threshold (default: 12)
+
+  local state_file="./$name.env"
+  local error=0
+
+  # shellcheck source=/dev/null
+  [[ -f "$state_file" ]] && source "$state_file"
+
+  local prev_batch_number="prev_${name}_batch_number"
+  local prev_idle_counter="prev_${name}_batch_number_idle_counter"
+
+  eval "${prev_batch_number}=\${${prev_batch_number}:-0}"
+  eval "${prev_idle_counter}=\${${prev_idle_counter}:-0}"
+
+  local batch_number="$(cast to-dec "$(cast rpc --rpc-url "$SEQUENCER_RPC_URL" "$rpc_method" | sed 's/\"//g')")"
+  echo "${name^} Batch Number: $batch_number"
+
+  if (( batch_number > ${!prev_batch_number} )); then
+    eval "${prev_batch_number}=${batch_number}"
+    eval "${prev_idle_counter}=0"
+  else
+    eval "${prev_idle_counter}=\$(( ${!prev_idle_counter} + 1 ))"
+    if (( ${!prev_idle_counter} >= threshold )); then
+      echo "ERROR: ${name^} batch number is stuck"
+      error=1
+    fi
+  fi
+
+  cat > "$state_file" <<EOF
+${prev_batch_number}=${!prev_batch_number}
+${prev_idle_counter}=${!prev_idle_counter}
+EOF
+
+  exit "$error"
+}
