@@ -42,15 +42,15 @@ echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
-# Set up the hardhat environment. It needs to be executed even in custom genesis mode
-sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 
 create_genesis
 
 echo_ts "Setting up local zkevm-contracts repo for deployment"
 pushd /opt/zkevm-contracts || exit 1
-cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# Set up the hardhat environment. It needs to be executed even in custom genesis mode
+sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
 # Deploy gas token
 # shellcheck disable=SC1054,SC1072,SC1083
@@ -123,9 +123,10 @@ cp genesis.json genesis.original.json
 # Check create_rollup_output.json exists before copying it.
 # For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
 if [[ -e create_rollup_output.json ]]; then
+    echo "File create_rollup_output.json does not exists. Combining files..."
     jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
 else
-    echo "File create_rollup_output.json does not exist. Copying deploy_output.json to combined.json."
+    echo "File create_rollup_output.json does not exist. Trying to copy deploy_output.json to combined.json."
     cp deploy_output.json combined.json
 fi
 jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c.json; mv c.json combined.json
