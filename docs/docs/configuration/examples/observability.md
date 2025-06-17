@@ -145,3 +145,29 @@ Logs show each check’s result:
 The status checker also appears in the Grafana _Services_ dashboard:
 
 ![status-checker](/img/status-checker.png)
+
+## Alerting
+
+Alerting monitors Prometheus-ingested metrics and triggering notifications when defined thresholds are breached. A set of preconfigured alerting rules is included out of the box. It is recommended to use alerting for simple use cases where there are existing Prometheus metrics and the status-checker for more complex scenarios.
+
+![alerting](/img/alerting.png)
+
+### Slack Notifications
+
+By default, Slack notifications are disabled. To enable them, set the following environment variables in [`grafana.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/additional_services/grafana.star#L10-L12):
+
+- `SLACK_WEBHOOK_URL`
+- `SLACK_CHANNEL`
+- `SLACK_USERNAME`
+
+When enabled, Grafana will post alert messages to the specified Slack channel during a Kurtosis run.
+
+### Exporting Rules
+
+To export and persist alerting rules:
+
+1. In Grafana, go to **Alerting → Alert Rules**.
+2. Click **Export → YAML → Download**.
+3. Save the downloaded file as [`static_files/additional_services/grafana-config/alerting.yml.tmpl`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/static_files/additional_services/grafana-config/alerting.yml.tmpl).
+
+![alerting-export](/img/alerting-export.png)
