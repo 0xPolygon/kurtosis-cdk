@@ -87,7 +87,7 @@ Several predefined dashboards are available, some with filters for `network`, `p
 
 ![dashboards](/img/dashboards.png)
 
-The _Panoptichain_ dashboard displays metrics from [panoptichain](https://github.com/0xPolygon/panoptichain), an open-source blockchain monitoring tool that captures data via RPC calls.
+The _Panoptichain_ dashboard displays metrics from [Panoptichain](https://github.com/0xPolygon/panoptichain), an open-source blockchain monitoring tool that captures data via RPC calls. All Panoptichain metrics are prefixed with `panoptichain_`. View all available Panoptichain metrics [here](https://github.com/0xPolygon/panoptichain/blob/main/metrics.md).
 
 ![panoptichain](/img/panoptichain.png)
 
