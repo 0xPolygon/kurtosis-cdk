@@ -2,10 +2,6 @@ name: docs-build
 
 on:
   pull_request:
-    branches:
-      - main
-    paths:
-      - docs/**
 
 permissions:
   contents: read

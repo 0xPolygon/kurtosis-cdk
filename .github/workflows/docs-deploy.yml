@@ -2,10 +2,7 @@ name: docs-deploy
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - docs/**
+    branches: [main]
 
 permissions:
   contents: read

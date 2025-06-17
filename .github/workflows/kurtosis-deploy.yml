@@ -2,16 +2,8 @@ name: deploy
 
 on:
   pull_request:
-    paths-ignore:
-      - docs/**
-      - .github/workflows/docs-*.yaml
-
   push:
-    branches:
-      - main
-    paths-ignore:
-      - docs/**
-      - .github/workflows/docs-*.yaml
+    branches: [main]
 
 permissions:
   contents: read
