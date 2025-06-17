@@ -2,7 +2,7 @@ ethereum_package = import_module(
     "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
 )
 fork_ethereum_package = import_module(
-    "github.com/ARR552/ethereum-package/main.star@9c124df80702c1e6095b3e1545e960391bc30e79"
+    "github.com/ARR552/ethereum-package/main.star@41066a2f62605032ebce3e6cb647049f4891f743"
 )
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
