@@ -39,7 +39,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.3.0-beta6",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.4.0-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.21",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.29",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
@@ -62,7 +62,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.2.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
     "test_runner_image": "leovct/e2e:78df008-cdk",
-    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.3",  # https://github.com/0xPolygon/status-checker/releases
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.4",  # https://github.com/0xPolygon/status-checker/releases
 }
 
 DEFAULT_PORTS = {
@@ -417,7 +417,10 @@ DEFAULT_ARGS = (
         # - status_checker
         # - test_runner
         # - tx_spammer
-        "additional_services": [constants.ADDITIONAL_SERVICES.test_runner],
+        "additional_services": [
+            constants.ADDITIONAL_SERVICES.test_runner,
+            constants.ADDITIONAL_SERVICES.bridge_spammer,
+        ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",

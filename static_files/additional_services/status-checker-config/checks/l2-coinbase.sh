@@ -17,6 +17,8 @@ events=$(
     --json | jq -r '.[] | .topics[1]' | tail -n "$last_n_events"
 )
 
+miner=$(cast block --rpc-url "$L2_RPC_URL" --json | jq -r '.miner')
+
 # Iterate over the sequence batches events because sometimes the batch number is
 # greater than the virtual batch.
 while IFS= read -r hex; do
@@ -27,34 +29,29 @@ while IFS= read -r hex; do
   fi
 
   vb_json=$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_getBatchByNumber "$batch_number")
-  block_hash=$(echo "$vb_json" | jq -r '.blocks[-1]')
   tx_hash=$(echo "$vb_json" | jq -r '.sendSequencesTxHash')
-  batch_ts=$(echo "$vb_json" | jq -r '.timestamp' | cast to-dec)
-
-  vb_block_json=$(cast block --json --rpc-url "$L2_RPC_URL" "$block_hash")
-  block_ts=$(echo "$vb_block_json" | jq -r '.timestamp' | cast to-dec)
-
   tx_json=$(cast tx --json --rpc-url "$L1_RPC_URL" "$tx_hash")
   input_data=$(echo "$tx_json" | jq -r '.input')
 
   if is_consensus rollup; then
-    seq_ts=$(
+    l2_coinbase=$(
       cast cdd --json \
         "sequenceBatches((bytes,bytes32,uint64,bytes32)[],uint32,uint64,bytes32,address)" \
         "$input_data" \
-        | jq -r '.[2]'
+        | jq -r '.[4]'
     )
   elif is_consensus cdk_validium; then
-    seq_ts=$(
+    l2_coinbase=$(
       cast cdd --json \
         "sequenceBatchesValidium((bytes32,bytes32,uint64,bytes32)[],uint32,uint64,bytes32,address,bytes)" \
         "$input_data" \
-        | jq -r '.[2]'
+        | jq -r '.[4]'
     )
   fi
 
-  if [ "$seq_ts" -ne "$batch_ts" ] || [ "$batch_ts" -ne "$block_ts" ]; then
-    echo "ERROR: batch=$batch_number seq_ts=$seq_ts batch_ts=$batch_ts block_ts=$block_ts"
+  l2_coinbase=$(echo "$l2_coinbase" | tr '[:upper:]' '[:lower:]')
+  if [[ "$miner" != "$l2_coinbase" ]]; then
+    echo "ERROR: L2 coinbase mismatch miner=$miner l2_coinbase=$l2_coinbase"
     exit 1
   fi
 done <<< "$events" 
