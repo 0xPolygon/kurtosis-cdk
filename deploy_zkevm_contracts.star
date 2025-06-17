@@ -188,33 +188,13 @@ def run(plan, args, deployment_stages, op_stack_args):
             description="Create deploy_op_succinct_contract files artifact",
         )
 
-        parse_evm_sketch_genesis_artifact = plan.render_templates(
-            name="parse-evm-sketch-genesis.sh",
-            config={
-                "parse-evm-sketch-genesis.sh": struct(
-                    template=read_file(
-                        src="./templates/op-succinct/parse-evm-sketch-genesis.sh"
-                    ),
-                    data=args,
-                ),
-            },
-            description="Create parse-evm-sketch-genesis.sh files artifact",
-        )
-
-        # Fetch evm-sketch-genesis-conf artifact
-        l1_geth_genesis = plan.get_files_artifact(
-            name="l1_geth_genesis.json",
-            description="Fetch l1_geth_genesis.json files artifact",
-        )
-
         # Mount op-succinct specific artifacts
         files["/opt/op-succinct/"] = Directory(
-            artifact_names=[fetch_rollup_config_artifact, l1_geth_genesis]
+            artifact_names=[fetch_rollup_config_artifact]
         )
         files["/opt/scripts/"] = Directory(
             artifact_names=[
-                deploy_op_succinct_contract_artifact,
-                parse_evm_sketch_genesis_artifact,
+                deploy_op_succinct_contract_artifact
             ]
         )
 

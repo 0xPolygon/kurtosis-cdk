@@ -28,16 +28,18 @@ set -x
 # Change to the working directory
 cd /opt/op-succinct || { echo "Error: Failed to change to /opt/op-succinct"; exit 1; }
 
-GENESIS_FILE="/opt/op-succinct/genesis.json"
+# genesis_file="/opt/op-succinct/genesis.json"
+chain_id="{{.zkevm_rollup_chain_id}}"
+genesis_file="/opt/op-succinct/genesis-$chain_id.json"
 
 # Check if genesis.json exists
-if [[ ! -f "$GENESIS_FILE" ]]; then
-    echo "Error: $GENESIS_FILE not found"
+if [[ ! -f "$genesis_file" ]]; then
+    echo "Error: $genesis_file not found"
     exit 1
 fi
 
 # Extract config section and save to config.json
-jq '.config' "$GENESIS_FILE" > /opt/op-succinct/evm-sketch-genesis.json
+jq '.config' "$genesis_file" > /opt/op-succinct/evm-sketch-genesis.json
 
 # Verify the extraction
 # shellcheck disable=SC2181

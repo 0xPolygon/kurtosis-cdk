@@ -63,7 +63,7 @@ def run(plan, args):
             # Enable the Electra hardfork.
             # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
             #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
-            "electra_fork_epoch": 1,
+            "electra_fork_epoch": derive_l1_preset(args),
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
@@ -119,10 +119,17 @@ def _wait_for_l1_startup(plan, cl_rpc_url):
     )
 
 
-def extract_genesis_json(plan):
-    l1_geth_genesis = plan.store_service_files(
-        service_name="el-1-geth-lighthouse",
-        name="l1_geth_genesis.json",
-        src="/network-configs/genesis.json",
-        description="Storing genesis.json for evm-sketch-genesis field in aggkit-prover.",
-    )
+# def extract_genesis_json(plan):
+#     l1_geth_genesis = plan.store_service_files(
+#         service_name="el-1-geth-lighthouse",
+#         name="l1_geth_genesis.json",
+#         src="/network-configs/genesis.json",
+#         description="Storing genesis.json for evm-sketch-genesis field in aggkit-prover.",
+#     )
+
+
+def derive_l1_preset(args):
+    if args["l1_preset"] == "mainnet":
+        return 0
+    else:
+        return 1
