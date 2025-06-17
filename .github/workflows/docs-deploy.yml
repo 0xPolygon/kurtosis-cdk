@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   build:
-    name: Build Docusaurus
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -37,7 +36,6 @@ jobs:
           path: docs/build
 
   deploy:
-    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 5
