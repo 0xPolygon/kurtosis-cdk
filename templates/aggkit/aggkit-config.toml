@@ -169,7 +169,7 @@ Port = 5576
 # ------------------------------------------------------------------------------
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
-AggsenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 CheckStatusCertificateInterval = "1s"
 
