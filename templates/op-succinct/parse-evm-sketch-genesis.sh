@@ -38,11 +38,8 @@ if [[ ! -f "$genesis_file" ]]; then
     exit 1
 fi
 
-# Extract config section and save to config.json
-jq '.config' "$genesis_file" > /opt/op-succinct/evm-sketch-genesis.json
-
 # Add "config" section
-# jq '{"config": .config}' "$genesis_file" > /opt/op-succinct/evm-sketch-genesis.json
+jq '{"config": .config}' "$genesis_file" > /opt/op-succinct/evm-sketch-genesis.json
 
 # Verify the extraction
 # shellcheck disable=SC2181
