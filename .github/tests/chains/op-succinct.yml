@@ -29,5 +29,14 @@ args:
     - bridge_spammer
 
 optimism_package:
+  chains:
+    - proposer_params:
+        enabled: false
+      challenger_params:
+        enabled: false
+      network_params:
+        name: "001"
+        network_id: "2151908"
+        seconds_per_slot: 1
   observability:
     enabled: false
