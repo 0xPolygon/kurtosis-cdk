@@ -63,15 +63,11 @@ def create_evm_sketch_genesis(plan, args):
     # Add a temporary service using the contracts image
     temp_service_name = "temp-contracts"
 
-    files ={}
-    files["/opt/op-succinct/"] = Directory(
-        artifact_names=[op_geth_genesis]
-    )
+    files = {}
+    files["/opt/op-succinct/"] = Directory(artifact_names=[op_geth_genesis])
 
     files["/opt/scripts/"] = Directory(
-        artifact_names=[
-            parse_evm_sketch_genesis_artifact
-        ]
+        artifact_names=[parse_evm_sketch_genesis_artifact]
     )
 
     # Create helper service to deploy contracts

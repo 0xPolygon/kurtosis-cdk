@@ -193,9 +193,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             artifact_names=[fetch_rollup_config_artifact]
         )
         files["/opt/scripts/"] = Directory(
-            artifact_names=[
-                deploy_op_succinct_contract_artifact
-            ]
+            artifact_names=[deploy_op_succinct_contract_artifact]
         )
 
     # Create helper service to deploy contracts
