@@ -37,7 +37,7 @@ while true; do
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
     --legacy \
-    --mode t,2,7 \
+    --mode t,2,7,v3 \
     --requests "50000" \
     --concurrency "5" \
     --rate-limit "50" \
