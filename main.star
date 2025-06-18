@@ -46,7 +46,7 @@ def run(plan, args={}):
     # Extract the fetch-rollup-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
-        # ethereum_package.extract_genesis_json(plan)
+        ethereum_package.extract_genesis_json(plan)
         # Temporarily run op-succinct-proposer service and fetch-rollup-config binary
         # The extract binary will be passed into the contracts-001 service
         op_succinct_package.extract_fetch_rollup_config(plan, args)
@@ -98,9 +98,6 @@ def run(plan, args={}):
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
-                # Extract genesis to feed into evm-sketch-genesis
-                op_succinct_package.create_evm_sketch_genesis(plan, args)
-
                 # Run deploy-op-succinct-contracts.sh script in the contracts-001 service
                 plan.exec(
                     description="Deploying op-succinct contracts",
@@ -122,6 +119,20 @@ def run(plan, args={}):
                 args = args | op_succinct_env_vars
                 l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
+                # Parse .config section of L1 geth genesis for evm-sketch-genesis input
+                plan.exec(
+                    description="Parsing .config section of L1 geth genesis for evm-sketch-genesis input",
+                    service_name="contracts" + args["deployment_suffix"],
+                    recipe=ExecRecipe(
+                        command=[
+                            "/bin/bash",
+                            "-c",
+                            "cp /opt/scripts/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                                "/opt/op-succinct/parse-evm-sketch-genesis.sh"
+                            ),
+                        ]
+                    ),
+                )
 
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
