@@ -110,7 +110,7 @@ Status checks are scripts that assess network health. They reside in [`static_fi
 
 ### Writing Checks
 
-Add a shebang-compatible script to the directory. Success or failure is determined by the script's exit code. Use existing checks as examples and minimize false positives.
+Place each status-check script in the `checks` directory with a proper shebang (e.g. `#!/usr/bin/env bash`) on the first line so it can be executed directly. A script passes when it exits with code `0` and is considered failed on any non-zero exit code. Reference existing checks to maintain consistency and minimize false positives. Because status-check scripts are stateless and ephemeral between executions, required state must be managed externally. File-based storage or environment variables are suitable for simple state management, while a database should be used for more complex scenarios.
 
 ```bash title="block-number.sh"
 #!/usr/bin/env bash
