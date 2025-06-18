@@ -179,6 +179,13 @@ Mode="PessimisticProof"
 Mode="AggchainProof"
 {{- end}}
 
+# ------------------------------------------------------------------------------
+# MaxCertSize is the maximum size of the certificate
+# i.e (the emitted certificate cannot be bigger that this size)
+# 0 is infinite
+# ------------------------------------------------------------------------------
+# MaxCertSize = 0
+
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
@@ -233,13 +240,6 @@ SaveCertificatesToFilesPath = "/tmp"
 # KeepCertificatesHistory is a flag to keep the certificates history on storage
 # ------------------------------------------------------------------------------
 # KeepCertificatesHistory = false
-
-# ------------------------------------------------------------------------------
-# MaxCertSize is the maximum size of the certificate
-# i.e (the emitted certificate cannot be bigger that this size)
-# 0 is infinite
-# ------------------------------------------------------------------------------
-# MaxCertSize = 0
 
 # ------------------------------------------------------------------------------
 # BridgeMetadataAsHash is a flag to import the bridge metadata as hash

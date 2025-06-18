@@ -2,17 +2,12 @@ name: docs-build
 
 on:
   pull_request:
-    branches:
-      - main
-    paths:
-      - docs/**
 
 permissions:
   contents: read
 
 jobs:
   build:
-    name: Build Docusaurus
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
