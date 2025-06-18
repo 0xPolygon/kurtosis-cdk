@@ -3,8 +3,6 @@
 # Create New Rollup Step
 pushd /opt/zkevm-contracts || exit 1
 
-sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
-
 ts=$(date +%s)
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
