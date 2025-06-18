@@ -1,6 +1,12 @@
 def run(plan, args, predeployed_contracts=False):
+    if args.get("custom_genesis") == True:
+        return
+
     script = "/opt/contract-deploy/run-sovereign-setup.sh"
     if predeployed_contracts:
+        plan.print(
+            "Predeployed contracts detected. Using predeployed setup script."
+        )
         script = "/opt/contract-deploy/run-sovereign-setup-predeployed.sh"
 
     plan.exec(
