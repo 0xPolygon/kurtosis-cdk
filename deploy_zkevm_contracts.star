@@ -74,6 +74,10 @@ ARTIFACTS = [
         "name": "run-initialize-rollup.sh",
         "file": "./templates/sovereign-rollup/run-initialize-rollup.sh",
     },
+    {
+        "name": "configure-contract-container-custom-genesis.sh",
+        "file": "./templates/sovereign-rollup/configure-contract-container-custom-genesis.sh",
+    },
 ]
 
 
@@ -251,23 +255,23 @@ def run(plan, args, deployment_stages, op_stack_args):
       "trustedAggregator":      "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
       "proxyAdminAddress":      "0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c",
       "salt":                   "0x0000000000000000000000000000000000000000000000000000000000000001",
-      "polygonZkEVML2BridgeAddress":        "",
-      "polygonZkEVMGlobalExitRootL2Address": "",
+      "polygonZkEVML2BridgeAddress":        "0x927aa8656B3a541617Ef3fBa4A2AB71320dc7fD7",
+      "polygonZkEVMGlobalExitRootL2Address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
       "bridgeGenBlockNumber":               null
     }
-    EOF"""
+    """
             ]
             ),
         )
         
         plan.exec(
-            description="Initializing GlobalExitRoot contract",
+            description="Configuring contract container...",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
             command=[
                 "/bin/sh",
                 "-c",
-                "cast send 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 \"initialize()\" --private-key {} --rpc-url {}".format(args["zkevm_l2_admin_private_key"], args["l1_rpc_url"])
+                "chmod +x {0} && {0}".format("/opt/contract-deploy/configure-contract-container-custom-genesis.sh")
             ]
             ),
         )
@@ -286,21 +290,37 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ]
             ),
         )
+        plan.print("Deploying rollup smc on L1...")
+        plan.exec(
+            description="Deploying rollup smc on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-l1-2-contract-setup.sh"
+                    ),
+                ]
+            ),
+        )
+        # Store CDK configs.
+        plan.store_service_files(
+            name="cdk-erigon-chain-config",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
+        )
 
-    plan.print("Deploying rollup smc on L1...")
-    plan.exec(
-        description="Deploying rollup smc on L1",
-        service_name=contracts_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/run-l1-2-contract-setup.sh"
-                ),
-            ]
-        ),
-    )
+        plan.store_service_files(
+            name="cdk-erigon-chain-allocs",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+        )
+        plan.store_service_files(
+            name="cdk-erigon-chain-first-batch",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/first-batch-config.json",
+        )
 
     # Create keystores.
     plan.exec(
@@ -315,24 +335,6 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ),
             ]
         ),
-    )
-
-    # Store CDK configs.
-    plan.store_service_files(
-        name="cdk-erigon-chain-config",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
-    )
-
-    plan.store_service_files(
-        name="cdk-erigon-chain-allocs",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
-    )
-    plan.store_service_files(
-        name="cdk-erigon-chain-first-batch",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/first-batch-config.json",
     )
 
     # Force update GER.
