@@ -71,7 +71,7 @@ To verify Prometheus is ingesting metrics correctly:
    curl $(kurtosis port print cdk panoptichain-001 prometheus)/metrics
    ```
 
-   Adjust the `metrics` path if necessary for the service’s Prometheus configuration.
+   Adjust the `metrics` path if necessary for the service's Prometheus configuration.
 
 2. Navigate to:
 
@@ -110,7 +110,7 @@ Status checks are scripts that assess network health. They reside in [`static_fi
 
 ### Writing Checks
 
-Add a shebang-compatible script to the directory. Success or failure is determined by the script’s exit code. Use existing checks as examples and minimize false positives.
+Add a shebang-compatible script to the directory. Success or failure is determined by the script's exit code. Use existing checks as examples and minimize false positives.
 
 ```bash title="block-number.sh"
 #!/usr/bin/env bash
@@ -136,7 +136,7 @@ To view status check results, run:
 kurtosis service logs cdk status-checker-001 --follow
 ```
 
-Logs show each check’s result:
+Logs show each check's result:
 
 ```json
 [status-checker-001] {"level":"info","check":"l2-coinbase.sh","success":true,"time":"2025-06-17T19:24:20Z"}
