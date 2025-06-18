@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -uxo pipefail
+set -uo pipefail
 
 # This script simulates blockchain activity by sending transactions and making RPC calls.
 
