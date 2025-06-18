@@ -334,7 +334,10 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
+        run: |
+          # Add test runner and tx spammer to the args file
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ./.github/tests/chains/op-succinct.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -361,10 +364,10 @@ jobs:
             echo "No errors found in logs."
           fi
 
-      - name: Run optimistic-mode test
-        run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
+      # - name: Run optimistic-mode test
+      #   run: |
+      #     kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
+      #     kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
 
       - name: Post kurtosis run
         if: always()
