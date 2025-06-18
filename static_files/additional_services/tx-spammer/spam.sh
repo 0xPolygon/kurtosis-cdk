@@ -37,18 +37,18 @@ while true; do
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
     --legacy \
-    --verbosity 700 \
     --mode t,2,7,v3 \
     --requests "50000" \
     --concurrency "5" \
     --rate-limit "50" \
-    --eth-amount "0.000000000000000001"
+    --eth-amount "0.000000000000000001" \
+    --pretty-logs=false
 
   log_info "Making rpc calls"
   polycli rpcfuzz \
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
-    --verbosity 700
+    --pretty-logs=false
 
   log_info "Waiting 60 seconds before sending more transactions"
   sleep 60
