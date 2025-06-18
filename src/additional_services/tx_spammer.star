@@ -16,7 +16,7 @@ def run(plan, args, contract_setup_addresses):
     l2_rpc_url = _get_l2_rpc_url(plan, args)
 
     # Generate new wallet for the tx spammers.
-    l1_funder_private_key = args.get("l1_admin_private_key")
+    l1_funder_private_key = args.get("l1_preallocated_private_key")
     l1_wallet = _generate_new_funded_wallet(plan, l1_funder_private_key, l1_rpc_url)
 
     l2_funder_private_key = args.get("zkevm_l2_admin_private_key")
