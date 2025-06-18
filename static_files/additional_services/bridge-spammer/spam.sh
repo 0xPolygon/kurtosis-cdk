@@ -12,12 +12,6 @@ log_info() {
   echo "{\"info\": \"$1\"}"
 }
 
-# Function to handle errors and continue execution.
-handle_error() {
-  log_error "An error occurred. Continuing execution..."
-}
-trap handle_error ERR
-
 # Checking environment variables.
 if [[ -z "${PRIVATE_KEY}" ]]; then
   log_error "PRIVATE_KEY environment variable is not set"
@@ -58,6 +52,12 @@ log_info "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
 # Derive address from private key.
 eth_address=$(cast wallet address --private-key "$PRIVATE_KEY")
 log_info "eth_address: $eth_address"
+
+# Function to handle errors and continue execution.
+handle_error() {
+  log_error "An error occurred. Continuing execution..."
+}
+trap handle_error ERR
 
 # Deposit on L1 to avoid negative balance.
 log_info "Depositing on L1 to avoid negative balances"

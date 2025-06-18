@@ -12,12 +12,6 @@ log_info() {
   echo "{\"info\": \"$1\"}"
 }
 
-# Function to handle errors and continue execution.
-handle_error() {
-  log_error "An error occurred. Continuing execution..."
-}
-trap handle_error ERR
-
 # Checking environment variables.
 if [[ -z "${PRIVATE_KEY}" ]]; then
   log_error "PRIVATE_KEY environment variable is not set"
@@ -29,6 +23,12 @@ if [[ -z "${RPC_URL}" ]]; then
 fi
 log_info "PRIVATE_KEY: $PRIVATE_KEY"
 log_info "RPC_URL: $RPC_URL"
+
+# Function to handle errors and continue execution.
+handle_error() {
+  log_error "An error occurred. Continuing execution..."
+}
+trap handle_error ERR
 
 # Sending load to the rpc.
 while true; do
