@@ -361,6 +361,11 @@ jobs:
             echo "No errors found in logs."
           fi
 
+      - name: Run optimistic-mode test
+        run: |
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats tests/op/optimistic-mode.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats tests/op/optimistic-mode.bats"
+
       - name: Post kurtosis run
         if: always()
         uses: ./.github/actions/kurtosis-post-run
