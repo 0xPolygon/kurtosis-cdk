@@ -97,10 +97,10 @@ def run(plan, args={}):
                 plan, args, l2_kurtosis_addresses, args["op_el_rpc_url"]
             )
 
-            # Extract genesis to feed into evm-sketch-genesis
-            op_succinct_package.create_evm_sketch_genesis(plan, args)
-
             if deployment_stages.get("deploy_op_succinct", False):
+                # Extract genesis to feed into evm-sketch-genesis
+                op_succinct_package.create_evm_sketch_genesis(plan, args)
+
                 # Run deploy-op-succinct-contracts.sh script in the contracts-001 service
                 plan.exec(
                     description="Deploying op-succinct contracts",
