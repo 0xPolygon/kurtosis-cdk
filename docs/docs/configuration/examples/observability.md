@@ -133,7 +133,7 @@ env_vars = {
 To view status check results, run:
 
 ```bash
-kurtosis service logs cdk status-checker-001 -f
+kurtosis service logs cdk status-checker-001 --follow
 ```
 
 Logs show each check’s result:
