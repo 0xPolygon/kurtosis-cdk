@@ -3,55 +3,64 @@ set -uxo pipefail
 
 # This script simulates blockchain activity by perfoming L1 to L2 and L2 to L1 bridges.
 
+# Helper function to log messages in JSON format.
+log_error() {
+    echo "{\"error\": \"$1\"}"
+}
+
+log_info() {
+    echo "{\"info\": \"$1\"}"
+}
+
 # Function to handle errors and continue execution.
 handle_error() {
-  echo "An error occurred. Continuing execution..."
+    log_error "An error occurred. Continuing execution..."
 }
 trap handle_error ERR
 
 # Checking environment variables.
 if [[ -z "${PRIVATE_KEY}" ]]; then
-  echo "Error: PRIVATE_KEY environment variable is not set"
-  exit 1
+    log_error "PRIVATE_KEY environment variable is not set"
+    exit 1
 fi
 if [[ -z "${L1_CHAIN_ID}" ]]; then
-  echo "Error: L1_CHAIN_ID environment variable is not set"
-  exit 1
+    log_error "L1_CHAIN_ID environment variable is not set"
+    exit 1
 fi
 if [[ -z "${L1_RPC_URL}" ]]; then
-  echo "Error: L1_RPC_URL environment variable is not set"
-  exit 1
+    log_error "L1_RPC_URL environment variable is not set"
+    exit 1
 fi
 if [[ -z "${L2_CHAIN_ID}" ]]; then
-  echo "Error: L2_CHAIN_ID environment variable is not set"
-  exit 1
+    log_error "L2_CHAIN_ID environment variable is not set"
+    exit 1
 fi
 if [[ -z "${L2_RPC_URL}" ]]; then
-  echo "Error: L2_RPC_URL environment variable is not set"
-  exit 1
+    log_error "L2_RPC_URL environment variable is not set"
+    exit 1
 fi
 if [[ -z "${L1_BRIDGE_ADDRESS}" ]]; then
-  echo "Error: L1_BRIDGE_ADDRESS environment variable is not set"
-  exit 1
+    log_error "L1_BRIDGE_ADDRESS environment variable is not set"
+    exit 1
 fi
 if [[ -z "${L2_BRIDGE_ADDRESS}" ]]; then
-  echo "Error: L2_BRIDGE_ADDRESS environment variable is not set"
-  exit 1
+    log_error "L2_BRIDGE_ADDRESS environment variable is not set"
+    exit 1
 fi
-echo "PRIVATE_KEY: $PRIVATE_KEY"
-echo "L1_CHAIN_ID: $L1_CHAIN_ID"
-echo "L1_RPC_URL: $L1_RPC_URL"
-echo "L2_CHAIN_ID: $L2_CHAIN_ID"
-echo "L2_RPC_URL: $L2_RPC_URL"
-echo "L1_BRIDGE_ADDRESS: $L1_BRIDGE_ADDRESS"
-echo "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
+log_info "PRIVATE_KEY: $PRIVATE_KEY"
+log_info "L1_CHAIN_ID: $L1_CHAIN_ID"
+log_info "L1_RPC_URL: $L1_RPC_URL"
+log_info "L2_CHAIN_ID: $L2_CHAIN_ID"
+log_info "L2_RPC_URL: $L2_RPC_URL"
+log_info "L1_BRIDGE_ADDRESS: $L1_BRIDGE_ADDRESS"
+log_info "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
 
 # Derive address from private key.
 eth_address=$(cast wallet address --private-key "$PRIVATE_KEY")
-echo "eth_address: $eth_address"
+log_info "eth_address: $eth_address"
 
 # Deposit on L1 to avoid negative balance.
-echo "Depositing on L1 to avoid negative balances"
+log_info "Depositing on L1 to avoid negative balances"
 polycli ulxly bridge asset \
     --value "1000000000000000000" \
     --gas-limit "1250000" \
@@ -73,7 +82,7 @@ done
 
 # Start depositing on L2.
 while true; do
-    echo "Bridging from L1 to L2"
+    log_info "Bridging from L1 to L2"
     polycli ulxly bridge asset \
         --value "$(date +%s)" \
         --gas-limit "1250000" \
@@ -86,7 +95,7 @@ while true; do
         --pretty-logs=false
     sleep 1
 
-    echo "Bridging from L2 to L1"
+    log_info "Bridging from L2 to L1"
     polycli ulxly bridge asset \
         --value "$(date +%s)" \
         --gas-limit "1250000" \
