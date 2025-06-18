@@ -36,7 +36,7 @@ def run(plan, args, contract_setup_addresses):
         name="bridge-spammer-script",
     )
     plan.add_service(
-        name="bridge-spammer" + args.get("deployment_suffix"),
+        name="l2-bridge-spammer" + args.get("deployment_suffix"),
         config=ServiceConfig(
             image=constants.TOOLBOX_IMAGE,
             files={
