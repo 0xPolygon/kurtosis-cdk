@@ -26,6 +26,7 @@ args:
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
 
   additional_services:
+    - test_runner
     - bridge_spammer
 
 optimism_package:
