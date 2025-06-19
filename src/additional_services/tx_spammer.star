@@ -12,56 +12,65 @@ SCRIPT_FOLDER_PATH = "/opt/scripts"
 
 
 def run(plan, args, contract_setup_addresses):
-    # Get rpc urls.
+    # Get rpc urls and funder private keys.
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
-
-    # Generate new wallet for the tx spammers.
     l1_funder_private_key = args.get("l1_preallocated_private_key")
-    l1_wallet = _generate_new_funded_wallet(plan, l1_funder_private_key, l1_rpc_url)
-
     l2_funder_private_key = args.get("zkevm_l2_admin_private_key")
-    l2_wallet = _generate_new_funded_wallet(plan, l2_funder_private_key, l2_rpc_url)
 
-    # Upload both scripts.
+    # Start the spammer services.
     tx_spammer_artifact = plan.upload_files(
         src="{}/{}".format(TEMPLATES_FOLDER_PATH, TX_SPAMMER_SCRIPT_NAME),
         name="tx-spammer-script",
     )
-    rpc_fuzz_artifact = plan.upload_files(
-        src="{}/{}".format(TEMPLATES_FOLDER_PATH, RPC_FUZZER_SCRIPT_NAME),
-        name="rpc-fuzz-script",
-    )
 
-    # Start the tx spammer services.
+    l1_tx_spammer_wallet = _generate_new_funded_wallet(
+        plan, l1_funder_private_key, l1_rpc_url
+    )
     _start_tx_spammer_service(
         plan,
         name="l1-tx-spammer" + args.get("deployment_suffix"),
         script_artifact=tx_spammer_artifact,
-        private_key=l1_wallet.private_key,
+        private_key=l1_tx_spammer_wallet.private_key,
         rpc_url=l1_rpc_url,
+    )
+
+    l2_tx_spammer_wallet = _generate_new_funded_wallet(
+        plan, l2_funder_private_key, l2_rpc_url
     )
     _start_tx_spammer_service(
         plan,
         name="l2-tx-spammer" + args.get("deployment_suffix"),
         script_artifact=tx_spammer_artifact,
-        private_key=l2_wallet.private_key,
+        private_key=l2_tx_spammer_wallet.private_key,
         rpc_url=l2_rpc_url,
     )
 
-    # Start the rpc fuzz services.
+    # Start the fuzzer services.
+    rpc_fuzz_artifact = plan.upload_files(
+        src="{}/{}".format(TEMPLATES_FOLDER_PATH, RPC_FUZZER_SCRIPT_NAME),
+        name="rpc-fuzz-script",
+    )
+
+    l1_rpc_fuzzer_wallet = _generate_new_funded_wallet(
+        plan, l1_funder_private_key, l1_rpc_url
+    )
     _start_rpc_fuzzer_service(
         plan,
         name="l1-rpc-fuzzer" + args.get("deployment_suffix"),
         script_artifact=rpc_fuzz_artifact,
-        private_key=l1_wallet.private_key,
+        private_key=l1_rpc_fuzzer_wallet.private_key,
         rpc_url=l1_rpc_url,
+    )
+
+    l2_rpc_fuzzer_wallet = _generate_new_funded_wallet(
+        plan, l2_funder_private_key, l2_rpc_url
     )
     _start_rpc_fuzzer_service(
         plan,
         name="l2-rpc-fuzzer" + args.get("deployment_suffix"),
         script_artifact=rpc_fuzz_artifact,
-        private_key=l2_wallet.private_key,
+        private_key=l2_rpc_fuzzer_wallet.private_key,
         rpc_url=l2_rpc_url,
     )
 
