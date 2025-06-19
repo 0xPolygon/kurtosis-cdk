@@ -52,14 +52,14 @@ def run(plan, args, contract_setup_addresses):
     # Start the rpc fuzz services.
     _start_rpc_fuzzer_service(
         plan,
-        name="l1-rpc-fuzz" + args.get("deployment_suffix"),
+        name="l1-rpc-fuzzer" + args.get("deployment_suffix"),
         script_artifact=rpc_fuzz_artifact,
         private_key=l1_wallet.private_key,
         rpc_url=l1_rpc_url,
     )
     _start_rpc_fuzzer_service(
         plan,
-        name="l2-rpc-fuzz" + args.get("deployment_suffix"),
+        name="l2-rpc-fuzzer" + args.get("deployment_suffix"),
         script_artifact=rpc_fuzz_artifact,
         private_key=l2_wallet.private_key,
         rpc_url=l2_rpc_url,
