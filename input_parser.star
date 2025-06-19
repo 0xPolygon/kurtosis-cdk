@@ -46,7 +46,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.0-RC17",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.1-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
     # TODO: Update the image to the official version.
     # This image has been built using the following branch: https://github.com/leovct/agglayer-contracts/tree/v10.1.0-rc.3-devtools
