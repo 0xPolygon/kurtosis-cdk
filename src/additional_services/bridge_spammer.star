@@ -4,7 +4,7 @@ wallet_module = import_module("../wallet/wallet.star")
 # The folder where bridge spammer template files are stored in the repository.
 TEMPLATES_FOLDER_PATH = "../../static_files/additional_services/bridge-spammer"
 # The name of the bridge spammer script.
-SCRIPT_NAME = "spam.sh"
+SCRIPT_NAME = "bridge.sh"
 
 # The folder where bridge spammer scripts are stored inside the service.
 SCRIPT_FOLDER_PATH = "/opt/scripts"
