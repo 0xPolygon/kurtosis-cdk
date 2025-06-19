@@ -104,7 +104,7 @@ printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules
 # Deploy gas token
 # shellcheck disable=SC1054,SC1072,SC1083
 {{ if .gas_token_enabled }}
-{{ if eq .gas_token_address "" }}
+{{ if or (eq .gas_token_address "0x0000000000000000000000000000000000000000") (eq .gas_token_address "") }}
 echo_ts "Deploying gas token to L1"
 forge create \
     --broadcast \
