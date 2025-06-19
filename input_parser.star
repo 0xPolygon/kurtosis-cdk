@@ -809,12 +809,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
         )
 
-    # Gas token check
-    if args.get("gas_token_enabled", False):
-        # Ensure gas token is not used with OP Rollup.
-        if deployment_stages.get("deploy_optimism_rollup", False):
-            fail("Gas token is not supported when deploying OP Rollup.")
-
     # CDK Erigon normalcy and strict mode check
     if args["enable_normalcy"] and args["erigon_strict_mode"]:
         fail("normalcy and strict mode cannot be enabled together")
