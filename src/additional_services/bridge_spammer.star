@@ -27,7 +27,7 @@ def run(plan, args, contract_setup_addresses):
         address=args.get("zkevm_l2_claimtxmanager_address"),
         rpc_url=l2_rpc_url,
         funder_private_key=funder_private_key,
-        value="10ether",
+        value="50ether",
     )
 
     # Start the bridge spammer.

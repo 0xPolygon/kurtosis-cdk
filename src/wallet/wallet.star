@@ -27,7 +27,7 @@ def new(plan):
     )
 
 
-def fund(plan, address, rpc_url, funder_private_key, value="50ether"):
+def fund(plan, address, rpc_url, funder_private_key, value="1000ether"):
     plan.run_sh(
         name="address-funder",
         description="Funding address on network {}".format(rpc_url),
