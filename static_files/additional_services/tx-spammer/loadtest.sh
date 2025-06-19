@@ -38,7 +38,7 @@ while true; do
     --private-key "$PRIVATE_KEY" \
     --legacy \
     --requests "50000" \
-    --concurrency "5" \
+    --concurrency "20" \
     --rate-limit "50" \
     --eth-amount "1" \
     --pretty-logs=false

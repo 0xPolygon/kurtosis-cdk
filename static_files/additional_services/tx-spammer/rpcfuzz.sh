@@ -40,6 +40,6 @@ while true; do
     --json=true \
     --pretty-logs=false
 
-  log_info "Completed batch. Waiting 10 seconds before next batch."
-  sleep 10
+  log_info "Completed batch. Waiting 60 seconds before next batch."
+  sleep 60
 done
