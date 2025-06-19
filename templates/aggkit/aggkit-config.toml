@@ -182,7 +182,6 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
-{{- if eq .consensus_contract_type "fep"}}
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 {{- else}}
 AggSenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
@@ -195,14 +194,21 @@ Mode="PessimisticProof"
 Mode="AggchainProof"
 {{- end}}
 
+# ------------------------------------------------------------------------------
+# MaxCertSize is the maximum size of the certificate
+# i.e (the emitted certificate cannot be bigger that this size)
+# 0 is infinite
+# ------------------------------------------------------------------------------
+# MaxCertSize = 0
+
 [AggSender.AggkitProverClient]
 UseTLS = false
+
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
 TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 OpNodeURL = "{{.op_cl_rpc_url}}"
 {{- end}}
-
 
 [AggSender.MaxSubmitCertificateRate]
 NumRequests = 20
@@ -249,13 +255,6 @@ SaveCertificatesToFilesPath = "/tmp"
 # KeepCertificatesHistory is a flag to keep the certificates history on storage
 # ------------------------------------------------------------------------------
 # KeepCertificatesHistory = false
-
-# ------------------------------------------------------------------------------
-# MaxCertSize is the maximum size of the certificate
-# i.e (the emitted certificate cannot be bigger that this size)
-# 0 is infinite
-# ------------------------------------------------------------------------------
-# MaxCertSize = 0
 
 # ------------------------------------------------------------------------------
 # BridgeMetadataAsHash is a flag to import the bridge metadata as hash
