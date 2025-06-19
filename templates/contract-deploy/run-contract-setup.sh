@@ -119,6 +119,9 @@ jq \
     '.gasTokenAddress = $c[0].deployedTo' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+
+TMP_ROLLUP_PARAMS=$(cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json)
+echo_ts "Resulting create_rollup_parameters: $TMP_ROLLUP_PARAMS"
 # shellcheck disable=SC1073,SC1009
 {{ else }}
 echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
@@ -196,6 +199,9 @@ zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == 
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
 {{ if .gas_token_enabled }}
+TMP_ROLLUP_PARAMS=$(cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json)
+echo_ts "Resulting create_rollup_parameters 2: $TMP_ROLLUP_PARAMS"
+
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
 {{ end }}
 
