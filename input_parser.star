@@ -40,8 +40,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.4.0-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.0-rc.21",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:0.1.0-rc.29",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.4",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.1.2",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
@@ -52,7 +52,7 @@ DEFAULT_IMAGES = {
     # This image has been built using the following branch: https://github.com/leovct/agglayer-contracts/tree/v10.1.0-rc.3-devtools
     # It includes two fixes, one for proxiedTokensManager param and another one for bridge initialize call.
     # It is not an official release made by the contracts team, thus we label it as a "devtools" image.
-    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-rc.5-fork.12",
+    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-sp1.v5-fork.12",  # https://hub.docker.com/layers/jhkimqd/zkevm-contracts/v10.1.0-sp1.v5-fork.12/images/sha256-b3346dbce4f698ff57821c322b66378ea3103e7246596154b0653057d0b02fc8
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -60,7 +60,7 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.2.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-proposer
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-succinct
     "test_runner_image": "leovct/e2e:9fe80e1",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.4",  # https://github.com/0xPolygon/status-checker/releases
 }
@@ -449,9 +449,9 @@ DEFAULT_OP_STACK_ARGS = {
                 {
                     # OP Rollup configuration
                     "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.1",
+                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.0",
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.2",
+                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.3",
                     "count": 1,
                 },
             ],
@@ -468,6 +468,10 @@ DEFAULT_OP_STACK_ARGS = {
                 "network_id": str(DEFAULT_ROLLUP_ARGS.get("zkevm_rollup_chain_id")),
                 # The blocktime on the OP network
                 "seconds_per_slot": 1,
+                # Isthmus fork
+                # Defaults to None - not activated - decimal value
+                # Offset is in seconds
+                "isthmus_time_offset": 0,
             },
         },
     ],

@@ -22,6 +22,9 @@ def run(
         )
         (ports, public_ports) = get_aggkit_prover_ports(args)
 
+        # Fetch evm-sketch-genesis-conf artifact
+        evm_sketch_genesis_conf = get_evm_sketch_genesis(plan, args)
+
         prover_env_vars = {
             # TODO one of these values can be deprecated soon 2025-04-15
             "PROPOSER_NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
@@ -40,6 +43,7 @@ def run(
                     "/etc/aggkit": Directory(
                         artifact_names=[
                             aggkit_prover_config_artifact,
+                            evm_sketch_genesis_conf,
                         ]
                     ),
                 },
@@ -274,3 +278,28 @@ def get_agglayer_endpoint(plan, args):
         return "grpc"
     else:
         return "readrpc"
+
+
+# Fetch the parsed .config section of L1 geth genesis.
+def get_evm_sketch_genesis(plan, args):
+    # Upload file to files artifact
+    evm_sketch_genesis_conf_artifact = plan.store_service_files(
+        service_name="temp-contracts",
+        name="evm-sketch-genesis-conf-artifact.json",
+        src="/opt/op-succinct/evm-sketch-genesis.json",
+        description="Storing evm-sketch-genesis.json for evm-sketch-genesis field in aggkit-prover.",
+    )
+
+    # Fetch evm-sketch-genesis-conf artifact
+    evm_sketch_genesis_conf = plan.get_files_artifact(
+        name="evm-sketch-genesis-conf-artifact.json",
+        description="Fetch evm-sketch-genesis-conf-artifact.json files artifact",
+    )
+
+    # Remove temp-contracts service after extracting evm-sketch-genesis
+    plan.remove_service(
+        name="temp-contracts",
+        description="Remove temp-contracts service after extracting evm-sketch-genesis",
+    )
+
+    return evm_sketch_genesis_conf
