@@ -41,13 +41,14 @@ while true; do
     --requests "50000" \
     --concurrency "5" \
     --rate-limit "50" \
-    --eth-amount "0.000000000000000001" \
+    --eth-amount "1" \
     --pretty-logs=false
 
   log_info "Making rpc calls"
   polycli rpcfuzz \
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
+    --json=true \
     --pretty-logs=false
 
   log_info "Waiting 60 seconds before sending more transactions"
