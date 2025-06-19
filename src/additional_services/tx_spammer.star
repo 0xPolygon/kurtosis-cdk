@@ -4,8 +4,8 @@ wallet_module = import_module("../wallet/wallet.star")
 # The folder where tx spammer template files are stored in the repository.
 TEMPLATES_FOLDER_PATH = "../../static_files/additional_services/tx-spammer"
 # The name of the spammer scripts.
-TX_SPAMMER_SCRIPT_NAME = "tx-spammer.sh"
-RPC_FUZZER_SCRIPT_NAME = "rpc-fuzzer.sh"
+TX_SPAMMER_SCRIPT_NAME = "loadtest.sh"
+RPC_FUZZER_SCRIPT_NAME = "rpcfuzz.sh"
 
 # The folder where tx spammer scripts are stored inside the service.
 SCRIPT_FOLDER_PATH = "/opt/scripts"
@@ -24,27 +24,27 @@ def run(plan, args, contract_setup_addresses):
     l2_wallet = _generate_new_funded_wallet(plan, l2_funder_private_key, l2_rpc_url)
 
     # Upload both scripts.
-    tx_loadtest_artifact = plan.upload_files(
+    tx_spammer_artifact = plan.upload_files(
         src="{}/{}".format(TEMPLATES_FOLDER_PATH, TX_SPAMMER_SCRIPT_NAME),
-        name="tx-loadtest-script",
+        name="tx-spammer-script",
     )
     rpc_fuzz_artifact = plan.upload_files(
         src="{}/{}".format(TEMPLATES_FOLDER_PATH, RPC_FUZZER_SCRIPT_NAME),
         name="rpc-fuzz-script",
     )
 
-    # Start the tx loadtest services.
+    # Start the tx spammer services.
     _start_tx_spammer_service(
         plan,
-        name="l1-tx-loadtest" + args.get("deployment_suffix"),
-        script_artifact=tx_loadtest_artifact,
+        name="l1-tx-spammer" + args.get("deployment_suffix"),
+        script_artifact=tx_spammer_artifact,
         private_key=l1_wallet.private_key,
         rpc_url=l1_rpc_url,
     )
     _start_tx_spammer_service(
         plan,
-        name="l2-tx-loadtest" + args.get("deployment_suffix"),
-        script_artifact=tx_loadtest_artifact,
+        name="l2-tx-spammer" + args.get("deployment_suffix"),
+        script_artifact=tx_spammer_artifact,
         private_key=l2_wallet.private_key,
         rpc_url=l2_rpc_url,
     )
