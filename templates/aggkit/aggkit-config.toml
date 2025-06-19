@@ -182,11 +182,11 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
-{{- if eq .consensus_contract_type "pessimistic"}}
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+
+{{- if eq .consensus_contract_type "pessimistic"}}
 Mode="PessimisticProof"
 {{- else}}
-AggSenderPrivateKey = {Path = "/etc/aggkit/sovereignadmin.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 Mode="AggchainProof"
 {{- end}}
 CheckStatusCertificateInterval = "1s"
