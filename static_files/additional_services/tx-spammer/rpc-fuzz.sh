@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# This script simulates blockchain activity by sending transactions and making RPC calls.
+# This script fuzzes RPC endpoints to test their reliability.
 
 # Helper function to log messages in JSON format.
 log_error() {
@@ -26,31 +26,20 @@ log_info "RPC_URL: $RPC_URL"
 
 # Function to handle errors and continue execution.
 handle_error() {
-  log_error "An error occurred. Continuing execution..."
+  log_error "An error occurred. Continuing execution."
 }
 trap handle_error ERR
 
-# Sending load to the rpc.
+# Continuously fuzz rpc endpoints.
 while true; do
-  log_info "Sending transactions to the rpc"
-  polycli loadtest \
-    --rpc-url "$RPC_URL" \
-    --private-key "$PRIVATE_KEY" \
-    --legacy \
-    --mode t,2,7,v3 \
-    --requests "50000" \
-    --concurrency "5" \
-    --rate-limit "50" \
-    --eth-amount "1" \
-    --pretty-logs=false
-
-  log_info "Making rpc calls"
+  log_info "Starting rpc fuzzing"
   polycli rpcfuzz \
     --rpc-url "$RPC_URL" \
     --private-key "$PRIVATE_KEY" \
+    --fuzz=true \
     --json=true \
     --pretty-logs=false
 
-  log_info "Waiting 60 seconds before sending more transactions"
-  sleep 60
+  log_info "Completed batch. Waiting 10 seconds before next batch."
+  sleep 10
 done
