@@ -80,7 +80,7 @@ until [[ "$finalized_block_number" -gt "$current_block_number" ]]; do
   finalized_block_number="$(cast block-number --rpc-url "$L1_RPC_URL" finalized)"
 done
 
-# Start depositing on L2.
+# Start depositing on L2 and back to L1.
 while true; do
   log_info "Bridging from L1 to L2"
   polycli ulxly bridge asset \
@@ -93,7 +93,6 @@ while true; do
     --private-key "$PRIVATE_KEY" \
     --chain-id "$L1_CHAIN_ID" \
     --pretty-logs=false
-  sleep 1
 
   log_info "Bridging from L2 to L1"
   polycli ulxly bridge asset \
@@ -106,5 +105,4 @@ while true; do
     --private-key "$PRIVATE_KEY" \
     --chain-id "$L2_CHAIN_ID" \
     --pretty-logs=false
-  sleep 1
 done
