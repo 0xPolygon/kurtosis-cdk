@@ -12,10 +12,26 @@ git config --global --add safe.directory /opt/zkevm-contracts
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 chainID="$(jq -r '.chainID' "/opt/zkevm/create_rollup_parameters.json")"
 rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
+gas_token_addr="$(jq -r '.gasTokenAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 
 # Replace rollupManagerAddress with the extracted address
-sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
-jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
+# sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
+# jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
+
+# shellcheck disable=SC1054,SC1083,SC1056,SC1072
+{{ if not .gas_token_enabled }}
+gas_token_addr=0x0000000000000000000000000000000000000000
+# shellcheck disable=SC1009,SC1054,SC1073
+{{ end }}
+
+jq --arg ROLLUPMAN "$rollup_manager_addr" \
+   --arg ROLLUPID $rollup_id \
+   --arg GAS_TOKEN_ADDR "$gas_token_addr" \
+   '
+   .rollupManagerAddress = $ROLLUPMAN |
+   .rollupID = ($ROLLUPID | tonumber) |
+   .gasTokenAddress = $GAS_TOKEN_ADDR
+   ' /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
 mv /opt/contract-deploy/create-genesis-sovereign-params.json.tmp /opt/contract-deploy/create-genesis-sovereign-params.json
 
 # Required files to run the script
