@@ -27,6 +27,7 @@ l2-execution-layer-rpc-endpoint = "{{ .l2_el_rpc_url }}"
 l2-consensus-layer-rpc-endpoint = "{{ .l2_cl_rpc_url }}"
 polygon-rollup-manager = "{{ .rollup_manager_address }}"
 global-exit-root-manager-v2-sovereign-chain = "{{ .global_exit_root_address }}"
+evm-sketch-genesis = "/etc/aggkit/evm-sketch-genesis.json" # TODO: The order of deployment is important for this json file to exist at the time of populating this config file.
 
 [aggchain-proof-service.proposer-service]
 l1-rpc-endpoint = "{{ .l1_rpc_url }}"
