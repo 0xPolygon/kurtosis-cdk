@@ -18,8 +18,10 @@ gas_token_addr="$(jq -r '.gasTokenAddress' "/opt/zkevm/combined{{.deployment_suf
 #sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
 #jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
 
+# shellcheck disable=SC1054,SC1083
 {{ if not .gas_token_enabled }}
 gas_token_addr=0x0000000000000000000000000000000000000000
+# shellcheck disable=SC1009,SC1054,SC1073
 {{ end }}
 
 jq --arg ROLLUPMAN "$rollup_manager_addr" \
