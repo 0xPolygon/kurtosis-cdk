@@ -18,7 +18,7 @@ This configuration deploys a ZK rollup environment powered by Polygon's [zkEVM P
 
 - L1 Ethereum blockchain (lighthouse/geth).
 - Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer service](https://github.com/agglayer/agglayer) and [mock prover](https://github.com/agglayer/provers)).
-- L2 Optimism blockchain ([cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon), [zkevm-pool-manager](https://github.com/0xPolygon/zkevm-pool-manager), [zkevm-prover](https://github.com/0xPolygonHermez/zkevm-prover)and executor, [cdk-node](https://github.com/0xPolygon/cdk)).
+- L2 CDK-Erigon blockchain ([cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon), [zkevm-pool-manager](https://github.com/0xPolygon/zkevm-pool-manager), [zkevm-prover](https://github.com/0xPolygonHermez/zkevm-prover)and executor, [cdk-node](https://github.com/0xPolygon/cdk)).
 - [zkEVM bridge](https://github.com/0xPolygonHermez/zkevm-bridge-service) to facilitate asset bridging between L1 and L2 chains.
 
 #### Best for
