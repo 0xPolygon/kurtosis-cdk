@@ -22,8 +22,6 @@ gas_token_addr="$(jq -r '.gasTokenAddress' "/opt/zkevm/combined{{.deployment_suf
 gas_token_addr=0x0000000000000000000000000000000000000000
 {{ end }}
 
-echo "Gas token address: $gas_token_addr"
-
 jq --arg ROLLUPMAN "$rollup_manager_addr" \
    --arg ROLLUPID $rollup_id \
    --arg GAS_TOKEN_ADDR "$gas_token_addr" \
