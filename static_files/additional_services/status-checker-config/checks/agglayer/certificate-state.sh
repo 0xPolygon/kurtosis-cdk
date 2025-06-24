@@ -15,7 +15,8 @@ curr_id=$(echo "$curr_json" | jq -r '.certificate_id')
 curr_status=$(echo "$curr_json" | jq -r '.status')
 
 write_certificate() {
-  local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   echo "$curr_json" | jq --arg timestamp "$timestamp" '. + {timestamp: $timestamp}' > "$prev_cert"
 }
 
