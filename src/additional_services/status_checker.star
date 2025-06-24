@@ -51,6 +51,7 @@ def run(plan, args):
                 "L2_RPC_URL": l2_rpc_url,
                 "SEQUENCER_RPC_URL": sequencer_rpc_url,
                 "CONSENSUS_CONTRACT_TYPE": args.get("consensus_contract_type"),
+                "AGGLAYER_RPC_URL": args.get("agglayer_readrpc_url"),
             },
         ),
     )
