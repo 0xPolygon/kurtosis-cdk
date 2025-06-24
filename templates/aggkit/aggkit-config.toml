@@ -577,8 +577,6 @@ URL = "{{.op_el_rpc_url}}"
 # ------------------------------------------------------------------------------
 L1ChainID = "{{.zkevm_rollup_chain_id}}"
 
-
-
 # ==============================================================================
 #                        _           _                              __                  
 #  __ _  __ _  __ _  ___| |__   __ _(_)_ __  _ __  _ __ ___   ___  / _| __ _  ___ _ __  
@@ -588,11 +586,6 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 #       |___/ |___/                         |_|                        |___/                         
 # ------------------------------------------------------------------------------
 [AggchainProofGen]
-# ------------------------------------------------------------------------------
-# AggchainProofURL is the URL of the AggkitProver
-# ------------------------------------------------------------------------------
-AggchainProofURL = "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
-
 # ------------------------------------------------------------------------------
 # SovereignRollupAddr is the address of the sovereign rollup contract on L1
 # ------------------------------------------------------------------------------
@@ -604,10 +597,16 @@ SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 # ------------------------------------------------------------------------------
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 
+[AggchainProofGen.AggkitProverClient]
 # ------------------------------------------------------------------------------
-# UseAggkitProverTLS is a flag to enable the AggkitProver TLS handshake in the AggSender-AggkitProver gRPC connection
+# URL is the URL of the AggkitProver
 # ------------------------------------------------------------------------------
-# UseAggkitProverTLS = false
+URL = "{{AggchainProofURL}}"
+
+# ------------------------------------------------------------------------------
+# UseTLS is a flag to enable the AggkitProver TLS handshake in the AggSender-AggkitProver gRPC connection
+# ------------------------------------------------------------------------------
+# UseTLS = false
 
 # ==============================================================================
 #  ____             __ _ _ _             
