@@ -104,7 +104,8 @@ printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules
 # Deploy gas token
 # shellcheck disable=SC1054,SC1072,SC1083
 {{ if .gas_token_enabled }}
-{{ if eq .gas_token_address "" }}
+# shellcheck disable=SC1009,SC1073,SC1065,SC1050
+{{ if or (eq .gas_token_address "0x0000000000000000000000000000000000000000") (eq .gas_token_address "") }}
 echo_ts "Deploying gas token to L1"
 forge create \
     --broadcast \
@@ -119,6 +120,7 @@ jq \
     '.gasTokenAddress = $c[0].deployedTo' \
     /opt/contract-deploy/create_rollup_parameters.json \
     > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+
 # shellcheck disable=SC1073,SC1009
 {{ else }}
 echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"

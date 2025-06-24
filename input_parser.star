@@ -48,11 +48,8 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.1-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    # TODO: Update the image to the official version.
-    # This image has been built using the following branch: https://github.com/leovct/agglayer-contracts/tree/v10.1.0-rc.3-devtools
-    # It includes two fixes, one for proxiedTokensManager param and another one for bridge initialize call.
-    # It is not an official release made by the contracts team, thus we label it as a "devtools" image.
-    "zkevm_contracts_image": "jhkimqd/zkevm-contracts:v10.1.0-sp1.v5-fork.12",  # https://hub.docker.com/layers/jhkimqd/zkevm-contracts/v10.1.0-sp1.v5-fork.12/images/sha256-b3346dbce4f698ff57821c322b66378ea3103e7246596154b0653057d0b02fc8
+    # This image has been built from branch feature/zkEVMToPP which contains all improvements from v10.1.0-RC9 + sp1-v5
+    "zkevm_contracts_image": "xavierpolygon/agglayer-contracts:v10.1.0-rc.9-sp1.v5-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -808,12 +805,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 args["l1_engine"], constants.L1_ENGINES
             )
         )
-
-    # Gas token check
-    if args.get("gas_token_enabled", False):
-        # Ensure gas token is not used with OP Rollup.
-        if deployment_stages.get("deploy_optimism_rollup", False):
-            fail("Gas token is not supported when deploying OP Rollup.")
 
     # CDK Erigon normalcy and strict mode check
     if args["enable_normalcy"] and args["erigon_strict_mode"]:
