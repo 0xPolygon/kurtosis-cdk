@@ -599,11 +599,6 @@ GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 
 [AggchainProofGen.AggkitProverClient]
 # ------------------------------------------------------------------------------
-# URL is the URL of the AggkitProver
-# ------------------------------------------------------------------------------
-URL = "{{AggchainProofURL}}"
-
-# ------------------------------------------------------------------------------
 # UseTLS is a flag to enable the AggkitProver TLS handshake in the AggSender-AggkitProver gRPC connection
 # ------------------------------------------------------------------------------
 # UseTLS = false
