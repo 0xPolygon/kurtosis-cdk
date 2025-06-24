@@ -11,6 +11,11 @@ network_id=$(cast call --rpc-url "$L2_RPC_URL" "$l2_bridge_address" 'networkID()
 
 curr_json=$(cast rpc --rpc-url "$AGGLAYER_RPC_URL" interop_getLatestKnownCertificateHeader "$network_id")
 
+# Skip the check if there hasn't been a certificate at any point.
+if echo "$curr_json" | jq -e '. == null' > /dev/null; then
+  exit 0
+fi
+
 curr_id=$(echo "$curr_json" | jq -r '.certificate_id')
 curr_status=$(echo "$curr_json" | jq -r '.status')
 
