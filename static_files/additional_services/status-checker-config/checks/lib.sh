@@ -105,7 +105,7 @@ check_certificate_height() {
   local prev_height curr_height
   prev_height=$(jq -r '.height' "$prev_header")
   curr_height=$(jq -r '.height' "$curr_header")
-  if (( "$curr_height" <= "$prev_height" )); then
+  if (( curr_height <= prev_height )); then
     echo "ERROR: ${name^} certificate height not increasing: prev=$prev_height, curr=$curr_height"
     return 1
   fi
