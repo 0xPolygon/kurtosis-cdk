@@ -74,9 +74,10 @@ check_certificate_height() {
   # AGGLAYER_RPC_URL="http://127.0.0.1:55333"
   # L2_RPC_URL="http://127.0.0.1:53976"
 
-  local l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/zkevm/combined.json)
-  # local l2_bridge_address="0x927aa8656B3a541617Ef3fBa4A2AB71320dc7fD7"
-  local network_id=$(cast call --rpc-url "$L2_RPC_URL" "$l2_bridge_address" 'networkID()(uint32)')
+  local l2_bridge_address network_id
+  l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/zkevm/combined.json)
+  # l2_bridge_address="0x927aa8656B3a541617Ef3fBa4A2AB71320dc7fD7"
+  network_id=$(cast call --rpc-url "$L2_RPC_URL" "$l2_bridge_address" 'networkID()(uint32)')
 
   local prev_header="./prev-$name-certificate-header.json"
   local curr_header="./curr-$name-certificate-header.json"
