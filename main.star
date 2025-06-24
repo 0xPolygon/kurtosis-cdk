@@ -234,9 +234,21 @@ def run(plan, args={}):
 
             plan.print("Deploying cdk central/trusted environment")
             args["genesis_artifact"] = genesis_artifact
-            import_module(cdk_central_environment_package).run(
-                plan, args, deployment_stages, contract_setup_addresses
-            )
+
+            if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium:
+                plan.print("Deploying CDK Node infrastructure")
+                import_module(cdk_central_environment_package).run(
+                    plan, args, deployment_stages, contract_setup_addresses
+                )
+            else:
+                plan.print("Deploying AggKit infrastructure")
+                aggkit_package.run(
+                    plan,
+                    args,
+                    contract_setup_addresses,
+                    sovereign_contract_setup_addresses,
+                    deployment_stages,
+                )
 
             # Deploy contracts on L2.
             plan.print("Deploying contracts on L2")
