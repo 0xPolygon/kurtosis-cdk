@@ -48,8 +48,7 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.1-RC1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    # This image has been built from branch feature/zkEVMToPP which contains all improvements from v10.1.0-RC9 + sp1-v5
-    "zkevm_contracts_image": "xavierpolygon/agglayer-contracts:v10.1.0-rc.9-sp1.v5-fork.12",
+    "zkevm_contracts_image": "xavierpolygon/agglayer-contracts:v11.0.0-rc.1-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
