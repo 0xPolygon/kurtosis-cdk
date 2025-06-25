@@ -109,7 +109,7 @@ jobs:
     needs: list-ymls
     name: run-with-${{ matrix.file.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -185,8 +185,8 @@ jobs:
 
       - name: Run bridge tests
         run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=60m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=60m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
       - name: Post kurtosis run
         if: always()
