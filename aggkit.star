@@ -99,7 +99,11 @@ def run(
 
     # Start the aggoracle components.
     aggkit_configs = aggkit_package.create_aggkit_service_config(
-        args, aggkit_config_artifact, sovereign_genesis_artifact, keystore_artifacts
+        args,
+        deployment_stages,
+        aggkit_config_artifact,
+        sovereign_genesis_artifact,
+        keystore_artifacts,
     )
 
     plan.add_services(
@@ -166,21 +170,26 @@ def create_bridge_config_artifact(
         src="./templates/bridge-infra/bridge-config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
-    # l2_rpc_url = args["op_el_rpc_url"]
-    l2_rpc_url = "http://{}{}:{}".format(
-        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
-    )
-    # contract_addresses = contract_setup_addresses | {
-    #     "zkevm_rollup_address": sovereign_contract_setup_addresses.get(
-    #         "sovereign_rollup_addr"
-    #     ),
-    #     "zkevm_bridge_l2_address": sovereign_contract_setup_addresses.get(
-    #         "sovereign_bridge_proxy_addr"
-    #     ),
-    #     "zkevm_global_exit_root_l2_address": sovereign_contract_setup_addresses.get(
-    #         "sovereign_ger_proxy_addr"
-    #     ),
-    # }
+    if (
+        not deployment_stages.get("deploy_optimism_rollup", False)
+        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    ):
+        l2_rpc_url = "http://{}{}:{}".format(
+            args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+        )
+    else:
+        l2_rpc_url = args["op_el_rpc_url"]
+        contract_addresses = contract_setup_addresses | {
+            "zkevm_rollup_address": sovereign_contract_setup_addresses.get(
+                "sovereign_rollup_addr"
+            ),
+            "zkevm_bridge_l2_address": sovereign_contract_setup_addresses.get(
+                "sovereign_bridge_proxy_addr"
+            ),
+            "zkevm_global_exit_root_l2_address": sovereign_contract_setup_addresses.get(
+                "sovereign_ger_proxy_addr"
+            ),
+        }
     contract_addresses = contract_setup_addresses
     return plan.render_templates(
         name="bridge-config-artifact",

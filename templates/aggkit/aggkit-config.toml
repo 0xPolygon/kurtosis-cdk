@@ -35,26 +35,6 @@ NetworkID = {{.zkevm_rollup_id}}
 # This is the admin account for now
 L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 
-SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
-SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/aggkit/aggoracle.keystore"}}"
-AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"
-
-#{{- if .deploy_optimism_rollup }}
-#SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
-#SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-#AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/aggkit/aggoracle.keystore"}}"
-#AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-#SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"
-#{{- else }}
-#SequencerPrivateKeyPath = ""
-#SequencerPrivateKeyPassword  = ""
-#AggregatorPrivateKeyPath = ""
-#AggregatorPrivateKeyPassword  = ""
-#SenderProofToL1Addr = ""
-#{{- end}}
-
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 {{- if .deploy_optimism_rollup }}

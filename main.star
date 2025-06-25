@@ -235,7 +235,11 @@ def run(plan, args={}):
             plan.print("Deploying cdk central/trusted environment")
             args["genesis_artifact"] = genesis_artifact
 
-            if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium:
+            if (
+                args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
+                or args["consensus_contract_type"]
+                == constants.CONSENSUS_TYPE.cdk_validium
+            ):
                 plan.print("Deploying CDK Node infrastructure")
                 import_module(cdk_central_environment_package).run(
                     plan, args, deployment_stages, contract_setup_addresses
@@ -253,17 +257,20 @@ def run(plan, args={}):
             plan.print("Skipping the deployment of cdk central/trusted environment")
 
         # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
-        if deployment_stages.get("deploy_cdk_bridge_infra", False) and (args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium):
-                plan.print("Deploying cdk/bridge infrastructure")
-                import_module(cdk_bridge_infra_package).run(
-                    plan,
-                    args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
-                    contract_setup_addresses,
-                    deploy_bridge_ui=deployment_stages.get("deploy_cdk_bridge_ui", True),
-                    deploy_optimism_rollup=deployment_stages.get(
-                        "deploy_optimism_rollup", False
-                    ),
-                )
+        if deployment_stages.get("deploy_cdk_bridge_infra", False) and (
+            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
+            or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium
+        ):
+            plan.print("Deploying cdk/bridge infrastructure")
+            import_module(cdk_bridge_infra_package).run(
+                plan,
+                args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
+                contract_setup_addresses,
+                deploy_bridge_ui=deployment_stages.get("deploy_cdk_bridge_ui", True),
+                deploy_optimism_rollup=deployment_stages.get(
+                    "deploy_optimism_rollup", False
+                ),
+            )
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
@@ -278,7 +285,10 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if deployment_stages.get("deploy_optimism_rollup", False) or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
+    if (
+        deployment_stages.get("deploy_optimism_rollup", False)
+        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    ):
         plan.print("Deploying AggKit infrastructure")
         aggkit_package.run(
             plan,
