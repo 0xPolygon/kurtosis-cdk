@@ -44,8 +44,40 @@ jobs:
 
       - name: Run bridge tests
         run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+
+      - name: Check for error logs in aggkit service
+        working-directory: .github/scripts
+        run: |
+          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} aggkit-001 2>&1)
+          echo "$LOGS"
+          if [[ -z "$LOGS" ]]; then
+            echo "Error: No logs found for aggkit service! Service may not be functioning."
+            exit 1  # Fail the workflow if logs are empty
+          elif echo "$LOGS" | grep "ERRO\|FATA\|panic"; then
+            echo "Critical errors found in container logs!"
+            exit 1  # Fail the workflow if errors are found
+          else
+            echo "No errors found in logs."
+          fi
+      
+      - name: Check for error logs in agglayer service
+        working-directory: .github/scripts
+        run: |
+          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} agglayer 2>&1)
+          echo "$LOGS"
+          if [[ -z "$LOGS" ]]; then
+            echo "Error: No logs found for agglayer service! Service may not be functioning."
+            exit 1  # Fail the workflow if logs are empty
+          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
+            echo "Errors found in container logs!"
+            exit 1  # Fail the workflow if errors are found
+          else
+            echo "No errors found in logs."
+          fi
 
       - name: Post kurtosis run
         if: always()
@@ -155,8 +187,8 @@ jobs:
 
       - name: Run bridge tests
         run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
       - name: Post kurtosis run
         if: always()
@@ -281,8 +313,8 @@ jobs:
 
       - name: Run bridge tests
         run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 
       - name: Post kurtosis run
         if: always()
@@ -304,7 +336,10 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
+        run: |
+          # Add test runner and tx spammer to the args file
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ./.github/tests/chains/op-succinct.yml
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -330,6 +365,11 @@ jobs:
           else
             echo "No errors found in logs."
           fi
+
+      # - name: Run optimistic-mode test
+      #   run: |
+      #     kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
+      #     kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
 
       - name: Post kurtosis run
         if: always()

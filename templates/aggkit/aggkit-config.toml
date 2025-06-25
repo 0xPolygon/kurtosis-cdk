@@ -20,13 +20,7 @@ AggLayerURL="{{.agglayer_grpc_url}}"
 AggLayerURL="{{.agglayer_readrpc_url}}"
 {{- end }}
 
-# Check if "op" mode should be used for L2RPC
-{{- if and .deploy_optimism_rollup (eq .consensus_contract_type "fep") }}
-L2RPC = "{Mode = \"op\", URL = \"{{.op_el_rpc_url}}\", OpNodeURL = \"{{.op_cl_rpc_url}}\"}"
-# TODO should this only be assigned with AggchainFEP + OP mode?
-OpNodeURL = "{{.op_cl_rpc_url}}"
 AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
-{{- end}}
 
 ForkId = 12
 ContractVersions = "banana"
@@ -194,8 +188,10 @@ Mode="AggchainProof"
 
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
+SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 OpNodeURL = "{{.op_cl_rpc_url}}"
+RequireKeyMatchTrustedSequencer = true
 {{- end}}
 
 
@@ -573,6 +569,37 @@ URL = "{{.op_el_rpc_url}}"
 # ------------------------------------------------------------------------------
 L1ChainID = "{{.zkevm_rollup_chain_id}}"
 
+
+
+# ==============================================================================
+#                        _           _                              __                  
+#  __ _  __ _  __ _  ___| |__   __ _(_)_ __  _ __  _ __ ___   ___  / _| __ _  ___ _ __  
+# / _` |/ _` |/ _` |/ __| '_ \ / _` | | '_ \| '_ \| '__/ _ \ / _ \| |_ / _` |/ _ \ '_ \ 
+#| (_| | (_| | (_| | (__| | | | (_| | | | | | |_) | | | (_) | (_) |  _| (_| |  __/ | | |
+# \__,_|\__, |\__, |\___|_| |_|\__,_|_|_| |_| .__/|_|  \___/ \___/|_|  \__, |\___|_| |_|
+#       |___/ |___/                         |_|                        |___/                         
+# ------------------------------------------------------------------------------
+[AggchainProofGen]
+# ------------------------------------------------------------------------------
+# AggchainProofURL is the URL of the AggkitProver
+# ------------------------------------------------------------------------------
+AggchainProofURL = "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
+
+# ------------------------------------------------------------------------------
+# SovereignRollupAddr is the address of the sovereign rollup contract on L1
+# ------------------------------------------------------------------------------
+SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
+
+# ------------------------------------------------------------------------------
+# GlobalExitRootL2Addr is the address of the GlobalExitRootManager contract on l2 sovereign chain
+# this address is needed for the AggchainProof mode of the AggSender
+# ------------------------------------------------------------------------------
+GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
+
+# ------------------------------------------------------------------------------
+# UseAggkitProverTLS is a flag to enable the AggkitProver TLS handshake in the AggSender-AggkitProver gRPC connection
+# ------------------------------------------------------------------------------
+# UseAggkitProverTLS = false
 
 # ==============================================================================
 #  ____             __ _ _ _             
