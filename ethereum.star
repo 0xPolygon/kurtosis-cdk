@@ -1,9 +1,13 @@
 ethereum_package = import_module(
     "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
 )
-fork_ethereum_package = import_module(
+fork_ethereum_package_op = import_module(
     "github.com/ARR552/ethereum-package/main.star@6b9aa3530241ff3bda99f9d9b6b9e4186ba312dd"
 )
+fork_ethereum_package_only_smc = import_module(
+    "github.com/ARR552/ethereum-package/main.star@619e3f27807c3683f9faa11d50571003e95d69b8"
+)
+constants = import_module("./src/package_io/constants.star")
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
@@ -15,8 +19,15 @@ LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
 def run(plan, args):
     if args.get("custom_genesis") == True:
-        plan.print("Custom genesis is enabled, using the forked ethereum package.")
-        package = fork_ethereum_package
+        if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
+            plan.print("Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic.")
+            package = fork_ethereum_package_op
+        elif args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium:
+            plan.print("Custom genesis is enabled for validium consensus, using the forked ethereum package without any rollup deployed.")
+            package = fork_ethereum_package_only_smc
+        else:
+            plan.print("Unknown consensus contract type")
+            return
     else:
         plan.print("Custom genesis is disabled, using the default ethereum package.")
         package = ethereum_package

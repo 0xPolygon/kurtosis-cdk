@@ -75,8 +75,12 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/run-initialize-rollup.sh",
     },
     {
+        "name": "op-configure-contract-container-custom-genesis.sh",
+        "file": "./templates/sovereign-rollup/op-configure-contract-container-custom-genesis.sh",
+    },
+    {
         "name": "configure-contract-container-custom-genesis.sh",
-        "file": "./templates/sovereign-rollup/configure-contract-container-custom-genesis.sh",
+        "file": "./templates/cdk-erigon/configure-contract-container-custom-genesis.sh",
     },
 ]
 
@@ -224,11 +228,11 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
     # Deploy contracts.
-    if args.get("custom_genesis") == True:
-        plan.print("Skipping L1 smc deployment as custom genesis is set to true...")
+    if args.get("custom_genesis") == True and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
+        plan.print("Skipping L1 smc deployment as custom genesis is set to true for pessimistic mode...")
         # We need to create the combined.json file
         plan.exec(
-            description="Creating combined file",
+            description="Creating combined file for pessimistic",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
             command=[
@@ -257,7 +261,7 @@ def run(plan, args, deployment_stages, op_stack_args):
       "salt":                   "0x0000000000000000000000000000000000000000000000000000000000000001",
       "polygonZkEVML2BridgeAddress":        "0x927aa8656B3a541617Ef3fBa4A2AB71320dc7fD7",
       "polygonZkEVMGlobalExitRootL2Address": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
-      "bridgeGenBlockNumber":               null
+      "bridgeGenBlockNumber":               0
     }
     """
             ]
@@ -265,7 +269,20 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
         
         plan.exec(
-            description="Configuring contract container...",
+            description="Configuring contract container for pessimistic...",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format("/opt/contract-deploy/op-configure-contract-container-custom-genesis.sh")
+            ]
+            ),
+        )
+    elif args.get("custom_genesis") == True and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium:
+        plan.print("Skipping L1 smc deployment as custom genesis is set to true...")        
+        plan.exec(
+            description="Configuring contract container for cdk-validium...",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
             command=[
@@ -274,6 +291,37 @@ def run(plan, args, deployment_stages, op_stack_args):
                 "chmod +x {0} && {0}".format("/opt/contract-deploy/configure-contract-container-custom-genesis.sh")
             ]
             ),
+        )
+        plan.print("Deploying rollup smc on L1...")
+        plan.exec(
+            description="Deploying rollup smc on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-l1-2-contract-setup.sh"
+                    ),
+                ]
+            ),
+        )
+        # Store CDK configs.
+        plan.store_service_files(
+            name="cdk-erigon-chain-config",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
+        )
+
+        plan.store_service_files(
+            name="cdk-erigon-chain-allocs",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+        )
+        plan.store_service_files(
+            name="cdk-erigon-chain-first-batch",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/first-batch-config.json",
         )
     else:
         plan.print("Deploying L1 smc...")

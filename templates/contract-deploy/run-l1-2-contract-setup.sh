@@ -123,7 +123,7 @@ cp genesis.json genesis.original.json
 # Check create_rollup_output.json exists before copying it.
 # For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
 if [[ -e create_rollup_output.json ]]; then
-    echo "File create_rollup_output.json does not exists. Combining files..."
+    echo "File create_rollup_output.json exists. Combining files..."
     jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
 else
     echo "File create_rollup_output.json does not exist. Trying to copy deploy_output.json to combined.json."

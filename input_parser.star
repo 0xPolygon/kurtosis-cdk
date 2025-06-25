@@ -30,12 +30,12 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
     # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
     # Requires consensus_contract_type to be "pessimistic".
-    "deploy_optimism_rollup": True,
+    "deploy_optimism_rollup": False,
     # After deploying OP Stack, upgrade it to OP Succinct.
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": False,
+    "deploy_l2_contracts": True,
 }
 
 DEFAULT_IMAGES = {
@@ -189,7 +189,7 @@ DEFAULT_L1_ARGS = {
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # Custom L1 genesis
-    "custom_genesis": False,
+    "custom_genesis": True,
     # This mnemonic will:
     # a) be used to create keystores for all the types of validators that we have, and
     # b) be used to generate a CL genesis.ssz that has the children validator keys already
@@ -405,7 +405,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
+        "consensus_contract_type": constants.CONSENSUS_TYPE.cdk_validium,
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio
