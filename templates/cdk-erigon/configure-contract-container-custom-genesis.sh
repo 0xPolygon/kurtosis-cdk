@@ -1,13 +1,5 @@
 #!/bin/bash
 
-echo_ts() {
-    green="\e[32m"
-    end_color="\e[0m"
-
-    timestamp=$(date +"[%Y-%m-%d %H:%M:%S]")
-    echo -e "$green$timestamp$end_color $1" >&2
-}
-
 # deploymentRollupManagerBlockNumber must be different to 0 becuase cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
 cat >/opt/zkevm/combined.json <<'EOF'
     {
@@ -38,65 +30,5 @@ EOF
 
 cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
 cp /opt/zkevm/combined.json /opt/zkevm/deploy_output.json
-# sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' /opt/zkevm-contracts/hardhat.config.ts
-# cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
-
-# pushd /opt/zkevm-contracts || exit 1
-# MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
-
-# MNEMONIC="{{.l1_preallocated_mnemonic}}" npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee ./05_create_rollup.out
-# popd || exit 1
-
-# cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
-# cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm/
-# cp /opt/zkevm/combined.json /opt/zkevm/combined-001.json
-
-# if [[ -e /opt/zkevm-contracts/deployment/v2/create_rollup_output.json ]]; then
-#     cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
-# else
-#     echo "File /opt/zkevm-contracts/deployment/v2/create_rollup_output.json does not exist."
-# fi
-
-# # This is a jq script to transform the CDK-style genesis file into an allocs file for erigon
-# jq_script='
-# .genesis | map({
-#   (.address): {
-#     contractName: (if .contractName == "" then null else .contractName end),
-#     balance: (if .balance == "" then null else .balance end),
-#     nonce: (if .nonce == "" then null else .nonce end),
-#     code: (if .bytecode == "" then null else .bytecode end),
-#     storage: (if .storage == null or .storage == {} then null else (.storage | to_entries | sort_by(.key) | from_entries) end)
-#   }
-# }) | add'
-
-# # Use jq to transform the input JSON into the desired format
-# if ! output_json=$(jq "$jq_script" /opt/zkevm/genesis.json); then
-#     echo_ts "Error processing JSON with jq"
-#     exit 1
-# fi
-
-# # Write the output JSON to a file
-# if ! echo "$output_json" | jq . > "/opt/zkevm/dynamic-{{.chain_name}}-allocs.json"; then
-#     echo_ts "Error writing to file dynamic-{{.chain_name}}-allocs.json"
-#     exit 1
-# fi
-
-# if [[ -e create_rollup_output.json ]]; then
-#     jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "/opt/zkevm/dynamic-{{.chain_name}}-conf.json"
-#     batch_timestamp=$(jq '.firstBatchData.timestamp' /opt/zkevm/combined.json)
-#     jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "/opt/zkevm/dynamic-{{.chain_name}}-conf.json" > tmp_output.json
-#     mv tmp_output.json "/opt/zkevm/dynamic-{{.chain_name}}-conf.json"
-# else
-#     echo "Without create_rollup_output.json, there is no batch_timestamp available"
-#     jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "/opt/zkevm/dynamic-{{.chain_name}}-conf.json"
-# fi
-
-# # zkevm.initial-batch.config
-# jq '.firstBatchData' /opt/zkevm/combined.json > /opt/zkevm/first-batch-config.json
-
-# if [[ ! -s "/opt/zkevm/dynamic-{{.chain_name}}-conf.json" ]]; then
-#     echo_ts "Error creating the dynamic kurtosis config"
-#     exit 1
-# fi
 
 cast send 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"

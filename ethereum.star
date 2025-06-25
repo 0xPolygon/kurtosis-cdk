@@ -16,8 +16,8 @@ def run(plan, args):
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print("Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic.")
             package = import_module(fork_ethereum_package_op)
-        elif args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium:
-            plan.print("Custom genesis is enabled for validium consensus, using the forked ethereum package without any rollup deployed.")
+        elif args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup:
+            plan.print("Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed.")
             package = import_module(fork_ethereum_package_only_smc)
         else:
             plan.print("Unknown consensus contract type")
