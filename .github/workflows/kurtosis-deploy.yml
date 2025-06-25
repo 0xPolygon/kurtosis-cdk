@@ -366,10 +366,10 @@ jobs:
             echo "No errors found in logs."
           fi
 
-      # - name: Run optimistic-mode test
-      #   run: |
-      #     kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
-      #     kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
+      - name: Run optimistic-mode test
+        run: |
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
 
       - name: Post kurtosis run
         if: always()
