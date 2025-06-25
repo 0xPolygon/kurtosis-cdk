@@ -5,7 +5,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib.sh"
 
 check_consensus pessimistic fep
 
-prev_cert="./certificate-state.json"
+prev_cert="./certificate-status.json"
 l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/zkevm/combined.json)
 network_id=$(cast call --rpc-url "$L2_RPC_URL" "$l2_bridge_address" 'networkID()(uint32)')
 
@@ -44,10 +44,10 @@ now_epoch=$(date -u +%s)
 diff=$((now_epoch - prev_epoch))
 
 if (( diff > 120 )) && [[ "$prev_status" != "Settled" ]]; then
-  echo "ERROR: Certificate is stuck with ${prev_status,,} status diff=$diff"
+  echo "ERROR: Certificate is stuck status=${prev_status,,} diff=${diff}s"
   exit 1
 fi
 
 if (( diff > 300 )); then
-  echo "WARN: Certificate is stuck with ${prev_status,,} status diff=$diff"
+  echo "WARN: Certificate is stuck status=${prev_status,,} diff=${diff}s"
 fi
