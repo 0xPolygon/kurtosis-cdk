@@ -42,9 +42,6 @@ def run(plan, args={}):
             import_module(ethereum_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-    plan.print("RETURNING......")
-    return
-    plan.print("NOOOO......")
     # Extract the fetch-rollup-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Temporarily run op-succinct-proposer service and fetch-rollup-config binary

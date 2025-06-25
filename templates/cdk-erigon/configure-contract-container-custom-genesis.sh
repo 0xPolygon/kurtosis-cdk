@@ -8,7 +8,7 @@ echo_ts() {
     echo -e "$green$timestamp$end_color $1" >&2
 }
 
-# deploymentRollupManagerBlockNumber must be different to 0 becuase cdk-erigon requires this value (zkevm.l1-first-block) to be different to 0
+# deploymentRollupManagerBlockNumber must be different to 0 becuase cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
 cat >/opt/zkevm/combined.json <<'EOF'
     {
         "polygonRollupManagerAddress": "0xFB054898a55bB49513D1BA8e0FB949Ea3D9B4153",
@@ -24,7 +24,7 @@ cat >/opt/zkevm/combined.json <<'EOF'
         "zkEVMDeployerContract":      "0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99",
         "deployerAddress":            "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
         "timelockContractAddress":    "0x3D4C5989214ca3CDFf9e62778cDD56a94a05348D",
-        "deploymentRollupManagerBlockNumber": 0,
+        "deploymentRollupManagerBlockNumber": 1,
         "upgradeToULxLyBlockNumber":          0,
         "admin":                 "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
         "trustedAggregator":      "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
@@ -37,6 +37,7 @@ cat >/opt/zkevm/combined.json <<'EOF'
 EOF
 
 cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
+cp /opt/zkevm/combined.json /opt/zkevm/deploy_output.json
 # sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' /opt/zkevm-contracts/hardhat.config.ts
 # cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 

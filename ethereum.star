@@ -1,12 +1,6 @@
-ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
-)
-fork_ethereum_package_op = import_module(
-    "github.com/ARR552/ethereum-package/main.star@6b9aa3530241ff3bda99f9d9b6b9e4186ba312dd"
-)
-fork_ethereum_package_only_smc = import_module(
-    "github.com/ARR552/ethereum-package/main.star@619e3f27807c3683f9faa11d50571003e95d69b8"
-)
+ethereum_package = "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
+fork_ethereum_package_op = "github.com/ARR552/ethereum-package/main.star@6b9aa3530241ff3bda99f9d9b6b9e4186ba312dd"
+fork_ethereum_package_only_smc = "github.com/ARR552/ethereum-package/main.star@6c9b615a78c80057943db6ee2555b7bb3ca1f67c"
 constants = import_module("./src/package_io/constants.star")
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
@@ -21,16 +15,16 @@ def run(plan, args):
     if args.get("custom_genesis") == True:
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print("Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic.")
-            package = fork_ethereum_package_op
+            package = import_module(fork_ethereum_package_op)
         elif args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium:
             plan.print("Custom genesis is enabled for validium consensus, using the forked ethereum package without any rollup deployed.")
-            package = fork_ethereum_package_only_smc
+            package = import_module(fork_ethereum_package_only_smc)
         else:
             plan.print("Unknown consensus contract type")
             return
     else:
         plan.print("Custom genesis is disabled, using the default ethereum package.")
-        package = ethereum_package
+        package = import_module(ethereum_package)
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
         "participants": [
