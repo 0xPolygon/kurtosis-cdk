@@ -285,9 +285,9 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if (
-        deployment_stages.get("deploy_optimism_rollup", False)
-        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    if deployment_stages.get("deploy_optimism_rollup", False) or (
+        deployment_stages.get("deploy_cdk_central_environment", False)
+        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
     ):
         plan.print("Deploying AggKit infrastructure")
         aggkit_package.run(

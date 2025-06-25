@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./databases.star")
@@ -177,6 +178,7 @@ def create_bridge_config_artifact(
         l2_rpc_url = "http://{}{}:{}".format(
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
         )
+        contract_addresses = contract_setup_addresses
     else:
         l2_rpc_url = args["op_el_rpc_url"]
         contract_addresses = contract_setup_addresses | {
@@ -190,7 +192,6 @@ def create_bridge_config_artifact(
                 "sovereign_ger_proxy_addr"
             ),
         }
-    contract_addresses = contract_setup_addresses
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
