@@ -52,11 +52,12 @@ polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 {{- if .deploy_optimism_rollup }}
 RPCURL = "{{.op_el_rpc_url}}"
+WitnessURL = ""
 {{- else }}
-RPCURL="{{.l2_rpc_url}}"
+RPCURL= "{{.l2_rpc_url}}"
+WitnessURL = "{{.l2_rpc_url}}"
 {{- end }}
 
-WitnessURL = ""
 
 # These values can be overriden directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
@@ -474,7 +475,11 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
 # Default value is "LatestBlock"
 # ------------------------------------------------------------------------------
+{{- if .deploy_optimism_rollup }}
 BlockFinality = "FinalizedBlock"
+{{- else }}
+BlockFinality = "LatestBlock"
+{{- end }}       
 
 # ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.
