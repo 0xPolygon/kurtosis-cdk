@@ -67,7 +67,7 @@ def get_aggkit_cmd(args, deployment_stages):
         service_command = [
             "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
             + "--cfg=/etc/aggkit/config.toml "
-            + "--components=aggsender,bridge"
+            + "--components=aggsender"
         ]
     else:
         service_command = [

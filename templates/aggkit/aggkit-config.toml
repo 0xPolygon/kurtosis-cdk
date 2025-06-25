@@ -206,11 +206,7 @@ Mode="AggchainProof"
 
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
-{{- if .deploy_optimism_rollup }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
-{{- else }}
-SovereignRollupAddr = "{{.zkevm_rollup_address}}"
-{{- end }}
 TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 OpNodeURL = "{{.op_cl_rpc_url}}"
 RequireKeyMatchTrustedSequencer = true
