@@ -1,6 +1,4 @@
-ethereum_package = "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
-fork_ethereum_package_op = "github.com/ARR552/ethereum-package/main.star@6b9aa3530241ff3bda99f9d9b6b9e4186ba312dd"
-fork_ethereum_package_only_smc = "github.com/ARR552/ethereum-package/main.star@6c9b615a78c80057943db6ee2555b7bb3ca1f67c"
+ethereum_package = import_module("github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29")  # 2025-05-30
 constants = import_module("./src/package_io/constants.star")
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
@@ -10,21 +8,23 @@ GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # https://github.com/ethpandaops/ethereum-package/pull/915
 LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
+only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
+op_rollup_created_genesis = "templates/genesis/op-genesis.json"
 
 def run(plan, args):
     if args.get("custom_genesis") == True:
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print("Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic.")
-            package = import_module(fork_ethereum_package_op)
+            genesis = read_file(src=op_rollup_created_genesis)
         elif args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup:
             plan.print("Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed.")
-            package = import_module(fork_ethereum_package_only_smc)
+            genesis = read_file(src=only_smc_genesis)
         else:
             plan.print("Unknown consensus contract type")
             return
     else:
         plan.print("Custom genesis is disabled, using the default ethereum package.")
-        package = import_module(ethereum_package)
+        genesis = ""
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
         "participants": [
@@ -53,6 +53,7 @@ def run(plan, args):
             }
         ],
         "network_params": {
+            "additional_preloaded_contracts": genesis,
             "network_id": str(args["l1_chain_id"]),
             "preregistered_validator_keys_mnemonic": args["l1_preallocated_mnemonic"],
             "preset": args["l1_preset"],
@@ -83,7 +84,7 @@ def run(plan, args):
         "port_publisher": port_publisher,
     }
 
-    l1 = package.run(plan, l1_args)
+    l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
     _wait_for_l1_startup(plan, cl_rpc_url)
 
