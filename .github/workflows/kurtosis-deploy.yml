@@ -337,7 +337,7 @@ jobs:
 
       - name: Kurtosis run
         run: |
-          # Add test runner and tx spammer to the args file
+          # Add test runner to the args file
           yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ./.github/tests/chains/op-succinct.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
 
@@ -368,8 +368,27 @@ jobs:
 
       - name: Run optimistic-mode test
         run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} TIMEOUT=2500 && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
+          # Get all required URLs first
+          L1_RPC_URL="http://$(kurtosis port print "${{ env.ENCLAVE_NAME }}" el-1-geth-lighthouse rpc)"
+          L2_RPC_URL="$(kurtosis port print "${{ env.ENCLAVE_NAME }}" op-el-1-op-geth-op-node-001 rpc)"
+          L2_NODE_URL="$(kurtosis port print "${{ env.ENCLAVE_NAME }}" op-cl-1-op-node-op-geth-001 http)"
+          
+          # Run tests with all required environment variables
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
+            "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
+            TIMEOUT=2500 \
+            L1_RPC_URL=$L1_RPC_URL \
+            L2_RPC_URL=$L2_RPC_URL \
+            L2_NODE_URL=$L2_NODE_URL \
+            && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
+          
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
+            "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
+            TIMEOUT=2500 \
+            L1_RPC_URL=$L1_RPC_URL \
+            L2_RPC_URL=$L2_RPC_URL \
+            L2_NODE_URL=$L2_NODE_URL \
+            && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
 
       - name: Post kurtosis run
         if: always()
