@@ -46,8 +46,10 @@ jobs:
 
       - name: Run bridge tests
         run: |
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
       - name: Check for error logs in aggkit service
         working-directory: .github/scripts
@@ -376,8 +378,10 @@ jobs:
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
           export CLAIM_WAIT_DURATION="20m"
           bats ./tests/op/optimistic-mode.bats || exit 1
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
           bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           popd
 
       - name: Post kurtosis run
