@@ -229,30 +229,42 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
     # Deploy contracts.
-    if args.get("custom_genesis") == True and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
-        plan.print("Skipping L1 smc deployment as custom genesis is set to true for pessimistic mode...")
+    if (
+        args.get("custom_genesis") == True
+        and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic
+    ):
+        plan.print(
+            "Skipping L1 smc deployment as custom genesis is set to true for pessimistic mode..."
+        )
         plan.exec(
             description="Configuring contract container for pessimistic...",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format("/opt/contract-deploy/op-configure-contract-container-custom-genesis.sh")
-            ]
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/op-configure-contract-container-custom-genesis.sh"
+                    ),
+                ]
             ),
         )
-    elif args.get("custom_genesis") == True and (args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup):
-        plan.print("Skipping L1 smc deployment as custom genesis is set to true...")        
+    elif args.get("custom_genesis") == True and (
+        args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+        or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
+    ):
+        plan.print("Skipping L1 smc deployment as custom genesis is set to true...")
         plan.exec(
             description="Configuring contract container for rollup/cdk-validium...",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format("/opt/contract-deploy/configure-contract-container-custom-genesis.sh")
-            ]
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/configure-contract-container-custom-genesis.sh"
+                    ),
+                ]
             ),
         )
         plan.print("Deploying rollup smc on L1...")

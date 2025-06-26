@@ -4,9 +4,7 @@ def run(plan, args, predeployed_contracts=False):
 
     script = "/opt/contract-deploy/run-sovereign-setup.sh"
     if predeployed_contracts:
-        plan.print(
-            "Predeployed contracts detected. Using predeployed setup script."
-        )
+        plan.print("Predeployed contracts detected. Using predeployed setup script.")
         script = "/opt/contract-deploy/run-sovereign-setup-predeployed.sh"
 
     plan.exec(

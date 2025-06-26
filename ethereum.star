@@ -1,4 +1,6 @@
-ethereum_package = import_module("github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29")  # 2025-05-30
+ethereum_package = import_module(
+    "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"
+)  # 2025-05-30
 constants = import_module("./src/package_io/constants.star")
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
@@ -11,13 +13,21 @@ LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
 op_rollup_created_genesis = "templates/genesis/op-genesis.json"
 
+
 def run(plan, args):
     if args.get("custom_genesis") == True:
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
-            plan.print("Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic.")
+            plan.print(
+                "Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic."
+            )
             genesis = read_file(src=op_rollup_created_genesis)
-        elif args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup:
-            plan.print("Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed.")
+        elif (
+            args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+            or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
+        ):
+            plan.print(
+                "Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed."
+            )
             genesis = read_file(src=only_smc_genesis)
         else:
             plan.print("Unknown consensus contract type")
