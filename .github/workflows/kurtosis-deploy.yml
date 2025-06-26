@@ -44,10 +44,8 @@ jobs:
 
       - name: Run bridge tests
         run: |
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
       - name: Check for error logs in aggkit service
         working-directory: .github/scripts
@@ -369,26 +367,36 @@ jobs:
       - name: Run optimistic-mode test
         run: |
           # Get all required URLs first
+          echo "Getting RPC URLs..."
           L1_RPC_URL="http://$(kurtosis port print "${{ env.ENCLAVE_NAME }}" el-1-geth-lighthouse rpc)"
           L2_RPC_URL="$(kurtosis port print "${{ env.ENCLAVE_NAME }}" op-el-1-op-geth-op-node-001 rpc)"
           L2_NODE_URL="$(kurtosis port print "${{ env.ENCLAVE_NAME }}" op-cl-1-op-node-op-geth-001 http)"
           
-          # Run tests with all required environment variables
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
-            "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
-            TIMEOUT=2500 \
-            L1_RPC_URL=$L1_RPC_URL \
-            L2_RPC_URL=$L2_RPC_URL \
-            L2_NODE_URL=$L2_NODE_URL \
-            && bats --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
+          echo "L1_RPC_URL: $L1_RPC_URL"
+          echo "L2_RPC_URL: $L2_RPC_URL"
+          echo "L2_NODE_URL: $L2_NODE_URL"
           
+          echo "Running Enable OptimisticMode test..."
+          # Run tests with all required environment variables and force output
           kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
             "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
             TIMEOUT=2500 \
             L1_RPC_URL=$L1_RPC_URL \
             L2_RPC_URL=$L2_RPC_URL \
             L2_NODE_URL=$L2_NODE_URL \
-            && bats --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
+            && BATS_VERBOSE=1 bats -x --show-output-of-passing-tests --formatter tap --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
+          
+          echo "Waiting 30 seconds before running Disable test..."
+          sleep 30
+          
+          echo "Running Disable OptimisticMode test..."
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
+            "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
+            TIMEOUT=2500 \
+            L1_RPC_URL=$L1_RPC_URL \
+            L2_RPC_URL=$L2_RPC_URL \
+            L2_NODE_URL=$L2_NODE_URL \
+            && BATS_VERBOSE=1 bats -x --show-output-of-passing-tests --formatter tap --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
 
       - name: Post kurtosis run
         if: always()
