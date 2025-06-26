@@ -88,6 +88,7 @@ fund_account_on_l1 "sovereignadmin" "{{.zkevm_l2_sovereignadmin_address}}"
 echo_ts "Setting up local zkevm-contracts repo for deployment"
 pushd /opt/zkevm-contracts || exit 1
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # Set up the hardhat environment.
 sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 # Set up a foundry project in case we do a gas token or dac deployment.
