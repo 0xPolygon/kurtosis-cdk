@@ -49,7 +49,7 @@ while IFS= read -r hex; do
     )
   fi
 
-  l2_coinbase=$(echo "$l2_coinbase" | tr '[:upper:]' '[:lower:]')
+  l2_coinbase=${l2_coinbase,,}
   if [[ "$miner" != "$l2_coinbase" ]]; then
     echo "ERROR: L2 coinbase mismatch miner=$miner l2_coinbase=$l2_coinbase"
     exit 1
