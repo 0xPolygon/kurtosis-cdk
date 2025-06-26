@@ -332,7 +332,10 @@ jobs:
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
-
+          
+      - name: Install bats
+        uses: bats-core/bats-action@3.0.0
+        
       - name: Kurtosis run
         run: |
           # Add test runner to the args file
@@ -342,61 +345,25 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
-        working-directory: .github/scripts
-        run: |
-          ./monitor-op-rollup.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+      - name: Checkout agglayer-e2e
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          ref: 3446fef5780ed8d6271a343613b14eb2b08d523a
+          path: agglayer-e2e
 
-      - name: Check for error logs in op-succinct-proposer service
-        working-directory: .github/scripts
+      - name: Run e2e tests
         run: |
-          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} op-succinct-proposer-001 2>&1)
-          echo "$LOGS"
-          if [[ -z "$LOGS" ]]; then
-            echo "Error: No logs found for op-succinct-proposer service! Service may not be functioning."
-            exit 1  # Fail the workflow if logs are empty
-          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
-            echo "Errors found in container logs!"
-            exit 1  # Fail the workflow if errors are found
-          else
-            echo "No errors found in logs."
-          fi
-
-      - name: Run optimistic-mode test
-        run: |
-          # Get all required URLs first
-          echo "Getting RPC URLs..."
-          L1_RPC_URL="http://$(kurtosis port print "${{ env.ENCLAVE_NAME }}" el-1-geth-lighthouse rpc)"
-          L2_RPC_URL="$(kurtosis port print "${{ env.ENCLAVE_NAME }}" op-el-1-op-geth-op-node-001 rpc)"
-          L2_NODE_URL="$(kurtosis port print "${{ env.ENCLAVE_NAME }}" op-cl-1-op-node-op-geth-001 http)"
-          
-          echo "L1_RPC_URL: $L1_RPC_URL"
-          echo "L2_RPC_URL: $L2_RPC_URL"
-          echo "L2_NODE_URL: $L2_NODE_URL"
-          
-          echo "Running Enable OptimisticMode test..."
-          # Run tests with all required environment variables and force output
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
-            "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
-            TIMEOUT=2500 \
-            L1_RPC_URL=$L1_RPC_URL \
-            L2_RPC_URL=$L2_RPC_URL \
-            L2_NODE_URL=$L2_NODE_URL \
-            && BATS_VERBOSE=1 bats -x --show-output-of-passing-tests --formatter tap --filter 'Enable OptimisticMode' tests/op/optimistic-mode.bats"
-          
-          echo "Waiting 30 seconds before running Disable test..."
-          sleep 30
-          
-          echo "Running Disable OptimisticMode test..."
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
-            "export ENCLAVE_NAME=${{ env.ENCLAVE_NAME }} \
-            TIMEOUT=2500 \
-            L1_RPC_URL=$L1_RPC_URL \
-            L2_RPC_URL=$L2_RPC_URL \
-            L2_NODE_URL=$L2_NODE_URL \
-            && BATS_VERBOSE=1 bats -x --show-output-of-passing-tests --formatter tap --filter 'Disable OptimisticMode' tests/op/optimistic-mode.bats"
+          pushd agglayer-e2e || exit 1
+          set -a
+          source ./tests/.env
+          set +a
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          bats ./tests/op/optimistic-mode.bats \
+                ./tests/agglayer/bridges.bats
+          popd
 
       - name: Post kurtosis run
         if: always()
