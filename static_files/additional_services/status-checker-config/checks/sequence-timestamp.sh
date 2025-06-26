@@ -18,11 +18,11 @@ events=$(
 )
 
 # Iterate over the sequence batches events because sometimes the batch number is
-# is greater than the virtual batch.
+# greater than the virtual batch.
 while IFS= read -r hex; do
   batch_number=$(printf "%s\n" "$hex" | cast to-dec)
 
-  if [ "$batch_number" -gt "$virtual_batch_number" ]; then
+  if [[ "$batch_number" -gt "$virtual_batch_number" ]]; then
     continue
   fi
 

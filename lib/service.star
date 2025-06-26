@@ -1,4 +1,5 @@
 data_availability_package = import_module("./data_availability.star")
+constants = import_module("../src/package_io/constants.star")
 
 
 def get_contract_setup_addresses(plan, args, deployment_stages):
@@ -75,6 +76,24 @@ def get_l2_rpc_url(plan, args):
         plan.print("No ws rpc port found for service: '{}'".format(service.name))
 
     return struct(http=http_url, ws=ws_url)
+
+
+# Return the HTTP RPC URL of the sequencer or empty if it doesn't exist.
+def get_sequencer_rpc_url(plan, args):
+    if args.get("consensus_contract_type") not in [
+        constants.CONSENSUS_TYPE.rollup,
+        constants.CONSENSUS_TYPE.cdk_validium,
+    ]:
+        return ""
+
+    sequencer_service = plan.get_service(
+        args["sequencer_name"] + args["deployment_suffix"]
+    )
+    sequencer_rpc_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["rpc"].number
+    )
+
+    return sequencer_rpc_url
 
 
 def get_sovereign_contract_setup_addresses(plan, args):

@@ -205,6 +205,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             },
             description="Create deploy_op_succinct_contract files artifact",
         )
+
         # Mount op-succinct specific artifacts
         files["/opt/op-succinct/"] = Directory(
             artifact_names=[fetch_rollup_config_artifact]

@@ -37,3 +37,63 @@ def extract_fetch_rollup_config(plan, args):
         wait=None,
         description="Extract fetch-rollup-config from the op-succinct-proposer image to files artifact",
     )
+
+
+def create_evm_sketch_genesis(plan, args):
+    parse_evm_sketch_genesis_artifact = plan.render_templates(
+        name="parse-evm-sketch-genesis.sh",
+        config={
+            "parse-evm-sketch-genesis.sh": struct(
+                template=read_file(
+                    src="./templates/op-succinct/parse-evm-sketch-genesis.sh"
+                ),
+                data=args,
+            ),
+        },
+        description="Create parse-evm-sketch-genesis.sh files artifact",
+    )
+
+    op_geth_genesis = plan.store_service_files(
+        service_name="op-el-1-op-geth-op-node" + args["deployment_suffix"],
+        name="op_geth_genesis.json",
+        src="/network-configs/genesis-" + str(args["zkevm_rollup_chain_id"]) + ".json",
+        description="Storing OP Geth genesis.json for evm-sketch-genesis field in aggkit-prover.",
+    )
+
+    # Add a temporary service using the contracts image
+    temp_service_name = "temp-contracts"
+
+    files = {}
+    files["/opt/op-succinct/"] = Directory(artifact_names=[op_geth_genesis])
+
+    files["/opt/scripts/"] = Directory(
+        artifact_names=[parse_evm_sketch_genesis_artifact]
+    )
+
+    # Create helper service to deploy contracts
+    plan.add_service(
+        name=temp_service_name,
+        config=ServiceConfig(
+            image=args["zkevm_contracts_image"],
+            files=files,
+            # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
+            entrypoint=["bash", "-c"],
+            cmd=["sleep infinity"],
+            user=User(uid=0, gid=0),  # Run the container as root user.
+        ),
+    )
+
+    # Parse .config section of L1 geth genesis for evm-sketch-genesis input
+    plan.exec(
+        description="Parsing .config section of L1 geth genesis for evm-sketch-genesis input",
+        service_name="temp-contracts",
+        recipe=ExecRecipe(
+            command=[
+                "/bin/bash",
+                "-c",
+                "cp /opt/scripts/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                    "/opt/op-succinct/parse-evm-sketch-genesis.sh"
+                ),
+            ]
+        ),
+    )

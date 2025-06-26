@@ -1,11 +1,10 @@
 ports_package = import_module("../package_io/ports.star")
+service_package = import_module("../../lib/service.star")
 
 
 def run(plan, args):
-    l2_rpc_service = plan.get_service(args["l2_rpc_name"] + args["deployment_suffix"])
-    l2_rpc_url = "http://{}:{}".format(
-        l2_rpc_service.ip_address, l2_rpc_service.ports["rpc"].number
-    )
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
+    sequencer_rpc_url = service_package.get_sequencer_rpc_url(plan, args)
 
     status_checker_config_artifact = plan.render_templates(
         name="status-checker-config",
@@ -50,7 +49,9 @@ def run(plan, args):
             env_vars={
                 "L1_RPC_URL": args.get("l1_rpc_url"),
                 "L2_RPC_URL": l2_rpc_url,
+                "SEQUENCER_RPC_URL": sequencer_rpc_url,
                 "CONSENSUS_CONTRACT_TYPE": args.get("consensus_contract_type"),
+                "AGGLAYER_RPC_URL": args.get("agglayer_readrpc_url"),
             },
         ),
     )

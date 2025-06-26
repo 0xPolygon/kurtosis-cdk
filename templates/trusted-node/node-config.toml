@@ -526,7 +526,7 @@ L2Coinbase = "0x0000000000000000000000000000000000000000"
 MaxLogsCount = 1000
 
 # ------------------------------------------------------------------------------
-# MaxLogsBlockRange MaxLogsBlockRange is a configuration to set the
+# MaxLogsBlockRange is a configuration to set the
 # max range for block number when querying TXslogs in a single call to
 # the state, if zero it means no limit
 # ------------------------------------------------------------------------------
@@ -1117,16 +1117,16 @@ L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
 
 # ------------------------------------------------------------------------------
 # SenderAddress should generally be the address of the trusted
-# sequencer. This is the address that that the manager uses for
+# sequencer. This is the address that the manager uses for
 # signing the L1 txs.
 # ------------------------------------------------------------------------------
 SenderAddress = "{{.zkevm_l2_sequencer_address}}"
 
 # ------------------------------------------------------------------------------
-# PrivateKey is a object with the keystore and password that are used
+# PrivateKey is an object with the keystore and password that are used
 # for signing transactions. The keystore is a standard go-ethereum
 # style keystore that is encrypted with the provided password. In this
-# particular context, this needs to be the sequencers private key.
+# particular context, this needs to be the sequencer's private key.
 # ------------------------------------------------------------------------------
 [SequenceSender.PrivateKey]
 Path = "/etc/zkevm/sequencer.keystore"
@@ -1285,10 +1285,10 @@ SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 {{end}}
 
 # ------------------------------------------------------------------------------
-# PrivateKey is a object with the keystore and password that are used
+# PrivateKey is an object with the keystore and password that are used
 # for signing transactions. The keystore is a standard go-ethereum
 # style keystore that is encrypted with the provided password. In this
-# particular context, this needs to be the sequencers private key.
+# particular context, this needs to be the sequencer's private key.
 # ------------------------------------------------------------------------------
 [Aggregator.SequencerPrivateKey]
 Path = "/etc/zkevm/sequencer.keystore"
