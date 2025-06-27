@@ -179,6 +179,7 @@ def create_bridge_config_artifact(
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
         )
         contract_addresses = contract_setup_addresses
+        require_sovereign_chain_contract = False
     else:
         l2_rpc_url = args["op_el_rpc_url"]
         contract_addresses = contract_setup_addresses | {
@@ -192,6 +193,7 @@ def create_bridge_config_artifact(
                 "sovereign_ger_proxy_addr"
             ),
         }
+        require_sovereign_chain_contract = True
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -201,7 +203,7 @@ def create_bridge_config_artifact(
                     "global_log_level": args["global_log_level"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
-                    "require_sovereign_chain_contract": True,
+                    "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
