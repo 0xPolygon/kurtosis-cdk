@@ -12,5 +12,3 @@ args:
   cdk_validium_node_image: ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10
   consensus_contract_type: rollup
   sequencer_type: erigon
-  additional_services:
-    - pless_zkevm_node
