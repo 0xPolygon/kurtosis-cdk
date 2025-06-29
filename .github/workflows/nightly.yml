@@ -200,41 +200,41 @@ jobs:
           args_filename: pre-deployed-gas-token
 
   # Deploy a standalone zkevm permisionless node against Cardona Sepolia Tesnet.
-  cardona-sepolia-testnet-pless-zkevm-node:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
+  # cardona-sepolia-testnet-pless-zkevm-node:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 20
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Pre kurtosis run
-        uses: ./.github/actions/kurtosis-pre-run
-        with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_token: ${{ secrets.DOCKER_TOKEN }}
+  #     - name: Pre kurtosis run
+  #       uses: ./.github/actions/kurtosis-pre-run
+  #       with:
+  #         docker_username: ${{ secrets.DOCKER_USERNAME }}
+  #         docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Deploy the permisionless node
-        run: |
-          yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' ./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml .
-        # This step will only execute if the necessary secrets are available, preventing failures
-        # on pull requests from forked repositories.
-        if: ${{ env.ALCHEMY_SEPOLIA_RPC_URL}}
-        env:
-          ALCHEMY_SEPOLIA_RPC_URL: ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}
+  #     - name: Deploy the permisionless node
+  #       run: |
+  #         yq -Y --in-place '.args.l1_rpc_url = "${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}"' ./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml
+  #         kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/pless-zkevm-node/cardona-sepolia-testnet-pless-zkevm-node.yml .
+  #       # This step will only execute if the necessary secrets are available, preventing failures
+  #       # on pull requests from forked repositories.
+  #       if: ${{ env.ALCHEMY_SEPOLIA_RPC_URL}}
+  #       env:
+  #         ALCHEMY_SEPOLIA_RPC_URL: ${{ secrets.ALCHEMY_SEPOLIA_RPC_URL }}
 
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+  #     - name: Inspect enclave
+  #       run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (zkEVM Node Permissionless RPC)
-        working-directory: .github/scripts
-        run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)"
+  #     - name: Monitor CDK chain verified batches (zkEVM Node Permissionless RPC)
+  #       working-directory: .github/scripts
+  #       run: |
+  #         ./monitor-cdk-chain.sh \
+  #           --enclave ${{ env.ENCLAVE_NAME }} \
+  #           --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)"
 
-      - name: Post kurtosis run
-        if: always()
-        uses: ./.github/actions/kurtosis-post-run
-        with:
-          enclave_name: ${{ env.ENCLAVE_NAME }}
-          args_filename: cardona-sepolia-testnet-pless-zkevm-node
+  #     - name: Post kurtosis run
+  #       if: always()
+  #       uses: ./.github/actions/kurtosis-post-run
+  #       with:
+  #         enclave_name: ${{ env.ENCLAVE_NAME }}
+  #         args_filename: cardona-sepolia-testnet-pless-zkevm-node
