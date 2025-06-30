@@ -19,6 +19,10 @@ events=$(
     --json | jq -r '.[] | .topics[1]' | tail -n "$last_n_events"
 )
 
+if [[ -z "$events" ]]; then
+  exit 0
+fi
+
 # Iterate over the sequence batches events because sometimes the batch number is
 # greater than the virtual batch.
 while IFS= read -r hex; do
