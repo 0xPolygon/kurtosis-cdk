@@ -58,7 +58,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-succinct
     "test_runner_image": "leovct/e2e:9fe80e1",
-    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.4",  # https://github.com/0xPolygon/status-checker/releases
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",  # https://github.com/0xPolygon/status-checker/releases
 }
 
 DEFAULT_PORTS = {

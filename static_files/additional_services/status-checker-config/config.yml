@@ -4,7 +4,7 @@
 enabled_by_default: true
 interval: 10s
 logs:
-  level: trace
+  level: warn
 checks_dir: /opt/status-checker/checks
 modify_permissions: true
 antithesis: true
