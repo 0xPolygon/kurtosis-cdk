@@ -71,7 +71,7 @@ def run(
     agglayer_endpoint = get_agglayer_endpoint(plan, args)
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
-        name="cdk-aggoracle-config-artifact",
+        name="aggkit-config-artifact",
         config={
             "config.toml": struct(
                 template=aggkit_config_template,
