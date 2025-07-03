@@ -167,6 +167,35 @@ echo_ts "Final combined.json is ready:"
 cp combined.json "combined{{.deployment_suffix}}.json"
 cat combined.json
 
+echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
+cast send \
+    --private-key "{{.zkevm_l2_sequencer_private_key}}" \
+    --legacy \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polTokenAddress' combined.json)" \
+    'approve(address,uint256)(bool)' \
+    "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+
+# The DAC needs to be configured with a required number of signatures.
+# Right now the number of DAC nodes is not configurable.
+# If we add more nodes, we'll need to make sure the urls and keys are sorted.
+echo_ts "Setting the data availability committee"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
+    'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
+    1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+
+# The DAC needs to be enabled with a call to set the DA protocol.
+echo_ts "Setting the data availability protocol"
+cast send \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    "$(jq -r '.rollupAddress' combined.json)" \
+    'setDataAvailabilityProtocol(address)' \
+    "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+
 # This is a jq script to transform the CDK-style genesis file into an allocs file for erigon
 jq_script='
 .genesis | map({
