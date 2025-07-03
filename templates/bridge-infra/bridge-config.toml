@@ -80,6 +80,8 @@ HTTPPort = "{{.rpc_port_number}}"
 DefaultPageLimit = 25
 # Maximum limit for paginated results to prevent excessive data retrieval
 MaxPageLimit = 1000
+# FinalizedGEREnabled is used to only compute mt proofs with finalized GER. If all the networks are synced in the same bridge service, this flag must be disabled.
+FinalizedGEREnabled = true
     # Database configuration for the bridge server. Could be the same config as SyncDB but ideally It should be a read replica to distribute the load.
     [BridgeServer.DB]
     # Type of database for the bridge server
