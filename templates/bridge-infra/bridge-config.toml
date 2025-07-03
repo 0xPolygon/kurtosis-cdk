@@ -138,7 +138,7 @@ L2PolygonZkEVMGlobalExitRootAddresses = ["{{.zkevm_global_exit_root_l2_address}}
 # configuration, and retry settings for sending transactions.
 [ClaimTxManager]
 # Enable or disable the claim transaction manager
-Enabled = true
+Enabled = false
 # Frequency to monitor transactions
 FrequencyToMonitorTxs = "5s"
 # Path and password for the private key
