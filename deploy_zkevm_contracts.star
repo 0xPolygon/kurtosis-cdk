@@ -123,6 +123,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     if args.get("consensus_contract_type") in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
+        constants.CONSENSUS_TYPE.ecdsa,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
@@ -137,6 +138,9 @@ def run(plan, args, deployment_stages, op_stack_args):
                     data=args
                     | {
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "is_vanilla_client": is_vanilla_client(
                             args
                         ),
                         "deploy_op_succinct": deployment_stages.get(
@@ -270,3 +274,9 @@ def run(plan, args, deployment_stages, op_stack_args):
             ]
         ),
     )
+
+def is_vanilla_client(args):
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa:
+        return True
+    else:
+        return False
