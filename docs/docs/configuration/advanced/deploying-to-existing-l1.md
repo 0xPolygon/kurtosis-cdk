@@ -24,6 +24,10 @@ Kurtosis CDK is designed to be modular - so only minimal changes are required to
 
 Then create a `.yml` file to use as the `--args-file` input.
 ```yaml title="deploy-to-external-l1.yml"
+deployment_stages:
+  # Disable local L1.
+  deploy_l1: false
+
 args:
   verbosity: debug
 
