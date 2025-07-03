@@ -140,9 +140,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
-                        "is_vanilla_client": is_vanilla_client(
-                            args
-                        ),
+                        "is_vanilla_client": is_vanilla_client(args),
                         "deploy_op_succinct": deployment_stages.get(
                             "deploy_op_succinct", False
                         ),
@@ -274,6 +272,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             ]
         ),
     )
+
 
 def is_vanilla_client(args):
     if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa:
