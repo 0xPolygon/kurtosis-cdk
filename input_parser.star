@@ -812,7 +812,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
-            if args["consensus_contract_type"] != "fep":
+            if (
+                args["consensus_contract_type"] != "fep"
+                and args["consensus_contract_type"] != "ecdsa"
+            ):
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
                         args["consensus_contract_type"]
