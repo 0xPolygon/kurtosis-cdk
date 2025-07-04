@@ -31,4 +31,5 @@ EOF
 cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
 cp /opt/zkevm/combined.json /opt/zkevm/deploy_output.json
 
-cast send 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
+cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"

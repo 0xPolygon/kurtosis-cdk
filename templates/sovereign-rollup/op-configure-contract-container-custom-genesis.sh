@@ -38,4 +38,5 @@ cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm/
 cp /opt/zkevm/combined.json /opt/zkevm/combined-001.json
 
-cast send 0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2 "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
+cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"

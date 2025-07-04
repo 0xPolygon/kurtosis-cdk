@@ -267,7 +267,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ]
             ),
         )
-        plan.print("Deploying rollup smc on L1...")
+        plan.print("Creating rollup on L1...")
         plan.exec(
             description="Deploying rollup smc on L1",
             service_name=contracts_service_name,
@@ -313,7 +313,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ]
             ),
         )
-        plan.print("Deploying rollup smc on L1...")
+        plan.print("Creating rollup on L1...")
         plan.exec(
             description="Deploying rollup smc on L1",
             service_name=contracts_service_name,

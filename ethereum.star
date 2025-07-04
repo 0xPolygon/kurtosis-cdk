@@ -30,8 +30,7 @@ def run(plan, args):
             )
             genesis = read_file(src=only_smc_genesis)
         else:
-            plan.print("Unknown consensus contract type")
-            return
+            fail("Unknown consensus contract type")
     else:
         plan.print("Custom genesis is disabled, using the default ethereum package.")
         genesis = ""
