@@ -15,4 +15,3 @@ args:
   zkevm_use_real_verifier: false
   enable_normalcy: true
   sequencer_type: erigon
-  aggkit_components: aggsender
