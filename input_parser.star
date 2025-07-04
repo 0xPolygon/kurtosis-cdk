@@ -36,10 +36,12 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
+    # Deploy aggkit node in parallel to cdk node.
+    "deploy_aggkit_node": False,
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.4.0",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.4",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.1.2",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
@@ -88,7 +90,8 @@ DEFAULT_PORTS = {
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
-    "zkevm_cdk_node_port": 5576,
+    "cdk_node_rpc_port": 5576,
+    "aggkit_node_rest_api_port": 5577,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
@@ -139,7 +142,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 13 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -177,6 +180,9 @@ DEFAULT_ACCOUNTS = {
     # sovereignadmin
     "zkevm_l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
     "zkevm_l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
+    # claimsponsor
+    "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+    "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
 }
 
 DEFAULT_L1_ARGS = {
@@ -349,7 +355,7 @@ DEFAULT_ROLLUP_ARGS = {
     "aggkit_pprof_enabled": True,
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
-    "zkevm_path_rw_data": "/tmp/",
+    "zkevm_path_rw_data": "/tmp",
     # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check() function.
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
     # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check() function.
@@ -358,6 +364,10 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
+    "aggkit_components": "aggsender,aggoracle,bridge",
+    # Toggle to enable the claimsponsor on the aggkit node.
+    # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
+    "enable_aggkit_claim_sponsor": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
