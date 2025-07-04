@@ -10,12 +10,6 @@ RPC_FUZZER_SCRIPT_NAME = "rpcfuzz.sh"
 # The folder where tx spammer scripts are stored inside the service.
 SCRIPT_FOLDER_PATH = "/opt/scripts"
 
-# The min/max cpu/memory that spammer services can use.
-MIN_CPU = 100
-MAX_CPU = 1000
-MIN_MEMORY = 20
-MAX_MEMORY = 300
-
 
 def run(plan, args, contract_setup_addresses):
     # Get rpc urls and funder private keys.
@@ -136,9 +130,5 @@ def _start_service(plan, name, script_artifact, script_name, private_key, rpc_ur
             },
             entrypoint=["bash", "-c"],
             cmd=["chmod +x {0}/{1} && {0}/{1}".format(SCRIPT_FOLDER_PATH, script_name)],
-            min_cpu=MIN_CPU,
-            max_cpu=MAX_CPU,
-            min_memory=MIN_MEMORY,
-            max_memory=MAX_MEMORY,
         ),
     )
