@@ -130,7 +130,7 @@ jobs:
       - name: Kurtosis run
         run: |
           # Add test runner and tx spammer to the args file.
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ${{ matrix.file.path }}
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
 
       - name: Inspect enclave
@@ -300,7 +300,7 @@ jobs:
       - name: Deploy to local L1 chain
         run: |
           # Add test runner and tx spammer to the args file.
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' .github/tests/external-l1/deploy-cdk-to-local-l1.yml
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' .github/tests/external-l1/deploy-cdk-to-local-l1.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
 
       - name: Inspect enclave
