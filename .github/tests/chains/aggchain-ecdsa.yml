@@ -1,0 +1,45 @@
+# This args-file deploys the OP Succinct chain.
+deployment_stages:
+  deploy_op_succinct: false
+
+args:
+  # ECDSA consensus requires fork_id to be 0.
+  fork_id: 0
+  # Agghcain ECDSA consensus.
+  consensus_contract_type: ecdsa
+  # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
+  # A mock verifier is used otherwise.
+  op_succinct_mock: true
+  # Enable the integration with the Agglayer
+  op_succinct_agglayer: true
+  # Proof type. Must match the verifier gateway contract type. Options: "plonk", "groth16", "compressed", "core"
+  op_succinct_agg_proof_mode: "compressed"
+  # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
+  op_succinct_submission_interval: "1"
+  # The maximum number of concurrent proof requests to send to the `op-succinct-server`
+  op_succinct_max_concurrent_proof_requests: "1"
+  # The maximum number of concurrent witness generation processes to run on the `op-succinct-server`
+  op_succinct_max_concurrent_witness_gen: "1"
+  # Size of the range proof.
+  op_succinct_range_proof_interval: "60"
+
+  # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
+  # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
+  # Note this will noticeably increase the deployment time because of the increased L1 finality.
+  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+
+  additional_services:
+    - bridge_spammer
+
+optimism_package:
+  chains:
+    - proposer_params:
+        enabled: false
+      challenger_params:
+        enabled: false
+      network_params:
+        name: "001"
+        network_id: "2151908"
+        seconds_per_slot: 1
+  observability:
+    enabled: false

@@ -1,3 +1,4 @@
+constants = import_module("../src/package_io/constants.star")
 ports_package = import_module("../src/package_io/ports.star")
 
 
@@ -48,6 +49,7 @@ def create_aggkit_cdk_service_config(
 def create_aggkit_service_config(
     plan,
     args,
+    deployment_stages,
     config_artifact,
     genesis_artifact,
     keystore_artifact,
@@ -57,7 +59,7 @@ def create_aggkit_service_config(
 
     aggkit_name = "aggkit" + args["deployment_suffix"]
     (ports, public_ports) = get_aggkit_ports(args)
-    service_command = get_aggkit_cmd(args)
+    service_command = get_aggkit_cmd(args, deployment_stages)
     cdk_aggoracle_service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
@@ -109,11 +111,23 @@ def get_aggkit_ports(args):
     return (ports, public_ports)
 
 
-def get_aggkit_cmd(args):
-    service_command = [
-        "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
-        + "--cfg=/etc/aggkit/config.toml "
-        + "--components="
-        + args.get("aggkit_components")
-    ]
+def get_aggkit_cmd(args, deployment_stages):
+    # If running CDK-Erigon-PP, do not run the aggoracle component.
+    if (
+        not deployment_stages.get("deploy_optimism_rollup", False)
+        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    ):
+        service_command = [
+            "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
+            + "--cfg=/etc/aggkit/config.toml "
+            + "--components="
+            + args.get("aggkit_components")
+        ]
+    else:
+        service_command = [
+            "cat /etc/aggkit/config.toml && sleep 20 && aggkit run "
+            + "--cfg=/etc/aggkit/config.toml "
+            + "--components="
+            + args.get("aggkit_components")
+        ]
     return service_command

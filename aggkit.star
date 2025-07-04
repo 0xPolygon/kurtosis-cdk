@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./databases.star")
@@ -108,12 +109,14 @@ def run(
     )
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
-
+    l2_rpc_url = "http://{}{}:{}".format(
+        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+    )
     # Create the cdk aggoracle config.
     agglayer_endpoint = get_agglayer_endpoint(plan, args)
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
-        name="cdk-aggoracle-config-artifact",
+        name="aggkit-config-artifact",
         config={
             "config.toml": struct(
                 template=aggkit_config_template,
@@ -122,6 +125,7 @@ def run(
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                     "agglayer_endpoint": agglayer_endpoint,
+                    "l2_rpc_url": l2_rpc_url,
                 }
                 | db_configs
                 | contract_setup_addresses
@@ -140,6 +144,7 @@ def run(
     aggkit_configs = aggkit_package.create_aggkit_service_config(
         plan,
         args,
+        deployment_stages,
         aggkit_config_artifact,
         sovereign_genesis_artifact,
         keystore_artifacts,
@@ -216,18 +221,29 @@ def create_bridge_config_artifact(
         src="./templates/bridge-infra/bridge-config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
-    l2_rpc_url = args["op_el_rpc_url"]
-    contract_addresses = contract_setup_addresses | {
-        "zkevm_rollup_address": sovereign_contract_setup_addresses.get(
-            "sovereign_rollup_addr"
-        ),
-        "zkevm_bridge_l2_address": sovereign_contract_setup_addresses.get(
-            "sovereign_bridge_proxy_addr"
-        ),
-        "zkevm_global_exit_root_l2_address": sovereign_contract_setup_addresses.get(
-            "sovereign_ger_proxy_addr"
-        ),
-    }
+    if (
+        not deployment_stages.get("deploy_optimism_rollup", False)
+        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    ):
+        l2_rpc_url = "http://{}{}:{}".format(
+            args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+        )
+        contract_addresses = contract_setup_addresses
+        require_sovereign_chain_contract = False
+    else:
+        l2_rpc_url = args["op_el_rpc_url"]
+        contract_addresses = contract_setup_addresses | {
+            "zkevm_rollup_address": sovereign_contract_setup_addresses.get(
+                "sovereign_rollup_addr"
+            ),
+            "zkevm_bridge_l2_address": sovereign_contract_setup_addresses.get(
+                "sovereign_bridge_proxy_addr"
+            ),
+            "zkevm_global_exit_root_l2_address": sovereign_contract_setup_addresses.get(
+                "sovereign_ger_proxy_addr"
+            ),
+        }
+        require_sovereign_chain_contract = True
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -237,7 +253,7 @@ def create_bridge_config_artifact(
                     "global_log_level": args["global_log_level"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
-                    "require_sovereign_chain_contract": True,
+                    "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
@@ -322,11 +338,11 @@ def get_aggkit_prover_ports(args):
 def get_agglayer_endpoint(plan, args):
     if "local" in args["aggkit_image"]:
         return "grpc"
-    # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.4.0-beta1" -> "0.4.0-beta1")
-    version_str = args["aggkit_image"].split(":")[-1]  # Get "0.4.0-beta1"
+    # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.5.0-beta1" -> "0.5.0-beta1")
+    version_str = args["aggkit_image"].split(":")[-1]  # Get "0.5.0-beta1"
     # Remove any suffix like "-beta1"
-    version_clean = version_str.split("-")[0]  # Get "0.4.0"
-    # Convert to float for major.minor comparison (e.g., "0.4.0" -> 0.4)
+    version_clean = version_str.split("-")[0]  # Get "0.5.0"
+    # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5)
     version = float(".".join(version_clean.split(".")[:2]))
 
     if version >= 0.3:
