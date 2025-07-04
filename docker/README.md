@@ -118,13 +118,19 @@ local/zkevm-bridge-ui   local   040905e1cabe   28 seconds ago   377MB
 
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
 
+| toolbox | polycli | foundry |
+|---------|---------|---------|
+| 0.0.8   | v0.1.73 | stable  |
+| 0.0.9   | v0.1.81 | v1.2.3  |
+| 0.0.10  | v0.1.82 | v1.2.3  |
+
 Build the `toolbox` image.
 
 ```bash
 docker build . \
   --tag local/toolbox:local \
-  --build-arg POLYCLI_VERSION="v0.1.73" \
-  --build-arg FOUNDRY_VERSION=stable \
+  --build-arg POLYCLI_VERSION="v0.1.82" \
+  --build-arg FOUNDRY_VERSION="v1.2.3" \
   --file toolbox.Dockerfile
 ```
 
