@@ -41,15 +41,12 @@ sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\
 # The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
 rollupTypeID="{{ .zkevm_rollup_id }}"
 if [[ "$rollupTypeID" -eq 1 ]]; then
-    # For the first rollup, we need use https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
     echo "rollupID is 1. Running 4_createRollup.ts script"
-    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
-else
-    # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
-    cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 fi
+
+# The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
+cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
 # Save Rollup Information to a file.
 cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >/opt/zkevm-contracts/sovereign-rollup-out.json
