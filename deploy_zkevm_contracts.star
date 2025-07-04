@@ -15,12 +15,12 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
     {
-        "name": "run-l1-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-l1-contract-setup.sh",
+        "name": "run-l1-step1-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l1-step1-contract-setup.sh",
     },
     {
-        "name": "run-l1-2-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-l1-2-contract-setup.sh",
+        "name": "run-l1-step2-contract-setup.sh",
+        "file": "./templates/contract-deploy/run-l1-step2-contract-setup.sh",
     },
     {
         "name": "create-keystores.sh",
@@ -81,6 +81,14 @@ ARTIFACTS = [
     {
         "name": "configure-contract-container-custom-genesis.sh",
         "file": "./templates/cdk-erigon/configure-contract-container-custom-genesis.sh",
+    },
+    {
+        "name": "custom-genesis-addresses.json",
+        "file": "./templates/cdk-erigon/custom-genesis-addresses.json",
+    },
+    {
+        "name": "op-custom-genesis-addresses.json",
+        "file": "./templates/sovereign-rollup/op-custom-genesis-addresses.json",
     },
 ]
 
@@ -276,7 +284,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-l1-2-contract-setup.sh"
+                        "/opt/contract-deploy/run-l1-step2-contract-setup.sh"
                     ),
                 ]
             ),
@@ -308,7 +316,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-l1-contract-setup.sh"
+                        "/opt/contract-deploy/run-l1-step1-contract-setup.sh"
                     ),
                 ]
             ),
@@ -322,7 +330,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-l1-2-contract-setup.sh"
+                        "/opt/contract-deploy/run-l1-step2-contract-setup.sh"
                     ),
                 ]
             ),
