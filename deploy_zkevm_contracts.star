@@ -238,7 +238,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 
     # Deploy contracts.
     if (
-        args.get("custom_genesis") == True
+        args.get("l1_custom_genesis") == True
         and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic
     ):
         plan.print(
@@ -257,7 +257,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ]
             ),
         )
-    elif args.get("custom_genesis") == True and (
+    elif args.get("l1_custom_genesis") == True and (
         args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
         or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
     ):

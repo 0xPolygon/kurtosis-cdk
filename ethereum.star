@@ -15,7 +15,7 @@ op_rollup_created_genesis = "templates/genesis/op-genesis.json"
 
 
 def run(plan, args):
-    if args.get("custom_genesis") == True:
+    if args.get("l1_custom_genesis") == True:
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print(
                 "Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic."
