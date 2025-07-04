@@ -17,6 +17,10 @@ events=$(
     --json | jq -r '.[] | .topics[1]' | tail -n "$last_n_events"
 )
 
+if [[ -z "$events" ]]; then
+  exit 0
+fi
+
 miner=$(cast block --rpc-url "$L2_RPC_URL" --json | jq -r '.miner')
 
 # Iterate over the sequence batches events because sometimes the batch number is
