@@ -43,6 +43,7 @@ polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 {{- if .deploy_optimism_rollup }}
 RPCURL = "{{.op_el_rpc_url}}"
+{{- end}}
 
 # These values can be overriden directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
