@@ -16,7 +16,7 @@ concurrency:
 env:
   ENCLAVE_NAME: cdk
   POLYCLI_VERSION: v0.1.82
-  E2E_REF: dc844b989e2bc2d12cdc90ed0434199720ff1314
+  E2E_REF: 45314f4f839e1ac54844b4f49c7436de6a9e29d5
 
 jobs:
   run-without-args:
