@@ -14,5 +14,5 @@ args:
   gas_token_enabled: false
   zkevm_use_real_verifier: false
   enable_normalcy: true
+  aggkit_components: aggsender,bridge
   sequencer_type: erigon
-  aggkit_components: aggsender
