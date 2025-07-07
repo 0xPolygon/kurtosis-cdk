@@ -79,12 +79,12 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/op-configure-contract-container-custom-genesis.sh",
     },
     {
-        "name": "configure-contract-container-custom-genesis.sh",
-        "file": "./templates/cdk-erigon/configure-contract-container-custom-genesis.sh",
+        "name": "cdk-erigon-configure-contract-container-custom-genesis.sh",
+        "file": "./templates/cdk-erigon/cdk-erigon-configure-contract-container-custom-genesis.sh",
     },
     {
-        "name": "custom-genesis-addresses.json",
-        "file": "./templates/cdk-erigon/custom-genesis-addresses.json",
+        "name": "cdk-erigon-custom-genesis-addresses.json",
+        "file": "./templates/cdk-erigon/cdk-erigon-custom-genesis-addresses.json",
     },
     {
         "name": "op-custom-genesis-addresses.json",
@@ -240,14 +240,14 @@ def run(plan, args, deployment_stages, op_stack_args):
 
     # Deploy contracts.
     if (
-        args.get("l1_custom_genesis") == True
+        args.get("l1_custom_genesis")
         and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic
     ):
         plan.print(
-            "Skipping L1 smc deployment as custom genesis is set to true for pessimistic mode..."
+            "Skipping L1 smart contract deployment: using custom genesis in pessimistic mode"
         )
         plan.exec(
-            description="Configuring contract container for pessimistic...",
+            description="Configuring contract container for pessimistic",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
                 command=[
@@ -259,25 +259,24 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ]
             ),
         )
-    elif args.get("l1_custom_genesis") == True and (
+    elif args.get("l1_custom_genesis") and (
         args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
         or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
     ):
-        plan.print("Skipping L1 smc deployment as custom genesis is set to true...")
+        plan.print("Skipping L1 smart contract deployment: custom genesis is enabled")
         plan.exec(
-            description="Configuring contract container for rollup/cdk-validium...",
+            description="Configuring contract container for rollup/cdk-validium",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
                 command=[
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/configure-contract-container-custom-genesis.sh"
+                        "/opt/contract-deploy/cdk-erigon-configure-contract-container-custom-genesis.sh"
                     ),
                 ]
             ),
         )
-        plan.print("Creating rollup on L1...")
         plan.exec(
             description="Deploying rollup smc on L1",
             service_name=contracts_service_name,
@@ -309,9 +308,8 @@ def run(plan, args, deployment_stages, op_stack_args):
             src="/opt/zkevm/first-batch-config.json",
         )
     else:
-        plan.print("Deploying L1 smc...")
         plan.exec(
-            description="Deploying contracts on L1",
+            description="Deploying Agglayer smart contracts on L1",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
                 command=[
@@ -323,9 +321,8 @@ def run(plan, args, deployment_stages, op_stack_args):
                 ]
             ),
         )
-        plan.print("Creating rollup on L1...")
         plan.exec(
-            description="Deploying rollup smc on L1",
+            description="Creating rollup on L1",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
                 command=[

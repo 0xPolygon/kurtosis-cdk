@@ -15,12 +15,12 @@ op_rollup_created_genesis = "templates/genesis/op-genesis.json"
 
 
 def run(plan, args):
-    if args.get("l1_custom_genesis") == True:
+    if args.get("l1_custom_genesis"):
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print(
                 "Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic."
             )
-            genesis = read_file(src=op_rollup_created_genesis)
+            custom_genesis = read_file(src=op_rollup_created_genesis)
         elif (
             args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
             or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
@@ -28,12 +28,12 @@ def run(plan, args):
             plan.print(
                 "Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed."
             )
-            genesis = read_file(src=only_smc_genesis)
+            custom_genesis = read_file(src=only_smc_genesis)
         else:
             fail("Unknown consensus contract type")
     else:
         plan.print("Custom genesis is disabled, using the default ethereum package.")
-        genesis = ""
+        custom_genesis = ""
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
         "participants": [
@@ -62,7 +62,7 @@ def run(plan, args):
             }
         ],
         "network_params": {
-            "additional_preloaded_contracts": genesis,
+            "additional_preloaded_contracts": custom_genesis,
             "network_id": str(args["l1_chain_id"]),
             "preregistered_validator_keys_mnemonic": args["l1_preallocated_mnemonic"],
             "preset": args["l1_preset"],
