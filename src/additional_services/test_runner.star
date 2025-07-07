@@ -8,15 +8,17 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_optimism_rollup,
+    deployment_stages,
 ):
     # Get urls.
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
-    bridge_service_url = _get_bridge_service_url(plan, args)
+    bridge_service_url = _get_bridge_service_url(
+        plan, args, deployment_stages.get("deploy_cdk_bridge_infra")
+    )
     l2_bridge_address = _get_l2_bridge_address(
         plan,
-        deploy_optimism_rollup,
+        deployment_stages.get("deploy_optimism_rollup"),
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
     )
@@ -65,12 +67,15 @@ def _get_l2_rpc_url(plan, args):
     return service.ports["rpc"].url
 
 
-def _get_bridge_service_url(plan, args):
-    service_name = "zkevm-bridge-service" + args.get("deployment_suffix")
-    service = plan.get_service(service_name)
-    if "rpc" not in service.ports:
-        fail("The 'rpc' port of the l2 rpc service is not available.")
-    return service.ports["rpc"].url
+def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
+    if deploy_cdk_bridge_infra:
+        service_name = "zkevm-bridge-service" + args.get("deployment_suffix")
+        service = plan.get_service(service_name)
+        if "rpc" not in service.ports:
+            fail("The 'rpc' port of the l2 rpc service is not available.")
+        return service.ports["rpc"].url
+    else:
+        return ""
 
 
 def _get_l2_bridge_address(

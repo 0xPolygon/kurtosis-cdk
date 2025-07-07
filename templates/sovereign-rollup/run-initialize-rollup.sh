@@ -49,6 +49,8 @@ aggoracle_addr="{{.zkevm_l2_aggoracle_address}}"
 # aggoracle_private_key="{{.zkevm_l2_aggoracle_private_key}}"
 claimtxmanager_addr="{{.zkevm_l2_claimtxmanager_address}}"
 # claimtx_private_key="{{.zkevm_l2_claimtxmanager_private_key}}"
+claimsponsor_addr="{{.zkevm_l2_claimsponsor_address}}"
+# claimsponsor_private_key="{{.zkevm_l2_claimsponsor_private_key}}"
 
 rpc_url="{{.op_el_rpc_url}}"
 # This is the default prefunded account for the OP Network
@@ -57,6 +59,7 @@ private_key=$(cast wallet private-key --mnemonic 'test test test test test test 
 cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
 cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
 cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtxmanager_addr
+cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
 
 # Contract Deployment Step
 # cd /opt/zkevm-contracts || exit
