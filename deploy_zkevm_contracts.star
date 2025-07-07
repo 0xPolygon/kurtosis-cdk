@@ -15,12 +15,12 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
     {
-        "name": "run-l1-step1-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-l1-step1-contract-setup.sh",
+        "name": "run-deploy-l1-agglayer-core-contracts.sh",
+        "file": "./templates/contract-deploy/run-deploy-l1-agglayer-core-contracts.sh",
     },
     {
-        "name": "run-l1-step2-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-l1-step2-contract-setup.sh",
+        "name": "run-create-agglayer-rollup.sh",
+        "file": "./templates/contract-deploy/run-create-agglayer-rollup.sh",
     },
     {
         "name": "create-keystores.sh",
@@ -285,7 +285,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-l1-step2-contract-setup.sh"
+                        "/opt/contract-deploy/run-create-agglayer-rollup.sh"
                     ),
                 ]
             ),
@@ -316,7 +316,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-l1-step1-contract-setup.sh"
+                        "/opt/contract-deploy/run-deploy-l1-agglayer-core-contracts.sh"
                     ),
                 ]
             ),
@@ -329,7 +329,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                     "/bin/sh",
                     "-c",
                     "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-l1-step2-contract-setup.sh"
+                        "/opt/contract-deploy/run-create-agglayer-rollup.sh"
                     ),
                 ]
             ),
