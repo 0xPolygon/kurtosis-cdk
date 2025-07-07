@@ -33,7 +33,7 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
-TOOLBOX_IMAGE = "leovct/toolbox:0.0.8"
+TOOLBOX_IMAGE = "leovct/toolbox:0.0.10"
 
 L1_ENGINES = ("geth", "anvil")
 

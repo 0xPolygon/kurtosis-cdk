@@ -58,7 +58,7 @@ jobs:
       - name: Kurtosis run
         run: |
           # Add test runner and tx spammer to the args file.
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' ${{ matrix.file.path }}
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ${{ matrix.file.path }}
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
 
       - name: Inspect enclave
@@ -174,7 +174,7 @@ jobs:
       - name: Deploy the rest of the stack
         run: |
           # Add test runner and tx spammer to the args file.
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner", "tx_spammer"]' .github/tests/nightly/gas-token/pre-deployed.yml
+          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' .github/tests/nightly/gas-token/pre-deployed.yml
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/nightly/gas-token/pre-deployed.yml .
 
       - name: Inspect enclave
