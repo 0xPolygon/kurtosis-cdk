@@ -332,22 +332,62 @@ def get_aggkit_prover_ports(args):
     return (ports, public_ports)
 
 
+# Helper function to validate version format (e.g., "0.5.0", "1.2.3")
+def is_valid_version_format(version_str):
+    # Check if version string contains at least one dot
+    if version_str.count(".") < 1:
+        return False
+
+    # Split into parts and validate each part
+    parts = version_str.split(".")
+    if len(parts) < 2:
+        return False
+
+    # Check that first two parts are numeric
+    major = parts[0]
+    minor = parts[1]
+
+    if not major.isdigit() or not minor.isdigit():
+        return False
+
+    # If there's a patch version, it should also be numeric
+    if len(parts) > 2:
+        patch = parts[2]
+        if not patch.isdigit():
+            return False
+
+    return True
+
+
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
 def get_agglayer_endpoint(plan, args):
     if "local" in args["aggkit_image"]:
         return "grpc"
+
     # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.5.0-beta1" -> "0.5.0-beta1")
     version_str = args["aggkit_image"].split(":")[-1]  # Get "0.5.0-beta1"
     # Remove any suffix like "-beta1"
     version_clean = version_str.split("-")[0]  # Get "0.5.0"
-    # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5)
-    version = float(".".join(version_clean.split(".")[:2]))
 
-    if version >= 0.3:
-        return "grpc"
+    # Validate and parse version string
+    if is_valid_version_format(version_clean):
+        # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5)
+        version_parts = version_clean.split(".")
+        version = float(".".join(version_parts[:2]))
+
+        if version >= 0.3:
+            return "grpc"
+        else:
+            return "readrpc"
     else:
-        return "readrpc"
+        # If version format is invalid, log warning and default to grpc
+        plan.print(
+            "Warning: Invalid version format '{}' from image '{}'. Defaulting to grpc.".format(
+                version_clean, args["aggkit_image"]
+            )
+        )
+        return "grpc"
 
 
 # Fetch the parsed .config section of L1 geth genesis.

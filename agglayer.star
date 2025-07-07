@@ -1,5 +1,6 @@
 databases_package = import_module("./databases.star")
 ports_package = import_module("./src/package_io/ports.star")
+aggkit_package = import_module("./aggkit.star")
 
 
 def run(plan, deployment_stages, args, contract_setup_addresses):
@@ -71,6 +72,7 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
             cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
         ),
     )
+    run_agg_certificate_proxy(plan, args)
 
 
 def create_agglayer_prover_config_artifact(plan, args):
@@ -208,3 +210,49 @@ def get_agglayer_ports(args):
             )
     public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
     return (ports, public_ports)
+
+
+def run_agg_certificate_proxy(plan, args):
+    (ports, public_ports) = get_agglayer_ports(args)
+    cmd = []
+    cmd.extend(["--grpc", "0.0.0.0:" + str(args["agglayer_grpc_port"])])
+    cmd.extend(["--http", "0.0.0.0:" + str(args["agglayer_readrpc_port"])])
+    cmd.extend(["--db", "/tmp/certificates.db"])
+    cmd.extend(["--delay", "2m"])
+    cmd.extend(["--kill-switch-api-key", "5f49dd52-c9c0-4a48-9c8a-7f4c7fb91637"])
+    cmd.extend(["--kill-restart-api-key", "03f9f6b5-20e9-44cb-af59-1ba1f774eab5"])
+    cmd.extend(["--data-key", "bd12980a-a94a-476d-a85b-59db3267c967"])
+
+    # Determine which endpoint to use based on aggkit version
+    agglayer_endpoint = aggkit_package.get_agglayer_endpoint(plan, args)
+
+    if agglayer_endpoint == "grpc":
+        cmd.extend(
+            ["--aggsender-addr", "agglayer:" + str(args.get("agglayer_grpc_port"))]
+        )
+    else:
+        cmd.extend(
+            [
+                "--aggsender-addr",
+                "http://agglayer:" + str(args.get("agglayer_readrpc_port")),
+            ]
+        )
+
+    return plan.add_service(
+        name="agg-certificate-proxy",
+        config=ServiceConfig(
+            image=args["agg_certificate_proxy_image"],
+            ports={
+                "http": PortSpec(
+                    args["agglayer_readrpc_port"], application_protocol="http"
+                ),
+                "grpc": PortSpec(
+                    args["agglayer_grpc_port"], application_protocol="grpc"
+                ),
+            },
+            entrypoint=[
+                "/proxy",
+            ],
+            cmd=cmd,
+        ),
+    )

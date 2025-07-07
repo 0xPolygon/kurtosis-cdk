@@ -43,6 +43,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.4",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "agg_certificate_proxy_image": "ghcr.io/gateway-fm/agg-certificate-proxy:main-b63c85f",  # https://github.com/gateway-fm/agg-certificate-proxy/pkgs/container/agg-certificate-proxy
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.1.2",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
@@ -368,6 +369,8 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
+    # If enabled, the default agglayer url will actually be the url for the agg cert proxy
+    "use_agg_cert_proxy": True,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -538,6 +541,14 @@ def parse_args(plan, user_args):
     args["mitm_rpc_url"] = {
         k: mitm_rpc_url for k, v in args.get("mitm_proxied_components", {}).items() if v
     }
+
+    if args["use_agg_cert_proxy"]:
+        args["agglayer_grpc_url"] = "http://agg-certificate-proxy:" + str(
+            DEFAULT_PORTS.get("agglayer_grpc_port")
+        )
+        args["agglayer_readrpc_url"] = "http://agg-certicate-proxy:" + str(
+            DEFAULT_PORTS.get("agglayer_readrpc_port")
+        )
 
     # Validation step.
     verbosity = args.get("verbosity", "")
