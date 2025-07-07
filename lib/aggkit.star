@@ -110,9 +110,8 @@ def get_aggkit_ports(args):
 
 def get_aggkit_cmd(args):
     service_command = [
-        "run "
-        + "--cfg=/etc/aggkit/config.toml "
-        + "--components="
-        + args.get("aggkit_components")
+        "run",
+        "--cfg=/etc/aggkit/config.toml",
+        "--components=" + args.get("aggkit_components", ""),
     ]
     return service_command
