@@ -31,6 +31,8 @@ cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/create
 cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/addRollupType/genesis.json
 cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/createNewRollup/genesis.json
 
+cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
+
 deployOPSuccinct="{{ .deploy_op_succinct }}"
 if [[ $deployOPSuccinct == true ]]; then
 rm /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json

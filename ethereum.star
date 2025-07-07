@@ -1,6 +1,7 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"  # 2025-05-30
-)
+    "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"
+)  # 2025-05-30
+constants = import_module("./src/package_io/constants.star")
 
 GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
@@ -9,8 +10,30 @@ GETH_IMAGE = "ethereum/client-go:v1.15.11"
 # https://github.com/ethpandaops/ethereum-package/pull/915
 LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
+only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
+op_rollup_created_genesis = "templates/genesis/op-genesis.json"
+
 
 def run(plan, args):
+    if args.get("l1_custom_genesis"):
+        if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
+            plan.print(
+                "Custom genesis is enabled with pessimistic consensus, using the forked ethereum package for pessimistic."
+            )
+            custom_genesis = read_file(src=op_rollup_created_genesis)
+        elif (
+            args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+            or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
+        ):
+            plan.print(
+                "Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed."
+            )
+            custom_genesis = read_file(src=only_smc_genesis)
+        else:
+            fail("Unknown consensus contract type")
+    else:
+        plan.print("Custom genesis is disabled, using the default ethereum package.")
+        custom_genesis = ""
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
         "participants": [
@@ -39,6 +62,7 @@ def run(plan, args):
             }
         ],
         "network_params": {
+            "additional_preloaded_contracts": custom_genesis,
             "network_id": str(args["l1_chain_id"]),
             "preregistered_validator_keys_mnemonic": args["l1_preallocated_mnemonic"],
             "preset": args["l1_preset"],

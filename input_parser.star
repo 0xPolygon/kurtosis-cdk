@@ -190,6 +190,8 @@ DEFAULT_L1_ARGS = {
     "l1_engine": "geth",
     # The L1 network identifier.
     "l1_chain_id": 271828,
+    # Custom L1 genesis
+    "l1_custom_genesis": False,
     # This mnemonic will:
     # a) be used to create keystores for all the types of validators that we have, and
     # b) be used to generate a CL genesis.ssz that has the children validator keys already

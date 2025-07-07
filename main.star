@@ -42,7 +42,6 @@ def run(plan, args={}):
             ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-
     # Extract the fetch-rollup-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
