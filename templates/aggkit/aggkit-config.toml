@@ -9,28 +9,27 @@
 # setup. The values here should work, but are necessarily meant for
 # production environments. DYOR
 # The below configs are the default mandatory parameters to be used.
+# ==============================================================================
 
 PathRWData = "{{.zkevm_path_rw_data}}"
-L1URL="{{.l1_rpc_url}}"
+L1URL = "{{.l1_rpc_url}}"
 {{- if .deploy_optimism_rollup }}
-L2URL="{{.op_el_rpc_url}}"
+L2URL = "{{.op_el_rpc_url}}"
 {{- else }}
-L2URL="{{.l2_rpc_url}}"
+L2URL = "{{.l2_rpc_url}}"
 {{- end }}
 
 # Check if agglayer grpc or readrpc should be used for AggLayerURL
 {{- if eq .agglayer_endpoint "grpc" }}
-AggLayerURL="{{.agglayer_grpc_url}}"
+AggLayerURL = "{{.agglayer_grpc_url}}"
 {{- else }}
-AggLayerURL="{{.agglayer_readrpc_url}}"
+AggLayerURL = "{{.agglayer_readrpc_url}}"
 {{- end }}
 
-AggchainProofURL="{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
+AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
 NetworkID = {{.zkevm_rollup_id}}
 
-# This is the admin account for now
-L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 {{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
@@ -195,9 +194,9 @@ Port = "{{.aggkit_node_rest_api_port}}"
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
 {{- if eq .consensus_contract_type "pessimistic"}}
-Mode="PessimisticProof"
+Mode = "PessimisticProof"
 {{- else}}
-Mode="AggchainProof"
+Mode = "AggchainProof"
 {{- end}}
 CheckStatusCertificateInterval = "1s"
 
@@ -604,7 +603,7 @@ StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 {{- if .deploy_optimism_rollup }}
 URL = "{{.op_el_rpc_url}}"
 {{- else }}
-URL="{{.l2_rpc_url}}"
+URL= "{{.l2_rpc_url}}"
 {{- end }}
 
 # ------------------------------------------------------------------------------
