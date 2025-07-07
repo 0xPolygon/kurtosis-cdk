@@ -246,12 +246,25 @@ def run(plan, args={}):
             else:
                 plan.print("Skipping the deployment of CDK Node")
 
+            # Deploy AggKit infrastructure + Dedicated Bridge Service
+            if deployment_stages.get("deploy_aggkit_node", False):
+                plan.print("Deploying AggKit infrastructure")
+                import_module(aggkit_package).run_aggkit_cdk_node(
+                    plan,
+                    args,
+                    contract_setup_addresses,
+                    deployment_stages,
+                )
+            else:
+                plan.print("Skipping the deployment of aggkit infrastructure")
+
             # Deploy contracts on L2.
             plan.print("Deploying contracts on L2")
             deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
             import_module(deploy_l2_contracts_package).run(
                 plan, args, deploy_l2_contracts
             )
+
         else:
             plan.print("Skipping the deployment of cdk central/trusted environment")
 
@@ -300,14 +313,13 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of aggkit infrastructure")
 
     # Deploy additional services.
-    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     additional_services.launch(
         plan,
         args,
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
         genesis_artifact,
-        deploy_optimism_rollup,
+        deployment_stages,
     )
 
 
