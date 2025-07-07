@@ -39,7 +39,6 @@ def create_aggkit_cdk_service_config(
                 artifact_names=[],
             ),
         },
-        entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
     )
 
@@ -78,7 +77,6 @@ def create_aggkit_service_config(
                 artifact_names=[],
             ),
         },
-        entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
     )
 
@@ -112,7 +110,7 @@ def get_aggkit_ports(args):
 
 def get_aggkit_cmd(args):
     service_command = [
-        "aggkit run "
+        "run "
         + "--cfg=/etc/aggkit/config.toml "
         + "--components="
         + args.get("aggkit_components")
