@@ -40,10 +40,14 @@ def run(plan, args):
             {
                 "el_type": "geth",
                 "el_image": GETH_IMAGE,
+                "el_extra_params": [
+                    "--log.format=json",
+                    "--gcmode archive",
+                ],
                 "cl_type": "lighthouse",
                 "cl_image": LIGHTHOUSE_IMAGE,
-                "el_extra_params": ["--gcmode archive"],
                 "cl_extra_params": [
+                    "--log-format=JSON",
                     # Disable optimistic finalized sync. This will force Lighthouse to
                     # verify every execution block hash with the execution client during
                     # finalized sync. By default block hashes will be checked in Lighthouse
@@ -58,6 +62,9 @@ def run(plan, args):
                 ],
                 "vc_type": "lighthouse",
                 "vc_image": LIGHTHOUSE_IMAGE,
+                "vc_extra_params": [
+                    "--log-format=JSON",
+                ],
                 "count": args["l1_participants_count"],
             }
         ],
