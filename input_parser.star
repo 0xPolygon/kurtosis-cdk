@@ -458,16 +458,28 @@ DEFAULT_OP_STACK_ARGS = {
                     # OP Rollup configuration
                     "el_type": "op-geth",
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.0",
+                    "el_extra_params": [
+                        "--log.format=json",
+                    ],
                     "cl_type": "op-node",
                     "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.3",
+                    "cl_extra_params": [
+                        "--log.format=json",
+                    ],
                     "count": 1,
                 },
             ],
             "batcher_params": {
                 "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0",
+                "extra_params": [
+                    "--log.format=json",
+                ],
             },
             "proposer_params": {
                 "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
+                "extra_params": [
+                    "--log.format=json",
+                ],
             },
             "network_params": {
                 # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
