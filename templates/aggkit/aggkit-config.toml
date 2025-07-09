@@ -300,13 +300,6 @@ SaveCertificatesToFilesPath = "/tmp"
 # URLRPCL1 = "{{.l1_rpc_url}}"
 
 # ------------------------------------------------------------------------------
-# BlockFinality indicates which finality follows AggLayer accepted values are:
-# LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
-# Default value is "FinalizedBlock"
-# ------------------------------------------------------------------------------
-BlockFinality = "FinalizedBlock"
-
-# ------------------------------------------------------------------------------
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
 WaitPeriodNextGER = "10s"
