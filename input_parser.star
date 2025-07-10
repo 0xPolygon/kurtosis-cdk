@@ -41,9 +41,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.4",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "agg_certificate_proxy_image": "ghcr.io/gateway-fm/agg-certificate-proxy:main-b63c85f",  # https://github.com/gateway-fm/agg-certificate-proxy/pkgs/container/agg-certificate-proxy
+    "aggkit_image": "aggkit:local",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.3-post.2",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "agg_certificate_proxy_image": "ghcr.io/gateway-fm/agg-certificate-proxy:main-0430493",  # https://github.com/gateway-fm/agg-certificate-proxy/pkgs/container/agg-certificate-proxy
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.1.2",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
@@ -67,6 +67,7 @@ DEFAULT_IMAGES = {
 DEFAULT_PORTS = {
     # agglayer-node
     "agglayer_grpc_port": 4443,
+    "agglayer_proxy_grpc_port": 14443,
     "agglayer_readrpc_port": 4444,
     "agglayer_admin_port": 4446,
     "agglayer_metrics_port": 9092,

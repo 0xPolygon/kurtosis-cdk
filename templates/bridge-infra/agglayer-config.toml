@@ -41,6 +41,11 @@ max-request-body-size = 104857600
 # default value is equal to 4MB
 max-decoding-message-size = 104857600
 
+[proxied-networks]
+networks = [1]
+grpc-port = {{.agglayer_proxy_grpc_port}}
+host = "0.0.0.0"
+
 [outbound.rpc.settle]
 max-retries = 3
 retry-interval = 7
