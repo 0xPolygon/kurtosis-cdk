@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Requirement to correctly configure contracts deployer
+export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
+
 # Fund L1 OP addresses.
 IFS=';' read -ra addresses <<<"${L1_OP_ADDRESSES}"
 private_key=$(cast wallet private-key --mnemonic "{{.l1_preallocated_mnemonic}}")
