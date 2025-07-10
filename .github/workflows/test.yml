@@ -1,0 +1,40 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+env:
+  KURTOSIS_TEST_VERSION: v0.0.5
+  GO_VERSION: 1.21
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install kurtosis-test
+        run: |
+          push /tmp
+          git clone https://github.com/ethereum-optimism/kurtosis-test.git
+          pushd kurtosis-test
+          git checkout ${{ env.KURTOSIS_TEST_VERSION }}
+          go build -o kurtosis-test cli/main.go
+          ln -s kurtosis-test /usr/local/bin
+
+      - name: Run unit tests
+        run: kurtosis-test .
