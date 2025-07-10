@@ -3,6 +3,9 @@
 # Create New Rollup Step
 pushd /opt/zkevm-contracts || exit 1
 
+# Requirement to correctly configure contracts deployer
+export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
+
 ts=$(date +%s)
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
