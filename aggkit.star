@@ -113,7 +113,7 @@ def run(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
     # Create the cdk aggoracle config.
-    agglayer_endpoint = get_agglayer_endpoint(plan, args)
+    agglayer_endpoint = get_agglayer_endpoint(plan, args["aggkit_image"])
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
@@ -334,14 +334,22 @@ def get_aggkit_prover_ports(args):
 
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
-def get_agglayer_endpoint(plan, args):
-    if "local" in args["aggkit_image"]:
+def get_agglayer_endpoint(plan, aggkit_image):
+    # If the image is a local development image, we assume it supports grpc.
+    if "local" in aggkit_image:
         return "grpc"
-    # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.5.0-beta1" -> "0.5.0-beta1")
-    version_str = args["aggkit_image"].split(":")[-1]  # Get "0.5.0-beta1"
-    # Remove any suffix like "-beta1"
-    version_clean = version_str.split("-")[0]  # Get "0.5.0"
+
+    # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:v0.5.0-beta1" -> "0.5.0-beta1")
+    version_str = aggkit_image.split(":")[-1]  # Get "v0.5.0-beta1"
+    # Remove any prefix like "v" and suffix like "-beta1"
+    version_clean = version_str.removeprefix("v").split("-")[0]  # Get "0.5.0"
     # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5)
+    if version_clean.count(".") < 2:
+        fail(
+            "Invalid aggkit version format: '{}'. Expected format is 'vX.Y.Z' or 'X.Y.Z'.".format(
+                version_str
+            )
+        )
     version = float(".".join(version_clean.split(".")[:2]))
 
     if version >= 0.3:
