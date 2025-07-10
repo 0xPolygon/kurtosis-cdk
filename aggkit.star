@@ -112,8 +112,17 @@ def run(
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
+
+    # Determine the aggkit endpoint type.
+    # If the image is a local development image, we assume it supports grpc.
+    agglayer_endpoint = ""
+    if "local" in args["aggkit_image"]:
+        agglayer_endpoint = "grpc"
+    else:
+        aggkit_version = get_aggkit_version(args["aggkit_image"])
+        agglayer_endpoint = get_agglayer_endpoint(aggkit_version)
+
     # Create the cdk aggoracle config.
-    agglayer_endpoint = get_agglayer_endpoint(plan, args["aggkit_image"])
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
@@ -332,27 +341,59 @@ def get_aggkit_prover_ports(args):
     return (ports, public_ports)
 
 
-# Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
-# v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
-def get_agglayer_endpoint(plan, aggkit_image):
-    # If the image is a local development image, we assume it supports grpc.
-    if "local" in aggkit_image:
-        return "grpc"
+def get_aggkit_version(image):
+    """
+    Extract semantic version from aggkit image tag.
+    Returns only digits and dots, removing any prefixes and suffixes.
 
-    # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:v0.5.0-beta1" -> "0.5.0-beta1")
-    version_str = aggkit_image.split(":")[-1]  # Get "v0.5.0-beta1"
-    # Remove any prefix like "v" and suffix like "-beta1"
-    version_clean = version_str.removeprefix("v").split("-")[0]  # Get "0.5.0"
-    # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5)
-    if version_clean.count(".") < 2:
-        fail(
-            "Invalid aggkit version format: '{}'. Expected format is 'vX.Y.Z' or 'X.Y.Z'.".format(
-                version_str
-            )
-        )
-    version = float(".".join(version_clean.split(".")[:2]))
+    Examples:
+    - "aggkit:v0.5.0-beta1" -> "0.5.0"
+    - "aggkit:xyz0.2.0-rc.1" -> "0.2.0"
+    - "aggkit:latest" -> ""
+    - "aggkit:6" -> "6"
+    """
+    # Check if the image has a tag.
+    if ":" not in image:
+        fail("Aggkit image '{}' does not have a tag.".format(image))
 
-    if version >= 0.3:
+    # Extract the tag from the image.
+    tag = image.split(":")[-1]
+
+    # Remove suffix like "-beta1" or "-rc.1" first.
+    tag = tag.split("-")[0]
+
+    # Extract only digits and dots, ignoring any prefix letters.
+    version = ""
+    found_digit = False
+    for char in tag.elems():
+        if char.isdigit() or char == ".":
+            version += char
+            found_digit = True
+        elif found_digit:
+            # Stop when we hit a non-digit/non-dot after finding digits.
+            break
+    return version
+
+
+def get_agglayer_endpoint(aggkit_version):
+    """
+    Determine the endpoint type for aggkit based on the aggkit image version.
+    """
+
+    # Check if the version format is valid.
+    aggkit_version_no_dots = aggkit_version.replace(".", "")
+    if not aggkit_version_no_dots.isdigit() or len(aggkit_version_no_dots) == 0:
+        fail("Invalid aggkit version format: '{}'.".format(aggkit_version))
+
+    # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5).
+    if aggkit_version.count(".") > 1:
+        split = aggkit_version.split(".")
+        first_digit = split[0]
+        second_digit = split[1]
+        aggkit_version = "{}.{}".format(first_digit, second_digit)
+
+    # Determine the endpoint type based on the version.
+    if float(aggkit_version) >= 0.3:
         return "grpc"
     else:
         return "readrpc"
