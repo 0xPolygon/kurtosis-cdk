@@ -46,6 +46,7 @@ max-retries = 3
 retry-interval = 7
 confirmations = 1
 settlement-timeout = 1200
+gas-multiplier-factor = 175
 
 [log]
 # level = "{{.global_log_level}}"
