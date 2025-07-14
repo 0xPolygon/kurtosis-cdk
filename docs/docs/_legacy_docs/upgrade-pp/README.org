@@ -125,7 +125,7 @@ kurtosis service exec cdk contracts-001 "cat /opt/zkevm/combined.json"
 
 Now we need to attempt the upgrade from the current rollup manager to
 the pessimistic edition.  This could be run from your operating
-system, but I find it easier to run this directly from from the
+system, but I find it easier to run this directly from the
 contracts container since it's already configured with the correct
 tooling. Because we're going to be in the shell for a bit, I prefer to
 use ~docker exec~ rather than ~kurtosis service shell~.

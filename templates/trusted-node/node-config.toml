@@ -415,7 +415,7 @@ EthTransferGasPrice = 0
 EthTransferL1GasPriceFactor = 0
 
 # ------------------------------------------------------------------------------
-# L2GasPriceSuggesterFactor is used if the the EffectiveGasPrice
+# L2GasPriceSuggesterFactor is used if the EffectiveGasPrice
 # component is not enabled but is still somehow being called to
 # provide a gas price. This is likely only used in testing or
 # debugging purposes.
