@@ -11,17 +11,17 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 - They have been suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For example, pessimistic tags have been prefixed with `-fork.12`, e.g. the zkevm-contracts tag `v9.0.0-rc.2-pp` corresponds to `leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12`.
 - Because of some dependency breaking changes with `foundry`, we have introduced patch images. They are not compatible with all the versions of kurtosis-cdk!
 
-  | Patch Version | Foundry Version | Polycli Version | Compatibility with kurtosis-cdk |
-  | ------------- | --------------- | --------------- | --------------- |
-  | None | [nightly-31dd1f77fd9156d09836486d97963cec7f555343](https://github.com/foundry-rs/foundry/releases/tag/nightly-31dd1f77fd9156d09836486d97963cec7f555343) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | <= `v0.2.22` |
-  | `patch1` | [nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76](https://github.com/foundry-rs/foundry/tree/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | > `v0.2.22` |
+  | Patch Version | Foundry Version                                                                                                                                         | Polycli Version                                                          | Compatibility with kurtosis-cdk |
+  | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------- |
+  | None          | [nightly-31dd1f77fd9156d09836486d97963cec7f555343](https://github.com/foundry-rs/foundry/releases/tag/nightly-31dd1f77fd9156d09836486d97963cec7f555343) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | <= `v0.2.22`                    |
+  | `patch1`      | [nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76](https://github.com/foundry-rs/foundry/tree/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76)         | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | > `v0.2.22`                     |
 
 ### ZkEVM Bridge UI
 
 Kurtosis CDK's zkevm bridge UI images are [hosted](https://hub.docker.com/repository/docker/leovct/zkevm-bridge-ui/general) on the Docker Hub.
 
-| zkEVM Bridge UI Tag / Commit | Image |
-| ---------------------------- | ----- |
+| zkEVM Bridge UI Tag / Commit                                                                                          | Image                                  |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
 | [develop@0006445](https://github.com/0xPolygonHermez/zkevm-bridge-ui/commit/0006445e1cace5c4d737523fca44af7f7261e041) | `leovct/zkevm-bridge-ui:multi-network` |
 
 ## Custom Docker Images
@@ -119,7 +119,7 @@ local/zkevm-bridge-ui   local   040905e1cabe   28 seconds ago   377MB
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
 
 | toolbox | polycli | foundry |
-|---------|---------|---------|
+| ------- | ------- | ------- |
 | 0.0.8   | v0.1.73 | stable  |
 | 0.0.9   | v0.1.81 | v1.2.3  |
 | 0.0.10  | v0.1.82 | v1.2.3  |
@@ -140,4 +140,34 @@ Check the size of the image.
 $ docker images --filter "reference=local/toolbox"
 REPOSITORY       TAG    IMAGE ID       CREATED         SIZE
 local/toolbox   local   3f85f026aaf9   2 seconds ago   448MB
+```
+
+### Status Checker
+
+This is an optional image for the [`status-checker`](https://github.com/0xPolygon/status-checker)
+to be used when running `kurtosis-cdk` in offline environments.
+
+Build the `status-checker` image from the `kurtosis-cdk` root directory.
+
+```bash
+docker build . \
+  --tag local/status-checker:local \
+  --file docker/status-checker.Dockerfile
+
+# https://hub.docker.com/r/minhdvu/status-checker
+docker buildx build . \
+  -t minhdvu/status-checker:v0.2.8 \
+  -t minhdvu/status-checker:latest \
+  --platform=linux/amd64,linux/arm64 \
+  --push \
+  --builder=container \
+  -f ./docker/status-checker.Dockerfile
+```
+
+Check the size of the image.
+
+```bash
+$ docker images --filter "reference=local/status-checker"
+REPOSITORY             TAG       IMAGE ID       CREATED         SIZE
+local/status-checker   local     2554266f5834   9 minutes ago   1.77GB
 ```
