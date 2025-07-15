@@ -43,7 +43,7 @@ RUN git clone https://github.com/agglayer/op-succinct.git . \
     && git submodule update --init --recursive
 
 RUN cargo build --release \
-    && cp target/release/fetch-rollup-config /usr/local/bin/ \
+    && cp target/release/fetch-l2oo-config /usr/local/bin/ \
     && cargo clean && rm -rf .git
 
 # INFO (DL3049): Label `author` is missing.
