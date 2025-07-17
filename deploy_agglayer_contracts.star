@@ -229,7 +229,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     plan.add_service(
         name=contracts_service_name,
         config=ServiceConfig(
-            image=args["zkevm_contracts_image"],
+            image=args["agglayer_contracts_image"],
             files=files,
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],

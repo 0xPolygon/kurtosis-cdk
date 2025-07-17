@@ -9,7 +9,7 @@ args:
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
 
   # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.11
-  zkevm_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11-patch.1
+  agglayer_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11-patch.1
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=fork.11
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11

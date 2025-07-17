@@ -25,7 +25,7 @@ args:
   zkevm_l2_proofsigner_address: "0xf1a661D7b601Ec46a040f57193cC99aB8c4132FA"
   zkevm_l2_proofsigner_private_key: "0xc7fe3a006d75ba9326d9792523385abb49057c66aee0b8b4248821a89713f975"
 
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
+  agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
   additional_services: []
   consensus_contract_type: pessimistic
   sequencer_type: erigon
@@ -33,4 +33,3 @@ args:
   gas_token_enabled: true
   zkevm_use_real_verifier: true
   enable_normalcy: true
-
