@@ -7,14 +7,8 @@ We maintain a suite of custom Docker images tailored specifically for deploying 
 ### ZkEVM Contracts
 
 - They are [hosted](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) on the Docker Hub.
-- They share the same tags as [0xPolygonHermez/zkevm-contracts](https://github.com/0xPolygonHermez/zkevm-contracts).
+- They share the same tags as [agglayer/agglayer-contracts](https://github.com/agglayer/agglayer-contracts).
 - They have been suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For example, pessimistic tags have been prefixed with `-fork.12`, e.g. the zkevm-contracts tag `v9.0.0-rc.2-pp` corresponds to `leovct/zkevm-contracts:v9.0.0-rc.2-pp-fork.12`.
-- Because of some dependency breaking changes with `foundry`, we have introduced patch images. They are not compatible with all the versions of kurtosis-cdk!
-
-  | Patch Version | Foundry Version                                                                                                                                         | Polycli Version                                                          | Compatibility with kurtosis-cdk |
-  | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------- |
-  | None          | [nightly-31dd1f77fd9156d09836486d97963cec7f555343](https://github.com/foundry-rs/foundry/releases/tag/nightly-31dd1f77fd9156d09836486d97963cec7f555343) | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | <= `v0.2.22`                    |
-  | `patch1`      | [nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76](https://github.com/foundry-rs/foundry/tree/nightly-27cabbd6c905b1273a5ed3ba7c10acce90833d76)         | [v0.1.64](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.64) | > `v0.2.22`                     |
 
 ### ZkEVM Bridge UI
 
@@ -61,19 +55,15 @@ pushd /tmp/kurtosis-cdk/docker
 
 ### ZkEVM Contracts
 
-This image contains all the npm dependencies and zkevm contracts compiled for a specific fork id.
-
-> Automate the build process using this CI [workflow](https://github.com/0xPolygon/kurtosis-cdk/actions/workflows/docker-image-builder.yml). Images will be automatically [pushed](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) to the Docker Hub.
+This image contains all the npm dependencies and agglayer contracts compiled for a specific fork id.
 
 Build the `zkevm-contracts` image.
 
 ```bash
-version="v8.0.0-rc.4-fork.12"
+version="v11.0.0-rc.2"
 docker build . \
-  --tag local/zkevm-contracts:$version \
-  --build-arg ZKEVM_CONTRACTS_BRANCH=$version \
-  --build-arg POLYCLI_VERSION="v0.1.73" \
-  --build-arg FOUNDRY_VERSION=stable \
+  --tag local/zkevm-contracts:$version-fork.12 \
+  --build-arg AGGLAYER_CONTRACTS_BRANCH=$version \
   --file zkevm-contracts.Dockerfile
 ```
 
