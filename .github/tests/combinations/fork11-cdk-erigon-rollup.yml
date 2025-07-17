@@ -6,7 +6,7 @@ deployment_stages:
 args:
   verbosity: debug
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
-  zkevm_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11-patch.1
+  agglayer_contracts_image: leovct/zkevm-contracts:v7.0.0-rc.2-fork.11-patch.1
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11
   zkevm_node_image: hermeznetwork/zkevm-node:v0.7.0-fork11
   consensus_contract_type: rollup

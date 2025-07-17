@@ -1,10 +1,10 @@
 # Custom Docker Images for Kurtosis CDK
 
-We maintain a suite of custom Docker images tailored specifically for deploying the CDK stack. These images serve various purposes, including hosting distinct zkEVM contracts (each fork tagged separately), adapting the bridge UI to support relative URLs, and applying specific workloads.
+We maintain a suite of custom Docker images tailored specifically for deploying the CDK stack. These images serve various purposes, including hosting distinct agglayer contracts (each fork tagged separately), adapting the bridge UI to support relative URLs, and applying specific workloads.
 
 ## Docker Images
 
-### ZkEVM Contracts
+### Agglayer Contracts
 
 - They are [hosted](https://hub.docker.com/repository/docker/leovct/zkevm-contracts/general) on the Docker Hub.
 - They share the same tags as [agglayer/agglayer-contracts](https://github.com/agglayer/agglayer-contracts).
@@ -53,7 +53,7 @@ Move to the `docker` folder.
 pushd /tmp/kurtosis-cdk/docker
 ```
 
-### ZkEVM Contracts
+### Agglayer Contracts
 
 This image contains all the npm dependencies and agglayer contracts compiled for a specific fork id.
 

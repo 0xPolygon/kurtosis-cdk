@@ -5,7 +5,7 @@ args:
   verbosity: debug
 
   # https://hub.docker.com/repository/docker/leovct/zkevm-contracts/tags?name=fork.12
-  zkevm_contracts_image: jhkimqd/agglayer-contracts:v11.0.0-rc.2-fork.12
+  agglayer_contracts_image: jhkimqd/agglayer-contracts:v11.0.0-rc.2-fork.12
 
   # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags?name=v8
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12

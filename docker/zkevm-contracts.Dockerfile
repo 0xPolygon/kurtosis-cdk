@@ -7,7 +7,7 @@ RUN git clone --branch ${POLYCLI_VERSION} https://github.com/0xPolygon/polygon-c
 
 FROM node:22-bookworm
 LABEL author="devtools@polygon.technology"
-LABEL description="Helper image to deploy zkevm contracts"
+LABEL description="Helper image to deploy agglayer contracts"
 
 # STEP 1: Download agglayer contracts dependencies and compile contracts.
 ARG AGGLAYER_CONTRACTS_BRANCH
