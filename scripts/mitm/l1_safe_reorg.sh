@@ -10,14 +10,14 @@ FUNDED_PRV_KEY=0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c62
 BLOCK_TIME=6
 BLOCKS_PER_EPOCH=32
 
-KURTOSIS_PP_ARGS='{ 
+KURTOSIS_PP_ARGS='{
     "args": {
         "l1_engine": "anvil",
         "l1_anvil_block_time": '$BLOCK_TIME',
         "l1_anvil_slots_in_epoch": '$BLOCKS_PER_EPOCH',
         "mitm_proxied_components": {"agglayer": true, "cdk-node": true},
         "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc4",
-        "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
+        "agglayer_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
         "deploy_l2_contracts": true,
         "consensus_contract_type": "pessimistic",
         "erigon_strict_mode": false,
@@ -29,7 +29,7 @@ KURTOSIS_PP_ARGS='{
         "sequencer_type": "erigon"
     }
 }'
-KURTOSIS_FEP_ARGS='{ 
+KURTOSIS_FEP_ARGS='{
     "args": {
         "l1_engine": "anvil",
         "l1_anvil_block_time": '$BLOCK_TIME',
@@ -163,7 +163,7 @@ while true; do
     read -r -p "Press any key to stop sending bridges" -t 5 -N 1 input
     if [[ -n $input ]]; then
         echo
-        break 
+        break
     fi
 done
 

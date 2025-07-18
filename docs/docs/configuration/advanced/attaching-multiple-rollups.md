@@ -32,17 +32,19 @@ By default, the Kurtosis CDK environment spins up an OP Geth environment. This n
 To deploy this environment:
 
 First export the `kurtosis_enclave_name` and `kurtosish_hash` values to environment variables.
+
 ```bash
 kurtosis_enclave_name=cdk
 kurtosish_hash=e05e8cdcfee52a106ec6850b8956b77171cdd948 # Kurtosis tag v0.3.4 + v9.0.0-rc.2-pp contracts + CDK-Erigon Validium by default
 ```
 
 Then create a `.yml` file to use as the `--args-file` input.
+
 ```yaml title="initial-cdk-erigon-validium.yml"
 args:
   verbosity: debug
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.5
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
+  agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
   additional_services:
     - tx_spammer
@@ -51,6 +53,7 @@ args:
 ```
 
 Run the deployment.
+
 ```bash
 # Spin up cdk-erigon validium
 kurtosis run \
@@ -60,6 +63,7 @@ kurtosis run \
 ```
 
 Repeat the steps for Rollup consensus.
+
 ```yaml title="initial-cdk-erigon-rollup.yml"
 deployment_stages:
   deploy_l1: false
@@ -67,7 +71,7 @@ deployment_stages:
   deploy_cdk_bridge_ui: false
 args:
   verbosity: debug
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
+  agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
   additional_services:
     - tx_spammer
@@ -104,11 +108,11 @@ args:
 kurtosis run \
          --enclave "$kurtosis_enclave_name" \
          --args-file ./initial-cdk-erigon-rollup.yml \
-         "github.com/0xPolygon/kurtosis-cdk@$kurtosis_hash"    
+         "github.com/0xPolygon/kurtosis-cdk@$kurtosis_hash"
 ```
 
-
 Repeat the steps for PP consensus.
+
 ```yaml title="initial-cdk-erigon-pp.yml"
 deployment_stages:
   deploy_l1: false
@@ -119,7 +123,7 @@ args:
   zkevm_rollup_chain_id: 30303
   zkevm_rollup_id: 3
   verbosity: debug
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
+  agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
   additional_services:
     - tx_spammer
@@ -158,12 +162,13 @@ args:
 kurtosis run \
          --enclave "$kurtosis_enclave_name" \
          --args-file ./initial-cdk-erigon-pp.yml \
-         "github.com/0xPolygon/kurtosis-cdk@$kurtosis_hash"    
+         "github.com/0xPolygon/kurtosis-cdk@$kurtosis_hash"
 ```
 
 ### Agglayer Config Setup
 
 Identify the agglayer service running within the Kurtosis enclave.
+
 ```bash
 # Modify agglayer config
 agglayer_uuid=$(kurtosis enclave inspect --full-uuids $kurtosis_enclave_name | grep -E "^[0-9a-f]{32}[[:space:]]+agglayer([[:space:]]+|$)" | awk '{print $1}')
@@ -171,6 +176,7 @@ agglayer_container_name=agglayer--$agglayer_uuid
 ```
 
 Modify the agglayer config.
+
 ```bash
 # Add lines under [full-node-rpcs]
 docker exec -it $agglayer_container_name sed -i '/^\[full-node-rpcs\]/a # RPC of the second rollup node\n2 = "http://cdk-erigon-rpc-002:8123"' /etc/zkevm/agglayer-config.toml
@@ -180,17 +186,19 @@ docker exec -it $agglayer_container_name sed -i '/^\[proof-signers\]/a # Sequenc
 ```
 
 Restart the agglayer service for the changes to take effect.
+
 ```bash
 kurtosis service stop $kurtosis_enclave_name agglayer
 kurtosis service start $kurtosis_enclave_name agglayer
 ```
 
-### Monitor the logs for errors 
+### Monitor the logs for errors
 
 Install [Polycli | A Swiss Army knife of blockchain tools](https://github.com/0xPolygon/polygon-cli/releases).
 As of [v0.1.80](https://github.com/0xPolygon/polygon-cli/releases/tag/v0.1.80) `polycli dockerlogger` is available for easily monitoring logs of an entire docker network.
 
 Try using the tool with something like below.
+
 ```bash
 polycli dockerlogger --network kt-cdk --service agglayer,cdk-node --levels error,warn
 ```

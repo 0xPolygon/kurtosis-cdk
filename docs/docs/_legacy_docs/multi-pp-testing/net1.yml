@@ -1,5 +1,5 @@
 args:
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
+  agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
   additional_services: []
   consensus_contract_type: pessimistic
   sequencer_type: erigon
@@ -8,4 +8,3 @@ args:
   zkevm_use_real_verifier: true
   enable_normalcy: true
   sp1_prover_key: 0xsome_sp1_key
-

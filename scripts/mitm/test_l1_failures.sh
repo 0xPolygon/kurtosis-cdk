@@ -6,12 +6,12 @@ REAL_RPC_URL=http://anvil-001:8545
 L1_PROXY_NAME=mitm
 L1_PROXY_PORT=8234
 
-KURTOSIS_ARGS='{ 
+KURTOSIS_ARGS='{
     "args": {
         "l1_engine": "anvil",
         "l1_rpc_url": "http://'$L1_PROXY_NAME':'$L1_PROXY_PORT'",
         "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc4",
-        "zkevm_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
+        "agglayer_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
         "deploy_l2_contracts": true,
         "consensus_contract_type": "pessimistic",
         "erigon_strict_mode": false,
