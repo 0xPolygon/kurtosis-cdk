@@ -479,7 +479,7 @@ zkevm.l1-highest-block-type: finalized
 zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
 
 # The L1 block number from which to start syncing historical data.
-# Usually set to the block where the zkevm contracts were deployed.
+# Usually set to the block where the agglayer contracts were deployed.
 # Default: 0
 zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
 

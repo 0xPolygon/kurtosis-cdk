@@ -1,5 +1,5 @@
-FROM golang:1.22 AS polycli-builder
-ARG POLYCLI_VERSION
+FROM golang:1.23 AS polycli-builder
+ARG POLYCLI_VERSION="v0.1.83"
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_VERSION} https://github.com/0xPolygon/polygon-cli.git . \
   && make build
@@ -7,20 +7,21 @@ RUN git clone --branch ${POLYCLI_VERSION} https://github.com/0xPolygon/polygon-c
 
 FROM node:22-bookworm
 LABEL author="devtools@polygon.technology"
-LABEL description="Helper image to deploy zkevm contracts"
+LABEL description="Helper image to deploy agglayer contracts"
 
-# STEP 1: Download zkevm contracts dependencies and compile contracts.
-ARG ZKEVM_CONTRACTS_BRANCH
+# STEP 1: Download agglayer contracts dependencies and compile contracts.
+ARG AGGLAYER_CONTRACTS_BRANCH
 WORKDIR /opt/zkevm-contracts
-RUN git clone https://github.com/0xPolygonHermez/zkevm-contracts . \
-  && git checkout ${ZKEVM_CONTRACTS_BRANCH} \
+RUN git clone https://github.com/agglayer/agglayer-contracts . \
+  && git checkout ${AGGLAYER_CONTRACTS_BRANCH} \
   && npm install --global npm@10.9.0 \
   && npm install \
   && npx hardhat compile
 
 # STEP 2: Install tools.
-ARG FOUNDRY_VERSION
 COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
+
+ARG FOUNDRY_VERSION="stable"
 WORKDIR /opt
 # WARNING (DL3008): Pin versions in apt get install.
 # WARNING (DL3013): Pin versions in pip.

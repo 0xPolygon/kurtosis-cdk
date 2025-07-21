@@ -9,10 +9,10 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Set to false to use an external L1 like Sepolia.
     # Note that it will require a few additional parameters.
     "deploy_l1": True,
-    # Deploy zkevm contracts on L1 (as well as fund accounts).
-    # Set to false to use pre-deployed zkevm contracts.
+    # Deploy agglayer contracts on L1 (as well as fund accounts).
+    # Set to false to use pre-deployed agglayer contracts.
     # Note that it will require a few additional parameters.
-    "deploy_zkevm_contracts_on_l1": True,
+    "deploy_agglayer_contracts_on_l1": True,
     # Deploy databases.
     "deploy_databases": True,
     # Deploy CDK central/trusted environment.
@@ -50,7 +50,7 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "jhkimqd/agglayer-contracts:v11.0.0-rc.2-fork.12",
+    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v11.0.0-rc.2-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -562,9 +562,9 @@ def parse_args(plan, user_args):
 
     validate_additional_services(args.get("additional_services", []))
 
-    # Determine fork id from the zkevm contracts image tag.
-    zkevm_contracts_image = args.get("zkevm_contracts_image", "")
-    (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
+    # Determine fork id from the agglayer contracts image tag.
+    agglayer_contracts_image = args.get("agglayer_contracts_image", "")
+    (fork_id, fork_name) = get_fork_id(agglayer_contracts_image)
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -640,11 +640,11 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(zkevm_contracts_image):
+def get_fork_id(agglayer_contracts_image):
     """
-    Extract the fork identifier and fork name from a zkevm contracts image name.
+    Extract the fork identifier and fork name from a agglayer contracts image name.
 
-    The zkevm contracts tags follow the convention:
+    The agglayer contracts tags follow the convention:
     v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
 
     Where:
@@ -658,11 +658,11 @@ def get_fork_id(zkevm_contracts_image):
     - v7.0.0-rc.1-fork.10
     - v7.0.0-rc.1-fork.11-patch.1
     """
-    result = zkevm_contracts_image.split("-patch.")[0].split("-fork.")
+    result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
     if len(result) != 2:
         fail(
-            "The zkevm contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
-                zkevm_contracts_image
+            "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
+                agglayer_contracts_image
             )
         )
 
