@@ -40,6 +40,7 @@ def create_op_succinct_proposer_service_config(
         "RUST_LOG": args[
             "global_log_level"
         ],  # Kurtosis CDK specific. Required to see logs in the op-succinct-proposer after https://github.com/agglayer/op-succinct/commit/892085405a65a2b1c245beca3dcb9d9f5626af0e commit
+        "LOG_FORMAT": "json",  # Kurtosis CDK specific - https://github.com/agglayer/op-succinct/commit/cffd968bd744cddc262543e1195fdd36110ecf83
     }
 
     op_succinct_proposer_service_config = ServiceConfig(

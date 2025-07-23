@@ -74,7 +74,7 @@ def create_evm_sketch_genesis(plan, args):
     plan.add_service(
         name=temp_service_name,
         config=ServiceConfig(
-            image=args["zkevm_contracts_image"],
+            image=args["agglayer_contracts_image"],
             files=files,
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],

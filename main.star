@@ -13,7 +13,7 @@ cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
-deploy_zkevm_contracts_package = "./deploy_zkevm_contracts.star"
+deploy_agglayer_contracts_package = "./deploy_agglayer_contracts.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
@@ -42,7 +42,6 @@ def run(plan, args={}):
             ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-
     # Extract the fetch-rollup-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
@@ -54,9 +53,9 @@ def run(plan, args={}):
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
-    if deployment_stages.get("deploy_zkevm_contracts_on_l1", False):
-        plan.print("Deploying zkevm contracts on L1")
-        import_module(deploy_zkevm_contracts_package).run(
+    if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
+        plan.print("Deploying agglayer contracts on L1")
+        import_module(deploy_agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
         )
 
@@ -137,7 +136,7 @@ def run(plan, args={}):
             plan, args, deployment_stages
         )
     else:
-        plan.print("Skipping the deployment of zkevm contracts on L1")
+        plan.print("Skipping the deployment of agglayer contracts on L1")
 
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
@@ -234,9 +233,30 @@ def run(plan, args={}):
 
             plan.print("Deploying cdk central/trusted environment")
             args["genesis_artifact"] = genesis_artifact
-            import_module(cdk_central_environment_package).run(
-                plan, args, deployment_stages, contract_setup_addresses
-            )
+
+            if (
+                args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
+                or args["consensus_contract_type"]
+                == constants.CONSENSUS_TYPE.cdk_validium
+            ):
+                plan.print("Deploying CDK Node infrastructure")
+                import_module(cdk_central_environment_package).run(
+                    plan, args, deployment_stages, contract_setup_addresses
+                )
+            else:
+                plan.print("Skipping the deployment of CDK Node")
+
+            # Deploy AggKit infrastructure + Dedicated Bridge Service
+            if deployment_stages.get("deploy_aggkit_node", False):
+                plan.print("Deploying AggKit infrastructure")
+                import_module(aggkit_package).run_aggkit_cdk_node(
+                    plan,
+                    args,
+                    contract_setup_addresses,
+                    deployment_stages,
+                )
+            else:
+                plan.print("Skipping the deployment of aggkit infrastructure")
 
             # Deploy contracts on L2.
             plan.print("Deploying contracts on L2")
@@ -244,11 +264,15 @@ def run(plan, args={}):
             import_module(deploy_l2_contracts_package).run(
                 plan, args, deploy_l2_contracts
             )
+
         else:
             plan.print("Skipping the deployment of cdk central/trusted environment")
 
-        # Deploy cdk/bridge infrastructure.
-        if deployment_stages.get("deploy_cdk_bridge_infra", False):
+        # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
+        if deployment_stages.get("deploy_cdk_bridge_infra", False) and (
+            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
+            or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium
+        ):
             plan.print("Deploying cdk/bridge infrastructure")
             import_module(cdk_bridge_infra_package).run(
                 plan,
@@ -273,7 +297,10 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of OP Succinct")
 
     # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if deployment_stages.get("deploy_optimism_rollup", False):
+    if deployment_stages.get("deploy_optimism_rollup", False) or (
+        deployment_stages.get("deploy_cdk_central_environment", False)
+        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    ):
         plan.print("Deploying AggKit infrastructure")
         aggkit_package.run(
             plan,
@@ -286,14 +313,13 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of aggkit infrastructure")
 
     # Deploy additional services.
-    deploy_optimism_rollup = deployment_stages.get("deploy_optimism_rollup", False)
     additional_services.launch(
         plan,
         args,
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
         genesis_artifact,
-        deploy_optimism_rollup,
+        deployment_stages,
     )
 
 

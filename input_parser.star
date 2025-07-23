@@ -9,10 +9,10 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Set to false to use an external L1 like Sepolia.
     # Note that it will require a few additional parameters.
     "deploy_l1": True,
-    # Deploy zkevm contracts on L1 (as well as fund accounts).
-    # Set to false to use pre-deployed zkevm contracts.
+    # Deploy agglayer contracts on L1 (as well as fund accounts).
+    # Set to false to use pre-deployed agglayer contracts.
     # Note that it will require a few additional parameters.
-    "deploy_zkevm_contracts_on_l1": True,
+    "deploy_agglayer_contracts_on_l1": True,
     # Deploy databases.
     "deploy_databases": True,
     # Deploy CDK central/trusted environment.
@@ -36,9 +36,16 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
+    # Deploy aggkit node in parallel to cdk node.
+    "deploy_aggkit_node": False,
 }
 
 DEFAULT_IMAGES = {
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta3",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-RC2-amd64",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.4.0-beta1",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.4",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.1.2",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
@@ -46,9 +53,9 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4-rc1",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.1",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
     "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
-    "zkevm_contracts_image": "xavierpolygon/agglayer-contracts:v11.0.0-rc.1-fork.12",
+    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v11.0.0-rc.2-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
@@ -56,7 +63,7 @@ DEFAULT_IMAGES = {
     "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.1-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-succinct
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-succinct
     "test_runner_image": "leovct/e2e:9fe80e1",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",  # https://github.com/0xPolygon/status-checker/releases
 }
@@ -88,7 +95,8 @@ DEFAULT_PORTS = {
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
-    "zkevm_cdk_node_port": 5576,
+    "cdk_node_rpc_port": 5576,
+    "aggkit_node_rest_api_port": 5577,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
@@ -139,7 +147,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 13 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -177,6 +185,9 @@ DEFAULT_ACCOUNTS = {
     # sovereignadmin
     "zkevm_l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
     "zkevm_l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
+    # claimsponsor
+    "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+    "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
 }
 
 DEFAULT_L1_ARGS = {
@@ -184,6 +195,8 @@ DEFAULT_L1_ARGS = {
     "l1_engine": "geth",
     # The L1 network identifier.
     "l1_chain_id": 271828,
+    # Custom L1 genesis
+    "l1_custom_genesis": False,
     # This mnemonic will:
     # a) be used to create keystores for all the types of validators that we have, and
     # b) be used to generate a CL genesis.ssz that has the children validator keys already
@@ -349,7 +362,7 @@ DEFAULT_ROLLUP_ARGS = {
     "aggkit_pprof_enabled": True,
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
-    "zkevm_path_rw_data": "/tmp/",
+    "zkevm_path_rw_data": "/tmp",
     # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check() function.
     "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
     # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check() function.
@@ -358,6 +371,10 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
+    "aggkit_components": "aggsender,aggoracle,bridge",
+    # Toggle to enable the claimsponsor on the aggkit node.
+    # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
+    "enable_aggkit_claim_sponsor": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -446,16 +463,28 @@ DEFAULT_OP_STACK_ARGS = {
                     # OP Rollup configuration
                     "el_type": "op-geth",
                     "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.0",
+                    "el_extra_params": [
+                        "--log.format=json",
+                    ],
                     "cl_type": "op-node",
                     "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.3",
+                    "cl_extra_params": [
+                        "--log.format=json",
+                    ],
                     "count": 1,
                 },
             ],
             "batcher_params": {
                 "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0",
+                "extra_params": [
+                    "--log.format=json",
+                ],
             },
             "proposer_params": {
                 "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
+                "extra_params": [
+                    "--log.format=json",
+                ],
             },
             "network_params": {
                 # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
@@ -538,9 +567,9 @@ def parse_args(plan, user_args):
 
     validate_additional_services(args.get("additional_services", []))
 
-    # Determine fork id from the zkevm contracts image tag.
-    zkevm_contracts_image = args.get("zkevm_contracts_image", "")
-    (fork_id, fork_name) = get_fork_id(zkevm_contracts_image)
+    # Determine fork id from the agglayer contracts image tag.
+    agglayer_contracts_image = args.get("agglayer_contracts_image", "")
+    (fork_id, fork_name) = get_fork_id(agglayer_contracts_image)
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -616,11 +645,11 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(zkevm_contracts_image):
+def get_fork_id(agglayer_contracts_image):
     """
-    Extract the fork identifier and fork name from a zkevm contracts image name.
+    Extract the fork identifier and fork name from a agglayer contracts image name.
 
-    The zkevm contracts tags follow the convention:
+    The agglayer contracts tags follow the convention:
     v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
 
     Where:
@@ -634,11 +663,11 @@ def get_fork_id(zkevm_contracts_image):
     - v7.0.0-rc.1-fork.10
     - v7.0.0-rc.1-fork.11-patch.1
     """
-    result = zkevm_contracts_image.split("-patch.")[0].split("-fork.")
+    result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
     if len(result) != 2:
         fail(
-            "The zkevm contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
-                zkevm_contracts_image
+            "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
+                agglayer_contracts_image
             )
         )
 
@@ -812,7 +841,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
     if deployment_stages.get("deploy_optimism_rollup", False):
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
-            if args["consensus_contract_type"] != "fep" and args["consensus_contract_type"] != "ecdsa":
+            if (
+                args["consensus_contract_type"] != "fep"
+                and args["consensus_contract_type"] != "ecdsa"
+            ):
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
                         args["consensus_contract_type"]

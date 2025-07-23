@@ -1,6 +1,6 @@
 deployment_stages:
   deploy_l1: false
-  deploy_zkevm_contracts_on_l1: false
+  deploy_agglayer_contracts_on_l1: false
   deploy_databases: false
   deploy_cdk_central_environment: false
   deploy_cdk_bridge_infra: false

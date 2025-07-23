@@ -54,8 +54,14 @@ while IFS= read -r hex; do
     )
   fi
 
-  # The Go script decodes the batch L2 data into JSON.
-  indexes=$(go run main.go "$batch_l2_data" | jq -r '.Blocks[] | .IndexL1InfoTree')
+  # The Go script decodes the batch L2 data into JSON. If using the offline
+  # status-checker image, then the decode-batch-l2-data binary will be built;
+  # otherwise, just build the go script on the fly.
+  if command -v decode-batch-l2-data &> /dev/null; then
+    indexes=$(decode-batch-l2-data "$batch_l2_data" | jq -r '.Blocks[] | .IndexL1InfoTree')
+  else
+    indexes=$(go run main.go "$batch_l2_data" | jq -r '.Blocks[] | .IndexL1InfoTree')
+  fi
 
   while IFS= read -r index; do
     if (( index >= "$l1_info_tree_leaf_count" )); then

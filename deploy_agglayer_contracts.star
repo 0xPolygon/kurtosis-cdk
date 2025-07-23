@@ -15,8 +15,12 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
     {
-        "name": "run-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-contract-setup.sh",
+        "name": "run-deploy-l1-agglayer-core-contracts.sh",
+        "file": "./templates/contract-deploy/run-deploy-l1-agglayer-core-contracts.sh",
+    },
+    {
+        "name": "run-create-agglayer-rollup.sh",
+        "file": "./templates/contract-deploy/run-create-agglayer-rollup.sh",
     },
     {
         "name": "create-keystores.sh",
@@ -70,6 +74,22 @@ ARTIFACTS = [
         "name": "run-initialize-rollup.sh",
         "file": "./templates/sovereign-rollup/run-initialize-rollup.sh",
     },
+    {
+        "name": "op-configure-contract-container-custom-genesis.sh",
+        "file": "./templates/sovereign-rollup/op-configure-contract-container-custom-genesis.sh",
+    },
+    {
+        "name": "cdk-erigon-configure-contract-container-custom-genesis.sh",
+        "file": "./templates/cdk-erigon/cdk-erigon-configure-contract-container-custom-genesis.sh",
+    },
+    {
+        "name": "cdk-erigon-custom-genesis-addresses.json",
+        "file": "./templates/cdk-erigon/cdk-erigon-custom-genesis-addresses.json",
+    },
+    {
+        "name": "op-custom-genesis-addresses.json",
+        "file": "./templates/sovereign-rollup/op-custom-genesis-addresses.json",
+    },
 ]
 
 
@@ -110,7 +130,13 @@ def run(plan, args, deployment_stages, op_stack_args):
     # Retrieve vkeys and vkey selectors from the binaries.
     agglayer_image = args.get("agglayer_image")
     pp_vkey_hash = agglayer_vkey.get_hash(plan, agglayer_image)
+    plan.print(
+        "Agglayer vkey hash: {}".format(pp_vkey_hash),
+    )
     pp_vkey_selector = agglayer_vkey.get_selector(plan, agglayer_image)
+    plan.print(
+        "Agglayer vkey selector: {}".format(pp_vkey_selector),
+    )
 
     aggkit_prover_image = args.get("aggkit_prover_image")
     aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
@@ -123,6 +149,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     if args.get("consensus_contract_type") in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
+        constants.CONSENSUS_TYPE.ecdsa,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
@@ -139,6 +166,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
+                        "is_vanilla_client": is_vanilla_client(args),
                         "deploy_op_succinct": deployment_stages.get(
                             "deploy_op_succinct", False
                         ),
@@ -201,7 +229,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     plan.add_service(
         name=contracts_service_name,
         config=ServiceConfig(
-            image=args["zkevm_contracts_image"],
+            image=args["agglayer_contracts_image"],
             files=files,
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
@@ -211,19 +239,118 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
     # Deploy contracts.
-    plan.exec(
-        description="Deploying zkevm contracts on L1",
-        service_name=contracts_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/run-contract-setup.sh"
-                ),
-            ]
-        ),
-    )
+    if (
+        args.get("l1_custom_genesis")
+        and args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic
+    ):
+        plan.print(
+            "Skipping L1 smart contract deployment: using custom genesis in pessimistic mode"
+        )
+        plan.exec(
+            description="Configuring contract container for pessimistic",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/op-configure-contract-container-custom-genesis.sh"
+                    ),
+                ]
+            ),
+        )
+    elif args.get("l1_custom_genesis") and (
+        args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+        or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
+    ):
+        plan.print("Skipping L1 smart contract deployment: custom genesis is enabled")
+        plan.exec(
+            description="Configuring contract container for rollup/cdk-validium",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/cdk-erigon-configure-contract-container-custom-genesis.sh"
+                    ),
+                ]
+            ),
+        )
+        plan.exec(
+            description="Deploying rollup smc on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-create-agglayer-rollup.sh"
+                    ),
+                ]
+            ),
+        )
+        # Store CDK configs.
+        plan.store_service_files(
+            name="cdk-erigon-chain-config",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
+        )
+
+        plan.store_service_files(
+            name="cdk-erigon-chain-allocs",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+        )
+        plan.store_service_files(
+            name="cdk-erigon-chain-first-batch",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/first-batch-config.json",
+        )
+    else:
+        plan.exec(
+            description="Deploying Agglayer smart contracts on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-deploy-l1-agglayer-core-contracts.sh"
+                    ),
+                ]
+            ),
+        )
+        plan.exec(
+            description="Creating rollup on L1",
+            service_name=contracts_service_name,
+            recipe=ExecRecipe(
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "chmod +x {0} && {0}".format(
+                        "/opt/contract-deploy/run-create-agglayer-rollup.sh"
+                    ),
+                ]
+            ),
+        )
+        # Store CDK configs.
+        plan.store_service_files(
+            name="cdk-erigon-chain-config",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
+        )
+
+        plan.store_service_files(
+            name="cdk-erigon-chain-allocs",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+        )
+        plan.store_service_files(
+            name="cdk-erigon-chain-first-batch",
+            service_name="contracts" + args["deployment_suffix"],
+            src="/opt/zkevm/first-batch-config.json",
+        )
 
     # Create keystores.
     plan.exec(
@@ -240,24 +367,6 @@ def run(plan, args, deployment_stages, op_stack_args):
         ),
     )
 
-    # Store CDK configs.
-    plan.store_service_files(
-        name="cdk-erigon-chain-config",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
-    )
-
-    plan.store_service_files(
-        name="cdk-erigon-chain-allocs",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
-    )
-    plan.store_service_files(
-        name="cdk-erigon-chain-first-batch",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/first-batch-config.json",
-    )
-
     # Force update GER.
     plan.exec(
         description="Updating the GER so the L1 Info Tree Index is greater than 0",
@@ -270,3 +379,10 @@ def run(plan, args, deployment_stages, op_stack_args):
             ]
         ),
     )
+
+
+def is_vanilla_client(args):
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa:
+        return True
+    else:
+        return False

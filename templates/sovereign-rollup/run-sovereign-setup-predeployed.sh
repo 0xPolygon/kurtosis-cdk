@@ -3,6 +3,9 @@
 # Create New Rollup Step
 pushd /opt/zkevm-contracts || exit 1
 
+# Requirement to correctly configure contracts deployer
+export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
+
 ts=$(date +%s)
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
@@ -30,6 +33,8 @@ cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/tools/create
 # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
 cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/addRollupType/genesis.json
 cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/createNewRollup/genesis.json
+
+cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
 
 deployOPSuccinct="{{ .deploy_op_succinct }}"
 if [[ $deployOPSuccinct == true ]]; then

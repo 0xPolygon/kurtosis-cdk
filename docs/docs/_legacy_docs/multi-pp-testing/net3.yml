@@ -25,7 +25,6 @@ args:
   zkevm_l2_proofsigner_address: "0xDcd1d53324a9Ae5a50a55F62556A771376Fe434D"
   zkevm_l2_proofsigner_private_key: "0xcb1f295abf6538023fcf96eaa8e81969a65ba70ab61590187b77e2c01aaba748"
 
-  zkevm_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
+  agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
   additional_services: []
   sequencer_type: erigon
-
