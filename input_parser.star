@@ -92,6 +92,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
     "cdk_node_rpc_port": 5576,
     "aggkit_node_rest_api_port": 5577,
+    "aggkit_validator_grpc_port": 5578,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
@@ -371,6 +372,7 @@ DEFAULT_ROLLUP_ARGS = {
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
     "use_agg_oracle_committee": False,
+    "use_agg_sender_validator": True,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {

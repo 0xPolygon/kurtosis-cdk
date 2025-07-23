@@ -207,6 +207,14 @@ CheckStatusCertificateInterval = "1s"
 # ------------------------------------------------------------------------------
 # MaxCertSize = 0
 
+{{ if .use_agg_sender_validator }}
+RequireValidatorCall = true
+[AggSender.ValidatorClient]
+URL = "aggkit-validator{{.deployment_suffix}}:{{.aggkit_validator_grpc_port}}"
+{{ end }}
+
+
+
 [AggSender.AggkitProverClient]
 UseTLS = false
 
@@ -279,6 +287,24 @@ SaveCertificatesToFilesPath = "/tmp"
 # EnableRPC is a flag to enable the RPC for aggsender
 # ------------------------------------------------------------------------------
 # EnableRPC = false
+
+{{ if .use_agg_sender_validator }}
+[AggSender.AgglayerClient]
+Cached = true
+[ValidaAggSendertor.AgglayerClient.ConfigurationCache]
+TTL = "15m"
+Capacity = 100
+[AggSender.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+MinConnectTimeout = "5s"
+RequestTimeout = "300s"
+UseTLS = false
+[AggSender.AgglayerClient.GRPC.Retry]
+InitialBackoff = "1s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+MaxAttempts = 20
+{{ end }}
 
 # ==============================================================================
 #     _    ____  ____  ___  ____      _    ____ _     _____
@@ -642,3 +668,31 @@ ProfilingPort = {{.aggkit_pprof_port}}
 # Default: false
 # ------------------------------------------------------------------------------
 ProfilingEnabled = {{.aggkit_pprof_enabled}}
+
+
+# https://github.com/agglayer/aggkit/pull/744
+[Validator]
+EnableRPC = true
+Signer = { Method = "mock" }
+
+[Validator.ServerConfig]
+Host = "0.0.0.0"
+Port = {{.aggkit_validator_grpc_port}}
+MaxDecodingMessageSize = 1073741824  # 1GB
+
+# Is it necessary to specify all of thse values again?
+[Validator.LerQuerierConfig]
+RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
+RollupCreationBlockL1 = "{{.zkevm_rollup_manager_block_number}}"
+
+[Validator.AgglayerClient]
+Cached = true
+
+[Validator.AgglayerClient.ConfigurationCache]
+TTL = "15m"
+Capacity = 100
+
+[Validator.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+UseTLS = false
+
