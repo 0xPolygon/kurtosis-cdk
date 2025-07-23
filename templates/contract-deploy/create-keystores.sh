@@ -26,3 +26,4 @@ create_geth_keystore "proofsigner.keystore"     "{{.zkevm_l2_proofsigner_private
 create_geth_keystore "aggoracle.keystore"       "{{.zkevm_l2_aggoracle_private_key}}"       "{{.zkevm_l2_keystore_password}}"
 create_geth_keystore "sovereignadmin.keystore"  "{{.zkevm_l2_sovereignadmin_private_key}}"  "{{.zkevm_l2_keystore_password}}"
 create_geth_keystore "claimsponsor.keystore"    "{{.zkevm_l2_claimsponsor_private_key}}"    "{{.zkevm_l2_keystore_password}}"
+create_geth_keystore "aggkitvalidator.keystore" "{{.zkevm_l2_aggkitvalidator_private_key}}" "{{.zkevm_l2_keystore_password}}"

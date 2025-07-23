@@ -673,7 +673,9 @@ ProfilingEnabled = {{.aggkit_pprof_enabled}}
 # https://github.com/agglayer/aggkit/pull/744
 [Validator]
 EnableRPC = true
-Signer = { Method = "mock" }
+# Signer = { Method = "mock" }
+Signer = { Method = "local", Path = "/etc/aggkit/aggkitvalidator.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+
 
 [Validator.ServerConfig]
 Host = "0.0.0.0"

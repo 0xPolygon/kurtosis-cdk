@@ -199,12 +199,18 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimsponsor.keystore",
     )
+    aggkit_validator_keystore_artifact = plan.store_service_files(
+        name="aggkitvalidator-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/aggkitvalidator.keystore",
+    )
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         claimtx=claimtx_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
+        aggkit_validator=aggkit_validator_keystore_artifact,
     )
 
 

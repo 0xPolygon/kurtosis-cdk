@@ -97,8 +97,8 @@ def create_aggkit_service_config(
                 "/etc/aggkit": Directory(
                     artifact_names=[
                         config_artifact,
-                        keystore_artifact.sequencer,
                         keystore_artifact.claim_sponsor,
+                        keystore_artifact.aggkit_validator,
                     ],
                 ),
                 "/data": Directory(
