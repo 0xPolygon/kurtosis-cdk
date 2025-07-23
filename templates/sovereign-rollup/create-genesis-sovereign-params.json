@@ -6,7 +6,6 @@
     "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
     "sovereignWETHAddress": "{{ .gas_token_address }}",
     "sovereignWETHAddressIsNotMintable": false,
-    "globalExitRootUpdater": "{{ .zkevm_l2_aggoracle_address }}",
     "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}",
     "emergencyBridgePauser": "{{ .zkevm_l2_sovereignadmin_address }}",
     "emergencyBridgeUnpauser": "{{ .zkevm_l2_sovereignadmin_address }}",
@@ -23,5 +22,19 @@
         "adminAddress": "{{ .zkevm_l2_admin_address }}",
         "minDelay": 3600
     },
+
+
+    {{if .use_agg_oracle_committee}}
+    "useAggOracleCommittee": true,
+    "aggOracleCommittee": ["0x8576158a89648aA88B6036f47B8b74Fc0C2b5c66", "0xb420EAAbFeFA05b39dE520f811325A463E023954"],
+    "quorum": 1,
+    "globalExitRootUpdater": "",
+    {{else}}
+    "useAggOracleCommittee": false,
+    "aggOracleCommittee": [],
+    "quorum": 0,
+    "globalExitRootUpdater": "{{ .zkevm_l2_aggoracle_address }}",
+    {{end}}
+
     "formatGenesis": "geth"
 }
