@@ -36,6 +36,6 @@ RUN apt-get update \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
   && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
   && cp /root/.foundry/bin/* /usr/local/bin \
-  && pip3 install --break-system-packages flask gunicorn
+  && pip3 install --no-cache-dir --break-system-packages flask flask_wtf gunicorn
 
 USER node

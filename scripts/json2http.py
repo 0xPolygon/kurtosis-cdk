@@ -1,8 +1,13 @@
-from flask import Flask, jsonify, send_file, abort, url_for
 import os
+from flask import Flask, jsonify, send_from_directory, abort, url_for
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
+# SonarQube CSRF protection
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 BASE_DIR = os.path.normpath('/opt')
 
@@ -29,16 +34,20 @@ def list_json_files():
 
 @app.route(f"{BASE_DIR}/<path:subpath>")
 def serve_json(subpath):
-    file_path = os.path.normpath(os.path.join(BASE_DIR, subpath))
-    if not file_path.startswith(BASE_DIR + os.sep):
-        abort(403, "Access to the requested file is forbidden.")
-    if os.path.isfile(file_path) and file_path.endswith('.json'):
-        try:
-            return send_file(file_path, mimetype='application/json')
-        except Exception as e:
-            abort(500, f"Failed to read file: {str(e)}")
-    else:
-        abort(404, f"JSON file not found: {subpath}")
+    # Explicitly reject path traversal attempts
+    if ".." in subpath or subpath.startswith("/"):
+        abort(400, "Invalid path")
+
+    # Optionally, only allow .json files
+    if not subpath.endswith(".json"):
+        abort(403, "Only JSON files are allowed")
+
+    try:
+        return send_from_directory(BASE_DIR, subpath, mimetype='application/json')
+    except FileNotFoundError:
+        abort(404, "File not found")
+    except Exception as e:
+        abort(500, f"Error reading file: {str(e)}")
 
 if __name__ == '__main__':
     app.run()
