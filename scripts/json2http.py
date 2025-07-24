@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
-BASE_DIR = '/opt'
+BASE_DIR = os.path.normpath('/opt')
 
 
 @app.route('/')
@@ -30,7 +30,7 @@ def list_json_files():
 @app.route(f"{BASE_DIR}/<path:subpath>")
 def serve_json(subpath):
     file_path = os.path.normpath(os.path.join(BASE_DIR, subpath))
-    if not file_path.startswith(BASE_DIR):
+    if not file_path.startswith(BASE_DIR + os.sep):
         abort(403, "Access to the requested file is forbidden.")
     if os.path.isfile(file_path) and file_path.endswith('.json'):
         try:
