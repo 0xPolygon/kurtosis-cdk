@@ -249,7 +249,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             command=[
                 "/bin/sh",
                 "-c",
-                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/contract-deploy --daemon",
+                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/contract-deploy --daemon || true",
             ]
         ),
     )
