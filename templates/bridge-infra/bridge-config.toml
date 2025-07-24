@@ -59,7 +59,7 @@ L2URLs = ["{{.l2_rpc_url}}"]
 SyncInterval = "5s"
 # Number of blocks to read in each synchronization operation if the service is not synced and if there is enough data.
 SyncChunkSize = 100
-# Forces the SyncChunkSize for L2 networks. The chunck size won't be higher than the value specified but if there is not enough events in the network, the reorg protection can be affected.
+# Forces the SyncChunkSize for L2 networks. The chunk size won't be higher than the value specified but if there is not enough events in the network, the reorg protection can be affected.
 ForceL2SyncChunk = true
 
 # Bridge Controller Configuration

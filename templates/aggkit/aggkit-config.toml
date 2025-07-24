@@ -44,7 +44,7 @@ polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
 
-# These values can be overriden directly from genesis.json
+# These values can be overridden directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
@@ -254,10 +254,10 @@ SaveCertificatesToFilesPath = "/tmp"
 # MaxRetriesStoreCertificate = 3
 
 # ------------------------------------------------------------------------------
-# DelayBeetweenRetries is the delay between retries
+# DelayBetweenRetries is the delay between retries
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
-# DelayBeetweenRetries = 5s
+# DelayBetweenRetries = 5s
 
 # ------------------------------------------------------------------------------
 # KeepCertificatesHistory is a flag to keep the certificates history on storage
