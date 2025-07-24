@@ -95,7 +95,7 @@ Now edit ./deployment/v2/create_rollup_parameters.json
     "rollupManagerAddress":"0xFB054898a55bB49513D1BA8e0FB949Ea3D9B4153",
     "rollupTypeId": 1,
     "proxiedTokensManager" : "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
-    "_comment": "TODO.. It sounds like isVanilliaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
+    "_comment": "TODO.. It sounds like isVanillaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
     "isVanillaClient": false,
     "sovereignParams": {
         "bridgeManager": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",

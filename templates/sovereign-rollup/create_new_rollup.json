@@ -23,7 +23,7 @@
     "rollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
     "rollupTypeId": 1,
     "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}",
-    "_comment": "TODO.. It sounds like isVanilliaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
+    "_comment": "TODO.. It sounds like isVanillaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
     "isVanillaClient": "{{ .is_vanilla_client }}",
     "sovereignParams": {
         "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",

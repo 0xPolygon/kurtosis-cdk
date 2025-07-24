@@ -600,7 +600,7 @@ txpool.globalqueue: 30_000
 # Default: 3h
 # txpool.lifetime: 3h
 
-# A comma separared list of addresses, whoes transactions will traced in transaction pool with debug printing.
+# A comma separared list of addresses, whose transactions will traced in transaction pool with debug printing.
 # Default: ""
 txpool.trace.senders: ""
 
@@ -788,7 +788,7 @@ rpc.accessList: ""
 
 # Sets a cap on gas that can be used in eth_call/estimateGas.
 # Set to 0 to remove the cap.
-# Deault: 50_000_000
+# Default: 50_000_000
 rpc.gascap: 50_000_000
 
 
