@@ -28,13 +28,14 @@ WORKDIR /opt
 # WARNING (DL4006): Set the SHELL option -o pipefail before RUN with a pipe in it
 # hadolint ignore=DL3008,DL3013,DL4006
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends curl git jq pipx \
+  && apt-get install --yes --no-install-recommends curl git jq pipx python3-pip \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pipx ensurepath \
   && pipx install yq \
   && curl --silent --location --proto "=https" https://foundry.paradigm.xyz | bash \
   && /root/.foundry/bin/foundryup --install ${FOUNDRY_VERSION} \
-  && cp /root/.foundry/bin/* /usr/local/bin
+  && cp /root/.foundry/bin/* /usr/local/bin \
+  && pip3 install --no-cache-dir --break-system-packages flask flask_wtf gunicorn
 
 USER node
