@@ -37,6 +37,7 @@ while IFS= read -r hex; do
   tx_json=$(cast tx --json --rpc-url "$L1_RPC_URL" "$tx_hash")
   input_data=$(echo "$tx_json" | jq -r '.input')
   batch_l2_data=$(echo "$vb_json" | jq -r '.batchL2Data')
+  echo "$batch_l2_data" > batch_l2_data.txt
 
   if is_consensus rollup; then
     l1_info_tree_leaf_count=$(
@@ -58,9 +59,9 @@ while IFS= read -r hex; do
   # status-checker image, then the decode-batch-l2-data binary will be built;
   # otherwise, just build the go script on the fly.
   if command -v decode-batch-l2-data &> /dev/null; then
-    indexes=$(decode-batch-l2-data "$batch_l2_data" | jq -r '.Blocks[] | .IndexL1InfoTree')
+    indexes=$(decode-batch-l2-data batch_l2_data.txt | jq -r '.Blocks[] | .IndexL1InfoTree')
   else
-    indexes=$(go run main.go "$batch_l2_data" | jq -r '.Blocks[] | .IndexL1InfoTree')
+    indexes=$(go run main.go batch_l2_data.txt | jq -r '.Blocks[] | .IndexL1InfoTree')
   fi
 
   while IFS= read -r index; do
