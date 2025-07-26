@@ -7,6 +7,7 @@ ADDITIONAL_SERVICES = struct(
     erpc="erpc",
     observability="observability",
     pless_zkevm_node="pless_zkevm_node",
+    rpc_fuzzer="rpc_fuzzer",
     status_checker="status_checker",
     test_runner="test_runner",
     tx_spammer="tx_spammer",
