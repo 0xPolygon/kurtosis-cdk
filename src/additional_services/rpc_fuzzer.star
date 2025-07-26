@@ -4,7 +4,7 @@ wallet_module = import_module("../wallet/wallet.star")
 RPC_FUZZER_SCRIPT_PATH = "../../static_files/additional_services/tx-spammer/rpcfuzz.sh"
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, args):
     # Get rpc urls and funder private keys.
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
