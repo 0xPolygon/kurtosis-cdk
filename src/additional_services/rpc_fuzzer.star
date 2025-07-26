@@ -1,7 +1,7 @@
 constants = import_module("../../src/package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-RPC_FUZZ_SCRIPT_PATH = "../../static_files/additional_services/tx-spammer/rpcfuzz.sh"
+RPC_FUZZER_SCRIPT_PATH = "../../static_files/additional_services/tx-spammer/rpcfuzz.sh"
 
 
 def run(plan, args, contract_setup_addresses):
@@ -13,7 +13,7 @@ def run(plan, args, contract_setup_addresses):
 
     # Start the fuzzer services.
     rpc_fuzz_artifact = plan.upload_files(
-        src=RPC_FUZZ_SCRIPT_PATH,
+        src=RPC_FUZZER_SCRIPT_PATH,
         name="rpc-fuzz-script",
     )
 
@@ -72,6 +72,6 @@ def _start_rpc_fuzzer_service(plan, name, script_artifact, private_key, rpc_url)
                 "RPC_URL": rpc_url,
             },
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /opt/{1} && /opt/{1}".format(RPC_FUZZER_SCRIPT_NAME)],
+            cmd=["chmod +x /opt/{1} && /opt/{1}".format(RPC_FUZZER_SCRIPT_PATH)],
         ),
     )
