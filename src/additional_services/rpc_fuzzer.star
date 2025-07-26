@@ -77,7 +77,7 @@ def _start_rpc_fuzzer_service(plan, name, script_artifact, private_key, rpc_url)
             # Resource limits
             min_cpu=100,  # 0.1 CPU
             max_cpu=1000,  # 1 CPU
-            min_memory="128",  # 128Mb
-            max_memory="1024",  # 1024Mb
+            min_memory=128,  # 128Mb
+            max_memory=1024,  # 1024Mb
         ),
     )
