@@ -1,7 +1,7 @@
 constants = import_module("../../src/package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-RPC_FUZZER_SCRIPT_PATH = "../../static_files/additional_services/tx-spammer/rpcfuzz.sh"
+RPC_FUZZER_SCRIPT_PATH = "../../static_files/additional_services/rpc-fuzzer/rpcfuzz.sh"
 
 
 def run(plan, args):
