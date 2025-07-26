@@ -27,6 +27,27 @@ kurtosis lint --format .
 
 ### Testing
 
+#### Unit Tests
+
+We rely on [kurtosis-test](https://github.com/ethereum-optimism/kurtosis-test) to run a set of unit tests against the Starlark code.
+
+```bash
+git clone https://github.com/ethereum-optimism/kurtosis-test.git
+pushd kurtosis-test
+git checkout v0.0.5
+go build -o kurtosis-test cli/main.go
+cp kurtosis-test /usr/local/bin
+```
+
+Then run the Kurtosis tests.
+
+```bash
+# in kurtosis-cdk
+kurtosis-test .
+```
+
+#### E2E Tests
+
 :::info
 You will need to have the test runner deployed in your environment to run e2e tests with this command.
 :::

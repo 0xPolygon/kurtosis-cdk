@@ -1,4 +1,4 @@
-name: deploy
+name: test
 
 on:
   pull_request:
@@ -14,12 +14,108 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 env:
+  # unit test
+  KURTOSIS_TEST_VERSION: v0.0.5
+  GO_VERSION: 1.21
+
+  # kurtosis deploy
   ENCLAVE_NAME: cdk
   POLYCLI_VERSION: v0.1.82
   E2E_REF: 4763c63cb11c5e605bff749823bf514abcdac7b6
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      # Install linters
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Install hadolint
+        run: |
+          sudo wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
+
+      - name: Install shellcheck
+        run: sudo apt install shellcheck
+
+      # Run linters
+      - name: Run kurtosis linter
+        run: kurtosis lint .
+
+      - name: Run yamllint
+        run: yamllint --config-file ${{ github.workspace }}/.yamllint.yml .
+
+      - name: Run hadolint
+        run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
+
+      - name: Run shellcheck
+        run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
+
+  typos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
+
+  check-test-combinations-and-cdk-version-matrix:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          pip3 install yq
+          yq --version
+
+      - name: Generate test combinations and cdk version matrix
+        working-directory: .github/tests
+        run: ./combine-ymls.sh
+
+      - name: Check if test combinations and cdk version matrix are up to date
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Test combinations and/or CDK version matrix are not up to date. Please run \`./combine-ymls.sh\`."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Test combinations are up to date."
+          fi
+
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install kurtosis-test
+        run: |
+          git clone --branch ${{ env.KURTOSIS_TEST_VERSION }} https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
+          cd /tmp/kurtosis-test
+          go build -o kurtosis-test cli/main.go
+          cp kurtosis-test /usr/local/bin
+
+      - name: Run unit tests
+        run: kurtosis-test .
+
   run-without-args:
+    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -65,7 +161,7 @@ jobs:
           else
             echo "No errors found in logs."
           fi
-      
+
       - name: Check for error logs in agglayer service
         working-directory: .github/scripts
         run: |
@@ -88,6 +184,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
 
   list-ymls:
+    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
@@ -110,7 +207,7 @@ jobs:
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
 
   run-with-args:
-    needs: list-ymls
+    needs: [lint, unit, list-ymls]
     name: run-with-${{ matrix.file.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -200,6 +297,7 @@ jobs:
           args_filename: ${{ matrix.file.name }}
 
   additional-services:
+    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -283,6 +381,7 @@ jobs:
           args_filename: additional-services
 
   deploy-to-external-l1:
+    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -326,6 +425,7 @@ jobs:
           args_filename: deploy-to-external-l1
 
   run-with-op-succinct:
+    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -336,10 +436,10 @@ jobs:
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
-          
+
       - name: Install bats
         uses: bats-core/bats-action@3.0.0
-      
+
       - name: Install polycli
         run: |
           polycli_version="${{ env.POLYCLI_VERSION }}"
