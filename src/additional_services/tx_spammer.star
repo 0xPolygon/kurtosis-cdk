@@ -1,7 +1,8 @@
 constants = import_module("../../src/package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-TX_SPAMMER_SCRIPT_PATH = "../../static_files/additional_services/tx-spammer/loadtest.sh"
+TX_SPAMMER_FOLDER_PATH = "../../static_files/additional_services/tx-spammer"
+TX_SPAMMER_SCRIPT_NAME = "loadtest.sh"
 
 
 def run(plan, args):
@@ -13,7 +14,7 @@ def run(plan, args):
 
     # Start the spammer services.
     tx_spammer_artifact = plan.upload_files(
-        src=TX_SPAMMER_SCRIPT_PATH,
+        src="{}/{}".format(TX_SPAMMER_FOLDER_PATH, TX_SPAMMER_SCRIPT_NAME),
         name="tx-spammer-script",
     )
 
@@ -72,6 +73,11 @@ def _start_tx_spammer_service(plan, name, script_artifact, private_key, rpc_url)
                 "RPC_URL": rpc_url,
             },
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /opt/{1} && /opt/{1}".format(TX_SPAMMER_SCRIPT_NAME)],
+            cmd=["chmod +x /opt/{0} && /opt/{0}".format(TX_SPAMMER_SCRIPT_NAME)],
+            # Resource limits
+            min_cpu=100,  # 0.1 CPU
+            max_cpu=1000,  # 1 CPU
+            min_memory="128",  # 128Mb
+            max_memory="1024",  # 1024Mb
         ),
     )
