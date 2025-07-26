@@ -40,6 +40,8 @@ def launch(
             )
             import_module("./prometheus.star").run(plan, args)
             import_module("./grafana.star").run(plan, args)
+        elif svc == constants.ADDITIONAL_SERVICES.rpc_fuzzer:
+            import_module("./rpc_fuzzer.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.status_checker:
             import_module("./status_checker.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.test_runner:

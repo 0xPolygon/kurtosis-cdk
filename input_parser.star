@@ -422,6 +422,7 @@ DEFAULT_ARGS = (
         # - erpc
         # - observability
         # - pless_zkevm_node
+        # - rpc_fuzzer
         # - status_checker
         # - test_runner
         # - tx_spammer
