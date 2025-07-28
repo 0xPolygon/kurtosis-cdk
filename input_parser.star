@@ -49,7 +49,7 @@ DEFAULT_IMAGES = {
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
     "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
-    "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:multi-network",
+    "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
