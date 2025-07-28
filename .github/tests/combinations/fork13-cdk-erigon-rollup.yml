@@ -5,7 +5,7 @@ deployment_stages:
   deploy_op_succinct: false
 args:
   verbosity: debug
-  agglayer_contracts_image: leovct/zkevm-contracts:v8.1.0-rc.2-fork.13
+  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v8.1.0-rc.2-fork.13
   zkevm_prover_image: hermeznetwork/zkevm-prover:v9.0.0-RC3-fork.13
   consensus_contract_type: rollup
   sequencer_type: erigon

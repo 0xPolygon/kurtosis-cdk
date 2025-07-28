@@ -89,8 +89,8 @@ for fork in "${forks[@]}"; do
                             source: "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/\(.args.zkevm_prover_image | split(":")[1] | split("-fork")[0])",
                         },
                         agglayer_contracts: {
-                            version: .args.agglayer_contracts_image | split(":")[1] | split("-patch.")[0],
-                            source: "https://github.com/agglayer/agglayer-contracts/releases/tag/\(.args.agglayer_contracts_image | split(":")[1] | split("-patch.")[0])",
+                            version: .args.agglayer_contracts_image | split(":")[1],
+                            source: "https://github.com/agglayer/agglayer-contracts/releases/tag/\(.args.agglayer_contracts_image | split(":")[1])",
                         },
                         data_availability: {
                             version: $da_version,
