@@ -34,7 +34,9 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
-TOOLBOX_IMAGE = "leovct/toolbox:0.0.10"
+TOOLBOX_IMAGE = (
+    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.10"
+)
 
 L1_ENGINES = ("geth", "anvil")
 
