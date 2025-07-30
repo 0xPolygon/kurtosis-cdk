@@ -1,0 +1,179 @@
+name: Update Version Matrix
+
+on:
+  # Run daily at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update even if no changes detected'
+        required: false
+        default: 'false'
+        type: boolean
+  
+  # Run on pushes to main that change version-related files
+  push:
+    branches: [main]
+    paths:
+      - 'input_parser.star'
+      - '.github/tests/**/*.yml'
+      - 'scripts/version-matrix/**'
+
+jobs:
+  update-version-matrix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pyyaml
+      
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/version-matrix/extract-versions.py
+          chmod +x scripts/version-matrix/generate-markdown.py
+      
+      - name: Extract version matrix data
+        run: |
+          cd scripts/version-matrix
+          python extract-versions.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate updated Markdown matrix
+        run: |
+          cd scripts/version-matrix  
+          python generate-markdown.py
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet CDK_VERSION_MATRIX.MD || echo "changed=true" >> $GITHUB_OUTPUT
+          git diff --quiet version-matrix.json || echo "data_changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.changes.outputs.changed == 'true' || github.event.inputs.force_update == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Add files
+          git add CDK_VERSION_MATRIX.MD version-matrix.json
+          
+          # Create commit message with summary
+          echo "chore: update version matrix $(date -u +%Y-%m-%d)" > commit_msg.txt
+          echo "" >> commit_msg.txt
+          echo "Automated update of the CDK version matrix including:" >> commit_msg.txt
+          echo "- Component version compatibility" >> commit_msg.txt
+          echo "- Test scenario configurations" >> commit_msg.txt  
+          echo "- Latest release information" >> commit_msg.txt
+          echo "" >> commit_msg.txt
+          
+          # Add summary of changes if available
+          if [ -f version-matrix.json ]; then
+            echo "Summary:" >> commit_msg.txt
+            python -c "
+import json
+try:
+    with open('version-matrix.json', 'r') as f:
+        data = json.load(f)
+    summary = data.get('summary', {})
+    print(f'- Total components: {summary.get(\"total_components\", 0)}')
+    print(f'- Total scenarios: {summary.get(\"total_scenarios\", 0)}')
+    print(f'- Supported forks: {\", \".join(sorted(summary.get(\"supported_forks\", [])))}')
+except:
+    pass
+            " >> commit_msg.txt
+          fi
+          
+          echo "" >> commit_msg.txt
+          echo "🤖 Generated with Claude Code" >> commit_msg.txt
+          echo "" >> commit_msg.txt
+          echo "Co-Authored-By: Claude <noreply@anthropic.com>" >> commit_msg.txt
+          
+          git commit -F commit_msg.txt
+          git push
+      
+      - name: Create Pull Request (for non-main branches)
+        if: github.ref != 'refs/heads/main' && (steps.changes.outputs.changed == 'true' || github.event.inputs.force_update == 'true')
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "chore: update version matrix $(date -u +%Y-%m-%d)"
+          body: |
+            ## Automated Version Matrix Update
+            
+            This PR contains an automated update to the CDK version matrix.
+            
+            ### Changes
+            - Updated component version compatibility matrix
+            - Refreshed test scenario configurations
+            - Added latest release information
+            - Updated version status indicators
+            
+            ### Summary
+            The version matrix now includes:
+            - Component compatibility across different forks
+            - Status indicators (stable ✅, experimental 🧪, deprecated ⚠️, pinned 📌)
+            - Links to source repositories and releases
+            - Comprehensive test scenario documentation
+            
+            This update was generated automatically by analyzing:
+            - `input_parser.star` for default component versions
+            - `.github/tests/` configurations for test scenarios
+            - GitHub releases for latest version information
+            
+            🤖 Generated with [Claude Code](https://claude.ai/code)
+          branch: automated/version-matrix-update
+          delete-branch: true
+      
+      - name: Report summary
+        if: always()
+        run: |
+          echo "## Version Matrix Update Summary" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.changes.outputs.changed }}" == "true" ]; then
+            echo "✅ Version matrix was updated successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No changes detected in version matrix" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f version-matrix.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Matrix Statistics" >> $GITHUB_STEP_SUMMARY
+            python -c "
+import json
+try:
+    with open('version-matrix.json', 'r') as f:
+        data = json.load(f)
+    summary = data.get('summary', {})
+    print(f'- **Total components tracked**: {summary.get(\"total_components\", 0)}')
+    print(f'- **Total test scenarios**: {summary.get(\"total_scenarios\", 0)}')  
+    print(f'- **Supported forks**: {\", \".join(sorted(summary.get(\"supported_forks\", [])))}')
+    print(f'- **Consensus types**: {\", \".join(sorted(summary.get(\"consensus_types\", [])))}')
+except Exception as e:
+    print(f'Error reading summary: {e}')
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files Updated" >> $GITHUB_STEP_SUMMARY
+          echo "- \`CDK_VERSION_MATRIX.MD\` - Human-readable version matrix" >> $GITHUB_STEP_SUMMARY
+          echo "- \`version-matrix.json\` - Machine-readable version data" >> $GITHUB_STEP_SUMMARY
