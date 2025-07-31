@@ -25,7 +25,6 @@ yml2md() {
 }
 
 true >"$MATRIX_VERSION_FILE"
-echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" >"$MATRIX_VERSION_README"
 
 # File combinations.
 forks=(forks/*.yml)
@@ -106,5 +105,4 @@ for fork in "${forks[@]}"; do
         done
     done
 done
-yml2md "$MATRIX_VERSION_FILE" >>"$MATRIX_VERSION_README"
 echo "All combinations created!"

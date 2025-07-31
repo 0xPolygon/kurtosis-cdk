@@ -79,19 +79,46 @@ jobs:
           pip3 install yq
           yq --version
 
-      - name: Generate test combinations and cdk version matrix
+      - name: Generate test combinations
         working-directory: .github/tests
         run: ./combine-ymls.sh
 
-      - name: Check if test combinations and cdk version matrix are up to date
+      - name: Check if test combinations are up to date
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Test combinations and/or CDK version matrix are not up to date. Please run \`./combine-ymls.sh\`."
+            echo "❌ Error: Test combinations are not up to date. Please run \`./combine-ymls.sh\`."
             git status --porcelain
             git diff
             exit 1
           else
             echo "✅ Test combinations are up to date."
+          fi
+
+  version-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Generate version matrix
+        run: python scripts/version-matrix/extract-versions.py
+
+      - name: Generate markdown documentation
+        run: python scripts/version-matrix/generate-markdown.py
+
+      - name: Check if there are changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Version matrix is up to date."
           fi
 
   unit:
