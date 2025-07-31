@@ -1,1188 +1,421 @@
 {
-  "default_components": {
-    "AggKit": {
-      "fork_compatibility": null,
+  "default_images": {
+    "aggkit": {
       "image": "ghcr.io/agglayer/aggkit:0.5.0-beta3",
-      "last_updated": null,
-      "name": "AggKit",
-      "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.5.0-beta3",
+      "latest_version": "0.4.0",
+      "latest_version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.4.0",
       "status": "experimental",
-      "version": "0.5.0-beta3"
+      "version": "0.5.0-beta3",
+      "version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta3"
     },
-    "AggKit Prover": {
-      "fork_compatibility": null,
+    "aggkit-prover": {
       "image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
-      "last_updated": null,
-      "name": "AggKit Prover",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v1.2.0",
-      "status": "deprecated",
-      "version": "1.2.0"
+      "latest_version": "1.1.2",
+      "latest_version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.1.2",
+      "status": "experimental",
+      "version": "1.2.0",
+      "version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.2.0"
     },
-    "Agglayer": {
-      "fork_compatibility": null,
+    "agglayer": {
       "image": "ghcr.io/agglayer/agglayer:0.3.5",
-      "last_updated": null,
-      "name": "Agglayer",
-      "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.3.5",
-      "status": "deprecated",
-      "version": "0.3.5"
+      "latest_version": "0.3.5",
+      "latest_version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5",
+      "status": "latest",
+      "version": "0.3.5",
+      "version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
     },
-    "Agglayer Contracts": {
-      "fork_compatibility": null,
+    "agglayer-contracts": {
       "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-      "last_updated": null,
-      "name": "Agglayer Contracts",
-      "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
+      "latest_version": "9.0.0",
+      "latest_version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0",
       "status": "experimental",
-      "version": "11.0.0-rc.2-fork.12"
-    },
-    "Bridge Service": {
-      "fork_compatibility": null,
-      "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
-      "last_updated": null,
-      "name": "Bridge Service",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.6.2-RC2",
-      "status": "experimental",
-      "version": "0.6.2-RC2"
-    },
-    "Bridge UI": {
-      "fork_compatibility": null,
-      "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
-      "last_updated": null,
-      "name": "Bridge UI",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0006445",
-      "status": "stable",
-      "version": "0006445"
-    },
-    "CDK Erigon": {
-      "fork_compatibility": null,
-      "image": "hermeznetwork/cdk-erigon:v2.61.19",
-      "last_updated": null,
-      "name": "CDK Erigon",
-      "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v2.61.19",
-      "status": "deprecated",
-      "version": "2.61.19"
-    },
-    "CDK Node": {
-      "fork_compatibility": null,
-      "image": "ghcr.io/0xpolygon/cdk:0.5.4",
-      "last_updated": null,
-      "name": "CDK Node",
-      "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v0.5.4",
-      "status": "deprecated",
-      "version": "0.5.4"
-    },
-    "CDK Validium Node": {
-      "fork_compatibility": null,
-      "image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
-      "last_updated": null,
-      "name": "CDK Validium Node",
-      "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v0.6.4-cdk.10",
-      "status": "deprecated",
-      "version": "0.6.4-cdk.10"
-    },
-    "Data Availability": {
-      "fork_compatibility": null,
-      "image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
-      "last_updated": null,
-      "name": "Data Availability",
-      "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v0.0.13",
-      "status": "deprecated",
-      "version": "0.0.13"
-    },
-    "OP Succinct Proposer": {
-      "fork_compatibility": null,
-      "image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
-      "last_updated": null,
-      "name": "OP Succinct Proposer",
-      "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v2.3.3-agglayer",
-      "status": "deprecated",
-      "version": "2.3.3-agglayer"
-    },
-    "Pool Manager": {
-      "fork_compatibility": null,
-      "image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
-      "last_updated": null,
-      "name": "Pool Manager",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.1.2",
-      "status": "deprecated",
-      "version": "0.1.2"
-    },
-    "Sequence Sender": {
-      "fork_compatibility": null,
-      "image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",
-      "last_updated": null,
-      "name": "Sequence Sender",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.2.4",
-      "status": "deprecated",
-      "version": "0.2.4"
-    },
-    "Status Checker": {
-      "fork_compatibility": null,
-      "image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
-      "last_updated": null,
-      "name": "Status Checker",
-      "source_url": null,
-      "status": "deprecated",
-      "version": "0.2.8"
-    },
-    "Test Runner": {
-      "fork_compatibility": null,
-      "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
-      "last_updated": null,
-      "name": "Test Runner",
-      "source_url": null,
-      "status": "stable",
-      "version": "9fe80e1"
-    },
-    "ZkEVM Node": {
-      "fork_compatibility": null,
-      "image": "hermeznetwork/zkevm-node:v0.7.3",
-      "last_updated": null,
-      "name": "ZkEVM Node",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.3",
-      "status": "deprecated",
-      "version": "0.7.3"
-    },
-    "ZkEVM Prover": {
-      "fork_compatibility": null,
-      "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-      "last_updated": null,
-      "name": "ZkEVM Prover",
-      "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
-      "status": "experimental",
-      "version": "8.0.0-RC16-fork.12"
-    }
-  },
-  "generated_at": "2025-07-30T10:46:41.016342",
-  "latest_releases": {
-    "AggKit": {
-      "latest_version": "v0.4.0",
-      "published_at": "2025-06-21T15:27:50Z",
-      "url": "https://github.com/agglayer/aggkit/releases/tag/v0.4.0"
-    },
-    "Agglayer": {
-      "latest_version": "v0.3.5",
-      "published_at": "2025-06-24T16:38:22Z",
-      "url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
-    },
-    "Agglayer Contracts": {
-      "latest_version": "v9.0.0",
-      "published_at": "2025-05-14T14:21:53Z",
-      "url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0"
-    },
-    "Bridge Service": {
-      "latest_version": "v0.6.1",
-      "published_at": "2025-06-30T12:46:43Z",
-      "url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1"
-    },
-    "CDK Erigon": {
-      "latest_version": "v2.61.23",
-      "published_at": "2025-07-22T13:34:19Z",
-      "url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23"
-    },
-    "CDK Node": {
-      "latest_version": "v0.5.4",
-      "published_at": "2025-05-07T13:22:26Z",
-      "url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4"
-    },
-    "CDK Validium Node": {
-      "latest_version": "v0.6.7+cdk.2",
-      "published_at": "2025-03-13T13:59:00Z",
-      "url": "https://github.com/0xPolygon/cdk-validium-node/releases/tag/v0.6.7%2Bcdk.2"
-    },
-    "ZkEVM Prover": {
-      "latest_version": "v6.0.2",
-      "published_at": "2024-05-07T12:14:39Z",
-      "url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2"
-    }
-  },
-  "matrix_configurations": {
-    "11-validium": {
-      "agglayer_contracts": {
-        "source": "https://github.com/agglayer/agglayer-contracts/releases/tag/v7.0.0-rc.2-fork.11",
-        "version": "v7.0.0-rc.2-fork.11"
-      },
-      "bridge_service": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/v0.6.2-RC2",
-        "version": "v0.6.2-RC2"
-      },
-      "cdk_erigon": {
-        "source": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v2.61.19",
-        "version": "v2.61.19"
-      },
-      "consensus": "validium",
-      "data_availability": {
-        "source": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13",
-        "version": "0.0.13"
-      },
-      "fork_id": "11",
-      "zkevm_prover": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.4-hotfix.2",
-        "version": "v7.0.4-hotfix.2-fork.11"
-      }
-    },
-    "12-sovereign": {
-      "agglayer_contracts": {
-        "source": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
-        "version": "v11.0.0-rc.2-fork.12"
-      },
-      "bridge_service": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/v0.6.2-RC2",
-        "version": "v0.6.2-RC2"
-      },
-      "cdk_erigon": {
-        "source": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v2.61.19",
-        "version": "v2.61.19"
-      },
-      "consensus": "sovereign",
-      "data_availability": {
-        "source": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13",
-        "version": "0.0.13"
-      },
-      "fork_id": "12",
-      "zkevm_prover": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16",
-        "version": "v8.0.0-RC16-fork.12"
-      }
-    },
-    "12-validium": {
-      "agglayer_contracts": {
-        "source": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
-        "version": "v11.0.0-rc.2-fork.12"
-      },
-      "bridge_service": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/v0.6.2-RC2",
-        "version": "v0.6.2-RC2"
-      },
-      "cdk_erigon": {
-        "source": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v2.61.19",
-        "version": "v2.61.19"
-      },
-      "consensus": "validium",
-      "data_availability": {
-        "source": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13",
-        "version": "0.0.13"
-      },
-      "fork_id": "12",
-      "zkevm_prover": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16",
-        "version": "v8.0.0-RC16-fork.12"
-      }
-    },
-    "13-validium": {
-      "agglayer_contracts": {
-        "source": "https://github.com/agglayer/agglayer-contracts/releases/tag/v8.1.0-rc.2-fork.13",
-        "version": "v8.1.0-rc.2-fork.13"
-      },
-      "bridge_service": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/v0.6.2-RC2",
-        "version": "v0.6.2-RC2"
-      },
-      "cdk_erigon": {
-        "source": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v2.61.19",
-        "version": "v2.61.19"
-      },
-      "consensus": "validium",
-      "data_availability": {
-        "source": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13",
-        "version": "0.0.13"
-      },
-      "fork_id": "13",
-      "zkevm_prover": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v9.0.0-RC3",
-        "version": "v9.0.0-RC3-fork.13"
-      }
-    },
-    "9-validium": {
-      "agglayer_contracts": {
-        "source": "https://github.com/agglayer/agglayer-contracts/releases/tag/v6.0.0-rc.1-fork.9",
-        "version": "v6.0.0-rc.1-fork.9"
-      },
-      "bridge_service": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/v0.6.2-RC2",
-        "version": "v0.6.2-RC2"
-      },
-      "cdk_erigon": {
-        "source": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v2.61.19",
-        "version": "v2.61.19"
-      },
-      "consensus": "validium",
-      "data_availability": {
-        "source": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13",
-        "version": "0.0.13"
-      },
-      "fork_id": "9",
-      "zkevm_prover": {
-        "source": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.8",
-        "version": "v6.0.8"
-      }
-    }
-  },
-  "summary": {
-    "consensus_types": [
-      "cdk_validium",
-      "unknown",
-      "rollup",
-      "fep",
-      "pessimistic",
-      "ecdsa"
-    ],
-    "supported_forks": [
-      "0"
-    ],
-    "total_components": 17,
-    "total_scenarios": 35
-  },
-  "test_scenarios": {
-    "additional-services": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {},
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "additional-services",
-      "sequencer_type": null
-    },
-    "aggchain-ecdsa": {
-      "components": {},
-      "consensus_type": "ecdsa",
-      "deployment_stages": {
-        "deploy_op_succinct": false
-      },
-      "description": "Aggchain ECDSA",
-      "fork_id": "0",
-      "name": "aggchain-ecdsa",
-      "sequencer_type": null
-    },
-    "anvil-rollup": {
-      "components": {},
-      "consensus_type": "rollup",
-      "deployment_stages": {},
-      "description": "CDK (Rollup)",
-      "fork_id": null,
-      "name": "anvil-rollup",
-      "sequencer_type": null
-    },
-    "auto": {
-      "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
-          "status": "experimental",
-          "version": "11.0.0-rc.2-fork.12"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
-          "status": "experimental",
-          "version": "8.0.0-RC16-fork.12"
-        }
-      },
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Cdk Validium)",
-      "fork_id": null,
-      "name": "auto",
-      "sequencer_type": "erigon"
-    },
-    "cardona-sepolia-testnet-pless-zkevm-node": {
-      "components": {
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.3",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.3",
-          "status": "deprecated",
-          "version": "0.7.3"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v6.0.8",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.8",
-          "status": "stable",
-          "version": "6.0.8"
-        }
-      },
-      "consensus_type": "rollup",
-      "deployment_stages": {
-        "deploy_agglayer": false,
-        "deploy_agglayer_contracts_on_l1": false,
-        "deploy_cdk_bridge_infra": false,
-        "deploy_cdk_central_environment": false,
-        "deploy_cdk_erigon_node": false,
-        "deploy_databases": false,
-        "deploy_l1": false,
-        "deploy_l2_contracts": false
-      },
-      "description": "CDK (Rollup)",
-      "fork_id": null,
-      "name": "cardona-sepolia-testnet-pless-zkevm-node",
-      "sequencer_type": null
+      "version": "11.0.0-rc.2",
+      "version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2"
     },
     "cdk-erigon": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "cdk-erigon",
-      "sequencer_type": "erigon"
+      "image": "hermeznetwork/cdk-erigon:v2.61.19",
+      "latest_version": "2.61.23",
+      "latest_version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23",
+      "status": "deprecated",
+      "version": "2.61.19",
+      "version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.19"
     },
-    "cdk2": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_agglayer": false,
-        "deploy_cdk_bridge_ui": false,
-        "deploy_l1": false
-      },
-      "description": "Chain Configuration Test",
-      "fork_id": null,
-      "name": "cdk2",
-      "sequencer_type": null
+    "cdk-node": {
+      "image": "ghcr.io/0xpolygon/cdk:0.5.4",
+      "latest_version": "0.5.4",
+      "latest_version_source_url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4",
+      "status": "latest",
+      "version": "0.5.4",
+      "version_source_url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4"
     },
-    "combinations": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {},
-      "description": "Component Combination Test",
-      "fork_id": null,
-      "name": "combinations",
-      "sequencer_type": null
+    "op-succinct-proposer": {
+      "image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
+      "latest_version": null,
+      "latest_version_source_url": null,
+      "status": null,
+      "version": "2.3.3-agglayer",
+      "version_source_url": "https://github.com/agglayer/op-succinct/releases/tag/v2.3.3-agglayer"
     },
-    "custom-static-ports": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {},
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "custom-static-ports",
-      "sequencer_type": null
+    "zkevm-bridge-service": {
+      "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+      "latest_version": "0.6.1",
+      "latest_version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1",
+      "status": "experimental",
+      "version": "0.6.2-RC2",
+      "version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2"
     },
-    "custom-static-ports-cdk-erigon-sequencer-ds": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {},
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "custom-static-ports-cdk-erigon-sequencer-ds",
-      "sequencer_type": null
+    "zkevm-da": {
+      "image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
+      "latest_version": null,
+      "latest_version_source_url": null,
+      "status": null,
+      "version": "0.0.13",
+      "version_source_url": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13"
     },
-    "default-static-ports": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {},
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "default-static-ports",
-      "sequencer_type": null
+    "zkevm-pool-manager": {
+      "image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
+      "latest_version": null,
+      "latest_version_source_url": null,
+      "status": null,
+      "version": "0.1.2",
+      "version_source_url": "https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2"
     },
-    "deploy-cdk-to-local-l1": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_l1": false
-      },
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "deploy-cdk-to-local-l1",
-      "sequencer_type": null
+    "zkevm-prover": {
+      "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
+      "latest_version": "6.0.2",
+      "latest_version_source_url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2",
+      "status": "experimental",
+      "version": "8.0.0-RC16-fork.12",
+      "version_source_url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12"
     },
-    "deploy-cdk-to-sepolia": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_l1": false
-      },
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "deploy-cdk-to-sepolia",
-      "sequencer_type": null
+    "zkevm-sequence-sender": {
+      "image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",
+      "latest_version": null,
+      "latest_version_source_url": null,
+      "status": null,
+      "version": "0.2.4",
+      "version_source_url": "https://github.com/0xPolygon/zkevm-sequence-sender/releases/tag/v0.2.4"
+    }
+  },
+  "generated_at": "2025-07-31T12:19:25.507178",
+  "summary": {
+    "environments": {
+      "cdk-erigon": 3,
+      "cdk-opgeth": 2,
+      "total": 5
     },
-    "deploy-local-l1": {
-      "components": {},
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_agglayer": false,
-        "deploy_agglayer_contracts_on_l1": false,
-        "deploy_cdk_bridge_infra": false,
-        "deploy_cdk_central_environment": false,
-        "deploy_cdk_erigon_node": false,
-        "deploy_databases": false,
-        "deploy_l1": true,
-        "deploy_l2_contracts": false,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "Standard Test Configuration",
-      "fork_id": null,
-      "name": "deploy-local-l1",
-      "sequencer_type": null
-    },
-    "fork11": {
-      "components": {
-        "Agglayer": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/agglayer/agglayer:0.2.0-rc.19",
-          "last_updated": null,
-          "name": "Agglayer",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.2.0-rc.19",
-          "status": "experimental",
-          "version": "0.2.0-rc.19"
-        },
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v7.0.0-rc.2-fork.11",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.0-rc.2-fork.11",
-          "status": "experimental",
-          "version": "7.0.0-rc.2-fork.11"
-        },
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.0-fork11",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.0-fork11",
-          "status": "pinned",
-          "version": "0.7.0-fork11"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.4-hotfix.2-fork.11",
-          "status": "pinned",
-          "version": "7.0.4-hotfix.2-fork.11"
-        }
-      },
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_l2_contracts": true
-      },
-      "description": "Fork unknown Test",
-      "fork_id": null,
-      "name": "fork11",
-      "sequencer_type": null
-    },
-    "fork11-cdk-erigon-rollup": {
-      "components": {
-        "Agglayer": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/agglayer/agglayer:0.2.0-rc.19",
-          "last_updated": null,
-          "name": "Agglayer",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.2.0-rc.19",
-          "status": "experimental",
-          "version": "0.2.0-rc.19"
-        },
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v7.0.0-rc.2-fork.11",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.0-rc.2-fork.11",
-          "status": "experimental",
-          "version": "7.0.0-rc.2-fork.11"
-        },
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.0-fork11",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.0-fork11",
-          "status": "pinned",
-          "version": "0.7.0-fork11"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.4-hotfix.2-fork.11",
-          "status": "pinned",
-          "version": "7.0.4-hotfix.2-fork.11"
-        }
-      },
-      "consensus_type": "rollup",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Rollup)",
-      "fork_id": null,
-      "name": "fork11-cdk-erigon-rollup",
-      "sequencer_type": "erigon"
-    },
-    "fork11-cdk-erigon-validium": {
-      "components": {
-        "Agglayer": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/agglayer/agglayer:0.2.0-rc.19",
-          "last_updated": null,
-          "name": "Agglayer",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.2.0-rc.19",
-          "status": "experimental",
-          "version": "0.2.0-rc.19"
-        },
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v7.0.0-rc.2-fork.11",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.0-rc.2-fork.11",
-          "status": "experimental",
-          "version": "7.0.0-rc.2-fork.11"
-        },
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.0-fork11",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.0-fork11",
-          "status": "pinned",
-          "version": "0.7.0-fork11"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v7.0.4-hotfix.2-fork.11",
-          "status": "pinned",
-          "version": "7.0.4-hotfix.2-fork.11"
-        }
-      },
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Cdk Validium)",
-      "fork_id": null,
-      "name": "fork11-cdk-erigon-validium",
-      "sequencer_type": "erigon"
-    },
-    "fork12": {
-      "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
-          "status": "experimental",
-          "version": "11.0.0-rc.2-fork.12"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
-          "status": "experimental",
-          "version": "8.0.0-RC16-fork.12"
-        }
-      },
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_l2_contracts": true
-      },
-      "description": "Fork unknown Test",
-      "fork_id": null,
-      "name": "fork12",
-      "sequencer_type": null
-    },
+    "total_components": 12
+  },
+  "test_environments": {
     "fork12-cdk-erigon-rollup": {
       "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
+        "aggkit-prover": {
+          "image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+          "latest_version": "1.1.2",
+          "latest_version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.1.2",
           "status": "experimental",
-          "version": "11.0.0-rc.2-fork.12"
+          "version": "1.2.0",
+          "version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.2.0"
         },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
+        "agglayer": {
+          "image": "ghcr.io/agglayer/agglayer:0.3.5",
+          "latest_version": "0.3.5",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5",
+          "status": "latest",
+          "version": "0.3.5",
+          "version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
+        },
+        "agglayer-contracts": {
+          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
+          "latest_version": "9.0.0",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0",
           "status": "experimental",
-          "version": "8.0.0-RC16-fork.12"
+          "version": "11.0.0-rc.2",
+          "version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2"
+        },
+        "cdk-erigon": {
+          "image": "hermeznetwork/cdk-erigon:v2.61.19",
+          "latest_version": "2.61.23",
+          "latest_version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23",
+          "status": "deprecated",
+          "version": "2.61.19",
+          "version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.19"
+        },
+        "cdk-node": {
+          "image": "ghcr.io/0xpolygon/cdk:0.5.4",
+          "latest_version": "0.5.4",
+          "latest_version_source_url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4",
+          "status": "latest",
+          "version": "0.5.4",
+          "version_source_url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4"
+        },
+        "zkevm-bridge-service": {
+          "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+          "latest_version": "0.6.1",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1",
+          "status": "experimental",
+          "version": "0.6.2-RC2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2"
+        },
+        "zkevm-pool-manager": {
+          "image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
+          "latest_version": null,
+          "latest_version_source_url": null,
+          "status": null,
+          "version": "0.1.2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2"
+        },
+        "zkevm-prover": {
+          "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
+          "latest_version": "6.0.2",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2",
+          "status": "experimental",
+          "version": "8.0.0-RC16-fork.12",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12"
         }
       },
-      "consensus_type": "rollup",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Rollup)",
-      "fork_id": null,
-      "name": "fork12-cdk-erigon-rollup",
-      "sequencer_type": "erigon"
+      "config_file_path": ".github/tests/combinations/fork12-cdk-erigon-rollup.yml",
+      "type": "cdk-erigon-zkrollup"
     },
     "fork12-cdk-erigon-sovereign": {
       "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
+        "aggkit": {
+          "image": "ghcr.io/agglayer/aggkit:0.5.0-beta3",
+          "latest_version": "0.4.0",
+          "latest_version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.4.0",
           "status": "experimental",
-          "version": "11.0.0-rc.2-fork.12"
+          "version": "0.5.0-beta3",
+          "version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta3"
         },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
+        "aggkit-prover": {
+          "image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+          "latest_version": "1.1.2",
+          "latest_version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.1.2",
           "status": "experimental",
-          "version": "8.0.0-RC16-fork.12"
+          "version": "1.2.0",
+          "version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.2.0"
+        },
+        "agglayer": {
+          "image": "ghcr.io/agglayer/agglayer:0.3.5",
+          "latest_version": "0.3.5",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5",
+          "status": "latest",
+          "version": "0.3.5",
+          "version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
+        },
+        "agglayer-contracts": {
+          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
+          "latest_version": "9.0.0",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0",
+          "status": "experimental",
+          "version": "11.0.0-rc.2",
+          "version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2"
+        },
+        "cdk-erigon": {
+          "image": "hermeznetwork/cdk-erigon:v2.61.19",
+          "latest_version": "2.61.23",
+          "latest_version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23",
+          "status": "deprecated",
+          "version": "2.61.19",
+          "version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.19"
+        },
+        "zkevm-bridge-service": {
+          "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+          "latest_version": "0.6.1",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1",
+          "status": "experimental",
+          "version": "0.6.2-RC2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2"
+        },
+        "zkevm-pool-manager": {
+          "image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
+          "latest_version": null,
+          "latest_version_source_url": null,
+          "status": null,
+          "version": "0.1.2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2"
         }
       },
-      "consensus_type": "pessimistic",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "PP (Pessimistic Proofs)",
-      "fork_id": null,
-      "name": "fork12-cdk-erigon-sovereign",
-      "sequencer_type": "erigon"
+      "config_file_path": ".github/tests/combinations/fork12-cdk-erigon-sovereign.yml",
+      "type": "cdk-erigon-sovereign"
     },
     "fork12-cdk-erigon-validium": {
       "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
+        "aggkit-prover": {
+          "image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+          "latest_version": "1.1.2",
+          "latest_version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.1.2",
+          "status": "experimental",
+          "version": "1.2.0",
+          "version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.2.0"
+        },
+        "agglayer": {
+          "image": "ghcr.io/agglayer/agglayer:0.3.5",
+          "latest_version": "0.3.5",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5",
+          "status": "latest",
+          "version": "0.3.5",
+          "version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
+        },
+        "agglayer-contracts": {
           "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
+          "latest_version": "9.0.0",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0",
           "status": "experimental",
-          "version": "11.0.0-rc.2-fork.12"
+          "version": "11.0.0-rc.2",
+          "version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2"
         },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
+        "cdk-erigon": {
+          "image": "hermeznetwork/cdk-erigon:v2.61.19",
+          "latest_version": "2.61.23",
+          "latest_version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23",
+          "status": "deprecated",
+          "version": "2.61.19",
+          "version_source_url": "https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.19"
+        },
+        "cdk-node": {
+          "image": "ghcr.io/0xpolygon/cdk:0.5.4",
+          "latest_version": "0.5.4",
+          "latest_version_source_url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4",
+          "status": "latest",
+          "version": "0.5.4",
+          "version_source_url": "https://github.com/0xPolygon/cdk/releases/tag/v0.5.4"
+        },
+        "zkevm-bridge-service": {
+          "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+          "latest_version": "0.6.1",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1",
+          "status": "experimental",
+          "version": "0.6.2-RC2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2"
+        },
+        "zkevm-da": {
+          "image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
+          "latest_version": null,
+          "latest_version_source_url": null,
+          "status": null,
+          "version": "0.0.13",
+          "version_source_url": "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13"
+        },
+        "zkevm-pool-manager": {
+          "image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
+          "latest_version": null,
+          "latest_version_source_url": null,
+          "status": null,
+          "version": "0.1.2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2"
+        },
+        "zkevm-prover": {
           "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
+          "latest_version": "6.0.2",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2",
           "status": "experimental",
-          "version": "8.0.0-RC16-fork.12"
+          "version": "8.0.0-RC16-fork.12",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12"
         }
       },
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Cdk Validium)",
-      "fork_id": null,
-      "name": "fork12-cdk-erigon-validium",
-      "sequencer_type": "erigon"
-    },
-    "fork13": {
-      "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v8.1.0-rc.2-fork.13",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.1.0-rc.2-fork.13",
-          "status": "experimental",
-          "version": "8.1.0-rc.2-fork.13"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v9.0.0-RC3-fork.13",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v9.0.0-RC3-fork.13",
-          "status": "experimental",
-          "version": "9.0.0-RC3-fork.13"
-        }
-      },
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_l2_contracts": true
-      },
-      "description": "Fork unknown Test",
-      "fork_id": null,
-      "name": "fork13",
-      "sequencer_type": null
-    },
-    "fork13-cdk-erigon-rollup": {
-      "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v8.1.0-rc.2-fork.13",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.1.0-rc.2-fork.13",
-          "status": "experimental",
-          "version": "8.1.0-rc.2-fork.13"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v9.0.0-RC3-fork.13",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v9.0.0-RC3-fork.13",
-          "status": "experimental",
-          "version": "9.0.0-RC3-fork.13"
-        }
-      },
-      "consensus_type": "rollup",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Rollup)",
-      "fork_id": null,
-      "name": "fork13-cdk-erigon-rollup",
-      "sequencer_type": "erigon"
-    },
-    "fork13-cdk-erigon-validium": {
-      "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v8.1.0-rc.2-fork.13",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.1.0-rc.2-fork.13",
-          "status": "experimental",
-          "version": "8.1.0-rc.2-fork.13"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v9.0.0-RC3-fork.13",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v9.0.0-RC3-fork.13",
-          "status": "experimental",
-          "version": "9.0.0-RC3-fork.13"
-        }
-      },
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Cdk Validium)",
-      "fork_id": null,
-      "name": "fork13-cdk-erigon-validium",
-      "sequencer_type": "erigon"
-    },
-    "fork9": {
-      "components": {
-        "Agglayer": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/agglayer/agglayer:0.2.0-rc.19",
-          "last_updated": null,
-          "name": "Agglayer",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.2.0-rc.19",
-          "status": "experimental",
-          "version": "0.2.0-rc.19"
-        },
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v6.0.0-rc.1-fork.9",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.0-rc.1-fork.9",
-          "status": "experimental",
-          "version": "6.0.0-rc.1-fork.9"
-        },
-        "CDK Validium Node": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
-          "last_updated": null,
-          "name": "CDK Validium Node",
-          "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v0.6.4-cdk.10",
-          "status": "deprecated",
-          "version": "0.6.4-cdk.10"
-        },
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.3",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.3",
-          "status": "deprecated",
-          "version": "0.7.3"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v6.0.8",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.8",
-          "status": "stable",
-          "version": "6.0.8"
-        }
-      },
-      "consensus_type": "unknown",
-      "deployment_stages": {
-        "deploy_l2_contracts": true
-      },
-      "description": "Fork unknown Test",
-      "fork_id": null,
-      "name": "fork9",
-      "sequencer_type": null
-    },
-    "fork9-cdk-erigon-rollup": {
-      "components": {
-        "Agglayer": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/agglayer/agglayer:0.2.0-rc.19",
-          "last_updated": null,
-          "name": "Agglayer",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.2.0-rc.19",
-          "status": "experimental",
-          "version": "0.2.0-rc.19"
-        },
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v6.0.0-rc.1-fork.9",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.0-rc.1-fork.9",
-          "status": "experimental",
-          "version": "6.0.0-rc.1-fork.9"
-        },
-        "CDK Validium Node": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
-          "last_updated": null,
-          "name": "CDK Validium Node",
-          "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v0.6.4-cdk.10",
-          "status": "deprecated",
-          "version": "0.6.4-cdk.10"
-        },
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.3",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.3",
-          "status": "deprecated",
-          "version": "0.7.3"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v6.0.8",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.8",
-          "status": "stable",
-          "version": "6.0.8"
-        }
-      },
-      "consensus_type": "rollup",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Rollup)",
-      "fork_id": null,
-      "name": "fork9-cdk-erigon-rollup",
-      "sequencer_type": "erigon"
-    },
-    "fork9-cdk-erigon-validium": {
-      "components": {
-        "Agglayer": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/agglayer/agglayer:0.2.0-rc.19",
-          "last_updated": null,
-          "name": "Agglayer",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v0.2.0-rc.19",
-          "status": "experimental",
-          "version": "0.2.0-rc.19"
-        },
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v6.0.0-rc.1-fork.9",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.0-rc.1-fork.9",
-          "status": "experimental",
-          "version": "6.0.0-rc.1-fork.9"
-        },
-        "CDK Validium Node": {
-          "fork_compatibility": null,
-          "image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
-          "last_updated": null,
-          "name": "CDK Validium Node",
-          "source_url": "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/v0.6.4-cdk.10",
-          "status": "deprecated",
-          "version": "0.6.4-cdk.10"
-        },
-        "ZkEVM Node": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-node:v0.7.3",
-          "last_updated": null,
-          "name": "ZkEVM Node",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v0.7.3",
-          "status": "deprecated",
-          "version": "0.7.3"
-        },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v6.0.8",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v6.0.8",
-          "status": "stable",
-          "version": "6.0.8"
-        }
-      },
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {
-        "deploy_l2_contracts": true,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
-      },
-      "description": "CDK-Erigon (Cdk Validium)",
-      "fork_id": null,
-      "name": "fork9-cdk-erigon-validium",
-      "sequencer_type": "erigon"
+      "config_file_path": ".github/tests/combinations/fork12-cdk-erigon-validium.yml",
+      "type": "cdk-erigon-validium"
     },
     "op-default": {
-      "components": {},
-      "consensus_type": "pessimistic",
-      "deployment_stages": {
-        "deploy_optimism_rollup": true
-      },
-      "description": "OP Stack Rollup",
-      "fork_id": null,
-      "name": "op-default",
-      "sequencer_type": null
-    },
-    "op-succinct": {
-      "components": {},
-      "consensus_type": "fep",
-      "deployment_stages": {
-        "deploy_op_succinct": true
-      },
-      "description": "FEP (Full Execution Proofs) - OP Succinct",
-      "fork_id": null,
-      "name": "op-succinct",
-      "sequencer_type": null
-    },
-    "op-succinct-real-prover": {
-      "components": {},
-      "consensus_type": "fep",
-      "deployment_stages": {
-        "deploy_op_succinct": true,
-        "deploy_optimism_rollup": true
-      },
-      "description": "FEP (Full Execution Proofs) - OP Succinct",
-      "fork_id": null,
-      "name": "op-succinct-real-prover",
-      "sequencer_type": null
-    },
-    "op2": {
-      "components": {},
-      "consensus_type": "pessimistic",
-      "deployment_stages": {
-        "deploy_agglayer": false,
-        "deploy_l1": false,
-        "deploy_optimism_rollup": true
-      },
-      "description": "OP Stack Rollup",
-      "fork_id": null,
-      "name": "op2",
-      "sequencer_type": null
-    },
-    "pre-deployed": {
       "components": {
-        "Agglayer Contracts": {
-          "fork_compatibility": null,
-          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
-          "last_updated": null,
-          "name": "Agglayer Contracts",
-          "source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2-fork.12",
+        "aggkit": {
+          "image": "ghcr.io/agglayer/aggkit:0.5.0-beta3",
+          "latest_version": "0.4.0",
+          "latest_version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.4.0",
           "status": "experimental",
-          "version": "11.0.0-rc.2-fork.12"
+          "version": "0.5.0-beta3",
+          "version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta3"
         },
-        "ZkEVM Prover": {
-          "fork_compatibility": null,
-          "image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-          "last_updated": null,
-          "name": "ZkEVM Prover",
-          "source_url": "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12",
+        "aggkit-prover": {
+          "image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+          "latest_version": "1.1.2",
+          "latest_version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.1.2",
           "status": "experimental",
-          "version": "8.0.0-RC16-fork.12"
+          "version": "1.2.0",
+          "version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.2.0"
+        },
+        "agglayer": {
+          "image": "ghcr.io/agglayer/agglayer:0.3.5",
+          "latest_version": "0.3.5",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5",
+          "status": "latest",
+          "version": "0.3.5",
+          "version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
+        },
+        "agglayer-contracts": {
+          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
+          "latest_version": "9.0.0",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0",
+          "status": "experimental",
+          "version": "11.0.0-rc.2",
+          "version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2"
+        },
+        "zkevm-bridge-service": {
+          "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+          "latest_version": "0.6.1",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1",
+          "status": "experimental",
+          "version": "0.6.2-RC2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2"
         }
       },
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {
-        "deploy_l1": false,
-        "deploy_op_succinct": false,
-        "deploy_optimism_rollup": false
+      "config_file_path": ".github/tests/nightly/op-rollup/op-default.yml",
+      "type": "cdk-opgeth-sovereign"
+    },
+    "op-succinct": {
+      "components": {
+        "aggkit": {
+          "image": "ghcr.io/agglayer/aggkit:0.5.0-beta3",
+          "latest_version": "0.4.0",
+          "latest_version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.4.0",
+          "status": "experimental",
+          "version": "0.5.0-beta3",
+          "version_source_url": "https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta3"
+        },
+        "aggkit-prover": {
+          "image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+          "latest_version": "1.1.2",
+          "latest_version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.1.2",
+          "status": "experimental",
+          "version": "1.2.0",
+          "version_source_url": "https://github.com/agglayer/provers/releases/tag/v1.2.0"
+        },
+        "agglayer": {
+          "image": "ghcr.io/agglayer/agglayer:0.3.5",
+          "latest_version": "0.3.5",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5",
+          "status": "latest",
+          "version": "0.3.5",
+          "version_source_url": "https://github.com/agglayer/agglayer/releases/tag/v0.3.5"
+        },
+        "agglayer-contracts": {
+          "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
+          "latest_version": "9.0.0",
+          "latest_version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0",
+          "status": "experimental",
+          "version": "11.0.0-rc.2",
+          "version_source_url": "https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2"
+        },
+        "op-succinct-proposer": {
+          "image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
+          "latest_version": null,
+          "latest_version_source_url": null,
+          "status": null,
+          "version": "2.3.3-agglayer",
+          "version_source_url": "https://github.com/agglayer/op-succinct/releases/tag/v2.3.3-agglayer"
+        },
+        "zkevm-bridge-service": {
+          "image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+          "latest_version": "0.6.1",
+          "latest_version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1",
+          "status": "experimental",
+          "version": "0.6.2-RC2",
+          "version_source_url": "https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2"
+        }
       },
-      "description": "CDK-Erigon (Cdk Validium)",
-      "fork_id": null,
-      "name": "pre-deployed",
-      "sequencer_type": "erigon"
-    },
-    "rollup": {
-      "components": {},
-      "consensus_type": "rollup",
-      "deployment_stages": {},
-      "description": "CDK (Rollup)",
-      "fork_id": null,
-      "name": "rollup",
-      "sequencer_type": null
-    },
-    "sovereign": {
-      "components": {},
-      "consensus_type": "pessimistic",
-      "deployment_stages": {},
-      "description": "PP (Pessimistic Proofs)",
-      "fork_id": null,
-      "name": "sovereign",
-      "sequencer_type": null
-    },
-    "validium": {
-      "components": {},
-      "consensus_type": "cdk_validium",
-      "deployment_stages": {},
-      "description": "CDK (Cdk Validium)",
-      "fork_id": null,
-      "name": "validium",
-      "sequencer_type": null
+      "config_file_path": ".github/tests/chains/op-succinct.yml",
+      "type": "cdk-opgeth-zkrollup"
     }
   }
 }

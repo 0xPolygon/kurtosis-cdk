@@ -24,353 +24,501 @@ from datetime import datetime, timedelta
 @dataclass
 class ComponentVersion:
     """Represents a version of a component."""
-    name: str
     version: str
     image: str
-    source_url: Optional[str] = None
-    status: str = "stable"  # stable, deprecated, experimental, pinned
-    last_updated: Optional[str] = None
-    fork_compatibility: Optional[List[str]] = None
+    latest_version: Optional[str] = None
+    version_source_url: Optional[str] = None
+    latest_version_source_url: Optional[str] = None
+    status: Optional[str] = None
+    # last_updated: Optional[str] = None
+    # fork_compatibility: Optional[List[str]] = None
 
 
 @dataclass
-class TestScenario:
-    """Represents a test scenario configuration."""
-    name: str
-    description: str
-    consensus_type: str
-    sequencer_type: Optional[str]
-    fork_id: Optional[str]
+class TestEnvironment:
+    """Represents a test environment configuration."""
+    type: str
+    config_file_path: str
     components: Dict[str, ComponentVersion]
-    deployment_stages: Dict[str, bool]
 
 
 class VersionMatrixExtractor:
     """Extracts and manages version matrix information."""
-    
+
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.input_parser_path = repo_root / "input_parser.star"
         self.matrix_file = repo_root / "CDK_VERSION_MATRIX.MD"
-        self.tests_dir = repo_root / ".github" / "tests"
-        
+        self.test_files_paths = [
+            (repo_root / ".github" / "tests" / "chains" /
+             "op-succinct.yml", "cdk-opgeth-zkrollup"),
+            (repo_root / ".github" / "tests" / "nightly" /
+             "op-rollup" / "op-default.yml", "cdk-opgeth-sovereign"),
+            (repo_root / ".github" / "tests" / "combinations" /
+             "fork12-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            (repo_root / ".github" / "tests" / "combinations" /
+             "fork12-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            (repo_root / ".github" / "tests" / "combinations" /
+             "fork12-cdk-erigon-sovereign.yml", "cdk-erigon-sovereign"),
+            # (repo_root / ".github" / "tests" / "combinations" /
+            #  "fork11-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            # (repo_root / ".github" / "tests" / "combinations" /
+            #  "fork11-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            # (repo_root / ".github" / "tests" / "combinations" /
+            #  "fork9-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            # (repo_root / ".github" / "tests" / "combinations" /
+            #  "fork9-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+        ]
+
         # Component mapping
         self.component_mapping = {
-            "aggkit_image": "AggKit",
-            "agglayer_image": "Agglayer",
-            "aggkit_prover_image": "AggKit Prover",
-            "cdk_erigon_node_image": "CDK Erigon",
-            "cdk_node_image": "CDK Node",
-            "cdk_validium_node_image": "CDK Validium Node",
-            "agglayer_contracts_image": "Agglayer Contracts",
-            "zkevm_da_image": "Data Availability",
-            "zkevm_node_image": "ZkEVM Node",
-            "zkevm_pool_manager_image": "Pool Manager",
-            "zkevm_prover_image": "ZkEVM Prover",
-            "zkevm_sequence_sender_image": "Sequence Sender",
-            "zkevm_bridge_service_image": "Bridge Service",
-            "zkevm_bridge_ui_image": "Bridge UI",
-            "op_succinct_proposer_image": "OP Succinct Proposer",
-            "test_runner_image": "Test Runner",
-            "status_checker_image": "Status Checker"
+            "aggkit_image": "aggkit",
+            "aggkit_prover_image": "aggkit-prover",
+            "agglayer_image": "agglayer",
+            "agglayer_contracts_image": "agglayer-contracts",
+            "cdk_erigon_node_image": "cdk-erigon",
+            "cdk_node_image": "cdk-node",
+            # "cdk_validium_node_image": "cdk-validium-node",
+            "op-batcher": "op-batcher",
+            "op-geth": "op-geth",
+            "op-node": "op-node",
+            "op-proposer": "op-proposer",
+            "op_succinct_proposer_image": "op-succinct-proposer",
+            "zkevm_da_image": "zkevm-da",
+            "zkevm_bridge_service_image": "zkevm-bridge-service",
+            # "zkevm_node_image": "zkevm-node",
+            "zkevm_pool_manager_image": "zkevm-pool-manager",
+            "zkevm_prover_image": "zkevm-prover",
+            "zkevm_sequence_sender_image": "zkevm-sequence-sender",
         }
-        
+
         # GitHub repositories for version checking
         self.repos = {
-            "CDK Erigon": "0xPolygonHermez/cdk-erigon",
-            "ZkEVM Prover": "0xPolygonHermez/zkevm-prover", 
-            "Agglayer Contracts": "agglayer/agglayer-contracts",
-            "Data Availability": "0xPolygon/cdk-data-availability",
-            "Bridge Service": "0xPolygonHermez/zkevm-bridge-service",
-            "AggKit": "agglayer/aggkit",
-            "Agglayer": "agglayer/agglayer",
-            "CDK Node": "0xPolygon/cdk",
-            "CDK Validium Node": "0xPolygon/cdk-validium-node"
+            "aggkit": "agglayer/aggkit",
+            "aggkit-prover": "agglayer/provers",
+            "agglayer": "agglayer/agglayer",
+            "agglayer-contracts": "agglayer/agglayer-contracts",
+            "cdk-erigon": "0xPolygon/cdk-erigon",
+            "cdk-node": "0xPolygon/cdk",
+            # "cdk-validium-node": "0xPolygon/cdk-validium-node",
+            "op-batcher": "ethereum-optimism/optimism",
+            "op-geth": "ethereum-optimism/op-geth",
+            "op-node": "ethereum-optimism/optimism",
+            "op-proposer": "ethereum-optimism/optimism",
+            "op-succinct-proposer": "agglayer/op-succinct",
+            "zkevm-da": "0xPolygon/cdk-data-availability",
+            "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
+            # "zkevm-node": "0xPolygon/zkevm-node",
+            "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
+            "zkevm-prover": "0xPolygon/zkevm-prover",
+            "zkevm-sequence-sender": "0xPolygon/zkevm-sequence-sender",
         }
 
     def extract_default_images(self) -> Dict[str, ComponentVersion]:
         """Extract default image versions from input_parser.star."""
         components = {}
-        
+
         try:
             with open(self.input_parser_path, 'r') as f:
                 content = f.read()
-            
+
             # Extract DEFAULT_IMAGES dictionary
             default_images_match = re.search(
-                r'DEFAULT_IMAGES\s*=\s*\{(.*?)\}', 
-                content, 
+                r'DEFAULT_IMAGES\s*=\s*\{(.*?)\}',
+                content,
                 re.DOTALL
             )
-            
+
             if not default_images_match:
-                raise ValueError("DEFAULT_IMAGES not found in input_parser.star")
-            
+                raise ValueError(
+                    "DEFAULT_IMAGES not found in input_parser.star")
+
             images_content = default_images_match.group(1)
-            
+
             # Parse each image line
             for line in images_content.split('\n'):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
-                    
+
                 match = re.search(r'"([^"]+)":\s*"([^"]+)"', line)
                 if match:
                     key, image = match.groups()
                     if key in self.component_mapping:
+                        name = self.component_mapping[key]
                         version = self._extract_version_from_image(image)
-                        source_url = self._get_source_url(image, version)
-                        
-                        components[self.component_mapping[key]] = ComponentVersion(
-                            name=self.component_mapping[key],
+                        version_source_url = self._get_source_url(
+                            name, version)
+                        latest_version = self._get_latest_version(name)
+                        latest_version_source_url = self._get_source_url(
+                            name, latest_version)
+                        status = self._determine_status(
+                            version, latest_version)
+
+                        components[name] = ComponentVersion(
                             version=version,
+                            latest_version=latest_version,
                             image=image,
-                            source_url=source_url,
-                            status=self._determine_status(image, version)
+                            version_source_url=version_source_url,
+                            latest_version_source_url=latest_version_source_url,
+                            status=status,
                         )
-        
+
+            # Extract OP stack default images from DEFAULT_OP_STACK_ARGS
+            # TODO: Properly parse op images
+            op_stack_match = re.search(
+                r'DEFAULT_OP_STACK_ARGS\s*=\s*\{(.*?)\}', content, re.DOTALL)
+
+            if op_stack_match:
+                op_stack_content = op_stack_match.group(1)
+
+                # Simple direct image extraction
+                # op_images = {
+                #     'op-geth': re.search(r'"op-geth:([^"]+)"', op_stack_content),
+                #     'op-node': re.search(r'"op-node:([^"]+)"', op_stack_content),
+                #     'op-batcher': re.search(r'"op-batcher:([^"]+)"', op_stack_content),
+                #     'op-proposer': re.search(r'"op-proposer:([^"]+)"', op_stack_content),
+                #     'op-deployer': re.search(r'"op-deployer:([^"]+)"', op_stack_content),
+                # }
+
+                # Parse each image line
+                for line in op_stack_content.split('\n'):
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+
+                    print(line)
+
+                    # for component_name, match in op_images.items():
+                    #     if match:
+                    #         image = match.group(1)
+                    #         version = self._extract_version_from_image(image)
+                    #         version_source_url = self._get_source_url(
+                    #             component_name, version)
+                    #         latest_version = self._get_latest_version(
+                    #             component_name)
+                    #         latest_version_source_url = self._get_source_url(
+                    #             component_name, latest_version)
+                    #         status = self._determine_status(
+                    #             version, latest_version)
+
+                    #         components[component_name] = ComponentVersion(
+                    #             version=version,
+                    #             latest_version=latest_version,
+                    #             image=image,
+                    #             version_source_url=version_source_url,
+                    #             latest_version_source_url=latest_version_source_url,
+                    #             status=status,
+                    #         )
+                    #         print(components[component_name])
+
         except Exception as e:
             print(f"Error extracting default images: {e}")
-            
+
         return components
 
     def _extract_version_from_image(self, image: str) -> str:
         """Extract version from Docker image tag."""
         if ':' not in image:
             return "latest"
-        
+
         tag = image.split(':')[-1]
-        
+
         # Handle various tag formats
         if tag in ['latest', 'main', 'master']:
             return tag
-        
+
+        # Specific handling for agglayer-contracts images
+        if 'agglayer-contracts' in image:
+            tag = tag.split('-fork')[0]
+
         # Remove common prefixes
         version = re.sub(r'^v?', '', tag)
         return version
 
-    def _get_source_url(self, image: str, version: str) -> Optional[str]:
+    def _get_source_url(self, name: str, version: str) -> Optional[str]:
         """Generate source URL for the component version."""
         # Map image to repository
+        if not version:
+            return None
+
         for comp_name, repo in self.repos.items():
-            if any(keyword in image.lower() for keyword in comp_name.lower().split()):
+            if comp_name.lower() == name.lower():
                 if version not in ['latest', 'main', 'master']:
                     return f"https://github.com/{repo}/releases/tag/v{version.lstrip('v')}"
                 else:
-                    return f"https://github.com/{repo}"
+                    return f"https://github.com/{repo}/releases/latest"
         return None
 
-    def _determine_status(self, image: str, version: str) -> str:
-        """Determine the status of a version based on various factors."""
-        # Check for experimental indicators
-        if any(keyword in version.lower() for keyword in ['alpha', 'beta', 'rc', 'dev', 'experimental']):
-            return "experimental"
-        
-        # Check for specific pinned versions (common patterns)
-        if any(keyword in version.lower() for keyword in ['hotfix', 'patch', 'fork']):
-            return "pinned"
-        
-        # Check for very old versions (simplified check)
-        if re.match(r'^[0-4]\.', version):  # Versions starting with 0-4 might be older
-            return "deprecated"
-            
-        return "stable"
+    def _get_latest_version(self, component: str) -> Optional[str]:
+        """Fetch the latest version from GitHub releases."""
+        repo = self.repos.get(component)
+        if not repo:
+            return None
 
-    def extract_test_scenarios(self) -> Dict[str, TestScenario]:
-        """Extract test scenarios from .github/tests/ configurations."""
-        scenarios = {}
-        
+        try:
+            if component == 'op-node' or component == 'op-batcher':
+                url = f"https://api.github.com/repos/{repo}/releases"
+                response = requests.get(url, timeout=10, headers={
+                    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+                if response.status_code == 200:
+                    releases = response.json()
+                    for release in releases:
+                        if 'tag_name' in release:
+                            tag_name = release['tag_name']
+                            if tag_name.startswith(component):
+                                version = re.sub(
+                                    r'^v?', '', tag_name.split("/")[-1])
+                                return version
+                return None
+
+            url = f"https://api.github.com/repos/{repo}/releases/latest"
+            response = requests.get(url, timeout=10, headers={
+                                    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+
+            if response.status_code == 200:
+                release_data = response.json()
+                tag = release_data['tag_name']
+                version = re.sub(r'^v?', '', tag)
+                return version
+            else:
+                return None
+
+        except Exception as e:
+            print(f"Error fetching latest version for {component}: {e}")
+            return None
+
+    def _determine_status(self, version: str, latest_version: str) -> Optional[str]:
+        """Determine the status of a version based on various factors."""
+        # Check if version is unknown
+        if not latest_version:
+            return None
+
+        # Helper function to convert version string to comparable integer
+        def version_to_int(v):
+            # Remove any non-digit prefix and split by dots
+            clean_version = v.split('-')[0]  # Remove suffixes like "-beta1"
+            parts = clean_version.split('.')
+
+            # Pad with zeros if less parts available
+            while len(parts) < 3:
+                parts.append('0')
+
+            try:
+                # Convert to integer with larger multipliers to handle big numbers
+                # 1000000 for major, 1000 for minor, 1 for patch
+                major = int(parts[0]) if parts[0].isdigit() else 0
+                minor = int(parts[1]) if parts[1].isdigit() else 0
+                patch = int(parts[2]) if parts[2].isdigit() else 0
+                return major * 1000000 + minor * 1000 + patch
+            except (ValueError, IndexError):
+                return 0
+
+        # Check if version is greater than latest (e.g., pre-release)
+        try:
+            version_float = version_to_int(version)
+            latest_float = version_to_int(latest_version)
+
+            if version_float > latest_float:
+                return "experimental"
+            elif version_float < latest_float:
+                return "deprecated"
+            else:
+                return "latest"
+
+        except Exception as e:
+            print(f"Error determining status for version {version}: {e}")
+            return "unknown"
+
+    def extract_test_environments(self, default_images: Dict[str, str]) -> Dict[str, TestEnvironment]:
+        """Extract test environments from .github/tests/ configurations."""
+        environments = {}
+
         try:
             # Walk through test configuration files
-            for yaml_file in self.tests_dir.rglob("*.yml"):
-                if yaml_file.name in ['matrix.yml']:
-                    continue  # Skip the matrix file itself
-                
+            for (yaml_file, environment_type) in self.test_files_paths:
                 try:
                     with open(yaml_file, 'r') as f:
                         config = yaml.safe_load(f)
-                    
+
                     if not config:
                         continue
-                    
-                    scenario_name = yaml_file.stem
-                    relative_path = yaml_file.relative_to(self.tests_dir)
-                    
-                    # Extract scenario information
+
+                    environment_name = yaml_file.stem
+                    environment_file_path = yaml_file.relative_to(
+                        self.repo_root)
+
+                    # Extract environment information
                     args = config.get('args', {})
-                    deployment_stages = config.get('deployment_stages', {})
-                    
-                    consensus_type = args.get('consensus_contract_type', 'unknown')
-                    sequencer_type = args.get('sequencer_type')
-                    fork_id = args.get('fork_id')
-                    
-                    # Determine scenario type from path and config
-                    scenario_type = self._classify_scenario(relative_path, args, deployment_stages)
-                    
+
                     # Extract component versions from the config
                     components = self._extract_components_from_config(args)
-                    
-                    scenarios[scenario_name] = TestScenario(
-                        name=scenario_name,
-                        description=scenario_type,
-                        consensus_type=consensus_type,
-                        sequencer_type=sequencer_type,
-                        fork_id=str(fork_id) if fork_id is not None else None,
-                        components=components,
-                        deployment_stages=deployment_stages
+                    components_with_defaults = {
+                        name: comp for name, comp in components.items()
+                    }
+                    components_with_defaults.update({
+                        name: comp for name, comp in default_images.items()
+                        if name not in components
+                    })
+
+                    # Filter components based on environment type
+                    allowed_components = self._get_allowed_components(
+                        environment_type)
+                    filtered_components = {
+                        name: comp for name, comp in components_with_defaults.items()
+                        if name in allowed_components
+                    }
+
+                    environments[environment_name] = TestEnvironment(
+                        type=environment_type,
+                        config_file_path=str(environment_file_path),
+                        components=filtered_components,
                     )
-                    
+
                 except Exception as e:
                     print(f"Error processing {yaml_file}: {e}")
                     continue
-        
-        except Exception as e:
-            print(f"Error scanning test scenarios: {e}")
-            
-        return scenarios
 
-    def _classify_scenario(self, path: Path, args: dict, deployment_stages: dict) -> str:
-        """Classify the type of test scenario."""
-        path_str = str(path).lower()
-        
-        # Check deployment stages for scenario type
-        if deployment_stages.get('deploy_op_succinct'):
-            return "FEP (Full Execution Proofs) - OP Succinct"
-        
-        if deployment_stages.get('deploy_optimism_rollup'):
-            return "OP Stack Rollup"
-        
-        # Check consensus type
-        consensus = args.get('consensus_contract_type', '').lower()
-        if consensus == 'fep':
-            return "FEP (Full Execution Proofs)"
-        elif consensus == 'pessimistic':
-            return "PP (Pessimistic Proofs)"
-        elif consensus in ['rollup', 'cdk_validium']:
-            sequencer = args.get('sequencer_type', '')
-            if sequencer == 'erigon':
-                return f"CDK-Erigon ({consensus.replace('_', ' ').title()})"
-            else:
-                return f"CDK ({consensus.replace('_', ' ').title()})"
-        elif consensus == 'ecdsa':
-            return "Aggchain ECDSA"
-        
-        # Classify by path
-        if 'consensus' in path_str:
-            return f"Consensus Test ({consensus})"
-        elif 'fork' in path_str:
-            fork_id = args.get('fork_id', 'unknown')
-            return f"Fork {fork_id} Test"
-        elif 'combination' in path_str:
-            return "Component Combination Test"
-        elif 'chain' in path_str:
-            return "Chain Configuration Test"
-        
-        return "Standard Test Configuration"
+        except Exception as e:
+            print(f"Error scanning test environments: {e}")
+
+        return environments
+
+    def _get_allowed_components(self, environment_name: str) -> List[str]:
+        """Get list of components allowed for a environment type."""
+
+        environment_components = {
+            "cdk-erigon-zkrollup": [
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'cdk-erigon',
+                'cdk-node',
+                'zkevm-bridge-service',
+                'zkevm-pool-manager',
+                'zkevm-prover',
+            ],
+            "cdk-erigon-validium": [
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'cdk-erigon',
+                # TODO: Check if we should use cdk-validium-node instead.
+                'cdk-node',
+                # 'cdk-validium-node',  # different from cdk-erigon-zkrollup
+                'zkevm-bridge-service',
+                'zkevm-da',  # different from cdk-erigon-zkrollup
+                'zkevm-pool-manager',
+                'zkevm-prover',
+            ],
+            "cdk-erigon-sovereign": [
+                'aggkit-prover',
+                'aggkit',  # different from cdk-erigon-zkrollup and cdk-erigon-validium
+                'agglayer',
+                'agglayer-contracts',
+                'cdk-erigon',
+                'zkevm-bridge-service',
+                'zkevm-pool-manager',
+            ],
+            "cdk-opgeth-zkrollup": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-node',
+                'op-geth',
+                'op-succinct-proposer',
+                'zkevm-bridge-service',
+            ],
+            "cdk-opgeth-sovereign": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-node',
+                'op-geth',
+                'op-proposer',  # different from cdk-opgeth-zkrollup
+                'zkevm-bridge-service',
+            ]
+        }
+
+        # Find the matching environment pattern
+        for pattern, components in environment_components.items():
+            if environment_name == pattern:
+                return components
+
+        # If no pattern matches, return an empty list
+        return []
 
     def _extract_components_from_config(self, args: dict) -> Dict[str, ComponentVersion]:
         """Extract component versions from test configuration args."""
         components = {}
-        
+
         for key, value in args.items():
             if key.endswith('_image') and key in self.component_mapping:
-                comp_name = self.component_mapping[key]
+                name = self.component_mapping[key]
                 version = self._extract_version_from_image(value)
-                source_url = self._get_source_url(value, version)
-                
-                components[comp_name] = ComponentVersion(
-                    name=comp_name,
-                    version=version,
+                version_source_url = self._get_source_url(name, version)
+                latest_version = self._get_latest_version(name)
+                latest_version_source_url = self._get_source_url(
+                    name, latest_version)
+
+                components[name] = ComponentVersion(
                     image=value,
-                    source_url=source_url,
-                    status=self._determine_status(value, version)
+                    version=version,
+                    version_source_url=version_source_url,
+                    latest_version=latest_version,
+                    latest_version_source_url=latest_version_source_url,
+                    status=self._determine_status(version, latest_version)
                 )
-        
+
         return components
-
-    def extract_matrix_info(self) -> Dict:
-        """Extract information from existing matrix.yml file."""
-        matrix_info = {}
-        
-        matrix_file = self.tests_dir / "matrix.yml"
-        if matrix_file.exists():
-            try:
-                with open(matrix_file, 'r') as f:
-                    matrix_info = yaml.safe_load(f) or {}
-            except Exception as e:
-                print(f"Error reading matrix.yml: {e}")
-        
-        return matrix_info
-
-    def check_latest_releases(self) -> Dict[str, Dict]:
-        """Check latest releases from GitHub repositories."""
-        release_info = {}
-        
-        for component, repo in self.repos.items():
-            try:
-                # Use GitHub API to get latest release
-                url = f"https://api.github.com/repos/{repo}/releases/latest"
-                response = requests.get(url, timeout=10)
-                
-                if response.status_code == 200:
-                    release_data = response.json()
-                    release_info[component] = {
-                        'latest_version': release_data['tag_name'],
-                        'published_at': release_data['published_at'],
-                        'url': release_data['html_url']
-                    }
-                else:
-                    print(f"Could not fetch latest release for {component}: {response.status_code}")
-                    
-            except Exception as e:
-                print(f"Error checking releases for {component}: {e}")
-        
-        return release_info
 
     def generate_version_matrix(self) -> Dict:
         """Generate comprehensive version matrix."""
         print("Extracting default images...")
-        default_components = self.extract_default_images()
-        
-        print("Extracting test scenarios...")
-        test_scenarios = self.extract_test_scenarios()
-        
-        print("Extracting matrix information...")
-        matrix_info = self.extract_matrix_info()
-        
-        print("Checking latest releases...")
-        latest_releases = self.check_latest_releases()
-        
+        default_images = self.extract_default_images()
+
+        print("Extracting test environments...")
+        test_environments = self.extract_test_environments(default_images)
+
+        # Count environments by type
+        environment_counts = {
+            'total': len(test_environments)
+        }
+        for environment in test_environments.values():
+            architecture = 'unknown'
+            if environment.type.startswith('cdk-opgeth'):
+                architecture = 'cdk-opgeth'
+            elif environment.type.startswith('cdk-erigon'):
+                architecture = 'cdk-erigon'
+
+            environment_counts[architecture] = environment_counts.get(
+                architecture, 0) + 1
+
         # Build comprehensive matrix
         matrix = {
             'generated_at': datetime.now().isoformat(),
-            'default_components': {name: asdict(comp) for name, comp in default_components.items()},
-            'test_scenarios': {name: asdict(scenario) for name, scenario in test_scenarios.items()},
-            'matrix_configurations': matrix_info,
-            'latest_releases': latest_releases,
+            'default_images': {name: asdict(comp) for name, comp in default_images.items()},
+            'test_environments': {name: asdict(environment) for name, environment in test_environments.items()},
             'summary': {
-                'total_components': len(default_components),
-                'total_scenarios': len(test_scenarios),
-                'supported_forks': list(set(
-                    scenario.fork_id for scenario in test_scenarios.values() 
-                    if scenario.fork_id
-                )),
-                'consensus_types': list(set(
-                    scenario.consensus_type for scenario in test_scenarios.values()
-                ))
+                'total_components': len(default_images),
+                'environments': environment_counts,
             }
         }
-        
+
         return matrix
 
     def save_matrix_json(self, matrix: Dict, output_path: Optional[Path] = None):
         """Save matrix as JSON file."""
         if output_path is None:
             output_path = self.repo_root / "version-matrix.json"
-        
+
         with open(output_path, 'w') as f:
             json.dump(matrix, f, indent=2, sort_keys=True)
-        
+
         print(f"Version matrix saved to {output_path}")
 
 
@@ -378,20 +526,16 @@ def main():
     """Main execution function."""
     repo_root = Path(__file__).parent.parent.parent
     extractor = VersionMatrixExtractor(repo_root)
-    
+
     print("Starting version matrix extraction...")
     matrix = extractor.generate_version_matrix()
-    
-    # Save the matrix
     extractor.save_matrix_json(matrix)
-    
+
     # Print summary
     summary = matrix['summary']
     print(f"\n=== Version Matrix Summary ===")
     print(f"Total Components: {summary['total_components']}")
-    print(f"Total Test Scenarios: {summary['total_scenarios']}")
-    print(f"Supported Forks: {', '.join(sorted(summary['supported_forks']))}")
-    print(f"Consensus Types: {', '.join(sorted(summary['consensus_types']))}")
+    print(f"Total Test environments: {summary['environments']['total']}")
     print(f"Matrix generated at: {matrix['generated_at']}")
 
 
