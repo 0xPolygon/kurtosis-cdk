@@ -156,54 +156,54 @@ class VersionMatrixExtractor:
 
             # Extract OP stack default images from DEFAULT_OP_STACK_ARGS
             # TODO: Properly parse op images
-            op_stack_match = re.search(
-                r'DEFAULT_OP_STACK_ARGS\s*=\s*\{(.*?)\}', content, re.DOTALL)
+        #     op_stack_match = re.search(
+        #         r'DEFAULT_OP_STACK_ARGS\s*=\s*\{(.*?)\}', content, re.DOTALL)
 
-            if op_stack_match:
-                op_stack_content = op_stack_match.group(1)
+        #     if op_stack_match:
+        #         op_stack_content = op_stack_match.group(1)
 
-                # Simple direct image extraction
-                # op_images = {
-                #     'op-geth': re.search(r'"op-geth:([^"]+)"', op_stack_content),
-                #     'op-node': re.search(r'"op-node:([^"]+)"', op_stack_content),
-                #     'op-batcher': re.search(r'"op-batcher:([^"]+)"', op_stack_content),
-                #     'op-proposer': re.search(r'"op-proposer:([^"]+)"', op_stack_content),
-                #     'op-deployer': re.search(r'"op-deployer:([^"]+)"', op_stack_content),
-                # }
+        #         # Simple direct image extraction
+        #         # op_images = {
+        #         #     'op-geth': re.search(r'"op-geth:([^"]+)"', op_stack_content),
+        #         #     'op-node': re.search(r'"op-node:([^"]+)"', op_stack_content),
+        #         #     'op-batcher': re.search(r'"op-batcher:([^"]+)"', op_stack_content),
+        #         #     'op-proposer': re.search(r'"op-proposer:([^"]+)"', op_stack_content),
+        #         #     'op-deployer': re.search(r'"op-deployer:([^"]+)"', op_stack_content),
+        #         # }
 
-                # Parse each image line
-                for line in op_stack_content.split('\n'):
-                    line = line.strip()
-                    if not line or line.startswith('#'):
-                        continue
+        #         # Parse each image line
+        #         for line in op_stack_content.split('\n'):
+        #             line = line.strip()
+        #             if not line or line.startswith('#'):
+        #                 continue
 
-                    print(line)
+        #             print(line)
 
-                    # for component_name, match in op_images.items():
-                    #     if match:
-                    #         image = match.group(1)
-                    #         version = self._extract_version_from_image(image)
-                    #         version_source_url = self._get_source_url(
-                    #             component_name, version)
-                    #         latest_version = self._get_latest_version(
-                    #             component_name)
-                    #         latest_version_source_url = self._get_source_url(
-                    #             component_name, latest_version)
-                    #         status = self._determine_status(
-                    #             version, latest_version)
+        #             # for component_name, match in op_images.items():
+        #             #     if match:
+        #             #         image = match.group(1)
+        #             #         version = self._extract_version_from_image(image)
+        #             #         version_source_url = self._get_source_url(
+        #             #             component_name, version)
+        #             #         latest_version = self._get_latest_version(
+        #             #             component_name)
+        #             #         latest_version_source_url = self._get_source_url(
+        #             #             component_name, latest_version)
+        #             #         status = self._determine_status(
+        #             #             version, latest_version)
 
-                    #         components[component_name] = ComponentVersion(
-                    #             version=version,
-                    #             latest_version=latest_version,
-                    #             image=image,
-                    #             version_source_url=version_source_url,
-                    #             latest_version_source_url=latest_version_source_url,
-                    #             status=status,
-                    #         )
-                    #         print(components[component_name])
+        #             #         components[component_name] = ComponentVersion(
+        #             #             version=version,
+        #             #             latest_version=latest_version,
+        #             #             image=image,
+        #             #             version_source_url=version_source_url,
+        #             #             latest_version_source_url=latest_version_source_url,
+        #             #             status=status,
+        #             #         )
+        #             #         print(components[component_name])
 
-        except Exception as e:
-            print(f"Error extracting default images: {e}")
+        # except Exception as e:
+        #     print(f"Error extracting default images: {e}")
 
         return components
 

@@ -87,6 +87,7 @@ sidebar_position: 3
             md += f"### {environment_type}\n\n"
             md += f"- File path: {config_file_path}\n\n"
             md += self._generate_component_table(components)
+            md += "\n"
 
         # Default images table
         md += "## Default Images\n\n"
