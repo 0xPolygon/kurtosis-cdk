@@ -50,9 +50,11 @@ Run the scripts individually to update the version matrix:
 
 ```bash
 # Extract version data
+# File saved to scripts/version-matrix/matrix.json
 python3 scripts/version-matrix/extract-versions.py
 
 # Generate Markdown documentation
+# File saved to docs/docs/version-matrix.md
 python3 scripts/version-matrix/generate-markdown.py
 ```
 

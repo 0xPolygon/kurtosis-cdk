@@ -48,26 +48,16 @@ class VersionMatrixExtractor:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.input_parser_path = repo_root / "input_parser.star"
-        self.matrix_file = repo_root / "CDK_VERSION_MATRIX.MD"
         self.test_files_paths = [
-            (repo_root / ".github" / "tests" / "chains" /
-             "op-succinct.yml", "cdk-opgeth-zkrollup"),
-            (repo_root / ".github" / "tests" / "nightly" /
-             "op-rollup" / "op-default.yml", "cdk-opgeth-sovereign"),
-            (repo_root / ".github" / "tests" / "combinations" /
-             "fork12-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            (repo_root / ".github" / "tests" / "combinations" /
-             "fork12-cdk-erigon-validium.yml", "cdk-erigon-validium"),
-            (repo_root / ".github" / "tests" / "combinations" /
-             "fork12-cdk-erigon-sovereign.yml", "cdk-erigon-sovereign"),
-            # (repo_root / ".github" / "tests" / "combinations" /
-            #  "fork11-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            # (repo_root / ".github" / "tests" / "combinations" /
-            #  "fork11-cdk-erigon-validium.yml", "cdk-erigon-validium"),
-            # (repo_root / ".github" / "tests" / "combinations" /
-            #  "fork9-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            # (repo_root / ".github" / "tests" / "combinations" /
-            #  "fork9-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            (repo_root / ".github" / "tests" / "chains" / "op-succinct.yml", "cdk-opgeth-zkrollup"),
+            (repo_root / ".github" / "tests" / "nightly" / "op-rollup" / "op-default.yml", "cdk-opgeth-sovereign"),
+            (repo_root / ".github" / "tests" / "combinations" / "fork12-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            (repo_root / ".github" / "tests" / "combinations" / "fork12-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            (repo_root / ".github" / "tests" / "combinations" / "fork12-cdk-erigon-sovereign.yml", "cdk-erigon-sovereign"),
+            # (repo_root / ".github" / "tests" / "combinations" / "fork11-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            # (repo_root / ".github" / "tests" / "combinations" / "fork11-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            # (repo_root / ".github" / "tests" / "combinations" / "fork9-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            # (repo_root / ".github" / "tests" / "combinations" / "fork9-cdk-erigon-validium.yml", "cdk-erigon-validium"),
         ]
 
         # Component mapping
@@ -89,7 +79,7 @@ class VersionMatrixExtractor:
             # "zkevm_node_image": "zkevm-node",
             "zkevm_pool_manager_image": "zkevm-pool-manager",
             "zkevm_prover_image": "zkevm-prover",
-            "zkevm_sequence_sender_image": "zkevm-sequence-sender",
+            # "zkevm_sequence_sender_image": "zkevm-sequence-sender",
         }
 
         # GitHub repositories for version checking
@@ -111,7 +101,7 @@ class VersionMatrixExtractor:
             # "zkevm-node": "0xPolygon/zkevm-node",
             "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
             "zkevm-prover": "0xPolygon/zkevm-prover",
-            "zkevm-sequence-sender": "0xPolygon/zkevm-sequence-sender",
+            # "zkevm-sequence-sender": "0xPolygon/zkevm-sequence-sender", # TODO: Remove this component from kurtosis-cdk
         }
 
     def extract_default_images(self) -> Dict[str, ComponentVersion]:
@@ -514,7 +504,7 @@ class VersionMatrixExtractor:
     def save_matrix_json(self, matrix: Dict, output_path: Optional[Path] = None):
         """Save matrix as JSON file."""
         if output_path is None:
-            output_path = self.repo_root / "version-matrix.json"
+            output_path = f"{self.repo_root}/scripts/version-matrix/matrix.json"
 
         with open(output_path, 'w') as f:
             json.dump(matrix, f, indent=2, sort_keys=True)

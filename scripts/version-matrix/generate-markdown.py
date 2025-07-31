@@ -32,8 +32,8 @@ class MarkdownMatrixGenerator:
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
-        self.matrix_json_path = repo_root / "version-matrix.json"
-        self.output_path = repo_root / "VERSION_MATRIX.MD"
+        self.matrix_json_path = repo_root / "scripts/version-matrix/matrix.json"
+        self.output_path = repo_root / "docs/docs/version-matrix.md"
 
         # Status icons
         self.status_icons = {
@@ -60,7 +60,11 @@ class MarkdownMatrixGenerator:
                 microsecond=0).isoformat()
         )
 
-        md = f"""# Version Matrix
+        md = f"""---
+sidebar_position: 3
+---
+        
+# Version Matrix
 
 > This version matrix is automatically generated. Last update made at {generated_at}.
 """
@@ -81,9 +85,8 @@ class MarkdownMatrixGenerator:
             components = environment.get('components', {})
 
             md += f"### {environment_type}\n\n"
-            md += f"- File path: [{config_file_path}]({config_file_path})\n\n"
+            md += f"- File path: {config_file_path}\n\n"
             md += self._generate_component_table(components)
-            md += "\n</details>\n\n"
 
         # Default images table
         md += "## Default Images\n\n"
