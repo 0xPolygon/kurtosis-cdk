@@ -280,6 +280,36 @@ SaveCertificatesToFilesPath = "/tmp"
 # ------------------------------------------------------------------------------
 # EnableRPC = false
 
+# ------------------------------------------------------------------------------
+# RetryCertAfterInError when a cert pass to 'InError'state
+# the AggSender will try to resend it immediately
+# ------------------------------------------------------------------------------
+# RetryCertAfterInError = false
+
+# ------------------------------------------------------------------------------
+# RequireNoFEPBlockGap is true if the AggSender should not accept a gap between
+# lastBlock from lastCertificate and first block of FEP
+# ------------------------------------------------------------------------------
+# RequireNoFEPBlockGap = false
+
+# ------------------------------------------------------------------------------
+# RequireOneBridgeInPPCertificate is a flag to force the AggSender to have at least one bridge exit
+# for the Pessimistic Proof certificates
+# ------------------------------------------------------------------------------
+# RequireOneBridgeInPPCertificate = false
+
+# ------------------------------------------------------------------------------
+# MaxL2BlockNumber is the last L2 block number that is going to be included in a certificate
+# 0 means disabled
+# ------------------------------------------------------------------------------
+# MaxL2BlockNumber = 0
+
+# ------------------------------------------------------------------------------
+# StopOnFinishedSendingAllCertificates is a flag to stop the AggSender when it finishes sending all certificates
+# up to MaxL2BlockNumber
+# ------------------------------------------------------------------------------
+# StopOnFinishedSendingAllCertificates = false
+
 # ==============================================================================
 #     _    ____  ____  ___  ____      _    ____ _     _____
 #    / \  / ___|/ ___|/ _ \|  _ \    / \  / ___| |   | ____|
