@@ -4,10 +4,10 @@ This document describes the automated version matrix system for Kurtosis CDK, wh
 
 ## Overview
 
-The version matrix system automates the process of tracking component versions across different Kurtosis environments and test scenarios. It provides:
+The version matrix system automates the process of tracking component versions across different Kurtosis environments and test environments. It provides:
 
 - **Automated extraction** of version information from code and configurations
-- **Comprehensive mapping** of versions used in different test scenarios
+- **Comprehensive mapping** of versions used in different test environments
 - **Status tracking** for versions (latest, deprecated, experimental)
 - **Human-readable documentation** generation
 - **CI automation** for regular updates
@@ -18,14 +18,14 @@ The version matrix system automates the process of tracking component versions a
 
 1. **Version Extraction** (`scripts/version-matrix/extract-versions.py`)
    - Parses `input_parser.star` for default component versions
-   - Scans `.github/tests/` for test scenario configurations
+   - Scans `.github/tests/` for test environment configurations
    - Fetches latest release information from GitHub APIs
    - Generates machine-readable version data (`version-matrix.json`)
 
 2. **Markdown Generation** (`scripts/version-matrix/generate-markdown.py`)
    - Creates human-readable version matrix documentation
    - Includes status indicators and source links
-   - Groups test scenarios by architecture type
+   - Groups test environments by architecture type
    - Provides comprehensive component details
 
 3. **CI Automation** (`.github/workflows/version-matrix-update.yml`)
@@ -69,7 +69,7 @@ The system is automatically integrated with GitHub Actions:
 
 ## Version Status System
 
-The system tracks four status types for each component version:
+The system tracks status types for each component version:
 
 | Status | Icon | Description |
 |--------|------|-------------|
