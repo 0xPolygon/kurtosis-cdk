@@ -1,8 +1,8 @@
 constants = import_module("../../src/package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-TX_SPAMMER_FOLDER_PATH = "../../static_files/additional_services/tx-spammer"
-TX_SPAMMER_SCRIPT_NAME = "loadtest.sh"
+RPC_FUZZER_FOLDER_NAME = "../../static_files/additional_services/rpc-fuzzer"
+RPC_FUZZER_SCRIPT_NAME = "rpcfuzz.sh"
 
 
 def run(plan, args):
@@ -12,31 +12,31 @@ def run(plan, args):
     l1_funder_private_key = args.get("l1_preallocated_private_key")
     l2_funder_private_key = args.get("zkevm_l2_admin_private_key")
 
-    # Start the spammer services.
-    tx_spammer_artifact = plan.upload_files(
-        src="{}/{}".format(TX_SPAMMER_FOLDER_PATH, TX_SPAMMER_SCRIPT_NAME),
-        name="tx-spammer-script",
+    # Start the fuzzer services.
+    rpc_fuzz_artifact = plan.upload_files(
+        src="{}/{}".format(RPC_FUZZER_FOLDER_NAME, RPC_FUZZER_SCRIPT_NAME),
+        name="rpc-fuzz-script",
     )
 
-    l1_tx_spammer_wallet = _generate_new_funded_wallet(
+    l1_rpc_fuzzer_wallet = _generate_new_funded_wallet(
         plan, l1_funder_private_key, l1_rpc_url
     )
-    _start_tx_spammer_service(
+    _start_rpc_fuzzer_service(
         plan,
-        name="l1-tx-spammer" + args.get("deployment_suffix"),
-        script_artifact=tx_spammer_artifact,
-        private_key=l1_tx_spammer_wallet.private_key,
+        name="l1-rpc-fuzzer" + args.get("deployment_suffix"),
+        script_artifact=rpc_fuzz_artifact,
+        private_key=l1_rpc_fuzzer_wallet.private_key,
         rpc_url=l1_rpc_url,
     )
 
-    l2_tx_spammer_wallet = _generate_new_funded_wallet(
+    l2_rpc_fuzzer_wallet = _generate_new_funded_wallet(
         plan, l2_funder_private_key, l2_rpc_url
     )
-    _start_tx_spammer_service(
+    _start_rpc_fuzzer_service(
         plan,
-        name="l2-tx-spammer" + args.get("deployment_suffix"),
-        script_artifact=tx_spammer_artifact,
-        private_key=l2_tx_spammer_wallet.private_key,
+        name="l2-rpc-fuzzer" + args.get("deployment_suffix"),
+        script_artifact=rpc_fuzz_artifact,
+        private_key=l2_rpc_fuzzer_wallet.private_key,
         rpc_url=l2_rpc_url,
     )
 
@@ -60,7 +60,7 @@ def _generate_new_funded_wallet(plan, funder_private_key, rpc_url):
     return wallet
 
 
-def _start_tx_spammer_service(plan, name, script_artifact, private_key, rpc_url):
+def _start_rpc_fuzzer_service(plan, name, script_artifact, private_key, rpc_url):
     plan.add_service(
         name=name,
         config=ServiceConfig(
@@ -73,7 +73,7 @@ def _start_tx_spammer_service(plan, name, script_artifact, private_key, rpc_url)
                 "RPC_URL": rpc_url,
             },
             entrypoint=["bash", "-c"],
-            cmd=["chmod +x /opt/{0} && /opt/{0}".format(TX_SPAMMER_SCRIPT_NAME)],
+            cmd=["chmod +x /opt/{0} && /opt/{0}".format(RPC_FUZZER_SCRIPT_NAME)],
             # Resource limits
             min_cpu=100,  # 0.1 CPU
             max_cpu=1000,  # 1 CPU

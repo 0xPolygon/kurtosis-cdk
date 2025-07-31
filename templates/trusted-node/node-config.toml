@@ -646,7 +646,7 @@ MaxSHA256Hashes = 0
 # SyncInterval defines the wait duration between reading new
 # information from the trusted sequencer, DAC, L1. Specifically, this
 # controls how long we wait between running sync operations and not
-# the frequence of syncs.
+# the frequency of syncs.
 # ------------------------------------------------------------------------------
 SyncInterval = "1s"
 
@@ -672,7 +672,7 @@ TrustedSequencerURL = ""
 # https://www.alchemy.com/overviews/ethereum-commitment-levels
 #
 # This value is configured for latest to speed up testing in the local
-# environment but this is not recommened for production environments
+# environment but this is not recommended for production environments
 # ------------------------------------------------------------------------------
 # SyncBlockProtection = "safe"
 # SyncBlockProtection = "finalized"
@@ -1352,7 +1352,7 @@ CheckBlocks = 0
 Percentile = 0
 
 # ------------------------------------------------------------------------------
-# UpdatePeriod determins how often we'll call the UpdateGasPriceAvg
+# UpdatePeriod determines how often we'll call the UpdateGasPriceAvg
 # method of our gas pricer
 # ------------------------------------------------------------------------------
 UpdatePeriod = "10s"

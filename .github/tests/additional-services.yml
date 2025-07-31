@@ -9,6 +9,7 @@ args:
     - erpc
     - observability
     # - pless_zkevm_node # zkevm-node doesn't support fork12.
+    - rpc_fuzzer
     - status_checker
     - test_runner
     - tx_spammer

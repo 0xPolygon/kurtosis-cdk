@@ -11,7 +11,7 @@ KURTOSIS_ARGS='{
         "l1_engine": "anvil",
         "l1_rpc_url": "http://'$L1_PROXY_NAME':'$L1_PROXY_PORT'",
         "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc4",
-        "agglayer_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
+        "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
         "deploy_l2_contracts": true,
         "consensus_contract_type": "pessimistic",
         "erigon_strict_mode": false,
@@ -28,7 +28,7 @@ KURTOSIS_ARGS='{
 TEST_PERCENTAGE=0.50                    # % of l1 requests to fail
 TEST_DURATION=180                       # amount of time to test each failure
 TIMEOUT=240                             # Time to wait for everything to settle after the failure
-CHECK_SC_VERIFICATION=0                 # Disable when using soverign chain
+CHECK_SC_VERIFICATION=0                 # Disable when using sovereign chain
 TEST_COMPONENT=agglayer                 # Set if you want to test a single component
 CLASSES="HttpErrorResponse"        # Set if you want to test a specific error class
 
@@ -109,7 +109,7 @@ if [ -n "$TEST_COMPONENT" ]; then
 fi
 
 
-# Set CLASSESS if empty
+# Set CLASSES if empty
 if [ -z "$CLASSES" ]; then
     CLASSES=$(sed -n 's/^class \([A-Za-z0-9]\+\).*/\1/p'  scripts/mitm/failures.py  | grep -v Generic)
 fi

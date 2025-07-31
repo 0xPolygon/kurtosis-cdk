@@ -7,6 +7,7 @@ ADDITIONAL_SERVICES = struct(
     erpc="erpc",
     observability="observability",
     pless_zkevm_node="pless_zkevm_node",
+    rpc_fuzzer="rpc_fuzzer",
     status_checker="status_checker",
     test_runner="test_runner",
     tx_spammer="tx_spammer",
@@ -33,7 +34,9 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
-TOOLBOX_IMAGE = "leovct/toolbox:0.0.10"
+TOOLBOX_IMAGE = (
+    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.10"
+)
 
 L1_ENGINES = ("geth", "anvil")
 

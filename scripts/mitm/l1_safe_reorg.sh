@@ -17,7 +17,7 @@ KURTOSIS_PP_ARGS='{
         "l1_anvil_slots_in_epoch": '$BLOCKS_PER_EPOCH',
         "mitm_proxied_components": {"agglayer": true, "cdk-node": true},
         "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc4",
-        "agglayer_contracts_image": "leovct/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
+        "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
         "deploy_l2_contracts": true,
         "consensus_contract_type": "pessimistic",
         "erigon_strict_mode": false,

@@ -99,8 +99,8 @@ document.getElementById('connectButton').addEventListener('click', async () => {
             alert(`The origin network ${originId} doesn't look familiar`);
             return;
         }
-        let ba = curNet.bridge.methods.bridgeAsset;
-        let txData = ba.apply(ba, depositArgs).encodeABI();
+        let bridgeAsset = curNet.bridge.methods.bridgeAsset;
+        let txData = bridgeAsset.apply(bridgeAsset, depositArgs).encodeABI();
         console.log(txData);
 
         try {
