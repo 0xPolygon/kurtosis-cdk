@@ -106,7 +106,10 @@ for fork in "${forks[@]}"; do
 
             output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_cons.yml"
             echo "# This file has been generated automatically." >"$output_file"
-            yq --slurp '.[0] * .[1] * .[2]' "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
+            yq --slurp '.[0] * .[1] * .[2] | 
+                if "'"$base_fork"'" == "fork12" and "'"$base_comp"'" == "cdk-erigon" and "'"$base_cons"'" == "sovereign" 
+                then .args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:v2.63.0-rc4" 
+                else . end' "$fork" "$cons" "$comp" --yaml-output >> "$output_file"
             echo "- $output_file"
 
             # Save version matrix for each fork.
