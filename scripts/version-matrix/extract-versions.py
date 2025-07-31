@@ -49,11 +49,16 @@ class VersionMatrixExtractor:
         self.repo_root = repo_root
         self.input_parser_path = repo_root / "input_parser.star"
         self.test_files_paths = [
-            (repo_root / ".github" / "tests" / "chains" / "op-succinct.yml", "cdk-opgeth-zkrollup"),
-            (repo_root / ".github" / "tests" / "nightly" / "op-rollup" / "op-default.yml", "cdk-opgeth-sovereign"),
-            (repo_root / ".github" / "tests" / "combinations" / "fork12-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            (repo_root / ".github" / "tests" / "combinations" / "fork12-cdk-erigon-validium.yml", "cdk-erigon-validium"),
-            (repo_root / ".github" / "tests" / "combinations" / "fork12-cdk-erigon-sovereign.yml", "cdk-erigon-sovereign"),
+            (repo_root / ".github" / "tests" / "chains" /
+             "op-succinct.yml", "cdk-opgeth-zkrollup"),
+            (repo_root / ".github" / "tests" / "nightly" /
+             "op-rollup" / "op-default.yml", "cdk-opgeth-sovereign"),
+            (repo_root / ".github" / "tests" / "combinations" /
+             "fork12-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
+            (repo_root / ".github" / "tests" / "combinations" /
+             "fork12-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            (repo_root / ".github" / "tests" / "combinations" /
+             "fork12-cdk-erigon-sovereign.yml", "cdk-erigon-sovereign"),
             # (repo_root / ".github" / "tests" / "combinations" / "fork11-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
             # (repo_root / ".github" / "tests" / "combinations" / "fork11-cdk-erigon-validium.yml", "cdk-erigon-validium"),
             # (repo_root / ".github" / "tests" / "combinations" / "fork9-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
@@ -221,6 +226,10 @@ class VersionMatrixExtractor:
         # Specific handling for agglayer-contracts images
         if 'agglayer-contracts' in image:
             tag = tag.split('-fork')[0]
+
+        # Specific handling for zkevm-prover images
+        if 'zkevm-prover' in image and tag.find('-fork.'):
+            tag = tag.split('-fork.')[0]
 
         # Remove common prefixes
         version = re.sub(r'^v?', '', tag)

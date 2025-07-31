@@ -29,7 +29,7 @@ This section lists all test environments with their configurations and component
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
 | zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | N/A | N/A |
-| zkevm-prover | [8.0.0-RC16-fork.12](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
 
 ### cdk-erigon-sovereign
 
@@ -59,7 +59,7 @@ This section lists all test environments with their configurations and component
 | zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | N/A | N/A |
 | zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | N/A | N/A |
-| zkevm-prover | [8.0.0-RC16-fork.12](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
 
 ### cdk-opgeth-sovereign
 
@@ -100,4 +100,4 @@ This section lists all test environments with their configurations and component
 | zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | N/A | N/A |
 | zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | N/A | N/A |
-| zkevm-prover | [8.0.0-RC16-fork.12](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16-fork.12) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
