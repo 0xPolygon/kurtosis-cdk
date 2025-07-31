@@ -267,9 +267,11 @@ zkevm.data-stream-inactivity-timeout: 10m
 # Default: 5m
 zkevm.data-stream-inactivity-check-interval: 5m
 
+# {{if .enable_normalcy}}
 # Type 1 CDK-Erigon Configs
 zkevm.honour-chainspec: true
 zkevm.initial-commitment: pmt
+# {{end}}
 
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           ____  _____ ___  _   _ _____ _   _  ____ _____ ____
