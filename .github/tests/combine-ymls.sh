@@ -2,7 +2,6 @@
 
 COMBINATIONS_FOLDER="combinations"
 MATRIX_VERSION_FILE="matrix.yml"
-MATRIX_VERSION_README="../../CDK_VERSION_MATRIX.MD"
 
 # Extracts the base file name from a full path, removing the directory path and the .yml extension.
 # e.g. get_file_name "forks/fork10.yml" should return "fork10".
@@ -25,7 +24,6 @@ yml2md() {
 }
 
 true >"$MATRIX_VERSION_FILE"
-echo -e "# Polygon CDK Version Matrix\n\nWhich versions of the CDK stack are meant to work together?\n" >"$MATRIX_VERSION_README"
 
 # File combinations.
 forks=(forks/*.yml)
@@ -106,5 +104,4 @@ for fork in "${forks[@]}"; do
         done
     done
 done
-yml2md "$MATRIX_VERSION_FILE" >>"$MATRIX_VERSION_README"
 echo "All combinations created!"

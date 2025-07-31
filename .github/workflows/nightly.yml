@@ -13,6 +13,38 @@ env:
   ENCLAVE_NAME: cdk
 
 jobs:
+  check-version-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Install dependencies
+        run: pip install -r scripts/version-matrix/requirements.txt
+
+      - name: Generate version matrix
+        run: python scripts/version-matrix/extract-versions.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+
+      - name: Generate markdown documentation
+        run: python scripts/version-matrix/generate-markdown.py
+
+      - name: Check if there are changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Version matrix is up to date."
+          fi
+
   list-ymls:
     runs-on: ubuntu-latest
     timeout-minutes: 2
