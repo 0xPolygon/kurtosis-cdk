@@ -5,7 +5,6 @@ deployment_stages:
   deploy_op_succinct: false
 args:
   verbosity: debug
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-RC3-amd64
   agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
   consensus_contract_type: pessimistic
