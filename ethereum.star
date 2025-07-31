@@ -54,7 +54,7 @@ def run(plan, args):
                     "--disable-backfill-rate-limiting",
                 ],
                 "vc_type": "lighthouse",
-                "vc_image": LIGHTHOUSE_IMAGE,
+                "vc_image": args.get("lighthouse_image"),
                 "vc_extra_params": [
                     "--log-format=JSON",
                 ],
