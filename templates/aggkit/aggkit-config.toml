@@ -549,14 +549,6 @@ InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 # ------------------------------------------------------------------------------
 BlockFinality = "LatestBlock"
 
-# ------------------------------------------------------------------------------
-# SyncMode denotes should the latest global exit root be determined
-# by querying the global exit root map (which is common way for FEP chains)
-# or the events emitted by sovereign chains (which is a common way for PP chains)
-# Valid values: "FEP", "PP"
-# ------------------------------------------------------------------------------
-# SyncMode = "FEP"
-
 # ==============================================================================
 #   ____ _        _    ___ __  __ ____  ____   ___  _   _ ____   ___  ____
 #  / ___| |      / \  |_ _|  \/  / ___||  _ \ / _ \| \ | / ___| / _ \|  _ \
