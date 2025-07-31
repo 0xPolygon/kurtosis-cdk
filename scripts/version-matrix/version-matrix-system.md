@@ -49,6 +49,10 @@ GitHub APIs ────────┘
 Run the scripts individually to update the version matrix:
 
 ```bash
+# Set a Github token to access GitHub API for version information.
+export GITHUB_TOKEN="..."
+# source .env
+
 # Extract version data
 # File saved to scripts/version-matrix/matrix.json
 python3 scripts/version-matrix/extract-versions.py

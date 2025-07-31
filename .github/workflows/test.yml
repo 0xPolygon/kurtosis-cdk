@@ -109,6 +109,8 @@ jobs:
 
       - name: Generate version matrix
         run: python scripts/version-matrix/extract-versions.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
 
       - name: Generate markdown documentation
         run: python scripts/version-matrix/generate-markdown.py

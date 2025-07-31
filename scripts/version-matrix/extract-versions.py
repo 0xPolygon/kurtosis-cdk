@@ -514,6 +514,12 @@ class VersionMatrixExtractor:
 
 def main():
     """Main execution function."""
+    # Check if GITHUB_TOKEN is set
+    if not os.getenv('GITHUB_TOKEN'):
+        print("Error: GITHUB_TOKEN environment variable is not set.")
+        print("Please set it to access GitHub API for version information.")
+        exit(1)
+
     repo_root = Path(__file__).parent.parent.parent
     extractor = VersionMatrixExtractor(repo_root)
 
