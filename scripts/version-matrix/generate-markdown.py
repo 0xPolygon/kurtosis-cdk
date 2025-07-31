@@ -63,10 +63,10 @@ class MarkdownMatrixGenerator:
         md = f"""---
 sidebar_position: 3
 ---
-        
+
 # Version Matrix
 
-> This version matrix is automatically generated. Last update made at {generated_at}.
+> This version matrix is automatically generated.
 """
 
         # Test environments.
