@@ -96,6 +96,8 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.19](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.19) | [2.61.23](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23) | deprecated ⚠️ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
+| geth | [1.16.1](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.1) | [1.16.1](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.1) | latest ✅ |
+| lighthouse | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | latest ✅ |
 | op-succinct-proposer | [2.3.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v2.3.3-agglayer) | N/A | N/A |
 | zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | N/A | N/A |

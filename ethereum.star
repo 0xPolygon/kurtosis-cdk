@@ -1,14 +1,7 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@7c11a34b8afc3f059aa6ca114f903d4f678bad29"
-)  # 2025-05-30
+    "github.com/ethpandaops/ethereum-package/main.star@82e5a7178138d892c0c31c3839c89d53ffd42d9a"
+)  # 2025-07-31
 constants = import_module("./src/package_io/constants.star")
-
-GETH_IMAGE = "ethereum/client-go:v1.15.11"
-# There's an issue with the latest version of the ethereum-package and lighthouse minimal image.
-# https://github.com/ethpandaops/ethereum-package/issues/899
-# The fix is not ideal for now since we're waiting on lighthouse to push a fix image.
-# https://github.com/ethpandaops/ethereum-package/pull/915
-LIGHTHOUSE_IMAGE = "ethpandaops/lighthouse:stable-999b045"
 
 only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
 op_rollup_created_genesis = "templates/genesis/op-genesis.json"
@@ -39,13 +32,13 @@ def run(plan, args):
         "participants": [
             {
                 "el_type": "geth",
-                "el_image": GETH_IMAGE,
+                "el_image": args.get("geth_image"),
                 "el_extra_params": [
                     "--log.format=json",
                     "--gcmode archive",
                 ],
                 "cl_type": "lighthouse",
-                "cl_image": LIGHTHOUSE_IMAGE,
+                "cl_image": args.get("lighthouse_image"),
                 "cl_extra_params": [
                     "--log-format=JSON",
                     # Disable optimistic finalized sync. This will force Lighthouse to

@@ -49,6 +49,8 @@ DEFAULT_IMAGES = {
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
+    "geth_image": "ethereum/client-go:v1.16.1",
+    "lighthouse_image": "ethpandaops/lighthouse:v7.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
