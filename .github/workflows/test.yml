@@ -113,15 +113,15 @@ jobs:
       - name: Generate markdown documentation
         run: python scripts/version-matrix/generate-markdown.py
 
+      - name: Remove timestamp from markdown
+        run: sed -i '' '/> This version matrix is automatically generated\. Last update made at/d' docs/docs/version-matrix.md
+
       - name: Check if there are changes
         run: |
-          # Check if there are changes excluding timestamp-only updates
-          git add -A
-          if git diff --cached --name-only | grep -v "version-matrix.md" > /dev/null || \
-             (git diff --cached docs/docs/version-matrix.md | grep -v "Last update made at" | grep "^[+-]" > /dev/null); then
+          if [[ -n $(git status --porcelain) ]]; then
             echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
             git status --porcelain
-            git diff --cached
+            git diff
             exit 1
           else
             echo "✅ Version matrix is up to date."
