@@ -114,7 +114,7 @@ jobs:
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Remove timestamp from markdown
-        run: sed -i '' '/> This version matrix is automatically generated\. Last update made at/d' docs/docs/version-matrix.md
+        run: sed -i '/> This version matrix is automatically generated\. Last update made at/d' docs/docs/version-matrix.md
 
       - name: Check if there are changes
         run: |
