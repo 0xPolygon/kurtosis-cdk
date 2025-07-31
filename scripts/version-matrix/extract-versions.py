@@ -202,8 +202,8 @@ class VersionMatrixExtractor:
         #             #         )
         #             #         print(components[component_name])
 
-        # except Exception as e:
-        #     print(f"Error extracting default images: {e}")
+        except Exception as e:
+            print(f"Error extracting default images: {e}")
 
         return components
 
