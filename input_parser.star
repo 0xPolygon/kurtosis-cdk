@@ -44,7 +44,7 @@ DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta3",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-RC3-amd64",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
