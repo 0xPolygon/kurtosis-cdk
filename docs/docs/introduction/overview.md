@@ -36,7 +36,7 @@ Install Kurtosis and set up your first devnet.
 
 Learn how to configure your devnet deployment.
 
-## [Version Matrix](../version-matrix.md)
+### [Version Matrix](../version-matrix.md)
 
 A list of all test environments with their configurations and component versions.
 
