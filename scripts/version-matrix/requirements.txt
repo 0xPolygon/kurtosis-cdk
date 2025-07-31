@@ -1,1 +1,2 @@
-pyyaml
+requests==2.32.4
+PyYAML==6.0.2
