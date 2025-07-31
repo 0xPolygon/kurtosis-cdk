@@ -535,6 +535,9 @@ def parse_args(plan, user_args):
     # As it changes L1 config it needs to be run before other functions/checks
     set_anvil_args(plan, args, user_args)
 
+
+    set_agglayer_image_version(plan, args, user_args)
+
     # Determine OP stack args.
     op_stack_args = get_op_stack_args(plan, args, op_stack_args)
 
@@ -737,6 +740,11 @@ def get_op_stack_args(plan, args, user_op_stack_args):
         },
     }
 
+
+def set_agglayer_image_version(plan, args, user_args):
+    if user_args["agglayer_image"] != None:
+        plan.print("Setting up the agglayer_image using the supplied image by user")
+        args["agglayer_image"] = user_args["agglayer_image"]
 
 def set_anvil_args(plan, args, user_args):
     if args["anvil_state_file"] != None:
