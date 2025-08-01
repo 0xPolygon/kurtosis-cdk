@@ -458,7 +458,7 @@ DEFAULT_ARGS = (
 # https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
 OP_ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
 DEFAULT_OP_STACK_ARGS = {
-    "source": "github.com/leovct/optimism-package/main.star@5080670d0b1cb24367fcf3ffcc21c6cb63e721a4",
+    "source": "github.com/leovct/optimism-package/main.star@d6853721549c655b327aedbbe49812c88ad9ba2e",
     "predeployed_contracts": True,
     "chains": [
         {
