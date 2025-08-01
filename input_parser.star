@@ -46,12 +46,17 @@ DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.23",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "geth_image": "ethereum/client-go:v1.16.1",
     "lighthouse_image": "sigp/lighthouse:v7.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.14.0",
+    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
+    "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.1",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5",
+    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
@@ -458,14 +463,13 @@ DEFAULT_OP_STACK_ARGS = {
         {
             "participants": [
                 {
-                    # OP Rollup configuration
                     "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.0",
+                    "el_image": DEFAULT_IMAGES.get("op_geth_image"),
                     "el_extra_params": [
                         "--log.format=json",
                     ],
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.3",
+                    "cl_image": DEFAULT_IMAGES.get("op_node_image"),
                     "cl_extra_params": [
                         "--log.format=json",
                     ],
@@ -473,13 +477,13 @@ DEFAULT_OP_STACK_ARGS = {
                 },
             ],
             "batcher_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0",
+                "image": DEFAULT_ARGS.get("op_batcher_image"),
                 "extra_params": [
                     "--log.format=json",
                 ],
             },
             "proposer_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
+                "image": DEFAULT_ARGS.get("op_proposer_image"),
                 "extra_params": [
                     "--log.format=json",
                 ],
@@ -499,7 +503,7 @@ DEFAULT_OP_STACK_ARGS = {
         },
     ],
     "op_contract_deployer_params": {
-        "image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
+        "image": DEFAULT_ARGS.get("op_contract_deployer_image"),
         "l1_artifacts_locator": OP_ARTIFACTS_LOCATOR,
         "l2_artifacts_locator": OP_ARTIFACTS_LOCATOR,
     },
