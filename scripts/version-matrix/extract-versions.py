@@ -74,10 +74,11 @@ class VersionMatrixExtractor:
             "cdk_erigon_node_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
             # "cdk_validium_node_image": "cdk-validium-node",
-            "op-batcher": "op-batcher",
-            "op-geth": "op-geth",
-            "op-node": "op-node",
-            "op-proposer": "op-proposer",
+            "op_batcher_image": "op-batcher",
+            "op_contract_deployer_image": "op-deployer",
+            "op_geth_image": "op-geth",
+            "op_node_image": "op-node",
+            "op_proposer_image": "op-proposer",
             "op_succinct_proposer_image": "op-succinct-proposer",
             "zkevm_da_image": "zkevm-da",
             "zkevm_bridge_service_image": "zkevm-bridge-service",
@@ -97,6 +98,7 @@ class VersionMatrixExtractor:
             "cdk-node": "0xPolygon/cdk",
             # "cdk-validium-node": "0xPolygon/cdk-validium-node",
             "op-batcher": "ethereum-optimism/optimism",
+            "op-deployer": "ethereum-optimism/optimism",
             "op-geth": "ethereum-optimism/op-geth",
             "op-node": "ethereum-optimism/optimism",
             "op-proposer": "ethereum-optimism/optimism",
@@ -159,54 +161,6 @@ class VersionMatrixExtractor:
                             status=status,
                         )
 
-            # Extract OP stack default images from DEFAULT_OP_STACK_ARGS
-            # TODO: Properly parse op images
-        #     op_stack_match = re.search(
-        #         r'DEFAULT_OP_STACK_ARGS\s*=\s*\{(.*?)\}', content, re.DOTALL)
-
-        #     if op_stack_match:
-        #         op_stack_content = op_stack_match.group(1)
-
-        #         # Simple direct image extraction
-        #         # op_images = {
-        #         #     'op-geth': re.search(r'"op-geth:([^"]+)"', op_stack_content),
-        #         #     'op-node': re.search(r'"op-node:([^"]+)"', op_stack_content),
-        #         #     'op-batcher': re.search(r'"op-batcher:([^"]+)"', op_stack_content),
-        #         #     'op-proposer': re.search(r'"op-proposer:([^"]+)"', op_stack_content),
-        #         #     'op-deployer': re.search(r'"op-deployer:([^"]+)"', op_stack_content),
-        #         # }
-
-        #         # Parse each image line
-        #         for line in op_stack_content.split('\n'):
-        #             line = line.strip()
-        #             if not line or line.startswith('#'):
-        #                 continue
-
-        #             print(line)
-
-        #             # for component_name, match in op_images.items():
-        #             #     if match:
-        #             #         image = match.group(1)
-        #             #         version = self._extract_version_from_image(image)
-        #             #         version_source_url = self._get_source_url(
-        #             #             component_name, version)
-        #             #         latest_version = self._get_latest_version(
-        #             #             component_name)
-        #             #         latest_version_source_url = self._get_source_url(
-        #             #             component_name, latest_version)
-        #             #         status = self._determine_status(
-        #             #             version, latest_version)
-
-        #             #         components[component_name] = ComponentVersion(
-        #             #             version=version,
-        #             #             latest_version=latest_version,
-        #             #             image=image,
-        #             #             version_source_url=version_source_url,
-        #             #             latest_version_source_url=latest_version_source_url,
-        #             #             status=status,
-        #             #         )
-        #             #         print(components[component_name])
-
         except Exception as e:
             print(f"Error extracting default images: {e}")
 
@@ -243,6 +197,9 @@ class VersionMatrixExtractor:
 
         for comp_name, repo in self.repos.items():
             if comp_name.lower() == name.lower():
+                if comp_name in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
+                    return f"https://github.com/{repo}/releases/tag/{comp_name}/v{version.lstrip('v')}"
+
                 if version not in ['latest', 'main', 'master']:
                     return f"https://github.com/{repo}/releases/tag/v{version.lstrip('v')}"
                 else:
@@ -256,7 +213,7 @@ class VersionMatrixExtractor:
             return None
 
         try:
-            if component == 'op-node' or component == 'op-batcher':
+            if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
                 url = f"https://api.github.com/repos/{repo}/releases"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
@@ -425,6 +382,7 @@ class VersionMatrixExtractor:
                 'agglayer',
                 'agglayer-contracts',
                 'op-batcher',
+                'op-deployer',
                 'op-node',
                 'op-geth',
                 'op-succinct-proposer',
@@ -436,6 +394,7 @@ class VersionMatrixExtractor:
                 'agglayer',
                 'agglayer-contracts',
                 'op-batcher',
+                'op-deployer',
                 'op-node',
                 'op-geth',
                 'op-proposer',  # different from cdk-opgeth-zkrollup
