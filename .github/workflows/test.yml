@@ -153,67 +153,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Pre kurtosis run
-        uses: ./.github/actions/kurtosis-pre-run
-        with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_token: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Monitor rollup
-        working-directory: .github/scripts
+      - name: Trigger Test Workflow
+        env:
+          PAT: ${{ secrets.AGGLAYER_E2E_PAT }} # PAT for test repo with actions scope
+          AGGLAYER_E2E: "agglayer/e2e"
+          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} # Dynamically set to current Kurtosis CDK branch
         run: |
-          ./monitor-op-rollup.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+          curl -X POST \
+            -H "Authorization: Bearer $PAT" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/$AGGLAYER_E2E/actions/workflows/Standard-Battery-Tests-Kurtosis/dispatches \
+            -d '{
+              "ref": "main",
+              "inputs": {
+                "agglayer-e2e-ref": "main",
+                "kurtosis-cdk-ref": "${{ env.CURRENT_BRANCH }}",
+                "kurtosis-enclave-name": "${{ env.ENCLAVE_NAME }}",
+                "stack": "cdk-op-geth",
+                "enable-monitored-chaos-stress-tests": false
+              }
+            }'
 
-      - name: Run bridge tests
+      - name: Check Test Status
+        id: check_status
         run: |
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          run_id=$(curl -s -H "Authorization: Bearer $PAT" \
+            https://api.github.com/repos/$AGGLAYER_E2E/actions/runs | jq -r '.workflow_runs[] | select(.name == "Standard Battery Tests - Kurtosis") | .id' | head -n 1)
+          status=""
+          while [[ "$status" != "completed" ]]; do
+            sleep 10
+            status=$(curl -s -H "Authorization: Bearer $PAT" \
+              https://api.github.com/repos/$AGGLAYER_E2E/actions/runs/$run_id | jq -r '.status')
+          done
+          conclusion=$(curl -s -H "Authorization: Bearer $PAT" \
+            https://api.github.com/repos/$AGGLAYER_E2E/actions/runs/$run_id | jq -r '.conclusion')
+          echo "status=$conclusion" >> $GITHUB_OUTPUT
 
-      - name: Check for error logs in aggkit service
-        working-directory: .github/scripts
-        run: |
-          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} aggkit-001 2>&1)
-          echo "$LOGS"
-          if [[ -z "$LOGS" ]]; then
-            echo "Error: No logs found for aggkit service! Service may not be functioning."
-            exit 1  # Fail the workflow if logs are empty
-          elif echo "$LOGS" | grep "ERRO\|FATA\|panic"; then
-            echo "Critical errors found in container logs!"
-            exit 1  # Fail the workflow if errors are found
-          else
-            echo "No errors found in logs."
-          fi
-
-      - name: Check for error logs in agglayer service
-        working-directory: .github/scripts
-        run: |
-          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} agglayer 2>&1)
-          echo "$LOGS"
-          if [[ -z "$LOGS" ]]; then
-            echo "Error: No logs found for agglayer service! Service may not be functioning."
-            exit 1  # Fail the workflow if logs are empty
-          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
-            echo "Errors found in container logs!"
-            exit 1  # Fail the workflow if errors are found
-          else
-            echo "No errors found in logs."
-          fi
-
-      - name: Post kurtosis run
-        if: always()
-        uses: ./.github/actions/kurtosis-post-run
-        with:
-          enclave_name: ${{ env.ENCLAVE_NAME }}
+      - name: Fail if Tests Fail
+        if: steps.check_status.outputs.status != 'success'
+        run: exit 1
 
   list-ymls:
     needs: [lint, unit]
