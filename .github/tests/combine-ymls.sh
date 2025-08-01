@@ -23,6 +23,48 @@ yml2md() {
     ' "$1"
 }
 
+# Save version matrix for a fork-consensus combination.
+save_version_matrix() {
+    local fork_id="$1"
+    local consensus="$2"
+    local erigon_version="$3"
+    local output_file="$4"
+
+    # shellcheck disable=SC2016
+    yq --raw-output \
+        --arg fork_id "$fork_id" \
+        --arg consensus "$consensus" \
+        --arg bridge_version "$default_bridge_version" \
+        --arg da_version "$default_da_version" \
+        --arg erigon_version "$erigon_version" \
+        --yaml-output '{
+        ($fork_id + "-" + $consensus): {
+            fork_id: $fork_id,
+            consensus: $consensus,
+            cdk_erigon: {
+                version: $erigon_version,
+                source: "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\($erigon_version)",
+            },
+            zkevm_prover: {
+                version: .args.zkevm_prover_image | split(":")[1],
+                source: "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/\(.args.zkevm_prover_image | split(":")[1] | split("-fork")[0])",
+            },
+            agglayer_contracts: {
+                version: .args.agglayer_contracts_image | split(":")[1],
+                source: "https://github.com/agglayer/agglayer-contracts/releases/tag/\(.args.agglayer_contracts_image | split(":")[1])",
+            },
+            data_availability: {
+                version: $da_version,
+                source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v\($da_version)",
+            },
+            bridge_service: {
+                version: $bridge_version,
+                source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\($bridge_version)",
+            },
+        }
+        }' "$output_file" >>"$MATRIX_VERSION_FILE"
+}
+
 true >"$MATRIX_VERSION_FILE"
 
 # File combinations.
@@ -31,6 +73,7 @@ consensus=(consensus/*.yml)
 components=(components/*.yml)
 
 default_erigon_version="$(grep -E "cdk_erigon_node_image.*hermeznetwork/cdk-erigon" ../../input_parser.star | sed 's#.*hermeznetwork/cdk-erigon:\([^"]*\).*#\1#')"
+default_sovereign_erigon_version="$(grep -E "cdk_sovereign_erigon_node_image.*hermeznetwork/cdk-erigon" ../../input_parser.star | sed 's#.*hermeznetwork/cdk-erigon:\([^"]*\).*#\1#')"
 default_bridge_version="$(grep -E "zkevm_bridge_service_image.*hermeznetwork" ../../input_parser.star | sed 's#.*hermeznetwork/zkevm-bridge-service:\([^"]*\).*#\1#')"
 default_da_version="$(grep -E "zkevm_da_image.*0xpolygon" ../../input_parser.star | sed 's#.*0xpolygon/cdk-data-availability:\([^"]*\).*#\1#')"
 
@@ -61,45 +104,20 @@ for fork in "${forks[@]}"; do
 
             output_file="$COMBINATIONS_FOLDER/$base_fork-$base_comp-$base_cons.yml"
             echo "# This file has been generated automatically." >"$output_file"
-            yq --slurp '.[0] * .[1] * .[2]' "$fork" "$cons" "$comp" --yaml-output >>"$output_file"
+            yq --slurp '.[0] * .[1] * .[2] | 
+                if "'"$base_fork"'" == "fork12" and "'"$base_comp"'" == "cdk-erigon" and "'"$base_cons"'" == "sovereign" 
+                then .args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:v2.63.0-rc4" 
+                else . end' "$fork" "$cons" "$comp" --yaml-output >> "$output_file"
             echo "- $output_file"
 
             # Save version matrix for each fork.
-            if [[ "$base_comp" == "cdk-erigon" && ("$base_cons" == "validium" || "$base_cons" == "sovereign") ]]; then
+            if [[ "$base_comp" == "cdk-erigon" ]]; then
                 fork_id=${base_fork#fork}
-                # shellcheck disable=SC2016
-                yq --raw-output \
-                    --arg fork_id "$fork_id" \
-                    --arg consensus "$base_cons" \
-                    --arg bridge_version "$default_bridge_version" \
-                    --arg da_version "$default_da_version" \
-                    --arg erigon_version "$default_erigon_version" \
-                    --yaml-output '{
-                    ($fork_id + "-" + $consensus): {
-                        fork_id: $fork_id,
-                        consensus: $consensus,
-                        cdk_erigon: {
-                            version: $erigon_version,
-                            source: "https://github.com/0xPolygonHermez/cdk-erigon/releases/tag/\($erigon_version)",
-                        },
-                        zkevm_prover: {
-                            version: .args.zkevm_prover_image | split(":")[1],
-                            source: "https://github.com/0xPolygonHermez/zkevm-prover/releases/tag/\(.args.zkevm_prover_image | split(":")[1] | split("-fork")[0])",
-                        },
-                        agglayer_contracts: {
-                            version: .args.agglayer_contracts_image | split(":")[1],
-                            source: "https://github.com/agglayer/agglayer-contracts/releases/tag/\(.args.agglayer_contracts_image | split(":")[1])",
-                        },
-                        data_availability: {
-                            version: $da_version,
-                            source: "https://github.com/0xPolygon/cdk-data-availability/releases/tag/v\($da_version)",
-                        },
-                        bridge_service: {
-                            version: $bridge_version,
-                            source: "https://github.com/0xPolygonHermez/zkevm-bridge-service/releases/tag/\($bridge_version)",
-                        },
-                }}
-                ' "$output_file" >>"$MATRIX_VERSION_FILE"
+                if [[ "$base_cons" == "validium" ]]; then
+                    save_version_matrix "$fork_id" "$base_cons" "$default_erigon_version" "$output_file"
+                elif [[ "$base_cons" == "sovereign" ]]; then
+                    save_version_matrix "$fork_id" "$base_cons" "$default_sovereign_erigon_version" "$output_file"
+                fi
             fi
         done
     done

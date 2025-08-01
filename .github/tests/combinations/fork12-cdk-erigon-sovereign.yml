@@ -16,3 +16,4 @@ args:
   enable_normalcy: true
   aggkit_components: aggsender,bridge
   sequencer_type: erigon
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-rc4

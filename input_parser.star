@@ -47,6 +47,7 @@ DEFAULT_IMAGES = {
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.23",
+    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "geth_image": "ethereum/client-go:v1.16.1",
