@@ -50,6 +50,7 @@ DEFAULT_IMAGES = {
     "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
+    "db_image": "postgres:16.2",
     "geth_image": "ethereum/client-go:v1.16.1",
     "lighthouse_image": "sigp/lighthouse:v7.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
