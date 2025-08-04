@@ -50,5 +50,5 @@ runs:
         python-version: 3.13
     
     - name: Add registry prefix to image names
-      shell: python
+      shell: bash
       run: python3 scripts/add-registry-prefix.py --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
