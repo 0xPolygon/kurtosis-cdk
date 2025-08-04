@@ -95,7 +95,7 @@ def run(plan, args):
 
     l1 = ethereum_package.run(plan, l1_args)
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
-    _wait_for_l1_startup(plan, cl_rpc_url)
+    _wait_for_l1_startup(plan, args, cl_rpc_url)
 
 
 # Generate ethereum package public ports configuration.
@@ -119,10 +119,11 @@ def generate_port_publisher_config(args):
     return port_publisher_config
 
 
-def _wait_for_l1_startup(plan, cl_rpc_url):
+def _wait_for_l1_startup(plan, args, cl_rpc_url):
     plan.run_sh(
         name="wait-for-l1-startup",
         description="Wait for L1 to start up - it can take up to 2 minutes",
+        image=args.get("kurtosis_curl_jq_image"),
         env_vars={
             "CL_RPC_URL": cl_rpc_url,
         },

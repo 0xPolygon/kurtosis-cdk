@@ -163,22 +163,22 @@ def get_op_succinct_env_vars(plan, args):
 
 def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     proposer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "proposer", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "proposer", args
     )
     batcher_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "batcher", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "batcher", args
     )
     sequencer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "sequencer", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "sequencer", args
     )
     challenger_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "challenger", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "challenger", args
     )
     proxy_admin_address = _read_l1_op_contract_address(
         plan,
         op_deployer_configs_artifact,
         "l1ProxyAdmin",
-        args["zkevm_rollup_chain_id"],
+        args,
     )
     return {
         "op_proposer_address": proposer_address,
@@ -189,14 +189,15 @@ def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     }
 
 
-def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, chain_id):
+def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, args):
     result = plan.run_sh(
         description="Reading op-{} contract address".format(key),
+        image=args.get("kurtosis_curl_jq_image"),
         files={
             "/opt/config": op_deployer_configs_artifact,
         },
         run="jq --raw-output '.address' /opt/config/{}-{}.json | tr -d '\n'".format(
-            key, chain_id
+            key, args.get("zkevm_rollup_chain_id")
         ),
     )
     return result.output
