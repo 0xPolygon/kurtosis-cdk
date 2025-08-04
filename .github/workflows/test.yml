@@ -30,13 +30,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Pre kurtosis run
-        uses: ./.github/actions/kurtosis-pre-run
-        with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_token: ${{ secrets.DOCKER_TOKEN }}
-
       # Install linters
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install -y kurtosis-cli=1.7.2
+          kurtosis analytics disable
+
       - name: Install yamllint
         run: pip install yamllint
 
