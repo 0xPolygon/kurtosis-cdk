@@ -52,3 +52,23 @@ runs:
     - name: Add registry prefix to image names
       shell: bash
       run: python3 scripts/add-registry-prefix.py --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+
+    - name: Pull kurtosis core components from GCR
+      shell: bash
+      run: |
+        registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        
+        docker pull "${registry}/timberio/vector:0.45.0-debian"
+        docker tag "${registry}/timberio/vector:0.45.0-debian" timberio/vector:0.45.0-debian
+
+        docker pull "${registry}/badouralix/curl-jq:latest"
+        docker tag "${registry}/badouralix/curl-jq:latest" badouralix/curl-jq:latest
+
+        docker pull "${registry}/traefik:2.10.6"
+        docker tag "${registry}/traefik:2.10.6" traefik:2.10.6
+
+        docker pull "${registry}/alpine:3.17"
+        docker tag "${registry}/alpine:3.17" alpine:3.17
+
+        docker pull "${registry}/kurtosistech/engine:1.7.2"
+        docker tag "${registry}/kurtosistech/engine:1.7.2" kurtosistech/engine:1.7.2
