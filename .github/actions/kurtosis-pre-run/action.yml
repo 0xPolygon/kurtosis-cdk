@@ -8,6 +8,10 @@ inputs:
   docker_token:
     description: The token for Docker Hub
     required: false
+  pull_images_from_gcr:
+    description: Whether to pull images from GCR
+    required: false
+    default: "true"
 
 runs:
   using: composite
@@ -20,7 +24,7 @@ runs:
         sudo apt install -y kurtosis-cli=1.7.2
         kurtosis analytics disable
         kurtosis version
-    
+
     - name: Install jq
       shell: bash
       run: |
@@ -38,14 +42,6 @@ runs:
       uses: foundry-rs/foundry-toolchain@de808b1eea699e761c404bda44ba8f21aba30b2c # v1.3.1
       with:
         version: v1.0.0
-    
-    - uses: actions/setup-python@v4
-      with:
-        python-version: 3.13
-    
-    - name: Add registry prefix to image names
-      shell: bash
-      run: python3 scripts/add-registry-prefix.py --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
 
     - name: Login to docker registry
       if: ${{ inputs.docker_username && inputs.docker_token }}
@@ -55,10 +51,11 @@ runs:
         password: ${{ inputs.docker_token }}
 
     - name: Pull kurtosis core components from GCR
+      if: ${{ inputs.pull_images_from_gcr == 'true' }}
       shell: bash
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
-        
+
         docker pull "${registry}/timberio/vector:0.45.0-debian"
         docker tag "${registry}/timberio/vector:0.45.0-debian" timberio/vector:0.45.0-debian
 
@@ -73,3 +70,13 @@ runs:
 
         docker pull "${registry}/kurtosistech/engine:1.7.2"
         docker tag "${registry}/kurtosistech/engine:1.7.2" kurtosistech/engine:1.7.2
+
+    - uses: actions/setup-python@v4
+      if: ${{ inputs.pull_images_from_gcr == 'true' }}
+      with:
+        python-version: 3.13
+
+    - name: Add registry prefix to image names
+      if: ${{ inputs.pull_images_from_gcr == 'true' }}
+      shell: bash
+      run: python3 scripts/add-registry-prefix.py --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
