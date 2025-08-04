@@ -18,13 +18,6 @@ runs:
       with:
         username: ${{ inputs.docker_username }}
         password: ${{ inputs.docker_token }}
-    
-    - name: Login to github container registry
-      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
 
     - name: Install kurtosis
       shell: bash
@@ -51,3 +44,11 @@ runs:
       uses: foundry-rs/foundry-toolchain@de808b1eea699e761c404bda44ba8f21aba30b2c # v1.3.1
       with:
         version: v1.0.0
+    
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.13
+    
+    - name: Add registry prefix to image names
+      shell: python
+      run: python3 scripts/add-registry-prefix.py --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
