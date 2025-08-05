@@ -105,7 +105,7 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.23](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23) | [2.61.23](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.23) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| geth | [1.16.1](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.1) | [1.16.1](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.1) | latest ✅ |
+| geth | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | latest ✅ |
 | lighthouse | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | latest ✅ |
 | op-batcher | [1.14.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.14.0) | [1.14.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.14.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.4.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.1) | deprecated ⚠️ |
