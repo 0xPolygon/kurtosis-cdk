@@ -8,7 +8,7 @@
 # - ✅ Matching values from rpc and sequencer
 # - ✅ Matching values from rpc and data stream
 # - ✅ Is this a validium or a rollup
-# - ✅ Dac Committe Members
+# - ✅ Dac Committee Members
 # - ✅ Batch verification gap
 
 check_variable() {

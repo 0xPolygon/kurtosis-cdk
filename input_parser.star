@@ -41,26 +41,34 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "aggkit:aggsender-validator",  # https://github.com/agglayer/aggkit/pkgs/container/aggkit
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",  # https://github.com/agglayer/agglayer/pkgs/container/agglayer
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",  # https://github.com/agglayer/provers/pkgs/container/aggkit-prover
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.19",  # https://hub.docker.com/r/hermeznetwork/cdk-erigon/tags
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",  # https://github.com/0xpolygon/cdk/pkgs/container/cdk
-    "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",  # https://github.com/0xPolygon/cdk-validium-node/pkgs/container/cdk-validium-node/
-    "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",  # https://hub.docker.com/_/haproxy/tags
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",  # https://hub.docker.com/r/hermeznetwork/zkevm-bridge-service/tags
-    "zkevm_bridge_ui_image": "leovct/zkevm-bridge-ui:multi-network",  # https://hub.docker.com/r/leovct/zkevm-bridge-ui/tags
+    "aggkit_image": "jhkimqd/aggkit:aggsender-validator-local",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v12.0.0-rc.1-fork.12",
-    "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",  # https://github.com/0xpolygon/cdk-data-availability/pkgs/container/cdk-data-availability
-    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",  # https://hub.docker.com/r/hermeznetwork/zkevm-node/tags
-    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",  # https://hub.docker.com/r/hermeznetwork/zkevm-pool-manager/tags
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",  # https://hub.docker.com/r/hermeznetwork/zkevm-prover/tags
-    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",  # https://hub.docker.com/r/hermeznetwork/zkevm-sequence-sender/tags
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",  # https://github.com/foundry-rs/foundry/pkgs/container/foundry/versions?filters%5Bversion_type%5D=tagged
-    "mitm_image": "mitmproxy/mitmproxy:11.1.3",  # https://hub.docker.com/r/mitmproxy/mitmproxy/tags
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",  # https://github.com/agglayer/op-succinct/pkgs/container/op-succinct%2Fop-succinct
-    "test_runner_image": "leovct/e2e:9fe80e1",
-    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",  # https://github.com/0xPolygon/status-checker/releases
+    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.23",
+    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
+    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
+    "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
+    "geth_image": "ethereum/client-go:v1.16.2",
+    "lighthouse_image": "sigp/lighthouse:v7.1.0",
+    "mitm_image": "mitmproxy/mitmproxy:11.1.3",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.14.0",
+    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
+    "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.1",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5",
+    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
+    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
+    "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
+    "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
+    "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
+    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+    "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
+    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
+    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
+    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
+    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",
 }
 
 DEFAULT_PORTS = {
@@ -207,7 +215,7 @@ DEFAULT_L1_ARGS = {
     "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
     # The L1 WS RPC endpoint.
     "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
-    # The L1 concensus layer RPC endpoint.
+    # The L1 consensus layer RPC endpoint.
     "l1_beacon_url": "http://cl-1-lighthouse-geth:4000",
     # The additional services to spin up.
     # Default: []
@@ -428,6 +436,7 @@ DEFAULT_ARGS = (
         # - erpc
         # - observability
         # - pless_zkevm_node
+        # - rpc_fuzzer
         # - status_checker
         # - test_runner
         # - tx_spammer
@@ -461,14 +470,13 @@ DEFAULT_OP_STACK_ARGS = {
         {
             "participants": [
                 {
-                    # OP Rollup configuration
                     "el_type": "op-geth",
-                    "el_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.0",
+                    "el_image": DEFAULT_IMAGES.get("op_geth_image"),
                     "el_extra_params": [
                         "--log.format=json",
                     ],
                     "cl_type": "op-node",
-                    "cl_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.3",
+                    "cl_image": DEFAULT_IMAGES.get("op_node_image"),
                     "cl_extra_params": [
                         "--log.format=json",
                     ],
@@ -476,13 +484,13 @@ DEFAULT_OP_STACK_ARGS = {
                 },
             ],
             "batcher_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.12.0",
+                "image": DEFAULT_ARGS.get("op_batcher_image"),
                 "extra_params": [
                     "--log.format=json",
                 ],
             },
             "proposer_params": {
-                "image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
+                "image": DEFAULT_ARGS.get("op_proposer_image"),
                 "extra_params": [
                     "--log.format=json",
                 ],
@@ -502,7 +510,7 @@ DEFAULT_OP_STACK_ARGS = {
         },
     ],
     "op_contract_deployer_params": {
-        "image": "jhkimqd/op-deployer:v0.4.0-rc.2",
+        "image": DEFAULT_ARGS.get("op_contract_deployer_image"),
         "l1_artifacts_locator": OP_ARTIFACTS_LOCATOR,
         "l2_artifacts_locator": OP_ARTIFACTS_LOCATOR,
     },

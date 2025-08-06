@@ -113,7 +113,7 @@ def run(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
     # Create the cdk aggoracle config.
-    agglayer_endpoint = get_agglayer_endpoint(plan, args)
+    agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
@@ -340,20 +340,40 @@ def get_aggkit_prover_ports(args):
 
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
 # v0.2.0 aggkit only supports readrpc, and v0.3.0 or greater aggkit supports grpc.
-def get_agglayer_endpoint(plan, args):
-    if "local" in args["aggkit_image"]:
+def _get_agglayer_endpoint(aggkit_image):
+    # If the aggkit image is a local build, we assume it uses grpc.
+    if "local" in aggkit_image:
         return "grpc"
-    # Extract version from image tag (e.g., "ghcr.io/agglayer/aggkit:0.5.0-beta1" -> "0.5.0-beta1")
-    version_str = args["aggkit_image"].split(":")[-1]  # Get "0.5.0-beta1"
-    # Remove any suffix like "-beta1"
-    version_clean = version_str.split("-")[0]  # Get "0.5.0"
-    # Convert to float for major.minor comparison (e.g., "0.5.0" -> 0.5)
-    version = float(".".join(version_clean.split(".")[:2]))
 
+    # Extract the aggkit version from the image name.
+    version = _extract_aggkit_version(aggkit_image)
     if version >= 0.3:
         return "grpc"
     else:
         return "readrpc"
+
+
+def _extract_aggkit_version(aggkit_image):
+    """Extract the version from the aggkit image name and return a float."""
+
+    # ghcr.io/agglayer/aggkit:v0.5.0-beta1 -> v0.5.0-beta1
+    tag = aggkit_image.split(":")[-1]
+
+    # v0.5.0-beta1 -> v0.5.0
+    tag_without_suffix = tag.split("-")[0]
+
+    # v0.5.0-beta1 -> 0.5.0
+    version = tag_without_suffix
+    for i in range(len(tag_without_suffix)):
+        if tag_without_suffix[i].isdigit():
+            version = tag_without_suffix[i:]
+            break
+
+    # return a float
+    if version.count(".") > 1:
+        split = version.split(".")
+        return float("{}.{}".format(split[0], split[1]))
+    return float(version)
 
 
 # Fetch the parsed .config section of L1 geth genesis.

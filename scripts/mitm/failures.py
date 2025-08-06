@@ -113,7 +113,7 @@ class EmptyJSONResponse(GenericRequestFailure):
             http.Response.make(200, body, {"Content-Type": "application/json"})
 
 
-class ArbirtraryHTMLResponse(GenericRequestFailure):
+class ArbitraryHTMLResponse(GenericRequestFailure):
     def _my_request(self, flow):
         flow.response = \
             http.Response.make(
@@ -123,7 +123,7 @@ class ArbirtraryHTMLResponse(GenericRequestFailure):
             )
 
 
-class ArbirtraryJSONResponse(GenericRequestFailure):
+class ArbitraryJSONResponse(GenericRequestFailure):
     def _my_request(self, flow):
         flow.response = \
             http.Response.make(

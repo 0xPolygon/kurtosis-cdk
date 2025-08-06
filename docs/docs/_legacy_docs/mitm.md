@@ -37,8 +37,8 @@ Existing failures are implemented on [/scripts/mitm/failures.py](/scripts/mitm/f
 - ```NullResponse```: Returning no data with 200 http code
 - ```EmptyJSONResultResponse```: Returning JSON with empty result field
 - ```EmptyJSONResponse```: Returning and empty JSON
-- ```ArbirtraryHTMLResponse```: Returning a fixed HTML content
-- ```ArbirtraryJSONResponse```: Returning a fixed JSON content
+- ```ArbitraryHTMLResponse```: Returning a fixed HTML content
+- ```ArbitraryJSONResponse```: Returning a fixed JSON content
 - ```SlowResponse```: Delay response for few seconds
 - ```CorruptedJSONResponse```: Change a random byte on the returned JSON
 - ```NoResponse```: Closing the HTTP connection without returning any answer
