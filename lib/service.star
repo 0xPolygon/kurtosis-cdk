@@ -163,31 +163,22 @@ def get_op_succinct_env_vars(plan, args):
 
 def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     proposer_address = _read_l1_op_contract_address(
-        plan,
-        op_deployer_configs_artifact,
-        "proposer",
-        args.get("zkevm_rollup_chain_id"),
+        plan, op_deployer_configs_artifact, "proposer", args["zkevm_rollup_chain_id"]
     )
     batcher_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "batcher", args.get("zkevm_rollup_chain_id")
     )
     sequencer_address = _read_l1_op_contract_address(
-        plan,
-        op_deployer_configs_artifact,
-        "sequencer",
-        args.get("zkevm_rollup_chain_id"),
+        plan, op_deployer_configs_artifact, "sequencer", args["zkevm_rollup_chain_id"]
     )
     challenger_address = _read_l1_op_contract_address(
-        plan,
-        op_deployer_configs_artifact,
-        "challenger",
-        args.get("zkevm_rollup_chain_id"),
+        plan, op_deployer_configs_artifact, "challenger", args["zkevm_rollup_chain_id"]
     )
     proxy_admin_address = _read_l1_op_contract_address(
         plan,
         op_deployer_configs_artifact,
         "l1ProxyAdmin",
-        args.get("zkevm_rollup_chain_id"),
+        args["zkevm_rollup_chain_id"],
     )
     return {
         "op_proposer_address": proposer_address,
