@@ -77,21 +77,7 @@ runs:
     - name: Pre pull package images from GCR
       if: ${{ inputs.pull_images_from_gcr == 'true' }}
       shell: bash
-      run: |
-        file="modified-images.txt"
-        total_images=$(wc -l < "$file")
-        current=0
-        while IFS= read -r image; do
-          # Skip empty lines
-          [[ -z "$image" ]] && continue
-
-          current=$((current + 1))
-          echo "[$current/$total_images] Pulling: $image"
-          if ! docker pull "$image"; then
-            echo "Failed to pull image: $image"
-            exit 1
-          fi
-        done < "$file"
+      run: cat modified-images.txt | xargs -n 1 -P 8 docker pull
 
     - name: Pre pull kurtosis core images from GCR
       if: ${{ inputs.pull_images_from_gcr == 'true' }}
