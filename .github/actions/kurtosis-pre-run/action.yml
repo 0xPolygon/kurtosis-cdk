@@ -60,6 +60,7 @@ runs:
       shell: bash
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        gcloud auth configure-docker europe-west2-docker.pkg.dev
 
         docker pull "${registry}/timberio/vector:0.45.0-debian"
         docker tag "${registry}/timberio/vector:0.45.0-debian" timberio/vector:0.45.0-debian
