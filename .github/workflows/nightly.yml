@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   actions: write
+  id-token: write
 
 env:
   ENCLAVE_NAME: cdk
@@ -43,6 +44,68 @@ jobs:
           else
             echo "✅ Version matrix is up to date."
           fi
+
+  run-without-args:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+          pull_images_from_gcr: "false"
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Run bridge tests
+        run: |
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+
+      - name: Check for error logs in aggkit service
+        working-directory: .github/scripts
+        run: |
+          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} aggkit-001 2>&1)
+          echo "$LOGS"
+          if [[ -z "$LOGS" ]]; then
+            echo "Error: No logs found for aggkit service! Service may not be functioning."
+            exit 1  # Fail the workflow if logs are empty
+          elif echo "$LOGS" | grep "ERRO\|FATA\|panic"; then
+            echo "Critical errors found in container logs!"
+            exit 1  # Fail the workflow if errors are found
+          else
+            echo "No errors found in logs."
+          fi
+
+      - name: Check for error logs in agglayer service
+        working-directory: .github/scripts
+        run: |
+          LOGS=$(kurtosis service logs ${{ env.ENCLAVE_NAME }} agglayer 2>&1)
+          echo "$LOGS"
+          if [[ -z "$LOGS" ]]; then
+            echo "Error: No logs found for agglayer service! Service may not be functioning."
+            exit 1  # Fail the workflow if logs are empty
+          elif echo "$LOGS" | grep -i "error\|exception\|failed\|fatal"; then
+            echo "Errors found in container logs!"
+            exit 1  # Fail the workflow if errors are found
+          else
+            echo "No errors found in logs."
+          fi
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
   list-ymls:
     runs-on: ubuntu-latest
