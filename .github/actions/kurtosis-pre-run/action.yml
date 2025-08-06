@@ -71,6 +71,7 @@ runs:
 
     - name: Configure Docker to use GCR
       if: ${{ inputs.pull_images_from_gcr == 'true' }}
+      shell: bash
       run: gcloud auth configure-docker europe-west2-docker.pkg.dev
 
     - name: Pre pull package images from GCR
