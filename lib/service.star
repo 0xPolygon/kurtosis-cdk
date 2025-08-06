@@ -163,22 +163,31 @@ def get_op_succinct_env_vars(plan, args):
 
 def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     proposer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "proposer", args
+        plan,
+        op_deployer_configs_artifact,
+        "proposer",
+        args.get("zkevm_rollup_chain_id"),
     )
     batcher_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "batcher", args
+        plan, op_deployer_configs_artifact, "batcher", args.get("zkevm_rollup_chain_id")
     )
     sequencer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "sequencer", args
+        plan,
+        op_deployer_configs_artifact,
+        "sequencer",
+        args.get("zkevm_rollup_chain_id"),
     )
     challenger_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "challenger", args
+        plan,
+        op_deployer_configs_artifact,
+        "challenger",
+        args.get("zkevm_rollup_chain_id"),
     )
     proxy_admin_address = _read_l1_op_contract_address(
         plan,
         op_deployer_configs_artifact,
         "l1ProxyAdmin",
-        args,
+        args.get("zkevm_rollup_chain_id"),
     )
     return {
         "op_proposer_address": proposer_address,
@@ -189,15 +198,14 @@ def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     }
 
 
-def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, args):
+def _read_l1_op_contract_address(plan, op_deployer_configs_artifact, key, chain_id):
     result = plan.run_sh(
         description="Reading op-{} contract address".format(key),
-        image=args.get("kurtosis_curl_jq_image"),
         files={
             "/opt/config": op_deployer_configs_artifact,
         },
         run="jq --raw-output '.address' /opt/config/{}-{}.json | tr -d '\n'".format(
-            key, args.get("zkevm_rollup_chain_id")
+            key, chain_id
         ),
     )
     return result.output

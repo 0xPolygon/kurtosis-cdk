@@ -28,7 +28,6 @@ def start_stateless_executor(plan, args, config_artifact, start_port_name):
 def _start_service(plan, type, args, config_artifact, start_port_name):
     cpu_arch_result = plan.run_sh(
         description="Determining CPU system architecture",
-        image=args.get("kurtosis_curl_jq_image"),
         run="uname -m | tr -d '\n'",
     )
     cpu_arch = cpu_arch_result.output
