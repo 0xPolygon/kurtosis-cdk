@@ -471,7 +471,7 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Install bats
-        uses: bats-core/bats-action@3.0.0
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
 
       - name: Install polycli
         run: |
