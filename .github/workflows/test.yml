@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
   actions: write
-  id-token: 'write'
+  id-token: "write"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -161,6 +161,9 @@ jobs:
         with:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Debug
+        run: /home/runner/.docker/config.json
 
       - name: Kurtosis run
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
