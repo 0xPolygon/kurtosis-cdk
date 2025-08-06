@@ -166,7 +166,7 @@ def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
         plan, op_deployer_configs_artifact, "proposer", args["zkevm_rollup_chain_id"]
     )
     batcher_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "batcher", args.get("zkevm_rollup_chain_id")
+        plan, op_deployer_configs_artifact, "batcher", args["zkevm_rollup_chain_id"]
     )
     sequencer_address = _read_l1_op_contract_address(
         plan, op_deployer_configs_artifact, "sequencer", args["zkevm_rollup_chain_id"]
