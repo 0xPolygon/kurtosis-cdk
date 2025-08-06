@@ -7,7 +7,7 @@ to enable pulling images from a private registry (e.g., GCP) instead of Docker H
 avoiding rate limiting issues in CI.
 
 Usage:
-    python scripts/add-registry-prefix.py --registry-prefix "your-registry.pkg.dev/project/repo"
+    python .github/scripts/add-registry-prefix.py --registry-prefix "your-registry.pkg.dev/project/repo"
 """
 
 import argparse
@@ -180,14 +180,14 @@ def main():
         input_parser_path = args.input_file
     else:
         # Try to find input_parser.star relative to script location
-        script_dir = Path(__file__).parent
+        script_dir = Path(__file__).parent.parent
         repo_root = script_dir.parent
         input_parser_path = repo_root / "input_parser.star"
 
     if not input_parser_path.exists():
         print(f"Error: {input_parser_path} not found")
         sys.exit(1)
-    
+
     # Set output file path
     output_file_path = args.output_file or Path("modified-images.txt")
 
@@ -219,7 +219,8 @@ def main():
                         f.write(f"{image}\n")
                 print(f"Modified images written to: {output_file_path}")
             except Exception as e:
-                print(f"Warning: Could not write to output file {output_file_path}: {e}")
+                print(
+                    f"Warning: Could not write to output file {output_file_path}: {e}")
 
             # Validate the modified file
             if prefix_adder.validate_file():
@@ -237,7 +238,8 @@ def main():
                     f.write("")
                 print(f"Empty output file created: {output_file_path}")
             except Exception as e:
-                print(f"Warning: Could not create output file {output_file_path}: {e}")
+                print(
+                    f"Warning: Could not create output file {output_file_path}: {e}")
 
         print("Registry prefix addition completed successfully")
 
