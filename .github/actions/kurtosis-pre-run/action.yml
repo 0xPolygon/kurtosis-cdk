@@ -99,11 +99,12 @@ runs:
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
         images=(
+          "kurtosistech/engine:1.7.2"
           "timberio/vector:0.45.0-debian"
-          "badouralix/curl-jq:latest"
           "traefik:2.10.6"
           "alpine:3.17"
-          "kurtosistech/engine:1.7.2"
+          "badouralix/curl-jq:latest"
+          "mslipper/deployment-utils:latest"
         )
         for image in "${images[@]}"; do
           echo "Pulling: $image"
