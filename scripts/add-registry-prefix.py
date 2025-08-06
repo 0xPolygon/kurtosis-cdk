@@ -167,6 +167,11 @@ def main():
         type=Path,
         help="Path to input_parser.star file (default: auto-detect)"
     )
+    parser.add_argument(
+        "--output-file",
+        type=Path,
+        help="Path to output file for modified images (default: modified-images.txt)"
+    )
 
     args = parser.parse_args()
 
@@ -182,9 +187,13 @@ def main():
     if not input_parser_path.exists():
         print(f"Error: {input_parser_path} not found")
         sys.exit(1)
+    
+    # Set output file path
+    output_file_path = args.output_file or Path("modified-images.txt")
 
     print(f"Processing: {input_parser_path}")
     print(f"Registry prefix: {args.registry_prefix}")
+    print(f"Output file: {output_file_path}")
 
     # Perform actual modification
     try:
@@ -193,8 +202,24 @@ def main():
         modified_count, modified_images = prefix_adder.process_file()
         if modified_count > 0:
             print(f"Successfully modified {modified_count} images:")
+
+            # Extract just the new image names (after the arrow)
+            new_image_names = []
             for change in modified_images:
                 print(f"  {change}")
+
+                # Extract the new image name from "original -> new" format
+                new_image = change.split(" -> ")[1]
+                new_image_names.append(new_image)
+
+            # Write modified images to output file
+            try:
+                with open(output_file_path, 'w') as f:
+                    for image in new_image_names:
+                        f.write(f"{image}\n")
+                print(f"Modified images written to: {output_file_path}")
+            except Exception as e:
+                print(f"Warning: Could not write to output file {output_file_path}: {e}")
 
             # Validate the modified file
             if prefix_adder.validate_file():
@@ -205,6 +230,14 @@ def main():
                 sys.exit(1)
         else:
             print("No images were modified (all already have registry prefixes)")
+
+            # Create empty output file
+            try:
+                with open(output_file_path, 'w') as f:
+                    f.write("")
+                print(f"Empty output file created: {output_file_path}")
+            except Exception as e:
+                print(f"Warning: Could not create output file {output_file_path}: {e}")
 
         print("Registry prefix addition completed successfully")
 
