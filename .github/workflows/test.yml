@@ -162,9 +162,6 @@ jobs:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Debug
-        run: cat /home/runner/.docker/config.json
-
       - name: Kurtosis run
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
 
