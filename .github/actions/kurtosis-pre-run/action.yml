@@ -90,6 +90,8 @@ runs:
           "traefik:2.10.6"
           "alpine:3.17"
           "badouralix/curl-jq:latest"
+          "protolambda/eth2-val-tools:latest"
+          "ethpandaops/ethereum-genesis-generator:4.1.19"
           "mslipper/deployment-utils:latest"
         )
         for image in "${images[@]}"; do
