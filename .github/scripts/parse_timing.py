@@ -10,6 +10,7 @@ import re
 import json
 import sys
 import argparse
+import os
 from typing import Optional, Dict, Any
 
 
@@ -65,15 +66,17 @@ def extract_timing_from_log(log_file_path: str) -> Optional[Dict[str, Any]]:
         with open(log_file_path, 'r', encoding='utf-8') as f:
             content = f.read()
     except FileNotFoundError:
+        print(f"Error: log file not found: {log_file_path}", file=sys.stderr)
         return None
     except Exception as e:
-        print(f"Error reading log file: {e}", file=sys.stderr)
+        print(f"Error: reading log file: {e}", file=sys.stderr)
         return None
 
     # Pattern to match the timing line
     pattern = r'Starlark code successfully run\.\s*Total instruction execution time:\s*([0-9hms.]+)\.'
     matches = re.findall(pattern, content, re.IGNORECASE)
     if not matches:
+        print(f"Error: no timing information found in log file", file=sys.stderr)
         return None
     raw_time = matches[-1]  # Use the last match if multiple found
 
@@ -85,26 +88,114 @@ def extract_timing_from_log(log_file_path: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def load_thresholds(threshold_file_path: str) -> Dict[str, float]:
+    """
+    Load timing thresholds from configuration file.
+
+    Format: <config-name>: <threshold_seconds>
+    Lines starting with # are comments.
+    """
+    thresholds = {}
+
+    if not os.path.exists(threshold_file_path):
+        print(
+            f"Error: threshold file not found: {threshold_file_path}", file=sys.stderr)
+        return None
+
+    try:
+        with open(threshold_file_path, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+
+                # Skip empty lines and comments
+                if not line or line.startswith('#'):
+                    continue
+
+                # Parse config_name: threshold format
+                if ':' not in line:
+                    print(
+                        f"Warning: Invalid format on line {line_num}: {line}", file=sys.stderr)
+                    continue
+
+                config_name, threshold_str = line.split(':', 1)
+                config_name = config_name.strip()
+                threshold_str = threshold_str.strip()
+
+                try:
+                    threshold = float(threshold_str)
+                    thresholds[config_name] = threshold
+                except ValueError:
+                    print(
+                        f"Warning: Invalid threshold value on line {line_num}: {threshold_str}", file=sys.stderr)
+                    continue
+
+    except Exception as e:
+        print(
+            f"Error reading threshold file {threshold_file_path}: {e}", file=sys.stderr)
+
+    return thresholds
+
+
+def get_config_name_from_path(config_path: str) -> str:
+    """Extract config name from file path for threshold lookup."""
+    if not config_path:
+        return "default"
+
+    # Extract filename without extension
+    filename = os.path.basename(config_path)
+    config_name = os.path.splitext(filename)[0]
+
+    return config_name
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Parse deployment timing from Kurtosis log files')
     parser.add_argument('log_file', help='Path to the log file to parse')
-    parser.add_argument('--threshold', type=float, default=200.0,
-                        help='Maximum allowed execution time in seconds (default: 200)')
+    parser.add_argument('--threshold', type=float,
+                        help='Maximum allowed execution time in seconds (overrides config file)')
+    parser.add_argument('--config-file',
+                        help='Path to the args file used for this deployment (for threshold lookup)')
+    parser.add_argument('--threshold-file', default='.github/scripts/timing-thresholds.txt',
+                        help='Path to threshold configuration file')
     args = parser.parse_args()
 
-    (raw_time, parsed_time) = extract_timing_from_log(args.log_file)
-    if (raw_time, parsed_time) is None:
-        print(
-            f"No timing information found in {args.log_file}", file=sys.stderr)
+    result = extract_timing_from_log(args.log_file)
+    if result is None:
         sys.exit(1)
+
+    raw_time, parsed_time = result
+
+    # Determine threshold to use
+    if args.threshold:
+        # Use explicit threshold from command line
+        threshold = args.threshold
+        threshold_source = "command line"
+    else:
+        # Load thresholds from config file
+        thresholds = load_thresholds(args.threshold_file)
+        if thresholds is None:
+            sys.exit(1)
+
+        config_name = get_config_name_from_path(args.config_file)
+
+        # Look up threshold by config name, fall back to default
+        if config_name in thresholds:
+            threshold = thresholds[config_name]
+            threshold_source = f"config '{config_name}'"
+        elif 'default' in thresholds:
+            threshold = thresholds['default']
+            threshold_source = "default config"
+        else:
+            threshold = 200.0  # Fallback default
+            threshold_source = "fallback default"
 
     print("Kurtosis execution times:")
     print(f"- raw: {raw_time}")
     print(f"- parsed: {parsed_time:.2f}s")
-    print(f"- threshold: {args.threshold:.1f}s")
+    print(f"- threshold: {threshold:.1f}s (from {threshold_source})")
 
-    if parsed_time > args.threshold:
+    if parsed_time > threshold:
         print(f"❌ Error: execution time exceeds the threshold")
         sys.exit(1)
     else:

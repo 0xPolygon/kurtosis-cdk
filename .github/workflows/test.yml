@@ -168,7 +168,7 @@ jobs:
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --verbosity detailed . 2>&1 | tee run.log
 
       - name: Extract timing information
-        run: python3 .github/scripts/parse_timing.py run.log --threshold ${{ env.EXECUTION_THRESHOLD_SECONDS }}
+        run: python3 .github/scripts/parse_timing.py run.log
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -271,7 +271,7 @@ jobs:
           kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --verbosity detailed . 2>&1 | tee run.log
 
       - name: Extract timing information
-        run: python3 .github/scripts/parse_timing.py run.log --threshold ${{ env.EXECUTION_THRESHOLD_SECONDS }}
+        run: python3 .github/scripts/parse_timing.py run.log --config-file ${{ matrix.file.path }}
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -356,7 +356,7 @@ jobs:
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --verbosity detailed . 2>&1 | tee run.log
 
       - name: Extract timing information
-        run: python3 .github/scripts/parse_timing.py run.log --threshold ${{ env.EXECUTION_THRESHOLD_SECONDS }}
+        run: python3 .github/scripts/parse_timing.py run.log --config-file ./.github/tests/additional-services.yml
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -500,7 +500,7 @@ jobs:
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --verbosity detailed . 2>&1 | tee run.log
 
       - name: Extract timing information
-        run: python3 .github/scripts/parse_timing.py run.log --threshold ${{ env.EXECUTION_THRESHOLD_SECONDS }}
+        run: python3 .github/scripts/parse_timing.py run.log --config-file ./.github/tests/chains/op-succinct.yml
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}

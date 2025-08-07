@@ -1,0 +1,15 @@
+# Timing thresholds for different environments (in seconds)
+# Format: <config-file-name>: <threshold_seconds>
+
+# Default threshold
+default: 420
+
+# Client configurations
+op-default: 400
+op-succinct: 480
+fork12-cdk-erigon-sovereign: 300
+fork12-cdk-erigon-validium: 380
+fork12-cdk-erigon-rolup: 350
+
+# Additional services configurations
+additional-services: 420
