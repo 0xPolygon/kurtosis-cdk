@@ -21,6 +21,7 @@ env:
 
   # kurtosis deploy
   ENCLAVE_NAME: cdk
+  EXECUTION_THRESHOLD_SECONDS: 400
   POLYCLI_VERSION: v0.1.82
   E2E_REF: 4763c63cb11c5e605bff749823bf514abcdac7b6
 
