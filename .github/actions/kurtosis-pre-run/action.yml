@@ -69,7 +69,9 @@ runs:
     - name: Add registry prefix to image names
       if: ${{ inputs.pull_images_from_gcr == 'true' }}
       shell: bash
-      run: python3 .github/scripts/add-registry-prefix.py --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+      run: |
+        script_path=$(realpath "${{ github.action_path }}/../../scripts/add-registry-prefix.py")
+        python3 "${script_path}" --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
 
     - uses: google-github-actions/auth@v2.0.0
       if: ${{ inputs.pull_images_from_gcr == 'true' }}
