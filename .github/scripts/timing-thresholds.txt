@@ -5,11 +5,11 @@
 default: 420
 
 # Client configurations
-op-default: 400
+op-default: 420
 op-succinct: 480
-fork12-cdk-erigon-sovereign: 300
+fork12-cdk-erigon-sovereign: 320
 fork12-cdk-erigon-validium: 380
 fork12-cdk-erigon-rolup: 350
 
 # Additional services configurations
-additional-services: 420
+additional-services: 440
