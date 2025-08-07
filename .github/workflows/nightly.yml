@@ -38,7 +38,7 @@ jobs:
       - name: Check if there are changes
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "::warning title=YOUR-TITLE::Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            echo "::warning title=version-matrix::Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
             git status --porcelain
             git diff
           else
