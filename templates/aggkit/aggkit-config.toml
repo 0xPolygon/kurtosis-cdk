@@ -360,6 +360,15 @@ MaxAttempts = 20
 # ------------------------------------------------------------------------------
 WaitPeriodNextGER = "10s"
 
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+{{ if .use_agg_oracle_committee }}
+EnableAggOracleCommittee = true
+{{- else }}
+EnableAggOracleCommittee = false
+{{ end }}
+
 [AggOracle.EVMSender]
 # ------------------------------------------------------------------------------
 # Address of the sovereign global exit root proxy contract on L2
@@ -384,6 +393,13 @@ GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
 WaitPeriodMonitorTx = "10s"
+
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+{{ if .use_agg_oracle_committee }}
+AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
+{{ end }}
 
 [AggOracle.EVMSender.EthTxManager]
 # ------------------------------------------------------------------------------

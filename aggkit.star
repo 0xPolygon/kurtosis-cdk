@@ -112,7 +112,7 @@ def run(
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
-    # Create the cdk aggoracle config.
+    # Create the cdk aggkit config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(

@@ -382,7 +382,7 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
-    "use_agg_oracle_committee": False,
+    "use_agg_oracle_committee": True,
     "use_agg_sender_validator": True,
 }
 
