@@ -102,6 +102,10 @@ ARTIFACTS = [
         "name": "deploy-agg-oracle-commitee.json",
         "file": "./templates/sovereign-rollup/deploy-agg-oracle-commitee.json",
     },
+    {
+        "name": "deployAggOracleCommittee.ts",
+        "file": "./templates/sovereign-rollup/deployAggOracleCommittee.ts",
+    },
 ]
 
 
