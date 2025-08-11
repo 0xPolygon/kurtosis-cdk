@@ -6,6 +6,7 @@ zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
 service_package = import_module("./lib/service.star")
 
+
 def run_aggkit_cdk_node(
     plan,
     args,
@@ -114,8 +115,12 @@ def run(
     )
     if args["use_agg_oracle_committee"]:
         # Fetch aggoracle_commitee_address
-        aggoracle_committee_address = service_package.get_aggoracle_committee_address(plan, args)
-        sovereign_contract_setup_addresses = sovereign_contract_setup_addresses | aggoracle_committee_address
+        aggoracle_committee_address = service_package.get_aggoracle_committee_address(
+            plan, args
+        )
+        sovereign_contract_setup_addresses = (
+            sovereign_contract_setup_addresses | aggoracle_committee_address
+        )
     # Create the cdk aggkit config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
