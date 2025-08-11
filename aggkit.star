@@ -112,8 +112,10 @@ def run(
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
-    # Fetch aggoracle_commitee_address
-    aggoracle_committee_address = service_package.get_aggoracle_committee_address(plan, args)
+    if args["use_agg_oracle_committee"]:
+        # Fetch aggoracle_commitee_address
+        aggoracle_committee_address = service_package.get_aggoracle_committee_address(plan, args)
+        sovereign_contract_setup_addresses = sovereign_contract_setup_addresses | aggoracle_committee_address
     # Create the cdk aggkit config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
@@ -129,7 +131,6 @@ def run(
                     "agglayer_endpoint": agglayer_endpoint,
                     "l2_rpc_url": l2_rpc_url,
                 }
-                | aggoracle_committee_address
                 | db_configs
                 | contract_setup_addresses
                 | sovereign_contract_setup_addresses,
