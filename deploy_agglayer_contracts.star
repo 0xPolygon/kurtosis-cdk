@@ -94,18 +94,6 @@ ARTIFACTS = [
         "name": "json2http.py",
         "file": "./scripts/json2http.py",
     },
-    {
-        "name": "run-agg-oracle-commitee-setup.sh",
-        "file": "./templates/sovereign-rollup/run-agg-oracle-commitee-setup.sh",
-    },
-    {
-        "name": "deploy-agg-oracle-commitee.json",
-        "file": "./templates/sovereign-rollup/deploy-agg-oracle-commitee.json",
-    },
-    {
-        "name": "deployAggOracleCommittee.ts",
-        "file": "./templates/sovereign-rollup/deployAggOracleCommittee.ts",
-    },
 ]
 
 

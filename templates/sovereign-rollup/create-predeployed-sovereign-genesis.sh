@@ -67,6 +67,14 @@ else
     exit 1
 fi
 
+# Copy aggoracle implementation and proxy address to combined.json
+if [[ "{{.use_agg_oracle_committee}}" ]]; then
+jq --arg impl "$(jq -r '.genesisSCNames["AggOracleCommittee implementation"]' /opt/zkevm/create-sovereign-genesis-output.json)" \
+   --arg proxy "$(jq -r '.genesisSCNames["AggOracleCommittee proxy"]' /opt/zkevm/create-sovereign-genesis-output.json)" \
+   '. + { "aggOracleCommitteeImplementationAddress": $impl, "aggOracleCommitteeProxyAddress": $proxy }' \
+   /opt/zkevm/combined.json > /opt/zkevm/combined.json.tmp && mv /opt/zkevm/combined.json.tmp /opt/zkevm/combined.json
+fi
+
 >/tmp/create_op_allocs.py cat <<EOF
 import json
 

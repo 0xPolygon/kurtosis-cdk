@@ -296,26 +296,6 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of OP Succinct")
 
-    # Deploy aggOracleCommittee contract onto L2
-    if args["use_agg_oracle_committee"]:
-        script = "/opt/contract-deploy/run-agg-oracle-commitee-setup.sh"
-        plan.print("Deploying aggOracleCommittee contract onto L2.")
-        plan.exec(
-            description="Deploying aggOracleCommittee contract onto L2",
-            service_name="contracts" + args["deployment_suffix"],
-            recipe=ExecRecipe(
-                command=[
-                    "/bin/sh",
-                    "-c",
-                    "chmod +x {0} && {0}".format(script),
-                ]
-            ),
-        )
-        agg_oracle_committee_address = service_package.get_aggoracle_committee_address(
-            plan, args
-        )
-        sovereign_contract_setup_addresses = sovereign_contract_setup_addresses | agg_oracle_committee_address
-
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False) or (
         deployment_stages.get("deploy_cdk_central_environment", False)
