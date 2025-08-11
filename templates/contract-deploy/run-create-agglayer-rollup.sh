@@ -85,6 +85,11 @@ jq \
 
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
 
+# Add aggoraclecommittee predeploy into genesis.json
+jq --slurpfile aggoraclecommittee /opt/contract-deploy/aggoraclecommittee.json \
+  '.genesis += $aggoraclecommittee[0].genesis' \
+  /opt/zkevm/genesis.json > /opt/zkevm/genesis.json.tmp && mv /opt/zkevm/genesis.json.tmp /opt/zkevm/genesis.json
+
 # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
 deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
 if [[ "$deploy_optimism_rollup" != "true" ]]; then
@@ -136,6 +141,10 @@ jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c
 # Add the L2 GER Proxy address in combined.json (for panoptichain).
 zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
+
+# Add aggoraclecommittee address into combined.json
+agg_oracle_committee_address=$(jq -r '.genesis[] | select(.contractName == "AggOracleCommittee Proxy") | .address' /opt/zkevm/genesis.json)
+jq --arg a "$agg_oracle_committee_address" '.aggOracleCommitteeProxyAddress = $a' /opt/zkevm/combined.json > /opt/zkevm/c.json; mv /opt/zkevm/c.json /opt/zkevm/combined.json
 
 {{ if .gas_token_enabled }}
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json

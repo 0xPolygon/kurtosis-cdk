@@ -94,6 +94,10 @@ ARTIFACTS = [
         "name": "json2http.py",
         "file": "./scripts/json2http.py",
     },
+    {
+        "name": "aggoraclecommittee.json",
+        "file": "./templates/contract-deploy/aggoraclecommittee.json",
+    }
 ]
 
 
