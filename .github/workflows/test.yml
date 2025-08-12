@@ -485,6 +485,11 @@ jobs:
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
 
       - name: Install polycli
         run: |
