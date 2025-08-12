@@ -18,6 +18,19 @@ gas_token_addr="$(jq -r '.gasTokenAddress' "/opt/zkevm/combined{{.deployment_suf
 # sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
 # jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
 
+# Extract AggOracle Committee member addresses as a JSON array
+agg_oracle_committee_members=$(seq 0 $(( "{{ .agg_oracle_committee_total_members }}" - 1 )) | while read -r index; do
+    cast wallet address --mnemonic "lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop" --mnemonic-index "$index"
+done | jq -R . | jq -s .)
+
+# By default, the AggOracle sender will be "{{ .zkevm_l2_aggoracle_address }}", which is also the signer to update L2 GER.
+# But any of the addresses from the aggOracleCommittee should be able to sign the transaction. This will require change to AggOracle.EVMSender.EthTxManager.PrivateKeys
+# Append to aggOracleCommittee in the JSON file
+jq --argjson addrs "$agg_oracle_committee_members" '
+  .aggOracleCommittee += $addrs
+' /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp \
+  && mv /opt/contract-deploy/create-genesis-sovereign-params.json.tmp /opt/contract-deploy/create-genesis-sovereign-params.json
+
 # shellcheck disable=SC1054,SC1083,SC1056,SC1072
 {{ if not .gas_token_enabled }}
 gas_token_addr=0x0000000000000000000000000000000000000000

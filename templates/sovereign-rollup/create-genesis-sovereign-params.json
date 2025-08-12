@@ -26,8 +26,8 @@
 
     {{if .use_agg_oracle_committee}}
     "useAggOracleCommittee": true,
-    "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}", "{{ .zkevm_l2_admin_address }}", "{{ .zkevm_l2_sovereignadmin_address }}"],
-    "quorum": 1,
+    "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}"],
+    "quorum": "{{ .agg_oracle_committee_quorum }}",
     "aggOracleOwner": "{{ .zkevm_l2_sovereignadmin_address }}",
     "globalExitRootUpdater": "",
     {{else}}
