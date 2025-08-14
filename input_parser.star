@@ -346,9 +346,9 @@ DEFAULT_ROLLUP_ARGS = {
     # If the agglayer/aggkit-prover is going to use the network
     # prover, we'll need to provide an API Key Replace with a valid
     # SP1 key to use the SP1 Prover Network.
-    "sp1_prover_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "sp1_prover_key": "58301ea64f48a91e21f900bacf599eb61ec9331455db34f9b4279d5c652f368f",
     # If we're setting an sp1 key, we might want to specify a specific RPC url as well
-    "agglayer_prover_network_url": "https://rpc.production.succinct.xyz",
+    "agglayer_prover_network_url": "http://spn-coordinator-001:50051",
     # The type of primary prover to use in agglayer-prover. Note: if mock-prover is selected,
     # agglayer-node will also be configured with a mock verifier
     "agglayer_prover_primary_prover": "mock-prover",
@@ -420,7 +420,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
+        "consensus_contract_type": constants.CONSENSUS_TYPE.fep,
         # Additional services to run alongside the network.
         # Options:
         # - arpeggio

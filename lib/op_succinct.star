@@ -25,6 +25,7 @@ def create_op_succinct_proposer_service_config(
         "MAX_CONCURRENT_PROOF_REQUESTS": args[
             "op_succinct_max_concurrent_proof_requests"
         ],
+        "NETWORK_RPC_URL": args["agglayer_prover_network_url"],
         "MAX_CONCURRENT_WITNESS_GEN": args["op_succinct_max_concurrent_witness_gen"],
         "RANGE_PROOF_INTERVAL": args["op_succinct_range_proof_interval"],
         "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"

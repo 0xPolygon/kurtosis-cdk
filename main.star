@@ -285,6 +285,27 @@ def run(plan, args={}):
             )
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
+    
+    spn_coordinator_service_config = ServiceConfig(
+        image="arr551/spn-coordinator:v0.0.1-dev",
+        ports= {
+        "grpc": PortSpec(
+            50051,
+            application_protocol="grpc",
+            wait="60s",
+        ),
+    },
+        env_vars={},
+    )
+
+    spn_coordinator_configs = (
+        {"spn-coordinator" + args["deployment_suffix"]: spn_coordinator_service_config}
+    )
+
+    plan.add_services(
+        configs=spn_coordinator_configs,
+        description="Starting the spn_coordinator component",
+    )
 
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):

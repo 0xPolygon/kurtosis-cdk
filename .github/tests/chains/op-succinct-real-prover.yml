@@ -6,7 +6,7 @@ deployment_stages:
 args:
   # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
-  sp1_prover_key: "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31" # XXX: Replace with an active key
+  sp1_prover_key: "58301ea64f48a91e21f900bacf599eb61ec9331455db34f9b4279d5c652f368f" # XXX: Replace with an active key
   # Valid values are: "network-prover", "mock-prover"
   agglayer_prover_primary_prover: "network-prover"
   # Valid values are: "network-prover", "mock-prover"
@@ -35,7 +35,7 @@ args:
   deployment_suffix: "-001"
   zkevm_rollup_id: 1
   # Size of the range proof.
-  op_succinct_range_proof_interval: "1800"
+  op_succinct_range_proof_interval: "180"
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
