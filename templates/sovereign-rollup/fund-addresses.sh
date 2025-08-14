@@ -19,7 +19,7 @@ if [[ -z "$L2_FUNDING_AMOUNT" ]]; then
     exit 1
 fi
 
-# The layer1 url when use local
+# The op l2 's rpc url
 EXPECT_URL="http://op-el-1-op-geth-op-node$DEPLOYMENT_SUFFIX:8545"
 
 # Set private key based on RPC_URL
