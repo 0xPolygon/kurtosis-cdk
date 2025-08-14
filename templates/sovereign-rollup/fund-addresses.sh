@@ -19,8 +19,11 @@ if [[ -z "$L2_FUNDING_AMOUNT" ]]; then
     exit 1
 fi
 
+# The op l2 's rpc url
+EXPECT_URL="http://op-el-1-op-geth-op-node$DEPLOYMENT_SUFFIX:8545"
+
 # Set private key based on RPC_URL
-if [[ "$RPC_URL" == "http://op-el-1-op-geth-op-node-001:8545" ]]; then
+if [[ "$RPC_URL" == "$EXPECT_URL" ]]; then
     # Default optimism-package preallocated mnemonic
     if ! private_key=$(cast wallet private-key --mnemonic "test test test test test test test test test test test junk" 2>/dev/null) || [[ -z "$private_key" ]]; then
         echo "Error: Failed to derive private key from mnemonic."
