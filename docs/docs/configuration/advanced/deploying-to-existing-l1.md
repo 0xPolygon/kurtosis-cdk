@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 # Deploy Kurtosis CDK to an existing L1 like Sepolia
