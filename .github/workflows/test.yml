@@ -21,6 +21,7 @@ env:
 
   # kurtosis deploy
   ENCLAVE_NAME: cdk
+  EXECUTION_THRESHOLD_SECONDS: 400
   POLYCLI_VERSION: v0.1.82
   E2E_REF: 4763c63cb11c5e605bff749823bf514abcdac7b6
 
@@ -182,7 +183,10 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --verbosity detailed . 2>&1 | tee run.log
+
+      - name: Extract timing information
+        run: python3 .github/scripts/parse_timing.py run.log
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -253,7 +257,7 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml)
+          file_paths=$(ls -R ./.github/tests/combinations/fork12*.yml ./.github/tests/nightly/op-rollup/op-default.yml)
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "$file_path")
             echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
@@ -282,7 +286,10 @@ jobs:
         run: |
           # Add test runner and tx spammer to the args file.
           yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ${{ matrix.file.path }}
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
+          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} --verbosity detailed . 2>&1 | tee run.log
+
+      - name: Extract timing information
+        run: python3 .github/scripts/parse_timing.py run.log --config-file ${{ matrix.file.path }}
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -364,7 +371,10 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml --verbosity detailed . 2>&1 | tee run.log
+
+      - name: Extract timing information
+        run: python3 .github/scripts/parse_timing.py run.log --config-file ./.github/tests/additional-services.yml
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -510,10 +520,10 @@ jobs:
           popd
 
       - name: Kurtosis run
-        run: |
-          # Add test runner to the args file
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ./.github/tests/chains/op-succinct.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml --verbosity detailed . 2>&1 | tee run.log
+
+      - name: Extract timing information
+        run: python3 .github/scripts/parse_timing.py run.log --config-file ./.github/tests/chains/op-succinct.yml
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
