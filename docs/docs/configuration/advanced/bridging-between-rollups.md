@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
 ---
 
 # Bridge Between Multiple Rollups in a Single Kurtosis Enclave
