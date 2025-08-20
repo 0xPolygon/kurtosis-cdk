@@ -41,7 +41,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "jhkimqd/aggkit:aggsender-validator-local",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.6.0-beta2",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v12.0.0-rc.0-fork.12",  # https://github.com/agglayer/agglayer-contracts/tree/v12.0.0-rc.0
@@ -382,7 +382,7 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
-    "use_agg_oracle_committee": True,
+    "use_agg_oracle_committee": False,
     "agg_oracle_committee_quorum": 1,
     # The below parameter will be automatically populated based on "agg_oracle_committee_total_members"
     # "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}", "{{ .zkevm_l2_admin_address }}", "{{ .zkevm_l2_sovereignadmin_address }}"],
