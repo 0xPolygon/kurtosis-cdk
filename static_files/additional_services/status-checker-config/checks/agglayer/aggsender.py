@@ -4,6 +4,13 @@ import sqlite3
 import json
 import urllib.request
 import os
+import sys
+
+consensus_type = os.getenv("CONSENSUS_CONTRACT_TYPE")
+args = ["pessimistic", "fep"]
+if consensus_type not in args:
+    print(f"Skipping check, consensus must be one of: {', '.join(args)}")
+    sys.exit(0)
 
 CertificateStatus = {
     0: "Pending",
@@ -36,7 +43,7 @@ with urllib.request.urlopen(request) as response:
 
 header = json.loads(response_text)["result"]
 if header is None:
-    exit(0)
+    sys.exit(0)
 
 certificate_id = header["certificate_id"]
 
