@@ -103,7 +103,8 @@ def fund_addresses(plan, args, contract_addresses, rpc_url):
 
     # Only set L1_PREALLOCATED_MNEMONIC if provided and not using the default RPC
     if (
-        rpc_url != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+        rpc_url
+        != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
         and "l1_preallocated_mnemonic" in args
     ):
         env_vars["L1_PREALLOCATED_MNEMONIC"] = args["l1_preallocated_mnemonic"]
