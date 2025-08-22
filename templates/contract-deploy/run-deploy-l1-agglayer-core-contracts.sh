@@ -146,7 +146,7 @@ fi
 
 # The sequencer needs to pay POL when it sequences batches.
 # This gets refunded when the batches are verified on L1.
-# In order for this to work t,he rollup address must be approved to transfer the sequencers' POL tokens.
+# In order for this to work the rollup address must be approved to transfer the sequencers' POL tokens.
 echo_ts "Minting POL token on L1 for the sequencer"
 cast send \
     --private-key "{{.zkevm_l2_sequencer_private_key}}" \
