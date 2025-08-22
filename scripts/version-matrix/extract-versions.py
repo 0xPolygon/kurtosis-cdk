@@ -277,14 +277,18 @@ class VersionMatrixExtractor:
         # Check if version is greater than latest (e.g., pre-release)
         try:
             version_float = version_to_int(version)
+            version_suffix = version.split('-')[1] if '-' in version else ''
             latest_float = version_to_int(latest_version)
+            latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
 
             if version_float > latest_float:
                 return "experimental"
             elif version_float < latest_float:
                 return "deprecated"
             else:
-                return "latest"
+                if version_suffix == latest_suffix:
+                    return "latest"
+                return "experimental"
 
         except Exception as e:
             print(f"Error determining status for version {version}: {e}")

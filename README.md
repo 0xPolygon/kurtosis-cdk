@@ -8,7 +8,7 @@ Specifically, this package will:
 2. Deploy [Agglayer contracts](https://github.com/agglayer/agglayer-contracts) on the L1 chain.
 3. Start the [Agglayer](https://github.com/agglayer/agglayer) and its [prover](https://github.com/agglayer/provers), enabling trustless cross-chain token transfers and message-passing, as well as more complex operations between L2 chains, secured by zk proofs.
 4. Launch a local L2 blockchain, fully customizable with multi-client support, leveraging the [Optimism Kurtosis package](https://github.com/ethpandaops/optimism-package). It will deploy an Optimism stack enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity.
-5. Deploy the [zkEVM bridge](https://github.com/0xPolygonHermez/zkevm-bridge-service) to facilitate asset bridging between L1 and L2 chains.
+5. Deploy the [zkEVM bridge](https://github.com/0xPolygon/zkevm-bridge-service) to facilitate asset bridging between L1 and L2 chains.
 
 Optional features:
 
