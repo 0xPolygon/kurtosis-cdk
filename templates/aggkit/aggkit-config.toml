@@ -207,7 +207,7 @@ CheckStatusCertificateInterval = "1s"
 # ------------------------------------------------------------------------------
 # MaxCertSize = 0
 
-{{ if .use_agg_sender_validator }}
+{{- if .use_agg_sender_validator }}
 {{- if eq .consensus_contract_type "pessimistic"}}
 RequireValidatorCall = true
 {{- else}}
@@ -215,7 +215,7 @@ RequireValidatorCall = false
 {{- end}}
 [AggSender.ValidatorClient]
 URL = "aggkit-validator{{.deployment_suffix}}:{{.aggkit_validator_grpc_port}}"
-{{ end }}
+{{- end }}
 
 
 
@@ -292,7 +292,7 @@ SaveCertificatesToFilesPath = "/tmp"
 # ------------------------------------------------------------------------------
 # EnableRPC = false
 
-{{ if .use_agg_sender_validator }}
+{{- if .use_agg_sender_validator }}
 [AggSender.AgglayerClient]
 Cached = true
 [ValidaAggSendertor.AgglayerClient.ConfigurationCache]
@@ -308,7 +308,7 @@ InitialBackoff = "1s"
 MaxBackoff = "10s"
 BackoffMultiplier = 2.0
 MaxAttempts = 20
-{{ end }}
+{{- end }}
 
 # ------------------------------------------------------------------------------
 # RetryCertAfterInError when a cert pass to 'InError'state
@@ -367,11 +367,11 @@ WaitPeriodNextGER = "10s"
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
-{{ if .use_agg_oracle_committee }}
+{{- if .use_agg_oracle_committee }}
 EnableAggOracleCommittee = true
 {{- else }}
 EnableAggOracleCommittee = false
-{{ end }}
+{{- end }}
 
 [AggOracle.EVMSender]
 # ------------------------------------------------------------------------------
@@ -401,16 +401,20 @@ WaitPeriodMonitorTx = "10s"
 # ------------------------------------------------------------------------------
 #
 # ------------------------------------------------------------------------------
-{{ if .use_agg_oracle_committee }}
+{{- if .use_agg_oracle_committee }}
 AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
-{{ end }}
+{{- end }}
 
 [AggOracle.EVMSender.EthTxManager]
 # ------------------------------------------------------------------------------
 # PrivateKeys defines all the key store files that are going
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
+{{- if .use_agg_oracle_committee }}
 PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+{{- else }}
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+{{- end }}
 
 # ------------------------------------------------------------------------------
 # FrequencyToMonitorTxs frequency of the resending failed txs

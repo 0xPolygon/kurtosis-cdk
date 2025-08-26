@@ -29,12 +29,14 @@ create_geth_keystore "claimsponsor.keystore"    "{{.zkevm_l2_claimsponsor_privat
 create_geth_keystore "aggkitvalidator.keystore" "{{.zkevm_l2_aggkitvalidator_private_key}}" "{{.zkevm_l2_keystore_password}}"
 
 # Generate multiple aggoracle keystores for committee members
-MNEMONIC="lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop"
-COMMITTEE_SIZE={{ .agg_oracle_committee_total_members }}
+if [[ "{{ .use_agg_oracle_committee }}" == "true" ]]; then
+    MNEMONIC="lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop"
+    COMMITTEE_SIZE="{{ .agg_oracle_committee_total_members }}"
 
-if [[ "$COMMITTEE_SIZE" -ge 1 ]]; then
-    for (( index=0; index<COMMITTEE_SIZE; index++ )); do
-        aggoracle_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
-        create_geth_keystore "aggoracle-$index.keystore" "$aggoracle_private_key" "{{.zkevm_l2_keystore_password}}"
-    done
+    if [[ "$COMMITTEE_SIZE" -ge 1 ]]; then
+        for (( index=0; index<COMMITTEE_SIZE; index++ )); do
+            aggoracle_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
+            create_geth_keystore "aggoracle-$index.keystore" "$aggoracle_private_key" "{{.zkevm_l2_keystore_password}}"
+        done
+    fi
 fi
