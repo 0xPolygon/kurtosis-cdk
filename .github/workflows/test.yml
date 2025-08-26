@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   actions: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,13 +31,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Pre kurtosis run
-        uses: ./.github/actions/kurtosis-pre-run
-        with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_token: ${{ secrets.DOCKER_TOKEN }}
-
       # Install linters
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install -y kurtosis-cli=1.7.2
+          kurtosis analytics disable
+
       - name: Install yamllint
         run: pip install yamllint
 
@@ -107,15 +110,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r scripts/version-matrix/requirements.txt
 
+      - name: Detect fork and set token
+        id: detect-fork
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]] || [[ -z "${{ secrets.GH_TOKEN_READ }}" ]]; then
+            echo "use_token=false" >> $GITHUB_OUTPUT
+            echo "Running from fork or token unavailable - skipping GitHub API calls"
+          else
+            echo "use_token=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate version matrix
-        run: python scripts/version-matrix/extract-versions.py
+        run: |
+          if [[ "${{ steps.detect-fork.outputs.use_token }}" == "true" ]]; then
+            echo "Generating version matrix with GitHub API..."
+            python scripts/version-matrix/extract-versions.py
+          else
+            echo "Skipping version matrix generation due to missing GitHub token (fork or missing secret)"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
 
       - name: Generate markdown documentation
+        if: ${{ steps.detect-fork.outputs.use_token == 'true' }}
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Check if there are changes
+        if: ${{ steps.detect-fork.outputs.use_token == 'true' }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
@@ -135,6 +156,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: false
 
       - name: Install kurtosis-test
         run: |
@@ -470,7 +492,12 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Install bats
-        uses: bats-core/bats-action@3.0.0
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
 
       - name: Install polycli
         run: |

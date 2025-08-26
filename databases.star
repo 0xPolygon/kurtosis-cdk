@@ -10,7 +10,6 @@ USE_REMOTE_POSTGRES = False
 POSTGRES_HOSTNAME = "127.0.0.1"
 
 # Mostly static params unless user has specialized postgres configuration
-POSTGRES_IMAGE = "postgres:16.2"
 POSTGRES_SERVICE_NAME = "postgres"
 POSTGRES_PORT = 5432
 
@@ -182,7 +181,7 @@ def create_postgres_service(plan, db_configs, args, start_port_name):
 
     (ports, public_ports) = get_database_ports(args, start_port_name)
     postgres_service_cfg = ServiceConfig(
-        image=POSTGRES_IMAGE,
+        image=args.get("db_image"),
         ports=ports,
         public_ports=public_ports,
         env_vars={
