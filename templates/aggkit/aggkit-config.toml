@@ -208,7 +208,11 @@ CheckStatusCertificateInterval = "1s"
 # MaxCertSize = 0
 
 {{ if .use_agg_sender_validator }}
+{{- if eq .consensus_contract_type "pessimistic"}}
 RequireValidatorCall = true
+{{- else}}
+RequireValidatorCall = false
+{{- end}}
 [AggSender.ValidatorClient]
 URL = "aggkit-validator{{.deployment_suffix}}:{{.aggkit_validator_grpc_port}}"
 {{ end }}
