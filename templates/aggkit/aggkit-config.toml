@@ -735,7 +735,7 @@ Host = "0.0.0.0"
 Port = {{.aggkit_validator_grpc_port}}
 MaxDecodingMessageSize = 1073741824  # 1GB
 
-# Is it necessary to specify all of thse values again?
+# Is it necessary to specify all of these values again?
 [Validator.LerQuerierConfig]
 RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
 RollupCreationBlockL1 = "{{.zkevm_rollup_manager_block_number}}"

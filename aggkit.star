@@ -113,7 +113,7 @@ def run(
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
-    
+
     # Check if AggOracle Committee is enabled
     if (
         args["use_agg_oracle_committee"] == False
@@ -122,7 +122,7 @@ def run(
     ):
         # Deploy single aggkit service with aggkit-001 naming
         plan.print("Deploying single aggkit service (non-committee mode)")
-        
+
         # Create the cdk aggoracle config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
@@ -134,7 +134,9 @@ def run(
                     data=args
                     | deployment_stages
                     | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
                         "agglayer_endpoint": agglayer_endpoint,
                         "l2_rpc_url": l2_rpc_url,
                     }
@@ -168,8 +170,8 @@ def run(
     else:
         # Deploy multiple committee members
         plan.print("Deploying aggkit committee members")
-        
-        # Fetch aggoracle_commitee_address
+
+        # Fetch aggoracle_committee_address
         aggoracle_committee_address = service_package.get_aggoracle_committee_address(
             plan, args
         )
@@ -190,7 +192,7 @@ def run(
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
         committee_total_members = args.get("agg_oracle_committee_total_members", 1)
-        
+
         for member_index in range(committee_total_members):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
@@ -201,7 +203,9 @@ def run(
                         data=args
                         | deployment_stages
                         | {
-                            "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                            "is_cdk_validium": data_availability_package.is_cdk_validium(
+                                args
+                            ),
                             "agglayer_endpoint": agglayer_endpoint,
                             "l2_rpc_url": l2_rpc_url,
                             "committee_member_index": member_index,
@@ -222,7 +226,7 @@ def run(
                 keystore_artifacts,
                 member_index,
             )
-            
+
             # Merge configs
             aggkit_configs.update(member_aggkit_configs)
 
@@ -281,7 +285,7 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/aggkitvalidator.keystore",
     )
-    
+
     # Store multiple aggoracle committee member keystores
     committee_keystores = []
     if args.get("use_agg_oracle_committee", False):
@@ -296,7 +300,7 @@ def get_keystores_artifacts(plan, args):
     else:
         # For non-committee mode, use the standard aggoracle keystore as the first committee member
         committee_keystores.append(aggoracle_keystore_artifact)
-    
+
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
