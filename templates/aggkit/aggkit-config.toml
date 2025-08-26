@@ -410,7 +410,7 @@ AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
 # PrivateKeys defines all the key store files that are going
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
-PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
 
 # ------------------------------------------------------------------------------
 # FrequencyToMonitorTxs frequency of the resending failed txs

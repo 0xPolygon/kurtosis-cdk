@@ -28,15 +28,20 @@ def new(plan):
 
 
 def fund(plan, address, rpc_url, funder_private_key, value="1000ether"):
+    # Extract numeric value from the value parameter
+    target_value = value.replace("ether", "")
+    
+    # Use a bash script file approach to avoid runtime value issues
     plan.run_sh(
-        name="address-funder",
-        description="Funding address on network {}".format(rpc_url),
+        name="conditional-address-funder",
+        description="Checking balance and conditionally funding address {} on network {}".format(address, rpc_url),
         image=constants.TOOLBOX_IMAGE,
-        run="cast send --legacy --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --value ${VALUE} ${ADDRESS}",
+        run='bash -c \'CURRENT_BALANCE=$(cast balance --ether --rpc-url "$RPC_URL" "$ADDRESS"); if (( $(echo "$CURRENT_BALANCE < $TARGET_VALUE" | bc -l) )); then echo "Current balance: $CURRENT_BALANCE ether, target: $TARGET_VALUE ether. Funding..."; cast send --legacy --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY" --value "$VALUE" "$ADDRESS"; else echo "Address $ADDRESS already has sufficient balance: $CURRENT_BALANCE >= $TARGET_VALUE ether"; fi\'',
         env_vars={
             "ADDRESS": address,
             "PRIVATE_KEY": funder_private_key,
             "RPC_URL": rpc_url,
             "VALUE": value,
+            "TARGET_VALUE": target_value,
         },
     )

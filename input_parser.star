@@ -384,12 +384,12 @@ DEFAULT_ROLLUP_ARGS = {
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
     "use_agg_oracle_committee": False,
-    "agg_oracle_committee_quorum": 1,
+    "agg_oracle_committee_quorum": 0,
     # The below parameter will be automatically populated based on "agg_oracle_committee_total_members"
     # "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}", "{{ .zkevm_l2_admin_address }}", "{{ .zkevm_l2_sovereignadmin_address }}"],
     # By default, the L2 mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop'
     # which is being used to generate the accounts in DEFAULT_ACCOUNTS will also be used to generate the committee members.
-    "agg_oracle_committee_total_members": 5,
+    "agg_oracle_committee_total_members": 1,
     "use_agg_sender_validator": True,
 }
 
@@ -817,6 +817,21 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 "AggOracle Committee is enabled. Total committee members ('{}') needs to be greater than quorum ('{}').".format(
                     args["agg_oracle_committee_total_members"],
                     args["agg_oracle_committee_quorum"],
+                )
+            )
+
+    # If AggOracle Committee is disabled, do sanity checks
+    if args["use_agg_oracle_committee"] == False:
+        if args["agg_oracle_committee_quorum"] != 0:
+            fail(
+                "AggOracle Committee is disabled. Quorum ('{}') needs to be 0.".format(
+                    args["agg_oracle_committee_quorum"]
+                )
+            )
+        if args["agg_oracle_committee_total_members"] != 1:
+            fail(
+                "AggOracle Committee is disabled. Total committee members ('{}') needs to be 1.".format(
+                    args["agg_oracle_committee_total_members"]
                 )
             )
 
