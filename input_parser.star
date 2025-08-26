@@ -383,7 +383,7 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
-    "use_agg_oracle_committee": True,
+    "use_agg_oracle_committee": False,
     "agg_oracle_committee_quorum": 1,
     # The below parameter will be automatically populated based on "agg_oracle_committee_total_members"
     # "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}", "{{ .zkevm_l2_admin_address }}", "{{ .zkevm_l2_sovereignadmin_address }}"],
