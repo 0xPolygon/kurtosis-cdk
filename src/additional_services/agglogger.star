@@ -1,7 +1,13 @@
 service_package = import_module("../../lib/service.star")
 
 
-def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
+def run(
+    plan,
+    args,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+    deploy_optimism_rollup,
+):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
 
     if deploy_optimism_rollup:
@@ -41,7 +47,7 @@ def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
                     "zkevm_global_exit_root_l2_address": contract_setup_addresses.get(
                         "zkevm_global_exit_root_l2_address"
                     ),
-                    "sovereign_ger_proxy_addr": contract_setup_addresses.get(
+                    "sovereign_ger_proxy_addr": sovereign_contract_setup_addresses.get(
                         "sovereign_ger_proxy_addr"
                     ),
                 },

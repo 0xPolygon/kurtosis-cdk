@@ -15,6 +15,7 @@ def launch(
                 plan,
                 args,
                 contract_setup_addresses,
+                sovereign_contract_setup_addresses,
                 deployment_stages.get("deploy_optimism_rollup"),
             )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
