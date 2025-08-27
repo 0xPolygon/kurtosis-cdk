@@ -10,7 +10,14 @@ def launch(
     deployment_stages,
 ):
     for svc in args.get("additional_services", []):
-        if svc == constants.ADDITIONAL_SERVICES.arpeggio:
+        if svc == constants.ADDITIONAL_SERVICES.agglogger:
+            import_module("./agglogger.star").run(
+                plan,
+                args,
+                contract_setup_addresses,
+                deployment_stages.get("deploy_optimism_rollup"),
+            )
+        elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
             import_module("./arpeggio.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.assertoor:
             import_module("./assertoor.star").run(plan, args)
