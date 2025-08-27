@@ -50,7 +50,7 @@ def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
     )
 
     plan.add_service(
-        name="agglogger" + args["deployment_suffix"],
+        name="agglogger",
         config=ServiceConfig(
             image=args.get("agglogger_image"),
             files={
