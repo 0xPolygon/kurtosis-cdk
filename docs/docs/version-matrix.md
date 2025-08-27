@@ -10,14 +10,11 @@ sidebar_position: 3
 
 This section lists all test environments with their configurations and component versions.
 
-- [Version Matrix](#version-matrix)
-  - [Test Environments](#test-environments)
-    - [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
-    - [cdk-erigon-sovereign](#cdk-erigon-sovereign)
-    - [cdk-erigon-validium](#cdk-erigon-validium)
-    - [cdk-opgeth-sovereign](#cdk-opgeth-sovereign)
-    - [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
-  - [Default Images](#default-images)
+- [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
+- [cdk-erigon-sovereign](#cdk-erigon-sovereign)
+- [cdk-erigon-validium](#cdk-erigon-validium)
+- [cdk-opgeth-sovereign](#cdk-opgeth-sovereign)
+- [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
 
 ### cdk-erigon-zkrollup
 

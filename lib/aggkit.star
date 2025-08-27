@@ -75,10 +75,7 @@ def create_aggkit_service_config(
     else:
         if member_index == 0:
             # First aggkit naming should be consistent
-            aggkit_name = (
-                "aggkit"
-                + args["deployment_suffix"]
-            )
+            aggkit_name = "aggkit" + args["deployment_suffix"]
             # For the first aggkit node, it should spin up args["aggkit_components"]
             service_command = get_aggkit_cmd(args)
         else:
