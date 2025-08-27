@@ -63,6 +63,6 @@ def run(
                 "/etc/agglogger": Directory(artifact_names=[agglogger_config_artifact]),
             },
             entrypoint=["sh", "-c"],
-            cmd=["./agglogger run --config /etc/agglogger/config.json"],
+            cmd=["./agglogger run --config /etc/agglogger/config.json", "2>&1"],
         ),
     )
