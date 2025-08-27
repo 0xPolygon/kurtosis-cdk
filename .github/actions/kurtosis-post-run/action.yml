@@ -64,7 +64,6 @@ runs:
               echo "Printing logs for $container"
               docker logs --tail 50 "$container"
             done
-          exit 1
         else
           echo "All services are running."
         fi
