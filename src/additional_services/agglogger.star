@@ -54,6 +54,6 @@ def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
                 "/etc/agglogger": Directory(artifact_names=[agglogger_config_artifact]),
             },
             entrypoint=["bash", "-c"],
-            cmd=["./agglogger run --config /etc/agglogger/config.json"]
+            cmd=["./agglogger run --config /etc/agglogger/config.json"],
         ),
     )
