@@ -1,3 +1,6 @@
+service_package = import_module("../../lib/service.star")
+
+
 def run(plan, args, contract_setup_addresses, deploy_optimism_rollup):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
 
