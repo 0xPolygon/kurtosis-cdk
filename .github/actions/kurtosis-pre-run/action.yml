@@ -121,7 +121,14 @@ runs:
           "mslipper/deployment-utils:latest"
         )
         for image in "${images[@]}"; do
-          echo "Pulling: $image"
-          docker pull "${registry}/${image}"
-          docker tag "${registry}/${image}" "${image}"
+          {
+            docker pull "${registry}/${image}"
+            docker tag "${registry}/${image}" "${image}"
+          } &
         done
+        wait
+
+    - name: Display docker images
+      if: ${{ inputs.pull_images_from_gcr == 'true' }}
+      shell: bash
+      run: docker images
