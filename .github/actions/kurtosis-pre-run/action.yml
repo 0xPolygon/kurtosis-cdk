@@ -82,7 +82,10 @@ runs:
       shell: bash
       run: |
         script_path=$(realpath "${{ github.action_path }}/../../scripts/add-registry-prefix.py")
-        python3 "${script_path}" --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        # Test: Use the GCP free docker hub mirror
+        # registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        registry="mirror.gcr.io"
+        python3 "${script_path}" --registry-prefix "${registry}"
 
     - uses: google-github-actions/auth@v2.0.0
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
@@ -104,7 +107,9 @@ runs:
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       shell: bash
       run: |
-        registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        # Test: Use the GCP free docker hub mirror
+        # registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        registry="mirror.gcr.io"
         images=(
           "kurtosistech/engine:1.7.2"
           "timberio/vector:0.45.0-debian"
