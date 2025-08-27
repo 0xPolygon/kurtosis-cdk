@@ -71,7 +71,7 @@ runs:
     - name: Check for errors in service logs
       shell: bash
       run: |
-        kurtosis enclave inspect cdk --full-uuids | grep RUNNING | grep -v "Status:" | awk '{print $2 "--" $1}' |
+        kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep RUNNING | grep -v "Status:" | awk '{print $2 "--" $1}' |
           while read -r container; do
             echo "Checking logs for ${container}"
             if docker logs --since 10m "${container}" 2>&1 | grep -i "error\|exception\|failed\|fatal\|ERRO\|FATA\|panic"; then
