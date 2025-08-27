@@ -60,6 +60,7 @@ def create_aggkit_service_config(
     log_claim_sponsor_warning(plan, args)
 
     # Use different naming based on committee configuration
+    # Default single aggkit case
     if (
         args["use_agg_oracle_committee"] == False
         and args["agg_oracle_committee_total_members"] == 1
@@ -70,21 +71,14 @@ def create_aggkit_service_config(
         # Use the standard aggoracle keystore for single service mode
         selected_keystore = keystore_artifact.aggoracle
         service_command = get_aggkit_cmd(args)
+    # Multiple aggkit cases with multiple aggoracle committee members
     else:
-        # Committee member naming
-        aggkit_name = (
-            "aggkit"
-            + args["deployment_suffix"]
-            + "-aggoracle-committee-00"
-            + str(member_index)
-        )
-        # Use committee-specific keystore
-        selected_keystore = (
-            keystore_artifact.committee_keystores[member_index]
-            if member_index < len(keystore_artifact.committee_keystores)
-            else keystore_artifact.aggoracle
-        )
         if member_index == 0:
+            # First aggkit naming should be consistent
+            aggkit_name = (
+                "aggkit"
+                + args["deployment_suffix"]
+            )
             # For the first aggkit node, it should spin up args["aggkit_components"]
             service_command = get_aggkit_cmd(args)
         else:
@@ -94,6 +88,19 @@ def create_aggkit_service_config(
                 "--cfg=/etc/aggkit/config.toml",
                 "--components=aggoracle",
             ]
+            # Committee member naming
+            aggkit_name = (
+                "aggkit"
+                + args["deployment_suffix"]
+                + "-aggoracle-committee-00"
+                + str(member_index)
+            )
+        # Use committee-specific keystore
+        selected_keystore = (
+            keystore_artifact.committee_keystores[member_index]
+            if member_index < len(keystore_artifact.committee_keystores)
+            else keystore_artifact.aggoracle
+        )
 
     (ports, public_ports) = get_aggkit_ports(args)
 
@@ -173,6 +180,13 @@ def get_aggkit_ports(args):
         ports["pprof"] = PortSpec(
             args.get("aggkit_pprof_port"),
             application_protocol="http",
+            wait=None,
+        )
+
+    if args.get("use_agg_sender_validator"):
+        ports["validator-grpc"] = PortSpec(
+            args.get("aggkit_validator_grpc_port"),
+            application_protocol="grpc",
             wait=None,
         )
 
