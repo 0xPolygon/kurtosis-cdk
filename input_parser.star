@@ -46,7 +46,7 @@ DEFAULT_IMAGES = {
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v12.0.0-rc.0-fork.12",  # https://github.com/agglayer/agglayer-contracts/tree/v12.0.0-rc.0
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.23",
+    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
     "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
@@ -54,7 +54,7 @@ DEFAULT_IMAGES = {
     "geth_image": "ethereum/client-go:v1.16.2",
     "lighthouse_image": "sigp/lighthouse:v7.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.14.0",
+    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.15.0",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
     "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.1",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5",
