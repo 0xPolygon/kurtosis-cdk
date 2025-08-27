@@ -114,7 +114,7 @@ jobs:
             exit 0
           fi
 
-          if [[ -z "${{ secrets.GH_TOKEN_READ }}" ]]; then
+          if [[ -z "$GITHUB_TOKEN" ]]; then
             echo "No Github token provided. Skipping this job."
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "::warning title=version-matrix::Version matrix job skipped."
