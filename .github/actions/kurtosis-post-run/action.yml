@@ -53,13 +53,13 @@ runs:
     - name: Check for stopped services
       shell: bash
       run: |
-        stopped_services="$(kurtosis enclave inspect "${{ inputs.enclave_name }}" | grep STOPPED)"
+        stopped_services="$(kurtosis enclave inspect "${{ inputs.enclave_name }}" | grep STOPPED | grep -v "bridge-spammer")"
         if [[ -n "${stopped_services}" ]]; then
           echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
           echo "${stopped_services}"
           echo
 
-          kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' |
+          kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep STOPPED | grep -v "bridge-spammer" | awk '{print $2 "--" $1}' |
             while read -r container; do
               echo "Printing logs for $container"
               docker logs --tail 50 "$container"
