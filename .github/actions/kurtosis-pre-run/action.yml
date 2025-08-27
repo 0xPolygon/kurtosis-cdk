@@ -60,12 +60,12 @@ runs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
-    - name: Detect fork and secrets
+    - name: Detect fork
       id: detect-fork
       shell: bash
       run: |
-        # If running from a fork, or secrets are missing, fallback to public images
-        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]] || [[ -z "${{ inputs.docker_token }}" ]]; then
+        # If running from a fork, fallback to public images.
+        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
           echo "pull_gcr=false" >> $GITHUB_OUTPUT
         else
           echo "pull_gcr=${{ inputs.pull_images_from_gcr }}" >> $GITHUB_OUTPUT
