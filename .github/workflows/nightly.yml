@@ -20,22 +20,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check if job should be run
+        id: check-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "Prevent running this job on forks. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ -z "${{ secrets.GH_TOKEN_READ }}" ]]; then
+            echo "No Github token provided. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning title=version-matrix::Version matrix job skipped."
+            exit 0
+          fi
+
+          echo "Running version matrix job."
+          echo "skip=false" >> $GITHUB_OUTPUT
+
       - uses: actions/setup-python@v4
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
           python-version: 3.13
 
       - name: Install dependencies
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: pip install -r scripts/version-matrix/requirements.txt
 
       - name: Generate version matrix
-        run: python scripts/version-matrix/extract-versions.py
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: python scripts/version-matrix/extract-versions.py
 
       - name: Generate markdown documentation
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Check if there are changes
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             echo "::warning title=version-matrix::Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."

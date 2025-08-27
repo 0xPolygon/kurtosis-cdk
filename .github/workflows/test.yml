@@ -103,40 +103,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check if job should be run
+        id: check-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "Prevent running this job on forks. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ -z "${{ secrets.GH_TOKEN_READ }}" ]]; then
+            echo "No Github token provided. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning title=version-matrix::Version matrix job skipped."
+            exit 0
+          fi
+
+          echo "Running version matrix job."
+          echo "skip=false" >> $GITHUB_OUTPUT
+
       - uses: actions/setup-python@v4
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
           python-version: 3.13
 
       - name: Install dependencies
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: pip install -r scripts/version-matrix/requirements.txt
 
-      - name: Detect fork and set token
-        id: detect-fork
-        run: |
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]] || [[ -z "${{ secrets.GH_TOKEN_READ }}" ]]; then
-            echo "use_token=false" >> $GITHUB_OUTPUT
-            echo "Running from fork or token unavailable - skipping GitHub API calls"
-          else
-            echo "use_token=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Generate version matrix
-        run: |
-          if [[ "${{ steps.detect-fork.outputs.use_token }}" == "true" ]]; then
-            echo "Generating version matrix with GitHub API..."
-            python scripts/version-matrix/extract-versions.py
-          else
-            echo "Skipping version matrix generation due to missing GitHub token (fork or missing secret)"
-          fi
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          echo "Generating version matrix with GitHub API..."
+          python scripts/version-matrix/extract-versions.py
 
       - name: Generate markdown documentation
-        if: ${{ steps.detect-fork.outputs.use_token == 'true' }}
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Check if there are changes
-        if: ${{ steps.detect-fork.outputs.use_token == 'true' }}
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
