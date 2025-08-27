@@ -279,10 +279,7 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Kurtosis run
-        run: |
-          # Add test runner and tx spammer to the args file.
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' ${{ matrix.file.path }}
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
@@ -451,10 +448,7 @@ jobs:
         run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
 
       - name: Deploy to local L1 chain
-        run: |
-          # Add test runner and tx spammer to the args file.
-          yq --in-place --yaml-roundtrip '.args.additional_services += ["test_runner"]' .github/tests/external-l1/deploy-cdk-to-local-l1.yml
-          kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}

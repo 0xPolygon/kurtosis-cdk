@@ -25,9 +25,6 @@ args:
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
 
-  additional_services:
-    - bridge_spammer
-
 optimism_package:
   chains:
     - proposer_params:
