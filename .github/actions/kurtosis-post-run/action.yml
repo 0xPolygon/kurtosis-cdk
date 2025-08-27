@@ -49,3 +49,37 @@ runs:
       with:
         name: ${{ steps.archive-name.outputs.ARCHIVE_NAME }}
         path: ./dump
+
+    - name: Check for stopped services
+      shell: bash
+      run: |
+        stopped_services="$(kurtosis enclave inspect "${{ inputs.enclave_name }}" | grep STOPPED)"
+        if [[ -n "${stopped_services}" ]]; then
+          echo "It looks like there is at least one stopped service in the enclave... Something must have halted..."
+          echo "${stopped_services}"
+          echo
+
+          kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep STOPPED | awk '{print $2 "--" $1}' |
+            while read -r container; do
+              echo "Printing logs for $container"
+              docker logs --tail 50 "$container"
+            done
+          exit 1
+        else
+          echo "All services are running."
+        fi
+
+    - name: Check for errors in service logs
+      shell: bash
+      run: |
+        kurtosis enclave inspect cdk --full-uuids | grep RUNNING | grep -v "Status:" | awk '{print $2 "--" $1}' |
+          while read -r container; do
+            echo "Checking logs for ${container}"
+            if docker logs --since 10m "${container}" 2>&1 | grep -i "error\|exception\|failed\|fatal\|ERROR\|FATA\|panic"; then
+              echo "Errors found in container logs!"
+            else
+              echo "No errors found in logs."
+            fi
+            echo "------------------------------"
+            echo
+          done
