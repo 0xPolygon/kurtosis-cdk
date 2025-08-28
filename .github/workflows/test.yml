@@ -497,8 +497,34 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
 
-      - name: Run optimistic mode test
-        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats ./tests/op/optimistic-mode.bats"
+      - name: Install bats
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
+
+      - name: Checkout agglayer-e2e
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          path: agglayer-e2e
+          ref: 2872b23cedaf11d3abfa14c6f08e6028d4afdba5 # 2028-08-28
+
+      - name: Run OP optimistic mode tests
+        run: |
+          set -eo pipefail
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          bats ./tests/op/optimistic-mode.bats || exit 1
 
       - name: Post kurtosis run
         if: always()
