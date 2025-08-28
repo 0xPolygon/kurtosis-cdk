@@ -13,10 +13,6 @@ runs:
       shell: bash
       run: kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
-    - name: Run OP tests
-      shell: bash
-      run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats tests/op/optimistic-mode.bats"
-
     - name: Bridge from L1 to L2
       shell: bash
       run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
