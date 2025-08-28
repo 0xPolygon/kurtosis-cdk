@@ -492,11 +492,13 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
 # Default value is "LatestBlock"
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
-BlockFinality = "FinalizedBlock"
-{{- else }}
+
+# {{- if .deploy_optimism_rollup }}
+# BlockFinality = "FinalizedBlock"
+# {{- else }}
+# BlockFinality = "LatestBlock"
+# {{- end }}
 BlockFinality = "LatestBlock"
-{{- end }}
 
 # ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.
