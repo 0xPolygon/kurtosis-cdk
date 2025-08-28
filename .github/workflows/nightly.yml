@@ -91,11 +91,9 @@ jobs:
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Run bridge tests
-        run: |
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
       - name: Check for error logs in aggkit service
         working-directory: .github/scripts
@@ -236,9 +234,9 @@ jobs:
           fi
 
       - name: Run bridge tests
-        run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
       - name: Post kurtosis run
         if: always()
@@ -308,9 +306,9 @@ jobs:
             --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
 
       - name: Run bridge tests
-        run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
       - name: Post kurtosis run
         if: always()

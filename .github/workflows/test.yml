@@ -15,14 +15,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 env:
-  # unit test
-  KURTOSIS_TEST_VERSION: v0.0.5
-  GO_VERSION: 1.21
-
-  # kurtosis deploy
   ENCLAVE_NAME: cdk
-  POLYCLI_VERSION: v0.1.82
-  E2E_REF: 4763c63cb11c5e605bff749823bf514abcdac7b6
 
 jobs:
   lint:
@@ -165,12 +158,12 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: 1.21
           cache: false
 
       - name: Install kurtosis-test
         run: |
-          git clone --branch ${{ env.KURTOSIS_TEST_VERSION }} https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
+          git clone --branch v0.0.5 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
           cd /tmp/kurtosis-test
           go build -o kurtosis-test cli/main.go
           cp kurtosis-test /usr/local/bin
@@ -205,11 +198,9 @@ jobs:
               --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
 
       - name: Run bridge tests
-        run: |
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
       - name: Check for error logs in aggkit service
         working-directory: .github/scripts
@@ -349,9 +340,9 @@ jobs:
           fi
 
       - name: Run bridge tests
-        run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
       - name: Post kurtosis run
         if: always()
@@ -477,9 +468,9 @@ jobs:
               --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
 
       - name: Run bridge tests
-        run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
       - name: Post kurtosis run
         if: always()
@@ -501,24 +492,6 @@ jobs:
           docker_username: ${{ secrets.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
-        with:
-          support-path: "${{ github.workspace }}/lib/bats-support"
-          assert-path: "${{ github.workspace }}/lib/bats-assert"
-          detik-path: "${{ github.workspace }}/lib/bats-detik"
-          file-path: "${{ github.workspace }}/lib/bats-file"
-
-      - name: Install polycli
-        run: |
-          polycli_version="${{ env.POLYCLI_VERSION }}"
-          pushd $(mktemp -d) || exit 1
-          curl -s -L "https://github.com/0xPolygon/polygon-cli/releases/download/${polycli_version}/polycli_${polycli_version}_linux_amd64.tar.gz" > polycli.tar.gz
-          tar xf polycli.tar.gz
-          mv polycli_* /usr/local/bin/polycli
-          polycli version
-          popd
-
       - name: Kurtosis run
         run: |
           # Add test runner to the args file
@@ -528,30 +501,13 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
+      - name: Run bridge tests
+        uses: ./.github/actions/bridge-tests
         with:
-          repository: agglayer/e2e
-          ref: ${{ env.E2E_REF }}
-          path: agglayer-e2e
+          enclave_name: ${{ env.ENCLAVE_NAME }}
 
-      - name: Run e2e tests
-        run: |
-          set -eo pipefail
-          pushd agglayer-e2e || exit 1
-          set -a
-          source ./tests/.env
-          set +a
-          export BATS_LIB_PATH="$PWD/core/helpers/lib"
-          export PROJECT_ROOT="$PWD"
-          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          export CLAIM_WAIT_DURATION="20m"
-          bats ./tests/op/optimistic-mode.bats || exit 1
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
-          bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          popd
+      - name: Run optimistic mode test
+        run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner "bats ./tests/op/optimistic-mode.bats"
 
       - name: Post kurtosis run
         if: always()
