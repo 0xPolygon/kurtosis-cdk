@@ -41,10 +41,10 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta4",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.6.0-beta2",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
-    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
+    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v12.0.0-rc.0-fork.12",  # https://github.com/agglayer/agglayer-contracts/tree/v12.0.0-rc.0
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
     "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
@@ -101,6 +101,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
     "cdk_node_rpc_port": 5576,
     "aggkit_node_rest_api_port": 5577,
+    "aggsender_validator_grpc_port": 5578,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
@@ -151,7 +152,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 13 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor,aggsendervalidator",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -192,6 +193,9 @@ DEFAULT_ACCOUNTS = {
     # claimsponsor
     "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
     "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
+    # aggsendervalidator
+    "zkevm_l2_aggsendervalidator_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
+    "zkevm_l2_aggsendervalidator_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
 }
 
 DEFAULT_L1_ARGS = {
@@ -379,6 +383,16 @@ DEFAULT_ROLLUP_ARGS = {
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,
+    "use_agg_oracle_committee": False,
+    "agg_oracle_committee_quorum": 0,
+    # The below parameter will be automatically populated based on "agg_oracle_committee_total_members"
+    # "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}", "{{ .zkevm_l2_admin_address }}", "{{ .zkevm_l2_sovereignadmin_address }}"],
+    # By default, the L2 mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop'
+    # which is being used to generate the accounts in DEFAULT_ACCOUNTS will also be used to generate the committee members.
+    "agg_oracle_committee_total_members": 1,
+    "use_agg_sender_validator": False,
+    # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
+    "agg_sender_validator_total_number": 0,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -779,10 +793,73 @@ def set_anvil_args(plan, args, user_args):
 
 # Helper function to compact together checks for incompatible parameters in input_parser.star
 def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
+    # Disable CDK-Erigon and AggOracle Committee combination deployments
+    if (
+        args["sequencer_type"] == "erigon"
+        and deployment_stages.get("deploy_optimism_rollup", False) == False
+        and args["use_agg_oracle_committee"] == True
+    ):
+        fail("AggOracle Committee unsupported for CDK-Erigon")
+
+    # If AggOracle Committee is enabled, do sanity checks
+    if args["use_agg_oracle_committee"] == True:
+        # Check quorum is non-zero
+        if args["agg_oracle_committee_quorum"] < 1:
+            fail(
+                "AggOracle Committee is enabled. Quorum ('{}') needs to be greater than 1.".format(
+                    args["agg_oracle_committee_quorum"]
+                )
+            )
+        # Check total committee members >= quorum
+        if (
+            args["agg_oracle_committee_quorum"]
+            > args["agg_oracle_committee_total_members"]
+        ):
+            fail(
+                "AggOracle Committee is enabled. Total committee members ('{}') needs to be greater than quorum ('{}').".format(
+                    args["agg_oracle_committee_total_members"],
+                    args["agg_oracle_committee_quorum"],
+                )
+            )
+
+    # If AggOracle Committee is disabled, do sanity checks
+    if args["use_agg_oracle_committee"] == False:
+        if args["agg_oracle_committee_quorum"] != 0:
+            fail(
+                "AggOracle Committee is disabled. Quorum ('{}') needs to be 0.".format(
+                    args["agg_oracle_committee_quorum"]
+                )
+            )
+        if args["agg_oracle_committee_total_members"] != 1:
+            fail(
+                "AggOracle Committee is disabled. Total committee members ('{}') needs to be 1.".format(
+                    args["agg_oracle_committee_total_members"]
+                )
+            )
+
+    # If Aggsender Validator is disabled, do sanity checks
+    if args["use_agg_sender_validator"] == False:
+        if args["agg_sender_validator_total_number"] != 0:
+            fail(
+                "Aggsender Validator is disabled. agg_sender_validator_total_number ('{}') needs to be 0.".format(
+                    args["agg_sender_validator_total_number"]
+                )
+            )
+
+    # If Aggsender Validator is enabled, do sanity checks
+    if args["use_agg_sender_validator"] == True:
+        # Check agg_sender_validator_total_number >= 1
+        if args["agg_sender_validator_total_number"] < 1:
+            fail(
+                "Aggsender Validator is enabled. agg_sender_validator_total_number ('{}') needs to be greater than 1.".format(
+                    args["agg_sender_validator_total_number"]
+                )
+            )
+
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
         "deployment_suffix"
-    ] + ":8545" and deployment_stages.get("deploy_op_stack", False):
+    ] + ":8545" and deployment_stages.get("deploy_optimism_rollup", False):
         plan.print(
             "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
                 args["op_el_rpc_url"], args["deployment_suffix"]
@@ -794,7 +871,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # Fix the op stack cl rpc urls according to the deployment_suffix.
     if args["op_cl_rpc_url"] != "http://op-cl-1-op-node-op-geth" + args[
         "deployment_suffix"
-    ] + ":8547" and deployment_stages.get("deploy_op_stack", False):
+    ] + ":8547" and deployment_stages.get("deploy_optimism_rollup", False):
         plan.print(
             "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
                 args["op_cl_rpc_url"], args["deployment_suffix"]
@@ -807,7 +884,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # The check will return fail() instead of dynamically changing the network_params name.
     if op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"] != args[
         "deployment_suffix"
-    ][1:] and deployment_stages.get("deploy_op_stack", False):
+    ][1:] and deployment_stages.get("deploy_optimism_rollup", False):
         fail(
             "op_stack_args network_params name is set to '{}', please change it to match deployment_suffix '{}'".format(
                 op_stack_args["optimism_package"]["chains"][0]["network_params"][
@@ -820,7 +897,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
     # Check args[zkevm_rollup_chain_id] and op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"] are equal.
     if str(args["zkevm_rollup_chain_id"]) != str(
         op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"]
-    ) and deployment_stages.get("deploy_op_stack", False):
+    ) and deployment_stages.get("deploy_optimism_rollup", False):
         fail(
             "op_stack_args network_params network_id is set to '{}', please change it to match zkevm_rollup_chain_id '{}'".format(
                 op_stack_args["optimism_package"]["chains"][0]["network_params"][

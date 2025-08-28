@@ -22,7 +22,7 @@ env:
   # kurtosis deploy
   ENCLAVE_NAME: cdk
   POLYCLI_VERSION: v0.1.82
-  E2E_REF: 4763c63cb11c5e605bff749823bf514abcdac7b6
+  E2E_REF: 5b9a9beeafde8baf28207a03f2ab5f02a6120714
 
 jobs:
   lint:
