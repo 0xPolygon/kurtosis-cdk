@@ -114,60 +114,73 @@ def run(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
 
-    # Check if AggOracle Committee is enabled
+    # Always deploy aggkit service
+    # Deploy single aggkit service with aggkit-001 naming
+    plan.print("Deploying single aggkit service")
+
+    # If use_agg_oracle_committee is True, fetch the aggoracle_committee_address
     if (
-        args["use_agg_oracle_committee"] == False
-        and args["agg_oracle_committee_total_members"] == 1
-        and args["agg_oracle_committee_quorum"] == 0
+        args["use_agg_oracle_committee"] == True
+        and args["agg_oracle_committee_total_members"] > 1
+        and args["agg_oracle_committee_quorum"] != 0
     ):
-        # Deploy single aggkit service with aggkit-001 naming
-        plan.print("Deploying single aggkit service (non-committee mode)")
-
-        # Create the cdk aggoracle config.
-        agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
-        aggkit_config_artifact = plan.render_templates(
-            name="aggkit-config-artifact",
-            config={
-                "config.toml": struct(
-                    template=aggkit_config_template,
-                    data=args
-                    | deployment_stages
-                    | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(
-                            args
-                        ),
-                        "agglayer_endpoint": agglayer_endpoint,
-                        "l2_rpc_url": l2_rpc_url,
-                    }
-                    | db_configs
-                    | contract_setup_addresses
-                    | sovereign_contract_setup_addresses,
-                )
-            },
+        # Fetch aggoracle_committee_address
+        aggoracle_committee_address = service_package.get_aggoracle_committee_address(
+            plan, args
+        )
+        sovereign_contract_setup_addresses = (
+            sovereign_contract_setup_addresses | aggoracle_committee_address
         )
 
-        sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
-        sovereign_genesis_artifact = plan.render_templates(
-            name="sovereign_genesis",
-            config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
-        )
+    # Create the cdk aggoracle config.
+    agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+    aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
+    aggkit_config_artifact = plan.render_templates(
+        name="aggkit-config-artifact",
+        config={
+            "config.toml": struct(
+                template=aggkit_config_template,
+                data=args
+                | deployment_stages
+                | {
+                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+                    "agglayer_endpoint": agglayer_endpoint,
+                    "l2_rpc_url": l2_rpc_url,
+                }
+                | db_configs
+                | contract_setup_addresses
+                | sovereign_contract_setup_addresses,
+            )
+        },
+    )
 
-        # Start the single aggoracle component with standard naming
-        aggkit_configs = aggkit_package.create_aggkit_service_config(
-            plan,
-            args,
-            aggkit_config_artifact,
-            sovereign_genesis_artifact,
-            keystore_artifacts,
-            0,  # Use member_index 0 for single service
-        )
+    sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
+    sovereign_genesis_artifact = plan.render_templates(
+        name="sovereign_genesis",
+        config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
+    )
 
-        plan.add_services(
-            configs=aggkit_configs,
-            description="Starting the single cdk aggkit component",
-        )
-    else:
+    # Start the single aggkit component with standard naming
+    aggkit_configs = aggkit_package.create_root_aggkit_service_config(
+        plan,
+        args,
+        aggkit_config_artifact,
+        sovereign_genesis_artifact,
+        keystore_artifacts,
+        0,  # Use member_index 0 for single service
+    )
+
+    plan.add_services(
+        configs=aggkit_configs,
+        description="Starting the single cdk aggkit component",
+    )
+
+    # Deploy multiple aggoracle committee members
+    if (
+        args["use_agg_oracle_committee"] == True
+        and args["agg_oracle_committee_total_members"] > 1
+        and args["agg_oracle_committee_quorum"] != 0
+    ):
         # Deploy multiple committee members
         plan.print("Deploying aggkit committee members")
 
@@ -183,12 +196,6 @@ def run(
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
 
-        sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
-        sovereign_genesis_artifact = plan.render_templates(
-            name="sovereign_genesis",
-            config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
-        )
-
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
         committee_total_members = args.get("agg_oracle_committee_total_members", 1)
@@ -196,7 +203,7 @@ def run(
         for member_index in range(committee_total_members):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
-                name="aggkit-config-artifact-{}".format(member_index),
+                name="aggkit-aggoracle-config-artifact-{}".format(member_index),
                 config={
                     "config.toml": struct(
                         template=aggkit_config_template,
@@ -218,7 +225,7 @@ def run(
             )
 
             # Create aggkit service config for each committee member
-            member_aggkit_configs = aggkit_package.create_aggkit_service_config(
+            member_aggkit_configs = aggkit_package.create_aggoracle_service_config(
                 plan,
                 args,
                 aggkit_config_artifact,
@@ -233,6 +240,78 @@ def run(
         plan.add_services(
             configs=aggkit_configs,
             description="Starting the cdk aggkit components for all committee members",
+        )
+
+    # Deploy multiple aggsender validators
+    if (
+        args["use_agg_sender_validator"] == True
+        and args["agg_sender_validator_total_number"] >= 1
+    ):
+        # Deploy multiple committee members
+        plan.print("Deploying aggsender validators")
+
+        # Fetch aggoracle_committee_address
+        aggoracle_committee_address = service_package.get_aggoracle_committee_address(
+            plan, args
+        )
+        sovereign_contract_setup_addresses = (
+            sovereign_contract_setup_addresses | aggoracle_committee_address
+        )
+
+        # Create the cdk aggkit config.
+        agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+        aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
+
+        # Start multiple aggoracle components based on committee size
+        aggkit_configs = {}
+        aggsender_validator_total_members = args.get(
+            "agg_sender_validator_total_number", 1
+        )
+
+        for member_index in range(aggsender_validator_total_members):
+            # Create individual config for each committee member
+            aggkit_config_artifact = plan.render_templates(
+                name="aggkit-aggsender-validator-config-artifact-{}".format(
+                    member_index
+                ),
+                config={
+                    "config.toml": struct(
+                        template=aggkit_config_template,
+                        data=args
+                        | deployment_stages
+                        | {
+                            "is_cdk_validium": data_availability_package.is_cdk_validium(
+                                args
+                            ),
+                            "agglayer_endpoint": agglayer_endpoint,
+                            "l2_rpc_url": l2_rpc_url,
+                            "committee_member_index": member_index,
+                        }
+                        | db_configs
+                        | contract_setup_addresses
+                        | sovereign_contract_setup_addresses,
+                    )
+                },
+            )
+
+            # Create aggkit service config for each committee member
+            member_aggkit_configs = (
+                aggkit_package.create_aggsender_validator_service_config(
+                    plan,
+                    args,
+                    aggkit_config_artifact,
+                    sovereign_genesis_artifact,
+                    keystore_artifacts,
+                    member_index,
+                )
+            )
+
+            # Merge configs
+            aggkit_configs.update(member_aggkit_configs)
+
+        plan.add_services(
+            configs=aggkit_configs,
+            description="Starting the cdk aggkit components for all aggsender validators",
         )
 
     # Start the bridge service only once (regardless of committee mode)
@@ -280,10 +359,10 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimsponsor.keystore",
     )
-    aggkit_validator_keystore_artifact = plan.store_service_files(
-        name="aggkitvalidator-keystore",
+    aggsender_validator_keystore_artifact = plan.store_service_files(
+        name="aggsendervalidator-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggkitvalidator.keystore",
+        src="/opt/zkevm/aggsendervalidator.keystore",
     )
 
     # Store multiple aggoracle committee member keystores
@@ -301,14 +380,32 @@ def get_keystores_artifacts(plan, args):
         # For non-committee mode, use the standard aggoracle keystore as the first committee member
         committee_keystores.append(aggoracle_keystore_artifact)
 
+    # Store multiple aggsender validator keystores
+    aggsender_validator_keystores = []
+    if args.get("use_agg_sender_validator", False):
+        aggsender_validator_total_members = args.get(
+            "agg_sender_validator_total_number", 1
+        )
+        for member_index in range(aggsender_validator_total_members):
+            aggsender_validator_keystore = plan.store_service_files(
+                name="aggsendervalidator-{}-keystore".format(member_index),
+                service_name="contracts" + args["deployment_suffix"],
+                src="/opt/zkevm/aggsendervalidator-{}.keystore".format(member_index),
+            )
+            aggsender_validator_keystores.append(aggsender_validator_keystore)
+    else:
+        # For non-validator mode, use the standard aggsender validator keystore as the first validator
+        aggsender_validator_keystores.append(aggsender_validator_keystore_artifact)
+
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         claimtx=claimtx_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
-        aggkit_validator=aggkit_validator_keystore_artifact,
+        aggsender_validator=aggsender_validator_keystore_artifact,
         committee_keystores=committee_keystores,
+        aggsender_validator_keystores=aggsender_validator_keystores,
     )
 
 

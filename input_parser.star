@@ -101,7 +101,7 @@ DEFAULT_PORTS = {
     "zkevm_rpc_ws_port": 8133,
     "cdk_node_rpc_port": 5576,
     "aggkit_node_rest_api_port": 5577,
-    "aggkit_validator_grpc_port": 5578,
+    "aggsender_validator_grpc_port": 5578,
     "blockscout_frontend_port": 3000,
     "anvil_port": 8545,
     "mitm_port": 8234,
@@ -152,7 +152,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor,aggkitvalidator",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor,aggsendervalidator",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -193,9 +193,9 @@ DEFAULT_ACCOUNTS = {
     # claimsponsor
     "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
     "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
-    # aggkitvalidator
-    "zkevm_l2_aggkitvalidator_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
-    "zkevm_l2_aggkitvalidator_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
+    # aggsendervalidator
+    "zkevm_l2_aggsendervalidator_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
+    "zkevm_l2_aggsendervalidator_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
 }
 
 DEFAULT_L1_ARGS = {
@@ -391,6 +391,8 @@ DEFAULT_ROLLUP_ARGS = {
     # which is being used to generate the accounts in DEFAULT_ACCOUNTS will also be used to generate the committee members.
     "agg_oracle_committee_total_members": 1,
     "use_agg_sender_validator": False,
+    # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
+    "agg_sender_validator_total_number": 0,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -832,6 +834,25 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             fail(
                 "AggOracle Committee is disabled. Total committee members ('{}') needs to be 1.".format(
                     args["agg_oracle_committee_total_members"]
+                )
+            )
+
+    # If Aggsender Validator is disabled, do sanity checks
+    if args["use_agg_sender_validator"] == False:
+        if args["agg_sender_validator_total_number"] != 0:
+            fail(
+                "Aggsender Validator is disabled. agg_sender_validator_total_number ('{}') needs to be 0.".format(
+                    args["agg_sender_validator_total_number"]
+                )
+            )
+
+    # If Aggsender Validator is enabled, do sanity checks
+    if args["use_agg_sender_validator"] == True:
+        # Check agg_sender_validator_total_number >= 1
+        if args["agg_sender_validator_total_number"] < 1:
+            fail(
+                "Aggsender Validator is enabled. agg_sender_validator_total_number ('{}') needs to be greater than 1.".format(
+                    args["agg_sender_validator_total_number"]
                 )
             )
 

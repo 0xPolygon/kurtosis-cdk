@@ -214,7 +214,7 @@ RequireValidatorCall = true
 RequireValidatorCall = false
 {{- end}}
 [AggSender.ValidatorClient]
-URL = "aggkit-validator{{.deployment_suffix}}:{{.aggkit_validator_grpc_port}}"
+URL = "aggkit-validator{{.deployment_suffix}}:{{.aggsender_validator_grpc_port}}"
 {{- end }}
 
 
@@ -410,7 +410,7 @@ AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
 # PrivateKeys defines all the key store files that are going
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
-{{- if .use_agg_oracle_committee }}
+{{- if and .use_agg_oracle_committee .committee_member_index }}
 PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
 {{- else }}
 PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
@@ -727,12 +727,17 @@ ProfilingEnabled = {{.aggkit_pprof_enabled}}
 [Validator]
 EnableRPC = true
 # Signer = { Method = "mock" }
-Signer = { Method = "local", Path = "/etc/aggkit/aggkitvalidator.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
-
+Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+# PessimisticProof or AggchainProof
+{{- if eq .consensus_contract_type "pessimistic"}}
+Mode = "PessimisticProof"
+{{- else}}
+Mode = "AggchainProof"
+{{- end}}
 
 [Validator.ServerConfig]
 Host = "0.0.0.0"
-Port = {{.aggkit_validator_grpc_port}}
+Port = {{.aggsender_validator_grpc_port}}
 MaxDecodingMessageSize = 1073741824  # 1GB
 
 # Is it necessary to specify all of these values again?

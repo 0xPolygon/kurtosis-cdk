@@ -21,7 +21,7 @@ def create_aggkit_cdk_service_config(
     log_claim_sponsor_warning(plan, args)
 
     aggkit_name = "aggkit" + args["deployment_suffix"]
-    (ports, public_ports) = get_aggkit_ports(args)
+    (ports, public_ports) = get_aggkit_ports(args, None)
     service_command = get_aggkit_cmd(args)
     aggkit_cdk_service_config = ServiceConfig(
         image=args["aggkit_image"],
@@ -48,7 +48,7 @@ def create_aggkit_cdk_service_config(
     return configs_to_return
 
 
-def create_aggkit_service_config(
+def create_root_aggkit_service_config(
     plan,
     args,
     config_artifact,
@@ -59,47 +59,83 @@ def create_aggkit_service_config(
     # Check if claim sponsor is enabled and "bridge" is not in aggkit_components
     log_claim_sponsor_warning(plan, args)
 
-    # Use different naming based on committee configuration
-    # Default single aggkit case
-    if (
-        args["use_agg_oracle_committee"] == False
-        and args["agg_oracle_committee_total_members"] == 1
-        and args["agg_oracle_committee_quorum"] == 0
-    ):
-        # Single aggkit service with standard naming
-        aggkit_name = "aggkit" + args["deployment_suffix"]
-        # Use the standard aggoracle keystore for single service mode
-        selected_keystore = keystore_artifact.aggoracle
-        service_command = get_aggkit_cmd(args)
-    # Multiple aggkit cases with multiple aggoracle committee members
-    else:
-        if member_index == 0:
-            # First aggkit naming should be consistent
-            aggkit_name = "aggkit" + args["deployment_suffix"]
-            # For the first aggkit node, it should spin up args["aggkit_components"]
-            service_command = get_aggkit_cmd(args)
-        else:
-            # For the non first aggkit nodes, they should only run the "aggoracle" component
-            service_command = [
-                "run",
-                "--cfg=/etc/aggkit/config.toml",
-                "--components=aggoracle",
-            ]
-            # Committee member naming
-            aggkit_name = (
-                "aggkit"
-                + args["deployment_suffix"]
-                + "-aggoracle-committee-00"
-                + str(member_index)
-            )
-        # Use committee-specific keystore
-        selected_keystore = (
-            keystore_artifact.committee_keystores[member_index]
-            if member_index < len(keystore_artifact.committee_keystores)
-            else keystore_artifact.aggoracle
-        )
+    # Build components list
+    components = args.get("aggkit_components", "")
 
-    (ports, public_ports) = get_aggkit_ports(args)
+    aggkit_name = "aggkit" + args["deployment_suffix"]
+    selected_keystore = keystore_artifact.aggoracle
+
+    (ports, public_ports) = get_aggkit_ports(args, None)
+    service_command = get_aggkit_cmd(args)
+
+    cdk_root_aggkit_service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/aggkit": Directory(
+                artifact_names=[
+                    config_artifact,
+                    genesis_artifact,
+                    selected_keystore,
+                    keystore_artifact.sovereignadmin,
+                    keystore_artifact.claimtx,
+                    keystore_artifact.sequencer,
+                    keystore_artifact.claim_sponsor,
+                ],
+            ),
+            "/data": Directory(
+                artifact_names=[],
+            ),
+        },
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=service_command,
+    )
+
+    configs_to_return = {aggkit_name: cdk_root_aggkit_service_config}
+    return configs_to_return
+
+
+def create_aggoracle_service_config(
+    plan,
+    args,
+    config_artifact,
+    genesis_artifact,
+    keystore_artifact,
+    member_index=0,
+):
+    """Creates aggoracle-only service configs for committee members > 0"""
+
+    if member_index == 0:
+        # Skip member_index 0 as it's handled by root service
+        return {}
+
+    # Check if claim sponsor is enabled and "bridge" is not in aggkit_components
+    log_claim_sponsor_warning(plan, args)
+
+    # Committee member naming
+    aggkit_name = (
+        "aggkit"
+        + args["deployment_suffix"]
+        + "-aggoracle-committee-00"
+        + str(member_index)
+    )
+
+    # Use committee-specific keystore
+    selected_keystore = (
+        keystore_artifact.committee_keystores[member_index]
+        if member_index < len(keystore_artifact.committee_keystores)
+        else keystore_artifact.aggoracle
+    )
+
+    (ports, public_ports) = get_aggkit_ports(args, None)
+
+    # Only run aggoracle component for committee members
+    service_command = [
+        "run",
+        "--cfg=/etc/aggkit/config.toml",
+        "--components=aggoracle",
+    ]
 
     cdk_aggoracle_service_config = ServiceConfig(
         image=args["aggkit_image"],
@@ -110,7 +146,7 @@ def create_aggkit_service_config(
                 artifact_names=[
                     config_artifact,
                     genesis_artifact,
-                    selected_keystore,  # Use the appropriate keystore
+                    selected_keystore,
                     keystore_artifact.sovereignadmin,
                     keystore_artifact.claimtx,
                     keystore_artifact.sequencer,
@@ -125,41 +161,80 @@ def create_aggkit_service_config(
     )
 
     configs_to_return = {aggkit_name: cdk_aggoracle_service_config}
-
-    # Only create validator service for the first committee member to avoid conflicts
-    if args["use_agg_sender_validator"] and member_index == 0:
-        svc_name = "aggkit-validator" + args["deployment_suffix"]
-        (ports, public_ports) = get_aggkit_ports(args)
-        service_command = get_aggkit_cmd(args)
-        aggkit_cdk_service_config = ServiceConfig(
-            image=args["aggkit_image"],
-            ports=ports,
-            # public_ports=public_ports,
-            files={
-                "/etc/aggkit": Directory(
-                    artifact_names=[
-                        config_artifact,
-                        keystore_artifact.claim_sponsor,
-                        keystore_artifact.aggkit_validator,
-                    ],
-                ),
-                "/data": Directory(
-                    artifact_names=[],
-                ),
-            },
-            entrypoint=["/usr/local/bin/aggkit"],
-            cmd=[
-                "run",
-                "--cfg=/etc/aggkit/config.toml",
-                "--components=aggsender-validator",
-            ],
-        )
-        configs_to_return[svc_name] = aggkit_cdk_service_config
-
     return configs_to_return
 
 
-def get_aggkit_ports(args):
+def create_aggsender_validator_service_config(
+    plan,
+    args,
+    config_artifact,
+    genesis_artifact,
+    keystore_artifact,
+    member_index=0,
+):
+    """Creates aggsender-validator service configs"""
+
+    # Check if claim sponsor is enabled and "bridge" is not in aggkit_components
+    log_claim_sponsor_warning(plan, args)
+
+    # Aggsender validator naming
+    if member_index == 0:
+        aggkit_name = "aggkit" + args["deployment_suffix"] + "-aggsender-validator"
+    else:
+        aggkit_name = (
+            "aggkit"
+            + args["deployment_suffix"]
+            + "-aggsender-validator-00"
+            + str(member_index)
+        )
+
+    # Use aggsender validator keystore
+    if member_index >= 0 and member_index < len(
+        keystore_artifact.aggsender_validator_keystores
+    ):
+        selected_keystore = keystore_artifact.aggsender_validator_keystores[
+            member_index
+        ]
+    else:
+        selected_keystore = keystore_artifact.aggsender_validator
+
+    (ports, public_ports) = get_aggkit_ports(args, "aggsender_validator")
+
+    # Only run aggsender-validator component
+    service_command = [
+        "run",
+        "--cfg=/etc/aggkit/config.toml",
+        "--components=aggsender-validator",
+    ]
+
+    cdk_aggsender_validator_service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/aggkit": Directory(
+                artifact_names=[
+                    config_artifact,
+                    genesis_artifact,
+                    selected_keystore,
+                    keystore_artifact.sovereignadmin,
+                    keystore_artifact.claimtx,
+                    keystore_artifact.sequencer,
+                ],
+            ),
+            "/data": Directory(
+                artifact_names=[],
+            ),
+        },
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=service_command,
+    )
+
+    configs_to_return = {aggkit_name: cdk_aggsender_validator_service_config}
+    return configs_to_return
+
+
+def get_aggkit_ports(args, service_type=None):
     ports = {
         "rpc": PortSpec(
             args.get("cdk_node_rpc_port"),
@@ -180,9 +255,10 @@ def get_aggkit_ports(args):
             wait=None,
         )
 
-    if args.get("use_agg_sender_validator"):
+    # Only add validator-grpc port for aggsender-validator service
+    if service_type == "aggsender_validator" and args.get("use_agg_sender_validator"):
         ports["validator-grpc"] = PortSpec(
-            args.get("aggkit_validator_grpc_port"),
+            args.get("aggsender_validator_grpc_port"),
             application_protocol="grpc",
             wait=None,
         )

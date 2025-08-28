@@ -26,7 +26,7 @@ create_geth_keystore "proofsigner.keystore"     "{{.zkevm_l2_proofsigner_private
 create_geth_keystore "aggoracle.keystore"       "{{.zkevm_l2_aggoracle_private_key}}"       "{{.zkevm_l2_keystore_password}}"
 create_geth_keystore "sovereignadmin.keystore"  "{{.zkevm_l2_sovereignadmin_private_key}}"  "{{.zkevm_l2_keystore_password}}"
 create_geth_keystore "claimsponsor.keystore"    "{{.zkevm_l2_claimsponsor_private_key}}"    "{{.zkevm_l2_keystore_password}}"
-create_geth_keystore "aggkitvalidator.keystore" "{{.zkevm_l2_aggkitvalidator_private_key}}" "{{.zkevm_l2_keystore_password}}"
+create_geth_keystore "aggsendervalidator.keystore" "{{.zkevm_l2_aggsendervalidator_private_key}}" "{{.zkevm_l2_keystore_password}}"
 
 # Generate multiple aggoracle keystores for committee members
 # shellcheck disable=SC2050
@@ -38,6 +38,20 @@ if [[ "{{ .use_agg_oracle_committee }}" == "true" ]]; then
         for (( index=0; index<COMMITTEE_SIZE; index++ )); do
             aggoracle_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
             create_geth_keystore "aggoracle-$index.keystore" "$aggoracle_private_key" "{{.zkevm_l2_keystore_password}}"
+        done
+    fi
+fi
+
+# Generate multiple aggsender validator keystores for validators
+# shellcheck disable=SC2050
+if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
+    MNEMONIC="lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop"
+    VALIDATOR_COUNT="{{ .agg_sender_validator_total_number }}"
+
+    if [[ "$VALIDATOR_COUNT" -ge 1 ]]; then
+        for (( index=0; index<VALIDATOR_COUNT; index++ )); do
+            aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
+            create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.zkevm_l2_keystore_password}}"
         done
     fi
 fi
