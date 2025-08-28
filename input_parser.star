@@ -390,7 +390,7 @@ DEFAULT_ROLLUP_ARGS = {
     # By default, the L2 mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop'
     # which is being used to generate the accounts in DEFAULT_ACCOUNTS will also be used to generate the committee members.
     "agg_oracle_committee_total_members": 1,
-    "use_agg_sender_validator": True,
+    "use_agg_sender_validator": False,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
