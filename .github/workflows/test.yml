@@ -360,7 +360,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: ${{ matrix.file.name }}
 
-  additional-services:
+  run-with-additional-services:
     needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -444,7 +444,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: additional-services
 
-  deploy-to-external-l1:
+  run-with-external-l1:
     needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 40
