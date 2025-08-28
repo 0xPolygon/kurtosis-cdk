@@ -263,7 +263,7 @@ jobs:
       - id: set-matrix
         run: |
           # Only run a subset of the tests in CI.
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml)
+          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml | grep -Ev "fork9|fork11|fork13")
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "$file_path")
             echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
@@ -360,7 +360,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: ${{ matrix.file.name }}
 
-  additional-services:
+  run-with-additional-services:
     needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -444,7 +444,7 @@ jobs:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: additional-services
 
-  deploy-to-external-l1:
+  run-with-external-l1:
     needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 40

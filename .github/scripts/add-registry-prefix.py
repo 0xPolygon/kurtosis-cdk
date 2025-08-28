@@ -29,6 +29,8 @@ class RegistryPrefixAdder:
             'europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public',
             # oplabs tools artifacts registry
             'us-docker.pkg.dev/oplabs-tools-artifacts/images',
+            # github cloud registry
+            'ghcr.io',
         ]
 
     def should_skip_image(self, image: str) -> bool:
