@@ -16,9 +16,9 @@ runs:
     - name: Bridge from L1 to L2
       shell: bash
       run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
-        "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+        "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
 
     - name: Bridge from L2 to L1
       shell: bash
       run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
-        "export CLAIM_WAIT_DURATION=20m && bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+        "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
