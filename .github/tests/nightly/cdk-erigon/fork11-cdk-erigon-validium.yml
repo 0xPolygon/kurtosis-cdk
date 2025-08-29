@@ -1,10 +1,12 @@
 deployment_stages:
   deploy_l2_contracts: true
+  deploy_optimism_rollup: false
+  deploy_op_succinct: false
 
 args:
-  verbosity: debug
-  # Use this specific version of the agglayer to avoid the following issue:
-  # Error: Unable to get the InitL1InfoRootMap: Event InitL1InfoRootMap not found
+  sequencer_type: erigon
+  consensus_contract_type: cdk_validium
+
   agglayer_image: ghcr.io/agglayer/agglayer:0.2.0-rc.19
   agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v7.0.0-rc.2-fork.11
   zkevm_prover_image: hermeznetwork/zkevm-prover:v7.0.4-hotfix.2-fork.11

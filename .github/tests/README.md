@@ -1,34 +1,26 @@
-# Test Configuration Generator
+# Test Configurations
 
-The purpose of this tool is to automate the creation of comprehensive test suites for the CDK stack. By generating multiple combinations, it ensures that the stack is tested across various configurations and scenarios, helping to catch potential regressions.
+This document outlines the various Polygon CDK configurations tested in our CI pipeline. Each configuration represents a different combination of chain type, consensus mechanism, proof system, and execution client, covering the spectrum from traditional zkEVM rollups and validiums to aggchain with pessimistic and full execution proofs.
 
-The script combines configuration files from three categories:
+| Chain | verifierType | SC consensus | Proofs/Prover | Client | Test Configuration |
+|-------|--------------|--------------|---------------|--------|--------------------|
+| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | [cdk-erigon/rollup.yml](cdk-erigon/rollup.yml) (fork12) |
+| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | [cdk-erigon/validium.yml](cdk-erigon/validium.yml) (fork12) |
+| v0.2.0-ECDSA | Pessimistic | PolygonPessimisticConsensus | PP # SP1 | cdk-erigon OR op-stack | - [cdk-erigon/sovereign.yml](cdk-erigon/sovereign.yml) (fork12)<br>- [op-geth/sovereign.yml](op-geth/sovereign.yml) - **default environment** |
+| v0.3.0-ECDSA | ALGateway | AggchainECDSA | PP # SP1 | not supported (aggkit not built) | [op-geth/ecdsa.yml](op-geth/ecdsa.yml) |
+| v0.3.0-FEP | ALGateway | AggchainFEP | (PP + FEP) # SP1 | op-stack | - [op-succinct/mock-prover.yml](op-succinct/mock-prover.yml)<br>- [op-succinct/real-prover.yml](op-succinct/real-prover.yml)|
 
-- Fork configurations under `forks/` (e.g., fork9.yml, fork10.yml)
-- Consensus modes under `consensus/` (e.g., rollup.yml, validium.yml)
-- Component types under `components` (e.g., zkevm-node-sequencer-sequence-sender-aggregator.yml, erigon-sequencer-cdk-sequence-sender-aggregator.yml)
+For reference: <https://agglayer.github.io/protocol-team-docs/aggregation-layer/v0.3.0/SC-specs/#16-table-agglayer-chains-supported>
 
-It then creates new `.yml` files that represent each unique combination of these configurations.
+## Nightly
 
-To run it, you can simply use: `./combine-ymls.sh`.
+In addition to the standard environments, we also test a few additional environments in the nightly workflow:
 
-Here is an example:
-
-```bash
-$ ./combine-ymls.sh
-Creating combinations...
-- combinations/fork11-cdk-erigon-rollup.yml
-- combinations/fork11-legacy-zkevm-rollup.yml
-- combinations/fork11-cdk-erigon-validium.yml
-- combinations/fork12-cdk-erigon-rollup.yml
-- combinations/fork12-cdk-erigon-validium.yml
-- combinations/fork13-cdk-erigon-rollup.yml
-- combinations/fork13-cdk-erigon-validium.yml
-- combinations/fork9-cdk-erigon-rollup.yml
-- combinations/fork9-legacy-zkevm-rollup.yml
-- combinations/fork9-cdk-erigon-validium.yml
-- combinations/fork9-legacy-zkevm-validium.yml
-All combinations created!
-```
-
-The generated test files are then utilized by the `deploy` job in the CI pipeline to tests the different combinations.
+| Chain | verifierType | SC consensus | Proofs/Prover | Client | Fork ID | Test Configuration |
+|-------|--------------|--------------|---------------|--------|---------|--------------------|
+| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | 9 | [fork9-cdk-erigon-rollup.yml](nightly/cdk-erigon/fork9-cdk-erigon-rollup.yml) |
+| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | 9 | [fork9-cdk-erigon-validium.yml](nightly/cdk-erigon/fork9-cdk-erigon-validium.yml) |
+| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | 11 | [fork11-cdk-erigon-rollup.yml](nightly/cdk-erigon/fork11-cdk-erigon-rollup.yml) |
+| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | 11 | [fork11-cdk-erigon-validium.yml](nightly/cdk-erigon/fork11-cdk-erigon-validium.yml) |
+| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | 13 | [fork13-cdk-erigon-rollup.yml](nightly/cdk-erigon/fork13-cdk-erigon-rollup.yml) |
+| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | 13 | [fork13-cdk-erigon-validium.yml](nightly/cdk-erigon/fork13-cdk-erigon-validium.yml) |

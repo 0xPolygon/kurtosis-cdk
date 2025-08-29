@@ -109,21 +109,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate test combinations
-        working-directory: .github/tests
-        run: ./combine-ymls.sh
-
       - id: set-matrix
         run: |
-          # Only run a subset of the tests in CI.
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml)
+          file_paths=$(ls -R \
+            ./.github/tests/additional-services.yml \
+            ./.github/tests/cdk-erigon/*.yml \
+            ./.github/tests/nightly/cdk-erigon/*.yml \
+            ./.github/tests/op-geth/*.yml \
+            ./.github/tests/op-succinct/*.yml \
+              | grep -v "real-prover")
+          echo "file_paths:"
+          echo "${file_paths}"
+          echo
 
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/**/*.yml | grep -Ev "sovereign|gas-token|pless-zkevm-node")
           matrix=$(echo "${file_paths}" | while read -r file_path; do
-            file_name=$(basename -s ".yml" "$file_path")
-            echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
+            file_name=$(basename -s ".yml" "${file_path}")
+            folder_name=$(basename $(dirname "${file_path}"))
+            if [[ "${folder_name}" =~ "op-geth|op-succinct" ]]; then
+              job_name="${folder_name}-${file_name}"
+            elif [[ "${folder_name}" =~ "cdk-erigon|op-geth|op-succinct" && ! "${file_path}" =~ "nightly" ]]; then
+              job_name="fork12-${folder_name}-${file_name}"
+            elif [[ "${folder_name}" =~ "nightly" ]]; then
+              job_name="nightly-${file_name}"
+            else
+              job_name="${file_name}"
+            fi
+            echo "{\"name\": \"$job_name\", \"path\": \"$file_path\"}"
           done | jq -s -c '.')
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "matrix:"
+          echo "${matrix}" | jq
 
   run-with-args:
     needs: list-ymls
