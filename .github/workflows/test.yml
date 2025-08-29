@@ -205,7 +205,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" =~ "cdk-erigon|op-geth|op-succinct" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]] || [[ "${folder_name}" == "op-succinct" ]]; then
               job_name="${folder_name}-${file_name}"
             else
               job_name="${file_name}"
