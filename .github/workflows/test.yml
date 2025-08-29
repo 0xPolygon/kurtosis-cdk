@@ -64,32 +64,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
 
-  check-test-combinations:
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install yq
-        run: |
-          pip3 install yq
-          yq --version
-
-      - name: Generate test combinations
-        working-directory: .github/tests
-        run: ./combine-ymls.sh
-
-      - name: Check if test combinations are up to date
-        run: |
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Test combinations are not up to date. Please run \`./combine-ymls.sh\`."
-            git status --porcelain
-            git diff
-            exit 1
-          else
-            echo "✅ Test combinations are up to date."
-          fi
-
   check-version-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -217,19 +191,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate test combinations
-        working-directory: .github/tests
-        run: ./combine-ymls.sh
-
       - id: set-matrix
         run: |
-          # Only run a subset of the tests in CI.
-          file_paths=$(ls -R ./.github/tests/combinations/*.yml ./.github/tests/nightly/op-rollup/op-default.yml | grep -Ev "fork9|fork11|fork13")
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-geth/*.yml)
+          echo "file_paths:"
+          echo "${file_paths}"
+          echo
+
           matrix=$(echo "${file_paths}" | while read -r file_path; do
-            file_name=$(basename -s ".yml" "$file_path")
-            echo "{\"name\": \"$file_name\", \"path\": \"$file_path\"}"
+            file_name=$(basename -s ".yml" "${file_path}")
+            folder_name=$(basename $(dirname "${file_path}"))
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
+              job_name="${folder_name}-${file_name}"
+            else
+              job_name="${file_name}"
+            fi
+            echo "{\"name\": \"$job_name\", \"path\": \"$file_path\"}"
           done | jq -s -c '.')
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "matrix:"
+          echo "${matrix}" | jq
 
   run-with-args:
     needs: [lint, unit, list-ymls]
@@ -317,6 +298,69 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: ${{ matrix.file.name }}
+
+  run-with-op-succinct:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/op-succinct/mock-prover.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Install bats
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
+
+      - name: Checkout agglayer-e2e
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          path: agglayer-e2e
+          ref: 4763c63cb11c5e605bff749823bf514abcdac7b6 # 2028-07-10
+
+      - name: Run bridge tests and op optimistic mode tests
+        run: |
+          set -eo pipefail
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          export CLAIM_WAIT_DURATION="20m"
+
+          # Run op optimistic mode tests
+          bats ./tests/op/optimistic-mode.bats || exit 1
+
+          # Run bridge tests
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
+          bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: cdk-op-geth-succinct
 
   run-with-additional-services:
     needs: [lint, unit]
@@ -442,66 +486,3 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
-
-  run-with-op-succinct:
-    needs: [lint, unit]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Pre kurtosis run
-        uses: ./.github/actions/kurtosis-pre-run
-        with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_token: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
-        with:
-          support-path: "${{ github.workspace }}/lib/bats-support"
-          assert-path: "${{ github.workspace }}/lib/bats-assert"
-          detik-path: "${{ github.workspace }}/lib/bats-detik"
-          file-path: "${{ github.workspace }}/lib/bats-file"
-
-      - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          ref: 2872b23cedaf11d3abfa14c6f08e6028d4afdba5 # 2028-08-28
-
-      - name: Run bridge tests and op optimistic mode tests
-        run: |
-          set -eo pipefail
-          pushd agglayer-e2e || exit 1
-
-          set -a
-          source ./tests/.env
-          set +a
-
-          export BATS_LIB_PATH="$PWD/core/helpers/lib"
-          export PROJECT_ROOT="$PWD"
-          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          export CLAIM_WAIT_DURATION="20m"
-
-          # Run op optimistic mode tests
-          bats ./tests/op/optimistic-mode.bats || exit 1
-
-          # Run bridge tests
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
-          bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
-
-      - name: Post kurtosis run
-        if: always()
-        uses: ./.github/actions/kurtosis-post-run
-        with:
-          enclave_name: ${{ env.ENCLAVE_NAME }}
-          args_filename: cdk-op-geth-succinct

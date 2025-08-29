@@ -10,10 +10,8 @@ This script creates a comprehensive Markdown version matrix that includes:
 """
 
 import json
-import yaml
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict
 from dataclasses import dataclass
 
 
@@ -53,13 +51,6 @@ class MarkdownMatrixGenerator:
 
     def generate_markdown_report(self, data: Dict) -> str:
         """Generate markdown report from version matrix."""
-
-        # Header
-        generated_at = data.get(
-            'generated_at', datetime.now(timezone.utc).replace(
-                microsecond=0).isoformat()
-        )
-
         md = f"""---
 sidebar_position: 3
 ---
@@ -74,12 +65,12 @@ sidebar_position: 3
         md += "This section lists all test environments with their configurations and component versions.\n\n"
 
         test_environments = data.get('test_environments', {})
-        for environment_name, environment in sorted(test_environments.items()):
+        for _, environment in sorted(test_environments.items()):
             environment_type = environment.get('type', 'unknown')
             md += f"- [{environment_type}](#{environment_type})\n"
         md += "\n"
 
-        for environment_name, environment in sorted(test_environments.items()):
+        for _, environment in sorted(test_environments.items()):
             environment_type = environment.get('type', 'unknown')
             config_file_path = environment.get('config_file_path', '')
             components = environment.get('components', {})
