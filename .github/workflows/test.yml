@@ -193,11 +193,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R \
-            ./.github/tests/cdk-erigon/*.yml \
-            ./.github/tests/op-geth/*.yml \
-            ./.github/tests/op-succinct/*.yml \
-              | grep -v "real-prover")
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-geth/*.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -205,7 +201,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]] || [[ "${folder_name}" == "op-succinct" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
               job_name="${folder_name}-${file_name}"
             else
               job_name="${file_name}"
@@ -302,6 +298,66 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: ${{ matrix.file.name }}
+
+  run-with-op-succinct:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/op-succinct/mock-prover.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Run bridge tests
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+      - name: Install bats
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
+
+      - name: Checkout agglayer-e2e
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          path: agglayer-e2e
+          ref: 2872b23cedaf11d3abfa14c6f08e6028d4afdba5 # 2028-08-28
+
+      - name: Run OP optimistic mode tests
+        run: |
+          set -eo pipefail
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          bats ./tests/op/optimistic-mode.bats || exit 1
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: cdk-op-geth-succinct
 
   run-with-additional-services:
     needs: [lint, unit]
@@ -427,63 +483,3 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: deploy-to-external-l1
-
-  run-with-op-succinct:
-    needs: [lint, unit]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Pre kurtosis run
-        uses: ./.github/actions/kurtosis-pre-run
-        with:
-          docker_username: ${{ secrets.DOCKER_USERNAME }}
-          docker_token: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Kurtosis run
-        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/chains/op-succinct.yml .
-
-      - name: Inspect enclave
-        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
-
-      - name: Run bridge tests
-        uses: ./.github/actions/bridge-tests
-        with:
-          enclave_name: ${{ env.ENCLAVE_NAME }}
-
-      - name: Install bats
-        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
-        with:
-          support-path: "${{ github.workspace }}/lib/bats-support"
-          assert-path: "${{ github.workspace }}/lib/bats-assert"
-          detik-path: "${{ github.workspace }}/lib/bats-detik"
-          file-path: "${{ github.workspace }}/lib/bats-file"
-
-      - name: Checkout agglayer-e2e
-        uses: actions/checkout@v4
-        with:
-          repository: agglayer/e2e
-          path: agglayer-e2e
-          ref: 2872b23cedaf11d3abfa14c6f08e6028d4afdba5 # 2028-08-28
-
-      - name: Run OP optimistic mode tests
-        run: |
-          set -eo pipefail
-          pushd agglayer-e2e || exit 1
-
-          set -a
-          source ./tests/.env
-          set +a
-
-          export BATS_LIB_PATH="$PWD/core/helpers/lib"
-          export PROJECT_ROOT="$PWD"
-          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          bats ./tests/op/optimistic-mode.bats || exit 1
-
-      - name: Post kurtosis run
-        if: always()
-        uses: ./.github/actions/kurtosis-post-run
-        with:
-          enclave_name: ${{ env.ENCLAVE_NAME }}
-          args_filename: cdk-op-geth-succinct
