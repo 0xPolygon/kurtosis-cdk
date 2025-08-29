@@ -462,11 +462,6 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Run bridge tests
-        uses: ./.github/actions/bridge-tests
-        with:
-          enclave_name: ${{ env.ENCLAVE_NAME }}
-
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
         with:
@@ -482,7 +477,7 @@ jobs:
           path: agglayer-e2e
           ref: 2872b23cedaf11d3abfa14c6f08e6028d4afdba5 # 2028-08-28
 
-      - name: Run OP optimistic mode tests
+      - name: Run bridge tests and op optimistic mode tests
         run: |
           set -eo pipefail
           pushd agglayer-e2e || exit 1
@@ -494,7 +489,15 @@ jobs:
           export BATS_LIB_PATH="$PWD/core/helpers/lib"
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          export CLAIM_WAIT_DURATION="20m"
+
+          # Run op optimistic mode tests
           bats ./tests/op/optimistic-mode.bats || exit 1
+
+          # Run bridge tests
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
+          bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
 
       - name: Post kurtosis run
         if: always()
