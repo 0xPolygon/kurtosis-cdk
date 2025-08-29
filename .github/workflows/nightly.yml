@@ -112,7 +112,6 @@ jobs:
       - id: set-matrix
         run: |
           file_paths=$(ls -R \
-            ./.github/tests/additional-services.yml \
             ./.github/tests/cdk-erigon/*.yml \
             ./.github/tests/nightly/cdk-erigon/*.yml \
             ./.github/tests/op-geth/*.yml \
