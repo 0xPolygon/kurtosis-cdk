@@ -438,7 +438,6 @@ DEFAULT_ARGS = (
         "additional_services": [
             constants.ADDITIONAL_SERVICES.bridge_spammer,
             constants.ADDITIONAL_SERVICES.test_runner,
-            constants.ADDITIONAL_SERVICES.tx_spammer,
         ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
