@@ -45,6 +45,7 @@ DEFAULT_IMAGES = {
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
+    "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
     "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
@@ -423,6 +424,7 @@ DEFAULT_ARGS = (
         "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
         # Additional services to run alongside the network.
         # Options:
+        # - agglogger
         # - arpeggio
         # - assertoor
         # - blockscout
@@ -436,6 +438,7 @@ DEFAULT_ARGS = (
         # - test_runner
         # - tx_spammer
         "additional_services": [
+            constants.ADDITIONAL_SERVICES.agglogger,
             constants.ADDITIONAL_SERVICES.bridge_spammer,
             constants.ADDITIONAL_SERVICES.test_runner,
         ],

@@ -1,0 +1,146 @@
+{
+  "EndPoints": {
+    "L1": {
+      "URL": "{{.l1_rpc_url}}",
+      "ChainID": {{.l1_chain_id}},
+      "NetworkID": null
+    },
+    "L2": {
+      "URL": "{{.l2_rpc_url}}",
+      "ChainID": {{.l2_chain_id}},
+      "NetworkID": {{.l2_network_id}}
+    },
+    "Agglayer": {
+      "URL": "{{.agglayer_rpc_url}}"
+    }
+  },
+  "EndPointSets": {
+    "All": [
+      "L1",
+      "L2"
+    ],
+    "Ethereum": [
+      "L1"
+    ],
+    "ZkEVMs": [
+      "L2"
+    ],
+    "Agglayer": [
+      "Agglayer"
+    ]
+  },
+  "Probes": [
+    {
+      "_comment": "Tracking the times when blocks are created versus finalized is critical for understanding consistency",
+      "Type": "BlockNumber",
+      "EndPoints": "All",
+      "Fields": [
+        "latest",
+        "safe",
+        "finalized"
+      ]
+    },
+    {
+      "_comment": "This would make a call to zkevm_batchNumber, zkevm_virtualBatchNumber, or zkevm_verifiedBatchNumber to track track how these batch numbers are being synced on L2",
+      "Type": "L2BatchNumber",
+      "EndPoints": "ZkEVMs",
+      "Fields": [
+        "current",
+        "sequenced",
+        "verified"
+      ]
+    },
+    {
+      "_comment": "The idea here is to check the sequenced and verified batch numbers directly from the rollup manager",
+      "Type": "L1BatchNumber",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Fields": [
+        "1",
+        "3"
+      ]
+    },
+    {
+      "Type": "PolygonRollupManager",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Fields": [
+        "RollupTypeCount",
+        "RollupCount",
+        "TotalSequencedBatches",
+        "TotalVerifiedBatches",
+        "RollupExitRoot",
+        "AggregationTimestamp",
+        "EmergencyState",
+        "BatchFee"
+      ]
+    },
+    {
+      "Type": "PolygonRollupManagerEvent",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_rollup_manager_address}}",
+      "_Fields": [
+        "VerifyBatchesTrustedAggregator",
+        "OnSequenceBatches",
+        "VerifyPessimisticStateTransition"
+      ],
+      "Fields": [
+        "1",
+        "3"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMBridgeV2",
+      "EndPoints": "All",
+      "Address": "{{.zkevm_bridge_address}}",
+      "Fields": [
+        "DepositCount",
+        "Root"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMBridgeV2Event",
+      "EndPoints": "All",
+      "Address": "{{.zkevm_bridge_address}}",
+      "Fields": [
+        "BridgeEvent",
+        "ClaimEvent"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMGlobalExitRoot",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Fields": [
+        "DepositCount",
+        "GlobalExitRoot",
+        "Root",
+        "MainnetExitRoot",
+        "RollupExitRoot"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMGlobalExitRootEvent",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Fields": [
+        "UpdateL1InfoTree",
+        "UpdateL1InfoTreeV2"
+      ]
+    },
+    {
+      "_comment": "In the case of zkevm the L2 GER contract doesn't emit events. We read the value directly from an RPC",
+      "Type": "L2GlobalExitRootZkEVM",
+      "EndPoints": "ZkEVMs",
+      "Address": "{{.zkevm_global_exit_root_l2_address}}"
+    },
+    {
+      "Type": "AgglayerCertificateHeaderProbe",
+      "EndPoints": "Agglayer",
+      "Fields": [
+        "20"
+      ]
+    }
+  ],
+  "GlobalPollInterval": 30000000000
+}
