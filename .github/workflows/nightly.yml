@@ -225,7 +225,6 @@ jobs:
           args_filename: ${{ matrix.file.name }}
 
   run-with-op-succinct:
-    needs: [lint]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -297,7 +296,6 @@ jobs:
           args_filename: cdk-op-geth-succinct
 
   run-with-additional-services:
-    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -381,7 +379,6 @@ jobs:
           args_filename: additional-services
 
   run-with-external-l1:
-    needs: [lint, unit]
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
