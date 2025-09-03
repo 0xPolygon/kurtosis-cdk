@@ -212,7 +212,6 @@ UseTLS = false
 
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
-SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 OpNodeURL = "{{.op_cl_rpc_url}}"
 RequireKeyMatchTrustedSequencer = true
@@ -619,15 +618,6 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # \__,_|\__, |\__, |\___|_| |_|\__,_|_|_| |_| .__/|_|  \___/ \___/|_|  \__, |\___|_| |_|
 #       |___/ |___/                         |_|                        |___/
 # ------------------------------------------------------------------------------
-[AggchainProofGen]
-# ------------------------------------------------------------------------------
-# SovereignRollupAddr is the address of the sovereign rollup contract on L1
-# ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
-SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
-{{- else }}
-SovereignRollupAddr = "{{.zkevm_rollup_address}}"
-{{- end }}
 
 # ------------------------------------------------------------------------------
 # GlobalExitRootL2Addr is the address of the GlobalExitRootManager contract on l2 sovereign chain
