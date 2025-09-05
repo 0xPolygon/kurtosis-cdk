@@ -31,11 +31,11 @@ AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.a
 NetworkID = {{.zkevm_rollup_id}}
 
 {{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") }}
-SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
-SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+AggSenderPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
+AggSenderPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 {{- else }}
-SequencerPrivateKeyPath = ""
-SequencerPrivateKeyPassword  = ""
+AggSenderPrivateKeyPath = ""
+AggSenderPrivateKeyPassword  = ""
 {{- end}}
 
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
@@ -253,11 +253,6 @@ BlockFinality = "LatestBlock"
 # 50 -> Middle
 # ------------------------------------------------------------------------------
 # EpochNotificationPercentage = 50
-
-# ------------------------------------------------------------------------------
-# AggSender will save the certificates to a file in this path
-# ------------------------------------------------------------------------------
-SaveCertificatesToFilesPath = "/tmp"
 
 # ------------------------------------------------------------------------------
 # MaxRetriesStoreCertificate is the maximum number of retries to store a certificate
@@ -585,10 +580,10 @@ BlockFinality = "LatestBlock"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 
 # ==============================================================================
-#  _     ____   ____ _____ ____  ______   ___   _  ____ 
+#  _     ____   ____ _____ ____  ______   ___   _  ____
 # | |   |___ \ / ___| ____|  _ \/ ___\ \ / / \ | |/ ___|
-# | |     __) | |  _|  _| | |_) \___ \\ V /|  \| | |    
-# | |___ / __/| |_| | |___|  _ < ___) || | | |\  | |___ 
+# | |     __) | |  _|  _| | |_) \___ \\ V /|  \| | |
+# | |___ / __/| |_| | |___|  _ < ___) || | | |\  | |___
 # |_____|_____|\____|_____|_| \_\____/ |_| |_| \_|\____|
 # ==============================================================================
 [L2GERSync]
@@ -662,12 +657,12 @@ URL= "{{.l2_rpc_url}}"
 L1ChainID = "{{.zkevm_rollup_chain_id}}"
 
 # ==============================================================================
-#                        _           _                              __
-#  __ _  __ _  __ _  ___| |__   __ _(_)_ __  _ __  _ __ ___   ___  / _| __ _  ___ _ __
-# / _` |/ _` |/ _` |/ __| '_ \ / _` | | '_ \| '_ \| '__/ _ \ / _ \| |_ / _` |/ _ \ '_ \
-#| (_| | (_| | (_| | (__| | | | (_| | | | | | |_) | | | (_) | (_) |  _| (_| |  __/ | | |
-# \__,_|\__, |\__, |\___|_| |_|\__,_|_|_| |_| .__/|_|  \___/ \___/|_|  \__, |\___|_| |_|
-#       |___/ |___/                         |_|                        |___/
+#     _                ____ _           _       ____                   __  ____
+#    / \   __ _  __ _ / ___| |__   __ _(_)_ __ |  _ \ _ __ ___   ___  / _|/ ___| ___ _ __
+#   / _ \ / _` |/ _` | |   | '_ \ / _` | | '_ \| |_) | '__/ _ \ / _ \| |_| |  _ / _ \ '_ \
+#  / ___ \ (_| | (_| | |___| | | | (_| | | | | |  __/| | | (_) | (_) |  _| |_| |  __/ | | |
+# /_/   \_\__, |\__, |\____|_| |_|\__,_|_|_| |_|_|   |_|  \___/ \___/|_|  \____|\___|_| |_|
+#         |___/ |___/
 # ------------------------------------------------------------------------------
 [AggchainProofGen]
 # ------------------------------------------------------------------------------
