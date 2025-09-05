@@ -26,7 +26,7 @@ SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
 AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
 AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"   
+SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
@@ -42,7 +42,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-	
+
 [L2Config]
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
@@ -65,7 +65,7 @@ Outputs = ["stderr"]
                 Port = "{{.aggregator_db.port}}"
                 EnableLog = false
                 MaxConns = 200
-       
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
