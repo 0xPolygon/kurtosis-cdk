@@ -49,9 +49,32 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
     VALIDATOR_COUNT="{{ .agg_sender_validator_total_number }}"
 
     if [[ "$VALIDATOR_COUNT" -ge 1 ]]; then
+        json_output="["
+
         for (( index=0; index<VALIDATOR_COUNT; index++ )); do
             aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
+            aggsender_validator_address=$(cast wallet address --private-key "$aggsendervalidator_private_key")
+
             create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.zkevm_l2_keystore_password}}"
+
+            json_output+='{"index":'$index',"address":"'$aggsender_validator_address'","private_key":"'$aggsendervalidator_private_key'"}'
+            if [[ $index -lt $((VALIDATOR_COUNT-1)) ]]; then
+                json_output+=","
+            fi
         done
+
+        json_output+="]"
+
+        echo "$json_output" > /opt/zkevm/aggsender-validators.json
+
+        # For each address in our json var, let's add it to the signers array in file /opt/contract-deploy/create_new_rollup.json
+        for address in $(jq -r '.[] | .address' /opt/zkevm/aggsender-validators.json); do
+            jq --arg address "$address" '.aggchainParams.signers += [$address]' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp
+            mv /opt/contract-deploy/create_new_rollup.json.tmp /opt/contract-deploy/create_new_rollup.json
+        done
+        # Let's set the count of signers as the threshold
+        threshold_count=$(jq '. | length' /opt/zkevm/aggsender-validators.json)
+        jq --arg threshold "$threshold_count" '.aggchainParams.threshold = ($threshold | tonumber)' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp
+        mv /opt/contract-deploy/create_new_rollup.json.tmp /opt/contract-deploy/create_new_rollup.json
     fi
 fi

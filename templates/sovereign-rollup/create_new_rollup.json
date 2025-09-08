@@ -53,6 +53,8 @@
         "aggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "initOwnedAggchainVKey": "{{ .aggchain_vkey_hash }}",
         "initAggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
-        "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"
+        "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+        "signers": [],
+        "threshold": 0
     }
 }
