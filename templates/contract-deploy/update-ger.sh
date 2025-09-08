@@ -25,7 +25,7 @@ token="0x0000000000000000000000000000000000000000"
 update_ger=true
 permit_data="0x"
 
-# Generate the call data, this is useful just to examine what the call will look loke
+# Generate the call data, this is useful just to examine what the call will look like
 echo "Generating the call data for the bridge tx..."
 cast calldata "$bridge_sig" "$destination_net" "$destination_addr" "$amount" "$token" "$update_ger" "$permit_data"
 
