@@ -153,7 +153,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     if args.get("consensus_contract_type") in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
-        constants.CONSENSUS_TYPE.ecdsa,
+        constants.CONSENSUS_TYPE.ecdsa_multisig,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
@@ -398,7 +398,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 
 
 def is_vanilla_client(args):
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa:
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
         return True
     else:
         return False

@@ -1,6 +1,6 @@
 {
     "realVerifier": "{{.zkevm_use_real_verifier}}",
-    "forkID": "{{.fork_id}}",
+    "forkID": {{.zkevm_rollup_fork_id}},
     "programVKey": "{{.program_vkey}}",
     "description": "kurtosis-devnet - {{.chain_name}}",
     "adminZkEVM": "{{.zkevm_l2_admin_address}}",
