@@ -67,14 +67,14 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
 
         echo "$json_output" > /opt/zkevm/aggsender-validators.json
 
-        # For each address in our json var, let's add it to the signers array in file /opt/contract-deploy/create_new_rollup.json
-        for address in $(jq -r '.[] | .address' /opt/zkevm/aggsender-validators.json); do
-            jq --arg address "$address" '.aggchainParams.signers += [$address]' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp
-            mv /opt/contract-deploy/create_new_rollup.json.tmp /opt/contract-deploy/create_new_rollup.json
-        done
-        # Let's set the count of signers as the threshold
-        threshold_count=$(jq '. | length' /opt/zkevm/aggsender-validators.json)
-        jq --arg threshold "$threshold_count" '.aggchainParams.threshold = ($threshold | tonumber)' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp
+        jq --argfile vals /opt/zkevm/aggsender-validators.json '
+            .aggchainParams.signers += (
+                $vals
+                | to_entries
+                | map([ .value.address, "agg-sender validator \(.value.index)" ])
+            )
+            | .aggchainParams.threshold = ($vals | length)
+        ' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp && \
         mv /opt/contract-deploy/create_new_rollup.json.tmp /opt/contract-deploy/create_new_rollup.json
     fi
 fi
