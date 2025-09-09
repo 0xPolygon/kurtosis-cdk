@@ -43,7 +43,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.6.0-beta2",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.4",
     "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v0.0.0-rc.0.aggchain.multisig-fork.0",  # https://github.com/agglayer/agglayer-contracts/tree/feature/pr_fixes
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
