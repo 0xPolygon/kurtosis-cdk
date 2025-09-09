@@ -16,9 +16,9 @@ import json
 import yaml
 import requests
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 @dataclass
@@ -30,8 +30,6 @@ class ComponentVersion:
     version_source_url: Optional[str] = None
     latest_version_source_url: Optional[str] = None
     status: Optional[str] = None
-    # last_updated: Optional[str] = None
-    # fork_compatibility: Optional[List[str]] = None
 
 
 @dataclass
@@ -49,20 +47,20 @@ class VersionMatrixExtractor:
         self.repo_root = repo_root
         self.input_parser_path = repo_root / "input_parser.star"
         self.test_files_paths = [
-            (repo_root / ".github" / "tests" / "chains" /
-             "op-succinct.yml", "cdk-opgeth-zkrollup"),
-            (repo_root / ".github" / "tests" / "nightly" /
-             "op-rollup" / "op-default.yml", "cdk-opgeth-sovereign"),
-            (repo_root / ".github" / "tests" / "combinations" /
-             "fork12-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            (repo_root / ".github" / "tests" / "combinations" /
-             "fork12-cdk-erigon-validium.yml", "cdk-erigon-validium"),
-            (repo_root / ".github" / "tests" / "combinations" /
-             "fork12-cdk-erigon-sovereign.yml", "cdk-erigon-sovereign"),
-            # (repo_root / ".github" / "tests" / "combinations" / "fork11-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            # (repo_root / ".github" / "tests" / "combinations" / "fork11-cdk-erigon-validium.yml", "cdk-erigon-validium"),
-            # (repo_root / ".github" / "tests" / "combinations" / "fork9-cdk-erigon-rollup.yml", "cdk-erigon-zkrollup"),
-            # (repo_root / ".github" / "tests" / "combinations" / "fork9-cdk-erigon-validium.yml", "cdk-erigon-validium"),
+            # cdk-erigon
+            (repo_root / ".github" / "tests" / "cdk-erigon" /
+             "rollup.yml", "cdk-erigon-zkrollup"),
+            (repo_root / ".github" / "tests" / "cdk-erigon" /
+             "validium.yml", "cdk-erigon-validium"),
+            (repo_root / ".github" / "tests" / "cdk-erigon" /
+             "sovereign.yml", "cdk-erigon-sovereign"),
+            # op-geth
+            (repo_root / ".github" / "tests" / "op-geth" /
+             "sovereign.yml", "cdk-opgeth-sovereign"),
+            (repo_root / ".github" / "tests" / "op-geth" /
+             "ecdsa.yml", "cdk-opgeth-ecdsa"),
+            (repo_root / ".github" / "tests" / "op-succinct" /
+             "mock-prover.yml", "cdk-opgeth-zkrollup"),
         ]
 
         # Component mapping
@@ -279,7 +277,8 @@ class VersionMatrixExtractor:
             version_float = version_to_int(version)
             version_suffix = version.split('-')[1] if '-' in version else ''
             latest_float = version_to_int(latest_version)
-            latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
+            latest_suffix = latest_version.split(
+                '-')[1] if '-' in latest_version else ''
 
             if version_float > latest_float:
                 return "experimental"
@@ -308,7 +307,6 @@ class VersionMatrixExtractor:
                     if not config:
                         continue
 
-                    environment_name = yaml_file.stem
                     environment_file_path = yaml_file.relative_to(
                         self.repo_root)
 
@@ -333,7 +331,7 @@ class VersionMatrixExtractor:
                         if name in allowed_components
                     }
 
-                    environments[environment_name] = TestEnvironment(
+                    environments[environment_type] = TestEnvironment(
                         type=environment_type,
                         config_file_path=str(environment_file_path),
                         components=filtered_components,
@@ -352,6 +350,7 @@ class VersionMatrixExtractor:
         """Get list of components allowed for a environment type."""
 
         environment_components = {
+            # cdk-erigon
             "cdk-erigon-zkrollup": [
                 'aggkit-prover',
                 'agglayer',
@@ -384,18 +383,7 @@ class VersionMatrixExtractor:
                 'zkevm-bridge-service',
                 'zkevm-pool-manager',
             ],
-            "cdk-opgeth-zkrollup": [
-                'aggkit',
-                'aggkit-prover',
-                'agglayer',
-                'agglayer-contracts',
-                'op-batcher',
-                'op-deployer',
-                'op-node',
-                'op-geth',
-                'op-succinct-proposer',
-                'zkevm-bridge-service',
-            ],
+            # cdk-opgeth
             "cdk-opgeth-sovereign": [
                 'aggkit',
                 'aggkit-prover',
@@ -405,9 +393,33 @@ class VersionMatrixExtractor:
                 'op-deployer',
                 'op-node',
                 'op-geth',
-                'op-proposer',  # different from cdk-opgeth-zkrollup
+                'op-proposer',
                 'zkevm-bridge-service',
-            ]
+            ],
+            "cdk-opgeth-ecdsa": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-deployer',
+                'op-node',
+                'op-geth',
+                'op-proposer',
+                'zkevm-bridge-service',
+            ],
+            "cdk-opgeth-zkrollup": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-deployer',
+                'op-node',
+                'op-geth',
+                'op-succinct-proposer',  # different from cdk-opgeth-sovereign
+                'zkevm-bridge-service',
+            ],
         }
 
         # Find the matching environment pattern

@@ -1,0 +1,139 @@
+{
+  "EndPoints": {
+    "L1": {
+      "URL": "{{.l1_rpc_url}}",
+      "ChainID": {{.l1_chain_id}},
+      "NetworkID": null
+    },
+    "L2": {
+      "URL": "{{.l2_rpc_url}}",
+      "ChainID": {{.l2_chain_id}},
+      "NetworkID": {{.l2_network_id}}
+    },
+    "Agglayer": {
+      "URL": "{{.agglayer_rpc_url}}"
+    }
+  },
+  "EndPointSets": {
+    "All": [
+      "L1",
+      "L2"
+    ],
+    "Ethereum": [
+      "L1"
+    ],
+    "OPStack": [
+      "L2"
+    ],
+    "Agglayer": [
+      "Agglayer"
+    ]
+  },
+  "Probes": [
+    {
+      "_comment": "Tracking the times when blocks are created versus finalized is critical for understanding consistency",
+      "Type": "BlockNumber",
+      "EndPoints": "All",
+      "Fields": [
+        "latest",
+        "safe",
+        "finalized"
+      ]
+    },
+    {
+      "_comment": "The idea here is to check the sequenced and verified batch numbers directly from the rollup manager",
+      "Type": "L1BatchNumber",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Fields": [
+        "1",
+        "3"
+      ]
+    },
+    {
+      "Type": "PolygonRollupManager",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Fields": [
+        "RollupTypeCount",
+        "RollupCount",
+        "TotalSequencedBatches",
+        "TotalVerifiedBatches",
+        "RollupExitRoot",
+        "AggregationTimestamp",
+        "EmergencyState",
+        "BatchFee"
+      ]
+    },
+    {
+      "Type": "PolygonRollupManagerEvent",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_rollup_manager_address}}",
+      "_Fields": [
+        "VerifyBatchesTrustedAggregator",
+        "OnSequenceBatches",
+        "VerifyPessimisticStateTransition"
+      ],
+      "Fields": [
+        "1",
+        "3"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMBridgeV2",
+      "EndPoints": "All",
+      "Address": "{{.zkevm_bridge_address}}",
+      "Fields": [
+        "DepositCount",
+        "Root"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMBridgeV2Event",
+      "EndPoints": "All",
+      "Address": "{{.zkevm_bridge_address}}",
+      "Fields": [
+        "BridgeEvent",
+        "ClaimEvent"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMGlobalExitRoot",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Fields": [
+        "DepositCount",
+        "GlobalExitRoot",
+        "Root",
+        "MainnetExitRoot",
+        "RollupExitRoot"
+      ]
+    },
+    {
+      "Type": "PolygonZkEVMGlobalExitRootEvent",
+      "EndPoints": "Ethereum",
+      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Fields": [
+        "UpdateL1InfoTree",
+        "UpdateL1InfoTreeV2"
+      ]
+    },
+    {
+      "_comment": "In this case, we should have the UpdateHashChainValue event",
+      "Type": "GlobalExitRootManagerL2SovereignChainEvent",
+      "EndPoints": "OPStack",
+      "Address": "{{.sovereign_ger_proxy_addr}}",
+      "Fields": [
+        "UpdateHashChainValue"
+      ]
+    },
+    {
+      "Type": "AgglayerCertificateHeaderProbe",
+      "EndPoints": "Agglayer",
+      "Fields": [
+        "20"
+      ]
+    }
+  ],
+  "GlobalPollInterval": 30000000000
+}

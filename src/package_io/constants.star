@@ -1,4 +1,5 @@
 ADDITIONAL_SERVICES = struct(
+    agglogger="agglogger",
     arpeggio="arpeggio",
     assertoor="assertoor",
     blockscout="blockscout",

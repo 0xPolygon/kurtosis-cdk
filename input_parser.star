@@ -438,6 +438,7 @@ DEFAULT_ARGS = (
         "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
         # Additional services to run alongside the network.
         # Options:
+        # - agglogger
         # - arpeggio
         # - assertoor
         # - blockscout
@@ -451,8 +452,9 @@ DEFAULT_ARGS = (
         # - test_runner
         # - tx_spammer
         "additional_services": [
-            constants.ADDITIONAL_SERVICES.test_runner,
+            constants.ADDITIONAL_SERVICES.agglogger,
             constants.ADDITIONAL_SERVICES.bridge_spammer,
+            constants.ADDITIONAL_SERVICES.test_runner,
         ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",

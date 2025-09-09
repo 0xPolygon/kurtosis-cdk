@@ -10,35 +10,23 @@ sidebar_position: 3
 
 This section lists all test environments with their configurations and component versions.
 
-- [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
-- [cdk-erigon-sovereign](#cdk-erigon-sovereign)
-- [cdk-erigon-validium](#cdk-erigon-validium)
-- [cdk-opgeth-sovereign](#cdk-opgeth-sovereign)
-- [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
-
-### cdk-erigon-zkrollup
-
-- File path: .github/tests/combinations/fork12-cdk-erigon-rollup.yml
-
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.2](https://github.com/agglayer/provers/releases/tag/v1.1.2) | experimental 🧪 |
-| agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
-| agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
-| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
-| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
-| zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | N/A | N/A |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
+- [Version Matrix](#version-matrix)
+  - [Test Environments](#test-environments)
+    - [cdk-erigon-sovereign](#cdk-erigon-sovereign)
+    - [cdk-erigon-validium](#cdk-erigon-validium)
+    - [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
+    - [cdk-opgeth-sovereign](#cdk-opgeth-sovereign)
+    - [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
+  - [Default Images](#default-images)
 
 ### cdk-erigon-sovereign
 
-- File path: .github/tests/combinations/fork12-cdk-erigon-sovereign.yml
+- File path: .github/tests/cdk-erigon/sovereign.yml
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.6.0-beta2](https://github.com/agglayer/aggkit/releases/tag/v0.6.0-beta2) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | experimental 🧪 |
-| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.2](https://github.com/agglayer/provers/releases/tag/v1.1.2) | experimental 🧪 |
+| aggkit | [0.5.0-beta4](https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta4) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | deprecated ⚠️ |
+| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.63.0-rc4](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.63.0-rc4) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
@@ -47,11 +35,11 @@ This section lists all test environments with their configurations and component
 
 ### cdk-erigon-validium
 
-- File path: .github/tests/combinations/fork12-cdk-erigon-validium.yml
+- File path: .github/tests/cdk-erigon/validium.yml
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.2](https://github.com/agglayer/provers/releases/tag/v1.1.2) | experimental 🧪 |
+| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
@@ -61,14 +49,29 @@ This section lists all test environments with their configurations and component
 | zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | N/A | N/A |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
 
-### cdk-opgeth-sovereign
+### cdk-erigon-zkrollup
 
-- File path: .github/tests/nightly/op-rollup/op-default.yml
+- File path: .github/tests/cdk-erigon/rollup.yml
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.6.0-beta2](https://github.com/agglayer/aggkit/releases/tag/v0.6.0-beta2) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | experimental 🧪 |
-| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.2](https://github.com/agglayer/provers/releases/tag/v1.1.2) | experimental 🧪 |
+| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
+| agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
+| agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
+| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
+| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
+| zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
+| zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | N/A | N/A |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [6.0.2](https://github.com/0xPolygon/zkevm-prover/releases/tag/v6.0.2) | experimental 🧪 |
+
+### cdk-opgeth-sovereign
+
+- File path: .github/tests/op-geth/sovereign.yml
+
+| Component | Current Version | Latest Version | Status |
+|-----------|-----------------|----------------|--------|
+| aggkit | [0.5.0-beta4](https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta4) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | deprecated ⚠️ |
+| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
 | agglayer-contracts | [12.0.0-rc.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.0.0-rc.0) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
@@ -80,12 +83,12 @@ This section lists all test environments with their configurations and component
 
 ### cdk-opgeth-zkrollup
 
-- File path: .github/tests/chains/op-succinct.yml
+- File path: .github/tests/op-succinct/mock-prover.yml
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.6.0-beta2](https://github.com/agglayer/aggkit/releases/tag/v0.6.0-beta2) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | experimental 🧪 |
-| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.2](https://github.com/agglayer/provers/releases/tag/v1.1.2) | experimental 🧪 |
+| aggkit | [0.5.0-beta4](https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta4) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | deprecated ⚠️ |
+| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
 | agglayer-contracts | [12.0.0-rc.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.0.0-rc.0) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
@@ -99,13 +102,13 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.6.0-beta2](https://github.com/agglayer/aggkit/releases/tag/v0.6.0-beta2) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | experimental 🧪 |
-| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.2](https://github.com/agglayer/provers/releases/tag/v1.1.2) | experimental 🧪 |
+| aggkit | [0.5.0-beta4](https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta4) | [0.5.1](https://github.com/agglayer/aggkit/releases/tag/v0.5.1) | deprecated ⚠️ |
+| aggkit-prover | [1.2.0](https://github.com/agglayer/provers/releases/tag/v1.2.0) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | latest ✅ |
 | agglayer-contracts | [12.0.0-rc.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.0.0-rc.0) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| geth | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | latest ✅ |
+| geth | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | [1.16.3](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.3) | deprecated ⚠️ |
 | lighthouse | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | latest ✅ |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.2.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.2.6) | experimental 🧪 |
