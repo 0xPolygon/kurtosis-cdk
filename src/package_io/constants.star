@@ -1,4 +1,5 @@
 ADDITIONAL_SERVICES = struct(
+    agglogger="agglogger",
     arpeggio="arpeggio",
     assertoor="assertoor",
     blockscout="blockscout",
@@ -25,7 +26,7 @@ CONSENSUS_TYPE = struct(
     rollup="rollup",
     cdk_validium="cdk_validium",
     pessimistic="pessimistic",
-    ecdsa="ecdsa",
+    ecdsa_multisig="ecdsa_multisig",
     fep="fep",
 )
 

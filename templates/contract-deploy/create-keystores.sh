@@ -49,9 +49,38 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
     VALIDATOR_COUNT="{{ .agg_sender_validator_total_number }}"
 
     if [[ "$VALIDATOR_COUNT" -ge 1 ]]; then
+        json_output="["
+
         for (( index=0; index<VALIDATOR_COUNT; index++ )); do
             aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
+            aggsender_validator_address=$(cast wallet address --private-key "$aggsendervalidator_private_key")
+
             create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.zkevm_l2_keystore_password}}"
+
+            json_output+='{"index":'$index',"address":"'$aggsender_validator_address'","private_key":"'$aggsendervalidator_private_key'"}'
+            if [[ $index -lt $((VALIDATOR_COUNT-1)) ]]; then
+                json_output+=","
+            fi
         done
+
+        json_output+="]"
+
+        echo "$json_output" > /opt/zkevm/aggsender-validators.json
+
+        jq --argfile vals /opt/zkevm/aggsender-validators.json '
+            .aggchainParams.signers += (
+                $vals
+                | to_entries
+                | map([ 
+                    .value.address, 
+                    if .value.index == 0 then 
+                        "http://aggkit{{ .deployment_suffix }}-aggsender-validator:{{ .aggsender_validator_grpc_port }}" 
+                    else 
+                        "http://aggkit{{ .deployment_suffix }}-aggsender-validator-\(.value.index | tostring | if length == 1 then "00" + . else if length == 2 then "0" + . else . end end):{{ .aggsender_validator_grpc_port }}" 
+                    end 
+                ])
+            )
+        ' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp && \
+        mv /opt/contract-deploy/create_new_rollup.json.tmp /opt/contract-deploy/create_new_rollup.json
     fi
 fi

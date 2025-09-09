@@ -58,7 +58,7 @@ def run(
 ):
     if (
         deployment_stages.get("deploy_op_succinct", False)
-        and args["consensus_contract_type"] != "pessimistic"
+        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.fep
     ):
         # Create aggkit-prover
         aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(

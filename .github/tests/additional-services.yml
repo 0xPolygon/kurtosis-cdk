@@ -1,6 +1,7 @@
 args:
   verbosity: debug
   additional_services:
+    - agglogger
     - arpeggio
     # - assertoor
     # - blockscout # The service experiences Out of Memory (OOM) termination when deployed inside github runners.

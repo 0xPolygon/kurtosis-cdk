@@ -10,8 +10,8 @@ DATA_AVAILABILITY_MODES = struct(
 )
 
 AGGCHAIN_CONTRACT_NAMES = struct(
-    # Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1
-    ecdsa="ecdsa",
+    # Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1
+    ecdsa_multisig="ecdsa_multisig",
     # Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
     fep="fep",
 )
@@ -21,7 +21,7 @@ CONSENSUS_CONTRACTS = {
     DATA_AVAILABILITY_MODES.rollup: "PolygonZkEVMEtrog",
     DATA_AVAILABILITY_MODES.cdk_validium: "PolygonValidiumEtrog",
     DATA_AVAILABILITY_MODES.pessimistic: "PolygonPessimisticConsensus",
-    AGGCHAIN_CONTRACT_NAMES.ecdsa: "AggchainECDSA",
+    AGGCHAIN_CONTRACT_NAMES.ecdsa_multisig: "AggchainECDSAMultisig",
     AGGCHAIN_CONTRACT_NAMES.fep: "AggchainFEP",
 }
 

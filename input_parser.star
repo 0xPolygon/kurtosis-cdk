@@ -44,7 +44,8 @@ DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.6.0-beta2",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
-    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v12.0.0-rc.0-fork.12",  # https://github.com/agglayer/agglayer-contracts/tree/v12.0.0-rc.0
+    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v0.0.0-rc.0.aggchain.multisig-fork.0",  # https://github.com/agglayer/agglayer-contracts/tree/feature/pr_fixes
+    "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
     "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
@@ -393,6 +394,7 @@ DEFAULT_ROLLUP_ARGS = {
     "use_agg_sender_validator": False,
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
+    "agg_sender_multisig_threshold": 1,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -432,11 +434,12 @@ DEFAULT_ARGS = (
         # - 'cdk_validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
         # Aggchain Consensus Options:
-        # - 'ecdsa': Aggchain using an ECDSA signature with CONSENSUS_TYPE = 1.
+        # - 'ecdsa_multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
         "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
         # Additional services to run alongside the network.
         # Options:
+        # - agglogger
         # - arpeggio
         # - assertoor
         # - blockscout
@@ -450,8 +453,9 @@ DEFAULT_ARGS = (
         # - test_runner
         # - tx_spammer
         "additional_services": [
-            constants.ADDITIONAL_SERVICES.test_runner,
+            constants.ADDITIONAL_SERVICES.agglogger,
             constants.ADDITIONAL_SERVICES.bridge_spammer,
+            constants.ADDITIONAL_SERVICES.test_runner,
         ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
@@ -534,14 +538,14 @@ VALID_ADDITIONAL_SERVICES = [
 ]
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [9, 11, 12, 13]
+SUPPORTED_FORK_IDS = [0, 9, 11, 12, 13]
 
 VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.rollup,
     constants.CONSENSUS_TYPE.cdk_validium,
     constants.CONSENSUS_TYPE.pessimistic,
     constants.CONSENSUS_TYPE.fep,
-    constants.CONSENSUS_TYPE.ecdsa,
+    constants.CONSENSUS_TYPE.ecdsa_multisig,
 ]
 
 
@@ -856,6 +860,21 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 )
             )
 
+    # Check agg_sender_multisig_threshold is never below 1
+    if args["agg_sender_multisig_threshold"] < 1:
+        fail(
+            "Aggsender multisig threshold ('{}') cannot be below 1.".format(
+                args["agg_sender_multisig_threshold"]
+            )
+        )
+
+    if args["consensus_contract_type"] == "ecdsa_multisig" and args["fork_id"] != 0:
+        fail(
+            "ForkID ('{}') must be 0 if AggchainECDSAMultisig consensus is being used.".format(
+                args["fork_id"]
+            )
+        )
+
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
         "deployment_suffix"
@@ -924,7 +943,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
             if (
                 args["consensus_contract_type"] != "fep"
-                and args["consensus_contract_type"] != "ecdsa"
+                and args["consensus_contract_type"] != "ecdsa_multisig"
             ):
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(
