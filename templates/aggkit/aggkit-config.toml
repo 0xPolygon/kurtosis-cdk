@@ -193,7 +193,7 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
-{{- if eq .consensus_contract_type "pessimistic"}}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"
@@ -729,7 +729,7 @@ EnableRPC = true
 # Signer = { Method = "mock" }
 Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
 # PessimisticProof or AggchainProof
-{{- if eq .consensus_contract_type "pessimistic"}}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"
