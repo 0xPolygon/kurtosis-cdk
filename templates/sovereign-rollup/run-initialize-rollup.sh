@@ -260,7 +260,7 @@ check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
 rollupID=$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "{{.zkevm_rollup_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
 # shellcheck disable=SC2050
 if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
-    FIXME - Temporary work around to make sure the default aggkey is configured
+    # FIXME - Temporary work around to make sure the default aggkey is configured
     cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' /opt/zkevm/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
     true
 fi
