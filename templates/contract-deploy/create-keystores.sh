@@ -80,7 +80,6 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
                     end 
                 ])
             )
-            | .aggchainParams.threshold = ($vals | length)
         ' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp && \
         mv /opt/contract-deploy/create_new_rollup.json.tmp /opt/contract-deploy/create_new_rollup.json
     fi

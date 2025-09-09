@@ -48,7 +48,6 @@
             "aggregationVkey": "{{ .sp1_aggregation_vkey }}",
             "rangeVkeyCommitment": "{{ .sp1_range_vkey_commitment }}"
         },
-        "useDefaultGateway": true,
         "ownedAggchainVKey": "{{ .aggchain_vkey_hash }}",
         "aggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "initOwnedAggchainVKey": "{{ .aggchain_vkey_hash }}",
@@ -56,6 +55,6 @@
         "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}",
         "useDefaultSigners": false,
         "signers": [["{{ .zkevm_l2_aggsendervalidator_address }}","http://aggkit-001:5576"]],
-        "threshold": "{{ .agg_sender_multisig_threshold }}"
+        "threshold": {{ .agg_sender_multisig_threshold }}
     }
 }
