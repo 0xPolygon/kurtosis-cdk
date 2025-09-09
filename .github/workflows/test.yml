@@ -263,8 +263,8 @@ jobs:
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
+            echo "Skipping block verification as consensus is pessimistic or ecdsa_multisig."
           else
             result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
             if [[ "$result" == "true" ]]; then
