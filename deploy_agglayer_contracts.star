@@ -160,16 +160,6 @@ def run(plan, args, deployment_stages, op_stack_args):
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
-    #    aggnsender_validators = []
-    #    if args.get("use_agg_sender_validator", False):
-    #        aggsender_validators = [
-    #            validator['address'] for validator in GetHttpRequestRecipe(
-    #                port_id = "http",
-    #                service_name = "contracts-001",
-    #                endpoint = "/opt/zkevm/aggsender-validators.json",
-    #            )
-    #        ]
-
     artifacts = []
     for artifact_cfg in artifact_paths:
         template = read_file(src=artifact_cfg["file"])
@@ -202,7 +192,6 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "aggchain_vkey_hash": aggchain_vkey_hash,
                         "aggchain_vkey_selector": aggchain_vkey_selector,
                         "program_vkey": program_vkey,
-                        #                        "aggsender_validators": aggsender_validators,
                     },
                 )
             },

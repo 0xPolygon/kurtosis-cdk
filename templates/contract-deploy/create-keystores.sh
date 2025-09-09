@@ -71,7 +71,14 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
             .aggchainParams.signers += (
                 $vals
                 | to_entries
-                | map([ .value.address, "agg-sender validator \(.value.index)" ])
+                | map([ 
+                    .value.address, 
+                    if .value.index == 0 then 
+                        "http://aggkit{{ .deployment_suffix }}-aggsender-validator:{{ .aggsender_validator_grpc_port }}" 
+                    else 
+                        "http://aggkit{{ .deployment_suffix }}-aggsender-validator-\(.value.index | tostring | if length == 1 then "00" + . else if length == 2 then "0" + . else . end end):{{ .aggsender_validator_grpc_port }}" 
+                    end 
+                ])
             )
             | .aggchainParams.threshold = ($vals | length)
         ' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/create_new_rollup.json.tmp && \

@@ -397,6 +397,7 @@ DEFAULT_ROLLUP_ARGS = {
     "use_agg_sender_validator": False,
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
+    "agg_sender_multisig_threshold": 1,
 }
 
 DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
@@ -857,6 +858,14 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             fail(
                 "Aggsender Validator is enabled. agg_sender_validator_total_number ('{}') needs to be greater than 1.".format(
                     args["agg_sender_validator_total_number"]
+                )
+            )
+    
+    # Check agg_sender_multisig_threshold is never below 1
+    if args["agg_sender_multisig_threshold"] < 1:
+        fail(
+                "Aggsender multisig threshold ('{}') cannot be below 1.".format(
+                    args["agg_sender_multisig_threshold"]
                 )
             )
 
