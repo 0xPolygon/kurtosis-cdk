@@ -858,14 +858,14 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                     args["agg_sender_validator_total_number"]
                 )
             )
-    
+
     # Check agg_sender_multisig_threshold is never below 1
     if args["agg_sender_multisig_threshold"] < 1:
         fail(
-                "Aggsender multisig threshold ('{}') cannot be below 1.".format(
-                    args["agg_sender_multisig_threshold"]
-                )
+            "Aggsender multisig threshold ('{}') cannot be below 1.".format(
+                args["agg_sender_multisig_threshold"]
             )
+        )
 
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
