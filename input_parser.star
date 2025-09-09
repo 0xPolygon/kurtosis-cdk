@@ -867,6 +867,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
         )
 
+    if args["consensus_contract_type"] == "ecdsa_multisig" and args["fork_id"] != 0:
+        fail(
+            "ForkID ('{}') must be 0 if AggchainECDSAMultisig consensus is being used.".format(
+                args["fork_id"]
+            )
+        )
+
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
         "deployment_suffix"
