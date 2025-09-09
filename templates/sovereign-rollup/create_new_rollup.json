@@ -48,6 +48,7 @@
             "aggregationVkey": "{{ .sp1_aggregation_vkey }}",
             "rangeVkeyCommitment": "{{ .sp1_range_vkey_commitment }}"
         },
+        "useDefaultVkeys": false,
         "ownedAggchainVKey": "{{ .aggchain_vkey_hash }}",
         "aggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "initOwnedAggchainVKey": "{{ .aggchain_vkey_hash }}",

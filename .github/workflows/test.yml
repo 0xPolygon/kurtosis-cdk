@@ -239,7 +239,7 @@ jobs:
       - name: Monitor pessimistic chain virtual batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})

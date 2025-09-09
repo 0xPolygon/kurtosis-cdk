@@ -146,6 +146,8 @@ def run(plan, args, deployment_stages, op_stack_args):
     aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
     if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
         aggchain_vkey_selector = "0x00000000"
+    elif args["consensus_contract_type"] == constants.CONSENSUS_TYPE.fep:
+        aggchain_vkey_selector = "0x00000001"
     else:
         aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
 
