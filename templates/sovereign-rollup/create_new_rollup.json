@@ -55,7 +55,7 @@
         "initAggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}",
         "useDefaultSigners": false,
-        "signers": [["{{ .zkevm_l2_sequencer_address }}","AggSender.PrivateKey"]],
+        "signers": [["{{ .zkevm_l2_sequencer_address }}"," "]],
         "threshold": {{ .agg_sender_multisig_threshold }}
     }
 }

@@ -275,7 +275,7 @@ def run(
         )
 
         for agg_sender_validator_member_index in range(
-            agg_sender_validator_total_members
+            1, agg_sender_validator_total_members + 1
         ):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
@@ -367,11 +367,6 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/claimsponsor.keystore",
     )
-    aggsender_validator_keystore_artifact = plan.store_service_files(
-        name="aggsendervalidator-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggsendervalidator.keystore",
-    )
 
     # Store multiple aggoracle committee member keystores
     committee_keystores = []
@@ -396,16 +391,14 @@ def get_keystores_artifacts(plan, args):
         agg_sender_validator_total_members = args.get(
             "agg_sender_validator_total_number", 1
         )
-        for member_index in range(agg_sender_validator_total_members):
+        # For loop starts from 1 instead of 0 for aggsender-validator service suffix consistency
+        for member_index in range(1, agg_sender_validator_total_members + 1):
             aggsender_validator_keystore = plan.store_service_files(
                 name="aggsendervalidator-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
                 src="/opt/zkevm/aggsendervalidator-{}.keystore".format(member_index),
             )
             aggsender_validator_keystores.append(aggsender_validator_keystore)
-    else:
-        # For non-validator mode, use the standard aggsender validator keystore as the first validator
-        aggsender_validator_keystores.append(aggsender_validator_keystore_artifact)
 
     return struct(
         aggoracle=aggoracle_keystore_artifact,
@@ -413,7 +406,6 @@ def get_keystores_artifacts(plan, args):
         claimtx=claimtx_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
-        aggsender_validator=aggsender_validator_keystore_artifact,
         committee_keystores=committee_keystores,
         aggsender_validator_keystores=aggsender_validator_keystores,
     )

@@ -26,7 +26,6 @@ create_geth_keystore "proofsigner.keystore"     "{{.zkevm_l2_proofsigner_private
 create_geth_keystore "aggoracle.keystore"       "{{.zkevm_l2_aggoracle_private_key}}"       "{{.zkevm_l2_keystore_password}}"
 create_geth_keystore "sovereignadmin.keystore"  "{{.zkevm_l2_sovereignadmin_private_key}}"  "{{.zkevm_l2_keystore_password}}"
 create_geth_keystore "claimsponsor.keystore"    "{{.zkevm_l2_claimsponsor_private_key}}"    "{{.zkevm_l2_keystore_password}}"
-create_geth_keystore "aggsendervalidator.keystore" "{{.zkevm_l2_aggsendervalidator_private_key}}" "{{.zkevm_l2_keystore_password}}"
 
 # Generate multiple aggoracle keystores for committee members
 # shellcheck disable=SC2050
@@ -51,7 +50,8 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
     if [[ "$VALIDATOR_COUNT" -ge 1 ]]; then
         json_output="["
 
-        for (( index=0; index<VALIDATOR_COUNT; index++ )); do
+        # For loop starts from 1 instead of 0 for aggsender-validator service suffix consistency
+        for (( index=1; index<VALIDATOR_COUNT+1; index++ )); do
             # $((index + 100)) is being used instead of $index, because we are using the same MNEMONIC for multiple different addresses.
             # By adding 100 to the original index, we are adding variety in the addresses being generated.
             aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $((index + 100)))
@@ -60,7 +60,7 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
             create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.zkevm_l2_keystore_password}}"
 
             json_output+='{"index":'$index',"address":"'$aggsender_validator_address'","private_key":"'$aggsendervalidator_private_key'"}'
-            if [[ $index -lt $((VALIDATOR_COUNT-1)) ]]; then
+            if [[ $index -lt $VALIDATOR_COUNT ]]; then
                 json_output+=","
             fi
         done

@@ -180,25 +180,18 @@ def create_aggsender_validator_service_config(
     log_claim_sponsor_warning(plan, args)
 
     # Aggsender validator naming
-    if member_index == 0:
-        aggkit_name = "aggkit" + args["deployment_suffix"] + "-aggsender-validator"
-    else:
-        aggkit_name = (
-            "aggkit"
-            + args["deployment_suffix"]
-            + "-aggsender-validator-00"
-            + str(member_index)
-        )
+    aggkit_name = (
+        "aggkit"
+        + args["deployment_suffix"]
+        + "-aggsender-validator-00"
+        + str(member_index)
+    )
 
     # Use aggsender validator keystore
-    if member_index >= 0 and member_index < len(
-        keystore_artifact.aggsender_validator_keystores
-    ):
-        selected_keystore = keystore_artifact.aggsender_validator_keystores[
-            member_index
-        ]
-    else:
-        selected_keystore = keystore_artifact.aggsender_validator
+    selected_keystore = keystore_artifact.aggsender_validator_keystores[
+        member_index
+        - 1  # Convert from 1-based to 0-based indexing when accessing aggsender_validator_keystores array
+    ]
 
     (ports, public_ports) = get_aggkit_ports(args, "aggsender_validator")
 
