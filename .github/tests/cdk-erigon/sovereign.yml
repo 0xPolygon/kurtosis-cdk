@@ -1,0 +1,20 @@
+deployment_stages:
+  deploy_l2_contracts: true
+  deploy_optimism_rollup: false
+  deploy_op_succinct: false
+
+args:
+  sequencer_type: erigon
+  consensus_contract_type: pessimistic
+
+  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12
+  zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-rc4
+
+  sp1_prover_key: ""
+  agglayer_prover_primary_prover: mock-prover
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  zkevm_use_real_verifier: false
+  enable_normalcy: true
+  aggkit_components: aggsender,bridge

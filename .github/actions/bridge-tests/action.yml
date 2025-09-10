@@ -1,0 +1,24 @@
+name: bridge-tests
+description: Run agglayer/e2e bridge tests against a Kurtosis enclave.
+
+inputs:
+  enclave_name:
+    description: The name of the kurtosis enclave
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Stop bridge spammer
+      shell: bash
+      run: kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+
+    - name: Bridge from L1 to L2
+      shell: bash
+      run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
+        "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+
+    - name: Bridge from L2 to L1
+      shell: bash
+      run: kurtosis service exec ${{ env.ENCLAVE_NAME }} test-runner \
+        "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"

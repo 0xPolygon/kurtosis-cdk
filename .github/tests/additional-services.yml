@@ -1,6 +1,7 @@
 args:
   verbosity: debug
   additional_services:
+    - agglogger
     - arpeggio
     # - assertoor
     # - blockscout # The service experiences Out of Memory (OOM) termination when deployed inside github runners.
@@ -9,6 +10,7 @@ args:
     - erpc
     - observability
     # - pless_zkevm_node # zkevm-node doesn't support fork12.
+    - rpc_fuzzer
     - status_checker
     - test_runner
     - tx_spammer

@@ -238,7 +238,9 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # - 2: BigEndian (improved format)
 # - 3: Latest format with additional features
 # Default: 2
-# fork12 or after {{if eq .zkevm_rollup_fork_name "banana"}}
+# {{if eq .cdk_erigon_node_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
+# zkevm.datastream-version: not supported
+# fork12 or after {{else if eq .zkevm_rollup_fork_name "banana"}}
 zkevm.datastream-version: 3
 # before fork12 {{else}}
 zkevm.datastream-version: 2
@@ -265,6 +267,11 @@ zkevm.data-stream-inactivity-timeout: 10m
 # Default: 5m
 zkevm.data-stream-inactivity-check-interval: 5m
 
+# {{if .enable_normalcy}}
+# Type 1 CDK-Erigon Configs
+zkevm.honour-chainspec: true
+zkevm.initial-commitment: pmt
+# {{end}}
 
 # --------------------------------------------------------------------------------------------------
 #   ______  _________     ____  __           ____  _____ ___  _   _ _____ _   _  ____ _____ ____
@@ -600,7 +607,7 @@ txpool.globalqueue: 30_000
 # Default: 3h
 # txpool.lifetime: 3h
 
-# A comma separared list of addresses, whoes transactions will traced in transaction pool with debug printing.
+# A comma separared list of addresses, whose transactions will traced in transaction pool with debug printing.
 # Default: ""
 txpool.trace.senders: ""
 
@@ -788,7 +795,7 @@ rpc.accessList: ""
 
 # Sets a cap on gas that can be used in eth_call/estimateGas.
 # Set to 0 to remove the cap.
-# Deault: 50_000_000
+# Default: 50_000_000
 rpc.gascap: 50_000_000
 
 

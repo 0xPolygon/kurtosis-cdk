@@ -1,0 +1,497 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+env:
+  ENCLAVE_NAME: cdk
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install linters
+      - name: Install kurtosis
+        shell: bash
+        run: |
+          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          sudo apt update
+          sudo apt install -y kurtosis-cli=1.7.2
+          kurtosis analytics disable
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Install hadolint
+        run: |
+          sudo wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
+
+      - name: Install shellcheck
+        run: sudo apt install shellcheck
+
+      # Run linters
+      - name: Run kurtosis linter
+        run: kurtosis lint .
+
+      - name: Run yamllint
+        run: yamllint --config-file ${{ github.workspace }}/.yamllint.yml .
+
+      - name: Run hadolint
+        run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
+
+      - name: Run shellcheck
+        run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
+
+  typos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
+
+  check-version-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if job should be run
+        id: check-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "Prevent running this job on forks. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ -z "$GITHUB_TOKEN" ]]; then
+            echo "No Github token provided. Skipping this job."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "::warning title=version-matrix::Version matrix job skipped."
+            exit 0
+          fi
+
+          echo "Running version matrix job."
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-python@v4
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        with:
+          python-version: 3.13
+
+      - name: Install dependencies
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: pip install -r scripts/version-matrix/requirements.txt
+
+      - name: Generate version matrix
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
+        run: |
+          echo "Generating version matrix with GitHub API..."
+          python scripts/version-matrix/extract-versions.py
+
+      - name: Generate markdown documentation
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: python scripts/version-matrix/generate-markdown.py
+
+      - name: Check if there are changes
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Version matrix is up to date."
+          fi
+
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.21
+          cache: false
+
+      - name: Install kurtosis-test
+        run: |
+          git clone --branch v0.0.5 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
+          cd /tmp/kurtosis-test
+          go build -o kurtosis-test cli/main.go
+          cp kurtosis-test /usr/local/bin
+
+      - name: Run unit tests
+        run: kurtosis-test .
+
+  run-without-args:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+
+      - name: Run bridge tests
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+  list-ymls:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set-matrix
+        run: |
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-geth/*.yml)
+          echo "file_paths:"
+          echo "${file_paths}"
+          echo
+
+          matrix=$(echo "${file_paths}" | while read -r file_path; do
+            file_name=$(basename -s ".yml" "${file_path}")
+            folder_name=$(basename $(dirname "${file_path}"))
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
+              job_name="${folder_name}-${file_name}"
+            else
+              job_name="${file_name}"
+            fi
+            echo "{\"name\": \"$job_name\", \"path\": \"$file_path\"}"
+          done | jq -s -c '.')
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "matrix:"
+          echo "${matrix}" | jq
+
+  run-with-args:
+    needs: [lint, unit, list-ymls]
+    name: run-with-${{ matrix.file.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJson(needs.list-ymls.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=${{ matrix.file.path }} .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor pessimistic chain virtual batches (Central RPC)
+        run: |
+          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
+          if [[ "$result" == "pessimistic" ]]; then
+            echo "Skipping block verification as consensus is pessimistic."
+          else
+            sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
+            rpc_name=""
+            if [[ "$sequencer_type" == "erigon" ]]; then
+              rpc_name="cdk-erigon-rpc-001"
+            elif [[ "$sequencer_type" == "zkevm" ]]; then
+              rpc_name="zkevm-node-rpc-001"
+            elif [[ "$sequencer_type" == "null" ]]; then
+              rpc_name="cdk-erigon-rpc-001"
+            else
+              echo "Unknown sequencer type: $sequencer_type"
+              exit 1
+            fi
+            echo "RPC name: $rpc_name"
+            ./.github/scripts/monitor-pessimistic-chain.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
+          fi
+
+      - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
+        run: |
+          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
+          if [[ "$result" == "pessimistic" ]]; then
+            echo "Skipping block verification as consensus is pessimistic."
+          else
+            result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
+            if [[ "$result" == "true" ]]; then
+              ./.github/scripts/monitor-cdk-chain.sh \
+                --enclave ${{ env.ENCLAVE_NAME }} \
+                --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+            else
+              echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
+            fi
+          fi
+
+      - name: Monitor OP rollup finalized blocks (OP CL RPC)
+        run: |
+          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file.path }})
+          if [[ "$result" == "true" ]]; then
+            ./.github/scripts/monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+          else
+            echo "Skipping block verification as there is no OP rollup in the environment"
+          fi
+
+      - name: Run bridge tests
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: ${{ matrix.file.name }}
+
+  run-with-op-succinct:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/op-succinct/mock-prover.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Install bats
+        uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
+        with:
+          support-path: "${{ github.workspace }}/lib/bats-support"
+          assert-path: "${{ github.workspace }}/lib/bats-assert"
+          detik-path: "${{ github.workspace }}/lib/bats-detik"
+          file-path: "${{ github.workspace }}/lib/bats-file"
+
+      - name: Install polycli
+        run: |
+          polycli_version="v0.1.87"
+          pushd $(mktemp -d) || exit 1
+          curl -s -L "https://github.com/0xPolygon/polygon-cli/releases/download/${polycli_version}/polycli_${polycli_version}_linux_amd64.tar.gz" > polycli.tar.gz
+          tar xf polycli.tar.gz
+          mv polycli_* /usr/local/bin/polycli
+          polycli version
+
+      - name: Checkout agglayer-e2e
+        uses: actions/checkout@v4
+        with:
+          repository: agglayer/e2e
+          path: agglayer-e2e
+          ref: 4763c63cb11c5e605bff749823bf514abcdac7b6 # 2028-07-10
+
+      - name: Run bridge tests and op optimistic mode tests
+        run: |
+          set -eo pipefail
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          export CLAIM_WAIT_DURATION="20m"
+
+          # Run op optimistic mode tests
+          bats ./tests/op/optimistic-mode.bats || exit 1
+
+          # Run bridge tests
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
+          bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: cdk-op-geth-succinct
+
+  run-with-additional-services:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Kurtosis run
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/additional-services.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Verify arpeggio rpc
+        run: |
+          result=$(yq '.args.additional_services | contains(["arpeggio"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} arpeggio-001 rpc)
+          else
+            echo "Arpeggio is not deployed."
+          fi
+
+      - name: Verify blutgang rpc
+        run: |
+          result=$(yq '.args.additional_services | contains(["blutgang"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} blutgang-001 http)
+          else
+            echo "Blutgang is not deployed."
+          fi
+
+      - name: Verify erpc rpc
+        run: |
+          result=$(yq '.args.additional_services | contains(["erpc"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/2151908"
+          else
+            echo "ERPC is not deployed."
+          fi
+
+      - name: Verify permissionless zkevm-node rpc
+        run: |
+          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
+          else
+            echo "Permissionless zkevm-node is not deployed."
+          fi
+
+      - name: Verify that prometheus collects panoptichain metrics
+        run: |
+          result=$(yq '.args.additional_services | contains(["prometheus_grafana"])' ./.github/tests/additional-services.yml)
+          if [ "$result" = "true" ]; then
+            echo "Wait for one minute while Prometheus gathers metrics..."
+            sleep 60
+
+            echo "Retrieve Panoptichain metrics from Prometheus..."
+            panoptichain_metric="panoptichain_system_uptime"
+            prometheus_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} prometheus-001 http)
+            prometheus_query=$(curl "$prometheus_url/api/v1/query?query=$panoptichain_metric")
+            echo $prometheus_query | jq
+            if [ "$(jq -r '.data.result[0].metric.__name__' <<<$prometheus_query)" == "$panoptichain_metric" ]; then
+              echo "✅ Prometheus collects panoptichain metrics!"
+            else
+              echo "❌ Prometheus does not collect panoptichain metrics..."
+              exit 1
+            fi
+          else
+            echo "Prometheus is not deployed."
+          fi
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: additional-services
+
+  run-with-external-l1:
+    needs: [lint, unit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre kurtosis run
+        uses: ./.github/actions/kurtosis-pre-run
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Deploy local L1 chain
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-local-l1.yml .
+
+      - name: Deploy to local L1 chain
+        run: kurtosis run --enclave=${{ env.ENCLAVE_NAME }} --args-file=./.github/tests/external-l1/deploy-cdk-to-local-l1.yml .
+
+      - name: Inspect enclave
+        run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+
+      - name: Run bridge tests
+        uses: ./.github/actions/bridge-tests
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+
+      - name: Post kurtosis run
+        if: always()
+        uses: ./.github/actions/kurtosis-post-run
+        with:
+          enclave_name: ${{ env.ENCLAVE_NAME }}
+          args_filename: deploy-to-external-l1

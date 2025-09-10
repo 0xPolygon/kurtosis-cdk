@@ -345,7 +345,7 @@ Okay this looks good. Just to recap that has happened:
 
 - We deployed the rollup manager using ~test~ mode which assigns the
   admin as the admin account rather than the timelock
-- We granted the ~DEFAULT_ADMIN_ROLE~ to the timelock addres
+- We granted the ~DEFAULT_ADMIN_ROLE~ to the timelock address
 - We scheduled a time locked transaction to revoke the admin account's
   ~DEFAULT_ADMIN_ROLE~
 - We executed the transaction after the elapsed amount of time.

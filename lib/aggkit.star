@@ -17,7 +17,7 @@ def create_aggkit_cdk_service_config(
     config_artifact,
     keystore_artifact,
 ):
-    # Check if claim sponsor is enabled nd "bridge" is not in aggkit_components
+    # Check if claim sponsor is enabled and "bridge" is not in aggkit_components
     log_claim_sponsor_warning(plan, args)
 
     aggkit_name = "aggkit" + args["deployment_suffix"]
@@ -38,6 +38,7 @@ def create_aggkit_cdk_service_config(
             "/data": Directory(
                 artifact_names=[],
             ),
+            "/tmp": Directory(persistent_key="aggkit-tmp"),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
@@ -53,7 +54,7 @@ def create_aggkit_service_config(
     genesis_artifact,
     keystore_artifact,
 ):
-    # Check if claim sponsor is enabled nd "bridge" is not in aggkit_components
+    # Check if claim sponsor is enabled and "bridge" is not in aggkit_components
     log_claim_sponsor_warning(plan, args)
 
     aggkit_name = "aggkit" + args["deployment_suffix"]
@@ -77,6 +78,7 @@ def create_aggkit_service_config(
             "/data": Directory(
                 artifact_names=[],
             ),
+            "/tmp": Directory(persistent_key="aggkit-tmp"),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,

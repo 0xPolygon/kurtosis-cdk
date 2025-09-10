@@ -44,7 +44,7 @@ polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
 
-# These values can be overriden directly from genesis.json
+# These values can be overridden directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
@@ -254,10 +254,10 @@ SaveCertificatesToFilesPath = "/tmp"
 # MaxRetriesStoreCertificate = 3
 
 # ------------------------------------------------------------------------------
-# DelayBeetweenRetries is the delay between retries
+# DelayBetweenRetries is the delay between retries
 # Duration expressed in units: [ns, us, ms, s, m, h, d]"
 # ------------------------------------------------------------------------------
-# DelayBeetweenRetries = 5s
+# DelayBetweenRetries = 5s
 
 # ------------------------------------------------------------------------------
 # KeepCertificatesHistory is a flag to keep the certificates history on storage
@@ -279,6 +279,36 @@ SaveCertificatesToFilesPath = "/tmp"
 # EnableRPC is a flag to enable the RPC for aggsender
 # ------------------------------------------------------------------------------
 # EnableRPC = false
+
+# ------------------------------------------------------------------------------
+# RetryCertAfterInError when a cert pass to 'InError'state
+# the AggSender will try to resend it immediately
+# ------------------------------------------------------------------------------
+# RetryCertAfterInError = false
+
+# ------------------------------------------------------------------------------
+# RequireNoFEPBlockGap is true if the AggSender should not accept a gap between
+# lastBlock from lastCertificate and first block of FEP
+# ------------------------------------------------------------------------------
+# RequireNoFEPBlockGap = false
+
+# ------------------------------------------------------------------------------
+# RequireOneBridgeInPPCertificate is a flag to force the AggSender to have at least one bridge exit
+# for the Pessimistic Proof certificates
+# ------------------------------------------------------------------------------
+# RequireOneBridgeInPPCertificate = false
+
+# ------------------------------------------------------------------------------
+# MaxL2BlockNumber is the last L2 block number that is going to be included in a certificate
+# 0 means disabled
+# ------------------------------------------------------------------------------
+# MaxL2BlockNumber = 0
+
+# ------------------------------------------------------------------------------
+# StopOnFinishedSendingAllCertificates is a flag to stop the AggSender when it finishes sending all certificates
+# up to MaxL2BlockNumber
+# ------------------------------------------------------------------------------
+# StopOnFinishedSendingAllCertificates = false
 
 # ==============================================================================
 #     _    ____  ____  ___  ____      _    ____ _     _____
@@ -505,14 +535,13 @@ BlockFinality = "LatestBlock"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 
 # ==============================================================================
-#  _                _____ _______ _____ ______ _____   _______     ___   _  _____
-# | |        /\    / ____|__   __/ ____|  ____|  __ \ / ____\ \   / / \ | |/ ____|
-# | |       /  \  | (___    | | | |  __| |__  | |__) | (___  \ \_/ /|  \| | |
-# | |      / /\ \  \___ \   | | | | |_ |  __| |  _  / \___ \  \   / | . ` | |
-# | |____ / ____ \ ____) |  | | | |__| | |____| | \ \ ____) |  | |  | |\  | |____
-# |______/_/    \_\_____/   |_|  \_____|______|_|  \_\_____/   |_|  |_| \_|\_____|
+#  _     ____   ____ _____ ____  ______   ___   _  ____ 
+# | |   |___ \ / ___| ____|  _ \/ ___\ \ / / \ | |/ ___|
+# | |     __) | |  _|  _| | |_) \___ \\ V /|  \| | |    
+# | |___ / __/| |_| | |___|  _ < ___) || | | |\  | |___ 
+# |_____|_____|\____|_____|_| \_\____/ |_| |_| \_|\____|
 # ==============================================================================
-[LastGERSync]
+[L2GERSync]
 # ------------------------------------------------------------------------------
 # BlockFinality indicates which finality follows AggLayer accepted values are:
 # LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock

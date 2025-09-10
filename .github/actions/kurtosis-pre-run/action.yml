@@ -8,24 +8,15 @@ inputs:
   docker_token:
     description: The token for Docker Hub
     required: false
+  pull_images_from_gcr:
+    description: Whether to pull images from GCR
+    required: false
+    default: "true"
 
 runs:
   using: composite
   steps:
-    - name: Login to docker registry
-      if: ${{ inputs.docker_username && inputs.docker_token }}
-      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-      with:
-        username: ${{ inputs.docker_username }}
-        password: ${{ inputs.docker_token }}
-    
-    - name: Login to github container registry
-      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
-
+    # Install dependencies
     - name: Install kurtosis
       shell: bash
       run: |
@@ -34,12 +25,13 @@ runs:
         sudo apt install -y kurtosis-cli=1.7.2
         kurtosis analytics disable
         kurtosis version
-    
+
     - name: Install jq
       shell: bash
       run: |
         sudo apt update
         sudo apt install -y jq
+        jq --version
 
     - name: Install yq
       shell: bash
@@ -51,3 +43,87 @@ runs:
       uses: foundry-rs/foundry-toolchain@de808b1eea699e761c404bda44ba8f21aba30b2c # v1.3.1
       with:
         version: v1.0.0
+        cache: false
+
+    # Login to registries
+    - name: Login to docker registry
+      if: ${{ inputs.docker_username && inputs.docker_token }}
+      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      with:
+        username: ${{ inputs.docker_username }}
+        password: ${{ inputs.docker_token }}
+
+    - name: Login to github container registry
+      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    - name: Detect fork
+      id: detect-fork
+      shell: bash
+      run: |
+        # If running from a fork, fallback to public images.
+        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+          echo "pull_gcr=false" >> $GITHUB_OUTPUT
+        else
+          echo "pull_gcr=${{ inputs.pull_images_from_gcr }}" >> $GITHUB_OUTPUT
+        fi
+
+    # Pull images from GCR if specified
+    - uses: actions/setup-python@v4
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      with:
+        python-version: 3.13
+
+    - name: Add registry prefix to image names
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      shell: bash
+      run: |
+        script_path=$(realpath "${{ github.action_path }}/../../scripts/add-registry-prefix.py")
+        python3 "${script_path}" --registry-prefix "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+
+    - uses: google-github-actions/auth@v2.0.0
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      with:
+        workload_identity_provider: "projects/337907489413/locations/global/workloadIdentityPools/github-wif/providers/github"
+        service_account: "kurtosis-cdk-ci@prj-polygonlabs-devtools-dev.iam.gserviceaccount.com"
+
+    - name: Configure Docker to use GCR
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      shell: bash
+      run: gcloud auth configure-docker europe-west2-docker.pkg.dev
+
+    - name: Pre pull package images from GCR
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      shell: bash
+      run: cat modified-images.txt | xargs -n 1 -P 8 docker pull
+
+    - name: Pre pull kurtosis core images from GCR
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
+      shell: bash
+      run: |
+        registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
+        images=(
+          "kurtosistech/engine:1.7.2"
+          "timberio/vector:0.45.0-debian"
+          "traefik:2.10.6"
+          "alpine:3.17"
+          "badouralix/curl-jq:latest"
+          "protolambda/eth2-val-tools:latest"
+          "ethpandaops/ethereum-genesis-generator:4.1.19"
+          "mslipper/deployment-utils:latest"
+        )
+        for image in "${images[@]}"; do
+          {
+            docker pull "${registry}/${image}"
+            docker tag "${registry}/${image}" "${image}"
+          } &
+        done
+        wait
+
+    - name: Display docker images
+      if: ${{ inputs.pull_images_from_gcr == 'true' }}
+      shell: bash
+      run: docker images

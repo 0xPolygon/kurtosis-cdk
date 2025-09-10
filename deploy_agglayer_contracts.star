@@ -90,6 +90,10 @@ ARTIFACTS = [
         "name": "op-custom-genesis-addresses.json",
         "file": "./templates/sovereign-rollup/op-custom-genesis-addresses.json",
     },
+    {
+        "name": "json2http.py",
+        "file": "./scripts/json2http.py",
+    },
 ]
 
 
@@ -230,11 +234,23 @@ def run(plan, args, deployment_stages, op_stack_args):
         name=contracts_service_name,
         config=ServiceConfig(
             image=args["agglayer_contracts_image"],
+            ports={"http": PortSpec(8080, application_protocol="http", wait=None)},
             files=files,
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
             user=User(uid=0, gid=0),  # Run the container as root user.
+        ),
+    )
+    plan.exec(
+        description="JSON 2 Http Server",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/contract-deploy --daemon || true",
+            ]
         ),
     )
 

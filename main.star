@@ -60,7 +60,7 @@ def run(plan, args={}):
         )
 
         if deployment_stages.get("deploy_optimism_rollup", False):
-            # Deploy Sovereign contracts (maybe a better name is creating soverign rollup)
+            # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
             plan.print("Creating new rollup type and creating rollup on L1")

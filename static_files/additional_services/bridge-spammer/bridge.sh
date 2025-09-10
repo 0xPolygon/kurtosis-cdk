@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# This script simulates blockchain activity by perfoming L1 to L2 and L2 to L1 bridges.
+# This script simulates blockchain activity by performing L1 to L2 and L2 to L1 bridges.
 
 # Helper function to log messages in JSON format.
 log_error() {

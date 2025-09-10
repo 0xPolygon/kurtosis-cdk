@@ -12,11 +12,25 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Check if the enclave exists
+      id: enclave-check
+      shell: bash
+      run: |
+        if kurtosis enclave inspect ${{ inputs.enclave_name }}; then
+          echo "ENCLAVE_EXISTS=true" >> "${GITHUB_OUTPUT}"
+          echo "Enclave ${{ inputs.enclave_name }} exists."
+        else
+          echo "ENCLAVE_EXISTS=false" >> "${GITHUB_OUTPUT}"
+          echo "Enclave ${{ inputs.enclave_name }} does not exist."
+        fi
+
     - name: Dump enclave
+      if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
       shell: bash
       run: kurtosis enclave dump ${{ inputs.enclave_name }} ./dump
 
     - name: Generate archive name
+      if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
       id: archive-name
       shell: bash
       run: |
@@ -30,7 +44,45 @@ runs:
         echo "ARCHIVE_NAME=${archive_name}"
 
     - name: Upload enclave dump
+      if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.archive-name.outputs.ARCHIVE_NAME }}
         path: ./dump
+
+    - name: Check for stopped services
+      if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
+      shell: bash
+      run: |
+        stopped_services="$(kurtosis enclave inspect "${{ inputs.enclave_name }}" | grep STOPPED | grep -v "bridge-spammer" || true)"
+        if [[ -n "${stopped_services}" ]]; then
+          echo "❌ It looks like there is at least one stopped service in the enclave... Something must have halted..."
+          echo "${stopped_services}"
+          echo
+
+          kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep STOPPED | grep -v "bridge-spammer" | awk '{print $2 "--" $1}' |
+            while read -r container; do
+              echo "Printing logs for ${container}"
+              echo "::warning title=${container}::Service stopped"
+              docker logs --tail 50 "${container}"
+            done
+        else
+          echo "✅ All services are running."
+        fi
+
+    - name: Check for errors in service logs
+      if: steps.enclave-check.outputs.ENCLAVE_EXISTS == 'true'
+      shell: bash
+      run: |
+        kurtosis enclave inspect "${{ inputs.enclave_name }}" --full-uuids | grep RUNNING | grep -v "Status:" | awk '{print $2 "--" $1}' |
+          while read -r container; do
+            echo "Checking logs for ${container}"
+            if docker logs --since 10m "${container}" 2>&1 | grep -Ev "NoPeersSubscribedToTopic|Errors: \[\]" | grep "error\|warn\|exception\|failed\|fatal\|ERRO\|FATA\|panic"; then
+              echo "❌ Errors found in container logs!"
+              echo "::warning title=${container}::Errors found in container logs"
+            else
+              echo "✅ No errors found in logs."
+            fi
+            echo "------------------------------"
+            echo
+          done
