@@ -198,12 +198,18 @@ def run(
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
-        agg_oracle_committee_total_members = args.get("agg_oracle_committee_total_members", 1)
+        agg_oracle_committee_total_members = args.get(
+            "agg_oracle_committee_total_members", 1
+        )
 
-        for agg_oracle_committee_member_index in range(agg_oracle_committee_total_members):
+        for agg_oracle_committee_member_index in range(
+            agg_oracle_committee_total_members
+        ):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
-                name="aggkit-aggoracle-config-artifact-{}".format(agg_oracle_committee_member_index),
+                name="aggkit-aggoracle-config-artifact-{}".format(
+                    agg_oracle_committee_member_index
+                ),
                 config={
                     "config.toml": struct(
                         template=aggkit_config_template,
@@ -268,7 +274,9 @@ def run(
             "agg_sender_validator_total_number", 1
         )
 
-        for agg_sender_validator_member_index in range(agg_sender_validator_total_members):
+        for agg_sender_validator_member_index in range(
+            agg_sender_validator_total_members
+        ):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
                 name="aggkit-aggsender-config-artifact-{}".format(
@@ -368,7 +376,9 @@ def get_keystores_artifacts(plan, args):
     # Store multiple aggoracle committee member keystores
     committee_keystores = []
     if args.get("use_agg_oracle_committee", False):
-        agg_oracle_committee_total_members = args.get("agg_oracle_committee_total_members", 1)
+        agg_oracle_committee_total_members = args.get(
+            "agg_oracle_committee_total_members", 1
+        )
         for member_index in range(agg_oracle_committee_total_members):
             committee_keystore = plan.store_service_files(
                 name="aggoracle-{}-keystore".format(member_index),
