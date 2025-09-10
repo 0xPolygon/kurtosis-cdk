@@ -30,7 +30,7 @@ rollup_manager_addr=$(jq -r '.rollupManagerAddress' /opt/zkevm/create_rollup_out
 rollup_id=$(jq -r '.rollupID' /opt/zkevm/create_rollup_output.json)
 
 # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" '.rollupManagerAddress = $rum | .rollupID = $rid' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup.json.tmp
+jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup.json.tmp
 mv /opt/contract-deploy/initialize_rollup.json.tmp /opt/contract-deploy/initialize_rollup.json
 
 cp /opt/contract-deploy/initialize_rollup.json /opt/zkevm-contracts/tools/initializeRollup/initialize_rollup.json
