@@ -52,7 +52,9 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
         json_output="["
 
         for (( index=0; index<VALIDATOR_COUNT; index++ )); do
-            aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
+            # $((index + 100)) is being used instead of $index, because we are using the same MNEMONIC for multiple different addresses.
+            # By adding 100 to the original index, we are adding variety in the addresses being generated.
+            aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $((index + 100)))
             aggsender_validator_address=$(cast wallet address --private-key "$aggsendervalidator_private_key")
 
             create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.zkevm_l2_keystore_password}}"
