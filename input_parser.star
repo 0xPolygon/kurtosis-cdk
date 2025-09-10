@@ -578,6 +578,14 @@ def parse_args(plan, user_args):
     agglayer_contracts_image = args.get("agglayer_contracts_image", "")
     (fork_id, fork_name) = get_fork_id(agglayer_contracts_image)
 
+    # Special case for aggchain ECDSA.
+    if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.ecdsa:
+        plan.print(
+            "Aggchain ECDSA consensus selected - changing fork_id to 0 (no fork)"
+        )
+        fork_id = 0
+        fork_name = "no-fork"
+
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
     sequencer_name = get_sequencer_name(sequencer_type)
