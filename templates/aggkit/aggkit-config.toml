@@ -193,6 +193,12 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
+# ------------------------------------------------------------------------------
+# Defines if a check on aggsender proposer startup will be performed 
+# to see if the proposer is in the multisig committee
+# ------------------------------------------------------------------------------
+# RequireCommitteeMembershipCheck = false
+
 {{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
