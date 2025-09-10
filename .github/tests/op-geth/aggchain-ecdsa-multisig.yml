@@ -9,16 +9,13 @@ args:
   consensus_contract_type: ecdsa_multisig
   use_agg_sender_validator: True
   # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
-  agg_sender_validator_total_number: 5
+  agg_sender_validator_total_number: 3
   agg_sender_multisig_threshold: 2
 
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
-
-  additional_services:
-    - bridge_spammer
 
 optimism_package:
   chains:

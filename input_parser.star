@@ -41,9 +41,9 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.6.0-beta2",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta1",  # https://github.com/agglayer/aggkit/tree/074ce6ba96da45e376bc7a2132500e5858cadc98
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.4",
     "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v0.0.0-rc.0.aggchain.multisig-fork.0",  # https://github.com/agglayer/agglayer-contracts/tree/feature/pr_fixes
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
@@ -65,7 +65,7 @@ DEFAULT_IMAGES = {
     "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
-    "zkevm_bridge_service_image": "hermeznetwork/zkevm-bridge-service:v0.6.2-RC2",
+    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.2-RC3",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",

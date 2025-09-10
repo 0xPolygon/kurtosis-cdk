@@ -193,7 +193,7 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
-{{- if eq .consensus_contract_type "pessimistic"}}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"
@@ -208,7 +208,7 @@ CheckStatusCertificateInterval = "1s"
 # MaxCertSize = 0
 
 {{- if .use_agg_sender_validator }}
-{{- if eq .consensus_contract_type "pessimistic"}}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 RequireValidatorCall = true
 {{- else}}
 RequireValidatorCall = false
@@ -405,8 +405,8 @@ AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
 # PrivateKeys defines all the key store files that are going
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
-{{- if and .use_agg_oracle_committee .committee_member_index }}
-PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+{{- if and .use_agg_oracle_committee .agg_oracle_committee_member_index }}
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.agg_oracle_committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
 {{- else }}
 PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
 {{- end }}
@@ -722,9 +722,13 @@ ProfilingEnabled = {{.aggkit_pprof_enabled}}
 [Validator]
 EnableRPC = true
 # Signer = { Method = "mock" }
-Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+{{- if .agg_sender_validator_member_index }}
+Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sender_validator_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+{{- else}}
+Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+{{- end}}
 # PessimisticProof or AggchainProof
-{{- if eq .consensus_contract_type "pessimistic"}}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"

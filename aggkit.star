@@ -198,12 +198,18 @@ def run(
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
-        committee_total_members = args.get("agg_oracle_committee_total_members", 1)
+        agg_oracle_committee_total_members = args.get(
+            "agg_oracle_committee_total_members", 1
+        )
 
-        for member_index in range(committee_total_members):
+        for agg_oracle_committee_member_index in range(
+            agg_oracle_committee_total_members
+        ):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
-                name="aggkit-aggoracle-config-artifact-{}".format(member_index),
+                name="aggkit-aggoracle-config-artifact-{}".format(
+                    agg_oracle_committee_member_index
+                ),
                 config={
                     "config.toml": struct(
                         template=aggkit_config_template,
@@ -215,7 +221,7 @@ def run(
                             ),
                             "agglayer_endpoint": agglayer_endpoint,
                             "l2_rpc_url": l2_rpc_url,
-                            "committee_member_index": member_index,
+                            "agg_oracle_committee_member_index": agg_oracle_committee_member_index,
                         }
                         | db_configs
                         | contract_setup_addresses
@@ -231,7 +237,7 @@ def run(
                 aggkit_config_artifact,
                 sovereign_genesis_artifact,
                 keystore_artifacts,
-                member_index,
+                agg_oracle_committee_member_index,
             )
 
             # Merge configs
@@ -264,15 +270,17 @@ def run(
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
-        aggsender_validator_total_members = args.get(
+        agg_sender_validator_total_members = args.get(
             "agg_sender_validator_total_number", 1
         )
 
-        for member_index in range(aggsender_validator_total_members):
+        for agg_sender_validator_member_index in range(
+            agg_sender_validator_total_members
+        ):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
-                name="aggkit-aggsender-validator-config-artifact-{}".format(
-                    member_index
+                name="aggkit-aggsender-config-artifact-{}".format(
+                    agg_sender_validator_member_index
                 ),
                 config={
                     "config.toml": struct(
@@ -285,7 +293,7 @@ def run(
                             ),
                             "agglayer_endpoint": agglayer_endpoint,
                             "l2_rpc_url": l2_rpc_url,
-                            "committee_member_index": member_index,
+                            "agg_sender_validator_member_index": agg_sender_validator_member_index,
                         }
                         | db_configs
                         | contract_setup_addresses
@@ -302,7 +310,7 @@ def run(
                     aggkit_config_artifact,
                     sovereign_genesis_artifact,
                     keystore_artifacts,
-                    member_index,
+                    agg_sender_validator_member_index,
                 )
             )
 
@@ -368,8 +376,10 @@ def get_keystores_artifacts(plan, args):
     # Store multiple aggoracle committee member keystores
     committee_keystores = []
     if args.get("use_agg_oracle_committee", False):
-        committee_total_members = args.get("agg_oracle_committee_total_members", 1)
-        for member_index in range(committee_total_members):
+        agg_oracle_committee_total_members = args.get(
+            "agg_oracle_committee_total_members", 1
+        )
+        for member_index in range(agg_oracle_committee_total_members):
             committee_keystore = plan.store_service_files(
                 name="aggoracle-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
@@ -383,10 +393,10 @@ def get_keystores_artifacts(plan, args):
     # Store multiple aggsender validator keystores
     aggsender_validator_keystores = []
     if args.get("use_agg_sender_validator", False):
-        aggsender_validator_total_members = args.get(
+        agg_sender_validator_total_members = args.get(
             "agg_sender_validator_total_number", 1
         )
-        for member_index in range(aggsender_validator_total_members):
+        for member_index in range(agg_sender_validator_total_members):
             aggsender_validator_keystore = plan.store_service_files(
                 name="aggsendervalidator-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
