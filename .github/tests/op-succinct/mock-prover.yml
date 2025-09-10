@@ -1,12 +1,9 @@
 # This args-file deploys the OP Succinct chain.
 deployment_stages:
-  deploy_op_succinct: false
+  deploy_op_succinct: true
 
 args:
-  # ECDSA consensus requires fork_id to be 0.
-  fork_id: 0
-  # Agghcain ECDSA consensus.
-  consensus_contract_type: ecdsa
+  consensus_contract_type: fep
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
   # A mock verifier is used otherwise.
   op_succinct_mock: true
@@ -27,9 +24,6 @@ args:
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
-
-  additional_services:
-    - bridge_spammer
 
 optimism_package:
   chains:

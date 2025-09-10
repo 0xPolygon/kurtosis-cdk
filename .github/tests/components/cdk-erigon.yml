@@ -1,9 +1,0 @@
-# new cdk stack:
-# - erigon sequencer
-# - cdk node sequence-sender and aggregator
-deployment_stages:
-  deploy_optimism_rollup: false
-  deploy_op_succinct: false
-
-args:
-  sequencer_type: erigon
