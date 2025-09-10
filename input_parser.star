@@ -174,9 +174,8 @@ DEFAULT_ACCOUNTS = {
     "zkevm_l2_loadtest_address": "0x81457240ff5b49CaF176885ED07e3E7BFbE9Fb81",
     "zkevm_l2_loadtest_private_key": "0xd7df6d64c569ffdfe7c56e6b34e7a2bdc7b7583db74512a9ffe26fe07faaa5de",
     # agglayer
-    # FIXME - HACK temporary way to force _TRUSTED_AGGREGATOR_ROLE
-    "zkevm_l2_agglayer_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
-    "zkevm_l2_agglayer_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970",
+    "zkevm_l2_agglayer_address": "0x351e560852ee001d5D19b5912a269F849f59479a",
+    "zkevm_l2_agglayer_private_key": "0x1d45f90c0a9814d8b8af968fa0677dab2a8ff0266f33b136e560fe420858a419",
     # dac
     "zkevm_l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6",
     "zkevm_l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b",
