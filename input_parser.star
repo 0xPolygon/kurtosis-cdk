@@ -734,6 +734,64 @@ def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
 def get_op_stack_args(plan, args, user_op_stack_args):
     op_stack_args = DEFAULT_OP_STACK_ARGS | user_op_stack_args
 
+    # Handle the specific nested merge cases manually
+    if "chains" in user_op_stack_args and len(user_op_stack_args["chains"]) > 0:
+        user_chain = user_op_stack_args["chains"][0]
+        default_chain = DEFAULT_OP_STACK_ARGS["chains"][0]
+
+        # Merge the chain configuration
+        merged_chain = default_chain | user_chain
+
+        # Handle nested participant merging if needed
+        if "participants" in user_chain and len(user_chain["participants"]) > 0:
+            if len(default_chain["participants"]) > 0:
+                merged_participant = (
+                    default_chain["participants"][0] | user_chain["participants"][0]
+                )
+                merged_chain["participants"] = [merged_participant]
+
+        # Handle batcher_params merging
+        if "batcher_params" in user_chain:
+            merged_chain["batcher_params"] = (
+                default_chain["batcher_params"] | user_chain["batcher_params"]
+            )
+
+        # Handle proposer_params merging
+        if "proposer_params" in user_chain:
+            merged_chain["proposer_params"] = (
+                default_chain["proposer_params"] | user_chain["proposer_params"]
+            )
+
+        # Handle challenger_params merging
+        if "challenger_params" in user_chain:
+            # challenger_params might not exist in defaults, so check first
+            default_challenger = default_chain.get("challenger_params", {})
+            merged_chain["challenger_params"] = (
+                default_challenger | user_chain["challenger_params"]
+            )
+
+        # Handle network_params merging
+        if "network_params" in user_chain:
+            merged_chain["network_params"] = (
+                default_chain["network_params"] | user_chain["network_params"]
+            )
+
+        op_stack_args["chains"] = [merged_chain]
+
+    # Handle op_contract_deployer_params merging
+    if "op_contract_deployer_params" in user_op_stack_args:
+        default_deployer_params = DEFAULT_OP_STACK_ARGS["op_contract_deployer_params"]
+        user_deployer_params = user_op_stack_args["op_contract_deployer_params"]
+        op_stack_args["op_contract_deployer_params"] = (
+            default_deployer_params | user_deployer_params
+        )
+
+    # Handle observability merging
+    if "observability" in user_op_stack_args:
+        default_observability = DEFAULT_OP_STACK_ARGS["observability"]
+        user_observability = user_op_stack_args["observability"]
+        op_stack_args["observability"] = default_observability | user_observability
+
     l1_chain_id = str(args.get("l1_chain_id", ""))
     l1_rpc_url = args.get("l1_rpc_url", "")
     l1_ws_url = args.get("l1_ws_url", "")
