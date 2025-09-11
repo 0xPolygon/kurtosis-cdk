@@ -862,6 +862,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                     args["agg_sender_validator_total_number"]
                 )
             )
+        # Check agg_sender_multisig_threshold not greater than agg_sender_validator_total_number
+        if args["agg_sender_multisig_threshold"] > args["agg_sender_validator_total_number"]:
+            fail(
+                "agg_sender_multisig_threshold ('{}') must be equal to or smaller than agg_sender_validator_total_number ('{}').".format(
+                    args["agg_sender_multisig_threshold"], args["agg_sender_validator_total_number"]
+                )
+            )
 
     # Check agg_sender_multisig_threshold is never below 1
     if args["agg_sender_multisig_threshold"] < 1:
