@@ -24,6 +24,7 @@ mitm_package = "./mitm.star"
 
 
 def run(plan, args={}):
+    plan.print("Obinna Branch, running")
     # Parse args.
     (deployment_stages, args, op_stack_args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
