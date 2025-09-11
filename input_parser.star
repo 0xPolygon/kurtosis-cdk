@@ -684,7 +684,10 @@ def get_fork_id(args, agglayer_contracts_image):
     - v7.0.0-rc.1-fork.11-patch.1
     """
     # If aggchain consensus is being used, return 0
-    if args["consensus_contract_type"] == "ecdsa_multisig" or args["consensus_contract_type"] == "fep":
+    if (
+        args["consensus_contract_type"] == "ecdsa_multisig"
+        or args["consensus_contract_type"] == "fep"
+    ):
         return (0, "aggchain")
     else:
         result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
@@ -863,10 +866,14 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
                 )
             )
         # Check agg_sender_multisig_threshold not greater than agg_sender_validator_total_number
-        if args["agg_sender_multisig_threshold"] > args["agg_sender_validator_total_number"]:
+        if (
+            args["agg_sender_multisig_threshold"]
+            > args["agg_sender_validator_total_number"]
+        ):
             fail(
                 "agg_sender_multisig_threshold ('{}') must be equal to or smaller than agg_sender_validator_total_number ('{}').".format(
-                    args["agg_sender_multisig_threshold"], args["agg_sender_validator_total_number"]
+                    args["agg_sender_multisig_threshold"],
+                    args["agg_sender_validator_total_number"],
                 )
             )
 
