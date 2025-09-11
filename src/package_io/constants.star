@@ -30,6 +30,11 @@ CONSENSUS_TYPE = struct(
     fep="fep",
 )
 
+SETTLEMENT_BACKEND = struct(
+    agglayer="agglayer",
+    l1="l1",
+)
+
 SEQUENCER_TYPE = struct(
     CDK_ERIGON="erigon",
     ZKEVM="zkevm",
