@@ -3,8 +3,6 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  # ecdsa_multisig consensus requires fork_id to be 0.
-  fork_id: 0
   # Agghcain ecdsa_multisig consensus.
   consensus_contract_type: ecdsa_multisig
   use_agg_sender_validator: True
