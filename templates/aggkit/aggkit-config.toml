@@ -291,7 +291,6 @@ SaveCertificatesToFilesPath = "/tmp"
 # ------------------------------------------------------------------------------
 # EnableRPC = false
 
-{{- if .use_agg_sender_validator }}
 [AggSender.AgglayerClient]
 Cached = true
 [ValidaAggSendertor.AgglayerClient.ConfigurationCache]
@@ -307,7 +306,6 @@ InitialBackoff = "1s"
 MaxBackoff = "10s"
 BackoffMultiplier = 2.0
 MaxAttempts = 20
-{{- end }}
 
 # ------------------------------------------------------------------------------
 # RetryCertAfterInError when a cert pass to 'InError'state

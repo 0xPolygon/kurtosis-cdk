@@ -301,9 +301,6 @@ DEFAULT_L2_ARGS = {
     "chain_name": "kurtosis",
     # Config name for OP stack rollup
     "sovereign_chain_name": "op-sovereign",
-    # TODO this seems like it comes from the op-succinct setup... we can probably get rid of this input
-    # The minimum interval at which checkpoints must be submitted. No high security assumptions.
-    "aggchain_submission_interval": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -434,7 +431,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa_multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
+        "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
         # Additional services to run alongside the network.
         # Options:
         # - agglogger
