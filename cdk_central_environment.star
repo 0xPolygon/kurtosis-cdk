@@ -144,10 +144,10 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/sequencer.keystore",
     )
-    aggregator_keystore_artifact = plan.store_service_files(
+    aggregator_keystore_artifact = plan.get_files_artifact(
         name="aggregator-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggregator.keystore",
+        # service_name="contracts" + args["deployment_suffix"],
+        # src="/opt/zkevm/aggregator.keystore",
     )
     proofsigner_keystore_artifact = plan.store_service_files(
         name="proofsigner-keystore",
