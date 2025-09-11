@@ -44,7 +44,7 @@ DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta2",  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta2
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.4",
-    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v0.0.0-rc.2.aggchain.multisig-fork.0",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
+    "agglayer_contracts_image": "jhkimqd/agglayer-contracts:v0.0.0-rc.2.aggchain.multisig-fork.12",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
@@ -318,8 +318,6 @@ DEFAULT_ROLLUP_ARGS = {
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
     "zkevm_use_real_verifier": False,
-    # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
-    "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
     # Set to true to run erigon as the sequencer.
     "erigon_strict_mode": True,
@@ -591,7 +589,7 @@ def parse_args(plan, user_args):
 
     # Determine fork id from the agglayer contracts image tag.
     agglayer_contracts_image = args.get("agglayer_contracts_image", "")
-    (fork_id, fork_name) = get_fork_id(agglayer_contracts_image)
+    (fork_id, fork_name) = get_fork_id(args, agglayer_contracts_image)
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -667,7 +665,7 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(agglayer_contracts_image):
+def get_fork_id(args, agglayer_contracts_image):
     """
     Extract the fork identifier and fork name from a agglayer contracts image name.
 
@@ -685,24 +683,29 @@ def get_fork_id(agglayer_contracts_image):
     - v7.0.0-rc.1-fork.10
     - v7.0.0-rc.1-fork.11-patch.1
     """
-    result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
-    if len(result) != 2:
-        fail(
-            "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
-                agglayer_contracts_image
+    # If aggchain consensus is being used, return 0
+    if args["consensus_contract_type"] == "ecdsa_multisig" or args["consensus_contract_type"] == "fep":
+        return (0, "aggchain")
+    else:
+        result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
+        if len(result) != 2:
+            fail(
+                "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
+                    agglayer_contracts_image
+                )
             )
-        )
 
-    fork_id = int(result[1])
-    if fork_id not in SUPPORTED_FORK_IDS:
-        fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
+        fork_id = int(result[1])
+        if fork_id not in SUPPORTED_FORK_IDS:
+            fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
 
-    fork_name = "elderberry"
-    if fork_id >= 12:
-        fork_name = "banana"
-    # TODO: Add support for durian once released.
+        fork_name = "elderberry"
+        if fork_id >= 12:
+            fork_name = "banana"
+        else:
+            fork_name = "aggchain"
 
-    return (fork_id, fork_name)
+        return (fork_id, fork_name)
 
 
 def get_sequencer_name(sequencer_type):
@@ -865,13 +868,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         fail(
             "Aggsender multisig threshold ('{}') cannot be below 1.".format(
                 args["agg_sender_multisig_threshold"]
-            )
-        )
-
-    if args["consensus_contract_type"] == "ecdsa_multisig" and args["fork_id"] != 0:
-        fail(
-            "ForkID ('{}') must be 0 if AggchainECDSAMultisig consensus is being used.".format(
-                args["fork_id"]
             )
         )
 
