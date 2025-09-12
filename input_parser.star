@@ -431,7 +431,7 @@ DEFAULT_ARGS = (
         # Aggchain Consensus Options:
         # - 'ecdsa_multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
-        "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
+        "consensus_contract_type": constants.CONSENSUS_TYPE.pessimistic,
         # Additional services to run alongside the network.
         # Options:
         # - agglogger
