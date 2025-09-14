@@ -69,9 +69,9 @@ def run(plan, args={}):
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
-            plan.print("THE PLAN", plan)
-            plan.print("THE ARGS", args)
-            plan.print("THE OPSTACK ARGS", args)
+            plan.print("THE PLAN: %s" % plan)
+            plan.print("THE ARGS: %s" % args)
+            plan.print("THE OPSTACK ARGS: %s" % opstack_args)  
 
             import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
