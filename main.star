@@ -56,6 +56,12 @@ def run(plan, args={}):
     sovereign_contract_setup_addresses = {}
     if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
         plan.print("Deploying agglayer contracts on L1")
+
+        plan.print("THE PLAN: " + str(plan))
+        plan.print("THE ARGS: " + str(args))
+        plan.print("DEP  STAGES: " + str(deployment_stages))
+        plan.print("THE OPSTACK ARGS: " + str( op_stack_args))
+
         import_module(deploy_agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
         )
@@ -71,7 +77,7 @@ def run(plan, args={}):
 
             plan.print("THE PLAN: " + str(plan))
             plan.print("THE ARGS: " + str(args))
-            plan.print("THE OPSTACK ARGS: " + str( args))
+            plan.print("THE OPSTACK ARGS: " + str(op_stack_args))
 
             import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
