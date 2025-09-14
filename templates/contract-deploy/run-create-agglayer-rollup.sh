@@ -114,6 +114,8 @@ if [[ -e /opt/zkevm-contracts/deployment/v2/create_rollup_output.json ]]; then
     cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 else
     echo "File /opt/zkevm-contracts/deployment/v2/create_rollup_output.json does not exist."
+    echo "Obinna ask it be created"
+    cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
 fi
 cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
 popd || exit 1

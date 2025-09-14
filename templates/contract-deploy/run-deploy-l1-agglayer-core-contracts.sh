@@ -36,7 +36,7 @@ fund_account_on_l1() {
         --mnemonic "{{.l1_preallocated_mnemonic}}" \
         --value "{{.l1_funding_amount}}" \
         "$address"
-}
+} 
 
 deploy_rollup_manager() {
     # Deploy contracts.
