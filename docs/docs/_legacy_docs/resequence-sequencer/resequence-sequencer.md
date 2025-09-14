@@ -32,6 +32,7 @@ kurtosis service exec cdk  cdk-erigon-sequencer-001 "cp \-r /etc/cdk-erigon/ /tm
 ```
 
 #### Stop the cdk-node
+
 It is important to stop the cdk-node-001 service when attempting this procedure.
 
 ```bash
@@ -39,6 +40,7 @@ kurtosis service stop cdk cdk-node-001
 ```
 
 #### Stop the sequencer
+
 The Erigon sequencer image in Kurtosis CDK is setup so that the `cdk-erigon` process can be killed without exiting the container. This allows changing the configuration of the sequencer more easily.
 
 ```bash
@@ -49,6 +51,7 @@ kurtosis service exec cdk cdk-erigon-sequencer-001 "pkill -SIGINT "cdk-erigon"" 
 ```
 
 #### Getting the latest L1 verified batch
+
 This can usually be done by querying the L1 explorer, but in a Kurtosis devnet environment, this can be done by querying the rollup manager contract.
 
 ```bash
@@ -64,13 +67,14 @@ current_batch_dec=$((16#$current_batch))
 - `0xd1ec3a1216f08b6eff72e169ceb548b782db18a6614852618d86bb19f3f9b0d3` is the verification topic for Etrog networks.
 
 #### Rollback batches on L1 contract
+
 Since the CDK network is managed by the L1 rollup manager contract, its important to trigger a batch rollback on the L1 rollup manager contract for our particular network after the L2 network is stopped.
 
 ```bash
-cast send "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2" "rollbackBatches(address,uint64)" "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91" "$latest_verified_batch" --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" --rpc-url "$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
+cast send "0x6c6c009cC348976dB4A908c92B24433d4F6edA43" "rollbackBatches(address,uint64)" "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91" "$latest_verified_batch" --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" --rpc-url "$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
 ```
 
-- `0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2` is the address of the rollup manager contract on L1
+- `0x6c6c009cC348976dB4A908c92B24433d4F6edA43` is the address of the rollup manager contract on L1
 - `0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91` is the address of our particular rollup contract.
 - `0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625` is the private key of the admin address.
 
@@ -95,42 +99,42 @@ Available Commands:
   force_set_prune      Override existing --prune flag value (if you know what you are doing)
   force_set_snapshot   Override existing --snapshots flag value (if you know what you are doing)
   help                 Help about any command
-  loop_exec            
-  loop_ih              
+  loop_exec
+  loop_ih
   mdbx_to_mdbx         copy data from '--chaindata' to '--chaindata.to'
-  print_migrations     
-  print_stages         
+  print_migrations
+  print_stages
   read_domains         Run block execution and commitment with Domains.
-  remove_migration     
+  remove_migration
   reset_state          Reset StateStages (5,6,7,8,9,10) and buckets
-  run_migrations       
-  stage_bodies         
-  stage_call_traces    
-  stage_exec           
-  stage_hash_state     
-  stage_headers        
-  stage_history        
-  stage_log_index      
-  stage_senders        
-  stage_snapshots      
-  stage_trie           
-  stage_tx_lookup      
+  run_migrations
+  stage_bodies
+  stage_call_traces
+  stage_exec
+  stage_hash_state
+  stage_headers
+  stage_history
+  stage_log_index
+  stage_senders
+  stage_snapshots
+  stage_trie
+  stage_tx_lookup
   state_domains        Run block execution and commitment with Domains.
   state_stages         Run all StateStages (which happen after senders) in loop.
-Examples: 
+Examples:
 --unwind=1 --unwind.every=10  # 10 blocks forward, 1 block back, 10 blocks forward, ...
 --unwind=10 --unwind.every=1  # 1 block forward, 10 blocks back, 1 blocks forward, ...
 --unwind=10  # 10 blocks back, then stop
 --integrity.fast=false --integrity.slow=false # Performs DB integrity checks each step. You can disable slow or fast checks.
 --block # Stop at exact blocks
 --chaindata.reference # When finish all cycles, does comparison to this db file.
-		
+
   state_stages_zkevm   Run all StateStages in loop.
 Examples:
 state_stages_zkevm --datadir=/datadirs/hermez-mainnet--unwind-batch-no=10  # unwind so the tip is the highest block in batch number 10
 state_stages_zkevm --datadir=/datadirs/hermez-mainnet --unwind-batch-no=2 --chain=hermez-bali --log.console.verbosity=4 --datadir-compare=/datadirs/pre-synced-block-100 # unwind to batch 2 and compare with another datadir
-		
-  warmup               
+
+  warmup
 
 Flags:
   -h, --help                           help for integration
@@ -184,6 +188,7 @@ kurtosis service start cdk cdk-node-001
 #### Monitor logs and check blocks
 
 The resequencing should be complete. Monitor the logs for the CDK components:
+
 - Check the latest block number and arbitrary block hashes from the sequencer
 - Check the latest block number and arbitrary block hashes from the erigon rpc and compare
 - Check that the L1 verified batch number increments after some time

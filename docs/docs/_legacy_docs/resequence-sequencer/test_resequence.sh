@@ -112,7 +112,7 @@ latest_verified_batch=$(get_latest_l1_verified_batch)
 
 # Rollback to the last good batch before the counter overflow on L1
 echo "Rolling back to batch $latest_verified_batch"
-cast send "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2" "rollbackBatches(address,uint64)" "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91" "$latest_verified_batch" --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" --rpc-url "$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
+cast send "0x6c6c009cC348976dB4A908c92B24433d4F6edA43" "rollbackBatches(address,uint64)" "0x1Fe038B54aeBf558638CA51C91bC8cCa06609e91" "$latest_verified_batch" --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" --rpc-url "$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
 
 echo "Using integration tool to unwind to batch $latest_verified_batch"
 kurtosis service exec cdk cdk-erigon-sequencer-001 "integration state_stages_zkevm --config=/etc/cdk-erigon/config.yaml --unwind-batch-no=$latest_verified_batch --chain dynamic-kurtosis --datadir /home/erigon/data/dynamic-kurtosis-sequencer"

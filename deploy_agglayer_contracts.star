@@ -5,7 +5,7 @@ data_availability_package = import_module("./lib/data_availability.star")
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
-ARTIFACTS = [
+ARTIFACTS = [ 
     {
         "name": "deploy_parameters.json",
         "file": "./templates/contract-deploy/deploy_parameters.json",

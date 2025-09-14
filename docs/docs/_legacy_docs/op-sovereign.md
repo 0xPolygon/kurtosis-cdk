@@ -60,6 +60,7 @@ When `deploy_optimism_rollup` is set to `True`, the CDK Erigon infrastructure de
 The setup process consists of two main steps:
 
 1. **Create New Rollup Onchain**
+
    - Uses the script: [createNewRollup.ts](https://github.com/0xPolygonHermez/zkevm-contracts/blob/v10.0.0-rc.1/tools/createNewRollup/createNewRollup.ts)
    - Configuration file: `create_new_rollup.json`
 
@@ -79,7 +80,7 @@ The setup process consists of two main steps:
      "multiplierGas": "",
      "timelockDelay": 0,
      "timelockSalt": "",
-     "rollupManagerAddress": "0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2",
+     "rollupManagerAddress": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
      "rollupTypeId": 1,
      "isVanillaClient": true,
      "sovereignParams": {
@@ -93,6 +94,7 @@ The setup process consists of two main steps:
    ```
 
 2. **Deploy Sovereign Contracts**
+
    - Contracts deployed on OP network:
      - `BridgeL2SovereignChain`
      - `GlobalExitRootManagerL2SovereignChain`
