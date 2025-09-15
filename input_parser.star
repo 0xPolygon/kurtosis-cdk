@@ -194,7 +194,6 @@ DEFAULT_ACCOUNTS = {
     # TEMPORARY USE SAME WALLET FOR ADMIN AND AGGCHAINMANAGER AS 4_CREATEROLLUP IS FAILING OTHERWISE
     "zkevm_l2_sovereignadmin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
     "zkevm_l2_sovereignadmin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
-
     # claimsponsor
     "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
     "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
