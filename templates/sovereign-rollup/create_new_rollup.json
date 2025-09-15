@@ -36,7 +36,7 @@
         "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}"
     },
     "aggchainParams": {
-        "aggchainManager": "{{ .zkevm_l2_admin_address }}",
+        "aggchainManager": "{{ .zkevm_l2_sovereignadmin_address }}",
         "initParams": {
             "l2BlockTime": "{{ .sp1_l2_block_time }}",
             "rollupConfigHash": "{{.sp1_rollup_config_hash}}",
