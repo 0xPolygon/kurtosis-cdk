@@ -1,13 +1,9 @@
-service_package = import_module("../../lib/service.star")
-
-AGGLAYER_DASHBOARD_IMAGE = "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v3.4.0"
-DASHBOARD_PORT_NUMBER = 60444
-CONFIG_PATH = "/kurtosis_config"
+AGGLAYER_DASHBOARD_IMAGE = "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v1"
+CONFIG_PATH = "/etc/dasboard"
+CONFIG_FILE = "config.json"
+DASHBOARD_PORT = 8000
 DASHBOARD_CONFIG_TEMPLATE = (
     "../../static_files/additional_services/agglayer-dashboard-config/config.json"
-)
-NGINX_CONFIG_FILE = (
-    "../../static_files/additional_services/agglayer-dashboard-config/nginx.conf"
 )
 
 
@@ -16,32 +12,25 @@ def run(plan, args, contract_setup_addresses):
         name="agglayer-dashboard",
         config=ServiceConfig(
             image=AGGLAYER_DASHBOARD_IMAGE,
-            ports={
-                "dashboard": PortSpec(
-                    DASHBOARD_PORT_NUMBER, application_protocol="http"
-                )
-            },
-            public_ports={
-                "dashboard": PortSpec(
-                    DASHBOARD_PORT_NUMBER, application_protocol="http"
-                )
-            },
+            ports={"dashboard": PortSpec(DASHBOARD_PORT, application_protocol="http")},
             files={
-                CONFIG_PATH: get_dashboard_config_dir(
-                    plan, args, contract_setup_addresses
-                )
+                CONFIG_PATH: get_dashboard_config(plan, args, contract_setup_addresses)
             },
+            env_vars={"CONFIG_FILE": CONFIG_PATH + "/" + CONFIG_FILE},
         ),
     )
 
 
-def get_dashboard_config_dir(plan, args, contract_setup_addresses):
+def get_dashboard_config(plan, args, contract_setup_addresses):
     agglayer_dashboard_config_template = read_file(src=DASHBOARD_CONFIG_TEMPLATE)
 
     template_data = {
-        "l2_chain_name": args["chain_name"],
-        "l2_chain_id": args["zkevm_rollup_chain_id"],
         "l2_rollup_id": args["zkevm_rollup_id"],
+        "l1_rpc_url": args["l1_rpc_url"],
+        "l2_rpc_url": "http://{}{}:{}".format(
+            args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+        ),
+        "agglayer_rpc_url": args.get("agglayer_readrpc_url"),
     } | contract_setup_addresses
 
     return Directory(
@@ -49,16 +38,11 @@ def get_dashboard_config_dir(plan, args, contract_setup_addresses):
             plan.render_templates(
                 name="agglayer-dashboard-config",
                 config={
-                    "config.json": struct(
+                    CONFIG_FILE: struct(
                         template=agglayer_dashboard_config_template,
                         data=template_data,
                     )
                 },
-            ),
-            plan.upload_files(
-                name="agglayer-dashboard-nginx",
-                src=NGINX_CONFIG_FILE,
-                description="Uploading Aggl Dashboard nginx config",
             ),
         ]
     )
