@@ -53,7 +53,7 @@ jq -c '.[]' claimable-txs.json | while IFS= read -r tx; do
   in_amount="$(echo "$tx" | jq -r '.amount')"
   in_metadata="$(echo "$tx" | jq -r '.metadata')"
 
-  # Generate the call data, this is useful just to examine what the call will look loke
+  # Generate the call data, this is useful just to examine what the call will look like
   echo "Generating the call data for the bridge claim tx..."
   cast calldata "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
 
