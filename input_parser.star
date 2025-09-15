@@ -41,7 +41,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 }
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta2",  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta2
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta4",  # To ensure compatibility, if you're testing ECDSAMultisig, modify aggchain-ecdsa-multisig.yml aggkit_image args directly
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.5",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.1.aggchain.multisig-fork.0",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
