@@ -451,6 +451,7 @@ DEFAULT_ARGS = (
             constants.ADDITIONAL_SERVICES.agglogger,
             constants.ADDITIONAL_SERVICES.bridge_spammer,
             constants.ADDITIONAL_SERVICES.test_runner,
+            constants.ADDITIONAL_SERVICES.agglayer_dashboard,
         ],
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",

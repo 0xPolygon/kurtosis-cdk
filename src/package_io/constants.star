@@ -12,6 +12,7 @@ ADDITIONAL_SERVICES = struct(
     status_checker="status_checker",
     test_runner="test_runner",
     tx_spammer="tx_spammer",
+    agglayer_dashboard="agglayer_dashboard",
 )
 
 LOG_LEVEL = struct(

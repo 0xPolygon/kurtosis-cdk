@@ -71,3 +71,15 @@ Repository: <https://github.com/0xPolygon/zkevm-bridge-ui>
 image_name="zkevm-bridge-ui:0006445"
 docker build --tag "${image_name}" --file zkevm-bridge-ui/zkevm-bridge-ui.Dockerfile zkevm-bridge-ui
 ```
+
+### Agglayer Dashboard
+
+Dashboard created and maintained by contract's team, providing a friendly interface to many aspects of the Agglayer, Aggchains and Rollup Manager.
+
+Repository: <https://github.com/agglayer/dashboard>
+
+Download the repo and switch to the desired branch/tag, overwrite existing Dockerfile there with the one provided in this folder, and build the image, for instance:
+
+```bash
+docker build . -t europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v3.4.0 --no-cache
+```
