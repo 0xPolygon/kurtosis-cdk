@@ -224,10 +224,6 @@ OpNodeURL = "{{.op_cl_rpc_url}}"
 RequireKeyMatchTrustedSequencer = true
 {{- end}}
 
-[AggSender.MaxSubmitCertificateRate]
-NumRequests = 20
-Interval = "1m"
-
 # ------------------------------------------------------------------------------
 # URLRPCL2 is the URL of the L2 RPC node
 # ------------------------------------------------------------------------------
@@ -247,11 +243,6 @@ BlockFinality = "LatestBlock"
 # 50 -> Middle
 # ------------------------------------------------------------------------------
 # EpochNotificationPercentage = 50
-
-# ------------------------------------------------------------------------------
-# AggSender will save the certificates to a file in this path
-# ------------------------------------------------------------------------------
-SaveCertificatesToFilesPath = "/tmp"
 
 # ------------------------------------------------------------------------------
 # MaxRetriesStoreCertificate is the maximum number of retries to store a certificate

@@ -38,7 +38,7 @@ def create_aggkit_cdk_service_config(
             "/data": Directory(
                 artifact_names=[],
             ),
-            "/tmp": Directory(persistent_key="aggkit-tmp"),
+            "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
@@ -78,7 +78,7 @@ def create_aggkit_service_config(
             "/data": Directory(
                 artifact_names=[],
             ),
-            "/tmp": Directory(persistent_key="aggkit-tmp"),
+            "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
