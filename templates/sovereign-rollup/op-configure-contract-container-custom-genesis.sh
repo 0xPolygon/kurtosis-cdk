@@ -1,31 +1,34 @@
-{% comment %} #!/bin/bash
+#!/bin/sh
 
-cp /opt/contract-deploy/op-custom-genesis-addresses.json /opt/zkevm/combined.json
+# --- strict-ish mode ---
+set -eu
+# pipefail is not POSIX, emulate by careful checking
+trap 'echo "[`date -Is`] ERROR on line $LINENO (exit $?)" >&2; exit 1' ERR INT HUP TERM
 
-sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' /opt/zkevm-contracts/hardhat.config.ts
-cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+# --- resolve script directory & log file ---
+# $0 may be relative, so normalise
+SCRIPT_PATH="$0"
+case "$SCRIPT_PATH" in
+  /*) : ;;                           # absolute
+  *) SCRIPT_PATH="$(pwd)/$SCRIPT_PATH" ;;
+esac
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+LOG_FILE="$SCRIPT_DIR/$(basename "$0").log"
 
-pushd /opt/zkevm-contracts || exit 1
-MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
-popd || exit 1
+# redirect everything to console AND log
+# (this works fine in /bin/sh without process substitution)
+exec > >(tee -a "$LOG_FILE") 2>&1
+# if process substitution isn't available, fall back to plain redirection:
+# exec >"$LOG_FILE" 2>&1
 
-cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
-cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm/
-cp /opt/zkevm/combined.json /opt/zkevm/combined-001.json
+log() { echo "[`date -Is`] $*"; }
 
-global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
-cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}" {% endcomment %}
-
-
-#!/usr/bin/env bash
-set -Eeuo pipefail
-trap 'echo "ERROR on line $LINENO"; exit 1' ERR
-
-log() { echo "[$(date -Is)] $*"; }
+log "=== START $(basename "$0") ==="
+log "Logging to: $LOG_FILE"
 
 # 0) Preconditions
 for bin in jq cast npx; do
-  command -v "$bin" >/dev/null || { echo "Missing required tool: $bin"; exit 1; }
+  command -v "$bin" >/dev/null 2>&1 || { log "Missing required tool: $bin"; exit 1; }
 done
 
 # 1) Copy combined addresses
@@ -43,12 +46,13 @@ log "Copying deploy_parameters.json"
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 test -s /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 
-# 4) Run createGenesis and capture logs (pipefail will propagate failures)
+# 4) Run createGenesis
 log "Running 1_createGenesis.ts"
-pushd /opt/zkevm-contracts >/dev/null
+oldpwd="$(pwd)"
+cd /opt/zkevm-contracts || exit 1
 MNEMONIC="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete" \
-  npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
-popd >/dev/null
+  npx ts-node deployment/v2/1_createGenesis.ts
+cd "$oldpwd"
 
 # 5) Verify genesis.json produced
 test -s /opt/zkevm-contracts/deployment/v2/genesis.json
@@ -63,8 +67,12 @@ test -s /opt/zkevm/create_rollup_parameters.json
 test -s /opt/zkevm/combined-001.json
 
 # 7) Extract address and sanity-check it
-global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
-[[ "$global_exit_root_address" =~ ^0x[0-9a-fA-F]{40}$ ]] || { echo "Invalid address: $global_exit_root_address"; exit 1; }
+global_exit_root_address="$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)"
+case "$global_exit_root_address" in
+  0x[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]*)
+    : ;;
+  *) log "Invalid address: $global_exit_root_address"; exit 1 ;;
+esac
 
 # 8) Initialize contract
 log "Sending initialize() to $global_exit_root_address"
