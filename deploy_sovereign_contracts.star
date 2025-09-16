@@ -1,4 +1,4 @@
-def run(plan, args, predeployed_contracts=False):
+def run(plan, args, predeployed_contracts=True):
     if args.get("l1_custom_genesis"):
         return
 
