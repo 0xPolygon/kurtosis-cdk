@@ -240,7 +240,7 @@ def create_aggsender_validator_service_config(
     # Use aggsender validator keystore
     selected_keystore = keystore_artifact.aggsender_validator_keystores[
         member_index
-        - 1  # Convert from 1-based to 0-based indexing when accessing aggsender_validator_keystores array
+        - 2  # Convert from 2-based to 0-based indexing when accessing aggsender_validator_keystores array
     ]
 
     (ports, public_ports) = get_aggkit_ports(args, "aggsender_validator")

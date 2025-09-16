@@ -266,7 +266,7 @@ def run(
     # Deploy multiple aggsender validators
     if (
         args["use_agg_sender_validator"] == True
-        and args["agg_sender_validator_total_number"] >= 1
+        and args["agg_sender_validator_total_number"] > 1
     ):
         # Deploy multiple committee members
         plan.print("Deploying aggsender validators")
@@ -290,7 +290,7 @@ def run(
         )
 
         for agg_sender_validator_member_index in range(
-            1, agg_sender_validator_total_members + 1
+            2, agg_sender_validator_total_members + 1
         ):
             # Create individual config for each committee member
             aggkit_config_artifact = plan.render_templates(
@@ -407,7 +407,7 @@ def get_keystores_artifacts(plan, args):
             "agg_sender_validator_total_number", 1
         )
         # For loop starts from 1 instead of 0 for aggsender-validator service suffix consistency
-        for member_index in range(1, agg_sender_validator_total_members + 1):
+        for member_index in range(2, agg_sender_validator_total_members + 1):
             aggsender_validator_keystore = plan.store_service_files(
                 name="aggsendervalidator-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],

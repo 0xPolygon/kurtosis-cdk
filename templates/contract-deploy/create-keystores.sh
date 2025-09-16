@@ -51,7 +51,7 @@ if [[ "{{ .use_agg_sender_validator }}" == "true" ]]; then
         json_output="["
 
         # For loop starts from 1 instead of 0 for aggsender-validator service suffix consistency
-        for (( index=1; index<VALIDATOR_COUNT+1; index++ )); do
+        for (( index=2; index<VALIDATOR_COUNT+1; index++ )); do
             # $((index + 100)) is being used instead of $index, because we are using the same MNEMONIC for multiple different addresses.
             # By adding 100 to the original index, we are adding variety in the addresses being generated.
             aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $((index + 100)))
