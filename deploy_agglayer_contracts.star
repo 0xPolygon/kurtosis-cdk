@@ -2,7 +2,7 @@ aggchain_vkey = import_module("./src/vkey/aggchain.star")
 agglayer_vkey = import_module("./src/vkey/agglayer.star")
 constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
-
+ 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
 ARTIFACTS = [ 
@@ -330,7 +330,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             recipe=ExecRecipe(
                 command=[
                     "/bin/sh",
-                    "-c",
+                    "-c", 
                     "chmod +x {0} && {0}".format(
                         "/opt/contract-deploy/run-deploy-l1-agglayer-core-contracts.sh"
                     ),

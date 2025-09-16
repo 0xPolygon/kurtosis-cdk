@@ -33,6 +33,7 @@ def run(plan, args={}):
         plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
     # Deploy a local L1.
+#===========================================deploy_l1 = true if not set to false ===========================================#
     if deployment_stages.get("deploy_l1", False):
         plan.print(
             "Deploying a local L1 (based on {})".format(args.get("l1_engine", "geth"))
@@ -43,6 +44,9 @@ def run(plan, args={}):
             ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
+#===========================================END==============================================================================#
+
+
     # Extract the fetch-rollup-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
@@ -54,6 +58,8 @@ def run(plan, args={}):
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
+
+#===================================RUNS if deploy_aglayer is TRUE, TRUE BY DEFAULT================================================#
     if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
         plan.print("Deploying agglayer contracts on L1")
 
@@ -65,7 +71,7 @@ def run(plan, args={}):
         import_module(deploy_agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
         )
-
+#===================================OPGET deployment PATH ========================================================================#
         if deployment_stages.get("deploy_optimism_rollup", False):
             # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
@@ -106,7 +112,7 @@ def run(plan, args={}):
             deploy_sovereign_contracts_package.fund_addresses(
                 plan, args, l2_kurtosis_addresses, args["op_el_rpc_url"]
             )
-
+            #=======Deploying OP succint=================================#
             if deployment_stages.get("deploy_op_succinct", False):
                 # Extract genesis to feed into evm-sketch-genesis
                 op_succinct_package.create_evm_sketch_genesis(plan, args)
@@ -143,12 +149,16 @@ def run(plan, args={}):
                 service_package.get_sovereign_contract_setup_addresses(plan, args)
             )
 
+#===============================================END OPGETH deplyment path =============================================================#
         contract_setup_addresses = service_package.get_contract_setup_addresses(
             plan, args, deployment_stages
         )
     else:
         plan.print("Skipping the deployment of agglayer contracts on L1")
+#==============================================END deploying agglayer==================================================================#
 
+
+#=========================================THE IF statement runs if you provide below data==============================================#
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
         "zkevm_rollup_manager_address" in args
@@ -163,13 +173,19 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
+#============================================================================================================================#
 
+#================================================DEPLOY DB is defaulted to TRUE===============================================#
     # Deploy databases.
     if deployment_stages.get("deploy_databases", False):
         plan.print("Deploying databases")
         import_module(databases_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of databases")
+#================================================------------------------------==============================================#
+   
+#=============================================RUNS IF deploy_optimism_rollup is FALSE=========================================#
+# - will execute for erigon rollup path
 
     # Get the genesis file.
     genesis_artifact = ""
@@ -181,7 +197,9 @@ def run(plan, args={}):
                 service_name="contracts" + args["deployment_suffix"],
                 src="/opt/zkevm/genesis.json",
             )
-
+#==================================================END=========================================================================#
+    
+    
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
         plan.print("Deploying MITM")
@@ -189,6 +207,8 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of MITM")
 
+
+#===============================================RUNS if deploy Agglayer is TRUE==============================================#
     # Deploy the agglayer.
     if deployment_stages.get("deploy_agglayer", False):
         plan.print("Deploying the agglayer")
@@ -197,7 +217,11 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of the agglayer")
+#================================================END=========================================================================#
 
+
+
+#=================================== DEPLOY ERIGON DEPLOYMENT MODE ==========================================================#
     if not deployment_stages.get("deploy_optimism_rollup", False):
         # Deploy cdk central/trusted environment.
         if deployment_stages.get("deploy_cdk_central_environment", False):
@@ -296,7 +320,11 @@ def run(plan, args={}):
             )
         else:
             plan.print("Skipping the deployment of cdk/bridge infrastructure")
+#============================================END=================================================================================#
 
+
+#=============================================DEPLOYING OP SUCCINT - OPGETH Deployment path =====================================#
+# 1. Imports Op Succints Packages
     # Deploy OP Succinct.
     if deployment_stages.get("deploy_op_succinct", False):
         # Run op-succinct-proposer service
@@ -306,8 +334,14 @@ def run(plan, args={}):
         )
     else:
         plan.print("Skipping the deployment of OP Succinct")
+#==========================================END=============================================================================£
 
+
+#===================================DEPLY AGGKIT for both ERIGON and OPGETH dep path=======================================#
     # Deploy AggKit infrastructure + Dedicated Bridge Service
+    # Deploy Aggkit for pessimistic consensus
+    # Deploy Aggkit for Optimis rollup 
+    # Deploy Aggkit for CDK central Environment
     if deployment_stages.get("deploy_optimism_rollup", False) or (
         deployment_stages.get("deploy_cdk_central_environment", False)
         and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
@@ -323,6 +357,7 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of aggkit infrastructure")
 
+#=======================================END=====================================================================================#
     # Deploy additional services.
     additional_services.launch(
         plan,
