@@ -3,7 +3,7 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta2"  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta2
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta3"  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta3
   # Agghcain ecdsa_multisig consensus.
   consensus_contract_type: ecdsa_multisig
   use_agg_sender_validator: True
