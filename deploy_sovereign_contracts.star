@@ -1,4 +1,4 @@
-def run(plan, args, predeployed_contracts=False):
+def run(plan, args, predeployed_contracts=True):
     if args.get("l1_custom_genesis"):
         return
 
@@ -6,7 +6,7 @@ def run(plan, args, predeployed_contracts=False):
     if predeployed_contracts:
         plan.print("Predeployed contracts detected. Using predeployed setup script.")
         script = "/opt/contract-deploy/run-sovereign-setup-predeployed.sh"
- 
+  
     plan.exec(
         description="Creating rollup type and rollup on L1",
         service_name="contracts" + args["deployment_suffix"],
