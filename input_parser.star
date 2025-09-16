@@ -378,7 +378,7 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
-    "aggkit_components": "aggsender,aggoracle,bridge",
+    "aggkit_components": "aggsender,aggoracle",
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.
     "enable_aggkit_claim_sponsor": False,

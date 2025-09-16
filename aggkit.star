@@ -172,7 +172,22 @@ def run(
 
     plan.add_services(
         configs=aggkit_configs,
-        description="Starting the single cdk aggkit component",
+        description="Starting the single aggkit component",
+    )
+
+    # Start the aggkit bridge component with standard naming
+    aggkit_bridge_configs = aggkit_package.create_aggkit_bridge_service_config(
+        plan,
+        args,
+        aggkit_config_artifact,
+        sovereign_genesis_artifact,
+        keystore_artifacts,
+        0,  # Use member_index 0 for single service
+    )
+
+    plan.add_services(
+        configs=aggkit_bridge_configs,
+        description="Starting the aggkit bridge component",
     )
 
     # Deploy multiple aggoracle committee members

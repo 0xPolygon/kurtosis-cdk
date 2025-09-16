@@ -69,7 +69,7 @@ def create_root_aggkit_service_config(
     (ports, public_ports) = get_aggkit_ports(args, None)
     service_command = get_aggkit_cmd(args)
 
-    cdk_root_aggkit_service_config = ServiceConfig(
+    root_aggkit_service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
         public_ports=public_ports,
@@ -93,7 +93,57 @@ def create_root_aggkit_service_config(
         cmd=service_command,
     )
 
-    configs_to_return = {aggkit_name: cdk_root_aggkit_service_config}
+    configs_to_return = {aggkit_name: root_aggkit_service_config}
+    return configs_to_return
+
+
+def create_aggkit_bridge_service_config(
+    plan,
+    args,
+    config_artifact,
+    genesis_artifact,
+    keystore_artifact,
+    member_index=0,
+):
+    # Check if claim sponsor is enabled and "bridge" is not in aggkit_components
+    log_claim_sponsor_warning(plan, args)
+
+    aggkit_name = "aggkit" + args["deployment_suffix"] + "-bridge"
+    selected_keystore = keystore_artifact.aggoracle
+
+    (ports, public_ports) = get_aggkit_ports(args, None)
+    # Only run bridge component for committee members
+    service_command = [
+        "run",
+        "--cfg=/etc/aggkit/config.toml",
+        "--components=bridge",
+    ]
+
+    aggkit_bridge_service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/aggkit": Directory(
+                artifact_names=[
+                    config_artifact,
+                    genesis_artifact,
+                    selected_keystore,
+                    keystore_artifact.sovereignadmin,
+                    keystore_artifact.claimtx,
+                    keystore_artifact.sequencer,
+                    keystore_artifact.claim_sponsor,
+                ],
+            ),
+            "/data": Directory(
+                artifact_names=[],
+            ),
+        },
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=service_command,
+    )
+
+    configs_to_return = {aggkit_name: aggkit_bridge_service_config}
     return configs_to_return
 
 
@@ -138,7 +188,7 @@ def create_aggoracle_service_config(
         "--components=aggoracle",
     ]
 
-    cdk_aggoracle_service_config = ServiceConfig(
+    aggoracle_service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
         public_ports=public_ports,
@@ -162,7 +212,7 @@ def create_aggoracle_service_config(
         cmd=service_command,
     )
 
-    configs_to_return = {aggkit_name: cdk_aggoracle_service_config}
+    configs_to_return = {aggkit_name: aggoracle_service_config}
     return configs_to_return
 
 
@@ -202,7 +252,7 @@ def create_aggsender_validator_service_config(
         "--components=aggsender-validator",
     ]
 
-    cdk_aggsender_validator_service_config = ServiceConfig(
+    aggsender_validator_service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
         public_ports=public_ports,
@@ -225,7 +275,7 @@ def create_aggsender_validator_service_config(
         cmd=service_command,
     )
 
-    configs_to_return = {aggkit_name: cdk_aggsender_validator_service_config}
+    configs_to_return = {aggkit_name: aggsender_validator_service_config}
     return configs_to_return
 
 
