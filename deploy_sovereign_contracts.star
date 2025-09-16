@@ -1,6 +1,7 @@
 def run(plan, args, predeployed_contracts=True):
-    if args.get("l1_custom_genesis"):
-        return
+    # if args.get("l1_custom_genesis"):
+    #     return
+    plan.print("Obinna comented out")
 
     script = "/opt/contract-deploy/run-sovereign-setup.sh"
     if predeployed_contracts:
