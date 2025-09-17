@@ -15,7 +15,7 @@ The diagram below illustrates the interchange of assets between layers, focusing
 
 It depicts several scenarios, such as bridging an ERC20 token from mainnet to another ERC20 token in LY, bridging L1 ETH to the LY gas token, or bridging a wrapped ERC20 token living on LX to LY ETH.
 
-![Unfied bridge exchanges](ulxly-exchanges.drawio.png)
+![Unified bridge exchanges](ulxly-exchanges.drawio.png)
 
 ## Set up and prerequisites
 
