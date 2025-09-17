@@ -259,6 +259,21 @@ def run(plan, args, deployment_stages, op_stack_args):
         ),
     )
 
+    # Create keystores.
+    plan.exec(
+        description="Creating keystores for zkevm-node/cdk-validium components",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
+                    "/opt/contract-deploy/create-keystores.sh"
+                ),
+            ]
+        ),
+    )
+
     # Deploy contracts.
     if (
         args.get("l1_custom_genesis")
@@ -373,20 +388,6 @@ def run(plan, args, deployment_stages, op_stack_args):
             src="/opt/zkevm/first-batch-config.json",
         )
 
-    # Create keystores.
-    plan.exec(
-        description="Creating keystores for zkevm-node/cdk-validium components",
-        service_name=contracts_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/create-keystores.sh"
-                ),
-            ]
-        ),
-    )
 
     # Force update GER.
     plan.exec(
