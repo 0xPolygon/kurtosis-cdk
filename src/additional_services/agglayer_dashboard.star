@@ -1,4 +1,4 @@
-AGGLAYER_DASHBOARD_IMAGE = "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v1"
+AGGLAYER_DASHBOARD_IMAGE = "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v2"
 CONFIG_PATH = "/etc/dasboard"
 CONFIG_FILE = "config.json"
 DASHBOARD_PORT = 8000
