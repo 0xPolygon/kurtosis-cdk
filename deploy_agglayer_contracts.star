@@ -209,8 +209,8 @@ def run(plan, args, deployment_stages, op_stack_args):
     # Create op-succinct artifacts
     if deployment_stages.get("deploy_op_succinct", False):
         fetch_rollup_config_artifact = plan.get_files_artifact(
-            name="fetch-rollup-config",
-            description="Get fetch-rollup-config files artifact",
+            name="fetch-l2oo-config",
+            description="Get fetch-l2oo-config files artifact",
         )
         deploy_op_succinct_contract_artifact = plan.render_templates(
             name="deploy-op-succinct-contracts.sh",
