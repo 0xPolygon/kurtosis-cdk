@@ -96,7 +96,7 @@ This will perform the required steps to load the previous state, however, the se
 kurtosis service exec $ENCLAVE cdk-erigon-sequencer-001 \
     "sed -i 's/zkevm.l1-sync-start-block: 1/zkevm.l1-sync-start-block: 0/' /etc/cdk-erigon/config.yaml"
 
-# Restart sequenccer
+# Restart sequencer
 kurtosis service stop $ENCLAVE cdk-erigon-sequencer-001
 kurtosis service start $ENCLAVE cdk-erigon-sequencer-001
 ```
