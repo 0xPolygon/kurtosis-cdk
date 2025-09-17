@@ -239,7 +239,7 @@ jobs:
       - name: Monitor pessimistic chain virtual batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
@@ -263,8 +263,8 @@ jobs:
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
+            echo "Skipping block verification as consensus is pessimistic or ecdsa_multisig."
           else
             result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
             if [[ "$result" == "true" ]]; then
@@ -340,7 +340,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: 4763c63cb11c5e605bff749823bf514abcdac7b6 # 2028-07-10
+          ref: 23f47cec326b12bf81dbaa22bfd2ed37265eea86
 
       - name: Run bridge tests and op optimistic mode tests
         run: |

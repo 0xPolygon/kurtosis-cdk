@@ -1,0 +1,9 @@
+{
+  "rollupManagerContractAddress": "{{ .zkevm_rollup_manager_address }}",
+  "rollupManagerContractDeploymentBlock": {{ .zkevm_rollup_manager_block_number }},
+  "rpcURL": "{{ .l1_rpc_url }}",
+  "aggLayerURL": "{{ .agglayer_rpc_url }}",
+  "l2rpcs": {
+    "{{ .l2_rollup_id }}": "{{ .l2_rpc_url }}"
+  }
+}

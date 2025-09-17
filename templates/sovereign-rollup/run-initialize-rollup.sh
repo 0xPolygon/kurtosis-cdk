@@ -30,7 +30,7 @@ rollup_manager_addr=$(jq -r '.rollupManagerAddress' /opt/zkevm/create_rollup_out
 rollup_id=$(jq -r '.rollupID' /opt/zkevm/create_rollup_output.json)
 
 # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" '.rollupManagerAddress = $rum | .rollupID = $rid' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup.json.tmp
+jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup.json.tmp
 mv /opt/contract-deploy/initialize_rollup.json.tmp /opt/contract-deploy/initialize_rollup.json
 
 cp /opt/contract-deploy/initialize_rollup.json /opt/zkevm-contracts/tools/initializeRollup/initialize_rollup.json
@@ -258,7 +258,9 @@ check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
 
 # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
 rollupID=$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "{{.zkevm_rollup_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
-if [[ $rollupID == "1" ]]; then
-# FIXME - Temporary work around to make sure the default aggkey is configured
-cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' /opt/zkevm/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
+# shellcheck disable=SC2050
+if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
+    # FIXME - Temporary work around to make sure the default aggkey is configured
+    cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' /opt/zkevm/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
+    true
 fi
