@@ -20,7 +20,7 @@ args:
     # Size of the range proof.
     op_succinct_range_proof_interval: "60"
 
-    agglayer_contracts_image: "vcastellm/agglayer-contracts:outposts-fork.12"
+    agglayer_contracts_image: "vcastellm/agglayer-contracts:v12-fork.12"
     # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
     # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
     # Note this will noticeably increase the deployment time because of the increased L1 finality.
