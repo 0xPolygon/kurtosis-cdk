@@ -111,6 +111,12 @@ GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 {{- end }}
 
+{{- if .deploy_optimism_rollup }}
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else }}
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+{{- end }}
+
 # ==============================================================================
 #  _     ___   ____
 # | |   / _ \ / ___|
@@ -217,10 +223,6 @@ TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.z
 OpNodeURL = "{{.op_cl_rpc_url}}"
 RequireKeyMatchTrustedSequencer = true
 {{- end}}
-
-[AggSender.MaxSubmitCertificateRate]
-NumRequests = 20
-Interval = "1m"
 
 # ------------------------------------------------------------------------------
 # URLRPCL2 is the URL of the L2 RPC node
@@ -487,7 +489,7 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # Default value is "LatestBlock"
 # ------------------------------------------------------------------------------
 {{- if .deploy_optimism_rollup }}
-BlockFinality = "FinalizedBlock"
+BlockFinality = "LatestBlock"
 {{- else }}
 BlockFinality = "LatestBlock"
 {{- end }}
@@ -535,10 +537,10 @@ BlockFinality = "LatestBlock"
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
 
 # ==============================================================================
-#  _     ____   ____ _____ ____  ______   ___   _  ____ 
+#  _     ____   ____ _____ ____  ______   ___   _  ____
 # | |   |___ \ / ___| ____|  _ \/ ___\ \ / / \ | |/ ___|
-# | |     __) | |  _|  _| | |_) \___ \\ V /|  \| | |    
-# | |___ / __/| |_| | |___|  _ < ___) || | | |\  | |___ 
+# | |     __) | |  _|  _| | |_) \___ \\ V /|  \| | |
+# | |___ / __/| |_| | |___|  _ < ___) || | | |\  | |___
 # |_____|_____|\____|_____|_| \_\____/ |_| |_| \_|\____|
 # ==============================================================================
 [L2GERSync]
