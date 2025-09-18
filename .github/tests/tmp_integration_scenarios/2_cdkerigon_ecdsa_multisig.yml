@@ -1,7 +1,7 @@
 deployment_stages:
   deploy_l2_contracts: true
   deploy_op_succinct: false
-  deploy_cdk_bridge_infra: false
+  deploy_cdk_bridge_infra: true
   deploy_optimism_rollup: false
 args: 
   sequencer_type: erigon

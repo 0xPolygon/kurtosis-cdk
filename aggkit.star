@@ -271,12 +271,8 @@ def run(
         # Deploy multiple committee members
         plan.print("Deploying aggsender validators")
 
-        # Fetch aggoracle_committee_address
-        aggoracle_committee_address = service_package.get_aggoracle_committee_address(
-            plan, args
-        )
         sovereign_contract_setup_addresses = (
-            sovereign_contract_setup_addresses | aggoracle_committee_address
+            sovereign_contract_setup_addresses
         )
 
         # Create the cdk aggkit config.
