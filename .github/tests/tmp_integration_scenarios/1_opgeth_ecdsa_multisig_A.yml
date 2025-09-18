@@ -1,3 +1,5 @@
+# STATUS: THIS SCENARIO WORKS
+
 # This args-file deploys the OP Succinct chain.
 deployment_stages:
   deploy_op_succinct: false
