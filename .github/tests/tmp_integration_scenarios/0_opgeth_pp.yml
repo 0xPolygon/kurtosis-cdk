@@ -1,3 +1,6 @@
+# STATUS: THIS SCENARIO DOES NOT WORK, AS NEW AGGKIT DOES NOT SUPPORT PESSIMISTIC CONSENSUS,
+#  IT NEEDS TO BE aggchainECDSAMultisig (aggkit requires validator committee)
+
 # This args-file deploys the OP Succinct chain.
 deployment_stages:
   deploy_op_succinct: false

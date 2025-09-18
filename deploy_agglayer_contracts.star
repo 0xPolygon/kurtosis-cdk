@@ -175,7 +175,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
-                        "is_vanilla_client": is_vanilla_client(args),
+                        "is_vanilla_client": is_vanilla_client(args, deployment_stages),
                         "deploy_op_succinct": deployment_stages.get(
                             "deploy_op_succinct", False
                         ),
@@ -255,6 +255,21 @@ def run(plan, args, deployment_stages, op_stack_args):
                 "/bin/sh",
                 "-c",
                 "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/contract-deploy --daemon || true",
+            ]
+        ),
+    )
+
+    # Create keystores.
+    plan.exec(
+        description="Creating keystores for zkevm-node/cdk-validium components",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
+                    "/opt/contract-deploy/create-keystores.sh"
+                ),
             ]
         ),
     )
@@ -373,21 +388,6 @@ def run(plan, args, deployment_stages, op_stack_args):
             src="/opt/zkevm/first-batch-config.json",
         )
 
-    # Create keystores.
-    plan.exec(
-        description="Creating keystores for zkevm-node/cdk-validium components",
-        service_name=contracts_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/create-keystores.sh"
-                ),
-            ]
-        ),
-    )
-
     # Force update GER.
     plan.exec(
         description="Updating the GER so the L1 Info Tree Index is greater than 0",
@@ -402,8 +402,11 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
 
-def is_vanilla_client(args):
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
+def is_vanilla_client(args, deployment_stages):
+    if (
+        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
+        and deployment_stages.get("deploy_optimism_rollup") == True
+    ):
         return True
     else:
         return False
