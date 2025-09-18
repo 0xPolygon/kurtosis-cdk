@@ -438,9 +438,9 @@ def create_bridge_config_artifact(
         src="./templates/bridge-infra/bridge-config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
-    if (
-        not deployment_stages.get("deploy_optimism_rollup", False)
-        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+    if not deployment_stages.get("deploy_optimism_rollup", False) and (
+        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
     ):
         l2_rpc_url = "http://{}{}:{}".format(
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]

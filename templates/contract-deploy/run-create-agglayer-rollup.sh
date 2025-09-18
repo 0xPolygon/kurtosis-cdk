@@ -274,7 +274,6 @@ if ! echo "$output_json" | jq . > "dynamic-{{.chain_name}}-allocs.json"; then
 fi
 
 echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
-{{ if ne .consensus_contract_type "ecdsa_multisig" }}
 if [[ -e create_rollup_output.json ]]; then
     jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
     batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
@@ -284,10 +283,6 @@ else
     echo "Without create_rollup_output.json, there is no batch_timestamp available"
     jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
 fi
-{{ else }}
-echo "Without create_rollup_output.json, there is no batch_timestamp available"
-jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
-{{ end }}
 
 # zkevm.initial-batch.config
 jq '.firstBatchData' combined.json > first-batch-config.json
