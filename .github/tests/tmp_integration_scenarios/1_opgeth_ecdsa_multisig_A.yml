@@ -5,9 +5,9 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta3"  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta3
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta4"
   agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.7"
-  agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.2.aggchain.multisig-fork.0"
+  agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig-fork.0"
 
   # Agghcain ecdsa_multisig consensus.
   consensus_contract_type: ecdsa_multisig
