@@ -42,7 +42,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.5.0-beta4",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.2.0",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.4.0",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.3.5",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
@@ -60,7 +60,7 @@ DEFAULT_IMAGES = {
     "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.1",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v2.3.3-agglayer",
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v3.1.0-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
