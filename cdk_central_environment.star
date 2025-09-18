@@ -48,6 +48,10 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
             config={"genesis.json": struct(template=genesis_file, data={})},
         )
 
+    settlement_backend = constants.SETTLEMENT_BACKEND.agglayer
+    if not deployment_stages.get("deploy_agglayer", True):
+        settlement_backend = constants.SETTLEMENT_BACKEND.l1
+
     keystore_artifacts = get_keystores_artifacts(plan, args)
     if args["sequencer_type"] == "zkevm":
         # Create the zkevm node config.
@@ -63,6 +67,7 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
+                        "settlement_backend": settlement_backend,
                     }
                     | db_configs,
                 )
@@ -120,6 +125,7 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
                             "cdk-node", args["l1_rpc_url"]
                         ),
                         "agglayer_endpoint": agglayer_endpoint,
+                        "settlement_backend": settlement_backend,
                     }
                     | db_configs
                     | contract_setup_addresses,

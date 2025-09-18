@@ -56,7 +56,7 @@ Outputs = ["stderr"]
         RetryTime = "30s"
         VerifyProofInterval = "10s"
         GasOffset = 150000
-        SettlementBackend = "agglayer"
+        SettlementBackend = "{{.settlement_backend}}"
         [Aggregator.DB]
                 Name = "{{.aggregator_db.name}}"
                 User = "{{.aggregator_db.user}}"
