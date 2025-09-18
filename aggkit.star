@@ -271,9 +271,7 @@ def run(
         # Deploy multiple committee members
         plan.print("Deploying aggsender validators")
 
-        sovereign_contract_setup_addresses = (
-            sovereign_contract_setup_addresses
-        )
+        sovereign_contract_setup_addresses = sovereign_contract_setup_addresses
 
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))

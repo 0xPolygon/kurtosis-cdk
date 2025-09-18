@@ -111,6 +111,12 @@ GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 {{- end }}
 
+{{- if .deploy_optimism_rollup }}
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else }}
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+{{- end }}
+
 # ==============================================================================
 #  _     ___   ____
 # | |   / _ \ / ___|
@@ -524,11 +530,13 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
 # Default value is "LatestBlock"
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
-BlockFinality = "FinalizedBlock"
-{{- else }}
+
+# {{- if .deploy_optimism_rollup }}
+# BlockFinality = "FinalizedBlock"
+# {{- else }}
+# BlockFinality = "LatestBlock"
+# {{- end }}
 BlockFinality = "LatestBlock"
-{{- end }}
 
 # ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.

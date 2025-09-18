@@ -299,8 +299,11 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False) or (
         deployment_stages.get("deploy_cdk_central_environment", False)
-        and (args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig)
+        and (
+            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+            or args["consensus_contract_type"]
+            == constants.CONSENSUS_TYPE.ecdsa_multisig
+        )
     ):
         plan.print("Deploying AggKit infrastructure")
         aggkit_package.run(
