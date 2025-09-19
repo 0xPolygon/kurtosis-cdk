@@ -73,7 +73,7 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.2.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.2.6) | experimental 🧪 |
-| op-geth | [1.101511.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101511.1) | [1.101602.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.0) | deprecated ⚠️ |
+| op-geth | [1.101511.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101511.1) | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | deprecated ⚠️ |
 | op-node | [1.13.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.13.5) | [1.13.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.13.6) | deprecated ⚠️ |
 | op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | N/A | N/A |
 | zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
@@ -90,7 +90,7 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.2.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.2.6) | experimental 🧪 |
-| op-geth | [1.101511.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101511.1) | [1.101602.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.0) | deprecated ⚠️ |
+| op-geth | [1.101511.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101511.1) | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | deprecated ⚠️ |
 | op-node | [1.13.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.13.5) | [1.13.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.13.6) | deprecated ⚠️ |
 | op-succinct-proposer | [2.3.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v2.3.3-agglayer) | N/A | N/A |
 | zkevm-bridge-service | [0.6.2-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC2) | [0.6.1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.1) | experimental 🧪 |
@@ -109,7 +109,7 @@ This section lists all test environments with their configurations and component
 | lighthouse | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | latest ✅ |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.2.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.2.6) | experimental 🧪 |
-| op-geth | [1.101511.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101511.1) | [1.101602.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.0) | deprecated ⚠️ |
+| op-geth | [1.101511.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101511.1) | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | deprecated ⚠️ |
 | op-node | [1.13.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.13.5) | [1.13.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.13.6) | deprecated ⚠️ |
 | op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | N/A | N/A |
 | op-succinct-proposer | [2.3.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v2.3.3-agglayer) | N/A | N/A |
