@@ -206,7 +206,7 @@ def create_aggoracle_service_config(
             "/data": Directory(
                 artifact_names=[],
             ),
-            "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
+            "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"] + "-aggoracle-committee-00" + str(member_index)),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
