@@ -39,7 +39,7 @@ def run(plan, args={}):
         if args.get("l1_engine", "geth") == "anvil":
             import_module(anvil_package).run(plan, args)
         else:
-            ethereum_package.run(plan, args)
+            ethereum_package.run(plan, args, deployment_stages)
     else:
         plan.print("Skipping the deployment of a local L1")
     # Extract the fetch-l2oo-config binary before starting contracts-001 service.
@@ -238,6 +238,12 @@ def run(plan, args={}):
                 args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
                 or args["consensus_contract_type"]
                 == constants.CONSENSUS_TYPE.cdk_validium
+                or (
+                    args.get("consensus_contract_type")
+                    == constants.CONSENSUS_TYPE.ecdsa_multisig
+                    and not deployment_stages.get("deploy_optimism_rollup", False)
+                    and args.get("aggkit_vs_cdknode") == "cdknode"
+                )
             ):
                 plan.print("Deploying CDK Node infrastructure")
                 import_module(cdk_central_environment_package).run(
@@ -272,6 +278,12 @@ def run(plan, args={}):
         if deployment_stages.get("deploy_cdk_bridge_infra", False) and (
             args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
             or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium
+            or (
+                args.get("consensus_contract_type")
+                == constants.CONSENSUS_TYPE.ecdsa_multisig
+                and not deployment_stages.get("deploy_optimism_rollup", False)
+                and args.get("aggkit_vs_cdknode") == "cdknode"
+            )
         ):
             plan.print("Deploying cdk/bridge infrastructure")
             import_module(cdk_bridge_infra_package).run(
@@ -299,8 +311,14 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False) or (
         deployment_stages.get("deploy_cdk_central_environment", False)
-        and (args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig)
+        and (
+            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+            or (
+                args["consensus_contract_type"]
+                == constants.CONSENSUS_TYPE.ecdsa_multisig
+                and args["aggkit_vs_cdknode"] == "aggkit"
+            )
+        )
     ):
         plan.print("Deploying AggKit infrastructure")
         aggkit_package.run(

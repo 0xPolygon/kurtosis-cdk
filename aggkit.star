@@ -271,10 +271,6 @@ def run(
         # Deploy multiple committee members
         plan.print("Deploying aggsender validators")
 
-        sovereign_contract_setup_addresses = (
-            sovereign_contract_setup_addresses
-        )
-
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
@@ -436,7 +432,11 @@ def create_bridge_config_artifact(
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
     if not deployment_stages.get("deploy_optimism_rollup", False) and (
         args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
+        or (
+            args.get("consensus_contract_type")
+            == constants.CONSENSUS_TYPE.ecdsa_multisig
+            and not deployment_stages.get("deploy_optimism_rollup", False)
+        )
     ):
         l2_rpc_url = "http://{}{}:{}".format(
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]

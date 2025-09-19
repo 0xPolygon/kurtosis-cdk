@@ -618,7 +618,7 @@ def parse_args(plan, user_args):
     if "deployment_stages" in args:
         args.pop("deployment_stages")
 
-    # The private key for sp1 is expected to not have the 0x prefix
+    # The private key for sp1 is expected to not have the 0x prefix
     if args.get("sp1_prover_key") and args["sp1_prover_key"].startswith("0x"):
         args["sp1_prover_key"] = args["sp1_prover_key"][2:]
 

@@ -65,7 +65,10 @@ def create_bridge_config_artifact(
             consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic
             and deploy_optimism_rollup
         )
-        or consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig
+        or (
+            consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig
+            and deploy_optimism_rollup
+        )
         or consensus_contract_type == constants.CONSENSUS_TYPE.fep
     )
 

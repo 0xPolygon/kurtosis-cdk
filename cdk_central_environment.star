@@ -31,8 +31,10 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
         not args["zkevm_use_real_verifier"]
         and not args["enable_normalcy"]
         and not args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-        and not args["consensus_contract_type"]
-        == constants.CONSENSUS_TYPE.ecdsa_multisig
+        and not (
+            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
+            and deployment_stages.get("deploy_optimism_rollup")
+        )
     ):
         zkevm_prover_package.start_prover(
             plan, args, prover_config_artifact, "zkevm_prover_start_port"

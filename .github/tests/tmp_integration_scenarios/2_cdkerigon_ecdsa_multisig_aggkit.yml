@@ -4,6 +4,9 @@ deployment_stages:
   deploy_cdk_bridge_infra: true
   deploy_optimism_rollup: false
 args: 
+  # FIXME - temporary variable to toggle between deploying aggkit vs cdknode
+  # Remove once path is consolidated
+  aggkit_vs_cdknode: aggkit
   sequencer_type: erigon
   sp1_prover_key: ""
   agglayer_prover_primary_prover: mock-prover
@@ -11,11 +14,11 @@ args:
   zkevm_use_real_verifier: false
 
   consensus_contract_type: ecdsa_multisig
-  use_agg_sender_validator: true
-  agg_sender_validator_total_number: 3
-  agg_sender_multisig_threshold: 2
+  use_agg_sender_validator: false
+  agg_sender_validator_total_number: 0
+  agg_sender_multisig_threshold: 1
   verbosity: debug
-  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta3
+  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta5
   agglayer_contracts_image: jhkimqd/agglayer-contracts:v0.0.0-rc.0.fix.create.rollup-fork.12
   additional_services: []    
   binary_name: aggkit
