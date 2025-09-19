@@ -1,5 +1,7 @@
 # SCENARIO: Testing aggoracle committee with multiple memnbers
-# STATUS: THIS SCENARIO IS SETTLING CERTIFICATES, HOWEVER AGGORACLE THROWS ERRORS
+# STATUS: THIS SCENARIO WORKS, after merging PR from Rachit to kurtosis-cdk
+
+# OLD STATUS 2025.09.18: THIS SCENARIO IS SETTLING CERTIFICATES, HOWEVER AGGORACLE THROWS ERRORS
 # {"level":"error","ts":1758127807.1169372,"caller":"sync/evmdriver.go:248","msg":"error during processBlock (attempt 3165): insert Block. err: UNIQUE constraint failed: block.num","pid":7,"version":"","syncer":"l1InfoTreeSyncer","stacktrace":"github.com/agglayer/aggkit/sync.(*EVMDriver).withRetry\n\t/app/sync/evmdriver.go:248\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).processBlock\n\t/app/sync/evmdriver.go:212\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).handleNewBlock\n\t/app/sync/evmdriver.go:198\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).Sync.func1\n\t/app/sync/evmdriver.go:168"}
 
 
