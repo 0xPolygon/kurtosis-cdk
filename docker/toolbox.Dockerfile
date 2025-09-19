@@ -20,7 +20,7 @@ COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (SC1091): (Sourced) file not included in mock.
 # hadolint ignore=DL3008,DL3013,DL4006,SC1091
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends bc curl git jq pipx vim-common \
+  && apt-get install --yes --no-install-recommends bc curl git jq pipx xxd \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pipx ensurepath \
