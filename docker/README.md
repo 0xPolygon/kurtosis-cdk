@@ -45,7 +45,7 @@ TODO
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
 
 ```bash
-image_name="toolbox:0.0.11"
+image_name="toolbox:0.0.12"
 docker build --tag $image_name --file toolbox.Dockerfile .
 ```
 
