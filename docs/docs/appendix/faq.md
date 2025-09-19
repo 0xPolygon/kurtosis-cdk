@@ -117,7 +117,7 @@ WARNING: Container images with different architecture than expected(arm64):
 > leovct/e2e:78df008-cdk - amd64
 > jhkimqd/zkevm-contracts:v10.1.0-rc.5-fork.12 - amd64
 > us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd:v4.14.2 - amd64
-> leovct/toolbox:0.0.8 - amd64
+> leovct/toolbox:0.0.12 - amd64
 ```
 
 **Solution:** Pull the image by specifying the `amd64` platform.
