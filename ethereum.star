@@ -7,7 +7,7 @@ only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
 op_rollup_created_genesis = "templates/genesis/op-genesis.json"
 
 
-def run(plan, args, deployment_stages):
+def run(plan, args):
     if args.get("l1_custom_genesis"):
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print(
@@ -17,11 +17,6 @@ def run(plan, args, deployment_stages):
         elif (
             args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
             or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
-            or (
-                args.get("consensus_contract_type")
-                == constants.CONSENSUS_TYPE.ecdsa_multisig
-                and not deployment_stages.get("deploy_optimism_rollup", False)
-            )
         ):
             plan.print(
                 "Custom genesis is enabled for rollup/validium consensus, using the forked ethereum package without any rollup deployed."

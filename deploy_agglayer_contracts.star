@@ -298,11 +298,6 @@ def run(plan, args, deployment_stages, op_stack_args):
     elif args.get("l1_custom_genesis") and (
         args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
         or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
-        or (
-            args.get("consensus_contract_type")
-            == constants.CONSENSUS_TYPE.ecdsa_multisig
-            and not deployment_stages.get("deploy_optimism_rollup", False)
-        )
     ):
         plan.print("Skipping L1 smart contract deployment: custom genesis is enabled")
         plan.exec(

@@ -4,9 +4,6 @@ deployment_stages:
   deploy_cdk_bridge_infra: true
   deploy_optimism_rollup: false
 args: 
-  # FIXME - temporary variable to toggle between deploying aggkit vs cdknode
-  # Remove once path is consolidated
-  aggkit_vs_cdknode: aggkit
   sequencer_type: erigon
   sp1_prover_key: ""
   agglayer_prover_primary_prover: mock-prover
