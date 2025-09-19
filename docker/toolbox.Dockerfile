@@ -1,6 +1,6 @@
 FROM golang:1.23 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
-ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.83" # 2025-07-02
+ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cli.git . \
   && git checkout ${POLYCLI_TAG_OR_COMMIT_SHA} \
@@ -10,7 +10,7 @@ RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cl
 FROM ubuntu:24.04
 LABEL author="devtools@polygon.technology"
 LABEL description="Blockchain toolbox"
-ARG FOUNDRY_VERSION="v1.2.3"
+ARG FOUNDRY_VERSION="v1.3.6"
 
 COPY --from=polycli-builder /opt/polygon-cli/out/polycli /usr/bin/polycli
 COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
@@ -20,7 +20,7 @@ COPY --from=polycli-builder /opt/polygon-cli/bindings /opt/bindings
 # WARNING (SC1091): (Sourced) file not included in mock.
 # hadolint ignore=DL3008,DL3013,DL4006,SC1091
 RUN apt-get update \
-  && apt-get install --yes --no-install-recommends bc curl git jq pipx \
+  && apt-get install --yes --no-install-recommends bc curl git jq pipx vim-common \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pipx ensurepath \
