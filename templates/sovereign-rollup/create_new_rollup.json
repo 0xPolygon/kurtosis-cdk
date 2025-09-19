@@ -1,6 +1,6 @@
 {
     "realVerifier": "{{.zkevm_use_real_verifier}}",
-    "forkID": "{{.fork_id}}",
+    "forkID": {{.zkevm_rollup_fork_id}},
     "programVKey": "{{.program_vkey}}",
     "description": "kurtosis-devnet - {{.chain_name}}",
     "adminZkEVM": "{{.zkevm_l2_admin_address}}",
@@ -24,7 +24,7 @@
     "rollupTypeId": 1,
     "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}",
     "_comment": "TODO.. It sounds like isVanillaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",
-    "isVanillaClient": "{{ .is_vanilla_client }}",
+    "isVanillaClient": {{ .is_vanilla_client }},
     "sovereignParams": {
         "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
         "sovereignWETHAddress": "{{ .gas_token_address }}",
@@ -48,11 +48,14 @@
             "aggregationVkey": "{{ .sp1_aggregation_vkey }}",
             "rangeVkeyCommitment": "{{ .sp1_range_vkey_commitment }}"
         },
-        "useDefaultGateway": true,
+        "useDefaultVkeys": false,
         "ownedAggchainVKey": "{{ .aggchain_vkey_hash }}",
         "aggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
         "initOwnedAggchainVKey": "{{ .aggchain_vkey_hash }}",
         "initAggchainVKeySelector": "{{ .aggchain_vkey_selector }}",
-        "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}"
+        "vKeyManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+        "useDefaultSigners": false,
+        "signers": [["{{ .zkevm_l2_sequencer_address }}"," "]],
+        "threshold": {{ .agg_sender_multisig_threshold }}
     }
 }

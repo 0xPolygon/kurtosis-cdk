@@ -23,5 +23,8 @@
     "defaultAdminAddress": "{{.zkevm_l2_admin_address}}",
     "aggchainDefaultVKeyRoleAddress": "{{.zkevm_l2_admin_address}}",
     "addRouteRoleAddress": "{{.zkevm_l2_admin_address}}",
-    "freezeRouteRoleAddress": "{{.zkevm_l2_admin_address}}"
+    "freezeRouteRoleAddress": "{{.zkevm_l2_admin_address}}",
+    "multisigRoleAddress": "{{.zkevm_l2_admin_address}}",
+    "newThreshold": 0,
+    "signersToAdd": []
 }

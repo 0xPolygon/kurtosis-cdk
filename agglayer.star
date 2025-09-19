@@ -23,7 +23,7 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
             ports=ports,
             public_ports=public_ports,
             files={
-                "/etc/zkevm": Directory(
+                "/etc/agglayer": Directory(
                     artifact_names=[
                         agglayer_prover_config_artifact,
                     ]
@@ -33,7 +33,7 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
                 "/usr/local/bin/agglayer",
             ],
             env_vars=prover_env_vars,
-            cmd=["prover", "--cfg", "/etc/zkevm/agglayer-prover-config.toml"],
+            cmd=["prover", "--cfg", "/etc/agglayer/agglayer-prover-config.toml"],
         ),
     )
     agglayer_prover_url = "http://{}:{}".format(
@@ -49,6 +49,11 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
         service_name="contracts" + args["deployment_suffix"],
         src="/opt/zkevm/agglayer.keystore",
     )
+    aggregator_keystore_artifact = plan.store_service_files(
+        name="aggregator-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src="/opt/zkevm/aggregator.keystore",
+    )
 
     (ports, public_ports) = get_agglayer_ports(args)
     plan.add_service(
@@ -58,17 +63,18 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
             ports=ports,
             public_ports=public_ports,
             files={
-                "/etc/zkevm": Directory(
+                "/etc/agglayer": Directory(
                     artifact_names=[
                         agglayer_config_artifact,
                         agglayer_keystore_artifact,
+                        aggregator_keystore_artifact,
                     ]
                 ),
             },
             entrypoint=[
                 "/usr/local/bin/agglayer",
             ],
-            cmd=["run", "--cfg", "/etc/zkevm/agglayer-config.toml"],
+            cmd=["run", "--cfg", "/etc/agglayer/agglayer-config.toml"],
         ),
     )
 

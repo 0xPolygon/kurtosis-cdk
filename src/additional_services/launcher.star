@@ -62,5 +62,9 @@ def launch(
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args)
+        elif svc == constants.ADDITIONAL_SERVICES.agglayer_dashboard:
+            import_module("./agglayer_dashboard.star").run(
+                plan, args, contract_setup_addresses
+            )
         else:
             fail("Invalid additional service: %s" % (svc))

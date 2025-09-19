@@ -42,11 +42,11 @@ def run(plan, args={}):
             ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-    # Extract the fetch-rollup-config binary before starting contracts-001 service.
+    # Extract the fetch-l2oo-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
         # ethereum_package.extract_genesis_json(plan)
-        # Temporarily run op-succinct-proposer service and fetch-rollup-config binary
+        # Temporarily run op-succinct-proposer service and fetch-l2oo-config binary
         # The extract binary will be passed into the contracts-001 service
         op_succinct_package.extract_fetch_rollup_config(plan, args)
 
@@ -299,7 +299,11 @@ def run(plan, args={}):
     # Deploy AggKit infrastructure + Dedicated Bridge Service
     if deployment_stages.get("deploy_optimism_rollup", False) or (
         deployment_stages.get("deploy_cdk_central_environment", False)
-        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+        and (
+            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
+            or args["consensus_contract_type"]
+            == constants.CONSENSUS_TYPE.ecdsa_multisig
+        )
     ):
         plan.print("Deploying AggKit infrastructure")
         aggkit_package.run(
