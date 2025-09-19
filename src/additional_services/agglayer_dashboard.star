@@ -1,4 +1,4 @@
-AGGLAYER_DASHBOARD_IMAGE = "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v2"
+AGGLAYER_DASHBOARD_IMAGE = "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dashboard:v4"
 CONFIG_PATH = "/etc/dasboard"
 CONFIG_FILE = "config.json"
 DASHBOARD_PORT = 8000
@@ -31,6 +31,7 @@ def get_dashboard_config(plan, args, contract_setup_addresses):
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
         ),
         "agglayer_rpc_url": args.get("agglayer_readrpc_url"),
+        "zkevm_l2_sovereignadmin_private_key": args.get("zkevm_l2_sovereignadmin_private_key"),
     } | contract_setup_addresses
 
     return Directory(
