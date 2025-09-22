@@ -9,6 +9,7 @@ args:
   agglayer_prover_primary_prover: mock-prover
   erigon_strict_mode: false
   zkevm_use_real_verifier: false
+  enable_normalcy: true
 
   consensus_contract_type: ecdsa_multisig
   use_agg_sender_validator: false
@@ -17,9 +18,10 @@ args:
   verbosity: debug
   aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta5
   agglayer_contracts_image: jhkimqd/agglayer-contracts:v0.0.0-rc.0.fix.create.rollup-fork.12
-  additional_services: []    
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-rc4
+
   binary_name: aggkit
-  aggkit_components: aggsender,bridge
+  aggkit_components: aggsender
   gas_token_enabled: false
 optimism_package:
   chains: 
