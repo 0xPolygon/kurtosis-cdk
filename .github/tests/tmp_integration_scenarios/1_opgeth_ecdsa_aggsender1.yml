@@ -22,7 +22,7 @@ args:
 
   # Real verifier
   agglayer_prover_primary_prover: "network-prover"
-  sp1_prover_key: "0x15697dec162680447e56c46ceefb0eb8225ec2e9404e9ce48128c8954b7be272"
+  sp1_prover_key: "xxxx"
   zkevm_use_real_verifier: true
 
 
