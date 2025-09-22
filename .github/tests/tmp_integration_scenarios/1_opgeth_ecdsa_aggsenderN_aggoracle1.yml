@@ -1,13 +1,12 @@
-# SCENARIO: Testing aggsender committee with multiple validators
+# SCENARIO: Testing aggoracle committee with single memnber
 # STATUS: THIS SCENARIO WORKS
 
-# This args-file deploys the OP Succinct chain.
 deployment_stages:
   deploy_op_succinct: false
 
 args:
-  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta5"
-  agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.7"
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta5"  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta3
+  agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.9"
   agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig-fork.0"
 
   # Agghcain ecdsa_multisig consensus.
@@ -16,6 +15,17 @@ args:
   # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
   agg_sender_validator_total_number: 5
   agg_sender_multisig_threshold: 3
+
+  # Aggoracle committee config
+  # QUORUM = TOTAL MEMBERS
+  use_agg_oracle_committee: True
+  agg_oracle_committee_quorum: 1
+  agg_oracle_committee_total_members: 1
+
+  # Real verifier
+  agglayer_prover_primary_prover: "network-prover"
+  sp1_prover_key: "0x15697dec162680447e56c46ceefb0eb8225ec2e9404e9ce48128c8954b7be272"
+  zkevm_use_real_verifier: true
 
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
