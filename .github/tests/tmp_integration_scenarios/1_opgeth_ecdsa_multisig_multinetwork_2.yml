@@ -6,7 +6,6 @@ deployment_stages:
 args: 
   consensus_contract_type: ecdsa_multisig
   use_agg_sender_validator: true
-  is_vanilla_client: true
   agg_sender_validator_total_number: 3
   agg_sender_multisig_threshold: 2
   l1_seconds_per_slot: 2
