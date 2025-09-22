@@ -23,5 +23,6 @@
         "adminAddress": "{{ .zkevm_l2_admin_address }}",
         "minDelay": 3600
     },
-    "formatGenesis": "geth"
+    "formatGenesis": "geth",
+    "useAggOracleCommittee": false
 }

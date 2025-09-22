@@ -26,16 +26,16 @@ def extract_fetch_rollup_config(plan, args):
     )
 
     plan.run_sh(
-        run="echo copying fetch-rollup-config binary to files artifact...",
+        run="echo copying fetch-l2oo-config binary to files artifact...",
         image=args.get("op_succinct_proposer_image"),
         store=[
             StoreSpec(
-                src="/usr/local/bin/fetch-rollup-config",
-                name="fetch-rollup-config",
+                src="/usr/local/bin/fetch-l2oo-config",
+                name="fetch-l2oo-config",
             )
         ],
         wait=None,
-        description="Extract fetch-rollup-config from the op-succinct-proposer image to files artifact",
+        description="Extract fetch-l2oo-config from the op-succinct-proposer image to files artifact",
     )
 
 
