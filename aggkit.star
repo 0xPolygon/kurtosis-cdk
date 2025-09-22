@@ -121,8 +121,8 @@ def run(
     # If use_agg_oracle_committee is True, fetch the aggoracle_committee_address
     if (
         args["use_agg_oracle_committee"] == True
-        and args["agg_oracle_committee_total_members"] > 1
-        and args["agg_oracle_committee_quorum"] != 0
+        and args["agg_oracle_committee_total_members"] > 0
+        and args["agg_oracle_committee_quorum"] > 0
     ):
         # Fetch aggoracle_committee_address
         aggoracle_committee_address = service_package.get_aggoracle_committee_address(
