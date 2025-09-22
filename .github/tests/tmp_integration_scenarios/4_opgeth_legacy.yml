@@ -1,0 +1,38 @@
+# This args-file deploys the OP Succinct chain.
+deployment_stages:
+  deploy_op_succinct: false
+
+args:
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.5.4"
+  agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.9"
+  agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.2.aggchain.multisig-fork.0"
+
+  # Agghcain ecdsa_multisig consensus.
+  consensus_contract_type: pessimistic
+
+  use_agg_sender_validator: False
+  use_agg_oracle_committee: False  
+
+  # Real verifier
+  agglayer_prover_primary_prover: "network-prover"
+  sp1_prover_key: "xxxx"
+  zkevm_use_real_verifier: true
+
+
+  # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
+  # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
+  # Note this will noticeably increase the deployment time because of the increased L1 finality.
+  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+
+optimism_package:
+  chains:
+    - proposer_params:
+        enabled: false
+      challenger_params:
+        enabled: false
+      network_params:
+        name: "001"
+        network_id: "2151908"
+        seconds_per_slot: 1
+  observability:
+    enabled: false
