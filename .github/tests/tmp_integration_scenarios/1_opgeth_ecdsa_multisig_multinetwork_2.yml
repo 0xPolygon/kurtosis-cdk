@@ -1,0 +1,32 @@
+deployment_stages: 
+  deploy_op_succinct: false
+  deploy_l1: false
+  deploy_agglayer: false
+
+args: 
+  consensus_contract_type: ecdsa_multisig
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 3
+  agg_sender_multisig_threshold: 2
+  l1_seconds_per_slot: 2
+  verbosity: debug
+  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta5
+  additional_services: []
+  binary_name: aggkit
+  aggkit_components: aggsender,aggoracle
+  zkevm_rollup_chain_id: 20202
+  zkevm_rollup_id: 2
+  deployment_suffix: "-002"
+
+optimism_package: 
+  chains: 
+    - proposer_params: 
+        enabled: false
+      challenger_params: 
+        enabled: false
+      network_params: 
+        name: "002"
+        network_id: "20202"
+        seconds_per_slot: 1
+  observability: 
+    enabled: false

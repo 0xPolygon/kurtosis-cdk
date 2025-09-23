@@ -1,5 +1,7 @@
-# STATUS: THIS SCENARIO IS SETTLING CERTIFICATES, HOWEVER AGGORACLE THROWS ERRORS
-# {"level":"error","ts":1758126941.132389,"caller":"ethtxmanager/ethtxmanager.go:642","msg":"failed to sign tx 0xfbf37f9b7719e76d17ae2494e5074303495bd25f6299ed2db117ff896aee152a: can't find sender private key to sign tx","pid":7,"monitoredTxId":"0x649a8a072921a6ff6106535eafd4386eb894de1efe40b3706d9397fda7a19643","createdAt":1758126941,"from":"0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d","to":"0xA7F6C7c461c2AB90786e5B21673ff31fB2a6f894","stacktrace":"github.com/0xPolygon/zkevm-ethtx-manager/ethtxmanager.(*Client).monitorTx\n\t/go/pkg/mod/github.com/0x!polygon/zkevm-ethtx-manager@v0.2.15/ethtxmanager/ethtxmanager.go:642\ngithub.com/0xPolygon/zkevm-ethtx-manager/ethtxmanager.(*Client).monitorTxs.func1\n\t/go/pkg/mod/github.com/0x!polygon/zkevm-ethtx-manager@v0.2.15/ethtxmanager/ethtxmanager.go:516"}
+# SCENARIO: Testing aggoracle committee with multiple memnbers
+# STATUS: THIS SCENARIO WORKS, after merging PR from Rachit to kurtosis-cdk
+
+# OLD STATUS 2025.09.18: THIS SCENARIO IS SETTLING CERTIFICATES, HOWEVER AGGORACLE THROWS ERRORS
 # {"level":"error","ts":1758127807.1169372,"caller":"sync/evmdriver.go:248","msg":"error during processBlock (attempt 3165): insert Block. err: UNIQUE constraint failed: block.num","pid":7,"version":"","syncer":"l1InfoTreeSyncer","stacktrace":"github.com/agglayer/aggkit/sync.(*EVMDriver).withRetry\n\t/app/sync/evmdriver.go:248\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).processBlock\n\t/app/sync/evmdriver.go:212\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).handleNewBlock\n\t/app/sync/evmdriver.go:198\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).Sync.func1\n\t/app/sync/evmdriver.go:168"}
 
 
@@ -8,9 +10,9 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta3"  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta3
-  agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.7"
-  agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.2.aggchain.multisig-fork.0"
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta5"
+  agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.9"
+  agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig-fork.0"
 
   # Agghcain ecdsa_multisig consensus.
   consensus_contract_type: ecdsa_multisig
@@ -19,10 +21,14 @@ args:
   agg_sender_validator_total_number: 5
   agg_sender_multisig_threshold: 3
 
-  # QUORUM = TOTAL MEMBERS
-  use_agg_oracle_committee: True
-  agg_oracle_committee_quorum: 5
-  agg_oracle_committee_total_members: 5
+  # Aggoracle committee config
+  use_agg_oracle_committee: False
+
+  # Real verifier
+  agglayer_prover_primary_prover: "network-prover"
+  sp1_prover_key: "xxxx"
+  zkevm_use_real_verifier: true
+
 
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.

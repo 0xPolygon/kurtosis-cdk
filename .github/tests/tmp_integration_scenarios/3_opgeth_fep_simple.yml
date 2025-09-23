@@ -1,7 +1,5 @@
-# SCENARIO: Testing fep consensus with multiple validators
+# SCENARIO: Testing fep consensus with simple setup, single validator
 # STATUS: THIS SCENARIO FAILS AS AGGLAYER FAILS TO FIND AGGCHAIN VKEY
-
-# OLD STATUS 2025.09.18: THIS SCENARIO FAILS AS AGGKKIT VALIDATOR COMMITTEE FAILS TO VALIDATE CERTIFICATE
 
 # This args-file deploys the OP Succinct chain.
 deployment_stages:
@@ -35,8 +33,8 @@ args:
 
     use_agg_sender_validator: True
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
-    agg_sender_validator_total_number: 5
-    agg_sender_multisig_threshold: 3
+    agg_sender_validator_total_number: 1
+    agg_sender_multisig_threshold: 1
 
     use_agg_oracle_committee: False
 

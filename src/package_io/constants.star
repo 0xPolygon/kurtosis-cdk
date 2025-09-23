@@ -37,7 +37,7 @@ SEQUENCER_TYPE = struct(
 )
 
 TOOLBOX_IMAGE = (
-    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.10"
+    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
 )
 
 L1_ENGINES = ("geth", "anvil")

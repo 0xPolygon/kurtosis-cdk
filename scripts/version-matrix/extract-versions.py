@@ -57,8 +57,8 @@ class VersionMatrixExtractor:
             # op-geth
             (repo_root / ".github" / "tests" / "op-geth" /
              "sovereign.yml", "cdk-opgeth-sovereign"),
-            (repo_root / ".github" / "tests" / "op-geth" /
-             "ecdsa.yml", "cdk-opgeth-ecdsa"),
+            # (repo_root / ".github" / "tests" / "op-geth" /
+            #  "ecdsa.yml", "cdk-opgeth-ecdsa"),
             (repo_root / ".github" / "tests" / "op-succinct" /
              "mock-prover.yml", "cdk-opgeth-zkrollup"),
         ]
@@ -396,18 +396,18 @@ class VersionMatrixExtractor:
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            "cdk-opgeth-ecdsa": [
-                'aggkit',
-                'aggkit-prover',
-                'agglayer',
-                'agglayer-contracts',
-                'op-batcher',
-                'op-deployer',
-                'op-node',
-                'op-geth',
-                'op-proposer',
-                'zkevm-bridge-service',
-            ],
+            # "cdk-opgeth-ecdsa": [
+            #     'aggkit',
+            #     'aggkit-prover',
+            #     'agglayer',
+            #     'agglayer-contracts',
+            #     'op-batcher',
+            #     'op-deployer',
+            #     'op-node',
+            #     'op-geth',
+            #     'op-proposer',
+            #     'zkevm-bridge-service',
+            # ],
             "cdk-opgeth-zkrollup": [
                 'aggkit',
                 'aggkit-prover',

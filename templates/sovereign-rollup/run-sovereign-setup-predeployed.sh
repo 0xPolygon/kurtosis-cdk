@@ -49,6 +49,10 @@ rm /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json
 npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
 cp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json /opt/zkevm/create_rollup_output.json
 else
+# shellcheck disable=SC2050
+if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
+sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
+fi
 # In the case for PP deployments without OP-Succinct, use the 4_createRollup.ts script instead of the createNewRollup.ts tool.
 cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out

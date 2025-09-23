@@ -1,0 +1,49 @@
+# SCENARIO: Testing aggoracle committee with multiple memnbers
+# STATUS: THIS SCENARIO WORKS, after merging PR from Rachit to kurtosis-cdk
+
+# OLD STATUS 2025.09.18: THIS SCENARIO IS SETTLING CERTIFICATES, HOWEVER AGGORACLE THROWS ERRORS
+# {"level":"error","ts":1758127807.1169372,"caller":"sync/evmdriver.go:248","msg":"error during processBlock (attempt 3165): insert Block. err: UNIQUE constraint failed: block.num","pid":7,"version":"","syncer":"l1InfoTreeSyncer","stacktrace":"github.com/agglayer/aggkit/sync.(*EVMDriver).withRetry\n\t/app/sync/evmdriver.go:248\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).processBlock\n\t/app/sync/evmdriver.go:212\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).handleNewBlock\n\t/app/sync/evmdriver.go:198\ngithub.com/agglayer/aggkit/sync.(*EVMDriver).Sync.func1\n\t/app/sync/evmdriver.go:168"}
+
+
+# This args-file deploys the OP Succinct chain.
+deployment_stages:
+  deploy_op_succinct: false
+
+args:
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta5"
+  agglayer_image: "ghcr.io/agglayer/agglayer:0.4.0-rc.9"
+  agglayer_contracts_image: "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig-fork.0"
+
+  # Agghcain ecdsa_multisig consensus.
+  consensus_contract_type: ecdsa_multisig
+  use_agg_sender_validator: False
+
+  # Aggoracle committee config
+  # QUORUM < TOTAL MEMBERS
+  use_agg_oracle_committee: True
+  agg_oracle_committee_quorum: 1
+  agg_oracle_committee_total_members: 1
+
+  # Real verifier
+  agglayer_prover_primary_prover: "network-prover"
+  sp1_prover_key: "xxxx"
+  zkevm_use_real_verifier: true
+
+
+  # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
+  # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
+  # Note this will noticeably increase the deployment time because of the increased L1 finality.
+  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+
+optimism_package:
+  chains:
+    - proposer_params:
+        enabled: false
+      challenger_params:
+        enabled: false
+      network_params:
+        name: "001"
+        network_id: "2151908"
+        seconds_per_slot: 1
+  observability:
+    enabled: false
