@@ -43,8 +43,8 @@ DEFAULT_DEPLOYMENT_STAGES = {
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.6.0-beta2",
     "aggkit_prover_image": "atanmarko/aggkit-prover:ger-removal",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.7",
     "agglayer_contracts_image": "vcastellm/agglayer-contracts:outposts-fork.12",
+    "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.10",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
