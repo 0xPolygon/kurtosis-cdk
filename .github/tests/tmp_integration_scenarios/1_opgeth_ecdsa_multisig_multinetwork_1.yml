@@ -8,7 +8,7 @@ args:
   agg_sender_multisig_threshold: 2
   l1_seconds_per_slot: 2
   verbosity: debug
-  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta5
+  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta6
   additional_services: []
   binary_name: aggkit
   aggkit_components: aggsender,aggoracle

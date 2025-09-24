@@ -23,7 +23,7 @@ args:
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-rc4
   binary_name: aggkit
   aggkit_components: aggsender
-  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta5
+  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta6
   gas_token_enabled: true
   gas_token_address: ""
   deployment_suffix: "-002"
