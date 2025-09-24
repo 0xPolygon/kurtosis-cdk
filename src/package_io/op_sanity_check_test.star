@@ -24,7 +24,7 @@ def test_sanity_check_success(plan):
             }
         ]
     }
-    source = "github.com/agglayer/optimism-package/src/package_io/sanity_check.star@cc37713aff9c4955dd6975cdbc34072a1286754e"
+    source = "github.com/agglayer/optimism-package/main.star@a70f83d31c746139d8b6155bdec6a26fdd4afda0"
     op_sanity_check.sanity_check(plan, args, op_args, source)
 
 
