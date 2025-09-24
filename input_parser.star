@@ -1,6 +1,6 @@
 constants = import_module("./src/package_io/constants.star")
 dict = import_module("./src/package_io/dict.star")
-op_input_parser = import_module("./op_input_parser.star")
+op_input_parser = import_module("./src/package_io/op_input_parser.star")
 
 
 # The deployment process is divided into various stages.

@@ -1,4 +1,4 @@
-constants = import_module("./src/package_io/constants.star")
+constants = import_module("./constants.star")
 op_sanity_check = import_module("./op_sanity_check.star")
 
 
