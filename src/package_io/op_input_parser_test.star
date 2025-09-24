@@ -1,5 +1,5 @@
-constants = import_module("../src/package_io/constants.star")
-op_input_parser = import_module("../src/package_io/op_input_parser.star")
+constants = import_module("./constants.star")
+op_input_parser = import_module("./op_input_parser.star")
 
 
 def test_parse_args_with_empty_args(plan):
