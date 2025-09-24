@@ -2,6 +2,25 @@ constants = import_module("./constants.star")
 op_input_parser = import_module("./op_input_parser.star")
 
 
+def test_sort_dict_by_values(plan):
+    # Should sort dictionary by keys alphabetically
+    unsorted_dict = {
+        "zebra": 1,
+        "alpha": 2,
+        "beta": 3,
+    }
+
+    result = op_input_parser._sort_dict_by_values(unsorted_dict)
+    keys = list(result.keys())
+
+    expect.eq(keys[0], "alpha")
+    expect.eq(keys[1], "beta")
+    expect.eq(keys[2], "zebra")
+    expect.eq(result.get("alpha"), 2)
+    expect.eq(result.get("beta"), 3)
+    expect.eq(result.get("zebra"), 1)
+
+
 def test_parse_args_with_empty_args(plan):
     # Should return default args when no user args are provided
     user_args = {
@@ -198,3 +217,102 @@ def test_parse_args_with_user_overrides(plan):
     # Check external_l1_network_params exists
     external_l1 = result.get("external_l1_network_params")
     expect.ne(external_l1, None)
+
+
+def test_parse_chains_with_empty_chains(plan):
+    # Should return default chain when empty chains array is provided
+    result = op_input_parser._parse_chains([])
+    expect.eq(len(result), 1)
+    expect.eq(result[0], op_input_parser.DEFAULT_CHAIN)
+
+
+def test_parse_chains_with_partial_config(plan):
+    # Should apply defaults to partially configured chains
+    chains = [
+        {
+            "network_params": {
+                "seconds_per_slot": 5,
+            }
+        },
+        {
+            "batcher_params": {
+                "image": "custom-batcher:latest",
+            }
+        },
+    ]
+
+    result = op_input_parser._parse_chains(chains)
+    expect.eq(len(result), 2)
+
+    # First chain should have custom network params but default everything else
+    chain0 = result[0]
+    expect.eq(chain0.get("network_params").get("seconds_per_slot"), 5)
+    expect.eq(chain0.get("network_params").get("name"), "001")  # default
+    expect.eq(
+        chain0.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
+    )
+
+    # Second chain should have custom batcher but default everything else
+    chain1 = result[1]
+    expect.eq(chain1.get("batcher_params").get("image"), "custom-batcher:latest")
+    expect.eq(
+        chain1.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
+    )
+
+
+def test_parse_participants_with_empty_participants(plan):
+    # Should return default participant when empty participants array is provided
+    result = op_input_parser._parse_participants([])
+    expect.eq(len(result), 1)
+    expect.eq(result[0], op_input_parser.DEFAULT_PARTICIPANT)
+
+
+def test_parse_participants_with_partial_config(plan):
+    # Should apply defaults to partially configured participants
+    participants = [
+        {
+            "el_image": "custom-geth:latest",
+            "count": 3,
+        },
+        {
+            "cl_image": "custom-node:latest",
+        },
+    ]
+
+    result = op_input_parser._parse_participants(participants)
+    expect.eq(len(result), 2)
+
+    # First participant should have custom EL image and count but default CL image
+    participant0 = result[0]
+    expect.eq(participant0.get("el_image"), "custom-geth:latest")
+    expect.eq(participant0.get("count"), 3)
+    expect.eq(
+        participant0.get("cl_image"), constants.DEFAULT_IMAGES.get("op_node_image")
+    )
+
+    # Second participant should have custom CL image but default everything else
+    participant1 = result[1]
+    expect.eq(participant1.get("cl_image"), "custom-node:latest")
+    expect.eq(
+        participant1.get("el_image"), constants.DEFAULT_IMAGES.get("op_geth_image")
+    )
+    expect.eq(participant1.get("count"), 1)
+
+
+def test_get_l1_config(plan):
+    # Should properly extract and format L1 configuration
+    user_args = {
+        "l1_chain_id": "11155111",
+        "l1_rpc_url": "http://localhost:8545",
+        "l1_ws_url": "ws://localhost:8546",
+        "l1_beacon_url": "http://localhost:5052",
+        "l1_preallocated_mnemonic": "test test test test test test test test test test test junk",
+    }
+
+    result = op_input_parser._get_l1_config(plan, user_args)
+
+    expect.eq(result.get("network_id"), "11155111")
+    expect.eq(result.get("el_rpc_url"), "http://localhost:8545")
+    expect.eq(result.get("el_ws_url"), "ws://localhost:8546")
+    expect.eq(result.get("cl_rpc_url"), "http://localhost:5052")
+    expect.eq(result.get("rpc_kind"), "standard")
