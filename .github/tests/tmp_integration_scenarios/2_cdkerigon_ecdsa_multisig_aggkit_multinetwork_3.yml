@@ -1,0 +1,31 @@
+deployment_stages: 
+  deploy_l2_contracts: true
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: true
+  deploy_optimism_rollup: false
+  deploy_l1: false
+  deploy_agglayer: false
+
+args:
+  additional_services: []
+  sequencer_type: erigon
+  sp1_prover_key: ""
+  agglayer_prover_primary_prover: mock-prover
+  erigon_strict_mode: false
+  zkevm_use_real_verifier: false
+  enable_normalcy: true
+  consensus_contract_type: ecdsa_multisig
+  use_agg_sender_validator: false
+  agg_sender_validator_total_number: 0
+  agg_sender_multisig_threshold: 1
+  verbosity: debug
+  agglayer_contracts_image: jhkimqd/agglayer-contracts:v0.0.0-rc.0.fix.1.create.genesis-fork.12
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-rc4
+  binary_name: aggkit
+  aggkit_components: aggsender
+  aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta5
+  gas_token_enabled: true
+  gas_token_address: ""
+  deployment_suffix: "-003"
+  zkevm_rollup_chain_id: 20203
+  zkevm_rollup_id: 3

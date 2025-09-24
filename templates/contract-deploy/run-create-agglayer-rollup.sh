@@ -74,13 +74,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
             > gasToken-erc20.json
         jq \
             --slurpfile c gasToken-erc20.json \
-            '.gasTokenAddress = $c[0].deployedTo' \
-            /opt/contract-deploy/create_new_rollup.json \
-            > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-
-        jq \
-            --slurpfile c gasToken-erc20.json \
-            '.sovereignParams.sovereignWETHAddress = $c[0].deployedTo' \
+            '.gasTokenAddress = $c[0].deployedTo | .sovereignParams.sovereignWETHAddress = $c[0].deployedTo' \
             /opt/contract-deploy/create_new_rollup.json \
             > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
         {{ else }}
@@ -136,6 +130,11 @@ jq 'walk(if type == "object" then
     /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json > temp.json && \
     mv temp.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 {{ end }}
+
+# Comment out aggLayerGateway.addDefaultAggchainVKey for additional rollups with same AggchainVKeySelector and OwnedAggchainVKey
+if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
+sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
+fi
 
 # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
 deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
