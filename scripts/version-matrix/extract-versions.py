@@ -3,7 +3,7 @@
 Automated version matrix extraction tool for Kurtosis CDK.
 
 This script automatically extracts version information from:
-1. input_parser.star (DEFAULT_IMAGES)
+1. constants.star (DEFAULT_IMAGES)
 2. .github/tests/ configurations
 3. Git tags and releases from component repositories
 
@@ -45,7 +45,7 @@ class VersionMatrixExtractor:
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
-        self.input_parser_path = repo_root / "input_parser.star"
+        self.constants_path = repo_root / "src" / "package_io" / "constants.star"
         self.test_files_paths = [
             # cdk-erigon
             (repo_root / ".github" / "tests" / "cdk-erigon" /
@@ -114,11 +114,11 @@ class VersionMatrixExtractor:
         }
 
     def extract_default_images(self) -> Dict[str, ComponentVersion]:
-        """Extract default image versions from input_parser.star."""
+        """Extract default image versions from constants.star."""
         components = {}
 
         try:
-            with open(self.input_parser_path, 'r') as f:
+            with open(self.constants_path, 'r') as f:
                 content = f.read()
 
             # Extract DEFAULT_IMAGES dictionary
@@ -130,7 +130,7 @@ class VersionMatrixExtractor:
 
             if not default_images_match:
                 raise ValueError(
-                    "DEFAULT_IMAGES not found in input_parser.star")
+                    "DEFAULT_IMAGES not found in constants.star")
 
             images_content = default_images_match.group(1)
 
