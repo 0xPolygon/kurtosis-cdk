@@ -105,9 +105,7 @@ def parse_args(plan, args, op_args):
         if k in op_args:
             if k == "chains":
                 op_args[k] = _parse_chains(op_args[k])
-            elif type(v) == type(True):
-                continue
-            else:
+            elif type(v) == type({}):
                 # Apply defaults
                 for kk, vv in v.items():
                     op_args[k].setdefault(kk, vv)
