@@ -4,7 +4,12 @@ op_input_parser = import_module("../op_input_parser.star")
 
 def test_parse_args_with_empty_args(plan):
     # Should return default args when no user args are provided
-    result = op_input_parser.parse_args(plan, {}, {})
+    user_args = {
+        "deployment_suffix": "-001",
+        "zkevm_rollup_chain_id": 2151908,
+        "l1_seconds_per_slot": 2,
+    }
+    result = op_input_parser.parse_args(plan, user_args, {})
     optimism_package = result.get("optimism_package")
 
     # Check native fields
@@ -39,6 +44,11 @@ def test_parse_args_with_empty_args(plan):
 def test_parse_args_with_user_overrides(plan):
     # Should correctly apply user overrides while preserving defaults
     user_args = {
+        "deployment_suffix": "-001",
+        "zkevm_rollup_chain_id": 2151908,
+        "l1_seconds_per_slot": 2,
+    }
+    user_op_args = {
         # meta configuration - non-native fields
         "predeployed_contracts": False,
         # native configuration - optimism-package fields
@@ -75,7 +85,7 @@ def test_parse_args_with_user_overrides(plan):
         },
     }
 
-    result = op_input_parser.parse_args(plan, {}, user_args)
+    result = op_input_parser.parse_args(plan, user_args, user_op_args)
     optimism_package = result.get("optimism_package")
 
     # Check chains structure

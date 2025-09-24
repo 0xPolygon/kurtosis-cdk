@@ -1,7 +1,6 @@
 constants = import_module("./src/package_io/constants.star")
 dict = import_module("./src/package_io/dict.star")
 op_input_parser = import_module("./op_input_parser.star")
-op_sanity_check = import_module("./op_sanity_check.star")
 
 
 # The deployment process is divided into various stages.
@@ -449,17 +448,7 @@ def parse_args(plan, user_args):
         "deployment_stages", {}
     )
     args = DEFAULT_ARGS | user_args.get("args", {})
-
-    # Parse op args
     op_input_args = user_args.get("optimism_package", {})
-    op_args = op_input_parser.parse_args(plan, args, op_input_args)
-
-    # Sanity check op args
-    source = args.pop("source")
-    for k in op_input_parser.DEFAULT_NON_NATIVE_ARGS.keys():
-        if k in args:
-            args.pop(k)
-    op_sanity_check.sanity_check(plan, args, op_args, source)
 
     # Change some params if anvil set to make it work
     # As it changes L1 config it needs to be run before other functions/checks
@@ -529,6 +518,9 @@ def parse_args(plan, user_args):
             "deploy_agglayer", False
         ),  # hacky but works fine for now.
     }
+
+    # Parse and sanity check op args
+    op_args = op_input_parser.parse_args(plan, args, op_input_args)
 
     # Sort dictionaries for debug purposes.
     sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)

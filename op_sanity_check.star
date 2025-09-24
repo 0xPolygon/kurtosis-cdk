@@ -19,8 +19,8 @@ def check_first_chain_id(args, op_args):
     network_params0 = chain0.get("network_params")
     op_chain_id = network_params0.get("network_id")
 
-    zkevm_rollup_chain_id = str(args.get("zkevm_rollup_chain_id"))
-    if op_chain_id != zkevm_rollup_chain_id:
+    zkevm_rollup_chain_id = args.get("zkevm_rollup_chain_id")
+    if str(op_chain_id) != str(zkevm_rollup_chain_id):
         fail(
             "The chain id of the first OP chain ({}) does not match the zkevm rollup chain id ({})".format(
                 op_chain_id, zkevm_rollup_chain_id
@@ -53,7 +53,7 @@ def check_first_chain_block_time(args, op_args):
     network_params0 = chain0.get("network_params")
     l2_block_time = network_params0.get("seconds_per_slot")
 
-    l1_block_time = args.get("l1_block_time")
+    l1_block_time = args.get("l1_seconds_per_slot")
     if l2_block_time > l1_block_time:
         fail(
             "The L2 block time of the first OP chain ({}) cannot be greater than the L1 block time ({})".format(

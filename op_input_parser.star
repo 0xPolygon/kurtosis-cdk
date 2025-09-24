@@ -1,4 +1,5 @@
 constants = import_module("./src/package_io/constants.star")
+op_sanity_check = import_module("./op_sanity_check.star")
 
 
 def _sort_dict_by_values(d):
@@ -42,7 +43,7 @@ DEFAULT_CHAIN = _sort_dict_by_values(
                 # However, our deployment suffix already starts with a "-", so we remove it here.
                 "name": "001",
                 # The rollup chain ID
-                "network_id": 1,
+                "network_id": 2151908,
                 # The rollup block time
                 "seconds_per_slot": 1,
                 # Hard fork activation times
@@ -120,11 +121,8 @@ def parse_args(plan, args, op_args):
     source = sorted_op_args.pop("source")
     predeployed_contracts = sorted_op_args.pop("predeployed_contracts")
 
-    # Run the optimism-package sanity check
-    optimism_package_sanity_check_module = import_module(
-        source.replace("main", "src/package_io/sanity_check")
-    )
-    optimism_package_sanity_check_module.sanity_check(plan, sorted_op_args)
+    # Sanity check
+    op_sanity_check.sanity_check(plan, args, sorted_op_args, source)
 
     return _sort_dict_by_values(
         {
