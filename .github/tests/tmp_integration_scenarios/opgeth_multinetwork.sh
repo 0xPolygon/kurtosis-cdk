@@ -51,17 +51,17 @@ NETWORK_ARGS='{
 kurtosis run --enclave "$ENCLAVE_NAME" . "$NETWORK_ARGS"
 
 # LETS DEPLOY A THIRD NETWORK WITH COMMITTEES SET AND JUST 1 MEMBER
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.args.deployment_suffix = "-003" | .args.zkevm_rollup_id = 3 | .args.zkevm_rollup_chain_id = 30303')
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.optimism_package.chains[0].network_params.name = "003" | .optimism_package.chains[0].network_params.network_id = "30303"')
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.args.use_agg_sender_validator = true | .args.use_agg_oracle_committee = true')
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.args.agg_oracle_committee_total_members = 1 | .args.agg_oracle_committee_quorum = 1 | .args.agg_sender_validator_total_number = 1 | .args.agg_sender_multisig_threshold = 1')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.args.deployment_suffix = "-003" | .args.zkevm_rollup_id = 3 | .args.zkevm_rollup_chain_id = 30303')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.optimism_package.chains[0].network_params.name = "003" | .optimism_package.chains[0].network_params.network_id = "30303"')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.args.use_agg_sender_validator = true | .args.use_agg_oracle_committee = true')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.args.agg_oracle_committee_total_members = 1 | .args.agg_oracle_committee_quorum = 1 | .args.agg_sender_validator_total_number = 1 | .args.agg_sender_multisig_threshold = 1')
 
 kurtosis run --enclave "$ENCLAVE_NAME" . "$NETWORK_ARGS"
 
 # LETS DEPLOY A FOURTH NETWORK WITH COMMITTEES SET AND FEW MEMBERS
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.args.deployment_suffix = "-004" | .args.zkevm_rollup_id = 4 | .args.zkevm_rollup_chain_id = 40404')
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.optimism_package.chains[0].network_params.name = "004" | .optimism_package.chains[0].network_params.network_id = "40404"')
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.args.use_agg_sender_validator = true | .args.use_agg_oracle_committee = true')
-NETWORK_ARGS=$(echo $NETWORK_ARGS | jq '.args.agg_oracle_committee_total_members = 5 | .args.agg_oracle_committee_quorum = 3 | .args.agg_sender_validator_total_number = 5 | .args.agg_sender_multisig_threshold = 3')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.args.deployment_suffix = "-004" | .args.zkevm_rollup_id = 4 | .args.zkevm_rollup_chain_id = 40404')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.optimism_package.chains[0].network_params.name = "004" | .optimism_package.chains[0].network_params.network_id = "40404"')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.args.use_agg_sender_validator = true | .args.use_agg_oracle_committee = true')
+NETWORK_ARGS=$(echo "$NETWORK_ARGS" | jq '.args.agg_oracle_committee_total_members = 5 | .args.agg_oracle_committee_quorum = 3 | .args.agg_sender_validator_total_number = 5 | .args.agg_sender_multisig_threshold = 3')
 
 kurtosis run --enclave "$ENCLAVE_NAME" . "$NETWORK_ARGS"
