@@ -1,5 +1,4 @@
 constants = import_module("./src/package_io/constants.star")
-input_parser = import_module("./input_parser.star")
 
 
 def _sort_dict_by_values(d):
@@ -12,11 +11,11 @@ DEFAULT_PARTICIPANT = _sort_dict_by_values(
         "count": 1,
         # Execution layer
         "el_type": "op-geth",
-        "el_image": input_parser.DEFAULT_IMAGES.get("op_geth_image"),
+        "el_image": constants.DEFAULT_IMAGES.get("op_geth_image"),
         "el_extra_params": ["--log.format=json"],
         # Consensus layer
         "cl_type": "op-node",
-        "cl_image": input_parser.DEFAULT_IMAGES.get("op_node_image"),
+        "cl_image": constants.DEFAULT_IMAGES.get("op_node_image"),
         "cl_extra_params": ["--log.format=json"],
     }
 )
@@ -26,13 +25,13 @@ DEFAULT_CHAIN = _sort_dict_by_values(
         "participants": [DEFAULT_PARTICIPANT],
         "batcher_params": _sort_dict_by_values(
             {
-                "image": input_parser.DEFAULT_IMAGES.get("op_batcher_image"),
+                "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
                 "extra_params": ["--log.format=json"],
             }
         ),
         "proposer_params": _sort_dict_by_values(
             {
-                "image": input_parser.DEFAULT_IMAGES.get("op_proposer_image"),
+                "image": constants.DEFAULT_IMAGES.get("op_proposer_image"),
                 "extra_params": ["--log.format=json"],
             }
         ),
@@ -41,11 +40,9 @@ DEFAULT_CHAIN = _sort_dict_by_values(
                 # Name maps to l2_services_suffix in optimism-package.
                 # The optimism-package appends a suffix with the following format: `-<name>`.
                 # However, our deployment suffix already starts with a "-", so we remove it here.
-                "name": input_parser.DEFAULT_ARGS.get("deployment_suffix")[1:],
+                "name": "001",
                 # The rollup chain ID
-                "network_id": str(
-                    input_parser.DEFAULT_ROLLUP_ARGS.get("zkevm_rollup_chain_id")
-                ),
+                "network_id": 1,
                 # The rollup block time
                 "seconds_per_slot": 1,
                 # Hard fork activation times
@@ -59,14 +56,10 @@ ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/ar
 
 DEFAULT_ARGS = _sort_dict_by_values(
     {
-        # Meta configuration - non native to optimism-package
-        "source": "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e",
-        "predeployed_contracts": True,
-        # Native optimism-package configuration
         "chains": [DEFAULT_CHAIN],
         "op_contract_deployer_params": _sort_dict_by_values(
             {
-                "image": input_parser.DEFAULT_IMAGES.get("op_contract_deployer_image"),
+                "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
                 "l1_artifacts_locator": ARTIFACTS_LOCATOR,
                 "l2_artifacts_locator": ARTIFACTS_LOCATOR,
             }
@@ -79,58 +72,65 @@ DEFAULT_ARGS = _sort_dict_by_values(
     }
 )
 
+DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
+    {
+        "source": "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e",
+        "predeployed_contracts": True,
+    }
+)
 
-def parse_optimism_args(plan, args, optimism_args):
+
+def parse_args(plan, args, op_args):
     # Get L1 network configuration
     external_l1_network_params = _get_l1_config(plan, args)
 
     # Process optimism args
-    if optimism_args == {}:
-        optimism_args = dict(DEFAULT_ARGS)  # create a mutable copy
-        optimism_args["chains"] = _parse_chains(optimism_args["chains"])
-        source = optimism_args.pop("source")
-        predeployed_contracts = optimism_args.pop("predeployed_contracts")
+    if op_args == {}:
+        op_args = dict(DEFAULT_ARGS | DEFAULT_NON_NATIVE_ARGS)  # create a mutable copy
+        op_args["chains"] = _parse_chains(op_args["chains"])
+        source = op_args.pop("source")
+        predeployed_contracts = op_args.pop("predeployed_contracts")
         return _sort_dict_by_values(
             {
                 "source": source,
                 "predeployed_contracts": predeployed_contracts,
-                "optimism_package": optimism_args,
+                "optimism_package": op_args,
                 "external_l1_network_params": external_l1_network_params,
             }
         )
 
-    optimism_args = dict(optimism_args)  # create a mutable copy
-    for k, v in DEFAULT_ARGS.items():
-        if k in optimism_args:
+    op_args = dict(op_args)  # create a mutable copy
+    for k, v in (DEFAULT_ARGS | DEFAULT_NON_NATIVE_ARGS).items():
+        if k in op_args:
             if k == "chains":
-                optimism_args[k] = _parse_chains(optimism_args[k])
+                op_args[k] = _parse_chains(op_args[k])
             elif type(v) == type(True):
                 continue
             else:
                 # Apply defaults
                 for kk, vv in v.items():
-                    optimism_args[k].setdefault(kk, vv)
-                optimism_args[k] = _sort_dict_by_values(optimism_args[k])
+                    op_args[k].setdefault(kk, vv)
+                op_args[k] = _sort_dict_by_values(op_args[k])
         else:
-            optimism_args[k] = v
+            op_args[k] = v
 
-    sorted_optimism_args = _sort_dict_by_values(optimism_args)
+    sorted_op_args = _sort_dict_by_values(op_args)
 
     # Extract meta fields
-    source = sorted_optimism_args.pop("source")
-    predeployed_contracts = sorted_optimism_args.pop("predeployed_contracts")
+    source = sorted_op_args.pop("source")
+    predeployed_contracts = sorted_op_args.pop("predeployed_contracts")
 
     # Run the optimism-package sanity check
     optimism_package_sanity_check_module = import_module(
         source.replace("main", "src/package_io/sanity_check")
     )
-    optimism_package_sanity_check_module.sanity_check(plan, sorted_optimism_args)
+    optimism_package_sanity_check_module.sanity_check(plan, sorted_op_args)
 
     return _sort_dict_by_values(
         {
             "source": source,
             "predeployed_contracts": predeployed_contracts,
-            "optimism_package": sorted_optimism_args,
+            "optimism_package": sorted_op_args,
             "external_l1_network_params": external_l1_network_params,
         }
     )

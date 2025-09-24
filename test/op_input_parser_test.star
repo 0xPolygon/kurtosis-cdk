@@ -1,10 +1,10 @@
-input_parser = import_module("../input_parser.star")
+constants = import_module("../src/package_io/constants.star")
 op_input_parser = import_module("../op_input_parser.star")
 
 
-def test_parse_optimism_args_with_empty_args(plan):
+def test_parse_args_with_empty_args(plan):
     # Should return default args when no user args are provided
-    result = op_input_parser.parse_optimism_args(plan, {}, {})
+    result = op_input_parser.parse_args(plan, {}, {})
     optimism_package = result.get("optimism_package")
 
     # Check native fields
@@ -17,16 +17,16 @@ def test_parse_optimism_args_with_empty_args(plan):
     participant0 = participants[0]
     expect.eq(participant0.get("count"), 1)
     expect.eq(
-        participant0.get("el_image"), input_parser.DEFAULT_IMAGES.get("op_geth_image")
+        participant0.get("el_image"), constants.DEFAULT_IMAGES.get("op_geth_image")
     )
     expect.eq(
-        participant0.get("cl_image"), input_parser.DEFAULT_IMAGES.get("op_node_image")
+        participant0.get("cl_image"), constants.DEFAULT_IMAGES.get("op_node_image")
     )
 
     proposer_params = chain0.get("proposer_params")
     expect.eq(
         proposer_params.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_proposer_image"),
+        constants.DEFAULT_IMAGES.get("op_proposer_image"),
     )
 
     observability = optimism_package.get("observability")
@@ -36,7 +36,7 @@ def test_parse_optimism_args_with_empty_args(plan):
     expect.eq(result.get("predeployed_contracts"), True)
 
 
-def test_parse_optimism_args_with_user_overrides(plan):
+def test_parse_args_with_user_overrides(plan):
     # Should correctly apply user overrides while preserving defaults
     user_args = {
         # meta configuration - non-native fields
@@ -75,7 +75,7 @@ def test_parse_optimism_args_with_user_overrides(plan):
         },
     }
 
-    result = op_input_parser.parse_optimism_args(plan, {}, user_args)
+    result = op_input_parser.parse_args(plan, {}, user_args)
     optimism_package = result.get("optimism_package")
 
     # Check chains structure
@@ -97,15 +97,15 @@ def test_parse_optimism_args_with_user_overrides(plan):
 
     # defaults
     expect.eq(
-        participant0.get("el_image"), input_parser.DEFAULT_IMAGES.get("op_geth_image")
+        participant0.get("el_image"), constants.DEFAULT_IMAGES.get("op_geth_image")
     )
     expect.eq(
         proposer_params0.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_proposer_image"),
+        constants.DEFAULT_IMAGES.get("op_proposer_image"),
     )
     expect.eq(
         batcher_params0.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_batcher_image"),
+        constants.DEFAULT_IMAGES.get("op_batcher_image"),
     )
     expect.eq(network_params0.get("seconds_per_slot"), 1)
     expect.eq(network_params0.get("name"), "001")
@@ -126,15 +126,15 @@ def test_parse_optimism_args_with_user_overrides(plan):
 
     # defaults
     expect.eq(
-        participant1.get("cl_image"), input_parser.DEFAULT_IMAGES.get("op_node_image")
+        participant1.get("cl_image"), constants.DEFAULT_IMAGES.get("op_node_image")
     )
     expect.eq(
         proposer_params1.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_proposer_image"),
+        constants.DEFAULT_IMAGES.get("op_proposer_image"),
     )
     expect.eq(
         batcher_params1.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_batcher_image"),
+        constants.DEFAULT_IMAGES.get("op_batcher_image"),
     )
     expect.eq(network_params1.get("name"), "001")
 
@@ -153,14 +153,14 @@ def test_parse_optimism_args_with_user_overrides(plan):
 
     # defaults
     expect.eq(
-        participant2.get("el_image"), input_parser.DEFAULT_IMAGES.get("op_geth_image")
+        participant2.get("el_image"), constants.DEFAULT_IMAGES.get("op_geth_image")
     )
     expect.eq(
-        participant2.get("cl_image"), input_parser.DEFAULT_IMAGES.get("op_node_image")
+        participant2.get("cl_image"), constants.DEFAULT_IMAGES.get("op_node_image")
     )
     expect.eq(
         proposer_params2.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_proposer_image"),
+        constants.DEFAULT_IMAGES.get("op_proposer_image"),
     )
     expect.eq(network_params2.get("seconds_per_slot"), 1)
     expect.eq(network_params2.get("name"), "001")
@@ -173,7 +173,7 @@ def test_parse_optimism_args_with_user_overrides(plan):
     op_contract_deployer_params = optimism_package.get("op_contract_deployer_params")
     expect.eq(
         op_contract_deployer_params.get("image"),
-        input_parser.DEFAULT_IMAGES.get("op_contract_deployer_image"),
+        constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
     )
 
     # Check meta (non-native) fields
