@@ -22,7 +22,7 @@ runs:
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install -y kurtosis-cli=1.7.2
+        sudo apt install -y kurtosis-cli=1.11.1
         kurtosis analytics disable
         kurtosis version
 
@@ -106,13 +106,15 @@ runs:
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
         images=(
-          "kurtosistech/engine:1.7.2"
+          "kurtosistech/engine:1.11.1"
+          "kurtosistech/core:1.11.1"
+          "kurtosistech/files-artifacts-expander:1.11.1"
           "timberio/vector:0.45.0-debian"
           "traefik:2.10.6"
           "alpine:3.17"
           "badouralix/curl-jq:latest"
           "protolambda/eth2-val-tools:latest"
-          "ethpandaops/ethereum-genesis-generator:4.1.19"
+          "ethpandaops/ethereum-genesis-generator:5.0.6"
           "mslipper/deployment-utils:latest"
         )
         for image in "${images[@]}"; do
