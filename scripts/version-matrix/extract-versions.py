@@ -230,6 +230,18 @@ class VersionMatrixExtractor:
                                 return version
                 return None
 
+            # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
+            if component == 'zkevm-prover':
+                url = f"https://api.github.com/repos/{repo}/tags"
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    tags = response.json()
+                    if tags:
+                        latest_tag = tags[0].get('name')
+                        latest_version = re.sub(r'^v?', '', latest_tag)
+                        return latest_version
+                return None
+
             url = f"https://api.github.com/repos/{repo}/releases/latest"
             response = requests.get(url, timeout=10, headers={
                                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
