@@ -1,0 +1,31 @@
+# This args-file deploys the OP Succinct chain.
+deployment_stages:
+  deploy_op_succinct: false
+
+args:
+  aggkit_image: "ghcr.io/agglayer/aggkit:0.7.0-beta6"  # https://github.com/agglayer/aggkit/tree/v0.7.0-beta6
+  
+  # Agghcain ecdsa_multisig consensus.
+  consensus_contract_type: ecdsa_multisig
+  use_agg_sender_validator: True
+  # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
+  # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
+  # Note this will noticeably increase the deployment time because of the increased L1 finality.
+  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+
+optimism_package:
+  chains:
+    - proposer_params:
+        enabled: false
+      challenger_params:
+        enabled: false
+      network_params:
+        name: "001"
+        network_id: "2151908"
+        seconds_per_slot: 1
+  observability:
+    enabled: false

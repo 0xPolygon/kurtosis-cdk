@@ -96,14 +96,14 @@ cat .env
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.
 
-# Run fetch-rollup-config to get the various configuration values that
+# Run fetch-l2oo-config to get the various configuration values that
 # we'll need in the rest of smart contract deployment
-mv /opt/op-succinct/fetch-rollup-config /usr/local/bin/
+mv /opt/op-succinct/fetch-l2oo-config /usr/local/bin/
 touch .git
-RUST_LOG=info fetch-rollup-config --env-file .env 2> fetch-rollup-config.out
+RUST_LOG=info fetch-l2oo-config --env-file .env 2> fetch-l2oo-config.out
 
 # Print out the rollup config for reference / debugging
-cat fetch-rollup-config.out
+cat fetch-l2oo-config.out
 
 convert_env_to_json() {
   # Accept input .env file and output json file as arguments
