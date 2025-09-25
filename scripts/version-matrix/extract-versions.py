@@ -230,7 +230,8 @@ class VersionMatrixExtractor:
                                     r'^v?', '', tag_name.split("/")[-1])
                                 return version
                 else:
-                    raise Exception(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                    return None
 
             # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
             if component in [
@@ -249,7 +250,8 @@ class VersionMatrixExtractor:
                         latest_version = re.sub(r'^v?', '', latest_tag)
                         return latest_version
                 else:
-                    raise Exception(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                    return None
 
             url = f"https://api.github.com/repos/{repo}/releases/latest"
             response = requests.get(url, timeout=10, headers={
@@ -261,7 +263,8 @@ class VersionMatrixExtractor:
                 version = re.sub(r'^v?', '', tag)
                 return version
             else:
-                raise Exception(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                return None
 
         except Exception as e:
             print(f"Error fetching latest version for {component}: {e}")
