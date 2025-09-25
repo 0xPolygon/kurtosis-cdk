@@ -12,6 +12,7 @@ ADDITIONAL_SERVICES = struct(
     status_checker="status_checker",
     test_runner="test_runner",
     tx_spammer="tx_spammer",
+    agglayer_dashboard="agglayer_dashboard",
 )
 
 LOG_LEVEL = struct(
@@ -26,7 +27,7 @@ CONSENSUS_TYPE = struct(
     rollup="rollup",
     cdk_validium="cdk_validium",
     pessimistic="pessimistic",
-    ecdsa="ecdsa",
+    ecdsa_multisig="ecdsa_multisig",
     fep="fep",
 )
 
