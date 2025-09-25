@@ -1,5 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 dict = import_module("./src/package_io/dict.star")
+op_input_parser = import_module("./src/package_io/op_input_parser.star")
+
 
 # The deployment process is divided into various stages.
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
@@ -38,39 +40,6 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_l2_contracts": False,
     # Deploy aggkit node in parallel to cdk node.
     "deploy_aggkit_node": False,
-}
-
-DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta6",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.4.1",
-    "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.12",
-    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig-fork.0",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
-    "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
-    "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
-    "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
-    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.63.0-rc4",  # Type-1 CDK Erigon Sovereign
-    "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
-    "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
-    "db_image": "postgres:16.2",
-    "geth_image": "ethereum/client-go:v1.16.2",
-    "lighthouse_image": "sigp/lighthouse:v7.1.0",
-    "mitm_image": "mitmproxy/mitmproxy:11.1.3",
-    "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.15.0",
-    "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
-    "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.1",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5",
-    "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v3.1.0-agglayer",
-    "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
-    "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
-    "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
-    "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
-    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.2-RC3",
-    "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
-    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
-    "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
-    "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",
 }
 
 DEFAULT_PORTS = {
@@ -460,7 +429,7 @@ DEFAULT_ARGS = (
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
     }
-    | DEFAULT_IMAGES
+    | constants.DEFAULT_IMAGES
     | DEFAULT_PORTS
     | DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
@@ -469,67 +438,6 @@ DEFAULT_ARGS = (
     | DEFAULT_L2_ARGS
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
-
-# https://github.com/ethpandaops/optimism-package
-# The below OP params can be customized by specifically referring to an artifact or image.
-# If none is is provided, it will refer to the default images from the Optimism-Package repo.
-# https://github.com/ethpandaops/optimism-package/blob/main/src/package_io/input_parser.star
-OP_ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
-DEFAULT_OP_STACK_ARGS = {
-    "source": "github.com/agglayer/optimism-package/main.star@a70f83d31c746139d8b6155bdec6a26fdd4afda0",
-    "predeployed_contracts": True,
-    "chains": [
-        {
-            "participants": [
-                {
-                    "el_type": "op-geth",
-                    "el_image": DEFAULT_IMAGES.get("op_geth_image"),
-                    "el_extra_params": [
-                        "--log.format=json",
-                    ],
-                    "cl_type": "op-node",
-                    "cl_image": DEFAULT_IMAGES.get("op_node_image"),
-                    "cl_extra_params": [
-                        "--log.format=json",
-                    ],
-                    "count": 1,
-                },
-            ],
-            "batcher_params": {
-                "image": DEFAULT_ARGS.get("op_batcher_image"),
-                "extra_params": [
-                    "--log.format=json",
-                ],
-            },
-            "proposer_params": {
-                "image": DEFAULT_ARGS.get("op_proposer_image"),
-                "extra_params": [
-                    "--log.format=json",
-                ],
-            },
-            "network_params": {
-                # name maps to l2_services_suffix in optimism. The optimism-package appends a suffix with the following format: -<name>
-                # the "-" however adds another "-" to the Kurtosis deployment_suffix. So we are doing string manipulation to remove the "-"
-                "name": DEFAULT_ARGS.get("deployment_suffix")[1:],
-                "network_id": str(DEFAULT_ROLLUP_ARGS.get("zkevm_rollup_chain_id")),
-                # The blocktime on the OP network
-                "seconds_per_slot": 1,
-                # Isthmus fork
-                # Defaults to None - not activated - decimal value
-                # Offset is in seconds
-                "isthmus_time_offset": 0,
-            },
-        },
-    ],
-    "op_contract_deployer_params": {
-        "image": DEFAULT_ARGS.get("op_contract_deployer_image"),
-        "l1_artifacts_locator": OP_ARTIFACTS_LOCATOR,
-        "l2_artifacts_locator": OP_ARTIFACTS_LOCATOR,
-    },
-    "observability": {
-        "enabled": False,
-    },
-}
 
 VALID_ADDITIONAL_SERVICES = [
     getattr(constants.ADDITIONAL_SERVICES, field)
@@ -553,18 +461,15 @@ def parse_args(plan, user_args):
     deployment_stages = DEFAULT_DEPLOYMENT_STAGES | user_args.get(
         "deployment_stages", {}
     )
-    op_stack_args = user_args.get("optimism_package", {})
     args = DEFAULT_ARGS | user_args.get("args", {})
+    op_input_args = user_args.get("optimism_package", {})
 
     # Change some params if anvil set to make it work
     # As it changes L1 config it needs to be run before other functions/checks
     set_anvil_args(plan, args, user_args)
 
-    # Determine OP stack args.
-    op_stack_args = get_op_stack_args(plan, args, op_stack_args)
-
     # Sanity check step for incompatible parameters
-    args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args)
+    args_sanity_check(plan, deployment_stages, args, user_args)
 
     validate_consensus_type(args.get("consensus_contract_type"))
 
@@ -632,11 +537,13 @@ def parse_args(plan, user_args):
         ),  # hacky but works fine for now.
     }
 
+    # Parse and sanity check op args
+    op_args = op_input_parser.parse_args(plan, args, op_input_args)
+
     # Sort dictionaries for debug purposes.
     sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)
     sorted_args = dict.sort_dict_by_values(args)
-    sorted_op_stack_args = dict.sort_dict_by_values(op_stack_args)
-    return (sorted_deployment_stages, sorted_args, sorted_op_stack_args)
+    return (sorted_deployment_stages, sorted_args, op_args)
 
 
 def validate_log_level(name, log_level):
@@ -739,100 +646,6 @@ def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
     return "zkevm-node-rpc"
 
 
-def get_op_stack_args(plan, args, user_op_stack_args):
-    op_stack_args = DEFAULT_OP_STACK_ARGS | user_op_stack_args
-
-    # Handle the specific nested merge cases manually
-    if "chains" in user_op_stack_args and len(user_op_stack_args["chains"]) > 0:
-        user_chain = user_op_stack_args["chains"][0]
-        default_chain = DEFAULT_OP_STACK_ARGS["chains"][0]
-
-        # Merge the chain configuration
-        merged_chain = default_chain | user_chain
-
-        # Handle nested participant merging if needed
-        if "participants" in user_chain and len(user_chain["participants"]) > 0:
-            if len(default_chain["participants"]) > 0:
-                merged_participant = (
-                    default_chain["participants"][0] | user_chain["participants"][0]
-                )
-                merged_chain["participants"] = [merged_participant]
-
-        # Handle batcher_params merging
-        if "batcher_params" in user_chain:
-            merged_chain["batcher_params"] = (
-                default_chain["batcher_params"] | user_chain["batcher_params"]
-            )
-
-        # Handle proposer_params merging
-        if "proposer_params" in user_chain:
-            merged_chain["proposer_params"] = (
-                default_chain["proposer_params"] | user_chain["proposer_params"]
-            )
-
-        # Handle challenger_params merging
-        if "challenger_params" in user_chain:
-            # challenger_params might not exist in defaults, so check first
-            default_challenger = default_chain.get("challenger_params", {})
-            merged_chain["challenger_params"] = (
-                default_challenger | user_chain["challenger_params"]
-            )
-
-        # Handle network_params merging
-        if "network_params" in user_chain:
-            merged_chain["network_params"] = (
-                default_chain["network_params"] | user_chain["network_params"]
-            )
-
-        op_stack_args["chains"] = [merged_chain]
-
-    # Handle op_contract_deployer_params merging
-    if "op_contract_deployer_params" in user_op_stack_args:
-        default_deployer_params = DEFAULT_OP_STACK_ARGS["op_contract_deployer_params"]
-        user_deployer_params = user_op_stack_args["op_contract_deployer_params"]
-        op_stack_args["op_contract_deployer_params"] = (
-            default_deployer_params | user_deployer_params
-        )
-
-    # Handle observability merging
-    if "observability" in user_op_stack_args:
-        default_observability = DEFAULT_OP_STACK_ARGS["observability"]
-        user_observability = user_op_stack_args["observability"]
-        op_stack_args["observability"] = default_observability | user_observability
-
-    l1_chain_id = str(args.get("l1_chain_id", ""))
-    l1_rpc_url = args.get("l1_rpc_url", "")
-    l1_ws_url = args.get("l1_ws_url", "")
-    l1_beacon_url = args.get("l1_beacon_url", "")
-
-    l1_preallocated_mnemonic = args.get("l1_preallocated_mnemonic", "")
-    private_key_result = plan.run_sh(
-        description="Deriving the private key from the mnemonic",
-        image=constants.TOOLBOX_IMAGE,
-        run="cast wallet private-key --mnemonic \"{}\" | tr -d '\n'".format(
-            l1_preallocated_mnemonic
-        ),
-    )
-    private_key = private_key_result.output
-
-    source = op_stack_args.pop("source")
-    predeployed_contracts = op_stack_args.pop("predeployed_contracts")
-
-    return {
-        "source": source,
-        "predeployed_contracts": predeployed_contracts,
-        "optimism_package": op_stack_args,
-        "external_l1_network_params": {
-            "network_id": l1_chain_id,
-            "rpc_kind": "standard",
-            "el_rpc_url": l1_rpc_url,
-            "el_ws_url": l1_ws_url,
-            "cl_rpc_url": l1_beacon_url,
-            "priv_key": private_key,
-        },
-    }
-
-
 def set_anvil_args(plan, args, user_args):
     if args["anvil_state_file"] != None:
         if user_args.get("args", {}).get("l1_engine") != "anvil":
@@ -865,7 +678,7 @@ def set_anvil_args(plan, args, user_args):
 
 
 # Helper function to compact together checks for incompatible parameters in input_parser.star
-def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
+def args_sanity_check(plan, deployment_stages, args, user_args):
     # Disable CDK-Erigon and AggOracle Committee combination deployments
     if (
         args["sequencer_type"] == "erigon"
@@ -972,32 +785,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
         args["op_cl_rpc_url"] = (
             "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
         )
-    # The optimism-package network_params is a frozen hash table, and is not modifiable during runtime.
-    # The check will return fail() instead of dynamically changing the network_params name.
-    if op_stack_args["optimism_package"]["chains"][0]["network_params"]["name"] != args[
-        "deployment_suffix"
-    ][1:] and deployment_stages.get("deploy_optimism_rollup", False):
-        fail(
-            "op_stack_args network_params name is set to '{}', please change it to match deployment_suffix '{}'".format(
-                op_stack_args["optimism_package"]["chains"][0]["network_params"][
-                    "name"
-                ],
-                args["deployment_suffix"][1:],
-            )
-        )
-
-    # Check args[zkevm_rollup_chain_id] and op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"] are equal.
-    if str(args["zkevm_rollup_chain_id"]) != str(
-        op_stack_args["optimism_package"]["chains"][0]["network_params"]["network_id"]
-    ) and deployment_stages.get("deploy_optimism_rollup", False):
-        fail(
-            "op_stack_args network_params network_id is set to '{}', please change it to match zkevm_rollup_chain_id '{}'".format(
-                op_stack_args["optimism_package"]["chains"][0]["network_params"][
-                    "network_id"
-                ],
-                args["zkevm_rollup_chain_id"],
-            )
-        )
 
     # Unsupported L1 engine check
     if args["l1_engine"] not in constants.L1_ENGINES:
@@ -1034,16 +821,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
             )
         if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
             fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")
-
-    # OP rollup check L1 blocktime >= L2 blocktime
-    op_network_params = op_stack_args["optimism_package"]["chains"][0]["network_params"]
-    if deployment_stages.get("deploy_optimism_rollup", False):
-        if args.get("l1_seconds_per_slot", 12) < op_network_params.get(
-            "seconds_per_slot", 1
-        ):
-            fail(
-                "OP Stack rollup requires L1 blocktime > 1 second. Change the l1_seconds_per_slot parameter"
-            )
 
     # FIXME - I've removed some code here that was doing some logic to
     # update the vkeys depending on the consensus. We either need to
