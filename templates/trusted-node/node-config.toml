@@ -1260,7 +1260,7 @@ SenderAddress = "{{.zkevm_l2_agglayer_address}}"
 # SettlementBackend determines if we're settling with the `agglayer'
 # or `direct' with L1
 # ------------------------------------------------------------------------------
-SettlementBackend = "agglayer"
+SettlementBackend = "{{.settlement_backend}}"
 
 # ------------------------------------------------------------------------------
 # AggLayerTxTimeout determines how long we'll wait for the AggLayer to
