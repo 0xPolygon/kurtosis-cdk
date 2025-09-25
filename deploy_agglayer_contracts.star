@@ -198,6 +198,26 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
         artifacts.append(artifact)
 
+    # Dump input params to input_args.json file
+    json_str = json.encode(
+        {
+            "args": args,
+            "deployment_stages": deployment_stages,
+            "op_stack_args": op_stack_args,
+        }
+    )
+    pretty_str = json.indent(json_str)
+    artifact = plan.render_templates(
+        name="input_args.json",
+        config={
+            "input_args.json": struct(
+                template="{{ . }}",
+                data=pretty_str,
+            ),
+        },
+    )
+    artifacts.append(artifact)
+
     # Base file artifacts to mount regardless of deployment type
     files = {
         "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
