@@ -678,7 +678,7 @@ def set_anvil_args(plan, args, user_args):
 
 
 # Helper function to compact together checks for incompatible parameters in input_parser.star
-def args_sanity_check(plan, deployment_stages, args, user_args, op_stack_args):
+def args_sanity_check(plan, deployment_stages, args, user_args):
     # Disable CDK-Erigon and AggOracle Committee combination deployments
     if (
         args["sequencer_type"] == "erigon"
