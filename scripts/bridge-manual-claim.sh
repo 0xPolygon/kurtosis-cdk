@@ -25,11 +25,11 @@ cat bridge-deposits.json
 
 # Filter the list of deposits down to the claimable txs that hasn't already been claimed and are destined for L1
 echo "Filtering the list of deposits..."
-jq '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == '$destination_net')]' bridge-deposits.json > claimable-txs.json
+jq --argjson dest_net "$destination_net" '[.deposits[] | select(.ready_for_claim == true and .claim_tx_hash == "" and .dest_net == $dest_net)]' bridge-deposits.json > claimable-txs.json
 cat claimable-txs.json
 
 # Process all the claimable txs
-jq -c '.[]' claimable-txs.json | while IFS= read -r tx; do
+while IFS= read -r tx; do
   echo "Processing claimable tx..."
   echo "$tx"
 
@@ -41,8 +41,8 @@ jq -c '.[]' claimable-txs.json | while IFS= read -r tx; do
   cat proof.json
 
   # Get our variables organized
-  in_merkle_proof="$(jq -r -c '.proof.merkle_proof' proof.json | tr -d '"')"
-  in_rollup_merkle_proof="$(jq -r -c '.proof.rollup_merkle_proof' proof.json | tr -d '"')"
+  in_merkle_proof="$(jq -r -c '.proof.merkle_proof' proof.json)"
+  in_rollup_merkle_proof="$(jq -r -c '.proof.rollup_merkle_proof' proof.json)"
   in_global_index="$(echo "$tx" | jq -r '.global_index')"
   in_main_exit_root="$(jq -r '.proof.main_exit_root' proof.json)"
   in_rollup_exit_root="$(jq -r '.proof.rollup_exit_root' proof.json)"
@@ -64,4 +64,4 @@ jq -c '.[]' claimable-txs.json | while IFS= read -r tx; do
   # Publish the actual transaction!
   echo "Publishing the bridge claim tx..."
   cast send --rpc-url "$l1_rpc_url" --private-key "$private_key" "$bridge_addr" "$claim_sig" "$in_merkle_proof" "$in_rollup_merkle_proof" "$in_global_index" "$in_main_exit_root" "$in_rollup_exit_root" "$in_orig_net" "$in_orig_addr" "$in_dest_net" "$in_dest_addr" "$in_amount" "$in_metadata"
-done
+done < <(jq -c '.[]' claimable-txs.json)
