@@ -219,6 +219,7 @@ class VersionMatrixExtractor:
                 url = f"https://api.github.com/repos/{repo}/releases"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+
                 if response.status_code == 200:
                     releases = response.json()
                     for release in releases:
@@ -228,19 +229,27 @@ class VersionMatrixExtractor:
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
                                 return version
-                return None
+                else:
+                    raise Exception(f"Error fetching latest version for {component}: {response.status_code} from {url}")
 
             # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
-            if component in ['zkevm-prover', 'zkevm-bridge-service']:
+            if component in [
+                'zkevm-prover', 'zkevm-bridge-service', 'op-succinct-proposer',
+                'zkevm-pool-manager', 'zkevm-da'
+            ]:
                 url = f"https://api.github.com/repos/{repo}/tags"
-                response = requests.get(url, timeout=10)
+                response = requests.get(
+                    url, timeout=10,
+                    headers={'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'}
+                )
                 if response.status_code == 200:
                     tags = response.json()
                     if tags:
                         latest_tag = tags[0].get('name')
                         latest_version = re.sub(r'^v?', '', latest_tag)
                         return latest_version
-                return None
+                else:
+                    raise Exception(f"Error fetching latest version for {component}: {response.status_code} from {url}")
 
             url = f"https://api.github.com/repos/{repo}/releases/latest"
             response = requests.get(url, timeout=10, headers={
@@ -252,7 +261,7 @@ class VersionMatrixExtractor:
                 version = re.sub(r'^v?', '', tag)
                 return version
             else:
-                return None
+                raise Exception(f"Error fetching latest version for {component}: {response.status_code} from {url}")
 
         except Exception as e:
             print(f"Error fetching latest version for {component}: {e}")
