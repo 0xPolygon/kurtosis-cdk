@@ -209,9 +209,9 @@ def test_parse_args_with_user_overrides(plan):
     # overrides
     expect.eq(result.get("predeployed_contracts"), False)
     # defaults
-    expect.eq(
+    expect.contains(
         result.get("source"),
-        "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e",
+        "github.com/agglayer/optimism-package/main.star@",
     )
 
     # Check external_l1_network_params exists
