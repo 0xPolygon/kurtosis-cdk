@@ -234,7 +234,7 @@ because we're running two separate devnets at this point.
 [[README.org_20241107_174356_V3QbFI.png]]
 
 Okay, to wrap this up, let's try to attach one more rollup that's
-using pessimsitic consensus. We'll create a new params file that
+using pessimistic consensus. We'll create a new params file that
 setups a new third network with PP consensus. We'll save it in a file
 called ~third.network.yml~.
 
