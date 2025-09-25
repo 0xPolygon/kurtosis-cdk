@@ -231,7 +231,7 @@ class VersionMatrixExtractor:
                 return None
 
             # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
-            if component == 'zkevm-prover':
+            if component in ['zkevm-prover', 'zkevm-bridge-service']:
                 url = f"https://api.github.com/repos/{repo}/tags"
                 response = requests.get(url, timeout=10)
                 if response.status_code == 200:
