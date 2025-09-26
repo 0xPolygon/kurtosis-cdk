@@ -28,7 +28,7 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.63.0-rc4](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.63.0-rc4) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
 | zkevm-bridge-service | [0.6.2-RC3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC3) | [0.6.2-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC5) | experimental 🧪 |
-| zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | deprecated ⚠️ |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 
 ### cdk-erigon-validium
 
@@ -43,7 +43,7 @@ This section lists all test environments with their configurations and component
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | zkevm-bridge-service | [0.6.2-RC3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC3) | [0.6.2-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC5) | experimental 🧪 |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
-| zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | deprecated ⚠️ |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [9.0.0-RC3](https://github.com/0xPolygon/zkevm-prover/releases/tag/v9.0.0-RC3) | deprecated ⚠️ |
 
 ### cdk-erigon-zkrollup
@@ -58,7 +58,7 @@ This section lists all test environments with their configurations and component
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | zkevm-bridge-service | [0.6.2-RC3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC3) | [0.6.2-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC5) | experimental 🧪 |
-| zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | deprecated ⚠️ |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [9.0.0-RC3](https://github.com/0xPolygon/zkevm-prover/releases/tag/v9.0.0-RC3) | deprecated ⚠️ |
 
 ### cdk-opgeth-sovereign
@@ -105,7 +105,7 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| geth | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | [1.16.3](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.3) | deprecated ⚠️ |
+| geth | [1.16.2](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.2) | [1.16.4](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.4) | deprecated ⚠️ |
 | lighthouse | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | latest ✅ |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.2.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.2.6) | experimental 🧪 |
@@ -115,5 +115,5 @@ This section lists all test environments with their configurations and component
 | op-succinct-proposer | [3.1.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.1.0-agglayer) | [3.1.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.1.0-agglayer) | latest ✅ |
 | zkevm-bridge-service | [0.6.2-RC3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC3) | [0.6.2-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC5) | experimental 🧪 |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
-| zkevm-pool-manager | [0.1.2](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.2) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | deprecated ⚠️ |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [9.0.0-RC3](https://github.com/0xPolygon/zkevm-prover/releases/tag/v9.0.0-RC3) | deprecated ⚠️ |
