@@ -1,4 +1,5 @@
 # Image names
+AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v12.1.0-rc.4
 TOOLBOX_IMAGE_NAME := toolbox:0.0.12
 
 # GCR registry
@@ -10,6 +11,10 @@ help: ## Display this help.
 
 ##@ Build
 
+.PHONY: build-agglayer-contracts
+build-agglayer-contracts: ## Build agglayer-contracts image
+	docker build --tag $(AGGLAYER_CONTRACTS_IMAGE_NAME) --file agglayer-contracts.Dockerfile .
+
 .PHONY: build-toolbox
 build-toolbox: ## Build toolbox image
 	docker build --tag $(TOOLBOX_IMAGE_NAME) --file toolbox.Dockerfile .
@@ -20,6 +25,11 @@ auth: ## Authenticate with Google Cloud Registry
 	gcloud auth login
 	gcloud config set project prj-polygonlabs-devtools-dev
 	gcloud auth configure-docker europe-west2-docker.pkg.dev
+
+.PHONY: push-agglayer-contracts
+push-agglayer-contracts: ## Push agglayer-contracts image to GCR
+	docker tag $(AGGLAYER_CONTRACTS_IMAGE_NAME) $(GCR_REGISTRY)/$(AGGLAYER_CONTRACTS_IMAGE_NAME)
+	docker push $(GCR_REGISTRY)/$(AGGLAYER_CONTRACTS_IMAGE_NAME)
 
 .PHONY: push-toolbox
 push-toolbox: ## Push toolbox image to GCR
