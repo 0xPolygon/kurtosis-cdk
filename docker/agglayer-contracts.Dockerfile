@@ -1,6 +1,6 @@
 FROM golang:1.23 AS polycli-builder
 ARG POLYCLI_BRANCH="main"
-ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.83" # 2025-07-02
+ARG POLYCLI_TAG_OR_COMMIT_SHA="v0.1.87" # 2025-08-11
 WORKDIR /opt/polygon-cli
 RUN git clone --branch ${POLYCLI_BRANCH} https://github.com/0xPolygon/polygon-cli.git . \
   && git checkout ${POLYCLI_TAG_OR_COMMIT_SHA} \
@@ -12,8 +12,8 @@ LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
 ARG AGGLAYER_CONTRACTS_BRANCH="main"
-ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="c8d0a429998f2ef2f8df3b1e9fe8f69be22fa9a8" # 2025-07-01
-ARG FOUNDRY_VERSION="v1.2.3"
+ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v12.1.0-rc.4" # 2025-09-24
+ARG FOUNDRY_VERSION="v1.3.6"
 
 # STEP 1: Download agglayer contracts dependencies and compile contracts.
 WORKDIR /opt/zkevm-contracts
