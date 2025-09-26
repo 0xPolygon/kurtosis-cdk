@@ -7,7 +7,7 @@ args:
   sequencer_type: erigon
   consensus_contract_type: pessimistic
 
-  aggkit_image: ghcr.io/agglayer/aggkit:0.5.0-beta4
+  aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
   agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.63.0-rc4
