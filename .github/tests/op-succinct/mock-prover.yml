@@ -28,7 +28,8 @@ args:
 
 optimism_package:
     chains:
-        - cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5
+        - participants:
+            - cl_image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5
           proposer_params:
               enabled: false
           challenger_params:
