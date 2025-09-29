@@ -26,12 +26,47 @@ def test_get_fork_id(plan):
             "not supported by Kurtosis CDK",
         ],
         # rollup - no fork specified should fail
-        ["rollup", False, "agglayer-contracts:v1.0.0", 0, "", "does not follow the standard"],
+        [
+            "rollup",
+            False,
+            "agglayer-contracts:v1.0.0",
+            0,
+            "",
+            "does not follow the standard",
+        ],
         # cdk validium - supported forks
-        ["cdk_validium", False, "agglayer-contracts:v1.0.0-fork.13", 13, "banana", None],
-        ["cdk_validium", False, "agglayer-contracts:v1.0.0-fork.12", 12, "banana", None],
-        ["cdk_validium", False, "agglayer-contracts:v1.0.0-fork.11", 11, "elderberry", None],
-        ["cdk_validium", False, "agglayer-contracts:v1.0.0-fork.9", 9, "elderberry", None],
+        [
+            "cdk_validium",
+            False,
+            "agglayer-contracts:v1.0.0-fork.13",
+            13,
+            "banana",
+            None,
+        ],
+        [
+            "cdk_validium",
+            False,
+            "agglayer-contracts:v1.0.0-fork.12",
+            12,
+            "banana",
+            None,
+        ],
+        [
+            "cdk_validium",
+            False,
+            "agglayer-contracts:v1.0.0-fork.11",
+            11,
+            "elderberry",
+            None,
+        ],
+        [
+            "cdk_validium",
+            False,
+            "agglayer-contracts:v1.0.0-fork.9",
+            9,
+            "elderberry",
+            None,
+        ],
         # cdk validium - unsupported forks should fail
         [
             "cdk_validium",
@@ -61,8 +96,22 @@ def test_get_fork_id(plan):
         # pessimistic - supported forks
         ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.13", 13, "banana", None],
         ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.12", 12, "banana", None],
-        ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.11", 11, "elderberry", None],
-        ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.9", 9, "elderberry", None],
+        [
+            "pessimistic",
+            False,
+            "agglayer-contracts:v1.0.0-fork.11",
+            11,
+            "elderberry",
+            None,
+        ],
+        [
+            "pessimistic",
+            False,
+            "agglayer-contracts:v1.0.0-fork.9",
+            9,
+            "elderberry",
+            None,
+        ],
         # pessimistic - unsupported forks should fail
         [
             "pessimistic",
@@ -90,9 +139,30 @@ def test_get_fork_id(plan):
             "does not follow the standard",
         ],
         # ecdsa multisig
-        ["ecdsa_multisig", False, "agglayer-contracts:v1.0.0-fork.13", 0, "aggchain", None],
-        ["ecdsa_multisig", False, "agglayer-contracts:v1.0.0-fork.12", 0, "aggchain", None],
-        ["ecdsa_multisig", False, "agglayer-contracts:v1.0.0-fork.11", 0, "aggchain", None],
+        [
+            "ecdsa_multisig",
+            False,
+            "agglayer-contracts:v1.0.0-fork.13",
+            0,
+            "aggchain",
+            None,
+        ],
+        [
+            "ecdsa_multisig",
+            False,
+            "agglayer-contracts:v1.0.0-fork.12",
+            0,
+            "aggchain",
+            None,
+        ],
+        [
+            "ecdsa_multisig",
+            False,
+            "agglayer-contracts:v1.0.0-fork.11",
+            0,
+            "aggchain",
+            None,
+        ],
         ["ecdsa_multisig", False, "agglayer-contracts:v1.0.0", 0, "aggchain", None],
         # fep
         ["fep", False, "agglayer-contracts:v1.0.0-fork.13", 0, "aggchain", None],
@@ -105,7 +175,14 @@ def test_get_fork_id(plan):
     ]
 
     for i, t in enumerate(tests):
-        [contract_type, deploy_optimism_rollup, image, expected_fork_id, expected_fork_name, expected_error] = (
+        [
+            contract_type,
+            deploy_optimism_rollup,
+            image,
+            expected_fork_id,
+            expected_fork_name,
+            expected_error,
+        ] = (
             t[0],
             t[1],
             t[2],
@@ -115,10 +192,14 @@ def test_get_fork_id(plan):
         )
         if expected_error:
             expect.fails(
-                lambda: input_parser.get_fork_id(contract_type, deploy_optimism_rollup, image),
+                lambda: input_parser.get_fork_id(
+                    contract_type, deploy_optimism_rollup, image
+                ),
                 expected_error,
             )
         else:
-            (fork_id, fork_name) = input_parser.get_fork_id(contract_type, deploy_optimism_rollup, image)
+            (fork_id, fork_name) = input_parser.get_fork_id(
+                contract_type, deploy_optimism_rollup, image
+            )
             expect.eq(fork_id, expected_fork_id)
             expect.eq(fork_name, expected_fork_name)
