@@ -28,7 +28,9 @@ def get_dashboard_config(plan, args, contract_setup_addresses):
         "l2_rollup_id": args["zkevm_rollup_id"],
         "l1_rpc_url": args["l1_rpc_url"],
         "l2_rpc_url": "http://{}{}:{}".format(
-            args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+            args["l2_rpc_name"],
+            args["deployment_suffix"],
+            args["cdk_erigon_rpc_http_port"],
         ),
         "agglayer_rpc_url": args.get("agglayer_readrpc_url"),
         "zkevm_l2_sovereignadmin_private_key": args.get(

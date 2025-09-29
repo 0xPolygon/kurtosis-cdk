@@ -56,7 +56,7 @@ def create_bridge_config_artifact(
     )
     l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
     l2_rpc_url = "http://{}{}:{}".format(
-        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+        args["l2_rpc_name"], args["deployment_suffix"], args["cdk_erigon_rpc_http_port"]
     )
 
     consensus_contract_type = args["consensus_contract_type"]

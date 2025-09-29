@@ -151,7 +151,7 @@ def create_agglayer_config_artifact(
                     ],
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "cdk_erigon_rpc_http_port": args["cdk_erigon_rpc_http_port"],
                     "agglayer_version": agglayer_version(args),
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],

@@ -23,13 +23,13 @@ EnableLog = false
 MaxConns = 200
 
 [Sender]
-SequencerURL = "http://cdk-erigon-sequencer{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+SequencerURL = "http://cdk-erigon-sequencer{{.deployment_suffix}}:{{.cdk_erigon_rpc_http_port}}"
 ResendTxsCheckInterval = "1s"
 Workers = 5
 QueueSize = 25
 
 [Monitor]
-L2NodeURL = "http://cdk-erigon-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+L2NodeURL = "http://cdk-erigon-rpc{{.deployment_suffix}}:{{.cdk_erigon_rpc_http_port}}"
 Workers = 5
 QueueSize = 25
 RetryWaitInterval = "3s"

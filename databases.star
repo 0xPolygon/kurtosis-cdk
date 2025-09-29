@@ -91,8 +91,6 @@ def get_db_configs(suffix, sequencer_type):
     dbs = None
     if sequencer_type == "erigon":
         dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS | OP_SUCCINCT_PROPOSER_DBS
-    elif sequencer_type == "zkevm":
-        dbs = CENTRAL_ENV_DBS | PROVER_DB
     else:
         fail("Unsupported sequencer type: %s" % sequencer_type)
 

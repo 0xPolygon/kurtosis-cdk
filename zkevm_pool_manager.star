@@ -36,7 +36,7 @@ def create_zkevm_pool_manager_config_artifact(plan, args, db_configs):
                     "deployment_suffix": args["deployment_suffix"],
                     "zkevm_pool_manager_port": args["zkevm_pool_manager_port"],
                     # ports
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "cdk_erigon_rpc_http_port": args["cdk_erigon_rpc_http_port"],
                 }
                 | db_configs,
             )

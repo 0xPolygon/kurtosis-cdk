@@ -814,7 +814,7 @@ http.addr: 0.0.0.0
 
 # The listening port of the HTTP RPC server.
 # Default: 8545
-http.port: {{.zkevm_rpc_http_port}}
+http.port: {{.cdk_erigon_rpc_http_port}}
 
 # Enable compression over HTTP.
 # Default: false
@@ -856,7 +856,7 @@ ws.addr: 0.0.0.0
 
 # The listening port of the WS RPC server.
 # Default: 8545
-ws.port: {{.zkevm_rpc_ws_port}}
+ws.port: {{.cdk_erigon_ws_port}}
 
 
 # ==============================================================================

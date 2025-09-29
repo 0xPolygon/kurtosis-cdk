@@ -1,6 +1,6 @@
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL="{{.l1_rpc_url}}"
-L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.cdk_erigon_rpc_http_port}}"
 AggLayerURL="{{.agglayer_grpc_url}}"
 
 NetworkID = {{.zkevm_rollup_id}}
@@ -9,7 +9,7 @@ SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
-RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.cdk_erigon_rpc_http_port}}"
 
 # This values can be override directly from genesis.json
 rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
@@ -51,5 +51,5 @@ PrivateKeys = [
 StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
-URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+URL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.cdk_erigon_rpc_http_port}}"
 L1ChainID = "{{.zkevm_rollup_chain_id}}"

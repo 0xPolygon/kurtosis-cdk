@@ -93,13 +93,13 @@ def _start_service(
 def get_cdk_erigon_ports(args, additional_ports, start_port_name):
     ports = {
         "pprof": PortSpec(
-            args["zkevm_pprof_port"], application_protocol="http", wait=None
+            args["cdk_erigon_pprof_port"], application_protocol="http", wait=None
         ),
         "prometheus": PortSpec(
             args["prometheus_port"], application_protocol="http", wait=None
         ),
-        "rpc": PortSpec(args["zkevm_rpc_http_port"], application_protocol="http"),
-        "ws-rpc": PortSpec(args["zkevm_rpc_ws_port"], application_protocol="ws"),
+        "rpc": PortSpec(args["cdk_erigon_rpc_http_port"], application_protocol="http"),
+        "ws-rpc": PortSpec(args["cdk_erigon_ws_port"], application_protocol="ws"),
     } | additional_ports
     public_ports = ports_package.get_public_ports(ports, start_port_name, args)
     return (ports, public_ports)

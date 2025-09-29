@@ -111,7 +111,7 @@ def run(
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
     l2_rpc_url = "http://{}{}:{}".format(
-        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+        args["l2_rpc_name"], args["deployment_suffix"], args["cdk_erigon_rpc_http_port"]
     )
 
     # Always deploy aggkit service
@@ -435,7 +435,9 @@ def create_bridge_config_artifact(
         or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
     ):
         l2_rpc_url = "http://{}{}:{}".format(
-            args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+            args["l2_rpc_name"],
+            args["deployment_suffix"],
+            args["cdk_erigon_rpc_http_port"],
         )
         contract_addresses = contract_setup_addresses
         require_sovereign_chain_contract = False
