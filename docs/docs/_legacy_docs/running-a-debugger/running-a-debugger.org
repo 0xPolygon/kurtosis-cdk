@@ -81,7 +81,7 @@ sed -i 's/vc-1-lighthouse-geth/172.16.0.13/gi' /tmp/node-config.toml
 *Note* this approach would only work if you have access to the enclave
 IPs. This is going to depend a lot on your network
 environment. Alternatively, you can replace all of these values with
-localhost and switch to the emphemeral ports.
+localhost and switch to the ephemeral ports.
 
 
 With all that setup, we should stop the actual synchronizer:
