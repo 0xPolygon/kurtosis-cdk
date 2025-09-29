@@ -444,9 +444,6 @@ VALID_ADDITIONAL_SERVICES = [
     for field in dir(constants.ADDITIONAL_SERVICES)
 ]
 
-# A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [0, 9, 11, 12, 13]
-
 VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.rollup,
     constants.CONSENSUS_TYPE.cdk_validium,
@@ -471,7 +468,8 @@ def parse_args(plan, user_args):
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args)
 
-    validate_consensus_type(args.get("consensus_contract_type"))
+    consensus_contract_type = args.get("consensus_contract_type")
+    validate_consensus_type(consensus_contract_type)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -494,8 +492,10 @@ def parse_args(plan, user_args):
     validate_additional_services(args.get("additional_services", []))
 
     # Determine fork id from the agglayer contracts image tag.
-    agglayer_contracts_image = args.get("agglayer_contracts_image", "")
-    (fork_id, fork_name) = get_fork_id(args, agglayer_contracts_image)
+    agglayer_contracts_image = args.get("agglayer_contracts_image")
+    (fork_id, fork_name) = get_fork_id(
+        consensus_contract_type, agglayer_contracts_image
+    )
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
@@ -577,50 +577,41 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(args, agglayer_contracts_image):
-    """
-    Extract the fork identifier and fork name from a agglayer contracts image name.
-
-    The agglayer contracts tags follow the convention:
-    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
-
-    Where:
-    - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
-    - <RC_NUMBER> is the release candidate number.
-    - <FORK_ID> is the fork identifier.
-    - -patch.<PATCH_NUMBER> is optional and represents the patch number.
-
-    Example:
-    - v8.0.0-rc.2-fork.12
-    - v7.0.0-rc.1-fork.10
-    - v7.0.0-rc.1-fork.11-patch.1
-    """
-    # If aggchain consensus is being used, return 0
-    if (
-        args["consensus_contract_type"] == "ecdsa_multisig"
-        or args["consensus_contract_type"] == "fep"
-    ):
+def get_fork_id(consensus_contract_type, agglayer_contracts_image):
+    # If aggchain consensus is being used, return zero.
+    if consensus_contract_type in [
+        constants.CONSENSUS_TYPE.ecdsa_multisig,
+        constants.CONSENSUS_TYPE.fep,
+    ]:
         return (0, "aggchain")
-    else:
-        result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
-        if len(result) != 2:
-            fail(
-                "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
-                    agglayer_contracts_image
-                )
+
+    # Otherwise, parse the fork id from the agglayer contracts image tag.
+    # The agglayer contracts tags follow the convention:
+    # v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
+    # Where:
+    # - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
+    # - <RC_NUMBER> is the release candidate number.
+    # - <FORK_ID> is the fork identifier.
+    # - -patch.<PATCH_NUMBER> is optional and represents the patch number.
+    #
+    # Example:
+    # - v8.0.0-rc.2-fork.12
+    # - v7.0.0-rc.1-fork.10
+    # - v7.0.0-rc.1-fork.11-patch.1
+    result = agglayer_contracts_image.split("-fork.")
+    if len(result) != 2:
+        fail(
+            "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
+                agglayer_contracts_image
             )
+        )
 
-        fork_id = int(result[1])
-        if fork_id not in SUPPORTED_FORK_IDS:
-            fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
+    fork_id = int(result[1])
+    if fork_id not in constants.FORK_ID_TO_NAME:
+        fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
 
-        fork_name = "elderberry"
-        if fork_id >= 12:
-            fork_name = "banana"
-        else:
-            fork_name = "aggchain"
-
-        return (fork_id, fork_name)
+    fork_name = constants.FORK_ID_TO_NAME[fork_id]
+    return (fork_id, fork_name)
 
 
 def get_sequencer_name(sequencer_type):

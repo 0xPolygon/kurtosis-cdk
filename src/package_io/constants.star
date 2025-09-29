@@ -36,6 +36,13 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
+FORK_ID_TO_NAME = {
+    9: "elderberry",
+    11: "elderberry",
+    12: "banana",
+    13: "banana",
+}
+
 TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
 )
