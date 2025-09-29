@@ -4,15 +4,15 @@ input_parser = import_module("./input_parser.star")
 def test_get_fork_id(plan):
     tests = [
         # rollup - supported forks
-        ["rollup", False, "agglayer-contracts:v1.0.0-fork.13", 13, "banana", None],
-        ["rollup", False, "agglayer-contracts:v1.0.0-fork.12", 12, "banana", None],
-        ["rollup", False, "agglayer-contracts:v1.0.0-fork.11", 11, "elderberry", None],
-        ["rollup", False, "agglayer-contracts:v1.0.0-fork.9", 9, "elderberry", None],
+        ["rollup", False, "image:v1.0.0-fork.13", 13, "banana", None],
+        ["rollup", False, "image:v1.0.0-fork.12", 12, "banana", None],
+        ["rollup", False, "image:v1.0.0-fork.11", 11, "elderberry", None],
+        ["rollup", False, "image:v1.0.0-fork.9", 9, "elderberry", None],
         # rollup - unsupported forks should fail
         [
             "rollup",
             False,
-            "agglayer-contracts:v1.0.0-fork.8",
+            "image:v1.0.0-fork.8",
             0,
             "",
             "not supported by Kurtosis CDK",
@@ -20,7 +20,7 @@ def test_get_fork_id(plan):
         [
             "rollup",
             False,
-            "agglayer-contracts:v1.0.0-fork.14",
+            "image:v1.0.0-fork.14",
             0,
             "",
             "not supported by Kurtosis CDK",
@@ -29,7 +29,7 @@ def test_get_fork_id(plan):
         [
             "rollup",
             False,
-            "agglayer-contracts:v1.0.0",
+            "image:v1.0.0",
             0,
             "",
             "does not follow the standard",
@@ -38,7 +38,7 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0-fork.13",
+            "image:v1.0.0-fork.13",
             13,
             "banana",
             None,
@@ -46,7 +46,7 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0-fork.12",
+            "image:v1.0.0-fork.12",
             12,
             "banana",
             None,
@@ -54,7 +54,7 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0-fork.11",
+            "image:v1.0.0-fork.11",
             11,
             "elderberry",
             None,
@@ -62,7 +62,7 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0-fork.9",
+            "image:v1.0.0-fork.9",
             9,
             "elderberry",
             None,
@@ -71,7 +71,7 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0-fork.8",
+            "image:v1.0.0-fork.8",
             0,
             "",
             "not supported by Kurtosis CDK",
@@ -79,7 +79,7 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0-fork.14",
+            "image:v1.0.0-fork.14",
             0,
             "",
             "not supported by Kurtosis CDK",
@@ -88,18 +88,18 @@ def test_get_fork_id(plan):
         [
             "cdk_validium",
             False,
-            "agglayer-contracts:v1.0.0",
+            "image:v1.0.0",
             0,
             "",
             "does not follow the standard",
         ],
         # pessimistic - supported forks
-        ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.13", 13, "banana", None],
-        ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.12", 12, "banana", None],
+        ["pessimistic", False, "image:v1.0.0-fork.13", 13, "banana", None],
+        ["pessimistic", False, "image:v1.0.0-fork.12", 12, "banana", None],
         [
             "pessimistic",
             False,
-            "agglayer-contracts:v1.0.0-fork.11",
+            "image:v1.0.0-fork.11",
             11,
             "elderberry",
             None,
@@ -107,7 +107,7 @@ def test_get_fork_id(plan):
         [
             "pessimistic",
             False,
-            "agglayer-contracts:v1.0.0-fork.9",
+            "image:v1.0.0-fork.9",
             9,
             "elderberry",
             None,
@@ -116,7 +116,7 @@ def test_get_fork_id(plan):
         [
             "pessimistic",
             False,
-            "agglayer-contracts:v1.0.0-fork.8",
+            "image:v1.0.0-fork.8",
             0,
             "",
             "not supported by Kurtosis CDK",
@@ -124,7 +124,7 @@ def test_get_fork_id(plan):
         [
             "pessimistic",
             False,
-            "agglayer-contracts:v1.0.0-fork.14",
+            "image:v1.0.0-fork.14",
             0,
             "",
             "not supported by Kurtosis CDK",
@@ -133,7 +133,7 @@ def test_get_fork_id(plan):
         [
             "pessimistic",
             False,
-            "agglayer-contracts:v1.0.0",
+            "image:v1.0.0",
             0,
             "",
             "does not follow the standard",
@@ -142,7 +142,7 @@ def test_get_fork_id(plan):
         [
             "ecdsa_multisig",
             False,
-            "agglayer-contracts:v1.0.0-fork.13",
+            "image:v1.0.0-fork.13",
             0,
             "aggchain",
             None,
@@ -150,7 +150,7 @@ def test_get_fork_id(plan):
         [
             "ecdsa_multisig",
             False,
-            "agglayer-contracts:v1.0.0-fork.12",
+            "image:v1.0.0-fork.12",
             0,
             "aggchain",
             None,
@@ -158,20 +158,20 @@ def test_get_fork_id(plan):
         [
             "ecdsa_multisig",
             False,
-            "agglayer-contracts:v1.0.0-fork.11",
+            "image:v1.0.0-fork.11",
             0,
             "aggchain",
             None,
         ],
-        ["ecdsa_multisig", False, "agglayer-contracts:v1.0.0", 0, "aggchain", None],
+        ["ecdsa_multisig", False, "image:v1.0.0", 0, "aggchain", None],
         # fep
-        ["fep", False, "agglayer-contracts:v1.0.0-fork.13", 0, "aggchain", None],
-        ["fep", False, "agglayer-contracts:v1.0.0-fork.12", 0, "aggchain", None],
-        ["fep", False, "agglayer-contracts:v1.0.0-fork.11", 0, "aggchain", None],
-        ["fep", False, "agglayer-contracts:v1.0.0", 0, "aggchain", None],
+        ["fep", False, "image:v1.0.0-fork.13", 0, "aggchain", None],
+        ["fep", False, "image:v1.0.0-fork.12", 0, "aggchain", None],
+        ["fep", False, "image:v1.0.0-fork.11", 0, "aggchain", None],
+        ["fep", False, "image:v1.0.0", 0, "aggchain", None],
         # optimism rollup
-        ["pessimistic", True, "agglayer-contracts:v1.0.0-fork.12", 0, "aggchain", None],
-        ["pessimistic", False, "agglayer-contracts:v1.0.0-fork.12", 12, "banana", None],
+        ["pessimistic", True, "image:v1.0.0-fork.12", 0, "aggchain", None],
+        ["pessimistic", False, "image:v1.0.0-fork.12", 12, "banana", None],
     ]
 
     for i, t in enumerate(tests):
