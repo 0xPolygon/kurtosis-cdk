@@ -185,7 +185,7 @@ fi
 jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c.json; mv c.json combined.json
 
 # Add the L2 GER Proxy address in combined.json (for panoptichain).
-zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
+zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "LegacyAgglayerGERL2 proxy") | .address' /opt/zkevm/genesis.json)
 jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
 {{ if .gas_token_enabled }}
