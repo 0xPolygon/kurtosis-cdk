@@ -49,7 +49,7 @@ CENTRAL_ENV_DBS = {
     },
 }
 
-# The prover database is a component of both central environment and permissionless zkEVM node environment.
+# The prover database is a component of the central environment.
 # Therefore, it is defined separately.
 PROVER_DB = {
     "prover_db": {
@@ -60,7 +60,7 @@ PROVER_DB = {
     }
 }
 
-# Databases required for a zkevm node to function as either a sequencer or a permissionless node.
+# Databases required for a zkevm node to function as a sequencer node.
 ZKEVM_NODE_DBS = {
     "event_db": {
         "name": "event_db",
@@ -80,7 +80,7 @@ ZKEVM_NODE_DBS = {
     },
 }
 
-# Databases required for a cdk erigon node to function as either a sequencer or a permissionless node.
+# Databases required for a cdk erigon node to function as either a sequencer node.
 CDK_ERIGON_DBS = {
     "pool_manager_db": {
         "name": "pool_manager_db",
@@ -137,30 +137,6 @@ def get_db_configs(suffix, sequencer_type):
 
 def _service_name(suffix):
     return POSTGRES_SERVICE_NAME + suffix
-
-
-def run_pless_zkevm(plan, args):
-    db_configs = get_pless_zkevm_db_configs(args["original_suffix"])
-    create_postgres_service(plan, db_configs, args, "pless_database_start_port")
-
-
-def get_pless_zkevm_db_configs(suffix):
-    dbs = ZKEVM_NODE_DBS | PROVER_DB
-    configs = {
-        k: v
-        | {
-            "hostname": POSTGRES_HOSTNAME
-            if USE_REMOTE_POSTGRES
-            else _service_name(_pless_suffix(suffix)),
-            "port": POSTGRES_PORT,
-        }
-        for k, v in dbs.items()
-    }
-    return configs
-
-
-def _pless_suffix(suffix):
-    return "-pless" + suffix
 
 
 def create_postgres_service(plan, db_configs, args, start_port_name):

@@ -32,16 +32,6 @@ def launch(
             )
         elif svc == constants.ADDITIONAL_SERVICES.erpc:
             import_module("./erpc.star").run(plan, args)
-        elif svc == constants.ADDITIONAL_SERVICES.pless_zkevm_node:
-            # Note that an additional suffix will be added to the permissionless services.
-            permissionless_node_args = dict(args)
-            permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-            permissionless_node_args["deployment_suffix"] = (
-                "-pless" + args["deployment_suffix"]
-            )
-            import_module("./pless_zkevm_node.star").run(
-                plan, permissionless_node_args, genesis_artifact
-            )
         elif svc == constants.ADDITIONAL_SERVICES.observability:
             import_module("./panoptichain.star").run(
                 plan, args, contract_setup_addresses

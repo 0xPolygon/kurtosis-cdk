@@ -99,7 +99,6 @@ DEFAULT_STATIC_PORTS = {
         "reverse_proxy_start_port": 51220,
         # Databases (51300-51399).
         "database_start_port": 51300,
-        "pless_database_start_port": 51310,
         # Pool manager (51400-51499).
         "zkevm_pool_manager_start_port": 51400,
         # DAC (51500-51599).
@@ -364,13 +363,6 @@ DEFAULT_ROLLUP_ARGS = {
     "agg_sender_multisig_threshold": 1,
 }
 
-DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
-    "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
-    "zkevm_aggregator_host": "zkevm-node-aggregator-001",
-    "genesis_file": "templates/permissionless-node/genesis.json",
-    "sovereign_genesis_file": "templates/sovereign-genesis.json",
-}
-
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
     "blockscout_params": {
         "blockscout_public_port": DEFAULT_PORTS.get("blockscout_frontend_port"),
@@ -414,7 +406,6 @@ DEFAULT_ARGS = (
         # - bridge_spammer
         # - erpc
         # - observability
-        # - pless_zkevm_node
         # - rpc_fuzzer
         # - status_checker
         # - test_runner
@@ -434,7 +425,6 @@ DEFAULT_ARGS = (
     | DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
-    | DEFAULT_PLESS_ZKEVM_NODE_ARGS
     | DEFAULT_L2_ARGS
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )

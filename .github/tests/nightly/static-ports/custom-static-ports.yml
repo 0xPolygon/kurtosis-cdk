@@ -26,7 +26,6 @@ args:
 
     ## Databases
     database_start_port: 61300
-    pless_database_start_port: 61310
 
     ## Pool manager
     zkevm_pool_manager_start_port: 61400
