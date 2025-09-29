@@ -3,7 +3,7 @@ deployment_stages:
 
 args:
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
-  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12
+  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2
   consensus_contract_type: pessimistic
 
 optimism_package:
