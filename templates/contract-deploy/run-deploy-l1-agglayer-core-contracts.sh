@@ -125,7 +125,7 @@ cat combined.json
 # DEPRECATED we will likely remove support for anything before fork 9 soon
 fork_id="{{.zkevm_rollup_fork_id}}"
 if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
-    jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
+    jq '.agglayerManagerAddress = .agglayerManager' combined.json > c.json; mv c.json combined.json
     jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
     jq '.upgradeToULxLyBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
     jq '.polygonDataCommitteeAddress = .polygonDataCommittee' combined.json > c.json; mv c.json combined.json
@@ -140,7 +140,7 @@ if [[ $is_first_rollup -eq 1 ]]; then
     cast send \
          --private-key "{{.zkevm_l2_admin_private_key}}" \
          --rpc-url "{{.l1_rpc_url}}" \
-         "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
+         "$(jq -r '.agglayerManagerAddress' combined.json)" \
          'grantRole(bytes32,address)' \
          "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
 fi

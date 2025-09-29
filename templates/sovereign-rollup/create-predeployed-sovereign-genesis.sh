@@ -7,9 +7,9 @@ pushd /opt/zkevm-contracts || exit 1
 git config --global --add safe.directory /opt/zkevm-contracts
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-# So a manual extraction of polygonRollupManagerAddress is done here.
+# So a manual extraction of agglayerManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+rollup_manager_addr="$(jq -r '.agglayerManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 chainID="$(jq -r '.chainID' "/opt/zkevm/create_rollup_parameters.json")"
 rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
 gas_token_addr="$(jq -r '.gasTokenAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"

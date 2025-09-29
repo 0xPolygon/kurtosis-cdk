@@ -9,16 +9,16 @@ export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
 ts=$(date +%s)
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-# So a manual extraction of polygonRollupManagerAddress is done here.
+# So a manual extraction of agglayerManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+rollup_manager_addr="$(jq -r '.agglayerManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 
 # Replace rollupManagerAddress with the extracted address
 jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' /opt/contract-deploy/create_new_rollup.json > "/opt/contract-deploy/create_new_rollup${ts}.json"
 cp "/opt/contract-deploy/create_new_rollup${ts}.json" /opt/contract-deploy/create_new_rollup.json
 
-# Replace polygonRollupManagerAddress with the extracted address
-jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' /opt/contract-deploy/add_rollup_type.json > "/opt/contract-deploy/add_rollup_type${ts}.json"
+# Replace agglayerManagerAddress with the extracted address
+jq --arg rum "$rollup_manager_addr" '.agglayerManagerAddress = $rum' /opt/contract-deploy/add_rollup_type.json > "/opt/contract-deploy/add_rollup_type${ts}.json"
 cp "/opt/contract-deploy/add_rollup_type${ts}.json" /opt/contract-deploy/add_rollup_type.json
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.

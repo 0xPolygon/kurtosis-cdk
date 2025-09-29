@@ -13,7 +13,7 @@ pol_token_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_addre
 echo '{' \
   \"polygonZkEVMBridgeAddress\":\""$zkevm_bridge_address"\", \
   \"rollupAddress\":\""$zkevm_rollup_address"\", \
-  \"polygonRollupManagerAddress\":\""$zkevm_rollup_manager_address"\", \
+  \"agglayerManagerAddress\":\""$zkevm_rollup_manager_address"\", \
   \"deploymentRollupManagerBlockNumber\":\""{{.zkevm_rollup_manager_block_number}}"\", \
   \"polygonZkEVMGlobalExitRootAddress\":\""$zkevm_global_exit_root_address"\", \
   \"polygonZkEVMGlobalExitRootL2Address\":\""{{.zkevm_global_exit_root_l2_address}}"\", \

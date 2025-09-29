@@ -29,15 +29,15 @@ sed -i \
   /opt/contract-deploy/create_new_rollup.json
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-# So a manual extraction of polygonRollupManagerAddress is done here.
+# So a manual extraction of agglayerManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
-rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined.json")"
+rollup_manager_addr="$(jq -r '.agglayerManagerAddress' "/opt/zkevm/combined.json")"
 
 # Replace rollupManagerAddress with the extracted address
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
 
-# Replace polygonRollupManagerAddress with the extracted address
-sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
+# Replace agglayerManagerAddress with the extracted address
+sed -i "s|\"agglayerManagerAddress\": \".*\"|\"agglayerManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
@@ -102,13 +102,13 @@ initNetworkID="{{.zkevm_rollup_id}}"
 initGasTokenAddress="{{.gas_token_address}}"
 initGasTokenNetwork="{{.gas_token_network}}"
 initGlobalExitRootManager=$ger_proxy_addr
-initPolygonRollupManager=$rollup_manager_addr
+initAgglayerManager=$rollup_manager_addr
 initGasTokenMetadata=0x
 initBridgeManager=$bridge_admin_addr
 initSovereignWETHAddress="{{.sovereign_weth_address}}"
 initSovereignWETHAddressIsNotMintable="{{.sovereign_weth_address_not_mintable}}"
 
-calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _polygonRollupManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initPolygonRollupManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
+calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _agglayerManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initAgglayerManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
 forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
 
 # Save the contract addresses to the sovereign-rollup-out.json file
@@ -173,7 +173,7 @@ cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"
 # Contract addresses to extract from combined.json and check for bytecode
 # shellcheck disable=SC2034
 l1_contract_names=(
-    "polygonRollupManagerAddress"
+    "agglayerManagerAddress"
     "polygonZkEVMBridgeAddress"
     "polygonZkEVMGlobalExitRootAddress"
     "aggLayerGatewayAddress"

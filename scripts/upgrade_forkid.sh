@@ -90,7 +90,7 @@ kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "cd /opt/zkevm-contracts && g
 # create env file for the commands we need to execute on contracts service
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'cd /opt' > /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'export ETH_RPC_URL=http://el-1-geth-lighthouse:8545' >> /opt/commands.sh"
-kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'ROLLUP_MAN=\$(cat zkevm/combined.json  | jq -r .polygonRollupManagerAddress)' >> /opt/commands.sh"
+kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'ROLLUP_MAN=\$(cat zkevm/combined.json  | jq -r .agglayerManagerAddress)' >> /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'ROLLUP=\$(cat zkevm/combined.json | jq -r .rollupAddress)' >> /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'GENESIS=\$(cat zkevm/combined.json  | jq -r .genesis)' >> /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo \"CONSENSUS=\\\$(cast call \\\$ROLLUP_MAN 'rollupTypeMap(uint32)(address,address,uint64,uint8,bool,bytes32)' 1 | head -1)\" >> /opt/commands.sh"
