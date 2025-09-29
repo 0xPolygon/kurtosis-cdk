@@ -460,6 +460,8 @@ def parse_args(plan, user_args):
     )
     args = DEFAULT_ARGS | user_args.get("args", {})
     op_input_args = user_args.get("optimism_package", {})
+    deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
+    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
 
     # Change some params if anvil set to make it work
     # As it changes L1 config it needs to be run before other functions/checks
@@ -494,15 +496,12 @@ def parse_args(plan, user_args):
     # Determine fork id from the agglayer contracts image tag.
     agglayer_contracts_image = args.get("agglayer_contracts_image")
     (fork_id, fork_name) = get_fork_id(
-        consensus_contract_type, agglayer_contracts_image
+        consensus_contract_type, deploy_op_node, agglayer_contracts_image
     )
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
     sequencer_name = get_sequencer_name(sequencer_type)
-
-    deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
-    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
 
     # Determine static ports, if specified.
@@ -577,12 +576,18 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(consensus_contract_type, agglayer_contracts_image):
-    # If aggchain consensus is being used, return zero.
-    if consensus_contract_type in [
-        constants.CONSENSUS_TYPE.ecdsa_multisig,
-        constants.CONSENSUS_TYPE.fep,
-    ]:
+def get_fork_id(
+    consensus_contract_type, deploy_optimism_rollup, agglayer_contracts_image
+):
+    # If aggchain consensus is being used or optimism rollup is being deployed, return zero.
+    if (
+        consensus_contract_type
+        in [
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
+            constants.CONSENSUS_TYPE.fep,
+        ]
+        or deploy_optimism_rollup
+    ):
         return (0, "aggchain")
 
     # Otherwise, parse the fork id from the agglayer contracts image tag.
