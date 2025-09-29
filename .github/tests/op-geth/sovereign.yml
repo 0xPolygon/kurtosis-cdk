@@ -2,6 +2,8 @@ deployment_stages:
   deploy_optimism_rollup: true
 
 args:
+  aggkit_image: ghcr.io/agglayer/aggkit:0.5.0-beta4
+  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.2-fork.12
   consensus_contract_type: pessimistic
 
 optimism_package:

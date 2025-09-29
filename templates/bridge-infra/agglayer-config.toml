@@ -57,7 +57,7 @@ format = "json"
 
 [auth.local]
 private-keys = [
-    { path = "/etc/zkevm/agglayer.keystore", password = "{{.zkevm_l2_keystore_password}}" },
+    { path = "/etc/agglayer/aggregator.keystore", password = "{{.zkevm_l2_keystore_password}}" },
 ]
 
 [l1]
@@ -97,9 +97,9 @@ input-backpressure-buffer-size = 1000
 [certificate-orchestrator.prover.sp1-local]
 
 [storage]
-db-path = "/etc/zkevm/storage"
+db-path = "/etc/agglayer/storage"
 
 [storage.backup]
-path = "/etc/zkevm/backups"
+path = "/etc/agglayer/backups"
 state-max-backup-count = 100
 pending-max-backup-count = 100

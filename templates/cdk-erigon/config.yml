@@ -186,7 +186,7 @@ zkevm.da-url: ""
 zkevm.pool-manager-url: {{.pool_manager_url}}
 # {{end}}
 
-# {{if eq .consensus_contract_type "pessimistic"}}
+# {{if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig")}}
 # The file that contains the initial (injected) batch data for pessimistic proofs consensus.
 zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
 # {{end}}
@@ -240,7 +240,7 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # Default: 2
 # {{if eq .cdk_erigon_node_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
 # zkevm.datastream-version: not supported
-# fork12 or after {{else if eq .zkevm_rollup_fork_name "banana"}}
+# fork12 or after {{else if or (eq .zkevm_rollup_fork_name "banana") (eq .zkevm_rollup_fork_name "aggchain")}}
 zkevm.datastream-version: 3
 # before fork12 {{else}}
 zkevm.datastream-version: 2
