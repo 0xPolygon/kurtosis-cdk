@@ -144,7 +144,10 @@ def run(plan, args, deployment_stages, op_stack_args):
 
     aggkit_prover_image = args.get("aggkit_prover_image")
     aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
-    aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
+        aggchain_vkey_selector = "0x00000000"
+    else:
+        aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
 
     # Set program vkey based on the consensus type.
     # For non pessimistic consensus types, we use the bytes32 zero hash.
@@ -153,7 +156,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     if args.get("consensus_contract_type") in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
-        constants.CONSENSUS_TYPE.ecdsa,
+        constants.CONSENSUS_TYPE.ecdsa_multisig,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
@@ -170,7 +173,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                         "is_cdk_validium": data_availability_package.is_cdk_validium(
                             args
                         ),
-                        "is_vanilla_client": is_vanilla_client(args),
+                        "is_vanilla_client": is_vanilla_client(args, deployment_stages),
                         "deploy_op_succinct": deployment_stages.get(
                             "deploy_op_succinct", False
                         ),
@@ -195,6 +198,26 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
         artifacts.append(artifact)
 
+    # Dump input params to input_args.json file
+    json_str = json.encode(
+        {
+            "args": args,
+            "deployment_stages": deployment_stages,
+            "op_stack_args": op_stack_args,
+        }
+    )
+    pretty_str = json.indent(json_str)
+    artifact = plan.render_templates(
+        name="input_args.json",
+        config={
+            "input_args.json": struct(
+                template="{{ . }}",
+                data=pretty_str,
+            ),
+        },
+    )
+    artifacts.append(artifact)
+
     # Base file artifacts to mount regardless of deployment type
     files = {
         "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
@@ -204,8 +227,8 @@ def run(plan, args, deployment_stages, op_stack_args):
     # Create op-succinct artifacts
     if deployment_stages.get("deploy_op_succinct", False):
         fetch_rollup_config_artifact = plan.get_files_artifact(
-            name="fetch-rollup-config",
-            description="Get fetch-rollup-config files artifact",
+            name="fetch-l2oo-config",
+            description="Get fetch-l2oo-config files artifact",
         )
         deploy_op_succinct_contract_artifact = plan.render_templates(
             name="deploy-op-succinct-contracts.sh",
@@ -250,6 +273,21 @@ def run(plan, args, deployment_stages, op_stack_args):
                 "/bin/sh",
                 "-c",
                 "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/contract-deploy --daemon || true",
+            ]
+        ),
+    )
+
+    # Create keystores.
+    plan.exec(
+        description="Creating keystores for zkevm-node/cdk-validium components",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "chmod +x {0} && {0}".format(
+                    "/opt/contract-deploy/create-keystores.sh"
+                ),
             ]
         ),
     )
@@ -368,21 +406,6 @@ def run(plan, args, deployment_stages, op_stack_args):
             src="/opt/zkevm/first-batch-config.json",
         )
 
-    # Create keystores.
-    plan.exec(
-        description="Creating keystores for zkevm-node/cdk-validium components",
-        service_name=contracts_service_name,
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/create-keystores.sh"
-                ),
-            ]
-        ),
-    )
-
     # Force update GER.
     plan.exec(
         description="Updating the GER so the L1 Info Tree Index is greater than 0",
@@ -397,8 +420,11 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
 
-def is_vanilla_client(args):
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa:
+def is_vanilla_client(args, deployment_stages):
+    if (
+        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
+        and deployment_stages.get("deploy_optimism_rollup") == True
+    ):
         return True
     else:
         return False
