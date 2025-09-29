@@ -28,7 +28,7 @@ sed -i \
   -e "s/\"startingTimestamp\": [^,}]*/\"startingTimestamp\": $starting_timestamp/" \
   /opt/contract-deploy/create_new_rollup.json
 
-# Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+# Extract the rollup manager address from the JSON file. .agglayer_manager_address is not available at the time of importing this script.
 # So a manual extraction of agglayerManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
 rollup_manager_addr="$(jq -r '.agglayerManagerAddress' "/opt/zkevm/combined.json")"

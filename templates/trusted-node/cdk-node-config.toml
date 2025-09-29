@@ -24,13 +24,13 @@ RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}
 WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 # This values can be override directly from genesis.json
-rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupCreationBlockNumber = "{{.agglayer_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.agglayer_manager_block_number}}"
+genesisBlockNumber = "{{.agglayer_manager_block_number}}"
 [L1Config]
 	chainId = "{{.l1_chain_id}}"
 	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
-	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+	polygonRollupManagerAddress = "{{.agglayer_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 	

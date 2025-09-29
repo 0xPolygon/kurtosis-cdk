@@ -506,7 +506,7 @@ def create_aggkit_prover_config_artifact(
                     "l2_el_rpc_url": args["op_el_rpc_url"],
                     "l2_cl_rpc_url": args["op_cl_rpc_url"],
                     "rollup_manager_address": contract_setup_addresses[
-                        "zkevm_rollup_manager_address"
+                        "agglayer_manager_address"
                     ],  # TODO: Check if it's the right address - is it the L1 rollup manager address ?
                     "global_exit_root_address": sovereign_contract_setup_addresses[
                         "sovereign_ger_proxy_addr"

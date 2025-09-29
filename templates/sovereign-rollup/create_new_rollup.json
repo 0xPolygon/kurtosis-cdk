@@ -20,7 +20,7 @@
     "multiplierGas": "",
     "timelockDelay": 0,
     "timelockSalt": "",
-    "rollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
+    "rollupManagerAddress": "{{ .agglayer_manager_address }}",
     "rollupTypeId": 1,
     "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}",
     "_comment": "TODO.. It sounds like isVanillaClient should be false.. But setting it to false cause other issues. E.g. TypeError: newRollupContract.generateInitializeTransaction is not a function",

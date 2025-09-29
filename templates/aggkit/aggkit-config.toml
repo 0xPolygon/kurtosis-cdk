@@ -45,9 +45,9 @@ RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
 
 # These values can be overridden directly from genesis.json
-rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupCreationBlockNumber = "{{.agglayer_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.agglayer_manager_block_number}}"
+genesisBlockNumber = "{{.agglayer_manager_block_number}}"
 # ------------------------------------------------------------------------------
 
 # ==============================================================================
@@ -77,7 +77,7 @@ polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 # ------------------------------------------------------------------------------
 # Address of the rollup manager contract on L1
 # ------------------------------------------------------------------------------
-polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+polygonRollupManagerAddress = "{{.agglayer_manager_address}}"
 
 # ------------------------------------------------------------------------------
 # Address of the pol token address on L1
@@ -570,7 +570,7 @@ BlockFinality = "LatestBlock"
 # The initial block number from which to start syncing.
 # Default: 0
 # ------------------------------------------------------------------------------
-InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
+InitialBlock = "{{.agglayer_manager_block_number}}"
 
 # ==============================================================================
 #  _     ____   ____ _____ ____  ______   ___   _  ____
@@ -734,8 +734,8 @@ MaxDecodingMessageSize = 1073741824  # 1GB
 
 # Is it necessary to specify all of these values again?
 [Validator.LerQuerierConfig]
-RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
-RollupCreationBlockL1 = "{{.zkevm_rollup_manager_block_number}}"
+RollupManagerAddr = "{{.agglayer_manager_address}}"
+RollupCreationBlockL1 = "{{.agglayer_manager_block_number}}"
 
 [Validator.AgglayerClient]
 Cached = true

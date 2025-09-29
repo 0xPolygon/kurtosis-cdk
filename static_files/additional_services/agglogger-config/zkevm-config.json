@@ -54,16 +54,16 @@
       "_comment": "The idea here is to check the sequenced and verified batch numbers directly from the rollup manager",
       "Type": "L1BatchNumber",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Address": "{{.agglayer_manager_address}}",
       "Fields": [
         "1",
         "3"
       ]
     },
     {
-      "Type": "PolygonRollupManager",
+      "Type": "AgglayerManager",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Address": "{{.agglayer_manager_address}}",
       "Fields": [
         "RollupTypeCount",
         "RollupCount",
@@ -76,9 +76,9 @@
       ]
     },
     {
-      "Type": "PolygonRollupManagerEvent",
+      "Type": "AgglayerManagerEven",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_rollup_manager_address}}",
+      "Address": "{{.agglayer_manager_address}}",
       "_Fields": [
         "VerifyBatchesTrustedAggregator",
         "OnSequenceBatches",

@@ -1,5 +1,5 @@
 {
-    "rollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
+    "rollupManagerAddress": "{{ .agglayer_manager_address }}",
     "rollupID": {{ .zkevm_rollup_id }},
     "chainID": {{.zkevm_rollup_chain_id}},
     "gasTokenAddress": "{{ .gas_token_address }}",

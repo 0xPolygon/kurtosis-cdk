@@ -35,8 +35,8 @@ def run(
                     # agglayer
                     "agglayer_rpc_url": args.get("agglayer_readrpc_url"),
                     # contract addresses
-                    "zkevm_rollup_manager_address": contract_setup_addresses.get(
-                        "zkevm_rollup_manager_address"
+                    "agglayer_manager_address": contract_setup_addresses.get(
+                        "agglayer_manager_address"
                     ),
                     "zkevm_bridge_address": contract_setup_addresses.get(
                         "zkevm_bridge_address"

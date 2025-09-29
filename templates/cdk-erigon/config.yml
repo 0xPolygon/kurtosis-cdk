@@ -402,12 +402,12 @@ zkevm.address-admin: "{{.zkevm_admin_address}}"
 # Default: ""
 zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
 
-# Specify the address of the PolygonRollupManager smart contract.
+# Specify the address of the AgglayerManager smart contract.
 # This contract manages the overall rollup process and coordinates different rollups.
 # NOTE: This flag should be renamed `zkevm.address-rollup-manager`.
 # https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
-zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+zkevm.address-rollup: "{{.agglayer_manager_address}}"
 
 # Specify the address of the Rollup smart contract, specific to a rollup (or validium) chain.
 # Essential for submitting batches and managing the state of the rollup.
@@ -488,7 +488,7 @@ zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
 # The L1 block number from which to start syncing historical data.
 # Usually set to the block where the agglayer contracts were deployed.
 # Default: 0
-zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
+zkevm.l1-first-block: {{.agglayer_manager_block_number}}
 
 # If non-zero, requires a specific L1 block to be finalized before the sequencer continues to sync.
 # Enhances security but may introduce delays in processing.

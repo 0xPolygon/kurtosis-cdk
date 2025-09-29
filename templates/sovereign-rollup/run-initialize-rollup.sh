@@ -23,7 +23,7 @@ jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
 jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' /opt/contract-deploy/initialize_rollup.json > "/opt/contract-deploy/initialize_rollup${ts}".json
 cp "/opt/contract-deploy/initialize_rollup${ts}.json" /opt/contract-deploy/initialize_rollup.json
 
-# Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+# Extract the rollup manager address from the JSON file. .agglayer_manager_address is not available at the time of importing this script.
 # So a manual extraction of agglayerManagerAddress is done here.
 # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
 rollup_manager_addr=$(jq -r '.rollupManagerAddress' /opt/zkevm/create_rollup_output.json)
