@@ -82,10 +82,8 @@ class VersionMatrixExtractor:
             "op_succinct_proposer_image": "op-succinct-proposer",
             "zkevm_da_image": "zkevm-da",
             "zkevm_bridge_service_image": "zkevm-bridge-service",
-            # "zkevm_node_image": "zkevm-node",
             "zkevm_pool_manager_image": "zkevm-pool-manager",
             "zkevm_prover_image": "zkevm-prover",
-            # "zkevm_sequence_sender_image": "zkevm-sequence-sender",
         }
 
         # GitHub repositories for version checking
@@ -107,7 +105,6 @@ class VersionMatrixExtractor:
             "op-succinct-proposer": "agglayer/op-succinct",
             "zkevm-da": "0xPolygon/cdk-data-availability",
             "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
-            # "zkevm-node": "0xPolygon/zkevm-node",
             "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
             "zkevm-prover": "0xPolygon/zkevm-prover",
             # "zkevm-sequence-sender": "0xPolygon/zkevm-sequence-sender", # TODO: Remove this component from kurtosis-cdk

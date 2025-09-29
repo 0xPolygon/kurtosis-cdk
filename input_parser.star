@@ -385,7 +385,6 @@ DEFAULT_ARGS = (
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
-        # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
         "sequencer_type": "erigon",
         # The type of consensus contract to use.
         # Consensus Options:
@@ -611,14 +610,11 @@ def get_fork_id(args, agglayer_contracts_image):
 def get_sequencer_name(sequencer_type):
     if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
         return "cdk-erigon-sequencer"
-    elif sequencer_type == constants.SEQUENCER_TYPE.ZKEVM:
-        return "zkevm-node-sequencer"
     else:
         fail(
-            "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
+            "Unsupported sequencer type: '{}', please use '{}'".format(
                 sequencer_type,
                 constants.SEQUENCER_TYPE.CDK_ERIGON,
-                constants.SEQUENCER_TYPE.ZKEVM,
             )
         )
 
@@ -628,7 +624,9 @@ def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
         return "op-el-1-op-geth-op-node"
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
-    return "zkevm-node-rpc"
+    fail(
+        "No sequencer deployed, set 'deploy_op_node' or 'deploy_cdk_erigon_node' to true"
+    )
 
 
 def set_anvil_args(plan, args, user_args):

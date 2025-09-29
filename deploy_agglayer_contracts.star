@@ -279,7 +279,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 
     # Create keystores.
     plan.exec(
-        description="Creating keystores for zkevm-node/cdk-validium components",
+        description="Creating keystores for cdk-validium components",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
             command=[
