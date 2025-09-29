@@ -118,19 +118,6 @@ pushd /opt/zkevm/ || exit 1
 cp deploy_output.json combined.json
 cat combined.json
 
-# There are a bunch of fields that need to be renamed in order for the
-# older fork7 code to be compatible with some of the fork8
-# automations. This schema matching can be dropped once this is
-# versioned up to 8
-# DEPRECATED we will likely remove support for anything before fork 9 soon
-fork_id="{{.zkevm_rollup_fork_id}}"
-if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
-    jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
-    jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
-    jq '.upgradeToULxLyBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
-    jq '.polygonDataCommitteeAddress = .polygonDataCommittee' combined.json > c.json; mv c.json combined.json
-fi
-
 # Configure contracts.
 
 if [[ $is_first_rollup -eq 1 ]]; then

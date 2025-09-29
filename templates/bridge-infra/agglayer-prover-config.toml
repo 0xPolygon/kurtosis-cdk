@@ -13,17 +13,7 @@ format = "json"
 [telemetry]
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"
 
-{{if or (eq .zkevm_rollup_fork_id "9") (eq .zkevm_rollup_fork_id "11")}}
-[cpu-prover]
-enabled = {{.is_cpu_prover_enabled}}
-max-concurrency-limit = 100
-proving-timeout = 900
-
-[network-prover]
-enabled = {{.is_network_prover_enabled}}
-{{else}}
 [primary-prover.{{.primary_prover}}]
-{{end}}
 proving-timeout = 900
 
 [grpc]

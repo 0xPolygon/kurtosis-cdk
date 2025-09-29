@@ -495,7 +495,7 @@ def create_aggkit_prover_config_artifact(
                     # ports
                     "aggkit_prover_grpc_port": args["aggkit_prover_grpc_port"],
                     "metrics_port": args["aggkit_prover_metrics_port"],
-                    # prover settings (fork12+)
+                    # prover settings
                     "primary_prover": args["aggkit_prover_primary_prover"],
                     # L1
                     # TODO: Is it the right way of creating the L1_RPC_URL for aggkit related component ?

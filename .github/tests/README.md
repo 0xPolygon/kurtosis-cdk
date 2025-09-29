@@ -11,16 +11,3 @@ This document outlines the various Polygon CDK configurations tested in our CI p
 | v0.3.0-FEP | ALGateway | AggchainFEP | (PP + FEP) # SP1 | op-stack | - [op-succinct/mock-prover.yml](op-succinct/mock-prover.yml)<br>- [op-succinct/real-prover.yml](op-succinct/real-prover.yml)|
 
 For reference: <https://agglayer.github.io/protocol-team-docs/aggregation-layer/v0.3.0/SC-specs/#16-table-agglayer-chains-supported>
-
-## Nightly
-
-In addition to the standard environments, we also test a few additional environments in the nightly workflow:
-
-| Chain | verifierType | SC consensus | Proofs/Prover | Client | Fork ID | Test Configuration |
-|-------|--------------|--------------|---------------|--------|---------|--------------------|
-| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | 9 | [fork9-cdk-erigon-rollup.yml](nightly/cdk-erigon/fork9-cdk-erigon-rollup.yml) |
-| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | 9 | [fork9-cdk-erigon-validium.yml](nightly/cdk-erigon/fork9-cdk-erigon-validium.yml) |
-| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | 11 | [fork11-cdk-erigon-rollup.yml](nightly/cdk-erigon/fork11-cdk-erigon-rollup.yml) |
-| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | 11 | [fork11-cdk-erigon-validium.yml](nightly/cdk-erigon/fork11-cdk-erigon-validium.yml) |
-| zkEVM | StateTransition | PolygonZkEVMEtrog | FEP # Hermez | cdk-erigon | 13 | [fork13-cdk-erigon-rollup.yml](nightly/cdk-erigon/fork13-cdk-erigon-rollup.yml) |
-| Valididum | StateTransition | PolygonValidiumEtrog | FEP # Hermez | cdk-erigon | 13 | [fork13-cdk-erigon-validium.yml](nightly/cdk-erigon/fork13-cdk-erigon-validium.yml) |

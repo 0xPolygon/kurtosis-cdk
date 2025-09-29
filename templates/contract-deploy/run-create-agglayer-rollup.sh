@@ -192,17 +192,6 @@ jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Ad
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
 {{ end }}
 
-
-# There are a bunch of fields that need to be renamed in order for the
-# older fork7 code to be compatible with some of the fork8
-# automations. This schema matching can be dropped once this is
-# versioned up to 8
-# DEPRECATED we will likely remove support for anything before fork 9 soon
-fork_id="{{.zkevm_rollup_fork_id}}"
-if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
-    jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
-fi
-
 # NOTE there is a disconnect in the necessary configurations here between the validium node and the zkevm node
 jq --slurpfile c combined.json '.rollupCreationBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
 jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = $c[0].upgradeToULxLyBlockNumber' genesis.json > g.json; mv g.json genesis.json

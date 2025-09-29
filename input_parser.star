@@ -445,7 +445,7 @@ VALID_ADDITIONAL_SERVICES = [
 ]
 
 # A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [0, 9, 11, 12, 13]
+SUPPORTED_FORK_IDS = [0, 12]
 
 VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.rollup,
@@ -590,10 +590,7 @@ def get_fork_id(args, agglayer_contracts_image):
     - <FORK_ID> is the fork identifier.
     - -patch.<PATCH_NUMBER> is optional and represents the patch number.
 
-    Example:
-    - v8.0.0-rc.2-fork.12
-    - v7.0.0-rc.1-fork.10
-    - v7.0.0-rc.1-fork.11-patch.1
+    Example: v8.0.0-rc.2-fork.12
     """
     # If aggchain consensus is being used, return 0
     if (
@@ -614,10 +611,8 @@ def get_fork_id(args, agglayer_contracts_image):
         if fork_id not in SUPPORTED_FORK_IDS:
             fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
 
-        fork_name = "elderberry"
-        if fork_id >= 12:
-            fork_name = "banana"
-        else:
+        fork_name = "banana"
+        if fork_id == 0:
             fork_name = "aggchain"
 
         return (fork_id, fork_name)
