@@ -9,16 +9,7 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
 NetworkID = {{.zkevm_rollup_id}}
-
-{{if eq .zkevm_rollup_fork_id "12"}}
-ContractVersions = "banana"
-{{else if eq .zkevm_rollup_fork_id "13"}}
-# Doesn't look like this is needed at the moment, but soon perhaps?
-# ContractVersions = "durian"
-ContractVersions = "banana"
-{{else}}
-ContractVersions = "elderberry"
-{{end}}
+ContractVersions = "{{.zkevm_rollup_fork_name}}"
 
 L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
 SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
