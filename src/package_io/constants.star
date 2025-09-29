@@ -31,13 +31,6 @@ CONSENSUS_TYPE = struct(
     fep="fep",
 )
 
-FORK_ID_TO_NAME = {
-    9: "elderberry",
-    11: "elderberry",
-    12: "banana",
-    13: "banana",
-}
-
 SEQUENCER_TYPE = struct(
     CDK_ERIGON="erigon",
     ZKEVM="zkevm",
