@@ -43,6 +43,13 @@ SEQUENCER_TYPE = struct(
     ZKEVM="zkevm",
 )
 
+FORK_ID_TO_NAME = {
+    9: "elderberry",
+    11: "elderberry",
+    12: "banana",
+    13: "banana",
+}
+
 TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
 )
@@ -56,7 +63,7 @@ DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta6",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.4.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.12",
-    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.1.0-rc.4",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
+    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.0.0",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
@@ -64,20 +71,20 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:16.2",
-    "geth_image": "ethereum/client-go:v1.16.2",
+    "geth_image": "ethereum/client-go:v1.16.3",
     "lighthouse_image": "sigp/lighthouse:v7.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.15.0",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
-    "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101511.1",
-    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5",
+    "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101602.3",
+    "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.7",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct:v3.1.0-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:9fe80e1",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
-    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.2-RC3",
+    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.2-RC5",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
     "zkevm_pool_manager_image": "hermeznetwork/zkevm-pool-manager:v0.1.2",
