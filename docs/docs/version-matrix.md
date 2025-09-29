@@ -22,7 +22,7 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.5.0-beta4](https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta4) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | deprecated ⚠️ |
+| aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | latest ✅ |
 | aggkit-prover | [1.4.1](https://github.com/agglayer/provers/releases/tag/v1.4.1) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.4.0-rc.12](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.12) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
@@ -67,7 +67,7 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.5.0-beta4](https://github.com/agglayer/aggkit/releases/tag/v0.5.0-beta4) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | deprecated ⚠️ |
+| aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | latest ✅ |
 | aggkit-prover | [1.4.1](https://github.com/agglayer/provers/releases/tag/v1.4.1) | [1.1.3](https://github.com/agglayer/provers/releases/tag/v1.1.3) | experimental 🧪 |
 | agglayer | [0.4.0-rc.12](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.12) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [11.0.0-rc.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.2) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
