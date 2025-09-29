@@ -268,3 +268,30 @@ def get_kurtosis_addresses(args):
         "zkevm_l2_aggoracle_address": zkevm_l2_aggoracle_address,
         "zkevm_l2_sovereignadmin_address": zkevm_l2_sovereignadmin_address,
     }
+
+
+# Get aggOracleCommittee contract address after deployment on L2.
+def get_aggoracle_committee_address(plan, args):
+    extract = {
+        "agg_oracle_committee_address": "fromjson | .aggOracleCommitteeProxyAddress"
+    }
+
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
+        extract=extract,
+    )
+
+    service_name = "contracts"
+    if args["deploy_agglayer"]:
+        plan.print("Changing querying service name to helper")
+        if "zkevm_rollup_manager_address" in args:
+            service_name = "helper"
+    service_name += args["deployment_suffix"]
+    result = plan.exec(
+        description="Getting agg_oracle_committee_address from {} service".format(
+            service_name
+        ),
+        service_name=service_name,
+        recipe=exec_recipe,
+    )
+    return get_exec_recipe_result(result)

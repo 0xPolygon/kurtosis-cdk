@@ -2,7 +2,7 @@
 """
 Registry prefix addition tool for Kurtosis CDK.
 
-This script adds a registry prefix to all Docker images in input_parser.star
+This script adds a registry prefix to all Docker images in constants.star
 to enable pulling images from a private registry (e.g., GCP) instead of Docker Hub,
 avoiding rate limiting issues in CI.
 
@@ -19,10 +19,10 @@ from typing import List, Tuple
 
 
 class RegistryPrefixAdder:
-    """Adds registry prefixes to Docker images in input_parser.star."""
+    """Adds registry prefixes to Docker images in constants.star."""
 
-    def __init__(self, input_parser_path: Path, registry_prefix: str):
-        self.input_parser_path = input_parser_path
+    def __init__(self, constants_path: Path, registry_prefix: str):
+        self.constants_path = constants_path
         self.registry_prefix = registry_prefix.rstrip('/')
         self.skip_registries = [
             # polygon devtools artifacts registry
@@ -63,13 +63,13 @@ class RegistryPrefixAdder:
         return image
 
     def process_file(self) -> Tuple[int, List[str]]:
-        """Process the input_parser.star file and add registry prefixes."""
-        if not self.input_parser_path.exists():
+        """Process the constants.star file and add registry prefixes."""
+        if not self.constants_path.exists():
             raise FileNotFoundError(
-                f"File not found: {self.input_parser_path}")
+                f"File not found: {self.constants_path}")
 
         # Read the file
-        with open(self.input_parser_path, 'r') as f:
+        with open(self.constants_path, 'r') as f:
             content = f.read()
 
         # Find the DEFAULT_IMAGES dictionary
@@ -78,7 +78,7 @@ class RegistryPrefixAdder:
 
         if not match:
             raise ValueError(
-                "DEFAULT_IMAGES dictionary not found in input_parser.star")
+                "DEFAULT_IMAGES dictionary not found in constants.star")
 
         before_dict = match.group(1)
         dict_content = match.group(2)
@@ -125,7 +125,7 @@ class RegistryPrefixAdder:
         )
 
         # Write the modified content back
-        with open(self.input_parser_path, 'w') as f:
+        with open(self.constants_path, 'w') as f:
             f.write(new_content)
 
         return len(modified_images), modified_images
@@ -133,7 +133,7 @@ class RegistryPrefixAdder:
     def validate_file(self) -> bool:
         """Basic validation to ensure the file is still valid after modification."""
         try:
-            with open(self.input_parser_path, 'r') as f:
+            with open(self.constants_path, 'r') as f:
                 content = f.read()
 
             # Check that DEFAULT_IMAGES dictionary is still present and well-formed
@@ -157,7 +157,7 @@ class RegistryPrefixAdder:
 def main():
     """Main execution function."""
     parser = argparse.ArgumentParser(
-        description="Add registry prefix to Docker images in input_parser.star"
+        description="Add registry prefix to Docker images in constants.star"
     )
     parser.add_argument(
         "--registry-prefix",
@@ -167,7 +167,7 @@ def main():
     parser.add_argument(
         "--input-file",
         type=Path,
-        help="Path to input_parser.star file (default: auto-detect)"
+        help="Path to constants.star file (default: auto-detect)"
     )
     parser.add_argument(
         "--output-file",
@@ -177,30 +177,30 @@ def main():
 
     args = parser.parse_args()
 
-    # Auto-detect input_parser.star if not provided
+    # Auto-detect constants.star if not provided
     if args.input_file:
-        input_parser_path = args.input_file
+        constants_path = args.input_file
     else:
-        # Try to find input_parser.star relative to script location
+        # Try to find constants.star relative to script location
         script_dir = Path(__file__).parent.parent
         repo_root = script_dir.parent
-        input_parser_path = repo_root / "input_parser.star"
+        constants_path = repo_root / "src" / "package_io" / "constants.star"
 
-    if not input_parser_path.exists():
-        print(f"Error: {input_parser_path} not found")
+    if not constants_path.exists():
+        print(f"Error: {constants_path} not found")
         sys.exit(1)
 
     # Set output file path
     output_file_path = args.output_file or Path("modified-images.txt")
 
-    print(f"Processing: {input_parser_path}")
+    print(f"Processing: {constants_path}")
     print(f"Registry prefix: {args.registry_prefix}")
     print(f"Output file: {output_file_path}")
 
     # Perform actual modification
     try:
         prefix_adder = RegistryPrefixAdder(
-            input_parser_path, args.registry_prefix)
+            constants_path, args.registry_prefix)
         modified_count, modified_images = prefix_adder.process_file()
         if modified_count > 0:
             print(f"Successfully modified {modified_count} images:")
@@ -229,7 +229,7 @@ def main():
                 print(f"File validation passed")
             else:
                 print(
-                    f"File validation failed - please check {input_parser_path}")
+                    f"File validation failed - please check {constants_path}")
                 sys.exit(1)
         else:
             print("No images were modified (all already have registry prefixes)")

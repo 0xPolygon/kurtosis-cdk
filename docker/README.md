@@ -45,7 +45,7 @@ TODO
 This image contains different tools to interact with blockchains such as `polycli` or `cast`.
 
 ```bash
-image_name="toolbox:0.0.11"
+image_name="toolbox:0.0.12"
 docker build --tag $image_name --file toolbox.Dockerfile .
 ```
 
@@ -71,3 +71,9 @@ Repository: <https://github.com/0xPolygon/zkevm-bridge-ui>
 image_name="zkevm-bridge-ui:0006445"
 docker build --tag "${image_name}" --file zkevm-bridge-ui/zkevm-bridge-ui.Dockerfile zkevm-bridge-ui
 ```
+
+### Agglayer Dashboard
+
+Build and create image from here:
+
+Repository: <https://github.com/xavier-romero/agglayer-dashboard>

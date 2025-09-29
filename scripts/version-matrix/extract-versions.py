@@ -3,7 +3,7 @@
 Automated version matrix extraction tool for Kurtosis CDK.
 
 This script automatically extracts version information from:
-1. input_parser.star (DEFAULT_IMAGES)
+1. constants.star (DEFAULT_IMAGES)
 2. .github/tests/ configurations
 3. Git tags and releases from component repositories
 
@@ -45,7 +45,7 @@ class VersionMatrixExtractor:
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
-        self.input_parser_path = repo_root / "input_parser.star"
+        self.constants_path = repo_root / "src" / "package_io" / "constants.star"
         self.test_files_paths = [
             # cdk-erigon
             (repo_root / ".github" / "tests" / "cdk-erigon" /
@@ -57,8 +57,8 @@ class VersionMatrixExtractor:
             # op-geth
             (repo_root / ".github" / "tests" / "op-geth" /
              "sovereign.yml", "cdk-opgeth-sovereign"),
-            (repo_root / ".github" / "tests" / "op-geth" /
-             "ecdsa.yml", "cdk-opgeth-ecdsa"),
+            # (repo_root / ".github" / "tests" / "op-geth" /
+            #  "ecdsa.yml", "cdk-opgeth-ecdsa"),
             (repo_root / ".github" / "tests" / "op-succinct" /
              "mock-prover.yml", "cdk-opgeth-zkrollup"),
         ]
@@ -114,11 +114,11 @@ class VersionMatrixExtractor:
         }
 
     def extract_default_images(self) -> Dict[str, ComponentVersion]:
-        """Extract default image versions from input_parser.star."""
+        """Extract default image versions from constants.star."""
         components = {}
 
         try:
-            with open(self.input_parser_path, 'r') as f:
+            with open(self.constants_path, 'r') as f:
                 content = f.read()
 
             # Extract DEFAULT_IMAGES dictionary
@@ -130,7 +130,7 @@ class VersionMatrixExtractor:
 
             if not default_images_match:
                 raise ValueError(
-                    "DEFAULT_IMAGES not found in input_parser.star")
+                    "DEFAULT_IMAGES not found in constants.star")
 
             images_content = default_images_match.group(1)
 
@@ -219,6 +219,7 @@ class VersionMatrixExtractor:
                 url = f"https://api.github.com/repos/{repo}/releases"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
+
                 if response.status_code == 200:
                     releases = response.json()
                     for release in releases:
@@ -228,7 +229,29 @@ class VersionMatrixExtractor:
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
                                 return version
-                return None
+                else:
+                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                    return None
+
+            # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
+            if component in [
+                'zkevm-prover', 'zkevm-bridge-service', 'op-succinct-proposer',
+                'zkevm-pool-manager', 'zkevm-da'
+            ]:
+                url = f"https://api.github.com/repos/{repo}/tags"
+                response = requests.get(
+                    url, timeout=10,
+                    headers={'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'}
+                )
+                if response.status_code == 200:
+                    tags = response.json()
+                    if tags:
+                        latest_tag = tags[0].get('name')
+                        latest_version = re.sub(r'^v?', '', latest_tag)
+                        return latest_version
+                else:
+                    print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
+                    return None
 
             url = f"https://api.github.com/repos/{repo}/releases/latest"
             response = requests.get(url, timeout=10, headers={
@@ -240,6 +263,7 @@ class VersionMatrixExtractor:
                 version = re.sub(r'^v?', '', tag)
                 return version
             else:
+                print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                 return None
 
         except Exception as e:
@@ -396,18 +420,18 @@ class VersionMatrixExtractor:
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            "cdk-opgeth-ecdsa": [
-                'aggkit',
-                'aggkit-prover',
-                'agglayer',
-                'agglayer-contracts',
-                'op-batcher',
-                'op-deployer',
-                'op-node',
-                'op-geth',
-                'op-proposer',
-                'zkevm-bridge-service',
-            ],
+            # "cdk-opgeth-ecdsa": [
+            #     'aggkit',
+            #     'aggkit-prover',
+            #     'agglayer',
+            #     'agglayer-contracts',
+            #     'op-batcher',
+            #     'op-deployer',
+            #     'op-node',
+            #     'op-geth',
+            #     'op-proposer',
+            #     'zkevm-bridge-service',
+            # ],
             "cdk-opgeth-zkrollup": [
                 'aggkit',
                 'aggkit-prover',
