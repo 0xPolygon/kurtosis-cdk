@@ -283,7 +283,7 @@ BlockFinality = "LatestBlock"
 # EnableRPC = false
 
 [AggSender.AgglayerClient]
-Cached = true
+Cached = false
 [ValidaAggSendertor.AgglayerClient.ConfigurationCache]
 TTL = "15m"
 Capacity = 100
