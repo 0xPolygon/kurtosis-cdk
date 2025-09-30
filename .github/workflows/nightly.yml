@@ -113,7 +113,6 @@ jobs:
         run: |
           file_paths=$(ls -R \
             ./.github/tests/cdk-erigon/*.yml \
-            ./.github/tests/nightly/cdk-erigon/*.yml \
             ./.github/tests/op-geth/*.yml)
           echo "file_paths:"
           echo "${file_paths}"
@@ -122,9 +121,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" && ! "${file_path}" =~ "nightly" ]]; then
-              job_name="fork12-${folder_name}-${file_name}"
-            elif [[ "${folder_name}" == "op-geth" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
               job_name="${folder_name}-${file_name}"
             elif [[ "${folder_name}" == "nightly" ]]; then
               job_name="nightly-${file_name}"
