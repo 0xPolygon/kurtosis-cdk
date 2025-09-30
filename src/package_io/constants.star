@@ -53,7 +53,7 @@ L1_ENGINES = ("geth", "anvil")
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta6",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta8",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.4.2",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.12",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor

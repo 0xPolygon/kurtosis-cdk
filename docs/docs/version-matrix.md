@@ -84,7 +84,7 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.7.0-beta6](https://github.com/agglayer/aggkit/releases/tag/v0.7.0-beta6) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | experimental 🧪 |
+| aggkit | [0.7.0-beta8](https://github.com/agglayer/aggkit/releases/tag/v0.7.0-beta8) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | experimental 🧪 |
 | aggkit-prover | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | latest ✅ |
 | agglayer | [0.4.0-rc.12](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.12) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
@@ -99,7 +99,7 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.7.0-beta6](https://github.com/agglayer/aggkit/releases/tag/v0.7.0-beta6) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | experimental 🧪 |
+| aggkit | [0.7.0-beta8](https://github.com/agglayer/aggkit/releases/tag/v0.7.0-beta8) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | experimental 🧪 |
 | aggkit-prover | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | latest ✅ |
 | agglayer | [0.4.0-rc.12](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.12) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
