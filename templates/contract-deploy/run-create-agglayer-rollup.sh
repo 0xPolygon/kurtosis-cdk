@@ -190,6 +190,19 @@ jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Ad
 
 {{ if .gas_token_enabled }}
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
+
+gas_token_address=$(jq -r '.gasTokenAddress' /opt/zkevm/combined.json)
+l1_bridge_addr=$(jq -r '.polygonZkEVMBridgeAddress' /opt/zkevm/combined.json)
+# Bridge gas token to L2 to prevent bridge underflow reverts
+echo "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
+polycli ulxly bridge asset \
+    --bridge-address "$l1_bridge_addr" \
+    --destination-address "0x0000000000000000000000000000000000000000" \
+    --destination-network "{{.zkevm_rollup_id}}" \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --value 10000000000000000000000 \
+    --token-address $gas_token_address
 {{ end }}
 
 
