@@ -9,21 +9,24 @@ def _sort_dict_by_values(d):
 
 DEFAULT_PARTICIPANT = _sort_dict_by_values(
     {
-        "count": 1,
-        # Execution layer
-        "el_type": "op-geth",
-        "el_image": constants.DEFAULT_IMAGES.get("op_geth_image"),
-        "el_extra_params": ["--log.format=json"],
-        # Consensus layer
-        "cl_type": "op-node",
-        "cl_image": constants.DEFAULT_IMAGES.get("op_node_image"),
-        "cl_extra_params": ["--log.format=json"],
+        "el": {
+            "type": "op-geth",
+            "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
+            "extra_params": ["--log.format=json"],
+        },
+        "cl": {
+            "type": "op-node",
+            "image": constants.DEFAULT_IMAGES.get("op_node_image"),
+            "extra_params": ["--log.format=json"],
+        },
     }
 )
 
 DEFAULT_CHAIN = _sort_dict_by_values(
     {
-        "participants": [DEFAULT_PARTICIPANT],
+        "participants": {
+            "node1": DEFAULT_PARTICIPANT,
+        },
         "batcher_params": _sort_dict_by_values(
             {
                 "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
@@ -57,7 +60,9 @@ ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/ar
 
 DEFAULT_ARGS = _sort_dict_by_values(
     {
-        "chains": [DEFAULT_CHAIN],
+        "chains": {
+            "chain1": DEFAULT_CHAIN,
+        },
         "op_contract_deployer_params": _sort_dict_by_values(
             {
                 "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
@@ -133,41 +138,45 @@ def parse_args(plan, args, op_args):
 
 
 def _parse_chains(chains):
-    if len(chains) == 0:
-        return [DEFAULT_CHAIN]
+    if len(chains.keys()) == 0:
+        return {"chain1": DEFAULT_CHAIN}
 
-    chains_with_defaults = []
-    for c in chains:
-        c = dict(c)  # create a mutable copy
-        for k, v in DEFAULT_CHAIN.items():
-            if k in c:
-                if k == "participants":
-                    c[k] = _parse_participants(c[k])
+    chains_with_defaults = {}
+    for k, v in chains.items():
+        c = dict(v)  # create a mutable copy
+        for kk, vv in DEFAULT_CHAIN.items():
+            if kk in c:
+                if kk == "participants":
+                    c[kk] = _parse_participants(c[kk])
                 else:
                     # Apply defaults
-                    for kk, vv in DEFAULT_CHAIN[k].items():
-                        c[k].setdefault(kk, vv)
-                    c[k] = _sort_dict_by_values(c[k])
+                    for kkk, vvv in DEFAULT_CHAIN[kk].items():
+                        c[kk].setdefault(kkk, vvv)
+                    c[kk] = _sort_dict_by_values(c[kk])
             else:
-                c[k] = v
-        chains_with_defaults.append(c)
+                c[kk] = vv
+        chains_with_defaults[k] = c
 
-    sorted_chains = [_sort_dict_by_values(c) for c in chains_with_defaults]
+    sorted_chains = {
+        k: _sort_dict_by_values(v) for k, v in chains_with_defaults.items()
+    }
     return sorted_chains
 
 
 def _parse_participants(participants):
-    if len(participants) == 0:
-        return [DEFAULT_PARTICIPANT]
+    if len(participants.keys()) == 0:
+        return {"node1": DEFAULT_PARTICIPANT}
 
-    participants_with_defaults = []
-    for p in participants:
-        p = dict(p)  # create a mutable copy
-        for k, v in DEFAULT_PARTICIPANT.items():
-            p.setdefault(k, v)
-        participants_with_defaults.append(p)
+    participants_with_defaults = {}
+    for k, v in participants.items():
+        p = dict(v)  # create a mutable copy
+        for kk, vv in DEFAULT_PARTICIPANT.items():
+            p.setdefault(kk, vv)
+        participants_with_defaults[k] = p
 
-    sorted_participants = [_sort_dict_by_values(p) for p in participants_with_defaults]
+    sorted_participants = {
+        k: _sort_dict_by_values(v) for k, v in participants_with_defaults.items()
+    }
     return sorted_participants
 
 

@@ -9,25 +9,27 @@ def test_sanity_check_success(plan):
         "l1_seconds_per_slot": 12,
     }
     op_args = {
-        "chains": [
-            {
-                "participants": [
-                    {
-                        "el_image": "op-geth:latest",
-                        "cl_image": "op-node:latest",
-                    }
-                ],
+        "chains": {
+            "chain1": {
+                "participants": {
+                    "node1": {
+                        "el": {
+                            "el_image": "op-geth:latest",
+                        },
+                        "cl": {
+                            "cl_image": "op-node:latest",
+                        },
+                    },
+                },
                 "network_params": {
                     "network_id": 1001,
                     "name": "001",
                     "seconds_per_slot": 2,
                 },
-            }
-        ]
+            },
+        },
     }
-    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source").replace(
-        "main.star", "src/package_io/sanity_check.star"
-    )
+    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source")
     op_sanity_check.sanity_check(plan, args, op_args, source)
 
 
@@ -41,25 +43,27 @@ def test_sanity_check_failure(plan):
         "invalid_param": "value",
         "source": op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source"),
         "predeployed_contracts": True,
-        "chains": [
-            {
-                "participants": [
-                    {
-                        "el_image": "op-geth:latest",
-                        "cl_image": "op-node:latest",
-                    }
-                ],
+        "chains": {
+            "chain1": {
+                "participants": {
+                    "node1": {
+                        "el": {
+                            "el_image": "op-geth:latest",
+                        },
+                        "cl": {
+                            "cl_image": "op-node:latest",
+                        },
+                    },
+                },
                 "network_params": {
                     "network_id": 1001,
                     "name": "001",
                     "seconds_per_slot": 2,
                 },
-            }
-        ],
+            },
+        },
     }
-    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source").replace(
-        "main.star", "src/package_io/sanity_check.star"
-    )
+    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source")
     expect.fails(
         lambda: op_sanity_check.sanity_check(plan, args, op_args, source),
         "Invalid parameter invalid_param",
@@ -72,13 +76,13 @@ def test_check_first_chain_id_success(plan):
         "zkevm_rollup_chain_id": 1001,
     }
     op_args = {
-        "chains": [
-            {
+        "chains": {
+            "chain1": {
                 "network_params": {
                     "network_id": 1001,
                 }
             }
-        ]
+        },
     }
     op_sanity_check.check_first_chain_id(args, op_args)
 
@@ -89,13 +93,13 @@ def test_check_first_chain_id_failure(plan):
         "zkevm_rollup_chain_id": 1001,
     }
     op_args = {
-        "chains": [
-            {
+        "chains": {
+            "chain1": {
                 "network_params": {
                     "network_id": 2002,
                 }
             }
-        ]
+        },
     }
     expect.fails(
         lambda: op_sanity_check.check_first_chain_id(args, op_args),
@@ -109,13 +113,13 @@ def test_check_first_chain_name_success(plan):
         "deployment_suffix": "-001",
     }
     op_args = {
-        "chains": [
-            {
+        "chains": {
+            "chain1": {
                 "network_params": {
                     "name": "001",
                 }
             }
-        ]
+        }
     }
     op_sanity_check.check_first_chain_name(args, op_args)
 
@@ -126,13 +130,13 @@ def test_check_first_chain_name_failure(plan):
         "deployment_suffix": "-001",
     }
     op_args = {
-        "chains": [
-            {
+        "chains": {
+            "chain1": {
                 "network_params": {
-                    "network_id": "002",
+                    "name": "002",
                 }
             }
-        ]
+        }
     }
     expect.fails(
         lambda: op_sanity_check.check_first_chain_name(args, op_args),
@@ -146,13 +150,13 @@ def test_check_first_chain_block_time_success(plan):
         "l1_seconds_per_slot": 12,
     }
     op_args = {
-        "chains": [
-            {
+        "chains": {
+            "chain1": {
                 "network_params": {
                     "seconds_per_slot": 10,
                 }
             }
-        ]
+        }
     }
     op_sanity_check.check_first_chain_block_time(args, op_args)
 
@@ -163,13 +167,13 @@ def test_check_first_chain_block_time_failure(plan):
         "l1_seconds_per_slot": 2,
     }
     op_args = {
-        "chains": [
-            {
+        "chains": {
+            "chain1": {
                 "network_params": {
                     "seconds_per_slot": 10,
                 }
             }
-        ]
+        }
     }
     expect.fails(
         lambda: op_sanity_check.check_first_chain_block_time(args, op_args),
