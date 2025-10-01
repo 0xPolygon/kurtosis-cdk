@@ -1,3 +1,4 @@
+op_input_parser = import_module("./op_input_parser.star")
 op_sanity_check = import_module("./op_sanity_check.star")
 
 
@@ -24,7 +25,9 @@ def test_sanity_check_success(plan):
             }
         ]
     }
-    source = "github.com/agglayer/optimism-package/src/package_io/sanity_check.star@cc37713aff9c4955dd6975cdbc34072a1286754e"
+    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source").replace(
+        "main.star", "src/package_io/sanity_check.star"
+    )
     op_sanity_check.sanity_check(plan, args, op_args, source)
 
 
@@ -36,7 +39,7 @@ def test_sanity_check_failure(plan):
     }
     op_args = {
         "invalid_param": "value",
-        "source": "github.com/agglayer/optimism-package/main.star@cc37713aff9c4955dd6975cdbc34072a1286754e",
+        "source": op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source"),
         "predeployed_contracts": True,
         "chains": [
             {
@@ -54,7 +57,9 @@ def test_sanity_check_failure(plan):
             }
         ],
     }
-    source = "github.com/agglayer/optimism-package/src/package_io/sanity_check.star@cc37713aff9c4955dd6975cdbc34072a1286754e"
+    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source").replace(
+        "main.star", "src/package_io/sanity_check.star"
+    )
     expect.fails(
         lambda: op_sanity_check.sanity_check(plan, args, op_args, source),
         "Invalid parameter invalid_param",
