@@ -1,12 +1,10 @@
 deployment_stages:
-  deploy_l1: false
   deploy_optimism_rollup: false
   deploy_op_succinct: false
 
 args:
   verbosity: debug
   gas_token_enabled: true
-  gas_token_address: "0xCHANGEME"
 
   # fork12-cdk-erigon-validium
   agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0-rc.3

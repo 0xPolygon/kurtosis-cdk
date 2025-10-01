@@ -48,6 +48,7 @@ log_info "L2_CHAIN_ID: $L2_CHAIN_ID"
 log_info "L2_RPC_URL: $L2_RPC_URL"
 log_info "L1_BRIDGE_ADDRESS: $L1_BRIDGE_ADDRESS"
 log_info "L2_BRIDGE_ADDRESS: $L2_BRIDGE_ADDRESS"
+log_info "L2_NETWORK_ID: $L2_NETWORK_ID"
 
 # Derive address from private key.
 eth_address=$(cast wallet address --private-key "$PRIVATE_KEY")
@@ -66,7 +67,7 @@ polycli ulxly bridge asset \
   --gas-limit "1250000" \
   --bridge-address "$L1_BRIDGE_ADDRESS" \
   --destination-address "$eth_address" \
-  --destination-network 1 \
+  --destination-network "$L2_NETWORK_ID" \
   --rpc-url "$L1_RPC_URL" \
   --private-key "$PRIVATE_KEY" \
   --chain-id "$L1_CHAIN_ID" \
@@ -88,7 +89,7 @@ while true; do
     --gas-limit "1250000" \
     --bridge-address "$L1_BRIDGE_ADDRESS" \
     --destination-address "$eth_address" \
-    --destination-network 1 \
+    --destination-network "$L2_NETWORK_ID" \
     --rpc-url "$L1_RPC_URL" \
     --private-key "$PRIVATE_KEY" \
     --chain-id "$L1_CHAIN_ID" \

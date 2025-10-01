@@ -43,7 +43,13 @@ wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+# shellcheck disable=SC1054,SC1072,SC1083
+{{ if eq .consensus_contract_type "ecdsa_multisig" }}
+cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+# shellcheck disable=SC1073,1009
+{{ else }}
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+{{ end }}
 
 create_genesis
 
@@ -55,35 +61,80 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 # Deploy gas token
 # shellcheck disable=SC1054,SC1072,SC1083
 {{ if .gas_token_enabled }}
-# shellcheck disable=SC1009,SC1073,SC1065,SC1050
-{{ if or (eq .gas_token_address "0x0000000000000000000000000000000000000000") (eq .gas_token_address "") }}
-echo_ts "Deploying gas token to L1"
-forge create \
-    --broadcast \
-    --json \
-    --rpc-url "{{.l1_rpc_url}}" \
-    --mnemonic "{{.l1_preallocated_mnemonic}}" \
-    contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-    --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
-    > gasToken-erc20.json
-jq \
-    --slurpfile c gasToken-erc20.json \
-    '.gasTokenAddress = $c[0].deployedTo' \
-    /opt/contract-deploy/create_rollup_parameters.json \
-    > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-
-# shellcheck disable=SC1073,SC1009
-{{ else }}
-echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
-jq \
-    --arg c "{{ .gas_token_address }}" \
-    '.gasTokenAddress = $c' \
-    /opt/contract-deploy/create_rollup_parameters.json \
-    > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
-{{ end }}
+    {{ if or (eq .gas_token_address "0x0000000000000000000000000000000000000000") (eq .gas_token_address "") }}
+    echo_ts "Deploying gas token to L1"
+        {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+        forge create \
+            --broadcast \
+            --json \
+            --rpc-url "{{.l1_rpc_url}}" \
+            --mnemonic "{{.l1_preallocated_mnemonic}}" \
+            contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
+            --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+            > gasToken-erc20.json
+        jq \
+            --slurpfile c gasToken-erc20.json \
+            '.gasTokenAddress = $c[0].deployedTo | .sovereignParams.sovereignWETHAddress = $c[0].deployedTo' \
+            /opt/contract-deploy/create_new_rollup.json \
+            > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+        {{ else }}
+        forge create \
+            --broadcast \
+            --json \
+            --rpc-url "{{.l1_rpc_url}}" \
+            --mnemonic "{{.l1_preallocated_mnemonic}}" \
+            contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
+            --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+            > gasToken-erc20.json
+        jq \
+            --slurpfile c gasToken-erc20.json \
+            '.gasTokenAddress = $c[0].deployedTo' \
+            /opt/contract-deploy/create_rollup_parameters.json \
+            > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+        {{ end }}
+    {{ else }}
+    echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
+        {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+        jq \
+            --arg c "{{ .gas_token_address }}" \
+            '.gasTokenAddress = $c' \
+            /opt/contract-deploy/create_new_rollup.json \
+            > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+        {{ else }}
+        jq \
+            --arg c "{{ .gas_token_address }}" \
+            '.gasTokenAddress = $c' \
+            /opt/contract-deploy/create_rollup_parameters.json \
+            > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+        {{ end }}
+    {{ end }}
 {{ end }}
 
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
+
+{{ if eq .consensus_contract_type "ecdsa_multisig" }}
+# Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
+jq 'walk(if type == "object" then 
+        with_entries(
+            if .key == "gasTokenAddress" and (.value == "<no value>" || .value == "") then 
+                .value = "0x0000000000000000000000000000000000000000" 
+            elif .key == "sovereignWETHAddress" and (.value == "<no value>" || .value == "") then 
+                .value = "0x0000000000000000000000000000000000000000"
+            else 
+                . 
+            end
+        ) 
+    else 
+        . 
+    end)' \
+    /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json > temp.json && \
+    mv temp.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+{{ end }}
+
+# Comment out aggLayerGateway.addDefaultAggchainVKey for additional rollups with same AggchainVKeySelector and OwnedAggchainVKey
+if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
+sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
+fi
 
 # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
 deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
@@ -139,6 +190,19 @@ jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Ad
 
 {{ if .gas_token_enabled }}
 jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
+
+gas_token_address=$(jq -r '.gasTokenAddress' /opt/zkevm/combined.json)
+l1_bridge_addr=$(jq -r '.polygonZkEVMBridgeAddress' /opt/zkevm/combined.json)
+# Bridge gas token to L2 to prevent bridge underflow reverts
+echo "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
+polycli ulxly bridge asset \
+    --bridge-address "$l1_bridge_addr" \
+    --destination-address "0x0000000000000000000000000000000000000000" \
+    --destination-network "{{.zkevm_rollup_id}}" \
+    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --rpc-url "{{.l1_rpc_url}}" \
+    --value 10000000000000000000000 \
+    --token-address $gas_token_address
 {{ end }}
 
 
@@ -148,7 +212,7 @@ jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.j
 # versioned up to 8
 # DEPRECATED we will likely remove support for anything before fork 9 soon
 fork_id="{{.zkevm_rollup_fork_id}}"
-if [[ fork_id -lt 8 ]]; then
+if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
     jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
 fi
 
@@ -176,6 +240,7 @@ cast send \
     'approve(address,uint256)(bool)' \
     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
+{{ if ne .consensus_contract_type "ecdsa_multisig" }}
 # The DAC needs to be configured with a required number of signatures.
 # Right now the number of DAC nodes is not configurable.
 # If we add more nodes, we'll need to make sure the urls and keys are sorted.
@@ -195,6 +260,8 @@ cast send \
     "$(jq -r '.rollupAddress' combined.json)" \
     'setDataAvailabilityProtocol(address)' \
     "$(jq -r '.polygonDataCommitteeAddress' combined.json)"
+{{ end }}
+
 
 # This is a jq script to transform the CDK-style genesis file into an allocs file for erigon
 jq_script='

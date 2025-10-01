@@ -54,7 +54,9 @@ jobs:
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
-        run: python scripts/version-matrix/extract-versions.py
+        run: |
+          echo "Generating version matrix with GitHub API..."
+          python scripts/version-matrix/extract-versions.py
 
       - name: Generate markdown documentation
         if: ${{ steps.check-run.outputs.skip == 'false' }}
@@ -64,16 +66,17 @@ jobs:
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "::warning title=version-matrix::Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
             git status --porcelain
             git diff
+            exit 1
           else
             echo "✅ Version matrix is up to date."
           fi
 
   run-without-args:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +92,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -111,10 +121,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R \
-            ./.github/tests/cdk-erigon/*.yml \
-            ./.github/tests/nightly/cdk-erigon/*.yml \
-            ./.github/tests/op-geth/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-geth/*.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -122,9 +129,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" && ! "${file_path}" =~ "nightly" ]]; then
-              job_name="fork12-${folder_name}-${file_name}"
-            elif [[ "${folder_name}" == "op-geth" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
               job_name="${folder_name}-${file_name}"
             elif [[ "${folder_name}" == "nightly" ]]; then
               job_name="nightly-${file_name}"
@@ -141,7 +146,7 @@ jobs:
     needs: list-ymls
     name: run-with-${{ matrix.file.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -161,10 +166,10 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (Central RPC)
+      - name: Monitor pessimistic chain virtual batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
@@ -180,7 +185,7 @@ jobs:
               exit 1
             fi
             echo "RPC name: $rpc_name"
-            ./.github/scripts/monitor-cdk-chain.sh \
+            ./.github/scripts/monitor-pessimistic-chain.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
               --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
           fi
@@ -188,8 +193,8 @@ jobs:
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
+            echo "Skipping block verification as consensus is pessimistic or ecdsa_multisig."
           else
             result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
             if [[ "$result" == "true" ]]; then
@@ -230,6 +235,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free up disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: true
+
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -264,7 +280,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: 4763c63cb11c5e605bff749823bf514abcdac7b6 # 2028-07-10
+          ref: bcbff97a600e090dd5cd912a5838c9514f8724e5
 
       - name: Run bridge tests and op optimistic mode tests
         run: |

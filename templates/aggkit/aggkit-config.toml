@@ -30,7 +30,7 @@ AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.a
 
 NetworkID = {{.zkevm_rollup_id}}
 
-{{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") }}
+{{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
 {{- else }}
@@ -193,7 +193,13 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
-{{- if eq .consensus_contract_type "pessimistic"}}
+# ------------------------------------------------------------------------------
+# Defines if a check on aggsender proposer startup will be performed 
+# to see if the proposer is in the multisig committee
+# ------------------------------------------------------------------------------
+# RequireCommitteeMembershipCheck = false
+
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"
@@ -206,6 +212,11 @@ CheckStatusCertificateInterval = "1s"
 # 0 is infinite
 # ------------------------------------------------------------------------------
 # MaxCertSize = 0
+
+{{- if .use_agg_sender_validator }}
+[AggSender.ValidatorClient]
+URL = "aggkit-validator{{.deployment_suffix}}:{{.aggsender_validator_grpc_port}}"
+{{- end }}
 
 [AggSender.AggkitProverClient]
 UseTLS = false
@@ -271,6 +282,22 @@ BlockFinality = "LatestBlock"
 # ------------------------------------------------------------------------------
 # EnableRPC = false
 
+[AggSender.AgglayerClient]
+Cached = false
+[ValidaAggSendertor.AgglayerClient.ConfigurationCache]
+TTL = "15m"
+Capacity = 100
+[AggSender.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+MinConnectTimeout = "5s"
+RequestTimeout = "300s"
+UseTLS = false
+[AggSender.AgglayerClient.GRPC.Retry]
+InitialBackoff = "1s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+MaxAttempts = 20
+
 # ------------------------------------------------------------------------------
 # RetryCertAfterInError when a cert pass to 'InError'state
 # the AggSender will try to resend it immediately
@@ -325,6 +352,15 @@ BlockFinality = "LatestBlock"
 # ------------------------------------------------------------------------------
 WaitPeriodNextGER = "10s"
 
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+{{- if .use_agg_oracle_committee }}
+EnableAggOracleCommittee = true
+{{- else }}
+EnableAggOracleCommittee = false
+{{- end }}
+
 [AggOracle.EVMSender]
 # ------------------------------------------------------------------------------
 # Address of the sovereign global exit root proxy contract on L2
@@ -350,12 +386,23 @@ GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
 # ------------------------------------------------------------------------------
 WaitPeriodMonitorTx = "10s"
 
+# ------------------------------------------------------------------------------
+#
+# ------------------------------------------------------------------------------
+{{- if .use_agg_oracle_committee }}
+AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
+{{- end }}
+
 [AggOracle.EVMSender.EthTxManager]
 # ------------------------------------------------------------------------------
 # PrivateKeys defines all the key store files that are going
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
+{{- if and .use_agg_oracle_committee .agg_oracle_committee_member_index }}
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.agg_oracle_committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+{{- else }}
 PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+{{- end }}
 
 # ------------------------------------------------------------------------------
 # FrequencyToMonitorTxs frequency of the resending failed txs
@@ -662,3 +709,42 @@ ProfilingPort = {{.aggkit_pprof_port}}
 # Default: false
 # ------------------------------------------------------------------------------
 ProfilingEnabled = {{.aggkit_pprof_enabled}}
+
+
+# https://github.com/agglayer/aggkit/pull/744
+[Validator]
+EnableRPC = true
+# Signer = { Method = "mock" }
+{{- if .agg_sender_validator_member_index }}
+Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sender_validator_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+{{- else}}
+Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+{{- end}}
+# PessimisticProof or AggchainProof
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
+Mode = "PessimisticProof"
+{{- else}}
+Mode = "AggchainProof"
+{{- end}}
+
+[Validator.ServerConfig]
+Host = "0.0.0.0"
+Port = {{.aggsender_validator_grpc_port}}
+MaxDecodingMessageSize = 1073741824  # 1GB
+
+# Is it necessary to specify all of these values again?
+[Validator.LerQuerierConfig]
+RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
+RollupCreationBlockL1 = "{{.zkevm_rollup_manager_block_number}}"
+
+[Validator.AgglayerClient]
+Cached = true
+
+[Validator.AgglayerClient.ConfigurationCache]
+TTL = "15m"
+Capacity = 100
+
+[Validator.AgglayerClient.GRPC]
+URL = "{{.agglayer_grpc_url}}"
+UseTLS = false
+
