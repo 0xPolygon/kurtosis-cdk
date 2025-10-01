@@ -8,9 +8,7 @@ def sanity_check(plan, args, op_args, source):
     # Run additional sanity checks on the first OP chain
     if not "chain1" in op_args.get("chains"):
         fail("The package expects a chain named 'chain1'")
-
     check_first_chain_id(args, op_args)
-    check_first_chain_name(args, op_args)
     check_first_chain_block_time(args, op_args)
 
 
@@ -26,21 +24,6 @@ def check_first_chain_id(args, op_args):
     if str(op_chain_id) != str(zkevm_rollup_chain_id):
         fail(
             "The chain id of the first OP chain does not match the zkevm rollup chain id"
-        )
-
-
-def check_first_chain_name(args, op_args):
-    chains = op_args.get("chains")
-    if len(chains.keys()) == 0:
-        fail("At least one OP chain must be defined")
-    chain1 = chains["chain1"]
-    network_params1 = chain1.get("network_params")
-    op_chain_name = network_params1.get("name")
-
-    deployment_suffix_without_prefix = args.get("deployment_suffix")[1:]
-    if op_chain_name != deployment_suffix_without_prefix:
-        fail(
-            "The name of the first OP chain does not match the deployment suffix without the leading suffix '-'"
         )
 
 

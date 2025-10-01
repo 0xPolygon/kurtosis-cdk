@@ -23,7 +23,6 @@ def test_sanity_check_success(plan):
                 },
                 "network_params": {
                     "network_id": 1001,
-                    "name": "001",
                     "seconds_per_slot": 2,
                 },
             },
@@ -57,7 +56,6 @@ def test_sanity_check_failure(plan):
                 },
                 "network_params": {
                     "network_id": 1001,
-                    "name": "001",
                     "seconds_per_slot": 2,
                 },
             },
@@ -119,43 +117,6 @@ def test_check_first_chain_id_failure(plan):
     expect.fails(
         lambda: op_sanity_check.check_first_chain_id(args, op_args),
         "The chain id of the first OP chain does not match the zkevm rollup chain id",
-    )
-
-
-def test_check_first_chain_name_success(plan):
-    # Should pass when chain name matches deployment suffix
-    args = {
-        "deployment_suffix": "-001",
-    }
-    op_args = {
-        "chains": {
-            "chain1": {
-                "network_params": {
-                    "name": "001",
-                }
-            }
-        }
-    }
-    op_sanity_check.check_first_chain_name(args, op_args)
-
-
-def test_check_first_chain_name_failure(plan):
-    # Should fail when chain name does not match deployment suffix
-    args = {
-        "deployment_suffix": "-001",
-    }
-    op_args = {
-        "chains": {
-            "chain1": {
-                "network_params": {
-                    "name": "002",
-                }
-            }
-        }
-    }
-    expect.fails(
-        lambda: op_sanity_check.check_first_chain_name(args, op_args),
-        "The name of the first OP chain does not match the deployment suffix without the leading suffix '-'",
     )
 
 

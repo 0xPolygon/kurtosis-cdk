@@ -142,7 +142,6 @@ def test_parse_args_with_user_overrides(plan):
         constants.DEFAULT_IMAGES.get("op_batcher_image"),
     )
     expect.eq(network_params1.get("seconds_per_slot"), 1)
-    expect.eq(network_params1.get("name"), "001")
 
     ## Chain 2: Custom EL image, custom network params, defaults elsewhere
     chain2 = chains.get("chain2")
@@ -170,7 +169,6 @@ def test_parse_args_with_user_overrides(plan):
         batcher_params2.get("image"),
         constants.DEFAULT_IMAGES.get("op_batcher_image"),
     )
-    expect.eq(network_params2.get("name"), "001")
 
     ## Chain 3: Custom batcher params, defaults elsewhere
     chain3 = chains.get("chain3")
@@ -197,7 +195,6 @@ def test_parse_args_with_user_overrides(plan):
         constants.DEFAULT_IMAGES.get("op_proposer_image"),
     )
     expect.eq(network_params3.get("seconds_per_slot"), 1)
-    expect.eq(network_params3.get("name"), "001")
 
     ## Chain 4: Empty config, all defaults
     chain4 = chains.get("chain4")
@@ -251,7 +248,6 @@ def test_parse_chains_with_partial_config(plan):
     # First chain should have custom network params but default everything else
     chain1 = result.get("chain1")
     expect.eq(chain1.get("network_params").get("seconds_per_slot"), 5)
-    expect.eq(chain1.get("network_params").get("name"), "001")  # default
     expect.eq(
         chain1.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
     )

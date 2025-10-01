@@ -41,10 +41,6 @@ DEFAULT_CHAIN = _sort_dict_by_values(
         ),
         "network_params": _sort_dict_by_values(
             {
-                # Name maps to l2_services_suffix in optimism-package.
-                # The optimism-package appends a suffix with the following format: `-<name>`.
-                # However, our deployment suffix already starts with a "-", so we remove it here.
-                "name": "001",
                 # The rollup chain ID
                 "network_id": 2151908,
                 # The rollup block time
