@@ -87,7 +87,7 @@ This section lists all test environments with their configurations and component
 | aggkit | [0.7.0-beta8](https://github.com/agglayer/aggkit/releases/tag/v0.7.0-beta8) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | experimental 🧪 |
 | aggkit-prover | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | latest ✅ |
 | agglayer | [0.4.0-rc.12](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.12) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
-| agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
+| agglayer-contracts | [12.1.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.1.0) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.3.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.3.4) | experimental 🧪 |
 | op-geth | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | latest ✅ |
@@ -102,7 +102,7 @@ This section lists all test environments with their configurations and component
 | aggkit | [0.7.0-beta8](https://github.com/agglayer/aggkit/releases/tag/v0.7.0-beta8) | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | experimental 🧪 |
 | aggkit-prover | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | latest ✅ |
 | agglayer | [0.4.0-rc.12](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.12) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
-| agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
+| agglayer-contracts | [12.1.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.1.0) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | geth | [1.16.3](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.3) | [1.16.4](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.4) | deprecated ⚠️ |

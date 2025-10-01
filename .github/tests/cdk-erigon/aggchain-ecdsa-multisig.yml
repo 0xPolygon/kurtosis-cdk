@@ -17,7 +17,7 @@ args:
   aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta8
 
   # Agglayer related params
-  agglayer_contracts_image: jhkimqd/agglayer-contracts:v0.0.0-rc.0.fix.1.create.genesis-fork.12
+  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.1.0
   agglayer_prover_primary_prover: mock-prover
   zkevm_use_real_verifier: false
   sp1_prover_key: ""
