@@ -31,12 +31,9 @@ def run(plan, args):
     l1_args = {
         "participants": [
             {
-                "el_type": "geth",
-                "el_image": args.get("geth_image"),
-                "el_extra_params": [
-                    "--log.format=json",
-                    "--gcmode archive",
-                ],
+                # General
+                "count": args["l1_participants_count"],
+                # Consensus client
                 "cl_type": "lighthouse",
                 "cl_image": args.get("lighthouse_image"),
                 "cl_extra_params": [
@@ -53,20 +50,35 @@ def run(plan, args):
                     # required for staking.
                     "--disable-backfill-rate-limiting",
                 ],
+                # Execution client
+                "el_type": "geth",
+                "el_image": args.get("geth_image"),
+                "el_extra_params": [
+                    "--log.format=json",
+                    "--gcmode archive",
+                ],
+                # Validator client
                 "vc_type": "lighthouse",
                 "vc_image": args.get("lighthouse_image"),
                 "vc_extra_params": [
                     "--log-format=JSON",
                 ],
-                "count": args["l1_participants_count"],
+                # Fulu hard fork config
+                # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
+                # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
+                # broadcasting data on behalf of the proposer.
+                # Since we don't enable perfect PeerDAS in the config, we need to have at least one supernode.
+                "supernode": True,
             }
         ],
         "network_params": {
             "additional_preloaded_contracts": custom_genesis,
             "network_id": str(args["l1_chain_id"]),
             "preregistered_validator_keys_mnemonic": args["l1_preallocated_mnemonic"],
-            "preset": args["l1_preset"],
             "seconds_per_slot": args["l1_seconds_per_slot"],
+            # The "minimal" preset is useful for rapid testing and development.
+            # It takes 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults.
+            "preset": args["l1_preset"],
             # ETH1_FOLLOW_DISTANCE, Default: 2048
             # This is used to calculate the minimum depth of block on the Ethereum 1 chain that can be considered by the Eth2 chain: it applies to the Genesis process and the processing of deposits by validators. The Eth1 chain depth is estimated by multiplying this value by the target average Eth1 block time, SECONDS_PER_ETH1_BLOCK.
             # The value of ETH1_FOLLOW_DISTANCE is not based on the expected depth of any reorgs of the Eth1 chain, which are rarely if ever more than 2-3 blocks deep. It is about providing time to respond to an incident on the Eth1 chain such as a consensus failure between clients.
@@ -84,10 +96,15 @@ def run(plan, args):
             # GENESIS_DELAY, Default: 12
             # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
             "genesis_delay": 12,
-            # Enable the Electra hardfork.
-            # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
-            #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
-            "electra_fork_epoch": derive_l1_preset(args),
+            # Ethereum hard fork configurations.
+            # Supported fork epochs are documented in `static_files/genesis-generation-config/el-cl/values.env.tmpl`.
+            # in the ethereum package repository.
+            "altair_fork_epoch": 0,
+            "bellatrix_fork_epoch": 0,
+            "capella_fork_epoch": 0,
+            "deneb_fork_epoch": 1,
+            "electra_fork_epoch": 2,
+            "fulu_fork_epoch": 3,  # Requires a supernode or perfect PeerDAS to be enabled.
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
@@ -141,10 +158,3 @@ def _wait_for_l1_startup(plan, cl_rpc_url):
         ),
         wait="5m",
     )
-
-
-def derive_l1_preset(args):
-    if args["l1_preset"] == "mainnet":
-        return 0
-    else:
-        return 1

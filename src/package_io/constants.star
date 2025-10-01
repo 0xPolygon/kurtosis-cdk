@@ -64,8 +64,9 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:16.2",
-    "geth_image": "ethereum/client-go:v1.16.3",
-    "lighthouse_image": "sigp/lighthouse:v7.1.0",
+    "geth_image": "ethereum/client-go:v1.16.4",
+    # We use an unstable build of lighthouse as a new release has not been cut yet for the fusaka hardfork
+    "lighthouse_image": "ethpandaops/lighthouse:unstable-ffa7b2b",  # 2025-09-25
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.15.0",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.0-rc.2",
