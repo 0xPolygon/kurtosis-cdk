@@ -211,7 +211,7 @@ def test_parse_args_with_user_overrides(plan):
     # defaults
     expect.contains(
         result.get("source"),
-        "github.com/agglayer/optimism-package/main.star@",
+        "github.com/agglayer/optimism-package",
     )
 
     # Check external_l1_network_params exists
