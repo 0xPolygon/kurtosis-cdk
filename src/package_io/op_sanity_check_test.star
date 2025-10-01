@@ -70,6 +70,21 @@ def test_sanity_check_failure(plan):
     )
 
 
+def test_no_chain1_defined(plan):
+    # Should fail because no "chain1" is defined
+    op_args = {
+        "chains": {
+            "chain2": {},
+            "chain3": {},
+        }
+    }
+    source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source")
+    expect.fails(
+        lambda: op_sanity_check.sanity_check(plan, {}, op_args, source),
+        "The package expects a chain named 'chain1'",
+    )
+
+
 def test_check_first_chain_id_success(plan):
     # Should pass when chain ID matches zkevm rollup chain ID
     args = {

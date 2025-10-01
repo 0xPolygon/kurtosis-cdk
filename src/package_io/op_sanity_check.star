@@ -6,6 +6,9 @@ def sanity_check(plan, args, op_args, source):
     optimism_package_sanity_check_module.sanity_check(plan, op_args)
 
     # Run additional sanity checks on the first OP chain
+    if not "chain1" in op_args.get("chains"):
+        fail("The package expects a chain named 'chain1'")
+
     check_first_chain_id(args, op_args)
     check_first_chain_name(args, op_args)
     check_first_chain_block_time(args, op_args)
