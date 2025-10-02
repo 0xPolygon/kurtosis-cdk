@@ -185,7 +185,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                         ),
                         "op_stack_seconds_per_slot": op_stack_args["optimism_package"][
                             "chains"
-                        ]["chain1"]["network_params"]["seconds_per_slot"],
+                        ]["001"]["network_params"]["seconds_per_slot"],
                         # vkeys and selectors
                         "pp_vkey_hash": pp_vkey_hash,
                         "pp_vkey_selector": pp_vkey_selector,

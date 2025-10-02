@@ -10,7 +10,7 @@ def test_sanity_check_success(plan):
     }
     op_args = {
         "chains": {
-            "chain1": {
+            "001": {
                 "participants": {
                     "node1": {
                         "el": {
@@ -43,7 +43,7 @@ def test_sanity_check_failure(plan):
         "source": op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source"),
         "predeployed_contracts": True,
         "chains": {
-            "chain1": {
+            "001": {
                 "participants": {
                     "node1": {
                         "el": {
@@ -69,11 +69,11 @@ def test_sanity_check_failure(plan):
 
 
 def test_no_chain1_defined(plan):
-    # Should fail because no "chain1" is defined
+    # Should fail because no "001" is defined
     op_args = {
         "chains": {
-            "chain2": {},
-            "chain3": {},
+            "002": {},
+            "003": {},
         }
     }
     source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source")
@@ -90,7 +90,7 @@ def test_check_first_chain_id_success(plan):
     }
     op_args = {
         "chains": {
-            "chain1": {
+            "001": {
                 "network_params": {
                     "network_id": 1001,
                 }
@@ -107,7 +107,7 @@ def test_check_first_chain_id_failure(plan):
     }
     op_args = {
         "chains": {
-            "chain1": {
+            "001": {
                 "network_params": {
                     "network_id": 2002,
                 }
@@ -127,7 +127,7 @@ def test_check_first_chain_block_time_success(plan):
     }
     op_args = {
         "chains": {
-            "chain1": {
+            "001": {
                 "network_params": {
                     "seconds_per_slot": 10,
                 }
@@ -144,7 +144,7 @@ def test_check_first_chain_block_time_failure(plan):
     }
     op_args = {
         "chains": {
-            "chain1": {
+            "001": {
                 "network_params": {
                     "seconds_per_slot": 10,
                 }

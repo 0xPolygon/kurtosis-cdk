@@ -57,7 +57,7 @@ ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/ar
 DEFAULT_ARGS = _sort_dict_by_values(
     {
         "chains": {
-            "chain1": DEFAULT_CHAIN,
+            "001": DEFAULT_CHAIN,
         },
         "op_contract_deployer_params": _sort_dict_by_values(
             {
@@ -76,7 +76,7 @@ DEFAULT_ARGS = _sort_dict_by_values(
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@a207353ab715268ef52df84ed6a07962c85ff7d4",  # overlay/main - 2025-10-01
+        "source": "github.com/agglayer/optimism-package/main.star@6e6a7f6d2fde824f63d73b6cedd8fedd0c81ed80",  # debug - 2025-10-02
         "predeployed_contracts": True,
     }
 )
@@ -135,7 +135,7 @@ def parse_args(plan, args, op_args):
 
 def _parse_chains(chains):
     if len(chains.keys()) == 0:
-        return {"chain1": DEFAULT_CHAIN}
+        return {"001": DEFAULT_CHAIN}
 
     chains_with_defaults = {}
     for k, v in chains.items():

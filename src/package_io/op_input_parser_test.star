@@ -34,7 +34,7 @@ def test_parse_args_with_empty_args(plan):
     # Check native fields
     chains = optimism_package.get("chains")
     expect.eq(len(chains.keys()), 1)
-    chain1 = chains.get("chain1")
+    chain1 = chains.get("001")
 
     participants = chain1.get("participants")
     expect.eq(len(participants.keys()), 1)
@@ -73,7 +73,7 @@ def test_parse_args_with_user_overrides(plan):
         "predeployed_contracts": False,
         # native configuration - optimism-package fields
         "chains": {
-            "chain1": {
+            "001": {
                 "participants": {
                     "node1": {
                         "cl": {
@@ -85,7 +85,7 @@ def test_parse_args_with_user_overrides(plan):
                     "enabled": False,
                 },
             },
-            "chain2": {
+            "002": {
                 "participants": {
                     "node1": {
                         "el": {
@@ -97,12 +97,12 @@ def test_parse_args_with_user_overrides(plan):
                     "seconds_per_slot": 12,
                 },
             },
-            "chain3": {
+            "003": {
                 "batcher_params": {
                     "image": "op-batcher:latest",
                 },
             },
-            "chain4": {},
+            "004": {},
         },
         "observability": {
             "enabled": True,
@@ -117,7 +117,7 @@ def test_parse_args_with_user_overrides(plan):
     expect.eq(len(chains.keys()), 4)
 
     ## Chain 1: Custom CL image, proposer disabled, defaults elsewhere
-    chain1 = chains.get("chain1")
+    chain1 = chains.get("001")
     participants1 = chain1.get("participants")
     expect.eq(len(participants1.keys()), 1)
 
@@ -144,7 +144,7 @@ def test_parse_args_with_user_overrides(plan):
     expect.eq(network_params1.get("seconds_per_slot"), 1)
 
     ## Chain 2: Custom EL image, custom network params, defaults elsewhere
-    chain2 = chains.get("chain2")
+    chain2 = chains.get("002")
     participants2 = chain2.get("participants")
     expect.eq(len(participants2.keys()), 1)
 
@@ -171,7 +171,7 @@ def test_parse_args_with_user_overrides(plan):
     )
 
     ## Chain 3: Custom batcher params, defaults elsewhere
-    chain3 = chains.get("chain3")
+    chain3 = chains.get("003")
     participants3 = chain3.get("participants")
     expect.eq(len(participants3.keys()), 1)
 
@@ -197,7 +197,7 @@ def test_parse_args_with_user_overrides(plan):
     expect.eq(network_params3.get("seconds_per_slot"), 1)
 
     ## Chain 4: Empty config, all defaults
-    chain4 = chains.get("chain4")
+    chain4 = chains.get("004")
     expect.eq(chain4, op_input_parser.DEFAULT_CHAIN)
 
     # Check op_contract_deployer_params defaults
@@ -225,18 +225,18 @@ def test_parse_chains_with_empty_chains(plan):
     # Should return default chain when empty dict is provided
     result = op_input_parser._parse_chains({})
     expect.eq(len(result.keys()), 1)
-    expect.eq(result.get("chain1"), op_input_parser.DEFAULT_CHAIN)
+    expect.eq(result.get("001"), op_input_parser.DEFAULT_CHAIN)
 
 
 def test_parse_chains_with_partial_config(plan):
     # Should apply defaults to partially configured chains
     chains = {
-        "chain1": {
+        "001": {
             "network_params": {
                 "seconds_per_slot": 5,
             },
         },
-        "chain2": {
+        "002": {
             "batcher_params": {
                 "image": "custom-batcher:latest",
             },
@@ -246,14 +246,14 @@ def test_parse_chains_with_partial_config(plan):
     expect.eq(len(result.keys()), 2)
 
     # First chain should have custom network params but default everything else
-    chain1 = result.get("chain1")
+    chain1 = result.get("001")
     expect.eq(chain1.get("network_params").get("seconds_per_slot"), 5)
     expect.eq(
         chain1.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
     )
 
     # Second chain should have custom batcher but default everything else
-    chain2 = result.get("chain2")
+    chain2 = result.get("002")
     expect.eq(chain2.get("batcher_params").get("image"), "custom-batcher:latest")
     expect.eq(
         chain2.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")

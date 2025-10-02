@@ -6,7 +6,7 @@ def sanity_check(plan, args, op_args, source):
     optimism_package_sanity_check_module.sanity_check(plan, op_args)
 
     # Run additional sanity checks on the first OP chain
-    if not "chain1" in op_args.get("chains"):
+    if not "001" in op_args.get("chains"):
         fail("The package expects a chain named 'chain1'")
     check_first_chain_id(args, op_args)
     check_first_chain_block_time(args, op_args)
@@ -16,7 +16,7 @@ def check_first_chain_id(args, op_args):
     chains = op_args.get("chains")
     if len(chains.keys()) == 0:
         fail("At least one OP chain must be defined")
-    chain1 = chains["chain1"]
+    chain1 = chains["001"]
     network_params1 = chain1.get("network_params")
     op_chain_id = network_params1.get("network_id")
 
@@ -31,7 +31,7 @@ def check_first_chain_block_time(args, op_args):
     chains = op_args.get("chains")
     if len(chains.keys()) == 0:
         fail("At least one OP chain must be defined")
-    chain1 = chains["chain1"]
+    chain1 = chains["001"]
     network_params1 = chain1.get("network_params")
     l2_block_time = network_params1.get("seconds_per_slot")
 
