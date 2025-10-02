@@ -79,7 +79,7 @@ def test_no_chain1_defined(plan):
     source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source")
     expect.fails(
         lambda: op_sanity_check.sanity_check(plan, {}, op_args, source),
-        "The package expects a chain named 'chain1'",
+        "The package expects a chain named '001'",
     )
 
 

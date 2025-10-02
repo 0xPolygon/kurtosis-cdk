@@ -7,7 +7,7 @@ def sanity_check(plan, args, op_args, source):
 
     # Run additional sanity checks on the first OP chain
     if not "001" in op_args.get("chains"):
-        fail("The package expects a chain named 'chain1'")
+        fail("The package expects a chain named '001'")
     check_first_chain_id(args, op_args)
     check_first_chain_block_time(args, op_args)
 
