@@ -78,6 +78,8 @@ def run(plan, args):
             "seconds_per_slot": args["l1_seconds_per_slot"],
             # The "minimal" preset is useful for rapid testing and development.
             # It takes 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults.
+            # In minimal preset, there are 8 slots per epoch.
+            # If we consider the seconds per slot is set to 2s, then an epoch will last 16s.
             "preset": args["l1_preset"],
             # ETH1_FOLLOW_DISTANCE, Default: 2048
             # This is used to calculate the minimum depth of block on the Ethereum 1 chain that can be considered by the Eth2 chain: it applies to the Genesis process and the processing of deposits by validators. The Eth1 chain depth is estimated by multiplying this value by the target average Eth1 block time, SECONDS_PER_ETH1_BLOCK.
@@ -104,7 +106,9 @@ def run(plan, args):
             "capella_fork_epoch": 0,
             "deneb_fork_epoch": 1,
             "electra_fork_epoch": 2,
-            "fulu_fork_epoch": 3,  # Requires a supernode or perfect PeerDAS to be enabled.
+            # Enable the fulu hard fork at epoch 5 - approximately after 2s x 5 x 10 = 90s in minimal preset
+            # We need to have fulu hardfork enabled after the OP deployment so that the L1 node accepts the huge tx
+            "fulu_fork_epoch": 5,  # requires a supernode or perfect PeerDAS to be enabled.
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
