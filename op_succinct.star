@@ -26,7 +26,8 @@ def extract_fetch_rollup_config(plan, args):
     )
 
     plan.run_sh(
-        run="echo copying fetch-l2oo-config binary to files artifact...",
+        # File name was fetch-rollup-config, changed to fetch-l2oo-config at some point
+        run="[ -e /usr/local/bin/fetch-rollup-config ] && cp -f /usr/local/bin/fetch-rollup-config /usr/local/bin/fetch-l2oo-config; echo 'copying fetch-l2oo-config binary to files artifact...'",
         image=args.get("op_succinct_proposer_image"),
         store=[
             StoreSpec(
