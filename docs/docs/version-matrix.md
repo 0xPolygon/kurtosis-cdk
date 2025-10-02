@@ -105,8 +105,8 @@ This section lists all test environments with their configurations and component
 | agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| geth | [1.16.3](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.3) | [1.16.4](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.4) | deprecated ⚠️ |
-| lighthouse | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | latest ✅ |
+| geth | [1.16.4](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.4) | [1.16.4](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.4) | latest ✅ |
+| lighthouse | [unstable-ffa7b2b](https://github.com/sigp/lighthouse/releases/tag/vunstable-ffa7b2b) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | deprecated ⚠️ |
 | op-batcher | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | [1.15.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.15.0) | latest ✅ |
 | op-deployer | [0.4.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.0-rc.2) | [0.3.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.3.4) | experimental 🧪 |
 | op-geth | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | [1.101602.3](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101602.3) | latest ✅ |
