@@ -52,7 +52,7 @@ DEFAULT_CHAIN = _sort_dict_by_values(
     }
 )
 
-ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
+ARTIFACTS_LOCATOR = "tag://op-contracts/v4.0.0"
 
 DEFAULT_ARGS = _sort_dict_by_values(
     {
