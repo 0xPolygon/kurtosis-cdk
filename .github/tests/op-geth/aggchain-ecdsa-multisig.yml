@@ -19,7 +19,7 @@ args:
 
 optimism_package:
   chains:
-    chain0:
+    001:
       proposer_params:
         enabled: false
       challenger_params:

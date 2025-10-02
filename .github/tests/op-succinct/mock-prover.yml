@@ -28,7 +28,7 @@ args:
 optimism_package:
   predeployed_contracts: true
   chains:
-    chain0:
+    001:
       participants:
         node1:
           cl:
