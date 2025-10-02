@@ -106,9 +106,7 @@ def run(plan, args):
             "capella_fork_epoch": 0,
             "deneb_fork_epoch": 1,
             "electra_fork_epoch": 2,
-            # Enable the fulu hard fork at epoch 5 - approximately after 2s x 5 x 10 = 90s in minimal preset
-            # We need to have fulu hardfork enabled after the OP deployment so that the L1 node accepts the huge tx
-            "fulu_fork_epoch": 5,  # requires a supernode or perfect PeerDAS to be enabled.
+            "fulu_fork_epoch": 19,  # enabling the fulu hard fork before would result in the op-chain deployment tx (26193342 gas) being reverted because it exceeds the tx gas limit (16777216 gas) set by the fulu hard fork; setting it to 19 means the fulu hard fork will be activated after 19*8*2=304 seconds (19 epochs of 8 slots of 2 seconds each in the case of the minimal preset), which should be enough time for the op-chain to be deployed.
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
