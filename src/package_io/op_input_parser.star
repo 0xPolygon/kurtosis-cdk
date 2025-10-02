@@ -52,8 +52,6 @@ DEFAULT_CHAIN = _sort_dict_by_values(
     }
 )
 
-ARTIFACTS_LOCATOR = "tag://op-contracts/v4.0.0"
-
 DEFAULT_ARGS = _sort_dict_by_values(
     {
         "chains": {
@@ -62,8 +60,8 @@ DEFAULT_ARGS = _sort_dict_by_values(
         "op_contract_deployer_params": _sort_dict_by_values(
             {
                 "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
-                "l1_artifacts_locator": ARTIFACTS_LOCATOR,
-                "l2_artifacts_locator": ARTIFACTS_LOCATOR,
+                "l1_artifacts_locator": "tag://op-contracts/v4.0.0",
+                "l2_artifacts_locator": "tag://op-contracts/v4.0.0",
             }
         ),
         "observability": _sort_dict_by_values(
