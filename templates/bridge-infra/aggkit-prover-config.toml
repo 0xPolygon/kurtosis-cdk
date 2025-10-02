@@ -13,7 +13,9 @@ runtime-timeout = "5s"
 
 [aggchain-proof-service.aggchain-proof-builder]
 network-id = {{ .network_id }}
+{{ if not .aggkit_legacy}}
 proving-timeout = "1h"
+{{ end }}
 
 [aggchain-proof-service.aggchain-proof-builder.primary-prover.{{ .primary_prover }}]
 proving-timeout = "1h"
