@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
-          sudo apt install -y kurtosis-cli=1.7.2
+          sudo apt install -y kurtosis-cli=1.11.1
           kurtosis analytics disable
 
       - name: Install yamllint
@@ -109,7 +109,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -222,7 +222,7 @@ jobs:
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
           else
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
@@ -291,7 +291,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: bcbff97a600e090dd5cd912a5838c9514f8724e5
+          ref: 871584b8cf6158ea1fb981faefccb50f66a8093c
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -433,7 +433,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
