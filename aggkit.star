@@ -484,6 +484,11 @@ def create_aggkit_prover_config_artifact(
         src="./templates/bridge-infra/aggkit-prover-config.toml"
     )
 
+    aggkit_version = args.get("aggkit_prover_image").split(":")[1]
+    aggkit_legacy = False
+    if any([aggkit_version.startswith(x) for x in ("1.0", "1.1", "1.2")]):
+        aggkit_legacy = True
+
     return plan.render_templates(
         name="aggkit-prover-artifact",
         config={
@@ -523,6 +528,7 @@ def create_aggkit_prover_config_artifact(
                     "network_id": args["zkevm_rollup_id"],
                     "agglayer_prover_network_url": args["agglayer_prover_network_url"],
                     "op_succinct_mock": args["op_succinct_mock"],
+                    "aggkit_legacy": aggkit_legacy,
                 },
             )
         },
