@@ -199,11 +199,7 @@ AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.z
 # ------------------------------------------------------------------------------
 # RequireCommitteeMembershipCheck = false
 
-{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
-Mode = "PessimisticProof"
-{{- else}}
-Mode = "AggchainProof"
-{{- end}}
+Mode = "Auto"
 CheckStatusCertificateInterval = "1s"
 
 # ------------------------------------------------------------------------------
@@ -283,10 +279,11 @@ BlockFinality = "LatestBlock"
 # EnableRPC = false
 
 [AggSender.AgglayerClient]
-Cached = false
-[ValidaAggSendertor.AgglayerClient.ConfigurationCache]
-TTL = "15m"
-Capacity = 100
+[[AggSender.AgglayerClient.APIRateLimits]]
+			MethodName = "SendCertificate"
+			[AggSender.AgglayerClient.APIRateLimits.RateLimit]
+				NumRequests = 0
+				Interval = 0
 [AggSender.AgglayerClient.GRPC]
 URL = "{{.agglayer_grpc_url}}"
 MinConnectTimeout = "5s"
