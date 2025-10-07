@@ -36,7 +36,7 @@ def create_aggkit_cdk_service_config(
                 ],
             ),
             "/data": Directory(
-                artifact_names=[],
+                persistent_key="aggkit-data" + args["deployment_suffix"]
             ),
             "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
         },
@@ -86,8 +86,9 @@ def create_root_aggkit_service_config(
                 ],
             ),
             "/data": Directory(
-                artifact_names=[],
+                persistent_key="aggkit-data" + args["deployment_suffix"]
             ),
+            "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
@@ -291,12 +292,14 @@ def get_aggkit_ports(args, service_type=None):
             application_protocol="http",
             wait=None,
         ),
-        "rest": PortSpec(
+    }
+
+    if "bridge" in args.get("aggkit_components", ""):
+        ports["rest"] = PortSpec(
             args.get("aggkit_node_rest_api_port"),
             application_protocol="http",
             wait=None,
-        ),
-    }
+        )
 
     if args.get("aggkit_pprof_enabled"):
         ports["pprof"] = PortSpec(
