@@ -282,8 +282,8 @@ BlockFinality = "LatestBlock"
 [[AggSender.AgglayerClient.APIRateLimits]]
 			MethodName = "SendCertificate"
 			[AggSender.AgglayerClient.APIRateLimits.RateLimit]
+                # Disable limit
 				NumRequests = 0
-				Interval = 0
 [AggSender.AgglayerClient.GRPC]
 URL = "{{.agglayer_grpc_url}}"
 MinConnectTimeout = "5s"
