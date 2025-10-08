@@ -18,6 +18,7 @@ L2URL = "{{.op_el_rpc_url}}"
 {{- else }}
 L2URL = "{{.l2_rpc_url}}"
 {{- end }}
+OpNodeURL = "{{.op_cl_rpc_url}}"
 
 # Check if agglayer grpc or readrpc should be used for AggLayerURL
 {{- if eq .agglayer_endpoint "grpc" }}
@@ -221,7 +222,6 @@ UseTLS = false
 [AggSender.OptimisticModeConfig]
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-OpNodeURL = "{{.op_cl_rpc_url}}"
 RequireKeyMatchTrustedSequencer = true
 {{- end}}
 
