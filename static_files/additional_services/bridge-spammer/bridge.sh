@@ -95,4 +95,16 @@ while true; do
     --chain-id "$L1_CHAIN_ID" \
     --pretty-logs=false
   sleep 60
+  log_info "Bridging from L2 to L1"
+  polycli ulxly bridge asset \
+    --value "$(date +%s)" \
+    --gas-limit "1250000" \
+    --bridge-address "$L2_BRIDGE_ADDRESS" \
+    --destination-address "$eth_address" \
+    --destination-network 0 \
+    --rpc-url "$L2_RPC_URL" \
+    --private-key "$PRIVATE_KEY" \
+    --chain-id "$L2_CHAIN_ID" \
+    --pretty-logs=false
+  sleep 1
 done
