@@ -30,10 +30,6 @@ INPUTS = [
 
 ARTIFACTS = [
     {
-        "name": "update-ger.sh",
-        "file": "./templates/contract-deploy/update-ger.sh",
-    },
-    {
         "name": "run-l2-contract-setup.sh",
         "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
     },
@@ -442,7 +438,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format("/opt/contract-deploy/update-ger.sh"),
+                "/opt/scripts/contracts.sh update_ger",
             ]
         ),
     )
