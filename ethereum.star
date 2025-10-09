@@ -106,7 +106,7 @@ def run(plan, args):
             "capella_fork_epoch": 0,
             "deneb_fork_epoch": 0,
             "electra_fork_epoch": 0,
-            "fulu_fork_epoch": 1, # blocks are not finalized if fulu hard fork is activated at genesis
+            "fulu_fork_epoch": 1,  # blocks are not finalized if fulu hard fork is activated at genesis
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
