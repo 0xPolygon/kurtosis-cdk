@@ -104,9 +104,9 @@ def run(plan, args):
             "altair_fork_epoch": 0,
             "bellatrix_fork_epoch": 0,
             "capella_fork_epoch": 0,
-            "deneb_fork_epoch": 1,
-            "electra_fork_epoch": 2,
-            "fulu_fork_epoch": 19,  # enabling the fulu hard fork before would result in the op-chain deployment tx (26193342 gas) being reverted because it exceeds the tx gas limit (16777216 gas) set by the fulu hard fork; setting it to 19 means the fulu hard fork will be activated after 19*8*2=304 seconds (19 epochs of 8 slots of 2 seconds each in the case of the minimal preset), which should be enough time for the op-chain to be deployed.
+            "deneb_fork_epoch": 0,
+            "electra_fork_epoch": 0,
+            "fulu_fork_epoch": 1, # blocks are not finalized if fulu hard fork is activated at genesis
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,

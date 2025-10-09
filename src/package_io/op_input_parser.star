@@ -74,7 +74,8 @@ DEFAULT_ARGS = _sort_dict_by_values(
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@fd75910420698166bcb00ecba1da230d4839db98",  # overlay/main branch - 2025-10-03
+        # "source": "github.com/agglayer/optimism-package/main.star@fd75910420698166bcb00ecba1da230d4839db98",  # overlay/main branch - 2025-10-03
+        "source": "github.com/agglayer/optimism-package/main.star@cd33afa5384b37b6da3767938a9538e15845354b",  # ci/check-finalized-blocks - 2025-10-09
         "predeployed_contracts": True,
     }
 )
