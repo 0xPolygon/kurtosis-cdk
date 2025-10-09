@@ -107,11 +107,24 @@ configure_contract_container_custom_genesis() {
     cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
+configure_contract_container_custom_genesis_cdk_erigon() {
+    # deploymentRollupManagerBlockNumber field inside cdk-erigon-custom-genesis-addresses.json must be different to 0 because cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
+    cp "$input_dir"/cdk-erigon-custom-genesis-addresses.json /opt/zkevm/combined.json
+
+    cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
+    cp /opt/zkevm/combined.json /opt/zkevm/deploy_output.json
+
+    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
+    cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+}
+
 # main handler, execute function according to parameter received
 if [[ "$1" == "create_keystores" ]]; then
     create_keystores
 elif [[ "$1" == "configure_contract_container_custom_genesis" ]]; then
     configure_contract_container_custom_genesis
+elif [[ "$1" == "configure_contract_container_custom_genesis_cdk_erigon" ]]; then
+    configure_contract_container_custom_genesis_cdk_erigon
 else
     echo "Invalid argument: $1"
     exit 1
