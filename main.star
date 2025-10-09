@@ -13,7 +13,7 @@ cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
-deploy_agglayer_contracts_package = "./deploy_agglayer_contracts.star"
+agglayer_contracts_package = "./agglayer_contracts.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
 deploy_l2_contracts_package = "./deploy_l2_contracts.star"
@@ -55,7 +55,7 @@ def run(plan, args={}):
     sovereign_contract_setup_addresses = {}
     if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
         plan.print("Deploying agglayer contracts on L1")
-        import_module(deploy_agglayer_contracts_package).run(
+        import_module(agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
         )
 
