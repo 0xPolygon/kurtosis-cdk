@@ -200,7 +200,11 @@ AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.z
 # ------------------------------------------------------------------------------
 # RequireCommitteeMembershipCheck = false
 
-Mode = "Auto"
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
+Mode = "PessimisticProof"
+{{- else}}
+Mode = "AggchainProof"
+{{- end}}
 CheckStatusCertificateInterval = "1s"
 
 # ------------------------------------------------------------------------------
