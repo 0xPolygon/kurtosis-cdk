@@ -37,7 +37,6 @@ def init_rollup(plan, args, deployment_stages):
                 ]
             ),
         )
-    script = "/opt/contract-deploy/run-initialize-rollup.sh"
 
     plan.exec(
         description="Running rollup initialization",
@@ -46,7 +45,7 @@ def init_rollup(plan, args, deployment_stages):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(script),
+                "/opt/scripts/contracts.sh initialize_rollup",
             ]
         ),
     )

@@ -66,10 +66,6 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/fund-addresses.sh",
     },
     {
-        "name": "run-initialize-rollup.sh",
-        "file": "./templates/sovereign-rollup/run-initialize-rollup.sh",
-    },
-    {
         "name": "json2http.py",
         "file": "./scripts/json2http.py",
     },
