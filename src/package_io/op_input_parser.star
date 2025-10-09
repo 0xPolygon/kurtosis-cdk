@@ -17,7 +17,10 @@ DEFAULT_PARTICIPANT = _sort_dict_by_values(
         "cl": {
             "type": "op-node",
             "image": constants.DEFAULT_IMAGES.get("op_node_image"),
-            "extra_params": ["--log.format=json"],
+            "extra_params": [
+                "--log.format=json",
+                "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
+            ],
         },
     }
 )
@@ -60,8 +63,8 @@ DEFAULT_ARGS = _sort_dict_by_values(
         "op_contract_deployer_params": _sort_dict_by_values(
             {
                 "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
-                "l1_artifacts_locator": "tag://op-contracts/v4.0.0",
-                "l2_artifacts_locator": "tag://op-contracts/v4.0.0",
+                "l1_artifacts_locator": "embedded",
+                "l2_artifacts_locator": "embedded",
             },
         ),
         "observability": _sort_dict_by_values(
@@ -74,8 +77,7 @@ DEFAULT_ARGS = _sort_dict_by_values(
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        # "source": "github.com/agglayer/optimism-package/main.star@fd75910420698166bcb00ecba1da230d4839db98",  # overlay/main branch - 2025-10-03
-        "source": "github.com/agglayer/optimism-package/main.star@cd33afa5384b37b6da3767938a9538e15845354b",  # ci/check-finalized-blocks - 2025-10-09
+        "source": "github.com/agglayer/optimism-package/main.star@8b282670ad90dd17cc33fad323ee17d86da35c9e",  # overlay/main - 2025-10-09
         "predeployed_contracts": True,
     }
 )
