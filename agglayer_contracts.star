@@ -262,18 +262,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
     ]
 
-    # Base file artifacts to mount regardless of deployment type
-    files = {
-        # These are filled as result of script execution:
-        "/opt/keystores": Directory(persistent_key="keystores"),
-        "/opt/output": Directory(persistent_key="output"),
-        # Content are made available to script here:
-        "/opt/input": Directory(artifact_names=input_artifacts),
-        "/opt/scripts": Directory(artifact_names=scripts_artifacts),
-        # Legacy folders (WIP):
-        "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
-        "/opt/contract-deploy/": Directory(artifact_names=artifacts),
-    }
+    succinct_artifacts = []
 
     # Create op-succinct artifacts
     if deployment_stages.get("deploy_op_succinct", False):
@@ -294,13 +283,24 @@ def run(plan, args, deployment_stages, op_stack_args):
             description="Create deploy_op_succinct_contract files artifact",
         )
 
+        succinct_artifacts.append(fetch_rollup_config_artifact)
+        scripts_artifacts.append(deploy_op_succinct_contract_artifact)
+
+    # Base file artifacts to mount regardless of deployment type
+    files = {
+        # These are filled as result of script execution:
+        "/opt/keystores": Directory(persistent_key="keystores"),
+        "/opt/output": Directory(persistent_key="output"),
+        # Content are made available to script here:
+        "/opt/input": Directory(artifact_names=input_artifacts),
+        "/opt/scripts": Directory(artifact_names=scripts_artifacts),
+        # Legacy folders (WIP):
+        "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
+        "/opt/contract-deploy/": Directory(artifact_names=artifacts),
+    }
+    if succinct_artifacts:
         # Mount op-succinct specific artifacts
-        files["/opt/op-succinct/"] = Directory(
-            artifact_names=[fetch_rollup_config_artifact]
-        )
-        files["/opt/scripts/"] = Directory(
-            artifact_names=[deploy_op_succinct_contract_artifact]
-        )
+        files["/opt/op-succinct/"] = Directory(artifact_names=succinct_artifacts)
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
