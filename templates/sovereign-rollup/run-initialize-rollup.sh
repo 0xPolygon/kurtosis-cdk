@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -e
+
+input_dir="/opt/input"
+
 # Initialize rollup
 pushd /opt/zkevm-contracts || exit 1
 
@@ -18,7 +21,7 @@ jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
 .aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval |
 .aggchainParams.initParams.aggregationVkey = $l2[0].aggregationVkey |
 .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
-' /opt/contract-deploy/create_new_rollup.json > /opt/contract-deploy/initialize_rollup.json
+' "$input_dir"/create_new_rollup.json > /opt/contract-deploy/initialize_rollup.json
 
 jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' /opt/contract-deploy/initialize_rollup.json > "/opt/contract-deploy/initialize_rollup${ts}".json
 cp "/opt/contract-deploy/initialize_rollup${ts}.json" /opt/contract-deploy/initialize_rollup.json

@@ -1,4 +1,8 @@
 #!/bin/bash
+
+input_dir="/opt/input"
+
+
 # This script is responsible for deploying the contracts for zkEVM/CDK.
 global_log_level="{{.global_log_level}}"
 if [[ $global_log_level == "debug" ]]; then
@@ -45,7 +49,7 @@ echo_ts "L1 RPC is now available"
 cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 # shellcheck disable=SC1054,SC1072,SC1083
 {{ if eq .consensus_contract_type "ecdsa_multisig" }}
-cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 # shellcheck disable=SC1073,1009
 {{ else }}
 cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
@@ -75,7 +79,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
         jq \
             --slurpfile c gasToken-erc20.json \
             '.gasTokenAddress = $c[0].deployedTo | .sovereignParams.sovereignWETHAddress = $c[0].deployedTo' \
-            /opt/contract-deploy/create_new_rollup.json \
+            "$input_dir"/create_new_rollup.json \
             > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
         {{ else }}
         forge create \
@@ -98,7 +102,7 @@ sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
         jq \
             --arg c "{{ .gas_token_address }}" \
             '.gasTokenAddress = $c' \
-            /opt/contract-deploy/create_new_rollup.json \
+            "$input_dir"/create_new_rollup.json \
             > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
         {{ else }}
         jq \

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+input_dir="/opt/input"
+
 # Requirement to correctly configure contracts deployer
 export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
 
@@ -26,7 +28,7 @@ starting_timestamp=$(cast block --rpc-url "{{.l1_rpc_url}}" -f timestamp "$start
 sed -i \
   -e "s/\"startingBlockNumber\": [^,}]*/\"startingBlockNumber\": $starting_block_number/" \
   -e "s/\"startingTimestamp\": [^,}]*/\"startingTimestamp\": $starting_timestamp/" \
-  /opt/contract-deploy/create_new_rollup.json
+  "$input_dir"/create_new_rollup.json
 
 # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
 # So a manual extraction of polygonRollupManagerAddress is done here.
@@ -34,7 +36,7 @@ sed -i \
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined.json")"
 
 # Replace rollupManagerAddress with the extracted address
-sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create_new_rollup.json
+sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/create_new_rollup.json
 
 # Replace polygonRollupManagerAddress with the extracted address
 sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
@@ -48,7 +50,7 @@ if [[ "$rollupTypeID" -eq 1 ]]; then
 fi
 
 # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
-cp /opt/contract-deploy/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
 npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
 # Save Rollup Information to a file.

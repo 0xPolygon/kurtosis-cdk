@@ -5,6 +5,13 @@ data_availability_package = import_module("./lib/data_availability.star")
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
+INPUTS = [
+    {
+        "name": "create_new_rollup.json",
+        "file": "./templates/sovereign-rollup/create_new_rollup.json",
+    },
+]
+
 ARTIFACTS = [
     {
         "name": "deploy_parameters.json",
@@ -23,10 +30,6 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/run-create-agglayer-rollup.sh",
     },
     {
-        "name": "create-keystores.sh",
-        "file": "./templates/contract-deploy/create-keystores.sh",
-    },
-    {
         "name": "update-ger.sh",
         "file": "./templates/contract-deploy/update-ger.sh",
     },
@@ -41,10 +44,6 @@ ARTIFACTS = [
     {
         "name": "run-sovereign-setup-predeployed.sh",
         "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
-    },
-    {
-        "name": "create_new_rollup.json",
-        "file": "./templates/sovereign-rollup/create_new_rollup.json",
     },
     {
         "name": "add_rollup_type.json",
@@ -218,8 +217,60 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
     artifacts.append(artifact)
 
+    template_data = args | {
+        "is_cdk_validium": data_availability_package.is_cdk_validium(args),
+        "is_vanilla_client": is_vanilla_client(args, deployment_stages),
+        "deploy_op_succinct": deployment_stages.get("deploy_op_succinct", False),
+        "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
+            args
+        ),
+        "deploy_optimism_rollup": deployment_stages.get(
+            "deploy_optimism_rollup", False
+        ),
+        "op_stack_seconds_per_slot": op_stack_args["optimism_package"]["chains"][0][
+            "network_params"
+        ]["seconds_per_slot"],
+        # vkeys and selectors
+        "pp_vkey_hash": pp_vkey_hash,
+        "pp_vkey_selector": pp_vkey_selector,
+        "aggchain_vkey_hash": aggchain_vkey_hash,
+        "aggchain_vkey_selector": aggchain_vkey_selector,
+        "program_vkey": program_vkey,
+    }
+
+    input_artifacts = []
+    for artifact_cfg in list(INPUTS):
+        artifact = plan.render_templates(
+            name=artifact_cfg["name"],
+            config={
+                artifact_cfg["name"]: struct(
+                    template=read_file(src=artifact_cfg["file"]), data=template_data
+                )
+            },
+        )
+        input_artifacts.append(artifact)
+
+    scripts_artifacts = [
+        plan.render_templates(
+            name="contracts.sh",
+            config={
+                "contracts.sh": struct(
+                    template=read_file(src="./templates/contracts/contracts.sh"),
+                    data=template_data,
+                )
+            },
+        )
+    ]
+
     # Base file artifacts to mount regardless of deployment type
     files = {
+        # These are filled as result of script execution:
+        "/opt/keystores": Directory(persistent_key="keystores"),
+        "/opt/output": Directory(persistent_key="output"),
+        # Content are made available to script here:
+        "/opt/input": Directory(artifact_names=input_artifacts),
+        "/opt/scripts": Directory(artifact_names=scripts_artifacts),
+        # Legacy folders (WIP):
         "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
         "/opt/contract-deploy/": Directory(artifact_names=artifacts),
     }
@@ -277,18 +328,21 @@ def run(plan, args, deployment_stages, op_stack_args):
         ),
     )
 
+    # Set permissions for contracts script
+    plan.exec(
+        description="Setting permissions for /opt/scripts/contracts.sh",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=["/bin/sh", "-c", "chmod +x /opt/scripts/contracts.sh"]
+        ),
+    )
+
     # Create keystores.
     plan.exec(
         description="Creating keystores for zkevm-node/cdk-validium components",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "chmod +x {0} && {0}".format(
-                    "/opt/contract-deploy/create-keystores.sh"
-                ),
-            ]
+            command=["/bin/sh", "-c", "/opt/scripts/contracts.sh create_keystores"]
         ),
     )
 

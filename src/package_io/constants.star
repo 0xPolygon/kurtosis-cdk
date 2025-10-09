@@ -52,6 +52,9 @@ L1_ENGINES = ("geth", "anvil")
 # Standard zero address in Ethereum.
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
+# Contracts folders
+KEYSTORES_DIR = "/opt/keystores"
+
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta8",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.4.2",
