@@ -496,7 +496,7 @@ def create_aggkit_prover_config_artifact(
                 template=aggkit_prover_config_template,
                 # TODO: Organize those args.
                 data={
-                    "log_level": args["aggkit_prover_log_level"],
+                    "log_level": args["global_log_level"],
                     # ports
                     "aggkit_prover_grpc_port": args["aggkit_prover_grpc_port"],
                     "metrics_port": args["aggkit_prover_metrics_port"],
