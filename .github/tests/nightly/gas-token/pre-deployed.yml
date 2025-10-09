@@ -4,7 +4,6 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  verbosity: debug
   gas_token_enabled: true
   gas_token_address: "0xCHANGEME"
 

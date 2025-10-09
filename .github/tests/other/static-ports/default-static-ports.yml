@@ -2,5 +2,4 @@
 # - L1 services will be exposed on the range 50000-50999.
 # - L2 services on the range 51000-51999.
 args:
-  verbosity: debug
   use_dynamic_ports: false

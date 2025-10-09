@@ -382,10 +382,6 @@ DEFAULT_ARGS = (
         # Suffix appended to service names.
         # Note: It should be a string.
         "deployment_suffix": "-001",
-        # Verbosity of the `kurtosis run` output.
-        # Valid values are "error", "warn", "info", "debug", and "trace".
-        # By default, the verbosity is set to "info". It won't log the value of the args.
-        "verbosity": "info",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
         "global_log_level": "info",
@@ -484,9 +480,6 @@ def parse_args(plan, user_args):
     }
 
     # Validation step.
-    verbosity = args.get("verbosity", "")
-    validate_log_level("verbosity", verbosity)
-
     global_log_level = args.get("global_log_level", "")
     validate_log_level("global log level", global_log_level)
 
