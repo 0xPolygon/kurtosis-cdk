@@ -38,6 +38,7 @@ def run_sequencer(plan, args, contract_setup_addresses):
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
                     "prometheus_port": args["prometheus_port"],
+                    "log_level": args["log_level"],
                 }
                 | args
                 | contract_setup_addresses,
@@ -124,6 +125,7 @@ def run_rpc(plan, args, contract_setup_addresses):
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 0,
                     "prometheus_port": args["prometheus_port"],
+                    "log_level": args["log_level"],
                 }
                 | args
                 | contract_setup_addresses,

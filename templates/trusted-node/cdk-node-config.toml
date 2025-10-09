@@ -39,7 +39,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 
 [Log]
 Environment = "development" # "production" or "development"
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 Outputs = ["stderr"]
 
 [Aggregator]

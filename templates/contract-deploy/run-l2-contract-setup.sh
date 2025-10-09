@@ -1,7 +1,7 @@
 #!/bin/bash
 
-global_log_level="{{.global_log_level}}"
-if [[ $global_log_level == "debug" ]]; then
+log_level="{{.log_level}}"
+if [[ $log_level == "debug" ]]; then
     set -x
 fi
 

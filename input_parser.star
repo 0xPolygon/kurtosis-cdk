@@ -384,7 +384,7 @@ DEFAULT_ARGS = (
         "deployment_suffix": "-001",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
-        "global_log_level": "info",
+        "log_level": "info",
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
@@ -480,8 +480,8 @@ def parse_args(plan, user_args):
     }
 
     # Validation step.
-    global_log_level = args.get("global_log_level", "")
-    validate_log_level("global log level", global_log_level)
+    log_level = args.get("log_level", "")
+    validate_log_level("log level", log_level)
 
     validate_additional_services(args.get("additional_services", []))
 

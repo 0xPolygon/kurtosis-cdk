@@ -38,7 +38,7 @@ def create_op_succinct_proposer_service_config(
         # "SIGNER_URL": "", # URL for the Web3Signer. Note: This takes precedence over the `PRIVATE_KEY` environment variable.
         # "SIGNER_ADDRESS": "", # Address of the account that will be posting output roots to L1. Note: Only set this if the signer is a Web3Signer. Note: Required if `SIGNER_URL` is set.
         "RUST_LOG": args[
-            "global_log_level"
+            "log_level"
         ],  # Kurtosis CDK specific. Required to see logs in the op-succinct-proposer after https://github.com/agglayer/op-succinct/commit/892085405a65a2b1c245beca3dcb9d9f5626af0e commit
         "LOG_FORMAT": "json",  # Kurtosis CDK specific - https://github.com/agglayer/op-succinct/commit/cffd968bd744cddc262543e1195fdd36110ecf83
     }

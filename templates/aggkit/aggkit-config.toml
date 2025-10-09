@@ -136,7 +136,7 @@ Environment = "development" # "production" or "development"
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 
 # ------------------------------------------------------------------------------
 # Outputs define the output paths for writing logs. The default is to

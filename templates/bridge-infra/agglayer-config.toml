@@ -49,9 +49,8 @@ settlement-timeout = 1200
 gas-multiplier-factor = 175
 
 [log]
-# level = "{{.global_log_level}}"
-# we want debug visibility here for now
-level = "debug"
+# level = "{{.log_level}}"
+level = "debug" # we want debug visibility for now
 outputs = ["stderr"]
 format = "json"
 
