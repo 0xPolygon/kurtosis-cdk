@@ -44,10 +44,10 @@ optimism_package:
   predeployed_contracts: true
   chains:
     "001":
-      participants:
-        node1:
-          cl:
-            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5
+      # participants:
+      #   node1:
+      #     cl:
+      #       image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.13.5
       batcher_params:
         max_channel_duration: 50 # 50 blocks @ 12 sec => 10 minutes per blob
       proposer_params:
