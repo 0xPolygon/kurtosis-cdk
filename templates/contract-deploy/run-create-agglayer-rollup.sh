@@ -46,7 +46,7 @@ echo_ts "Waiting for the L1 RPC to be available"
 wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
 echo_ts "L1 RPC is now available"
 
-cp /opt/contract-deploy/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+cp "$input_dir"/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
 # shellcheck disable=SC1054,SC1072,SC1083
 {{ if eq .consensus_contract_type "ecdsa_multisig" }}
 cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json

@@ -10,13 +10,17 @@ INPUTS = [
         "name": "create_new_rollup.json",
         "file": "./templates/sovereign-rollup/create_new_rollup.json",
     },
-]
-
-ARTIFACTS = [
+    {
+        "name": "op-custom-genesis-addresses.json",
+        "file": "./templates/sovereign-rollup/op-custom-genesis-addresses.json",
+    },
     {
         "name": "deploy_parameters.json",
         "file": "./templates/contract-deploy/deploy_parameters.json",
     },
+]
+
+ARTIFACTS = [
     {
         "name": "create_rollup_parameters.json",
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
@@ -74,20 +78,12 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/run-initialize-rollup.sh",
     },
     {
-        "name": "op-configure-contract-container-custom-genesis.sh",
-        "file": "./templates/sovereign-rollup/op-configure-contract-container-custom-genesis.sh",
-    },
-    {
         "name": "cdk-erigon-configure-contract-container-custom-genesis.sh",
         "file": "./templates/cdk-erigon/cdk-erigon-configure-contract-container-custom-genesis.sh",
     },
     {
         "name": "cdk-erigon-custom-genesis-addresses.json",
         "file": "./templates/cdk-erigon/cdk-erigon-custom-genesis-addresses.json",
-    },
-    {
-        "name": "op-custom-genesis-addresses.json",
-        "file": "./templates/sovereign-rollup/op-custom-genesis-addresses.json",
     },
     {
         "name": "json2http.py",
@@ -358,13 +354,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             description="Configuring contract container for pessimistic",
             service_name=contracts_service_name,
             recipe=ExecRecipe(
-                command=[
-                    "/bin/sh",
-                    "-c",
-                    "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/op-configure-contract-container-custom-genesis.sh"
-                    ),
-                ]
+                command=["/bin/sh", "-c", "/opt/scripts/contracts.sh configure_contract_container_custom_genesis"]
             ),
         )
     elif args.get("l1_custom_genesis") and (
