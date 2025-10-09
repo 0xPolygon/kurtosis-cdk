@@ -177,7 +177,7 @@ configure_contract_container_custom_genesis() {
     cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
-# Calles if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
+# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
 configure_contract_container_custom_genesis_cdk_erigon() {
     # deploymentRollupManagerBlockNumber field inside cdk-erigon-custom-genesis-addresses.json must be different to 0 because cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
     cp "$input_dir"/cdk-erigon-custom-genesis-addresses.json /opt/zkevm/combined.json
