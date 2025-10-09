@@ -18,6 +18,7 @@ L2URL = "{{.op_el_rpc_url}}"
 {{- else }}
 L2URL = "{{.l2_rpc_url}}"
 {{- end }}
+OpNodeURL = "{{.op_cl_rpc_url}}"
 
 # Check if agglayer grpc or readrpc should be used for AggLayerURL
 {{- if eq .agglayer_endpoint "grpc" }}
@@ -128,7 +129,7 @@ GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production" # "production" or "development"
+Environment = "development" # "production" or "development"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
@@ -225,7 +226,6 @@ UseTLS = false
 [AggSender.OptimisticModeConfig]
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-OpNodeURL = "{{.op_cl_rpc_url}}"
 RequireKeyMatchTrustedSequencer = true
 {{- end}}
 
@@ -283,10 +283,11 @@ BlockFinality = "LatestBlock"
 # EnableRPC = false
 
 [AggSender.AgglayerClient]
-Cached = false
-[ValidaAggSendertor.AgglayerClient.ConfigurationCache]
-TTL = "15m"
-Capacity = 100
+[[AggSender.AgglayerClient.APIRateLimits]]
+MethodName = "SendCertificate"
+[AggSender.AgglayerClient.APIRateLimits.RateLimit]
+# Disable limit
+NumRequests = 0
 [AggSender.AgglayerClient.GRPC]
 URL = "{{.agglayer_grpc_url}}"
 MinConnectTimeout = "5s"
