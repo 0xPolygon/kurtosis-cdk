@@ -16,11 +16,11 @@ ts=$(date +%s)
 rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
 
 # Replace rollupManagerAddress with the extracted address
-jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' "$input_dir"/create_new_rollup.json > "$input_dir"/create_new_rollup${ts}.json
-cp "$input_dir"/create_new_rollup${ts}.json "$input_dir"/create_new_rollup.json
+jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' "$input_dir"/create_new_rollup.json > "${input_dir}/create_new_rollup${ts}.json"
+cp "${input_dir}/create_new_rollup${ts}.json" "$input_dir"/create_new_rollup.json
 
 # Replace polygonRollupManagerAddress with the extracted address
-jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' "/opt/contract-deploy/add_rollup_type.json > "/opt/contract-deploy/add_rollup_type${ts}.json
+jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' "/opt/contract-deploy/add_rollup_type.json" > "/opt/contract-deploy/add_rollup_type${ts}.json"
 cp "/opt/contract-deploy/add_rollup_type${ts}.json" "/opt/contract-deploy/add_rollup_type.json"
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
