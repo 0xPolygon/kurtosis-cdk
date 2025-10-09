@@ -11,5 +11,4 @@ deployment_stages:
   deploy_l2_contracts: false
 
 args:
-  verbosity: debug
   additional_services: []

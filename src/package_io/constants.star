@@ -23,6 +23,11 @@ LOG_LEVEL = struct(
     trace="trace",
 )
 
+LOG_FORMAT = struct(
+    json="json",
+    pretty="pretty",
+)
+
 CONSENSUS_TYPE = struct(
     rollup="rollup",
     cdk_validium="cdk_validium",

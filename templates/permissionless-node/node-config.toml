@@ -2,9 +2,9 @@
 IsTrustedSequencer = false
 
 [Log]
-Environment = "production" # "production" or "development"
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 Outputs = ["stderr"]
+Environment = "{{.environment}}"
 
 [State]
         [State.DB]

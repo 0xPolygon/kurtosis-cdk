@@ -1,7 +1,7 @@
 [Log]
-Environment = "development"
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 Outputs = ["stdout"]
+Environment = "{{.environment}}"
 
 [SequenceSender]
 IsValidiumMode={{.zkevm_is_validium}}

@@ -15,7 +15,6 @@ args:
   is_vanilla_client: true     
   agg_sender_validator_total_number: 3
   agg_sender_multisig_threshold: 2
-  verbosity: debug
   aggkit_image: ghcr.io/agglayer/aggkit:0.7.0-beta3
   additional_services: []    
   binary_name: aggkit

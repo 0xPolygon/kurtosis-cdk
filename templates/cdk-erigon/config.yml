@@ -16,7 +16,7 @@ log.console.json: false
 # Set the log verbosity for console logs.
 # Options: crit, error, warn, info, debug, trace
 # Default: info
-log.console.verbosity: {{.global_log_level}}
+log.console.verbosity: {{.log_level}}
 
 # Format file logs with JSON
 # Default: false
@@ -25,7 +25,7 @@ log.dir.json: false
 # Set the log verbosity for logs stored to disk.
 # Options: crit, error, warn, info, debug, trace
 # Default: info
-log.dir.verbosity: {{.global_log_level}}
+log.dir.verbosity: {{.log_level}}
 
 # Path to store user and errors logs to disk.
 # Default: ""

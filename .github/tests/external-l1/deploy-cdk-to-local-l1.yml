@@ -1,6 +1,3 @@
 deployment_stages:
   # Disable local L1.
   deploy_l1: false
-
-args:
-  verbosity: debug

@@ -3,7 +3,6 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  verbosity: debug
   gas_token_enabled: true
 
   # fork12-cdk-erigon-validium

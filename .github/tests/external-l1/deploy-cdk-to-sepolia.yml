@@ -3,8 +3,6 @@ deployment_stages:
   deploy_l1: false
 
 args:
-  verbosity: debug
-
   ## L1 Config
   l1_chain_id: 11155111
   # TODO: Create another mnemonic seed phrase for running the contract deployment on L1.

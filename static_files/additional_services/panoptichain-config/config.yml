@@ -60,4 +60,4 @@ networks:
     polygon_zkevm: true
 
 logs:
-  verbosity: "{{.global_log_level}}"
+  verbosity: "{{.log_level}}"
