@@ -269,6 +269,13 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
+
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
         with:

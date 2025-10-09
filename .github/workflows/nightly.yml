@@ -258,6 +258,13 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
+
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
         with:
@@ -280,7 +287,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: bcbff97a600e090dd5cd912a5838c9514f8724e5
+          ref: 871584b8cf6158ea1fb981faefccb50f66a8093c
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
