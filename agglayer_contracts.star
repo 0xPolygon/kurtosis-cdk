@@ -26,6 +26,10 @@ INPUTS = [
         "name": "create_rollup_parameters.json",
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
+    {
+        "name": "add_rollup_type.json",
+        "file": "./templates/sovereign-rollup/add_rollup_type.json",
+    },
 ]
 
 ARTIFACTS = [
@@ -40,10 +44,6 @@ ARTIFACTS = [
     {
         "name": "run-sovereign-setup-predeployed.sh",
         "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
-    },
-    {
-        "name": "add_rollup_type.json",
-        "file": "./templates/sovereign-rollup/add_rollup_type.json",
     },
     {
         "name": "sovereign-genesis.json",

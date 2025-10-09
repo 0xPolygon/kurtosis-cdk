@@ -39,7 +39,7 @@ rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined
 sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/create_new_rollup.json
 
 # Replace polygonRollupManagerAddress with the extracted address
-sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/add_rollup_type.json
+sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/add_rollup_type.json
 
 # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
