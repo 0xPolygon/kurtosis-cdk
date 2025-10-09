@@ -2,6 +2,7 @@
 input_dir="/opt/input"
 output_dir="/opt/output"
 keystores_dir="/opt/keystores"
+contracts_dir=""$contracts_dir""
 
 # Internal function
 _create_geth_keystore() {
@@ -47,7 +48,7 @@ _wait_for_rpc_to_be_available() {
 # Internal function, used by create_agglayer_rollup
 _create_genesis() {
     echo_ts "Step 4: Creating genesis"
-    pushd /opt/zkevm-contracts || exit 1
+    pushd "$contracts_dir" || exit 1
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then
         echo_ts "The genesis file was not created after running createGenesis"
@@ -162,15 +163,15 @@ create_keystores() {
 configure_contract_container_custom_genesis() {
     cp "$input_dir"/op-custom-genesis-addresses.json /opt/zkevm/combined.json
 
-    sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' /opt/zkevm-contracts/hardhat.config.ts
-    cp "$input_dir"/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+    sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' "$contracts_dir"/hardhat.config.ts
+    cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
 
-    pushd /opt/zkevm-contracts || exit 1
+    pushd "$contracts_dir" || exit 1
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     popd || exit 1
 
-    cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
-    cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm/
+    cp "$contracts_dir"/deployment/v2/genesis.json /opt/zkevm/
+    cp "$input_dir"/create_rollup_parameters.json /opt/zkevm/
     cp /opt/zkevm/combined.json /opt/zkevm/combined-001.json
 
     global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
@@ -182,7 +183,7 @@ configure_contract_container_custom_genesis_cdk_erigon() {
     # deploymentRollupManagerBlockNumber field inside cdk-erigon-custom-genesis-addresses.json must be different to 0 because cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
     cp "$input_dir"/cdk-erigon-custom-genesis-addresses.json /opt/zkevm/combined.json
 
-    cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
+    cp /opt/zkevm/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
     cp /opt/zkevm/combined.json /opt/zkevm/deploy_output.json
 
     global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
@@ -228,9 +229,9 @@ deploy_agglayer_core_contracts() {
     _fund_account_on_l1 "sovereignadmin" "{{.zkevm_l2_sovereignadmin_address}}"
 
     _echo_ts "Setting up local zkevm-contracts repo for deployment"
-    pushd /opt/zkevm-contracts || exit 1
-    cp "$input_dir"/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
-    cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    pushd "$contracts_dir" || exit 1
+    cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
+    cp "$input_dir"/create_rollup_parameters.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     # Set up the hardhat environment.
     sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
     # Set up a foundry project in case we do a gas token or dac deployment.
@@ -243,7 +244,7 @@ deploy_agglayer_core_contracts() {
         is_first_rollup=1
     else
         _echo_ts "Skipping deployment of the Rollup Manager and LxLy"
-        cp /opt/zkevm/deploy_output.json /opt/zkevm-contracts/deployment/v2/
+        cp /opt/zkevm/deploy_output.json "$contracts_dir"/deployment/v2/
     fi
 
     # Combine contract deploy files.
@@ -251,7 +252,7 @@ deploy_agglayer_core_contracts() {
     # Now we can combine all of the files and put them into the general zkevm folder.
     _echo_ts "Combining contract deploy files"
     mkdir -p /opt/zkevm
-    cp /opt/zkevm-contracts/deployment/v2/deploy_*.json /opt/zkevm/
+    cp "$contracts_dir"/deployment/v2/deploy_*.json /opt/zkevm/
 
     popd || exit 1
 
@@ -349,19 +350,19 @@ create_agglayer_rollup() {
     _wait_for_rpc_to_be_available "{{.l1_rpc_url}}" "{{.l1_preallocated_mnemonic}}"
     _echo_ts "L1 RPC is now available"
 
-    cp "$input_dir"/deploy_parameters.json /opt/zkevm-contracts/deployment/v2/deploy_parameters.json
+    cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
     # shellcheck disable=SC1054,SC1072,SC1083
     {{ if eq .consensus_contract_type "ecdsa_multisig" }}
-    cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     # shellcheck disable=SC1073,1009
     {{ else }}
-    cp /opt/contract-deploy/create_rollup_parameters.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    cp "$input_dir"/create_rollup_parameters.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     {{ end }}
 
     _create_genesis
 
     _echo_ts "Setting up local zkevm-contracts repo for deployment"
-    pushd /opt/zkevm-contracts || exit 1
+    pushd "$contracts_dir" || exit 1
     # Set up the hardhat environment. It needs to be executed even in custom genesis mode
     sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
 
@@ -383,7 +384,7 @@ create_agglayer_rollup() {
                 --slurpfile c gasToken-erc20.json \
                 '.gasTokenAddress = $c[0].deployedTo | .sovereignParams.sovereignWETHAddress = $c[0].deployedTo' \
                 "$input_dir"/create_new_rollup.json \
-                > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+                > "$contracts_dir"/deployment/v2/create_rollup_parameters.json
             {{ else }}
             forge create \
                 --broadcast \
@@ -396,8 +397,8 @@ create_agglayer_rollup() {
             jq \
                 --slurpfile c gasToken-erc20.json \
                 '.gasTokenAddress = $c[0].deployedTo' \
-                /opt/contract-deploy/create_rollup_parameters.json \
-                > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+                "$input_dir"/create_rollup_parameters.json \
+                > "$contracts_dir"/deployment/v2/create_rollup_parameters.json
             {{ end }}
         {{ else }}
         _echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
@@ -406,18 +407,18 @@ create_agglayer_rollup() {
                 --arg c "{{ .gas_token_address }}" \
                 '.gasTokenAddress = $c' \
                 "$input_dir"/create_new_rollup.json \
-                > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+                > "$contracts_dir"/deployment/v2/create_rollup_parameters.json
             {{ else }}
             jq \
                 --arg c "{{ .gas_token_address }}" \
                 '.gasTokenAddress = $c' \
-                /opt/contract-deploy/create_rollup_parameters.json \
-                > /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+                "$input_dir"/create_rollup_parameters.json \
+                > "$contracts_dir"/deployment/v2/create_rollup_parameters.json
             {{ end }}
         {{ end }}
     {{ end }}
 
-    cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm/
+    cp "$contracts_dir"/deployment/v2/genesis.json /opt/zkevm/
 
     {{ if eq .consensus_contract_type "ecdsa_multisig" }}
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
@@ -434,13 +435,13 @@ create_agglayer_rollup() {
         else 
             . 
         end)' \
-        /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json > temp.json && \
-        mv temp.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+        "$contracts_dir"/deployment/v2/create_rollup_parameters.json > temp.json && \
+        mv temp.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     {{ end }}
 
     # Comment out aggLayerGateway.addDefaultAggchainVKey for additional rollups with same AggchainVKeySelector and OwnedAggchainVKey
     if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
-    sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
+    sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
 
     # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
@@ -468,12 +469,12 @@ create_agglayer_rollup() {
 
     # Check create_rollup_output.json exists before copying it.
     # For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
-    if [[ -e /opt/zkevm-contracts/deployment/v2/create_rollup_output.json ]]; then
-        cp /opt/zkevm-contracts/deployment/v2/create_rollup_output.json /opt/zkevm/
+    if [[ -e "$contracts_dir"/deployment/v2/create_rollup_output.json ]]; then
+        cp "$contracts_dir"/deployment/v2/create_rollup_output.json /opt/zkevm/
     else
-        echo "File /opt/zkevm-contracts/deployment/v2/create_rollup_output.json does not exist."
+        echo "File "$contracts_dir"/deployment/v2/create_rollup_output.json does not exist."
     fi
-    cp /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json /opt/zkevm/
+    cp "$contracts_dir"/deployment/v2/create_rollup_parameters.json /opt/zkevm/
     popd || exit 1
 
     _echo_ts "Modifying combined.json"
@@ -496,7 +497,7 @@ create_agglayer_rollup() {
     jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
     {{ if .gas_token_enabled }}
-    jq --slurpfile cru /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
+    jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
 
     gas_token_address=$(jq -r '.gasTokenAddress' /opt/zkevm/combined.json)
     l1_bridge_addr=$(jq -r '.polygonZkEVMBridgeAddress' /opt/zkevm/combined.json)

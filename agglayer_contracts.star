@@ -22,13 +22,13 @@ INPUTS = [
         "name": "cdk-erigon-custom-genesis-addresses.json",
         "file": "./templates/cdk-erigon/cdk-erigon-custom-genesis-addresses.json",
     },
-]
-
-ARTIFACTS = [
     {
         "name": "create_rollup_parameters.json",
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
+]
+
+ARTIFACTS = [
     {
         "name": "update-ger.sh",
         "file": "./templates/contract-deploy/update-ger.sh",
