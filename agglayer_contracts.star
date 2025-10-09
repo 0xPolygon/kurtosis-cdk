@@ -30,10 +30,6 @@ ARTIFACTS = [
         "file": "./templates/contract-deploy/create_rollup_parameters.json",
     },
     {
-        "name": "run-create-agglayer-rollup.sh",
-        "file": "./templates/contract-deploy/run-create-agglayer-rollup.sh",
-    },
-    {
         "name": "update-ger.sh",
         "file": "./templates/contract-deploy/update-ger.sh",
     },
@@ -376,9 +372,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-create-agglayer-rollup.sh"
-                    ),
+                    "/opt/scripts/contracts.sh create_agglayer_rollup",
                 ]
             ),
         )
@@ -418,9 +412,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "chmod +x {0} && {0}".format(
-                        "/opt/contract-deploy/run-create-agglayer-rollup.sh"
-                    ),
+                    "/opt/scripts/contracts.sh create_agglayer_rollup",
                 ]
             ),
         )
