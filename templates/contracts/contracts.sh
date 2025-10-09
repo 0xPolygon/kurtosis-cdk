@@ -2,7 +2,7 @@
 input_dir="/opt/input"
 output_dir="/opt/output"
 keystores_dir="/opt/keystores"
-contracts_dir=""$contracts_dir""
+contracts_dir="/opt/zkevm-contracts"
 
 # Internal function, used by create_keystores
 _create_geth_keystore() {
