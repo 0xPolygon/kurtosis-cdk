@@ -12,9 +12,9 @@ GenesisBlock = "0"
 TrackSequencer = false
 
 [Log]
-Environment = "{{.environment}}"
 Level = "{{.log_level}}"
 Outputs = ["stderr"]
+Environment = "{{.environment}}"
 
 [DB]
 User = "{{.dac_db.user}}"
