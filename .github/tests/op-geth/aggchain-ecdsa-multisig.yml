@@ -22,8 +22,3 @@ optimism_package:
     "001":
       proposer_params:
         enabled: false
-      network_params:
-        network_id: "2151908"
-        seconds_per_slot: 1
-  observability:
-    enabled: false

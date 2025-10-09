@@ -105,7 +105,7 @@ def test_parse_args_with_user_overrides(plan):
             "004": {},
         },
         "observability": {
-            "enabled": True,
+            "enabled": False,
         },
     }
 

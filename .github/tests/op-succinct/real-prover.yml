@@ -41,17 +41,9 @@ args:
   l1_seconds_per_slot: 12
 
 optimism_package:
-  predeployed_contracts: true
   chains:
     "001":
       batcher_params:
         max_channel_duration: 50 # 50 blocks @ 12 sec => 10 minutes per blob
       proposer_params:
         enabled: false
-      network_params:
-        network_id: "2151908"
-        seconds_per_slot: 1
-  observability:
-    # true = op-stack observability WITHOUT op-succinct
-    # false = kurtosis-cdk observability WITH op-succinct
-    enabled: false
