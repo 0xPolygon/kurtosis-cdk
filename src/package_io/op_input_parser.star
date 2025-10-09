@@ -9,25 +9,34 @@ def _sort_dict_by_values(d):
 
 DEFAULT_PARTICIPANT = _sort_dict_by_values(
     {
-        "count": 1,
-        # Execution layer
-        "el_type": "op-geth",
-        "el_image": constants.DEFAULT_IMAGES.get("op_geth_image"),
-        "el_extra_params": ["--log.format=json"],
-        # Consensus layer
-        "cl_type": "op-node",
-        "cl_image": constants.DEFAULT_IMAGES.get("op_node_image"),
-        "cl_extra_params": ["--log.format=json"],
+        "el": {
+            "type": "op-geth",
+            "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
+            "extra_params": ["--log.format=json"],
+        },
+        "cl": {
+            "type": "op-node",
+            "image": constants.DEFAULT_IMAGES.get("op_node_image"),
+            "extra_params": [
+                "--log.format=json",
+                "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
+            ],
+        },
     }
 )
 
 DEFAULT_CHAIN = _sort_dict_by_values(
     {
-        "participants": [DEFAULT_PARTICIPANT],
+        "participants": {
+            "node1": DEFAULT_PARTICIPANT,
+        },
         "batcher_params": _sort_dict_by_values(
             {
                 "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
-                "extra_params": ["--log.format=json"],
+                "extra_params": [
+                    "--txmgr.enable-cell-proofs",  # required for the fusaka hf
+                    "--log.format=json",
+                ],
             }
         ),
         "proposer_params": _sort_dict_by_values(
@@ -38,10 +47,6 @@ DEFAULT_CHAIN = _sort_dict_by_values(
         ),
         "network_params": _sort_dict_by_values(
             {
-                # Name maps to l2_services_suffix in optimism-package.
-                # The optimism-package appends a suffix with the following format: `-<name>`.
-                # However, our deployment suffix already starts with a "-", so we remove it here.
-                "name": "001",
                 # The rollup chain ID
                 "network_id": 2151908,
                 # The rollup block time
@@ -53,17 +58,17 @@ DEFAULT_CHAIN = _sort_dict_by_values(
     }
 )
 
-ARTIFACTS_LOCATOR = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
-
 DEFAULT_ARGS = _sort_dict_by_values(
     {
-        "chains": [DEFAULT_CHAIN],
+        "chains": {
+            "001": DEFAULT_CHAIN,
+        },
         "op_contract_deployer_params": _sort_dict_by_values(
             {
                 "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
-                "l1_artifacts_locator": ARTIFACTS_LOCATOR,
-                "l2_artifacts_locator": ARTIFACTS_LOCATOR,
-            }
+                "l1_artifacts_locator": "embedded",
+                "l2_artifacts_locator": "embedded",
+            },
         ),
         "observability": _sort_dict_by_values(
             {
@@ -75,7 +80,7 @@ DEFAULT_ARGS = _sort_dict_by_values(
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@a70f83d31c746139d8b6155bdec6a26fdd4afda0",
+        "source": "github.com/agglayer/optimism-package/main.star@8b282670ad90dd17cc33fad323ee17d86da35c9e",  # overlay/main - 2025-10-09
         "predeployed_contracts": True,
     }
 )
@@ -133,41 +138,45 @@ def parse_args(plan, args, op_args):
 
 
 def _parse_chains(chains):
-    if len(chains) == 0:
-        return [DEFAULT_CHAIN]
+    if len(chains.keys()) == 0:
+        return {"001": DEFAULT_CHAIN}
 
-    chains_with_defaults = []
-    for c in chains:
-        c = dict(c)  # create a mutable copy
-        for k, v in DEFAULT_CHAIN.items():
-            if k in c:
-                if k == "participants":
-                    c[k] = _parse_participants(c[k])
+    chains_with_defaults = {}
+    for k, v in chains.items():
+        c = dict(v)  # create a mutable copy
+        for kk, vv in DEFAULT_CHAIN.items():
+            if kk in c:
+                if kk == "participants":
+                    c[kk] = _parse_participants(c[kk])
                 else:
                     # Apply defaults
-                    for kk, vv in DEFAULT_CHAIN[k].items():
-                        c[k].setdefault(kk, vv)
-                    c[k] = _sort_dict_by_values(c[k])
+                    for kkk, vvv in DEFAULT_CHAIN[kk].items():
+                        c[kk].setdefault(kkk, vvv)
+                    c[kk] = _sort_dict_by_values(c[kk])
             else:
-                c[k] = v
-        chains_with_defaults.append(c)
+                c[kk] = vv
+        chains_with_defaults[k] = c
 
-    sorted_chains = [_sort_dict_by_values(c) for c in chains_with_defaults]
+    sorted_chains = {
+        k: _sort_dict_by_values(v) for k, v in chains_with_defaults.items()
+    }
     return sorted_chains
 
 
 def _parse_participants(participants):
-    if len(participants) == 0:
-        return [DEFAULT_PARTICIPANT]
+    if len(participants.keys()) == 0:
+        return {"node1": DEFAULT_PARTICIPANT}
 
-    participants_with_defaults = []
-    for p in participants:
-        p = dict(p)  # create a mutable copy
-        for k, v in DEFAULT_PARTICIPANT.items():
-            p.setdefault(k, v)
-        participants_with_defaults.append(p)
+    participants_with_defaults = {}
+    for k, v in participants.items():
+        p = dict(v)  # create a mutable copy
+        for kk, vv in DEFAULT_PARTICIPANT.items():
+            p.setdefault(kk, vv)
+        participants_with_defaults[k] = p
 
-    sorted_participants = [_sort_dict_by_values(p) for p in participants_with_defaults]
+    sorted_participants = {
+        k: _sort_dict_by_values(v) for k, v in participants_with_defaults.items()
+    }
     return sorted_participants
 
 

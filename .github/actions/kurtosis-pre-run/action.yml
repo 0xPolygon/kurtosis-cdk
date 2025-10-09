@@ -16,13 +16,24 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Free up disk space
+      uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false
+        docker-images: true
+        swap-storage: true
+
     # Install dependencies
     - name: Install kurtosis
       shell: bash
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install -y kurtosis-cli=1.7.2
+        sudo apt install -y kurtosis-cli=1.11.1
         kurtosis analytics disable
         kurtosis version
 
@@ -42,7 +53,7 @@ runs:
     - name: Install foundry
       uses: foundry-rs/foundry-toolchain@de808b1eea699e761c404bda44ba8f21aba30b2c # v1.3.1
       with:
-        version: v1.0.0
+        version: v1.3.6
         cache: false
 
     # Login to registries
@@ -60,6 +71,7 @@ runs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
+    # Pull images from GCR if specified
     - name: Detect fork
       id: detect-fork
       shell: bash
@@ -71,7 +83,6 @@ runs:
           echo "pull_gcr=${{ inputs.pull_images_from_gcr }}" >> $GITHUB_OUTPUT
         fi
 
-    # Pull images from GCR if specified
     - uses: actions/setup-python@v4
       if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       with:
@@ -106,13 +117,15 @@ runs:
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
         images=(
-          "kurtosistech/engine:1.7.2"
+          "kurtosistech/engine:1.11.1"
+          "kurtosistech/core:1.11.1"
+          "kurtosistech/files-artifacts-expander:1.11.1"
           "timberio/vector:0.45.0-debian"
           "traefik:2.10.6"
           "alpine:3.17"
           "badouralix/curl-jq:latest"
           "protolambda/eth2-val-tools:latest"
-          "ethpandaops/ethereum-genesis-generator:4.1.19"
+          "ethpandaops/ethereum-genesis-generator:5.0.6"
           "mslipper/deployment-utils:latest"
         )
         for image in "${images[@]}"; do
@@ -124,6 +137,6 @@ runs:
         wait
 
     - name: Display docker images
-      if: ${{ inputs.pull_images_from_gcr == 'true' }}
+      if: ${{ steps.detect-fork.outputs.pull_gcr == 'true' }}
       shell: bash
       run: docker images
