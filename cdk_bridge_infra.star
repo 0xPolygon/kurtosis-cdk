@@ -75,7 +75,8 @@ def create_bridge_config_artifact(
             "bridge-config.toml": struct(
                 template=bridge_config_template,
                 data={
-                    "log_level": args["log_level"],
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,

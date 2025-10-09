@@ -19,7 +19,7 @@
 # Set the logging level (e.g., debug, info, warn, error) to control verbosity
 Level = "{{.log_level}}"
 # Specify the environment in which the application is running (e.g., production, development)
-Environment = "production"
+Environment = "{{.environment}}"
 # Define where to output logs; options include stderr (standard error) or stdout
 Outputs = ["stderr"]
 

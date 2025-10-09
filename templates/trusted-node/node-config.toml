@@ -61,7 +61,7 @@ ForkUpgradeNewForkId = 0
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
@@ -1030,7 +1030,7 @@ UpgradeEtrogBatchNumber = 0
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the

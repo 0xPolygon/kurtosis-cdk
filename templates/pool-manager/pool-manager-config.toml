@@ -1,7 +1,7 @@
 [Log]
-Environment = "development"     # "production" or "development"
 Level = "{{.log_level}}"
 Outputs = ["stderr"]
+Environment = "{{.environment}}"
 
 [Server]
 Port = {{.zkevm_pool_manager_port}}

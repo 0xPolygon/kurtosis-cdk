@@ -184,7 +184,8 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
                 template=dac_config_template,
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "log_level": args["log_level"],
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
                     "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],

@@ -98,7 +98,8 @@ def create_agglayer_prover_config_artifact(plan, args):
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "log_level": args["log_level"],
+                    "log_level": args.get("log_level"),
+                    "log_format": args.get("log_format"),
                     "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
@@ -141,7 +142,8 @@ def create_agglayer_config_artifact(
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "log_level": args["log_level"],
+                    "log_level": args.get("log_level"),
+                    "log_format": args.get("log_format"),
                     "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["mitm_rpc_url"].get(
                         "agglayer", args["l1_rpc_url"]

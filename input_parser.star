@@ -385,6 +385,9 @@ DEFAULT_ARGS = (
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
         "log_level": "info",
+        # The log format that all components of the stack should use.
+        # Valid values are "json" and "pretty".
+        "log_format": "json",
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
@@ -480,8 +483,13 @@ def parse_args(plan, user_args):
     }
 
     # Validation step.
-    log_level = args.get("log_level", "")
-    validate_log_level("log level", log_level)
+    log_level = args.get("log_level")
+    validate_log_level(log_level)
+
+    log_format = args.get("log_format")
+    validate_log_format(log_format)
+    environment = log_format_to_environment(log_format)
+    args["environment"] = environment
 
     validate_additional_services(args.get("additional_services", []))
 
@@ -537,25 +545,44 @@ def parse_args(plan, user_args):
     return (sorted_deployment_stages, sorted_args, op_args)
 
 
-def validate_log_level(name, log_level):
-    if log_level not in (
+def validate_log_level(log_level):
+    VALID_LOG_LEVELS = [
         constants.LOG_LEVEL.error,
         constants.LOG_LEVEL.warn,
         constants.LOG_LEVEL.info,
         constants.LOG_LEVEL.debug,
         constants.LOG_LEVEL.trace,
-    ):
+    ]
+    if log_level not in VALID_LOG_LEVELS:
         fail(
-            "Unsupported {}: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
-                name,
-                log_level,
-                constants.LOG_LEVEL.error,
-                constants.LOG_LEVEL.warn,
-                constants.LOG_LEVEL.info,
-                constants.LOG_LEVEL.debug,
-                constants.LOG_LEVEL.trace,
+            "Unsupported log level: '{}', please use one of: '{}'".format(
+                log_level, VALID_LOG_LEVELS
             )
         )
+
+
+def validate_log_format(log_format):
+    VALID_LOG_FORMATS = [
+        constants.LOG_FORMAT.json,
+        constants.LOG_FORMAT.pretty,
+    ]
+    if log_format not in VALID_LOG_FORMATS:
+        fail(
+            "Unsupported log format: '{}', please use one of: '{}'".format(
+                log_format, VALID_LOG_FORMATS
+            )
+        )
+
+
+def log_format_to_environment(log_format):
+    mapping = {
+        constants.LOG_FORMAT.json: "production",
+        constants.LOG_FORMAT.pretty: "development",
+    }
+    environment = mapping.get(log_format)
+    if not environment:
+        fail("Unknown log format: {}".format(log_format))
+    return environment
 
 
 def validate_additional_services(additional_services):

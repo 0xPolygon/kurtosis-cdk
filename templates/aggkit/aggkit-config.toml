@@ -129,7 +129,7 @@ GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "development" # "production" or "development"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the

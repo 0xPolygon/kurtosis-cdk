@@ -52,7 +52,7 @@ gas-multiplier-factor = 175
 # level = "{{.log_level}}"
 level = "debug" # we want debug visibility for now
 outputs = ["stderr"]
-format = "json"
+format = "{{.log_format}}"
 
 [auth.local]
 private-keys = [

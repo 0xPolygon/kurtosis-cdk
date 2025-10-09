@@ -4,11 +4,10 @@ max-request-duration = 300
 max-buffered-queries = 100
 
 [log]
-environment = "production" # "production" or "development"
 # level = "{{.log_level}}"
 level = "debug" # we want debug visibility for now
 outputs = ["stderr"]
-format = "json"
+format = "{{.log_format}}"
 
 [telemetry]
 prometheus-addr = "0.0.0.0:{{.prometheus_port}}"

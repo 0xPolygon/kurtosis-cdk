@@ -38,7 +38,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
 [Log]
-Environment = "development" # "production" or "development"
+Environment = "{{.environment}}"
 Level = "{{.log_level}}"
 Outputs = ["stderr"]
 

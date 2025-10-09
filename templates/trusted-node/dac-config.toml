@@ -12,7 +12,7 @@ GenesisBlock = "0"
 TrackSequencer = false
 
 [Log]
-Environment = "development" # "production" or "development"
+Environment = "{{.environment}}"
 Level = "{{.log_level}}"
 Outputs = ["stderr"]
 
