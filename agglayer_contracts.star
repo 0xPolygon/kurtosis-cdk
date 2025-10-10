@@ -30,6 +30,10 @@ INPUTS = [
         "name": "add_rollup_type.json",
         "file": "./templates/sovereign-rollup/add_rollup_type.json",
     },
+    {
+        "name": "create-genesis-sovereign-params.json",
+        "file": "./templates/sovereign-rollup/create-genesis-sovereign-params.json",
+    },
 ]
 
 ARTIFACTS = [
@@ -44,10 +48,6 @@ ARTIFACTS = [
     {
         "name": "run-sovereign-setup-predeployed.sh",
         "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
-    },
-    {
-        "name": "create-genesis-sovereign-params.json",
-        "file": "./templates/sovereign-rollup/create-genesis-sovereign-params.json",
     },
     {
         "name": "create-predeployed-sovereign-genesis.sh",

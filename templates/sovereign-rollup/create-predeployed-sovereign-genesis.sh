@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+input_dir="/opt/input"
+
+
 pushd /opt/zkevm-contracts || exit 1
 
 # FIXME Just in case for now... ideally we don't need this but the base image is hacky right now
@@ -28,8 +31,8 @@ done | jq -R . | jq -s .)
 # Append to aggOracleCommittee in the JSON file
 jq --argjson addrs "$agg_oracle_committee_members" '
   .aggOracleCommittee += $addrs
-' /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp \
-  && mv /opt/contract-deploy/create-genesis-sovereign-params.json.tmp /opt/contract-deploy/create-genesis-sovereign-params.json
+' "$input_dir"/create-genesis-sovereign-params.json > "$input_dir"/create-genesis-sovereign-params.json.tmp \
+  && mv "$input_dir"/create-genesis-sovereign-params.json.tmp "$input_dir"/create-genesis-sovereign-params.json
 
 # shellcheck disable=SC1054,SC1083,SC1056,SC1072
 {{ if not .gas_token_enabled }}
@@ -44,11 +47,11 @@ jq --arg ROLLUPMAN "$rollup_manager_addr" \
    .rollupManagerAddress = $ROLLUPMAN |
    .rollupID = ($ROLLUPID | tonumber) |
    .gasTokenAddress = $GAS_TOKEN_ADDR
-   ' /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
-mv /opt/contract-deploy/create-genesis-sovereign-params.json.tmp /opt/contract-deploy/create-genesis-sovereign-params.json
+   ' "$input_dir"/create-genesis-sovereign-params.json > "$input_dir"/create-genesis-sovereign-params.json.tmp
+mv "$input_dir"/create-genesis-sovereign-params.json.tmp "$input_dir"/create-genesis-sovereign-params.json
 
 # Required files to run the script
-cp /opt/contract-deploy/create-genesis-sovereign-params.json /opt/zkevm-contracts/tools/createSovereignGenesis/create-genesis-sovereign-params.json
+cp "$input_dir"/create-genesis-sovereign-params.json /opt/zkevm-contracts/tools/createSovereignGenesis/create-genesis-sovereign-params.json
 # 2025-04-03 it's not clear which of these should be used at this point
 # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
 cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
