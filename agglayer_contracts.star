@@ -47,10 +47,6 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
     },
     {
-        "name": "create-predeployed-sovereign-genesis.sh",
-        "file": "./templates/sovereign-rollup/create-predeployed-sovereign-genesis.sh",
-    },
-    {
         "name": "json2http.py",
         "file": "./scripts/json2http.py",
     },
@@ -214,6 +210,11 @@ def run(plan, args, deployment_stages, op_stack_args):
                     data=template_data,
                 )
             },
+        ),
+        plan.upload_files(
+            src = "./templates/contracts/create_op_allocs.py",
+            name = "create_op_allocs.py",
+            description = "Uploading create_op_allocs.py artifact"
         )
     ]
 
@@ -429,6 +430,7 @@ def is_vanilla_client(args, deployment_stages):
         return False
 
 
+# Called from main for erigon stacks
 def l2_legacy_fund_accounts(plan, args):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     contracts_service_name = "contracts" + args["deployment_suffix"]
@@ -449,6 +451,7 @@ def l2_legacy_fund_accounts(plan, args):
     )
 
 
+# Called from main for erigon stacks
 def deploy_l2_contracts(plan, args):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     contracts_service_name = "contracts" + args["deployment_suffix"]
@@ -472,4 +475,30 @@ def deploy_l2_contracts(plan, args):
                 ),
             ]
         ),
+    )
+
+
+# Called from main when optimism rollup
+def create_sovereign_predeployed_genesis(plan, args):
+    contracts_service_name = "contracts" + args["deployment_suffix"]
+
+    plan.exec(
+        description="Creating sovereign predeployed Genesis for OP Stack",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                "/opt/scripts/contracts.sh create_predeployed_op_genesis",
+            ]
+        ),
+    )
+
+    allocs_file = "predeployed_allocs.json"
+
+    plan.store_service_files(
+        service_name=contracts_service_name,
+        name=allocs_file,
+        src="/opt/zkevm/" + allocs_file,
+        description="Storing {}".format(allocs_file),
     )

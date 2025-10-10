@@ -16,9 +16,6 @@ databases_package = "./databases.star"
 agglayer_contracts_package = "./agglayer_contracts.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
-create_sovereign_predeployed_genesis_package = (
-    "./create_sovereign_predeployed_genesis.star"
-)
 mitm_package = "./mitm.star"
 
 
@@ -67,8 +64,8 @@ def run(plan, args={}):
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
-            # XROMERO: TEST SKIPPING THIS STEP AS I BELIEVE ITS NOT REQUIRED
-            # import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
+            # This is required to push an artifact for predeployed_allocs that will be used from optimism-package
+            import_module(agglayer_contracts_package).create_sovereign_predeployed_genesis(plan, args)
 
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
