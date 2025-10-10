@@ -228,7 +228,7 @@ deploy_agglayer_core_contracts() {
     _fund_account_on_l1 "l1testing" "{{.zkevm_l2_l1testing_address}}"
     _fund_account_on_l1 "sovereignadmin" "{{.zkevm_l2_sovereignadmin_address}}"
 
-    _echo_ts "Setting up local zkevm-contracts repo for deployment"
+    _echo_ts "Setting up local agglayer-contracts repo for deployment"
     pushd "$contracts_dir" || exit 1
     cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
     cp "$input_dir"/create_rollup_parameters.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
@@ -361,7 +361,7 @@ create_agglayer_rollup() {
 
     _create_genesis
 
-    _echo_ts "Setting up local zkevm-contracts repo for deployment"
+    _echo_ts "Setting up local agglayer-contracts repo for deployment"
     pushd "$contracts_dir" || exit 1
     # Set up the hardhat environment. It needs to be executed even in custom genesis mode
     sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' hardhat.config.ts
