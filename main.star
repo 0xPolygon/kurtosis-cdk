@@ -67,7 +67,8 @@ def run(plan, args={}):
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
-            import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
+            # XROMERO: TEST SKIPPING THIS STEP AS I BELIEVE ITS NOT REQUIRED
+            # import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
 
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
