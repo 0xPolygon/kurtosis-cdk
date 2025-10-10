@@ -16,7 +16,6 @@ databases_package = "./databases.star"
 agglayer_contracts_package = "./agglayer_contracts.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
-deploy_l2_contracts_package = "./deploy_l2_contracts.star"
 create_sovereign_predeployed_genesis_package = (
     "./create_sovereign_predeployed_genesis.star"
 )
@@ -258,12 +257,15 @@ def run(plan, args={}):
             else:
                 plan.print("Skipping the deployment of aggkit infrastructure")
 
+            # fund account on L2
+            import_module(agglayer_contracts_package).deploy_l2_contracts(plan, args)
+
             # Deploy contracts on L2.
-            plan.print("Deploying contracts on L2")
-            deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
-            import_module(deploy_l2_contracts_package).run(
-                plan, args, deploy_l2_contracts
-            )
+            if deployment_stages.get("deploy_l2_contracts", False):
+                plan.print("Deploying contracts on L2")
+                import_module(agglayer_contracts_package).l2_legacy_fund_accounts(
+                    plan, args
+                )
 
         else:
             plan.print("Skipping the deployment of cdk central/trusted environment")

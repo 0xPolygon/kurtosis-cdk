@@ -2,6 +2,7 @@ aggchain_vkey = import_module("./src/vkey/aggchain.star")
 agglayer_vkey = import_module("./src/vkey/agglayer.star")
 constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
+service_package = import_module("./lib/service.star")
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -37,10 +38,6 @@ INPUTS = [
 ]
 
 ARTIFACTS = [
-    {
-        "name": "run-l2-contract-setup.sh",
-        "file": "./templates/contract-deploy/run-l2-contract-setup.sh",
-    },
     {
         "name": "run-sovereign-setup.sh",
         "file": "./templates/sovereign-rollup/run-sovereign-setup.sh",
@@ -430,3 +427,49 @@ def is_vanilla_client(args, deployment_stages):
         return True
     else:
         return False
+
+
+def l2_legacy_fund_accounts(plan, args):
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    contracts_service_name = "contracts" + args["deployment_suffix"]
+    env_string = "l2_rpc.url={0}".format(l2_rpc_url.http)
+
+    plan.exec(
+        description="Funding accounts on L2",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/bash",
+                "-c",
+                "{0} {1}".format(
+                    env_string, "/opt/scripts/contracts.sh l2_legacy_fund_accounts"
+                ),
+            ]
+        ),
+    )
+
+
+def deploy_l2_contracts(plan, args):
+    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    contracts_service_name = "contracts" + args["deployment_suffix"]
+    env_string = "l2_rpc.url={0}".format(l2_rpc_url.http)
+
+    # When funding accounts and deploying the contracts on l2, the
+    # zkevm-contracts service is reused to reduce startup time. Since the l2
+    # doesn't exist at the time the service is added to kurtosis, the
+    # `l2_rpc_url` can't be templated. Therefore, the `l2_rpc_url` is exported
+    # as an environment variable before running the script.
+
+    plan.exec(
+        description="Deploying contracts on L2",
+        service_name=contracts_service_name,
+        recipe=ExecRecipe(
+            command=[
+                "/bin/bash",
+                "-c",
+                "{0} {1}".format(
+                    env_string, "/opt/scripts/contracts.sh l2_contract_setup"
+                ),
+            ]
+        ),
+    )
