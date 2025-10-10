@@ -1,9 +1,9 @@
 #!/bin/bash
-scripts_dir={{.scripts_dir}}
-input_dir={{.input_dir}}
-output_dir={{.output_dir}}
-keystores_dir={{.keystores_dir}}
-contracts_dir={{.contracts_dir}}
+scripts_dir="{{.scripts_dir}}"
+input_dir="{{.input_dir}}"
+output_dir="{{.output_dir}}"
+keystores_dir="{{.keystores_dir}}"
+contracts_dir="{{.contracts_dir}}"
 
 # Internal function, used by create_keystores
 _create_geth_keystore() {
