@@ -46,10 +46,6 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
     },
     {
-        "name": "sovereign-genesis.json",
-        "file": "./templates/sovereign-rollup/genesis.json",
-    },
-    {
         "name": "create-genesis-sovereign-params.json",
         "file": "./templates/sovereign-rollup/create-genesis-sovereign-params.json",
     },
@@ -77,12 +73,6 @@ def run(plan, args, deployment_stages, op_stack_args):
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
     if args.get("use_previously_deployed_contracts"):
-        artifact_paths.append(
-            {
-                "name": "genesis.json",
-                "file": "./templates/contract-deploy/genesis.json",
-            }
-        )
         artifact_paths.append(
             {
                 "name": "combined.json",

@@ -154,18 +154,11 @@ def run(
         },
     )
 
-    sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
-    sovereign_genesis_artifact = plan.render_templates(
-        name="sovereign_genesis",
-        config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
-    )
-
     # Start the single aggkit component with standard naming
     aggkit_configs = aggkit_package.create_root_aggkit_service_config(
         plan,
         args,
         aggkit_config_artifact,
-        sovereign_genesis_artifact,
         keystore_artifacts,
         0,  # Use member_index 0 for single service
     )
@@ -180,7 +173,6 @@ def run(
         plan,
         args,
         aggkit_config_artifact,
-        sovereign_genesis_artifact,
         keystore_artifacts,
         0,  # Use member_index 0 for single service
     )
@@ -250,7 +242,6 @@ def run(
                 plan,
                 args,
                 aggkit_config_artifact,
-                sovereign_genesis_artifact,
                 keystore_artifacts,
                 agg_oracle_committee_member_index,
             )
@@ -315,7 +306,6 @@ def run(
                     plan,
                     args,
                     aggkit_config_artifact,
-                    sovereign_genesis_artifact,
                     keystore_artifacts,
                     agg_sender_validator_member_index,
                 )
