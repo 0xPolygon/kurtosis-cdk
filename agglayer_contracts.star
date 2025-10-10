@@ -432,7 +432,7 @@ def is_vanilla_client(args, deployment_stages):
 def l2_legacy_fund_accounts(plan, args):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     contracts_service_name = "contracts" + args["deployment_suffix"]
-    env_string = "l2_rpc.url={0}".format(l2_rpc_url.http)
+    env_string = "l2_rpc_url={0}".format(l2_rpc_url.http)
 
     plan.exec(
         description="Funding accounts on L2",
@@ -452,7 +452,7 @@ def l2_legacy_fund_accounts(plan, args):
 def deploy_l2_contracts(plan, args):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
     contracts_service_name = "contracts" + args["deployment_suffix"]
-    env_string = "l2_rpc.url={0}".format(l2_rpc_url.http)
+    env_string = "l2_rpc_url={0}".format(l2_rpc_url.http)
 
     # When funding accounts and deploying the contracts on l2, the
     # zkevm-contracts service is reused to reduce startup time. Since the l2
