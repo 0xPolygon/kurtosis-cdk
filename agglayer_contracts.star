@@ -46,10 +46,6 @@ ARTIFACTS = [
         "name": "run-sovereign-setup-predeployed.sh",
         "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
     },
-    {
-        "name": "json2http.py",
-        "file": "./scripts/json2http.py",
-    },
 ]
 
 
@@ -216,6 +212,11 @@ def run(plan, args, deployment_stages, op_stack_args):
             name="create_op_allocs.py",
             description="Uploading create_op_allocs.py artifact",
         ),
+        plan.upload_files(
+            src="./templates/contracts/json2http.py",
+            name="json2http.py",
+            description="Uploading json2http.py artifact",
+        ),
     ]
 
     succinct_artifacts = []
@@ -279,7 +280,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             command=[
                 "/bin/sh",
                 "-c",
-                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/contract-deploy --daemon || true",
+                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/scripts --daemon || true",
             ]
         ),
     )
