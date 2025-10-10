@@ -54,10 +54,6 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/create-predeployed-sovereign-genesis.sh",
     },
     {
-        "name": "op-original-genesis.json",
-        "file": "./templates/sovereign-rollup/op-original-genesis.json",
-    },
-    {
         "name": "fund-addresses.sh",
         "file": "./templates/sovereign-rollup/fund-addresses.sh",
     },
