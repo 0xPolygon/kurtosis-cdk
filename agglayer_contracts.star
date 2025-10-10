@@ -54,10 +54,6 @@ ARTIFACTS = [
         "file": "./templates/sovereign-rollup/create-predeployed-sovereign-genesis.sh",
     },
     {
-        "name": "fund-addresses.sh",
-        "file": "./templates/sovereign-rollup/fund-addresses.sh",
-    },
-    {
         "name": "json2http.py",
         "file": "./scripts/json2http.py",
     },

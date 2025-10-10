@@ -113,6 +113,7 @@ def fund_addresses(plan, args, contract_addresses, rpc_url):
     command = [
         "/bin/bash",
         "-c",
+        "{0} {1}".format(env_string, "/opt/scripts/contracts.sh fund_addresses")
         "chmod +x {0} && {1} {0}".format(
             "/opt/contract-deploy/fund-addresses.sh",
             env_string,
