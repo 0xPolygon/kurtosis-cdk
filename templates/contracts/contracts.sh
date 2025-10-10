@@ -51,7 +51,7 @@ _create_genesis() {
     pushd "$contracts_dir" || exit 1
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then
-        echo_ts "The genesis file was not created after running createGenesis"
+        _echo_ts "The genesis file was not created after running createGenesis"
         exit 1
     fi
     popd || exit 1
@@ -595,7 +595,7 @@ create_agglayer_rollup() {
         exit 1
     fi
 
-    echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
+    _echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
     if [[ -e create_rollup_output.json ]]; then
         jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
         batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
@@ -978,9 +978,9 @@ l2_legacy_fund_accounts() {
                         --private-key "{{.zkevm_l2_admin_private_key}}" \
                         --value 0 "{{.zkevm_l2_sequencer_address}}" &> /dev/null; do
             ((counter++))
-            echo_ts "Can't send L2 transfers yet... Retrying ($counter)..."
+            _echo_ts "Can't send L2 transfers yet... Retrying ($counter)..."
             if [[ $counter -ge $max_retries ]]; then
-                echo_ts "Exceeded maximum retry attempts. Exiting."
+                _echo_ts "Exceeded maximum retry attempts. Exiting."
                 exit 1
             fi
             sleep $retry_interval
@@ -1031,7 +1031,7 @@ l2_contract_setup() {
         set -x
     fi
     if [[ -e "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
-        echo_ts "This script has already been executed"
+        _echo_ts "This script has already been executed"
         exit 1
     fi
     if [[ -z "$l2_rpc_url" ]]; then
@@ -1041,7 +1041,7 @@ l2_contract_setup() {
 
     _fund_account_on_l2() {
         local address="$1"
-        echo_ts "Funding $address"
+        _echo_ts "Funding $address"
         cast send \
             --legacy \
             --async \
