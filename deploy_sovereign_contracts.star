@@ -5,7 +5,9 @@ def run(plan, args, predeployed_contracts=False):
     contracts_command = "/opt/scripts/contracts.sh create_sovereign_rollup"
     if predeployed_contracts:
         plan.print("Predeployed contracts detected. Using predeployed setup script.")
-        contracts_command = "/opt/scripts/contracts.sh create_sovereign_rollup_predeployed"
+        contracts_command = (
+            "/opt/scripts/contracts.sh create_sovereign_rollup_predeployed"
+        )
 
     plan.exec(
         description="Creating rollup type and rollup on L1",
