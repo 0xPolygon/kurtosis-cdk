@@ -1,14 +1,19 @@
 constants = import_module("./src/package_io/constants.star")
 
+
 def run(plan, args, predeployed_contracts=False):
     if args.get("l1_custom_genesis"):
         return
 
-    contracts_command = "{}/contracts.sh create_sovereign_rollup".format(constants.SCRIPTS_DIR)
+    contracts_command = "{}/contracts.sh create_sovereign_rollup".format(
+        constants.SCRIPTS_DIR
+    )
     if predeployed_contracts:
         plan.print("Predeployed contracts detected. Using predeployed setup script.")
         contracts_command = (
-            "{}/contracts.sh create_sovereign_rollup_predeployed".format(constants.SCRIPTS_DIR)
+            "{}/contracts.sh create_sovereign_rollup_predeployed".format(
+                constants.SCRIPTS_DIR
+            )
         )
 
     plan.exec(
@@ -117,7 +122,9 @@ def fund_addresses(plan, args, contract_addresses, rpc_url):
     command = [
         "/bin/bash",
         "-c",
-        "{0} {1}".format(env_string, constants.SCRIPTS_DIR+"/contracts.sh fund_addresses"),
+        "{0} {1}".format(
+            env_string, constants.SCRIPTS_DIR + "/contracts.sh fund_addresses"
+        ),
     ]
 
     plan.exec(

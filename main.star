@@ -108,7 +108,8 @@ def run(plan, args={}):
                             "/bin/bash",
                             "-c",
                             "cp {1}/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                                "/opt/op-succinct/deploy-op-succinct-contracts.sh", constants.SCRIPTS_DIR
+                                "/opt/op-succinct/deploy-op-succinct-contracts.sh",
+                                constants.SCRIPTS_DIR,
                             ),
                         ]
                     ),

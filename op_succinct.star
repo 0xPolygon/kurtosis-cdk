@@ -94,7 +94,8 @@ def create_evm_sketch_genesis(plan, args):
                 "/bin/bash",
                 "-c",
                 "cp {1}/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/parse-evm-sketch-genesis.sh", constants.SCRIPTS_DIR
+                    "/opt/op-succinct/parse-evm-sketch-genesis.sh",
+                    constants.SCRIPTS_DIR,
                 ),
             ]
         ),

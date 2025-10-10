@@ -105,7 +105,11 @@ def get_sovereign_contract_setup_addresses(plan, args):
     }
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat {}/sovereign-rollup-out.json".format(constants.CONTRACTS_DIR)],
+        command=[
+            "/bin/sh",
+            "-c",
+            "cat {}/sovereign-rollup-out.json".format(constants.CONTRACTS_DIR),
+        ],
         extract=extract,
     )
     service_name = "contracts" + args["deployment_suffix"]
