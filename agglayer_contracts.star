@@ -212,10 +212,10 @@ def run(plan, args, deployment_stages, op_stack_args):
             },
         ),
         plan.upload_files(
-            src = "./templates/contracts/create_op_allocs.py",
-            name = "create_op_allocs.py",
-            description = "Uploading create_op_allocs.py artifact"
-        )
+            src="./templates/contracts/create_op_allocs.py",
+            name="create_op_allocs.py",
+            description="Uploading create_op_allocs.py artifact",
+        ),
     ]
 
     succinct_artifacts = []
@@ -478,7 +478,7 @@ def deploy_l2_contracts(plan, args):
     )
 
 
-# Called from main when optimism rollup
+# Called from main when optimism rollup
 def create_sovereign_predeployed_genesis(plan, args):
     contracts_service_name = "contracts" + args["deployment_suffix"]
 

@@ -64,8 +64,10 @@ def run(plan, args={}):
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
-            # This is required to push an artifact for predeployed_allocs that will be used from optimism-package
-            import_module(agglayer_contracts_package).create_sovereign_predeployed_genesis(plan, args)
+            # This is required to push an artifact for predeployed_allocs that will be used from optimism-package
+            import_module(
+                agglayer_contracts_package
+            ).create_sovereign_predeployed_genesis(plan, args)
 
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
