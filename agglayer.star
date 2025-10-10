@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 databases_package = import_module("./databases.star")
 ports_package = import_module("./src/package_io/ports.star")
 
@@ -47,12 +48,12 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
     agglayer_keystore_artifact = plan.store_service_files(
         name="agglayer-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/agglayer.keystore",
+        src=constants.KEYSTORES_DIR + "/agglayer.keystore",
     )
     aggregator_keystore_artifact = plan.store_service_files(
         name="aggregator-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggregator.keystore",
+        src=constants.KEYSTORES_DIR + "/aggregator.keystore",
     )
 
     (ports, public_ports) = get_agglayer_ports(args)

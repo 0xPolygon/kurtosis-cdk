@@ -368,7 +368,6 @@ DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
     "genesis_file": "templates/permissionless-node/genesis.json",
-    "sovereign_genesis_file": "templates/sovereign-genesis.json",
 }
 
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {

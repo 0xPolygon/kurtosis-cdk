@@ -25,7 +25,6 @@ params.yml
 templates/contract-deploy/combined.json
 templates/contract-deploy/dynamic-kurtosis-allocs.json
 templates/contract-deploy/dynamic-kurtosis-conf.json
-templates/contract-deploy/genesis.json
 anvil_state.json
 
 # tests

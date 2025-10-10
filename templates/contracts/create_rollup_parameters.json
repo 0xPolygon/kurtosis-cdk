@@ -1,0 +1,20 @@
+{
+    "adminZkEVM": "{{.zkevm_l2_admin_address}}",
+    "chainID": {{.zkevm_rollup_chain_id}},
+    "consensusContract": "{{.zkevm_rollup_consensus}}",
+    "dataAvailabilityProtocol": "PolygonDataCommittee",
+    "deployerPvtKey": "{{.zkevm_l2_admin_private_key}}",
+    "description": "kurtosis-devnet - {{.chain_name}}",
+    "forkID": {{.zkevm_rollup_fork_id}},
+    "gasTokenAddress":"",
+    "maxFeePerGas": "",
+    "maxPriorityFeePerGas": "",
+    "multiplierGas": "",
+    "networkName": "{{.chain_name}}",
+    "realVerifier": {{.zkevm_use_real_verifier}},
+    "trustedSequencer": "{{.zkevm_l2_sequencer_address}}",
+    "trustedSequencerURL": "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}",
+    "trustedAggregator":"{{.zkevm_l2_aggregator_address}}",
+    "programVKey": "{{.program_vkey}}",
+    "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}"
+}

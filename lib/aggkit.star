@@ -53,7 +53,6 @@ def create_root_aggkit_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -77,7 +76,6 @@ def create_root_aggkit_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
                     keystore_artifact.claimtx,
@@ -102,7 +100,6 @@ def create_aggkit_bridge_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -128,7 +125,6 @@ def create_aggkit_bridge_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
                     keystore_artifact.claimtx,
@@ -152,7 +148,6 @@ def create_aggoracle_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -197,7 +192,6 @@ def create_aggoracle_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
                     keystore_artifact.claimtx,
@@ -226,7 +220,6 @@ def create_aggsender_validator_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -266,7 +259,6 @@ def create_aggsender_validator_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
                     keystore_artifact.claimtx,

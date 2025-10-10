@@ -25,7 +25,7 @@ def run(
     claimtx_keystore_artifact = plan.store_service_files(
         name="claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimtxmanager.keystore",
+        src=constants.KEYSTORES_DIR + "/claimtxmanager.keystore",
     )
     bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
         args, bridge_config_artifact, claimtx_keystore_artifact
