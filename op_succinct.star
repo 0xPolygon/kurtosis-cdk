@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 op_succinct_package = import_module("./lib/op_succinct.star")
 
 
@@ -67,7 +68,7 @@ def create_evm_sketch_genesis(plan, args):
     files = {}
     files["/opt/op-succinct/"] = Directory(artifact_names=[op_geth_genesis])
 
-    files["/opt/scripts/"] = Directory(
+    files[constants.SCRIPTS_DIR] = Directory(
         artifact_names=[parse_evm_sketch_genesis_artifact]
     )
 
@@ -92,8 +93,8 @@ def create_evm_sketch_genesis(plan, args):
             command=[
                 "/bin/bash",
                 "-c",
-                "cp /opt/scripts/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/parse-evm-sketch-genesis.sh"
+                "cp {1}/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                    "/opt/op-succinct/parse-evm-sketch-genesis.sh", constants.SCRIPTS_DIR
                 ),
             ]
         ),

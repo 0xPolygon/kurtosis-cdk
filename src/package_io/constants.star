@@ -54,6 +54,10 @@ ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 # Contracts folders
 KEYSTORES_DIR = "/opt/keystores"
+CONTRACTS_DIR = "/opt/zkevm-contracts"
+OUTPUT_DIR = "/opt/output"
+INPUT_DIR = "/opt/input"
+SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta8",

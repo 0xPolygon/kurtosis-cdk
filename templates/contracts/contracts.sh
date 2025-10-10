@@ -1,9 +1,9 @@
 #!/bin/bash
-scripts_dir="/opt/scripts"
-input_dir="/opt/input"
-output_dir="/opt/output"
-keystores_dir="/opt/keystores"
-contracts_dir="/opt/zkevm-contracts"
+scripts_dir={{.scripts_dir}}
+input_dir={{.input_dir}}
+output_dir={{.output_dir}}
+keystores_dir={{.keystores_dir}}
+contracts_dir={{.contracts_dir}}
 
 # Internal function, used by create_keystores
 _create_geth_keystore() {
@@ -1136,10 +1136,10 @@ l2_contract_setup() {
 create_predeployed_op_genesis() {
     set -e
 
-    pushd /opt/zkevm-contracts || exit 1
+    pushd "$contracts_dir" || exit 1
 
     # FIXME Just in case for now... ideally we don't need this but the base image is hacky right now
-    # git config --global --add safe.directory /opt/zkevm-contracts
+    # git config --global --add safe.directory "$contracts_dir"
 
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
     # So a manual extraction of polygonRollupManagerAddress is done here.
@@ -1183,20 +1183,20 @@ create_predeployed_op_genesis() {
     mv "$input_dir"/create-genesis-sovereign-params.json.tmp "$input_dir"/create-genesis-sovereign-params.json
 
     # Required files to run the script
-    cp "$input_dir"/create-genesis-sovereign-params.json /opt/zkevm-contracts/tools/createSovereignGenesis/create-genesis-sovereign-params.json
+    cp "$input_dir"/create-genesis-sovereign-params.json "$contracts_dir"/tools/createSovereignGenesis/create-genesis-sovereign-params.json
     # 2025-04-03 it's not clear which of these should be used at this point
-    # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
-    cp /opt/zkevm-contracts/deployment/v2/genesis.json /opt/zkevm-contracts/tools/createSovereignGenesis/genesis-base.json
+    # cp /opt/contract-deploy/sovereign-genesis.json "$contracts_dir"/tools/createSovereignGenesis/genesis-base.json
+    cp "$contracts_dir"/deployment/v2/genesis.json "$contracts_dir"/tools/createSovereignGenesis/genesis-base.json
 
     # Remove all existing output files if they exist
-    find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' -exec rm {} +
-    find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' -exec rm {} +
+    find "$contracts_dir"/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' -exec rm {} +
+    find "$contracts_dir"/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' -exec rm {} +
 
     # Run the script
     npx hardhat run ./tools/createSovereignGenesis/create-sovereign-genesis.ts --network localhost
 
     # Save the genesis file
-    genesis_file=$(find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' 2>/dev/null | head -n 1)
+    genesis_file=$(find "$contracts_dir"/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' 2>/dev/null | head -n 1)
     if [[ -f "$genesis_file" ]]; then
         cp "$genesis_file" /opt/zkevm/sovereign-predeployed-genesis.json
         echo "Predeployed Genesis file saved: /opt/zkevm/sovereign-predeployed-genesis.json"
@@ -1206,7 +1206,7 @@ create_predeployed_op_genesis() {
     fi
 
     # Save tool output file
-    output_file=$(find /opt/zkevm-contracts/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' 2>/dev/null | head -n 1)
+    output_file=$(find "$contracts_dir"/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' 2>/dev/null | head -n 1)
     if [[ -f "$output_file" ]]; then
         cp "$output_file" /opt/zkevm/create-sovereign-genesis-output.json
         echo "Output saved: /opt/zkevm/create-sovereign-genesis-output.json"
@@ -1229,7 +1229,7 @@ create_predeployed_op_genesis() {
 # Called from main when optimism rollup to create the rollup, using predeployed contracts on L2
 create_sovereign_rollup_predeployed() {
     # Create New Rollup Step
-    pushd /opt/zkevm-contracts || exit 1
+    pushd "$contracts_dir" || exit 1
 
     # Requirement to correctly configure contracts deployer
     export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
@@ -1253,41 +1253,41 @@ create_sovereign_rollup_predeployed() {
     # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
     # The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
 
-    cp "${input_dir}/add_rollup_type.json"   /opt/zkevm-contracts/tools/addRollupType/add_rollup_type.json
-    cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+    cp "${input_dir}/add_rollup_type.json"   "$contracts_dir"/tools/addRollupType/add_rollup_type.json
+    cp "$input_dir"/create_new_rollup.json "$contracts_dir"/tools/createNewRollup/create_new_rollup.json
 
     # 2025-04-03 - These are removed for now because the genesis is created later. I'm using the genesis that's created by 1_createGenesis - hopefully that's right.
-    # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/addRollupType/genesis.json
-    # cp /opt/contract-deploy/sovereign-genesis.json /opt/zkevm-contracts/tools/createNewRollup/genesis.json
-    cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/addRollupType/genesis.json
-    cp /opt/zkevm-contracts/deployment/v2/genesis.json  /opt/zkevm-contracts/tools/createNewRollup/genesis.json
+    # cp /opt/contract-deploy/sovereign-genesis.json "$contracts_dir"/tools/addRollupType/genesis.json
+    # cp /opt/contract-deploy/sovereign-genesis.json "$contracts_dir"/tools/createNewRollup/genesis.json
+    cp "$contracts_dir"/deployment/v2/genesis.json  "$contracts_dir"/tools/addRollupType/genesis.json
+    cp "$contracts_dir"/deployment/v2/genesis.json  "$contracts_dir"/tools/createNewRollup/genesis.json
 
-    cp /opt/zkevm/combined.json /opt/zkevm-contracts/deployment/v2/deploy_output.json
+    cp /opt/zkevm/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
 
     deployOPSuccinct="{{ .deploy_op_succinct }}"
     if [[ $deployOPSuccinct == true ]]; then
-    rm /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json
+    rm "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json
     npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
-    cp /opt/zkevm-contracts/tools/addRollupType/add_rollup_type_output-*.json /opt/zkevm/add_rollup_type_output.json
+    cp "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json /opt/zkevm/add_rollup_type_output.json
     rollup_type_id=$(jq -r '.rollupTypeID' /opt/zkevm/add_rollup_type_output.json)
-    jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json > /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json.tmp
-    mv /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json.tmp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
+    jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' "$contracts_dir"/tools/createNewRollup/create_new_rollup.json > "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp
+    mv "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp "$contracts_dir"/tools/createNewRollup/create_new_rollup.json
 
-    rm /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json
+    rm "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json
     npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
-    cp /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup_output_*.json /opt/zkevm/create_rollup_output.json
+    cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json /opt/zkevm/create_rollup_output.json
     else
     # shellcheck disable=SC2050
     if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
-    sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' /opt/zkevm-contracts/deployment/v2/4_createRollup.ts
+    sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
     # In the case for PP deployments without OP-Succinct, use the 4_createRollup.ts script instead of the createNewRollup.ts tool.
-    cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
     fi
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > /opt/zkevm-contracts/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
 }
 
@@ -1309,7 +1309,7 @@ create_sovereign_rollup() {
     done
 
     # Create New Rollup Step
-    cd /opt/zkevm-contracts || exit
+    cd "$contracts_dir" || exit
 
     # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
     # It follows the same logic which exist in deploy-op-succinct-contracts.sh to populate these values.
@@ -1341,11 +1341,11 @@ create_sovereign_rollup() {
     fi
 
     # The below method relies on https://github.com/0xPolygonHermez/zkevm-contracts/blob/v9.0.0-rc.5-pp/deployment/v2/4_createRollup.ts
-    cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json
+    cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >/opt/zkevm-contracts/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
     bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"
@@ -1367,7 +1367,7 @@ create_sovereign_rollup() {
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
 
     # Contract Deployment Step
-    cd /opt/zkevm-contracts || exit
+    cd "$contracts_dir" || exit
 
     echo "[profile.default]
     src = 'contracts'
@@ -1405,28 +1405,28 @@ create_sovereign_rollup() {
     forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
 
     # Save the contract addresses to the sovereign-rollup-out.json file
-    jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
-    jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
-    jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
-    jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' /opt/zkevm-contracts/sovereign-rollup-out.json >/opt/zkevm-contracts/sovereign-rollup-out.json.temp && mv /opt/zkevm-contracts/sovereign-rollup-out.json.temp /opt/zkevm-contracts/sovereign-rollup-out.json
+    jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' "$contracts_dir"/sovereign-rollup-out.json >"$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
+    jq --arg ger_impl_addr "$ger_impl_addr" '. += {"ger_impl_addr": $ger_impl_addr}' "$contracts_dir"/sovereign-rollup-out.json >"$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
+    jq --arg ger_proxy_addr "$ger_proxy_addr" '. += {"ger_proxy_addr": $ger_proxy_addr}' "$contracts_dir"/sovereign-rollup-out.json >"$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
+    jq --arg bridge_proxy_addr "$bridge_proxy_addr" '. += {"bridge_proxy_addr": $bridge_proxy_addr}' "$contracts_dir"/sovereign-rollup-out.json >"$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
 
     # Extract values from sovereign-rollup-out.json
-    sovereignRollupContract=$(jq -r '.sovereignRollupContract' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    rollupChainID=$(jq -r '.rollupChainID' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    verifier=$(jq -r '.verifier' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    forkID=$(jq -r '.forkID' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    lastLocalExitRoot=$(jq -r '.lastLocalExitRoot' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    lastBatchSequenced=$(jq -r '.lastBatchSequenced' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    lastVerifiedBatch=$(jq -r '.lastVerifiedBatch' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    _legacyLastPendingState=$(jq -r '._legacyLastPendingState' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    _legacyLastPendingStateConsolidated=$(jq -r '._legacyLastPendingStateConsolidated' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    lastVerifiedBatchBeforeUpgrade=$(jq -r '.lastVerifiedBatchBeforeUpgrade' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    rollupTypeID=$(jq -r '.rollupTypeID' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    rollupVerifierType=$(jq -r '.rollupVerifierType' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    bridge_impl_addr=$(jq -r '.bridge_impl_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    ger_impl_addr=$(jq -r '.ger_impl_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    ger_proxy_addr=$(jq -r '.ger_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
-    bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' /opt/zkevm-contracts/sovereign-rollup-out.json)
+    sovereignRollupContract=$(jq -r '.sovereignRollupContract' "$contracts_dir"/sovereign-rollup-out.json)
+    rollupChainID=$(jq -r '.rollupChainID' "$contracts_dir"/sovereign-rollup-out.json)
+    verifier=$(jq -r '.verifier' "$contracts_dir"/sovereign-rollup-out.json)
+    forkID=$(jq -r '.forkID' "$contracts_dir"/sovereign-rollup-out.json)
+    lastLocalExitRoot=$(jq -r '.lastLocalExitRoot' "$contracts_dir"/sovereign-rollup-out.json)
+    lastBatchSequenced=$(jq -r '.lastBatchSequenced' "$contracts_dir"/sovereign-rollup-out.json)
+    lastVerifiedBatch=$(jq -r '.lastVerifiedBatch' "$contracts_dir"/sovereign-rollup-out.json)
+    _legacyLastPendingState=$(jq -r '._legacyLastPendingState' "$contracts_dir"/sovereign-rollup-out.json)
+    _legacyLastPendingStateConsolidated=$(jq -r '._legacyLastPendingStateConsolidated' "$contracts_dir"/sovereign-rollup-out.json)
+    lastVerifiedBatchBeforeUpgrade=$(jq -r '.lastVerifiedBatchBeforeUpgrade' "$contracts_dir"/sovereign-rollup-out.json)
+    rollupTypeID=$(jq -r '.rollupTypeID' "$contracts_dir"/sovereign-rollup-out.json)
+    rollupVerifierType=$(jq -r '.rollupVerifierType' "$contracts_dir"/sovereign-rollup-out.json)
+    bridge_impl_addr=$(jq -r '.bridge_impl_addr' "$contracts_dir"/sovereign-rollup-out.json)
+    ger_impl_addr=$(jq -r '.ger_impl_addr' "$contracts_dir"/sovereign-rollup-out.json)
+    ger_proxy_addr=$(jq -r '.ger_proxy_addr' "$contracts_dir"/sovereign-rollup-out.json)
+    bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' "$contracts_dir"/sovereign-rollup-out.json)
 
     # Update existing fields and append new ones to combined.json
     jq --arg ger_proxy_addr "$ger_proxy_addr" \

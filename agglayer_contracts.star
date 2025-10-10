@@ -173,6 +173,11 @@ def run(plan, args, deployment_stages, op_stack_args):
         "aggchain_vkey_hash": aggchain_vkey_hash,
         "aggchain_vkey_selector": aggchain_vkey_selector,
         "program_vkey": program_vkey,
+        "contracts_dir": contants.CONTRACTS_DIR,
+        "keystores_dir": constants.KEYSTORES_DIR,
+        "output_dir": constants.OUTPUT_DIR,
+        "input_dir": constants.INPUT_DIR,
+        "scripts_dir": constants.SCRIPTS_DIR,
     }
 
     input_artifacts = []
@@ -236,11 +241,11 @@ def run(plan, args, deployment_stages, op_stack_args):
     # Base file artifacts to mount regardless of deployment type
     files = {
         # These are filled as result of script execution:
-        "/opt/keystores": Directory(persistent_key="keystores"),
-        "/opt/output": Directory(persistent_key="output"),
+        constants.KEYSTORES_DIR: Directory(persistent_key="keystores"),
+        constants.OUTPUT_DIR: Directory(persistent_key="output"),
         # Content are made available to script here:
-        "/opt/input": Directory(artifact_names=input_artifacts),
-        "/opt/scripts": Directory(artifact_names=scripts_artifacts),
+        constants.INPUT_DIR: Directory(artifact_names=input_artifacts),
+        constants.SCRIPTS_DIR: Directory(artifact_names=scripts_artifacts),
         # Legacy folders (WIP):
         "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
         "/opt/contract-deploy/": Directory(artifact_names=artifacts),
@@ -270,17 +275,17 @@ def run(plan, args, deployment_stages, op_stack_args):
             command=[
                 "/bin/sh",
                 "-c",
-                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir /opt/scripts --daemon || true",
+                "gunicorn --bind 0.0.0.0:8080 json2http:app --chdir {} --daemon || true".format(constants.SCRIPTS_DIR),
             ]
         ),
     )
 
     # Set permissions for contracts script
     plan.exec(
-        description="Setting permissions for /opt/scripts/contracts.sh",
+        description="Setting permissions for {}/contracts.sh".format(constants.SCRIPTS_DIR),
         service_name=contracts_service_name,
         recipe=ExecRecipe(
-            command=["/bin/sh", "-c", "chmod +x /opt/scripts/contracts.sh"]
+            command=["/bin/sh", "-c", "chmod +x {}/contracts.sh".format(constants.SCRIPTS_DIR)]
         ),
     )
 
@@ -289,7 +294,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         description="Creating keystores for zkevm-node/cdk-validium components",
         service_name=contracts_service_name,
         recipe=ExecRecipe(
-            command=["/bin/sh", "-c", "/opt/scripts/contracts.sh create_keystores"]
+            command=["/bin/sh", "-c", "{}/contracts.sh create_keystores".format(constants.SCRIPTS_DIR)]
         ),
     )
 
@@ -308,7 +313,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "/opt/scripts/contracts.sh configure_contract_container_custom_genesis",
+                    "{}/contracts.sh configure_contract_container_custom_genesis".format(constants.SCRIPTS_DIR),
                 ]
             ),
         )
@@ -324,7 +329,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "/opt/scripts/contracts.sh configure_contract_container_custom_genesis_cdk_erigon",
+                    "{}/contracts.sh configure_contract_container_custom_genesis_cdk_erigon".format(constants.SCRIPTS_DIR),
                 ]
             ),
         )
@@ -335,7 +340,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "/opt/scripts/contracts.sh create_agglayer_rollup",
+                    "{}/contracts.sh create_agglayer_rollup".format(constants.SCRIPTS_DIR),
                 ]
             ),
         )
@@ -364,7 +369,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "/opt/scripts/contracts.sh deploy_agglayer_core_contracts",
+                    "{}/contracts.sh deploy_agglayer_core_contracts".format(constants.SCRIPTS_DIR),
                 ]
             ),
         )
@@ -375,7 +380,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 command=[
                     "/bin/sh",
                     "-c",
-                    "/opt/scripts/contracts.sh create_agglayer_rollup",
+                    "{}/contracts.sh create_agglayer_rollup".format(constants.SCRIPTS_DIR),
                 ]
             ),
         )
@@ -405,7 +410,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             command=[
                 "/bin/sh",
                 "-c",
-                "/opt/scripts/contracts.sh update_ger",
+                "{}/contracts.sh update_ger".format(constants.SCRIPTS_DIR),
             ]
         ),
     )
@@ -435,7 +440,7 @@ def l2_legacy_fund_accounts(plan, args):
                 "/bin/bash",
                 "-c",
                 "{0} {1}".format(
-                    env_string, "/opt/scripts/contracts.sh l2_legacy_fund_accounts"
+                    env_string, "{}/contracts.sh l2_legacy_fund_accounts".format(constants.SCRIPTS_DIR)
                 ),
             ]
         ),
@@ -462,7 +467,7 @@ def deploy_l2_contracts(plan, args):
                 "/bin/bash",
                 "-c",
                 "{0} {1}".format(
-                    env_string, "/opt/scripts/contracts.sh l2_contract_setup"
+                    env_string, "{}/contracts.sh l2_contract_setup".format(constants.SCRIPTS_DIR)
                 ),
             ]
         ),
@@ -480,7 +485,7 @@ def create_sovereign_predeployed_genesis(plan, args):
             command=[
                 "/bin/sh",
                 "-c",
-                "/opt/scripts/contracts.sh create_predeployed_op_genesis",
+                "{}/contracts.sh create_predeployed_op_genesis".format(constants.SCRIPTS_DIR),
             ]
         ),
     )
