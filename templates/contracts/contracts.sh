@@ -47,7 +47,7 @@ _wait_for_rpc_to_be_available() {
 
 # Internal function, used by create_agglayer_rollup
 _create_genesis() {
-    echo_ts "Step 4: Creating genesis"
+    _echo_ts "Step 4: Creating genesis"
     pushd "$contracts_dir" || exit 1
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     if [[ ! -e deployment/v2/genesis.json ]]; then

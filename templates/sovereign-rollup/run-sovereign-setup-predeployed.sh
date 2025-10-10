@@ -27,7 +27,7 @@ cp "${input_dir}/add_rollup_type${ts}.json" "${input_dir}/add_rollup_type.json"
 # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
 # The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
 
-cp /opt/contract-deploy/add_rollup_type.json   /opt/zkevm-contracts/tools/addRollupType/add_rollup_type.json
+cp "${input_dir}/add_rollup_type.json"   /opt/zkevm-contracts/tools/addRollupType/add_rollup_type.json
 cp "$input_dir"/create_new_rollup.json /opt/zkevm-contracts/tools/createNewRollup/create_new_rollup.json
 
 # 2025-04-03 - These are removed for now because the genesis is created later. I'm using the genesis that's created by 1_createGenesis - hopefully that's right.
