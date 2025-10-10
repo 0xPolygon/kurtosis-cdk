@@ -258,7 +258,9 @@ def run(plan, args={}):
                 plan.print("Skipping the deployment of aggkit infrastructure")
 
             # fund account on L2
-            import_module(agglayer_contracts_package).l2_legacy_fund_accounts(plan, args)
+            import_module(agglayer_contracts_package).l2_legacy_fund_accounts(
+                plan, args
+            )
 
             # Deploy contracts on L2.
             if deployment_stages.get("deploy_l2_contracts", False):
