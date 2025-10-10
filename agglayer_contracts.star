@@ -17,7 +17,7 @@ INPUTS = [
     },
     {
         "name": "deploy_parameters.json",
-        "file": "./templates/contract-deploy/deploy_parameters.json",
+        "file": "./templates/contracts/deploy_parameters.json",
     },
     {
         "name": "cdk-erigon-custom-genesis-addresses.json",
@@ -25,7 +25,7 @@ INPUTS = [
     },
     {
         "name": "create_rollup_parameters.json",
-        "file": "./templates/contract-deploy/create_rollup_parameters.json",
+        "file": "./templates/contracts/create_rollup_parameters.json",
     },
     {
         "name": "add_rollup_type.json",
