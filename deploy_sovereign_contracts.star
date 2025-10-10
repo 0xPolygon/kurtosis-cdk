@@ -1,3 +1,5 @@
+constants = import_module("./src/package_io/constants.star")
+
 def run(plan, args, predeployed_contracts=False):
     if args.get("l1_custom_genesis"):
         return

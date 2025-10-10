@@ -173,7 +173,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "aggchain_vkey_hash": aggchain_vkey_hash,
         "aggchain_vkey_selector": aggchain_vkey_selector,
         "program_vkey": program_vkey,
-        "contracts_dir": contants.CONTRACTS_DIR,
+        "contracts_dir": constants.CONTRACTS_DIR,
         "keystores_dir": constants.KEYSTORES_DIR,
         "output_dir": constants.OUTPUT_DIR,
         "input_dir": constants.INPUT_DIR,
