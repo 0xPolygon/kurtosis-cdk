@@ -87,7 +87,7 @@ _deploy_rollup_manager() {
     fi
 }
 
-# Internal function, useb by intiialize_rollup
+# Internal function, useb by initialize_rollup
 _extract_addresses() {
     local -n keys_array=$1  # Reference to the input array
     local json_file=$2      # JSON file path
