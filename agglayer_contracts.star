@@ -37,20 +37,10 @@ INPUTS = [
     },
 ]
 
-ARTIFACTS = [
-    {
-        "name": "run-sovereign-setup.sh",
-        "file": "./templates/sovereign-rollup/run-sovereign-setup.sh",
-    },
-    {
-        "name": "run-sovereign-setup-predeployed.sh",
-        "file": "./templates/sovereign-rollup/run-sovereign-setup-predeployed.sh",
-    },
-]
-
 
 def run(plan, args, deployment_stages, op_stack_args):
-    artifact_paths = list(ARTIFACTS)
+    artifact_paths = []
+
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
     if args.get("use_previously_deployed_contracts"):

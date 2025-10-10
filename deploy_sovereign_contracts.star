@@ -2,10 +2,10 @@ def run(plan, args, predeployed_contracts=False):
     if args.get("l1_custom_genesis"):
         return
 
-    script = "/opt/contract-deploy/run-sovereign-setup.sh"
+    contracts_command = "/opt/scripts/contracts.sh create_sovereign_rollup"
     if predeployed_contracts:
         plan.print("Predeployed contracts detected. Using predeployed setup script.")
-        script = "/opt/contract-deploy/run-sovereign-setup-predeployed.sh"
+        contracts_command = "/opt/scripts/contracts.sh create_sovereign_rollup_predeployed"
 
     plan.exec(
         description="Creating rollup type and rollup on L1",
@@ -14,7 +14,7 @@ def run(plan, args, predeployed_contracts=False):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(script),
+                contracts_command,
             ]
         ),
     )
