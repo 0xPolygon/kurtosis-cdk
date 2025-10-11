@@ -243,12 +243,21 @@ def run(plan, args, deployment_stages, op_stack_args):
             description="Create deploy_op_succinct_contract files artifact",
         )
 
+        # Get L1 genesis artifact for op-succinct
+        l1_genesis_artifact = plan.get_files_artifact(
+            name="l1-genesis-for-op-succinct",
+            description="Get L1 genesis file for op-succinct",
+        )
+
         # Mount op-succinct specific artifacts
         files["/opt/op-succinct/"] = Directory(
             artifact_names=[fetch_rollup_config_artifact]
         )
         files["/opt/scripts/"] = Directory(
             artifact_names=[deploy_op_succinct_contract_artifact]
+        )
+        files["/configs/L1"] = Directory(
+            artifact_names=[l1_genesis_artifact]
         )
 
     # Create helper service to deploy contracts
