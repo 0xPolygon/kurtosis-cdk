@@ -38,7 +38,7 @@ INPUTS = [
 ]
 
 
-def run(plan, args, deployment_stages, op_stack_args):
+def run(plan, args, deployment_stages, op_stack_args, l1_genesis_artifact=""):
     inputs_list = list(INPUTS)
 
     # If we are configured to use a previous deployment, we'll
@@ -176,10 +176,8 @@ def run(plan, args, deployment_stages, op_stack_args):
         ),
     ]
 
-    l1_artifacts = []
-    succinct_artifacts = []
-
     # Create op-succinct artifacts
+    succinct_artifacts = []
     if deployment_stages.get("deploy_op_succinct", False):
         fetch_rollup_config_artifact = plan.get_files_artifact(
             name="fetch-l2oo-config",
@@ -197,14 +195,8 @@ def run(plan, args, deployment_stages, op_stack_args):
             },
             description="Create deploy_op_succinct_contract files artifact",
         )
-        l1_genesis_artifact = plan.get_files_artifact(
-            name="l1-genesis-for-op-succinct",
-            description="Get L1 genesis file for op-succinct",
-        )
-
         succinct_artifacts.append(fetch_rollup_config_artifact)
         scripts_artifacts.append(deploy_op_succinct_contract_artifact)
-        l1_artifacts.append(l1_genesis_artifact)
 
     # Base file artifacts to mount regardless of deployment type
     files = {
@@ -216,9 +208,8 @@ def run(plan, args, deployment_stages, op_stack_args):
         constants.SCRIPTS_DIR: Directory(artifact_names=scripts_artifacts),
     }
     if succinct_artifacts:
-        # Mount op-succinct specific artifacts
         files["/opt/op-succinct/"] = Directory(artifact_names=succinct_artifacts)
-        files["/configs/L1"] = Directory(artifact_names=[l1_genesis_artifact])
+        files["/opt/l1"]: Directory(artifact_names=[l1_genesis_artifact])
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
