@@ -394,7 +394,7 @@ def get_keystores_artifacts(plan, args):
             aggsender_validator_keystore = plan.store_service_files(
                 name="aggsendervalidator-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
-                src=constants.OUTPUT_DIR
+                src=constants.KEYSTORES_DIR
                 + "/aggsendervalidator-{}.keystore".format(member_index),
             )
             aggsender_validator_keystores.append(aggsender_validator_keystore)
