@@ -43,10 +43,10 @@ chains. We'll specifically want the create rollup parameters file
 from the second chain because we need to know the gas token address.
 
 ```
-kurtosis service exec pp contracts-001 "cat /opt/zkevm/combined-001.json"  | tail -n +2 | jq '.' > combined-001.json
-kurtosis service exec pp contracts-002 "cat /opt/zkevm/combined-002.json"  | tail -n +2 | jq '.' > combined-002.json
-kurtosis service exec pp contracts-002 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq -r '.gasTokenAddress' > gas-token-address.json
-kurtosis service exec pp contracts-003 "cat /opt/zkevm/combined-003.json"  | tail -n +2 | jq '.' > combined-003.json
+kurtosis service exec pp contracts-001 "cat /opt/output/combined-001.json"  | tail -n +2 | jq '.' > combined-001.json
+kurtosis service exec pp contracts-002 "cat /opt/output/combined-002.json"  | tail -n +2 | jq '.' > combined-002.json
+kurtosis service exec pp contracts-002 "cat /opt/output-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq -r '.gasTokenAddress' > gas-token-address.json
+kurtosis service exec pp contracts-003 "cat /opt/output/combined-003.json"  | tail -n +2 | jq '.' > combined-003.json
 ```
 
 This diagnosis isn't critical, but it's nice to confirm that we are
@@ -61,7 +61,7 @@ cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(
 Check that the hash of the verifier is actually the sp1 verifier. It should be f33fc6bc90b5ea5e0272a7ab87d701bdd05ecd78b8111ca4f450eeff1e6df26a
 
 ```
-kurtosis service exec pp contracts-001 'cat /opt/zkevm-contracts/artifacts/contracts/verifiers/SP1Verifier.sol/SP1Verifier.json' | tail -n +2 | jq -r '.deployedBytecode' | sha256sum
+kurtosis service exec pp contracts-001 'cat /opt/agglayer-contracts/artifacts/contracts/verifiers/SP1Verifier.sol/SP1Verifier.json' | tail -n +2 | jq -r '.deployedBytecode' | sha256sum
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.verifierAddress') | sha256sum
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-002.json | jq -r '.verifierAddress') | sha256sum
 ```

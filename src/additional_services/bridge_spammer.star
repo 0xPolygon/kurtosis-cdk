@@ -7,7 +7,7 @@ TEMPLATES_FOLDER_PATH = "../../static_files/additional_services/bridge-spammer"
 SCRIPT_NAME = "bridge.sh"
 
 # The folder where bridge spammer scripts are stored inside the service.
-SCRIPT_FOLDER_PATH = "/opt/scripts"
+SCRIPT_FOLDER_PATH = constants.SCRIPTS_DIR
 
 
 def run(plan, args, contract_setup_addresses):

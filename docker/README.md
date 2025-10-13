@@ -25,7 +25,7 @@ docker push "${gcp_image_name}"
 
 Pre-compiled agglayer contracts.
 
-Each image is suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For example, pessimistic tags have been prefixed with `-fork.12`, e.g. the zkevm-contracts tag `v9.0.0-rc.2-pp` corresponds to `europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v9.0.0-rc.2-pp-fork.12`.
+Each image is suffixed with `-fork.<id>` to work properly with Kurtosis CDK. For example, pessimistic tags have been prefixed with `-fork.12`, e.g. the agglayer-contracts tag `v9.0.0-rc.2-pp` corresponds to `europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v9.0.0-rc.2-pp-fork.12`.
 
 Repository: <https://github.com/agglayer/agglayer-contracts>
 

@@ -16,7 +16,7 @@ ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="c8d0a429998f2ef2f8df3b1e9fe8f69be22fa9
 ARG FOUNDRY_VERSION="v1.2.3"
 
 # STEP 1: Download agglayer contracts dependencies and compile contracts.
-WORKDIR /opt/zkevm-contracts
+WORKDIR /opt/agglayer-contracts
 RUN git clone --branch ${AGGLAYER_CONTRACTS_BRANCH} https://github.com/agglayer/agglayer-contracts . \
   && git checkout ${AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA} \
   && npm install --global npm@10.9.0 \

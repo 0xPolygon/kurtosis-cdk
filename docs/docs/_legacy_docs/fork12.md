@@ -25,7 +25,7 @@ kurtosis run --enclave cdk --args-file params.yml .
 Once the environment is running, verify that fork 12 is deployed by executing the following commands:
 
 ```bash
-rollup_manager_address="$(kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 | jq --raw-output '.polygonRollupManagerAddress')"
+rollup_manager_address="$(kurtosis service exec cdk contracts-001 'cat /opt/output/combined.json' | tail -n +2 | jq --raw-output '.polygonRollupManagerAddress')"
 rpc_url="$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
 sig="rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)"
 cast call --rpc-url $rpc_url $rollup_manager_address $sig 1
