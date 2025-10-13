@@ -48,7 +48,7 @@ def run(plan, args):
                 "cl_type": "lighthouse",
                 "cl_image": args.get("lighthouse_image"),
                 "cl_extra_params": [
-                    "--log.format=JSON"
+                    "--log-format=JSON"
                     if log_format == constants.LOG_FORMAT.json
                     else "",
                     # Disable optimistic finalized sync. This will force Lighthouse to
@@ -66,7 +66,7 @@ def run(plan, args):
                 "vc_type": "lighthouse",
                 "vc_image": args.get("lighthouse_image"),
                 "vc_extra_params": [
-                    "--log.format=JSON"
+                    "--log-format=JSON"
                     if log_format == constants.LOG_FORMAT.json
                     else "",
                 ],
