@@ -119,7 +119,13 @@ def run(plan, args):
     # Store L1 genesis file for op-succinct by querying the L1 RPC
     # The file will be named {chainId}.json
     l1_chain_id = str(args.get("l1_chain_id", 271828))
-    plan.print("Creating L1 genesis file with chain ID: " + l1_chain_id + ", filename: " + l1_chain_id + ".json")
+    plan.print(
+        "Creating L1 genesis file with chain ID: "
+        + l1_chain_id
+        + ", filename: "
+        + l1_chain_id
+        + ".json"
+    )
 
     # Create genesis template with chain ID
     genesis_template = """{{
@@ -144,18 +150,23 @@ def run(plan, args):
     "pragueTime": 0
   }},
   "alloc": {{}}
-}}""".format(chain_id=l1_chain_id)
+}}""".format(
+        chain_id=l1_chain_id
+    )
 
     # Render the genesis file with the chain ID as filename
     plan.render_templates(
         name="l1-genesis-for-op-succinct",
         config={
-            l1_chain_id + ".json": struct(
+            l1_chain_id
+            + ".json": struct(
                 template=genesis_template,
                 data={},
             ),
         },
-        description="Creating L1 genesis file at " + l1_chain_id + ".json for op-succinct",
+        description="Creating L1 genesis file at "
+        + l1_chain_id
+        + ".json for op-succinct",
     )
 
 

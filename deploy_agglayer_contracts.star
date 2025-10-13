@@ -256,9 +256,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         files["/opt/scripts/"] = Directory(
             artifact_names=[deploy_op_succinct_contract_artifact]
         )
-        files["/configs/L1"] = Directory(
-            artifact_names=[l1_genesis_artifact]
-        )
+        files["/configs/L1"] = Directory(artifact_names=[l1_genesis_artifact])
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]
