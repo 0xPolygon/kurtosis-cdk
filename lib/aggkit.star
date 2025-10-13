@@ -109,7 +109,7 @@ def create_aggkit_bridge_service_config(
     aggkit_name = "aggkit" + args["deployment_suffix"] + "-bridge"
     selected_keystore = keystore_artifact.aggoracle
 
-    (ports, public_ports) = get_aggkit_ports(args, None)
+    (ports, public_ports) = get_aggkit_ports(args, forced_bridge_port=True)
     # Only run bridge component for committee members
     service_command = [
         "run",
@@ -277,7 +277,7 @@ def create_aggsender_validator_service_config(
     return configs_to_return
 
 
-def get_aggkit_ports(args, service_type=None):
+def get_aggkit_ports(args, service_type=None, forced_bridge_port=False):
     ports = {
         "rpc": PortSpec(
             args.get("cdk_node_rpc_port"),
@@ -286,7 +286,7 @@ def get_aggkit_ports(args, service_type=None):
         ),
     }
 
-    if "bridge" in args.get("aggkit_components", ""):
+    if forced_bridge_port or "bridge" in args.get("aggkit_components", ""):
         ports["rest"] = PortSpec(
             args.get("aggkit_node_rest_api_port"),
             application_protocol="http",
