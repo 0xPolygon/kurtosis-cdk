@@ -244,8 +244,8 @@ def run(plan, args, deployment_stages, op_stack_args):
         constants.KEYSTORES_DIR: Directory(persistent_key="keystores-artifact"),
         constants.OUTPUT_DIR: Directory(persistent_key="output-artifact"),
         # Content are made available to script here:
-        constants.INPUT_DIR: Directory(artifact_names=input-artifacts),
-        constants.SCRIPTS_DIR: Directory(artifact_names=scripts-artifacts),
+        constants.INPUT_DIR: Directory(artifact_names=input - artifacts),
+        constants.SCRIPTS_DIR: Directory(artifact_names=scripts - artifacts),
         # Legacy folders (WIP):
         constants.OUTPUT_DIR: Directory(persistent_key="output-artifacts"),
         "/opt/contract-deploy/": Directory(artifact_names=artifacts),
@@ -372,7 +372,10 @@ def run(plan, args, deployment_stages, op_stack_args):
         plan.store_service_files(
             name="cdk-erigon-chain-allocs",
             service_name="contracts" + args["deployment_suffix"],
-            src=constants.OUTPUT_DIR + "/dynamic-" + args["chain_name"] + "-allocs.json",
+            src=constants.OUTPUT_DIR
+            + "/dynamic-"
+            + args["chain_name"]
+            + "-allocs.json",
         )
         plan.store_service_files(
             name="cdk-erigon-chain-first-batch",
@@ -416,7 +419,10 @@ def run(plan, args, deployment_stages, op_stack_args):
         plan.store_service_files(
             name="cdk-erigon-chain-allocs",
             service_name="contracts" + args["deployment_suffix"],
-            src=constants.OUTPUT_DIR + "/dynamic-" + args["chain_name"] + "-allocs.json",
+            src=constants.OUTPUT_DIR
+            + "/dynamic-"
+            + args["chain_name"]
+            + "-allocs.json",
         )
         plan.store_service_files(
             name="cdk-erigon-chain-first-batch",

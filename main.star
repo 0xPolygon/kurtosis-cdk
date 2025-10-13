@@ -168,7 +168,7 @@ def run(plan, args={}):
             genesis_artifact = plan.store_service_files(
                 name="genesis",
                 service_name="contracts" + args["deployment_suffix"],
-                src=constants.OUTPUT_DIR+"/genesis.json",
+                src=constants.OUTPUT_DIR + "/genesis.json",
             )
 
     # Deploy MITM
