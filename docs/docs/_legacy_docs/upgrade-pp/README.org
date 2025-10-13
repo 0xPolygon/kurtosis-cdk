@@ -87,7 +87,7 @@ Now, we need to grab the full ~combined.json~ file for reference
 in other commands:
 
 #+begin_src bash
-kurtosis service exec cdk contracts-001 "cat /opt/zkevm/combined.json"
+kurtosis service exec cdk contracts-001 "cat /opt/output/combined.json"
 #+end_src
 
 #+begin_src javascript

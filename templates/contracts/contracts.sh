@@ -181,7 +181,7 @@ create_keystores() {
 
 # Called if l1_custom_genesis and consensus_contract_type is pessimistic
 configure_contract_container_custom_genesis() {
-    cp "$input_dir"/op-custom-genesis-addresses.json /opt/zkevm/combined.json
+    cp "$input_dir"/op-custom-genesis-addresses.json "$output_dir"/combined.json
 
     sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' "$contracts_dir"/hardhat.config.ts
     cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
@@ -190,23 +190,23 @@ configure_contract_container_custom_genesis() {
     MNEMONIC="{{.l1_preallocated_mnemonic}}" npx ts-node deployment/v2/1_createGenesis.ts 2>&1 | tee 02_create_genesis.out
     popd || exit 1
 
-    cp "$contracts_dir"/deployment/v2/genesis.json /opt/zkevm/
-    cp "$input_dir"/create_rollup_parameters.json /opt/zkevm/
-    cp /opt/zkevm/combined.json /opt/zkevm/combined-001.json
+    cp "$contracts_dir"/deployment/v2/genesis.json "$output_dir"/
+    cp "$input_dir"/create_rollup_parameters.json "$output_dir"/
+    cp "$output_dir"/combined.json "$output_dir"/combined-001.json
 
-    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
+    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' "$output_dir"/combined.json)
     cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
 # Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
 configure_contract_container_custom_genesis_cdk_erigon() {
     # deploymentRollupManagerBlockNumber field inside cdk-erigon-custom-genesis-addresses.json must be different to 0 because cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
-    cp "$input_dir"/cdk-erigon-custom-genesis-addresses.json /opt/zkevm/combined.json
+    cp "$input_dir"/cdk-erigon-custom-genesis-addresses.json "$output_dir"/combined.json
 
-    cp /opt/zkevm/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
-    cp /opt/zkevm/combined.json /opt/zkevm/deploy_output.json
+    cp "$output_dir"/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
+    cp "$output_dir"/combined.json "$output_dir"/deploy_output.json
 
-    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' /opt/zkevm/combined.json)
+    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' "$output_dir"/combined.json)
     cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
@@ -218,7 +218,7 @@ deploy_agglayer_core_contracts() {
         set -x
     fi
 
-    if [[ -e "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock" ]]; then
+    if [[ -e "${output_dir}/.init-complete{{.deployment_suffix}}.lock" ]]; then
         _echo_ts "This script has already been executed"
         exit 1
     fi
@@ -229,8 +229,8 @@ deploy_agglayer_core_contracts() {
     # recovered network
     if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
         _echo_ts "We have a genesis and combined output file from a previous deployment"
-        cp /opt/contract-deploy/* /opt/zkevm/
-        pushd /opt/zkevm || exit 1
+        cp /opt/contract-deploy/* "$output_dir"/
+        pushd "$output_dir" || exit 1
         jq '.firstBatchData' combined.json > first-batch-config.json
         popd || exit 1
         exit
@@ -258,26 +258,26 @@ deploy_agglayer_core_contracts() {
     printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
     is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc
-    if [[ ! -e /opt/zkevm/combined.json ]]; then
+    if [[ ! -e "$output_dir"/combined.json ]]; then
         _echo_ts "It looks like this is the first rollup so we'll deploy the LxLy and Rollup Manager"
         _deploy_rollup_manager
         is_first_rollup=1
     else
         _echo_ts "Skipping deployment of the Rollup Manager and LxLy"
-        cp /opt/zkevm/deploy_output.json "$contracts_dir"/deployment/v2/
+        cp "$output_dir"/deploy_output.json "$contracts_dir"/deployment/v2/
     fi
 
     # Combine contract deploy files.
     # At this point, all of the contracts /should/ have been deployed.
     # Now we can combine all of the files and put them into the general zkevm folder.
     _echo_ts "Combining contract deploy files"
-    mkdir -p /opt/zkevm
-    cp "$contracts_dir"/deployment/v2/deploy_*.json /opt/zkevm/
+    mkdir -p "$output_dir"
+    cp "$contracts_dir"/deployment/v2/deploy_*.json "$output_dir"/
 
     popd || exit 1
 
     _echo_ts "Creating combined.json"
-    pushd /opt/zkevm/ || exit 1
+    pushd "$output_dir"/ || exit 1
     cp deploy_output.json combined.json
     cat combined.json
 
@@ -438,7 +438,7 @@ create_agglayer_rollup() {
         {{ end }}
     {{ end }}
 
-    cp "$contracts_dir"/deployment/v2/genesis.json /opt/zkevm/
+    cp "$contracts_dir"/deployment/v2/genesis.json "$output_dir"/
 
     {{ if eq .consensus_contract_type "ecdsa_multisig" }}
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
@@ -490,15 +490,15 @@ create_agglayer_rollup() {
     # Check create_rollup_output.json exists before copying it.
     # For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
     if [[ -e "$contracts_dir"/deployment/v2/create_rollup_output.json ]]; then
-        cp "$contracts_dir"/deployment/v2/create_rollup_output.json /opt/zkevm/
+        cp "$contracts_dir"/deployment/v2/create_rollup_output.json "$output_dir"/
     else
         echo "File "$contracts_dir"/deployment/v2/create_rollup_output.json does not exist."
     fi
-    cp "$contracts_dir"/deployment/v2/create_rollup_parameters.json /opt/zkevm/
+    cp "$contracts_dir"/deployment/v2/create_rollup_parameters.json "$output_dir"/
     popd || exit 1
 
     _echo_ts "Modifying combined.json"
-    pushd /opt/zkevm/ || exit 1
+    pushd "$output_dir"/ || exit 1
 
     cp genesis.json genesis.original.json
     # Check create_rollup_output.json exists before copying it.
@@ -513,14 +513,14 @@ create_agglayer_rollup() {
     jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c.json; mv c.json combined.json
 
     # Add the L2 GER Proxy address in combined.json (for panoptichain).
-    zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' /opt/zkevm/genesis.json)
+    zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
     jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
     {{ if .gas_token_enabled }}
     jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
 
-    gas_token_address=$(jq -r '.gasTokenAddress' /opt/zkevm/combined.json)
-    l1_bridge_addr=$(jq -r '.polygonZkEVMBridgeAddress' /opt/zkevm/combined.json)
+    gas_token_address=$(jq -r '.gasTokenAddress' "$output_dir"/combined.json)
+    l1_bridge_addr=$(jq -r '.polygonZkEVMBridgeAddress' "$output_dir"/combined.json)
     # Bridge gas token to L2 to prevent bridge underflow reverts
     echo "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
     polycli ulxly bridge asset \
@@ -604,7 +604,7 @@ create_agglayer_rollup() {
     }) | add'
 
     # Use jq to transform the input JSON into the desired format
-    if ! output_json=$(jq "$jq_script" /opt/zkevm/genesis.json); then
+    if ! output_json=$(jq "$jq_script" "$output_dir"/genesis.json); then
         _echo_ts "Error processing JSON with jq"
         exit 1
     fi
@@ -617,13 +617,13 @@ create_agglayer_rollup() {
 
     _echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
     if [[ -e create_rollup_output.json ]]; then
-        jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
+        jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' "$output_dir"/genesis.json > "dynamic-{{.chain_name}}-conf.json"
         batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
         jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "dynamic-{{.chain_name}}-conf.json" > tmp_output.json
         mv tmp_output.json "dynamic-{{.chain_name}}-conf.json"
     else
         echo "Without create_rollup_output.json, there is no batch_timestamp available"
-        jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' /opt/zkevm/genesis.json > "dynamic-{{.chain_name}}-conf.json"
+        jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' "$output_dir"/genesis.json > "dynamic-{{.chain_name}}-conf.json"
     fi
 
     # zkevm.initial-batch.config
@@ -653,7 +653,7 @@ create_agglayer_rollup() {
     fi
 
     # The contract setup is done!
-    touch "/opt/zkevm/.init-complete{{.deployment_suffix}}.lock"
+    touch "${output_dir}/.init-complete{{.deployment_suffix}}.lock"
 
 }
 
@@ -668,7 +668,7 @@ update_ger() {
     private_key="{{.zkevm_l2_admin_private_key}}"
 
     # The bridge address
-    bridge_address="$(jq --raw-output '.polygonZkEVMBridgeAddress' /opt/zkevm/combined.json)"
+    bridge_address="$(jq --raw-output '.polygonZkEVMBridgeAddress' ${output_dir}/combined.json)"
 
     # Grab the endpoints for l1
     l1_rpc_url="{{.l1_rpc_url}}"
@@ -726,8 +726,8 @@ initialize_rollup() {
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
     # So a manual extraction of polygonRollupManagerAddress is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr=$(jq -r '.rollupManagerAddress' /opt/zkevm/create_rollup_output.json)
-    rollup_id=$(jq -r '.rollupID' /opt/zkevm/create_rollup_output.json)
+    rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
+    rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
     # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
     jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup.json.tmp
@@ -739,7 +739,7 @@ initialize_rollup() {
     fi
 
     # Save Rollup Information to a file.
-    rollup_manager_addr=$(jq -r '.polygonRollupManagerAddress' /opt/zkevm/combined.json)
+    rollup_manager_addr=$(jq -r '.polygonRollupManagerAddress' "$output_dir"/combined.json)
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
@@ -757,10 +757,10 @@ initialize_rollup() {
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtxmanager_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
 
-    bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' /opt/zkevm/create-sovereign-genesis-output.json)
-    bridge_proxy_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain proxy"]' /opt/zkevm/create-sovereign-genesis-output.json)
-    ger_impl_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain implementation"]' /opt/zkevm/create-sovereign-genesis-output.json)
-    ger_proxy_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain proxy"]' /opt/zkevm/create-sovereign-genesis-output.json)
+    bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
+    bridge_proxy_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
+    ger_impl_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
+    ger_proxy_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
 
     # Save the contract addresses to the sovereign-rollup-out.json file
     jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' "$contracts_dir"/sovereign-rollup-out.json > "$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
@@ -811,12 +811,12 @@ initialize_rollup() {
         ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
         .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
         .rollupVerifierType = $rollupVerifierType' \
-        "/opt/zkevm/combined.json" > "/opt/zkevm/combined.json.temp"
+        "${output_dir}/combined.json" > "${output_dir}/combined.json.temp"
 
-    mv "/opt/zkevm/combined.json.temp" "/opt/zkevm/combined.json"
+    mv "${output_dir}/combined.json.temp" "${output_dir}/combined.json"
 
     # Copy the updated combined.json to a new file with the deployment suffix
-    cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+    cp "${output_dir}/combined.json" "${output_dir}/combined{{.deployment_suffix}}.json"
 
     # Contract addresses to extract from combined.json and check for bytecode
     # shellcheck disable=SC2034
@@ -839,7 +839,7 @@ initialize_rollup() {
     )
 
     # JSON file to extract addresses from
-    json_file="/opt/zkevm/combined.json"
+    json_file="${output_dir}/combined.json"
 
     # Extract addresses
     # shellcheck disable=SC2128
@@ -892,7 +892,7 @@ initialize_rollup() {
     # shellcheck disable=SC2050
     if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured
-        cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' /opt/zkevm/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
+        cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
         true
     fi
 }
@@ -1003,7 +1003,7 @@ l2_legacy_fund_accounts() {
         account_nonce="$((account_nonce + 1))"
     }
 
-    if [[ -e "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
+    if [[ -e "${output_dir}/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
         _echo_ts "This script has already been executed"
         exit 1
     fi
@@ -1033,7 +1033,7 @@ l2_contract_setup() {
     if [[ $global_log_level == "debug" ]]; then
         set -x
     fi
-    if [[ -e "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
+    if [[ -e "${output_dir}/.init-l2-complete{{.deployment_suffix}}.lock" ]]; then
         _echo_ts "This script has already been executed"
         exit 1
     fi
@@ -1128,7 +1128,7 @@ l2_contract_setup() {
     fi
 
     # The contract setup is done!
-    touch "/opt/zkevm/.init-l2-complete{{.deployment_suffix}}.lock"
+    touch "${output_dir}/.init-l2-complete{{.deployment_suffix}}.lock"
 
 }
 
@@ -1144,10 +1144,10 @@ create_predeployed_op_genesis() {
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
     # So a manual extraction of polygonRollupManagerAddress is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
-    chainID="$(jq -r '.chainID' "/opt/zkevm/create_rollup_parameters.json")"
+    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
+    chainID="$(jq -r '.chainID' "${output_dir}/create_rollup_parameters.json")"
     rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
-    gas_token_addr="$(jq -r '.gasTokenAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+    gas_token_addr="$(jq -r '.gasTokenAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
 
     # Replace rollupManagerAddress with the extracted address
     # sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
@@ -1198,8 +1198,8 @@ create_predeployed_op_genesis() {
     # Save the genesis file
     genesis_file=$(find "$contracts_dir"/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'genesis-rollupID*' 2>/dev/null | head -n 1)
     if [[ -f "$genesis_file" ]]; then
-        cp "$genesis_file" /opt/zkevm/sovereign-predeployed-genesis.json
-        echo "Predeployed Genesis file saved: /opt/zkevm/sovereign-predeployed-genesis.json"
+        cp "$genesis_file" "${output_dir}/sovereign-predeployed-genesis.json"
+        echo "Predeployed Genesis file saved: ${output_dir}/sovereign-predeployed-genesis.json"
     else
         echo "No matching Genesis file found!"
         exit 1
@@ -1208,8 +1208,8 @@ create_predeployed_op_genesis() {
     # Save tool output file
     output_file=$(find "$contracts_dir"/tools/createSovereignGenesis/ -maxdepth 1 -type f -name 'output-rollupID*' 2>/dev/null | head -n 1)
     if [[ -f "$output_file" ]]; then
-        cp "$output_file" /opt/zkevm/create-sovereign-genesis-output.json
-        echo "Output saved: /opt/zkevm/create-sovereign-genesis-output.json"
+        cp "$output_file" "${output_dir}/create-sovereign-genesis-output.json"
+        echo "Output saved: ${output_dir}/create-sovereign-genesis-output.json"
     else
         echo "No matching Output file found!"
         exit 1
@@ -1217,10 +1217,10 @@ create_predeployed_op_genesis() {
 
     # Copy aggoracle implementation and proxy address to combined.json
     if [[ "{{.use_agg_oracle_committee}}" ]]; then
-    jq --arg impl "$(jq -r '.genesisSCNames["AggOracleCommittee implementation"]' /opt/zkevm/create-sovereign-genesis-output.json)" \
-    --arg proxy "$(jq -r '.genesisSCNames["AggOracleCommittee proxy"]' /opt/zkevm/create-sovereign-genesis-output.json)" \
+    jq --arg impl "$(jq -r '.genesisSCNames["AggOracleCommittee implementation"]' ${output_dir}/create-sovereign-genesis-output.json)" \
+    --arg proxy "$(jq -r '.genesisSCNames["AggOracleCommittee proxy"]' ${output_dir}/create-sovereign-genesis-output.json)" \
     '. + { "aggOracleCommitteeImplementationAddress": $impl, "aggOracleCommitteeProxyAddress": $proxy }' \
-    /opt/zkevm/combined.json > /opt/zkevm/combined.json.tmp && mv /opt/zkevm/combined.json.tmp /opt/zkevm/combined.json
+    ${output_dir}/combined.json > ${output_dir}/combined.json.tmp && mv ${output_dir}/combined.json.tmp ${output_dir}/combined.json
     fi
 
     python3 "$scripts_dir"/create_op_allocs.py
@@ -1239,7 +1239,7 @@ create_sovereign_rollup_predeployed() {
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
     # So a manual extraction of polygonRollupManagerAddress is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined{{.deployment_suffix}}.json")"
+    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
 
     # Replace rollupManagerAddress with the extracted address
     jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' "$input_dir"/create_new_rollup.json > "${input_dir}/create_new_rollup${ts}.json"
@@ -1262,20 +1262,20 @@ create_sovereign_rollup_predeployed() {
     cp "$contracts_dir"/deployment/v2/genesis.json  "$contracts_dir"/tools/addRollupType/genesis.json
     cp "$contracts_dir"/deployment/v2/genesis.json  "$contracts_dir"/tools/createNewRollup/genesis.json
 
-    cp /opt/zkevm/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
+    cp "${output_dir}/combined.json" "$contracts_dir"/deployment/v2/deploy_output.json
 
     deployOPSuccinct="{{ .deploy_op_succinct }}"
     if [[ $deployOPSuccinct == true ]]; then
     rm "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json
     npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
-    cp "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json /opt/zkevm/add_rollup_type_output.json
-    rollup_type_id=$(jq -r '.rollupTypeID' /opt/zkevm/add_rollup_type_output.json)
+    cp "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json "${output_dir}/add_rollup_type_output.json"
+    rollup_type_id=$(jq -r '.rollupTypeID' "${output_dir}/add_rollup_type_output.json")
     jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' "$contracts_dir"/tools/createNewRollup/create_new_rollup.json > "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp
     mv "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp "$contracts_dir"/tools/createNewRollup/create_new_rollup.json
 
     rm "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json
     npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
-    cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json /opt/zkevm/create_rollup_output.json
+    cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json "${output_dir}/create_rollup_output.json"
     else
     # shellcheck disable=SC2050
     if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
@@ -1324,7 +1324,7 @@ create_sovereign_rollup() {
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
     # So a manual extraction of polygonRollupManagerAddress is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "/opt/zkevm/combined.json")"
+    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "${output_dir}/combined.json")"
 
     # Replace rollupManagerAddress with the extracted address
     sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/create_new_rollup.json
@@ -1457,11 +1457,11 @@ create_sovereign_rollup() {
         ._legacyLastPendingStateConsolidated = $_legacyLastPendingStateConsolidated |
         .lastVerifiedBatchBeforeUpgrade = $lastVerifiedBatchBeforeUpgrade |
         .rollupVerifierType = $rollupVerifierType' \
-        "/opt/zkevm/combined.json" >"/opt/zkevm/combined.json.temp" &&
-        mv "/opt/zkevm/combined.json.temp" "/opt/zkevm/combined.json"
+        "${output_dir}/combined.json" >"${output_dir}/combined.json.temp" &&
+        mv "${output_dir}/combined.json.temp" "${output_dir}/combined.json"
 
     # Copy the updated combined.json to a new file with the deployment suffix
-    cp "/opt/zkevm/combined.json" "/opt/zkevm/combined{{.deployment_suffix}}.json"
+    cp "${output_dir}/combined.json" "${output_dir}/combined{{.deployment_suffix}}.json"
 
     # Contract addresses to extract from combined.json and check for bytecode
     # shellcheck disable=SC2034
@@ -1484,7 +1484,7 @@ create_sovereign_rollup() {
     )
 
     # JSON file to extract addresses from
-    json_file="/opt/zkevm/combined.json"
+    json_file="${output_dir}/combined.json"
 
     # shellcheck disable=SC2128
     l1_contract_addresses=$(_extract_addresses l1_contract_names "$json_file")

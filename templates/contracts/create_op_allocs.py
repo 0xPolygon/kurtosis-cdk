@@ -1,7 +1,7 @@
 import json
 
-genesis_polygon = "/opt/zkevm/sovereign-predeployed-genesis.json"
-predeployed_allocs = "/opt/zkevm/predeployed_allocs.json"
+genesis_polygon = "/opt/output/sovereign-predeployed-genesis.json"
+predeployed_allocs = "/opt/output/predeployed_allocs.json"
 
 # Load the genesis file
 import json

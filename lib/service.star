@@ -23,7 +23,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         ] = "fromjson | .polygonDataCommitteeAddress"
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
+        command=["/bin/sh", "-c", "cat {}/combined.json".format(constants.OUTPUT_DIR)],
         extract=extract,
     )
     service_name = "contracts"
@@ -281,7 +281,7 @@ def get_aggoracle_committee_address(plan, args):
     }
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
+        command=["/bin/sh", "-c", "cat {}/combined.json".format(constants.OUTPUT_DIR)],
         extract=extract,
     )
 

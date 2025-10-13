@@ -241,13 +241,13 @@ def run(plan, args, deployment_stages, op_stack_args):
     # Base file artifacts to mount regardless of deployment type
     files = {
         # These are filled as result of script execution:
-        constants.KEYSTORES_DIR: Directory(persistent_key="keystores"),
-        constants.OUTPUT_DIR: Directory(persistent_key="output"),
+        constants.KEYSTORES_DIR: Directory(persistent_key="keystores-artifact"),
+        constants.OUTPUT_DIR: Directory(persistent_key="output-artifact"),
         # Content are made available to script here:
-        constants.INPUT_DIR: Directory(artifact_names=input_artifacts),
-        constants.SCRIPTS_DIR: Directory(artifact_names=scripts_artifacts),
+        constants.INPUT_DIR: Directory(artifact_names=input-artifacts),
+        constants.SCRIPTS_DIR: Directory(artifact_names=scripts-artifacts),
         # Legacy folders (WIP):
-        "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
+        constants.OUTPUT_DIR: Directory(persistent_key="output-artifacts"),
         "/opt/contract-deploy/": Directory(artifact_names=artifacts),
     }
     if succinct_artifacts:
@@ -366,18 +366,18 @@ def run(plan, args, deployment_stages, op_stack_args):
         plan.store_service_files(
             name="cdk-erigon-chain-config",
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
+            src=constants.OUTPUT_DIR + "/dynamic-" + args["chain_name"] + "-conf.json",
         )
 
         plan.store_service_files(
             name="cdk-erigon-chain-allocs",
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+            src=constants.OUTPUT_DIR + "/dynamic-" + args["chain_name"] + "-allocs.json",
         )
         plan.store_service_files(
             name="cdk-erigon-chain-first-batch",
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/first-batch-config.json",
+            src=constants.OUTPUT_DIR + "/first-batch-config.json",
         )
     else:
         plan.exec(
@@ -410,18 +410,18 @@ def run(plan, args, deployment_stages, op_stack_args):
         plan.store_service_files(
             name="cdk-erigon-chain-config",
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-conf.json",
+            src=constants.OUTPUT_DIR + "/dynamic-" + args["chain_name"] + "-conf.json",
         )
 
         plan.store_service_files(
             name="cdk-erigon-chain-allocs",
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/dynamic-" + args["chain_name"] + "-allocs.json",
+            src=constants.OUTPUT_DIR + "/dynamic-" + args["chain_name"] + "-allocs.json",
         )
         plan.store_service_files(
             name="cdk-erigon-chain-first-batch",
             service_name="contracts" + args["deployment_suffix"],
-            src="/opt/zkevm/first-batch-config.json",
+            src=constants.OUTPUT_DIR + "/first-batch-config.json",
         )
 
     # Force update GER.
@@ -523,6 +523,6 @@ def create_sovereign_predeployed_genesis(plan, args):
     plan.store_service_files(
         service_name=contracts_service_name,
         name=allocs_file,
-        src="/opt/zkevm/" + allocs_file,
+        src=constants.OUTPUT_DIR + "/" + allocs_file,
         description="Storing {}".format(allocs_file),
     )

@@ -168,7 +168,7 @@ def run(plan, args={}):
             genesis_artifact = plan.store_service_files(
                 name="genesis",
                 service_name="contracts" + args["deployment_suffix"],
-                src="/opt/zkevm/genesis.json",
+                src=constants.OUTPUT_DIR+"/genesis.json",
             )
 
     # Deploy MITM
@@ -343,6 +343,7 @@ def deploy_helper_service(plan, args):
                 data=args
                 | {
                     "rpc_url": args["l1_rpc_url"],
+                    "output_dir": constants.OUTPUT_DIR,
                 },
             )
         },
@@ -354,7 +355,7 @@ def deploy_helper_service(plan, args):
         name=helper_service_name,
         config=ServiceConfig(
             image=constants.TOOLBOX_IMAGE,
-            files={"/opt/zkevm": get_rollup_info_artifact},
+            files={constants.OUTPUT_DIR: get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
@@ -370,7 +371,7 @@ def deploy_helper_service(plan, args):
                 "/bin/sh",
                 "-c",
                 "chmod +x {0} && {0}".format(
-                    "/opt/zkevm/get-rollup-info.sh",
+                    "{}/get-rollup-info.sh".format(constants.OUTPUT_DIR),
                 ),
             ]
         ),
