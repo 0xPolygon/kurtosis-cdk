@@ -142,7 +142,7 @@ After a few minutes, the number of verified batches should increase (the first b
 
     ```sh
     git clone git@github.com:0xPolygonHermez/zkevm-contracts.git
-    pushd zkevm-contracts/
+    pushd agglayer-contracts/
     git reset --hard a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
     npm install
     printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml

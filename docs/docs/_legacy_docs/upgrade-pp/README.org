@@ -139,7 +139,7 @@ docker exec -it --user root contracts-001--54a495d290fb4b0caaab9dd36b8a1e69 /bin
 Now we should be in the shell for the contracts container.
 
 #+begin_src bash
-cd zkevm-contracts/
+cd agglayer-contracts/
 git stash # there are some local modifications to set the localhost network
 git pull
 git checkout v9.0.0-rc.3-pp

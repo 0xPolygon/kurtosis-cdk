@@ -489,7 +489,7 @@ all done within docker for convenience as well.
 docker exec -it contracts-001--abc8888306a74c7fa5148c0c3ce5e796 /bin/bash
 # run the docker command first, but note the image name will be different
 
-cd /opt/zkevm-contracts
+cd /opt/agglayer-contracts
 git pull
 git stash
 git checkout v8.1.0-rc.1-fork.13

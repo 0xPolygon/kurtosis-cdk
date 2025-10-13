@@ -39,18 +39,18 @@ INPUTS = [
 
 
 def run(plan, args, deployment_stages, op_stack_args):
-    artifact_paths = []
+    inputs_list = list(INPUTS)
 
     # If we are configured to use a previous deployment, we'll
     # dynamically add artifacts for the genesis and combined outputs.
     if args.get("use_previously_deployed_contracts"):
-        artifact_paths.append(
+        inputs_list.append(
             {
                 "name": "combined.json",
                 "file": "./templates/contract-deploy/combined.json",
             }
         )
-        artifact_paths.append(
+        inputs_list.append(
             {
                 "name": "dynamic-" + args["chain_name"] + "-conf.json",
                 "file": "./templates/contract-deploy/dynamic-"
@@ -58,7 +58,7 @@ def run(plan, args, deployment_stages, op_stack_args):
                 + "-conf.json",
             }
         )
-        artifact_paths.append(
+        inputs_list.append(
             {
                 "name": "dynamic-" + args["chain_name"] + "-allocs.json",
                 "file": "./templates/contract-deploy/dynamic-"
@@ -96,64 +96,6 @@ def run(plan, args, deployment_stages, op_stack_args):
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
-    artifacts = []
-    for artifact_cfg in artifact_paths:
-        template = read_file(src=artifact_cfg["file"])
-        artifact = plan.render_templates(
-            name=artifact_cfg["name"],
-            config={
-                artifact_cfg["name"]: struct(
-                    template=template,
-                    data=args
-                    | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(
-                            args
-                        ),
-                        "is_vanilla_client": is_vanilla_client(args, deployment_stages),
-                        "deploy_op_succinct": deployment_stages.get(
-                            "deploy_op_succinct", False
-                        ),
-                        "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
-                            args
-                        ),
-                        "deploy_optimism_rollup": deployment_stages.get(
-                            "deploy_optimism_rollup", False
-                        ),
-                        "op_stack_seconds_per_slot": op_stack_args["optimism_package"][
-                            "chains"
-                        ][0]["network_params"]["seconds_per_slot"],
-                        # vkeys and selectors
-                        "pp_vkey_hash": pp_vkey_hash,
-                        "pp_vkey_selector": pp_vkey_selector,
-                        "aggchain_vkey_hash": aggchain_vkey_hash,
-                        "aggchain_vkey_selector": aggchain_vkey_selector,
-                        "program_vkey": program_vkey,
-                    },
-                )
-            },
-        )
-        artifacts.append(artifact)
-
-    # Dump input params to input_args.json file
-    json_str = json.encode(
-        {
-            "args": args,
-            "deployment_stages": deployment_stages,
-            "op_stack_args": op_stack_args,
-        }
-    )
-    pretty_str = json.indent(json_str)
-    artifact = plan.render_templates(
-        name="input_args.json",
-        config={
-            "input_args.json": struct(
-                template="{{ . }}",
-                data=pretty_str,
-            ),
-        },
-    )
-    artifacts.append(artifact)
-
     template_data = args | {
         "is_cdk_validium": data_availability_package.is_cdk_validium(args),
         "is_vanilla_client": is_vanilla_client(args, deployment_stages),
@@ -181,7 +123,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     }
 
     input_artifacts = []
-    for artifact_cfg in list(INPUTS):
+    for artifact_cfg in inputs_list:
         artifact = plan.render_templates(
             name=artifact_cfg["name"],
             config={
@@ -191,6 +133,26 @@ def run(plan, args, deployment_stages, op_stack_args):
             },
         )
         input_artifacts.append(artifact)
+
+    # Dump input params to input_args.json file
+    json_str = json.encode(
+        {
+            "args": args,
+            "deployment_stages": deployment_stages,
+            "op_stack_args": op_stack_args,
+        }
+    )
+    pretty_str = json.indent(json_str)
+    artifact = plan.render_templates(
+        name="input_args.json",
+        config={
+            "input_args.json": struct(
+                template="{{ . }}",
+                data=pretty_str,
+            ),
+        },
+    )
+    input_artifacts.append(artifact)
 
     scripts_artifacts = [
         plan.render_templates(
@@ -482,7 +444,7 @@ def deploy_l2_contracts(plan, args):
     env_string = "l2_rpc_url={0}".format(l2_rpc_url.http)
 
     # When funding accounts and deploying the contracts on l2, the
-    # zkevm-contracts service is reused to reduce startup time. Since the l2
+    # contracts service is reused to reduce startup time. Since the l2
     # doesn't exist at the time the service is added to kurtosis, the
     # `l2_rpc_url` can't be templated. Therefore, the `l2_rpc_url` is exported
     # as an environment variable before running the script.

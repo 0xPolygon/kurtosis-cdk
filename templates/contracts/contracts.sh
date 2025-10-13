@@ -10,6 +10,12 @@ if [[ ! -e /opt/zkevm ]]; then
     ln -s "$output_dir" /opt/zkevm
 fi
 
+# Let's rename zkevm-contracts to agglayer-contracts if that's not already done
+if [[ -e /opt/zkevm-contracts && ! -e "$contracts_dir" ]]; then
+    mv /opt/zkevm-contracts "$contracts_dir"
+    ln -s "$contracts_dir" /opt/zkevm-contracts
+fi
+
 # Internal function, used by create_keystores
 _create_geth_keystore() {
     local keystore_name="$1"
@@ -232,10 +238,12 @@ deploy_agglayer_core_contracts() {
     # kurtosis entirely, we'll use those and exit. This is like a
     # permissionless use case or a use case where we're starting from
     # recovered network
-    if [[ -e "${output_dir}/genesis.json" && -e "${output_dir}/combined.json" ]]; then
+    if [[ -e "${input_dir}/genesis.json" && -e "${input_dir}/combined.json" ]]; then
         _echo_ts "We have a genesis and combined output file from a previous deployment"
-        pushd "$output_dir" || exit 1
-        jq '.firstBatchData' combined.json > first-batch-config.json
+        cp "$input_dir"/genesis.json "$output_dir"/
+        cp "$input_dir"/combined.json "$output_dir"/
+        cp "$input_dir"/dynamic-*.json "$output_dir"/
+        jq '.firstBatchData' "$input_dir"/combined.json > "$output_dir"/first-batch-config.json
         popd || exit 1
         exit
     fi
@@ -631,7 +639,7 @@ create_agglayer_rollup() {
     fi
 
     # zkevm.initial-batch.config
-    jq '.firstBatchData' combined.json > first-batch-config.json
+    jq '.firstBatchData' combined.json > "$output_dir"/first-batch-config.json
 
     if [[ ! -s "dynamic-{{.chain_name}}-conf.json" ]]; then
         _echo_ts "Error creating the dynamic kurtosis config"
