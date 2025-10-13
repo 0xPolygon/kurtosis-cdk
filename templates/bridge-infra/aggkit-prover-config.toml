@@ -1,9 +1,9 @@
 grpc-endpoint = "0.0.0.0:{{ .aggkit_prover_grpc_port }}"
 
 [log]
-level = "{{ .log_level }}"
+level = "{{.log_level}}"
 outputs = []
-format = "json"
+format = "{{.log_format}}"
 
 [telemetry]
 prometheus-addr = "0.0.0.0:{{ .metrics_port }}"

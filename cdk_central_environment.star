@@ -144,27 +144,27 @@ def get_keystores_artifacts(plan, args):
     sequencer_keystore_artifact = plan.store_service_files(
         name="sequencer-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sequencer.keystore",
+        src=constants.KEYSTORES_DIR + "/sequencer.keystore",
     )
     aggregator_keystore_artifact = plan.get_files_artifact(
         name="aggregator-keystore",
         # service_name="contracts" + args["deployment_suffix"],
-        # src="/opt/zkevm/aggregator.keystore",
+        # src=constants.KEYSTORES_DIR+"/aggregator.keystore",
     )
     proofsigner_keystore_artifact = plan.store_service_files(
         name="proofsigner-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/proofsigner.keystore",
+        src=constants.KEYSTORES_DIR + "/proofsigner.keystore",
     )
     dac_keystore_artifact = plan.store_service_files(
         name="dac-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/dac.keystore",
+        src=constants.KEYSTORES_DIR + "/dac.keystore",
     )
     claim_sponsor_keystore_artifact = plan.store_service_files(
         name="claimsponsor-keystore-cdk",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimsponsor.keystore",
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
     return struct(
         sequencer=sequencer_keystore_artifact,
@@ -184,7 +184,8 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
                 template=dac_config_template,
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "global_log_level": args["global_log_level"],
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
                     "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],

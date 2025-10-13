@@ -7,76 +7,88 @@ def _sort_dict_by_values(d):
     return {k: v for k, v in sorted_items}
 
 
-DEFAULT_PARTICIPANT = _sort_dict_by_values(
-    {
-        "el": {
-            "type": "op-geth",
-            "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
-            "extra_params": ["--log.format=json"],
-        },
-        "cl": {
-            "type": "op-node",
-            "image": constants.DEFAULT_IMAGES.get("op_node_image"),
-            "extra_params": [
-                "--log.format=json",
-                "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
-            ],
-        },
-    }
-)
-
-DEFAULT_CHAIN = _sort_dict_by_values(
-    {
-        "participants": {
-            "node1": DEFAULT_PARTICIPANT,
-        },
-        "batcher_params": _sort_dict_by_values(
-            {
-                "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
-                "extra_params": [
-                    "--txmgr.enable-cell-proofs",  # required for the fusaka hf
-                    "--log.format=json",
-                ],
-            }
-        ),
-        "proposer_params": _sort_dict_by_values(
-            {
-                "image": constants.DEFAULT_IMAGES.get("op_proposer_image"),
+def _default_participant(log_format=constants.LOG_FORMAT.json):
+    return _sort_dict_by_values(
+        {
+            "el": {
+                "type": "op-geth",
+                "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
                 "extra_params": ["--log.format=json"],
-            }
-        ),
-        "network_params": _sort_dict_by_values(
-            {
-                # The rollup chain ID
-                "network_id": 2151908,
-                # The rollup block time
-                "seconds_per_slot": 1,
-                # Hard fork activation times
-                "isthmus_time_offset": 0,
-            }
-        ),
-    }
-)
-
-DEFAULT_ARGS = _sort_dict_by_values(
-    {
-        "chains": {
-            "001": DEFAULT_CHAIN,
-        },
-        "op_contract_deployer_params": _sort_dict_by_values(
-            {
-                "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
-                "l1_artifacts_locator": "embedded",
-                "l2_artifacts_locator": "embedded",
             },
-        ),
-        "observability": _sort_dict_by_values(
-            {
-                "enabled": False,
-            }
-        ),
-    }
-)
+            "cl": {
+                "type": "op-node",
+                "image": constants.DEFAULT_IMAGES.get("op_node_image"),
+                "extra_params": [
+                    "--log.format=json",
+                    "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
+                ],
+            },
+        }
+    )
+
+
+def _default_chain(log_format=constants.LOG_FORMAT.json):
+    return _sort_dict_by_values(
+        {
+            "participants": {
+                "node1": _default_participant(log_format),
+            },
+            "batcher_params": _sort_dict_by_values(
+                {
+                    "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
+                    "extra_params": [
+                        "--txmgr.enable-cell-proofs",  # required for the fusaka hf
+                        "--log.format=json"
+                        if log_format == constants.LOG_FORMAT.json
+                        else "",
+                    ],
+                }
+            ),
+            "proposer_params": _sort_dict_by_values(
+                {
+                    "image": constants.DEFAULT_IMAGES.get("op_proposer_image"),
+                    "extra_params": [
+                        "--log.format=json"
+                        if log_format == constants.LOG_FORMAT.json
+                        else "",
+                    ],
+                }
+            ),
+            "network_params": _sort_dict_by_values(
+                {
+                    # The rollup chain ID
+                    "network_id": 2151908,
+                    # The rollup block time
+                    "seconds_per_slot": 1,
+                    # Hard fork activation times
+                    "isthmus_time_offset": 0,
+                }
+            ),
+        }
+    )
+
+
+def _default_args(log_format=constants.LOG_FORMAT.json):
+    return _sort_dict_by_values(
+        {
+            "chains": {
+                "001": _default_chain(log_format),
+            },
+            "op_contract_deployer_params": _sort_dict_by_values(
+                {
+                    "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
+                    "l1_artifacts_locator": "embedded",
+                    "l2_artifacts_locator": "embedded",
+                },
+            ),
+            "observability": _sort_dict_by_values(
+                {
+                    "enabled": False,
+                }
+            ),
+        }
+    )
+
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
@@ -87,13 +99,18 @@ DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
 
 
 def parse_args(plan, args, op_args):
+    log_format = args.get("log_format")
+    default_op_args = _default_args(log_format)
+
     # Get L1 network configuration
     external_l1_network_params = _get_l1_config(plan, args)
 
     # Process optimism args
     if op_args == {}:
-        op_args = dict(DEFAULT_ARGS | DEFAULT_NON_NATIVE_ARGS)  # create a mutable copy
-        op_args["chains"] = _parse_chains(op_args["chains"])
+        op_args = dict(
+            default_op_args | DEFAULT_NON_NATIVE_ARGS
+        )  # create a mutable copy
+        op_args["chains"] = _parse_chains(op_args["chains"], log_format)
         source = op_args.pop("source")
         predeployed_contracts = op_args.pop("predeployed_contracts")
         return _sort_dict_by_values(
@@ -106,10 +123,10 @@ def parse_args(plan, args, op_args):
         )
 
     op_args = dict(op_args)  # create a mutable copy
-    for k, v in (DEFAULT_ARGS | DEFAULT_NON_NATIVE_ARGS).items():
+    for k, v in (default_op_args | DEFAULT_NON_NATIVE_ARGS).items():
         if k in op_args:
             if k == "chains":
-                op_args[k] = _parse_chains(op_args[k])
+                op_args[k] = _parse_chains(op_args[k], log_format)
             elif type(v) == type({}):
                 # Apply defaults
                 for kk, vv in v.items():
@@ -137,20 +154,22 @@ def parse_args(plan, args, op_args):
     )
 
 
-def _parse_chains(chains):
+def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
+    default_op_chain = _default_chain(log_format)
+
     if len(chains.keys()) == 0:
-        return {"001": DEFAULT_CHAIN}
+        return {"001": default_op_chain}
 
     chains_with_defaults = {}
     for k, v in chains.items():
         c = dict(v)  # create a mutable copy
-        for kk, vv in DEFAULT_CHAIN.items():
+        for kk, vv in default_op_chain.items():
             if kk in c:
                 if kk == "participants":
                     c[kk] = _parse_participants(c[kk])
                 else:
                     # Apply defaults
-                    for kkk, vvv in DEFAULT_CHAIN[kk].items():
+                    for kkk, vvv in default_op_chain[kk].items():
                         c[kk].setdefault(kkk, vvv)
                     c[kk] = _sort_dict_by_values(c[kk])
             else:
@@ -163,14 +182,16 @@ def _parse_chains(chains):
     return sorted_chains
 
 
-def _parse_participants(participants):
+def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
+    default_participant = _default_participant(log_format)
+
     if len(participants.keys()) == 0:
-        return {"node1": DEFAULT_PARTICIPANT}
+        return {"node1": default_participant}
 
     participants_with_defaults = {}
     for k, v in participants.items():
         p = dict(v)  # create a mutable copy
-        for kk, vv in DEFAULT_PARTICIPANT.items():
+        for kk, vv in default_participant.items():
             p.setdefault(kk, vv)
         participants_with_defaults[k] = p
 

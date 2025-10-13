@@ -61,14 +61,14 @@ ForkUpgradeNewForkId = 0
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 
 # ------------------------------------------------------------------------------
 # Outputs define the output paths for writing logs. The default is to
@@ -1030,14 +1030,14 @@ UpgradeEtrogBatchNumber = 0
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 
 # ==============================================================================
 #  ____  _____ ___  _   _ _____ _   _  ____ _____ ____  _____ _   _ ____  _____ ____

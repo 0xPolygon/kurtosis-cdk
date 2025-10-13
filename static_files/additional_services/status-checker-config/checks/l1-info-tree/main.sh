@@ -9,7 +9,7 @@ check_consensus rollup cdk_validium
 # Ensure that no more than $last_n_events batches sequenced can be processed
 # within the status-checker check interval.
 last_n_events=10
-rollup_contract=$(jq -r '.rollupAddress' /opt/zkevm/combined.json)
+rollup_contract=$(jq -r '.rollupAddress' /opt/output/combined.json)
 virtual_batch_number=$(cast rpc --rpc-url "$L2_RPC_URL" zkevm_virtualBatchNumber | jq -r | cast to-dec)
 
 events=$(

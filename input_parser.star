@@ -368,7 +368,6 @@ DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
     "genesis_file": "templates/permissionless-node/genesis.json",
-    "sovereign_genesis_file": "templates/sovereign-genesis.json",
 }
 
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
@@ -382,14 +381,12 @@ DEFAULT_ARGS = (
         # Suffix appended to service names.
         # Note: It should be a string.
         "deployment_suffix": "-001",
-        # Verbosity of the `kurtosis run` output.
-        # Valid values are "error", "warn", "info", "debug", and "trace".
-        # By default, the verbosity is set to "info". It won't log the value of the args.
-        "verbosity": "info",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
-        "global_log_level": "debug",
-        "aggkit_prover_log_level": "info",
+        "log_level": "info",
+        # The log format that all components of the stack should use.
+        # Valid values are "json" and "pretty".
+        "log_format": "json",
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
@@ -485,11 +482,13 @@ def parse_args(plan, user_args):
     }
 
     # Validation step.
-    verbosity = args.get("verbosity", "")
-    validate_log_level("verbosity", verbosity)
+    log_level = args.get("log_level")
+    validate_log_level(log_level)
 
-    global_log_level = args.get("global_log_level", "")
-    validate_log_level("global log level", global_log_level)
+    log_format = args.get("log_format")
+    validate_log_format(log_format)
+    environment = log_format_to_environment(log_format)
+    args["environment"] = environment
 
     validate_additional_services(args.get("additional_services", []))
 
@@ -545,25 +544,44 @@ def parse_args(plan, user_args):
     return (sorted_deployment_stages, sorted_args, op_args)
 
 
-def validate_log_level(name, log_level):
-    if log_level not in (
+def validate_log_level(log_level):
+    VALID_LOG_LEVELS = [
         constants.LOG_LEVEL.error,
         constants.LOG_LEVEL.warn,
         constants.LOG_LEVEL.info,
         constants.LOG_LEVEL.debug,
         constants.LOG_LEVEL.trace,
-    ):
+    ]
+    if log_level not in VALID_LOG_LEVELS:
         fail(
-            "Unsupported {}: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
-                name,
-                log_level,
-                constants.LOG_LEVEL.error,
-                constants.LOG_LEVEL.warn,
-                constants.LOG_LEVEL.info,
-                constants.LOG_LEVEL.debug,
-                constants.LOG_LEVEL.trace,
+            "Unsupported log level: '{}', please use one of: '{}'".format(
+                log_level, VALID_LOG_LEVELS
             )
         )
+
+
+def validate_log_format(log_format):
+    VALID_LOG_FORMATS = [
+        constants.LOG_FORMAT.json,
+        constants.LOG_FORMAT.pretty,
+    ]
+    if log_format not in VALID_LOG_FORMATS:
+        fail(
+            "Unsupported log format: '{}', please use one of: '{}'".format(
+                log_format, VALID_LOG_FORMATS
+            )
+        )
+
+
+def log_format_to_environment(log_format):
+    mapping = {
+        constants.LOG_FORMAT.json: "production",
+        constants.LOG_FORMAT.pretty: "development",
+    }
+    environment = mapping.get(log_format)
+    if not environment:
+        fail("Unknown log format: {}".format(log_format))
+    return environment
 
 
 def validate_additional_services(additional_services):

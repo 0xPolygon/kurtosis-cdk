@@ -1,11 +1,20 @@
+constants = import_module("./src/package_io/constants.star")
+
+
 def run(plan, args, predeployed_contracts=False):
     if args.get("l1_custom_genesis"):
         return
 
-    script = "/opt/contract-deploy/run-sovereign-setup.sh"
+    contracts_command = "{}/contracts.sh create_sovereign_rollup".format(
+        constants.SCRIPTS_DIR
+    )
     if predeployed_contracts:
         plan.print("Predeployed contracts detected. Using predeployed setup script.")
-        script = "/opt/contract-deploy/run-sovereign-setup-predeployed.sh"
+        contracts_command = (
+            "{}/contracts.sh create_sovereign_rollup_predeployed".format(
+                constants.SCRIPTS_DIR
+            )
+        )
 
     plan.exec(
         description="Creating rollup type and rollup on L1",
@@ -14,7 +23,7 @@ def run(plan, args, predeployed_contracts=False):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(script),
+                contracts_command,
             ]
         ),
     )
@@ -33,11 +42,12 @@ def init_rollup(plan, args, deployment_stages):
                     "-c",
                     "echo '"
                     + l2oo_config
-                    + "' > /opt/contract-deploy/opsuccinctl2ooconfig.json",
+                    + "' > "
+                    + constants.OUTPUT_DIR
+                    + "/opsuccinctl2ooconfig.json",
                 ]
             ),
         )
-    script = "/opt/contract-deploy/run-initialize-rollup.sh"
 
     plan.exec(
         description="Running rollup initialization",
@@ -46,7 +56,7 @@ def init_rollup(plan, args, deployment_stages):
             command=[
                 "/bin/sh",
                 "-c",
-                "chmod +x {0} && {0}".format(script),
+                "{}/contracts.sh initialize_rollup".format(constants.SCRIPTS_DIR),
             ]
         ),
     )
@@ -114,9 +124,8 @@ def fund_addresses(plan, args, contract_addresses, rpc_url):
     command = [
         "/bin/bash",
         "-c",
-        "chmod +x {0} && {1} {0}".format(
-            "/opt/contract-deploy/fund-addresses.sh",
-            env_string,
+        "{0} {1}".format(
+            env_string, constants.SCRIPTS_DIR + "/contracts.sh fund_addresses"
         ),
     ]
 

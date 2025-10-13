@@ -23,6 +23,11 @@ LOG_LEVEL = struct(
     trace="trace",
 )
 
+LOG_FORMAT = struct(
+    json="json",
+    pretty="pretty",
+)
+
 CONSENSUS_TYPE = struct(
     rollup="rollup",
     cdk_validium="cdk_validium",
@@ -51,6 +56,13 @@ L1_ENGINES = ("geth", "anvil")
 
 # Standard zero address in Ethereum.
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
+# Contracts folders
+KEYSTORES_DIR = "/opt/keystores"
+CONTRACTS_DIR = "/opt/agglayer-contracts"
+OUTPUT_DIR = "/opt/output"
+INPUT_DIR = "/opt/input"
+SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0-beta8",

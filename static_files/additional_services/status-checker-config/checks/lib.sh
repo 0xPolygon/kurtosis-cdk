@@ -72,7 +72,7 @@ check_certificate_height() {
   local rpc_method="$2" # e.g. "interop_getLatestKnownCertificateHeader", "interop_getLatestPendingCertificateHeader", or "interop_getLatestSettledCertificateHeader"
 
   local l2_bridge_address network_id
-  l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/zkevm/combined.json)
+  l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/output/combined.json)
   network_id=$(cast call --rpc-url "$L2_RPC_URL" "$l2_bridge_address" 'networkID()(uint32)')
 
   local prev_header="./prev-$name-certificate-header.json"

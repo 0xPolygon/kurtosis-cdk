@@ -65,6 +65,7 @@ def test_parse_args_with_user_overrides(plan):
     # Should correctly apply user overrides while preserving defaults
     user_args = {
         "deployment_suffix": "-001",
+        "log_format": "json",
         "zkevm_rollup_chain_id": 2151908,
         "l1_seconds_per_slot": 2,
     }
@@ -198,7 +199,7 @@ def test_parse_args_with_user_overrides(plan):
 
     ## Chain 4: Empty config, all defaults
     chain4 = chains.get("004")
-    expect.eq(chain4, op_input_parser.DEFAULT_CHAIN)
+    expect.eq(chain4, op_input_parser._default_chain())
 
     # Check op_contract_deployer_params defaults
     op_contract_deployer_params = optimism_package.get("op_contract_deployer_params")
@@ -225,7 +226,7 @@ def test_parse_chains_with_empty_chains(plan):
     # Should return default chain when empty dict is provided
     result = op_input_parser._parse_chains({})
     expect.eq(len(result.keys()), 1)
-    expect.eq(result.get("001"), op_input_parser.DEFAULT_CHAIN)
+    expect.eq(result.get("001"), op_input_parser._default_chain())
 
 
 def test_parse_chains_with_partial_config(plan):
@@ -248,23 +249,20 @@ def test_parse_chains_with_partial_config(plan):
     # First chain should have custom network params but default everything else
     chain1 = result.get("001")
     expect.eq(chain1.get("network_params").get("seconds_per_slot"), 5)
-    expect.eq(
-        chain1.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
-    )
+    default_participants = op_input_parser._default_chain().get("participants")
+    expect.eq(chain1.get("participants"), default_participants)
 
     # Second chain should have custom batcher but default everything else
     chain2 = result.get("002")
     expect.eq(chain2.get("batcher_params").get("image"), "custom-batcher:latest")
-    expect.eq(
-        chain2.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
-    )
+    expect.eq(chain2.get("participants"), default_participants)
 
 
 def test_parse_participants_with_empty_participants(plan):
     # Should return default participant when empty dict is provided
     result = op_input_parser._parse_participants({})
     expect.eq(len(result.keys()), 1)
-    expect.eq(result.get("node1"), op_input_parser.DEFAULT_PARTICIPANT)
+    expect.eq(result.get("node1"), op_input_parser._default_participant())
 
 
 def test_parse_participants_with_partial_config(plan):

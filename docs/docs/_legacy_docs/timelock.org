@@ -8,7 +8,7 @@ Assuming that you've already full spun up your network, let's get the
 details of our deployment.
 
 #+begin_src bash :exports both verbatim :results output code
-kurtosis service exec cdk-v1 contracts-001 'cat /opt/zkevm/combined.json'
+kurtosis service exec cdk-v1 contracts-001 'cat /opt/output/combined.json'
 #+end_src
 
 #+RESULTS:
