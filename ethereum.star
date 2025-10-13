@@ -27,6 +27,14 @@ def run(plan, args):
     else:
         plan.print("Custom genesis is disabled, using the default ethereum package.")
         custom_genesis = ""
+
+    log_format = args.get("log_format")
+    geth_log_format_mapping = {
+        constants.LOG_FORMAT.json: "json",
+        constants.LOG_FORMAT.pretty: "terminal",
+    }
+    geth_log_format = geth_log_format_mapping.get(log_format)
+
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
         "participants": [
@@ -34,13 +42,15 @@ def run(plan, args):
                 "el_type": "geth",
                 "el_image": args.get("geth_image"),
                 "el_extra_params": [
-                    "--log.format=json",
+                    "--log.format={}".format(geth_log_format),
                     "--gcmode archive",
                 ],
                 "cl_type": "lighthouse",
                 "cl_image": args.get("lighthouse_image"),
                 "cl_extra_params": [
-                    "--log-format=JSON",
+                    "--log.format=JSON"
+                    if log_format == constants.LOG_FORMAT.json
+                    else "",
                     # Disable optimistic finalized sync. This will force Lighthouse to
                     # verify every execution block hash with the execution client during
                     # finalized sync. By default block hashes will be checked in Lighthouse
@@ -56,7 +66,9 @@ def run(plan, args):
                 "vc_type": "lighthouse",
                 "vc_image": args.get("lighthouse_image"),
                 "vc_extra_params": [
-                    "--log-format=JSON",
+                    "--log.format=JSON"
+                    if log_format == constants.LOG_FORMAT.json
+                    else "",
                 ],
                 "count": args["l1_participants_count"],
             }
