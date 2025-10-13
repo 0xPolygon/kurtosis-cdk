@@ -42,7 +42,9 @@ def init_rollup(plan, args, deployment_stages):
                     "-c",
                     "echo '"
                     + l2oo_config
-                    + "' > /opt/contract-deploy/opsuccinctl2ooconfig.json",
+                    + "' > "
+                    + constants.OUTPUT_DIR
+                    + "/opsuccinctl2ooconfig.json",
                 ]
             ),
         )

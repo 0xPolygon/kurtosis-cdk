@@ -246,8 +246,6 @@ def run(plan, args, deployment_stages, op_stack_args):
         # Content are made available to script here:
         constants.INPUT_DIR: Directory(artifact_names=input_artifacts),
         constants.SCRIPTS_DIR: Directory(artifact_names=scripts_artifacts),
-        # Legacy folders (WIP):
-        "/opt/contract-deploy/": Directory(artifact_names=artifacts),
     }
     if succinct_artifacts:
         # Mount op-succinct specific artifacts

@@ -5,6 +5,11 @@ output_dir="{{.output_dir}}"
 keystores_dir="{{.keystores_dir}}"
 contracts_dir="{{.contracts_dir}}"
 
+# Compatibility with the old zkevm folder for e2e tests while we are adapting them.
+if [[ ! -e /opt/zkevm ]]; then
+    ln -s "$output_dir" /opt/zkevm
+fi
+
 # Internal function, used by create_keystores
 _create_geth_keystore() {
     local keystore_name="$1"
@@ -227,9 +232,8 @@ deploy_agglayer_core_contracts() {
     # kurtosis entirely, we'll use those and exit. This is like a
     # permissionless use case or a use case where we're starting from
     # recovered network
-    if [[ -e "/opt/contract-deploy/genesis.json" && -e "/opt/contract-deploy/combined.json" ]]; then
+    if [[ -e "${output_dir}/genesis.json" && -e "${output_dir}/combined.json" ]]; then
         _echo_ts "We have a genesis and combined output file from a previous deployment"
-        cp /opt/contract-deploy/* "$output_dir"/
         pushd "$output_dir" || exit 1
         jq '.firstBatchData' combined.json > first-batch-config.json
         popd || exit 1
@@ -708,7 +712,7 @@ initialize_rollup() {
     deployOPSuccinct="{{ .deploy_op_succinct }}"
     if [[ $deployOPSuccinct == true ]]; then
     echo "Configuring OP Succinct setup..."
-    jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json '
+    jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json '
     .deployerPvtKey = .aggchainManagerPvtKey |
     .aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
     .aggchainParams.initParams.rollupConfigHash = $l2[0].rollupConfigHash |
@@ -718,10 +722,10 @@ initialize_rollup() {
     .aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval |
     .aggchainParams.initParams.aggregationVkey = $l2[0].aggregationVkey |
     .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
-    ' "$input_dir"/create_new_rollup.json > /opt/contract-deploy/initialize_rollup.json
+    ' "$input_dir"/create_new_rollup.json > "$output_dir"/initialize_rollup.json
 
-    jq --slurpfile l2 /opt/contract-deploy/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' /opt/contract-deploy/initialize_rollup.json > "/opt/contract-deploy/initialize_rollup${ts}".json
-    cp "/opt/contract-deploy/initialize_rollup${ts}.json" /opt/contract-deploy/initialize_rollup.json
+    jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup${ts}.json
+    cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
 
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
     # So a manual extraction of polygonRollupManagerAddress is done here.
@@ -730,10 +734,10 @@ initialize_rollup() {
     rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
     # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-    jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' /opt/contract-deploy/initialize_rollup.json > /opt/contract-deploy/initialize_rollup.json.tmp
-    mv /opt/contract-deploy/initialize_rollup.json.tmp /opt/contract-deploy/initialize_rollup.json
+    jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
+    mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
 
-    cp /opt/contract-deploy/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
+    cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
 
     npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
     fi
