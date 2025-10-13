@@ -96,15 +96,14 @@ cat .env
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.
 
-# Copy L1 genesis file from /configs/L1 to /opt/op-succinct/configs/L1
+# Copy L1 genesis file from /opt/l1 to /opt/op-succinct/configs/L1
 # The fetch-l2oo-config tool expects it at configs/L1/{chainId}.json relative to working directory
-mkdir -p /opt/op-succinct/configs/L1
-if [ -d "/configs/L1" ]; then
-    cp -r /configs/L1/* /opt/op-succinct/configs/L1/
-    echo "Copied L1 genesis files from /configs/L1 to /opt/op-succinct/configs/L1"
-    ls -la /opt/op-succinct/configs/L1/
+if [[ -d "/opt/l1" ]]; then
+    mkdir -p /opt/op-succinct/configs/L1
+    cp -r /opt/l1/*.json /opt/op-succinct/configs/L1/
 else
-    echo "Warning: /configs/L1 directory not found"
+    echo "/opt/l1 directory not found"
+    exit 1
 fi
 
 # Run fetch-l2oo-config to get the various configuration values that

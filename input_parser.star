@@ -388,7 +388,7 @@ DEFAULT_ARGS = (
         "verbosity": "info",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
-        "global_log_level": "debug",
+        "global_log_level": "info",
         "aggkit_prover_log_level": "info",
         # The type of the sequencer to deploy.
         # Options:

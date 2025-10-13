@@ -45,11 +45,9 @@ def create_op_succinct_proposer_service_config(
     }
 
     # Mount L1 genesis file if provided
-    # The op-succinct binary runs from /app working directory (see Dockerfile)
-    # It looks for configs/L1/{chainId}.json relative to working directory
     files = {}
     if l1_genesis_artifact:
-        files["/app/configs/L1"] = Directory(artifact_names=[l1_genesis_artifact])
+        files["/opt/l1"] = Directory(artifact_names=[l1_genesis_artifact])
 
     op_succinct_proposer_service_config = ServiceConfig(
         image=args["op_succinct_proposer_image"],

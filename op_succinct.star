@@ -1,21 +1,30 @@
 op_succinct_package = import_module("./lib/op_succinct.star")
 
 
-def extract_l1_genesis(plan, args):
-    """Extract L1 genesis file and store it as an artifact for op-succinct"""
-    # Get the L1 genesis file artifact that was stored by ethereum.star
-    l1_genesis_artifact = plan.get_files_artifact(
-        name="l1-genesis-for-op-succinct",
-    )
-    return "l1-genesis-for-op-succinct"
-
-
 def op_succinct_proposer_run(plan, args):
     # FIXME... what is this point of this.. I think we can use a script to do this and we can avoid the weird hard coded chain id
     # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
 
     # Extract L1 genesis file
-    l1_genesis_artifact = extract_l1_genesis(plan, args)
+    l1_genesis_original_artifact = plan.get_files_artifact(name="el_cl_genesis_data")
+    new_genesis_name = "{}.json".format(args.get("l1_chain_id"))
+    result = plan.run_sh(
+        name="rename-l1-genesis-for-op-succinct",
+        description="Rename L1 genesis",
+        files={"/tmp": Directory(artifact_names=[l1_genesis_original_artifact])},
+        run="mv /tmp/genesis.json /tmp/{}".format(new_genesis_name),
+        store=[
+            "/tmp/{}".format(new_genesis_name),
+        ],
+    )
+    artifact_count = len(result.files_artifacts)
+    if artifact_count != 1:
+        fail(
+            "The service should have generated 1 artifact, got {}.".format(
+                artifact_count
+            )
+        )
+    l1_genesis_artifact = result.files_artifacts[0]
 
     # Start the op-succinct-proposer component.
     op_succinct_proposer_configs = (
@@ -27,19 +36,6 @@ def op_succinct_proposer_run(plan, args):
     plan.add_services(
         configs=op_succinct_proposer_configs,
         description="Starting the op-succinct-proposer component",
-    )
-
-    # Debug: Verify L1 genesis file is mounted correctly
-    plan.exec(
-        description="Verifying L1 genesis file location in op-succinct container",
-        service_name="op-succinct-proposer" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "echo '=== Checking /app/configs/L1 directory ===' && ls -la /app/configs/L1/ && echo '=== Contents of genesis file ===' && cat /app/configs/L1/*.json || echo 'ERROR: Genesis file not found'",
-            ]
-        ),
     )
 
 
