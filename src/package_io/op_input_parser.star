@@ -7,7 +7,7 @@ def _sort_dict_by_values(d):
     return {k: v for k, v in sorted_items}
 
 
-def _default_participant(log_format):
+def _default_participant(log_format=constants.LOG_FORMAT.json):
     return _sort_dict_by_values(
         {
             "count": 1,
@@ -23,7 +23,7 @@ def _default_participant(log_format):
     )
 
 
-def _default_chain(log_format):
+def _default_chain(log_format=constants.LOG_FORMAT.json):
     return _sort_dict_by_values(
         {
             "participants": [_default_participant(log_format)],
@@ -57,7 +57,7 @@ def _default_chain(log_format):
     )
 
 
-def _default_args(log_format):
+def _default_args(log_format=constants.LOG_FORMAT.json):
     artifacts_locator = "https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-02024c5a26c16fc1a5c716fff1c46b5bf7f23890d431bb554ddbad60971211d4.tar.gz"
     return _sort_dict_by_values(
         {
@@ -142,7 +142,7 @@ def parse_args(plan, args, op_args):
     )
 
 
-def _parse_chains(chains, log_format):
+def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
     default_op_chain = _default_chain(log_format)
 
     if len(chains) == 0:
@@ -168,7 +168,7 @@ def _parse_chains(chains, log_format):
     return sorted_chains
 
 
-def _parse_participants(participants, log_format):
+def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
     default_op_participant = _default_participant(log_format)
 
     if len(participants) == 0:

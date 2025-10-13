@@ -64,6 +64,7 @@ def test_parse_args_with_user_overrides(plan):
     # Should correctly apply user overrides while preserving defaults
     user_args = {
         "deployment_suffix": "-001",
+        "log_format": "json",
         "zkevm_rollup_chain_id": 2151908,
         "l1_seconds_per_slot": 2,
     }
@@ -196,7 +197,9 @@ def test_parse_args_with_user_overrides(plan):
 
     ## Chain 3: Empty config, all defaults
     chain3 = chains[3]
-    expect.eq(chain3, op_input_parser.DEFAULT_CHAIN)
+    expect.eq(
+        chain3, op_input_parser._default_chain(log_format=constants.LOG_FORMAT.json)
+    )
 
     # Check op_contract_deployer_params defaults
     op_contract_deployer_params = optimism_package.get("op_contract_deployer_params")
@@ -223,7 +226,9 @@ def test_parse_chains_with_empty_chains(plan):
     # Should return default chain when empty chains array is provided
     result = op_input_parser._parse_chains([])
     expect.eq(len(result), 1)
-    expect.eq(result[0], op_input_parser.DEFAULT_CHAIN)
+    expect.eq(
+        result[0], op_input_parser._default_chain(log_format=constants.LOG_FORMAT.json)
+    )
 
 
 def test_parse_chains_with_partial_config(plan):
@@ -245,26 +250,28 @@ def test_parse_chains_with_partial_config(plan):
     expect.eq(len(result), 2)
 
     # First chain should have custom network params but default everything else
+    default_chain = op_input_parser._default_chain(log_format=constants.LOG_FORMAT.json)
+    default_participants = default_chain.get("participants")
+
     chain0 = result[0]
     expect.eq(chain0.get("network_params").get("seconds_per_slot"), 5)
     expect.eq(chain0.get("network_params").get("name"), "001")  # default
-    expect.eq(
-        chain0.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
-    )
+    expect.eq(chain0.get("participants"), default_participants)
 
     # Second chain should have custom batcher but default everything else
     chain1 = result[1]
     expect.eq(chain1.get("batcher_params").get("image"), "custom-batcher:latest")
-    expect.eq(
-        chain1.get("participants"), op_input_parser.DEFAULT_CHAIN.get("participants")
-    )
+    expect.eq(chain1.get("participants"), default_participants)
 
 
 def test_parse_participants_with_empty_participants(plan):
     # Should return default participant when empty participants array is provided
     result = op_input_parser._parse_participants([])
     expect.eq(len(result), 1)
-    expect.eq(result[0], op_input_parser.DEFAULT_PARTICIPANT)
+    expect.eq(
+        result[0],
+        op_input_parser._default_participant(log_format=constants.LOG_FORMAT.json),
+    )
 
 
 def test_parse_participants_with_partial_config(plan):
