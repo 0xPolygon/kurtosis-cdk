@@ -110,7 +110,7 @@ parameters. This gets logged out during the run, but you can also
 print it directly with a call like this:
 
 #+begin_src bash
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json'
+kurtosis service exec cdk contracts-001 'cat /opt/output/combined.json'
 #+end_src
 
 #+begin_src javascript
@@ -216,8 +216,8 @@ with the combined.json:
 #+begin_src bash
 work_dir=$(mktemp -d)
 pushd $work_dir
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/genesis.json' | tail -n +2 > genesis.json
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 > combined.json
+kurtosis service exec cdk contracts-001 'cat /opt/output/genesis.json' | tail -n +2 > genesis.json
+kurtosis service exec cdk contracts-001 'cat /opt/output/combined.json' | tail -n +2 > combined.json
 #+end_src
 
 This files will need to be tweaked for Erigon compatibility.
@@ -489,7 +489,7 @@ all done within docker for convenience as well.
 docker exec -it contracts-001--abc8888306a74c7fa5148c0c3ce5e796 /bin/bash
 # run the docker command first, but note the image name will be different
 
-cd /opt/zkevm-contracts
+cd /opt/agglayer-contracts
 git pull
 git stash
 git checkout v8.1.0-rc.1-fork.13
@@ -498,7 +498,7 @@ rm -rf artifacts cache node_modules
 npm i
 
 # confirm these with our own configs
-rollup_manager_addr="$(cat /opt/zkevm/combined.json | jq -r '.polygonRollupManagerAddress')"
+rollup_manager_addr="$(cat /opt/output/combined.json | jq -r '.polygonRollupManagerAddress')"
 admin_private_key="$(cat deployment/v2/deploy_parameters.json | jq -r '.deployerPvtKey')"
 
 cat upgrade/upgradeBanana/upgrade_parameters.json.example |
@@ -525,7 +525,7 @@ Continuing on from within the contracts container, we're going to use
 the two calldatas to schedule and then execute.
 
 #+begin_src bash
-time_lock_address="$(cat /opt/zkevm/combined.json | jq -r '.timelockContractAddress')"
+time_lock_address="$(cat /opt/output/combined.json | jq -r '.timelockContractAddress')"
 private_key="$(cat deployment/v2/deploy_parameters.json | jq -r '.deployerPvtKey')"
 
 # rpc_url="http://172.19.0.2:8545/"
@@ -548,13 +548,13 @@ that. Now we need to add a new rollup type for fork 12. The commands
 below would still be executed from within the contracts image.
 
 #+begin_src bash
-genesis_root="$(cat /opt/zkevm/genesis.json | jq -r '.root')"
+genesis_root="$(cat /opt/output/genesis.json | jq -r '.root')"
 description="migrationexample genesis"
 
 # We're going to use the SAME verifier for this test because it's use a mock prover here anyway
 # If this were a real network, we'd need to deploy the fflonk 12 verifier
-verifier_addr="$(cat /opt/zkevm/combined.json | jq -r '.verifierAddress')"
-cp /opt/zkevm/genesis.json tools/addRollupType/genesis.json
+verifier_addr="$(cat /opt/output/combined.json | jq -r '.verifierAddress')"
+cp /opt/output/genesis.json tools/addRollupType/genesis.json
 
 cat tools/addRollupType/add_rollup_type.json.example |
     jq --arg rum $rollup_manager_addr \
@@ -583,7 +583,7 @@ Now we get to do the same thing (pretty much) one more time to make
 sure that the rollup is updated to the new type.
 
 #+begin_src bash
-rollup_addr="$(cat /opt/zkevm/combined.json | jq -r '.rollupAddress')"
+rollup_addr="$(cat /opt/output/combined.json | jq -r '.rollupAddress')"
 
 cat tools/updateRollup/updateRollup.json.example |
     jq --arg rum $rollup_manager_addr \
@@ -608,7 +608,7 @@ sequencer URL because it's going to change from
 ~zkevm-node-sequencer-001~ to ~cdk-erigon-sequencer-001~.
 
 #+begin_src bash
-rollup_addr="$(cat /opt/zkevm/combined.json | jq -r '.rollupAddress')"
+rollup_addr="$(cat /opt/output/combined.json | jq -r '.rollupAddress')"
 
 cast send --private-key "$private_key" --rpc-url "$rpc_url" "$rollup_addr" 'setTrustedSequencerURL(string)' http://cdk-erigon-sequencer-001:8123
 #+end_src

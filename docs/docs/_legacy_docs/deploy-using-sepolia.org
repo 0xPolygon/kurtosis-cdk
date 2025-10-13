@@ -181,7 +181,7 @@ At this point, you'll probably want to see your deployed
 contracts an on-chain activity.
 
 #+begin_src bash :exports both verbatim :results output code
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json'
+kurtosis service exec cdk contracts-001 'cat /opt/output/combined.json'
 #+end_src
 
 #+RESULTS:

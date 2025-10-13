@@ -20,4 +20,4 @@ echo '{' \
   \"polygonDataCommitteeAddress\":\""{{.polygon_data_committee_address}}"\", \
   \"admin\":\""{{.zkevm_admin_address}}"\", \
   \"polTokenAddress\":\""$pol_token_address"\" \
-'}' | jq > /opt/zkevm/combined.json
+'}' | jq > "{{.output_dir}}"/combined.json

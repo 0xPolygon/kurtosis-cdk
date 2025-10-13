@@ -6,7 +6,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib.sh"
 check_consensus pessimistic fep
 
 prev_cert="./certificate-status.json"
-l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/zkevm/combined.json)
+l2_bridge_address=$(jq -r '.polygonZkEVML2BridgeAddress' /opt/output/combined.json)
 network_id=$(cast call --rpc-url "$L2_RPC_URL" "$l2_bridge_address" 'networkID()(uint32)')
 
 curr_json=$(cast rpc --rpc-url "$AGGLAYER_RPC_URL" interop_getLatestKnownCertificateHeader "$network_id")

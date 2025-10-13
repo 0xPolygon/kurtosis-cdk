@@ -52,7 +52,7 @@ contracts_uuid=$(kurtosis enclave inspect --full-uuids $kurtosis_enclave_name | 
 contracts_container_name=contracts-001--$contracts_uuid
 
 # Get the deployment details
-docker cp $contracts_container_name:/opt/zkevm/combined.json .
+docker cp $contracts_container_name:/opt/output/combined.json .
 l1_bridge_address=$(jq -r '.polygonZkEVMBridgeAddress' combined.json)
 ```
 

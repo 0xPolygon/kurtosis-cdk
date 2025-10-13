@@ -154,18 +154,11 @@ def run(
         },
     )
 
-    sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
-    sovereign_genesis_artifact = plan.render_templates(
-        name="sovereign_genesis",
-        config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
-    )
-
     # Start the single aggkit component with standard naming
     aggkit_configs = aggkit_package.create_root_aggkit_service_config(
         plan,
         args,
         aggkit_config_artifact,
-        sovereign_genesis_artifact,
         keystore_artifacts,
         0,  # Use member_index 0 for single service
     )
@@ -180,7 +173,6 @@ def run(
         plan,
         args,
         aggkit_config_artifact,
-        sovereign_genesis_artifact,
         keystore_artifacts,
         0,  # Use member_index 0 for single service
     )
@@ -250,7 +242,6 @@ def run(
                 plan,
                 args,
                 aggkit_config_artifact,
-                sovereign_genesis_artifact,
                 keystore_artifacts,
                 agg_oracle_committee_member_index,
             )
@@ -315,7 +306,6 @@ def run(
                     plan,
                     args,
                     aggkit_config_artifact,
-                    sovereign_genesis_artifact,
                     keystore_artifacts,
                     agg_sender_validator_member_index,
                 )
@@ -352,27 +342,27 @@ def get_keystores_artifacts(plan, args):
     aggoracle_keystore_artifact = plan.store_service_files(
         name="aggoracle-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggoracle.keystore",
+        src=constants.KEYSTORES_DIR + "/aggoracle.keystore",
     )
     sovereignadmin_keystore_artifact = plan.store_service_files(
         name="sovereignadmin-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sovereignadmin.keystore",
+        src=constants.KEYSTORES_DIR + "/sovereignadmin.keystore",
     )
     claimtx_keystore_artifact = plan.store_service_files(
         name="aggkit-claimtxmanager-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimtxmanager.keystore",
+        src=constants.KEYSTORES_DIR + "/claimtxmanager.keystore",
     )
     sequencer_keystore_artifact = plan.store_service_files(
         name="aggkit-sequencer-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sequencer.keystore",
+        src=constants.KEYSTORES_DIR + "/sequencer.keystore",
     )
     claim_sponsor_keystore_artifact = plan.store_service_files(
         name="claimsponsor-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimsponsor.keystore",
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
 
     # Store multiple aggoracle committee member keystores
@@ -385,7 +375,8 @@ def get_keystores_artifacts(plan, args):
             committee_keystore = plan.store_service_files(
                 name="aggoracle-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
-                src="/opt/zkevm/aggoracle-{}.keystore".format(member_index),
+                src=constants.KEYSTORES_DIR
+                + "/aggoracle-{}.keystore".format(member_index),
             )
             committee_keystores.append(committee_keystore)
     else:
@@ -403,7 +394,8 @@ def get_keystores_artifacts(plan, args):
             aggsender_validator_keystore = plan.store_service_files(
                 name="aggsendervalidator-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
-                src="/opt/zkevm/aggsendervalidator-{}.keystore".format(member_index),
+                src=constants.OUTPUT_DIR
+                + "/aggsendervalidator-{}.keystore".format(member_index),
             )
             aggsender_validator_keystores.append(aggsender_validator_keystore)
 
