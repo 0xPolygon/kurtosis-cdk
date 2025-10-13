@@ -2,7 +2,6 @@
 # - L1 services will be exposed on the range 60000-60999.
 # - L2 services on the range 61000-61999.
 args:
-  verbosity: debug
   use_dynamic_ports: false
   static_ports:
     # L1 public ports (60000-60999).

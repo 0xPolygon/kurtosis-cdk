@@ -27,9 +27,9 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
 [Log]
-Environment = "development" # "production" or "development"
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 Outputs = ["stderr"]
+Environment = "{{.environment}}"
 
 [REST]
 Port = "{{.aggkit_node_rest_api_port}}"
