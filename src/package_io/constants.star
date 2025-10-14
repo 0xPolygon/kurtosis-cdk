@@ -86,7 +86,7 @@ DEFAULT_IMAGES = {
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
     "op_succinct_proposer_image": "vcastellm/op-succinct:v3.2.2-fusaka",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
-    "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:871584b",
+    "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:742fd0f",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.1-bookworm",
     "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.2-RC5",
