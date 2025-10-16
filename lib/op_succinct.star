@@ -2,6 +2,7 @@
 # NETWORK_PRIVATE_KEY must be from user input
 def create_op_succinct_proposer_service_config(
     args,
+    l1_genesis_artifact=None,
 ):
     op_succinct_name = "op-succinct-proposer" + args["deployment_suffix"]
     ports = get_op_succinct_proposer_ports(args)
@@ -43,10 +44,18 @@ def create_op_succinct_proposer_service_config(
         "LOG_FORMAT": args.get("log_format"),
     }
 
+    # Mount L1 genesis file if provided
+    # The op-succinct binary runs from /app working directory (see Dockerfile)
+    # It looks for configs/L1/{chainId}.json relative to working directory
+    files = {}
+    if l1_genesis_artifact:
+        files["/app/configs/L1"] = Directory(artifact_names=[l1_genesis_artifact])
+
     op_succinct_proposer_service_config = ServiceConfig(
         image=args["op_succinct_proposer_image"],
         ports=ports,
         env_vars=env_vars,
+        files=files,
     )
 
     return {op_succinct_name: op_succinct_proposer_service_config}

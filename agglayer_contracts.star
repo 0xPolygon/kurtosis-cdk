@@ -106,7 +106,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "deploy_optimism_rollup": deployment_stages.get(
             "deploy_optimism_rollup", False
         ),
-        "op_stack_seconds_per_slot": op_stack_args["optimism_package"]["chains"][0][
+        "op_stack_seconds_per_slot": op_stack_args["optimism_package"]["chains"]["001"][
             "network_params"
         ]["seconds_per_slot"],
         # vkeys and selectors
@@ -176,6 +176,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         ),
     ]
 
+    l1_artifacts = []
     succinct_artifacts = []
 
     # Create op-succinct artifacts
@@ -196,9 +197,14 @@ def run(plan, args, deployment_stages, op_stack_args):
             },
             description="Create deploy_op_succinct_contract files artifact",
         )
+        l1_genesis_artifact = plan.get_files_artifact(
+            name="el_cl_genesis_data_for_op_succinct",
+            description="Get L1 genesis file for op-succinct",
+        )
 
         succinct_artifacts.append(fetch_rollup_config_artifact)
         scripts_artifacts.append(deploy_op_succinct_contract_artifact)
+        l1_artifacts.append(l1_genesis_artifact)
 
     # Base file artifacts to mount regardless of deployment type
     files = {
@@ -212,6 +218,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     if succinct_artifacts:
         # Mount op-succinct specific artifacts
         files["/opt/op-succinct/"] = Directory(artifact_names=succinct_artifacts)
+        files["/configs/L1"] = Directory(artifact_names=[l1_genesis_artifact])
 
     # Create helper service to deploy contracts
     contracts_service_name = "contracts" + args["deployment_suffix"]

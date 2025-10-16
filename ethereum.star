@@ -1,6 +1,6 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@82e5a7178138d892c0c31c3839c89d53ffd42d9a"
-)  # 2025-07-31
+    "github.com/ethpandaops/ethereum-package/main.star@a43368eb3085a20f5950de0c7d11dc4bece37348"
+)  # 2025-10-16
 constants = import_module("./src/package_io/constants.star")
 
 only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
@@ -39,18 +39,12 @@ def run(plan, args):
     l1_args = {
         "participants": [
             {
-                "el_type": "geth",
-                "el_image": args.get("geth_image"),
-                "el_extra_params": [
-                    "--log.format={}".format(geth_log_format),
-                    "--gcmode archive",
-                ],
+                # General
+                "count": args.get("l1_participants_count"),
+                # Consensus client
                 "cl_type": "lighthouse",
                 "cl_image": args.get("lighthouse_image"),
                 "cl_extra_params": [
-                    "--log-format=JSON"
-                    if log_format == constants.LOG_FORMAT.json
-                    else "",
                     # Disable optimistic finalized sync. This will force Lighthouse to
                     # verify every execution block hash with the execution client during
                     # finalized sync. By default block hashes will be checked in Lighthouse
@@ -62,23 +56,43 @@ def run(plan, args):
                     # generally choose to avoid this flag since backfill sync is not
                     # required for staking.
                     "--disable-backfill-rate-limiting",
+                ]
+                + (
+                    ["--log-format=JSON"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
+                # Execution client
+                "el_type": "geth",
+                "el_image": args.get("geth_image"),
+                "el_extra_params": [
+                    "--log.format={}".format(geth_log_format),
+                    "--gcmode archive",
                 ],
+                # Validator client
                 "vc_type": "lighthouse",
                 "vc_image": args.get("lighthouse_image"),
-                "vc_extra_params": [
-                    "--log-format=JSON"
-                    if log_format == constants.LOG_FORMAT.json
-                    else "",
-                ],
-                "count": args["l1_participants_count"],
+                "vc_extra_params": ["--log-format=JSON"]
+                if log_format == constants.LOG_FORMAT.json
+                else [],
+                # Fulu hard fork config
+                # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
+                # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
+                # broadcasting data on behalf of the proposer.
+                # Since we don't enable perfect PeerDAS in the config, we need to have at least one supernode.
+                "supernode": True,
             }
         ],
         "network_params": {
             "additional_preloaded_contracts": custom_genesis,
             "network_id": str(args["l1_chain_id"]),
             "preregistered_validator_keys_mnemonic": args["l1_preallocated_mnemonic"],
-            "preset": args["l1_preset"],
             "seconds_per_slot": args["l1_seconds_per_slot"],
+            # The "minimal" preset is useful for rapid testing and development.
+            # It takes 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults.
+            # In minimal preset, there are 8 slots per epoch.
+            # If we consider the seconds per slot is set to 2s, then an epoch will last 16s.
+            "preset": args["l1_preset"],
             # ETH1_FOLLOW_DISTANCE, Default: 2048
             # This is used to calculate the minimum depth of block on the Ethereum 1 chain that can be considered by the Eth2 chain: it applies to the Genesis process and the processing of deposits by validators. The Eth1 chain depth is estimated by multiplying this value by the target average Eth1 block time, SECONDS_PER_ETH1_BLOCK.
             # The value of ETH1_FOLLOW_DISTANCE is not based on the expected depth of any reorgs of the Eth1 chain, which are rarely if ever more than 2-3 blocks deep. It is about providing time to respond to an incident on the Eth1 chain such as a consensus failure between clients.
@@ -96,10 +110,15 @@ def run(plan, args):
             # GENESIS_DELAY, Default: 12
             # This is a grace period to allow nodes and node operators time to prepare for the genesis event. The genesis event cannot occur before MIN_GENESIS_TIME. If MIN_GENESIS_ACTIVE_VALIDATOR_COUNT validators are not registered sufficiently in advance of MIN_GENESIS_TIME, then Genesis will occur GENESIS_DELAY seconds after enough validators have been registered.
             "genesis_delay": 12,
-            # Enable the Electra hardfork.
-            # Note: The electra fork epoch is set to 1 instead of 0 to avoid the following error in the CL node (lighthouse).
-            #  Mar 11 11:56:46.595 CRIT Failed to start beacon node             reason: Built-in genesis state SSZ bytes are invalid: OffsetOutOfBounds(522733568)
-            "electra_fork_epoch": derive_l1_preset(args),
+            # Ethereum hard fork configurations.
+            # Supported fork epochs are documented in `static_files/genesis-generation-config/el-cl/values.env.tmpl`.
+            # in the ethereum package repository.
+            "altair_fork_epoch": 0,
+            "bellatrix_fork_epoch": 0,
+            "capella_fork_epoch": 0,
+            "deneb_fork_epoch": 0,
+            "electra_fork_epoch": 0,
+            "fulu_fork_epoch": 1,  # blocks are not finalized if fulu hard fork is activated at genesis
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,
@@ -153,10 +172,3 @@ def _wait_for_l1_startup(plan, cl_rpc_url):
         ),
         wait="5m",
     )
-
-
-def derive_l1_preset(args):
-    if args["l1_preset"] == "mainnet":
-        return 0
-    else:
-        return 1

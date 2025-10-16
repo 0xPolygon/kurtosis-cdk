@@ -383,10 +383,10 @@ DEFAULT_ARGS = (
         "deployment_suffix": "-001",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
-        "log_level": "info",
+        "log_level": constants.LOG_LEVEL.info,
         # The log format that all components of the stack should use.
         # Valid values are "json" and "pretty".
-        "log_format": "json",
+        "log_format": constants.LOG_FORMAT.pretty,
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).

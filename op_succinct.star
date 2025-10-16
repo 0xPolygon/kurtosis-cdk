@@ -7,8 +7,13 @@ def op_succinct_proposer_run(plan, args):
     # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
 
     # Start the op-succinct-proposer component.
+    l1_genesis_artifact = plan.get_files_artifact(
+        name="el_cl_genesis_data_for_op_succinct",
+    )
     op_succinct_proposer_configs = (
-        op_succinct_package.create_op_succinct_proposer_service_config(args)
+        op_succinct_package.create_op_succinct_proposer_service_config(
+            args, l1_genesis_artifact
+        )
     )
 
     plan.add_services(

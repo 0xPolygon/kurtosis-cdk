@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
-          sudo apt install -y kurtosis-cli=1.7.2
+          sudo apt install -y kurtosis-cli=1.11.1
           kurtosis analytics disable
 
       - name: Install yamllint
@@ -109,7 +109,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -222,7 +222,7 @@ jobs:
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
           else
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
@@ -246,17 +246,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Free up disk space
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: false
-          docker-images: true
-          swap-storage: true
-
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -268,6 +257,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
@@ -291,7 +287,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: bcbff97a600e090dd5cd912a5838c9514f8724e5
+          ref: 7c0d9503cf48a60a55873dc47837194c89b8768c
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -433,7 +429,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
