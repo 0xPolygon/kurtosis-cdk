@@ -84,7 +84,7 @@ DEFAULT_IMAGES = {
     "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101603.1",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.14.1",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
-    "op_succinct_proposer_image": "vcastellm/op-succinct:v3.2.3-fusaka",
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct:v3.2.3-fusaka",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/e2e:742fd0f",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
