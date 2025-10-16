@@ -36,6 +36,32 @@ def run(plan, args={}):
             ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
+
+    # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
+    # TODO: Fix the logic when using anvil and op-succinct
+    if deployment_stages.get("deploy_op_succinct", False):
+        l1_genesis_artifact = plan.get_files_artifact(name="el_cl_genesis_data")
+        new_genesis_name = "{}.json".format(args.get("l1_chain_id"))
+        result = plan.run_sh(
+            name="rename-l1-genesis",
+            description="Rename L1 genesis",
+            files={"/tmp": l1_genesis_artifact},
+            run="mv /tmp/genesis.json /tmp/{}".format(new_genesis_name),
+            store=[
+                StoreSpec(
+                    src="/tmp/{}".format(new_genesis_name),
+                    name="el_cl_genesis_data_for_op_succinct",
+                )
+            ],
+        )
+        artifact_count = len(result.files_artifacts)
+        if artifact_count != 1:
+            fail(
+                "The service should have generated 1 artifact, got {}.".format(
+                    artifact_count
+                )
+            )
+
     # Extract the fetch-l2oo-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
@@ -96,19 +122,6 @@ def run(plan, args={}):
             if deployment_stages.get("deploy_op_succinct", False):
                 # Extract genesis to feed into evm-sketch-genesis
                 op_succinct_package.create_evm_sketch_genesis(plan, args)
-
-                # Verify L1 genesis file is available in contracts service
-                plan.exec(
-                    description="Verifying L1 genesis file in contracts service",
-                    service_name="contracts" + args["deployment_suffix"],
-                    recipe=ExecRecipe(
-                        command=[
-                            "/bin/sh",
-                            "-c",
-                            "echo '=== Checking L1 genesis file ===' && ls -la /configs/L1/ && echo '=== File contents ===' && cat /configs/L1/*.json && echo '=== Verification complete ==='",
-                        ]
-                    ),
-                )
 
                 # Run deploy-op-succinct-contracts.sh script in the contracts-001 service
                 plan.exec(
