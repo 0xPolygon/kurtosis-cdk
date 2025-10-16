@@ -2,23 +2,14 @@ constants = import_module("./src/package_io/constants.star")
 op_succinct_package = import_module("./lib/op_succinct.star")
 
 
-def extract_l1_genesis(plan, args):
-    """Extract L1 genesis file and store it as an artifact for op-succinct"""
-    # Get the L1 genesis file artifact that was stored by ethereum.star
-    l1_genesis_artifact = plan.get_files_artifact(
-        name="el_cl_genesis_data_for_op_succinct",
-    )
-    return "el_cl_genesis_data_for_op_succinct"
-
-
 def op_succinct_proposer_run(plan, args):
     # FIXME... what is this point of this.. I think we can use a script to do this and we can avoid the weird hard coded chain id
     # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
 
-    # Extract L1 genesis file
-    l1_genesis_artifact = extract_l1_genesis(plan, args)
-
     # Start the op-succinct-proposer component.
+    l1_genesis_artifact = plan.get_files_artifact(
+        name="el_cl_genesis_data_for_op_succinct",
+    )
     op_succinct_proposer_configs = (
         op_succinct_package.create_op_succinct_proposer_service_config(
             args, l1_genesis_artifact
