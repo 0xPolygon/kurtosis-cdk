@@ -287,7 +287,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: c28ca34340301eb0b6a5d381806f4cee6d255bc0
+          ref: eaabd871500deb9edc4ac62e3700e0b8fa19e0f5
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
