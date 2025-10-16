@@ -97,19 +97,6 @@ def run(plan, args={}):
                 # Extract genesis to feed into evm-sketch-genesis
                 op_succinct_package.create_evm_sketch_genesis(plan, args)
 
-                # Verify L1 genesis file is available in contracts service
-                plan.exec(
-                    description="Verifying L1 genesis file in contracts service",
-                    service_name="contracts" + args["deployment_suffix"],
-                    recipe=ExecRecipe(
-                        command=[
-                            "/bin/sh",
-                            "-c",
-                            "echo '=== Checking L1 genesis file ===' && ls -la /configs/L1/ && echo '=== File contents ===' && cat /configs/L1/*.json && echo '=== Verification complete ==='",
-                        ]
-                    ),
-                )
-
                 # Run deploy-op-succinct-contracts.sh script in the contracts-001 service
                 plan.exec(
                     description="Deploying op-succinct contracts",

@@ -21,19 +21,6 @@ def op_succinct_proposer_run(plan, args):
         description="Starting the op-succinct-proposer component",
     )
 
-    # Debug: Verify L1 genesis file is mounted correctly
-    plan.exec(
-        description="Verifying L1 genesis file location in op-succinct container",
-        service_name="op-succinct-proposer" + args["deployment_suffix"],
-        recipe=ExecRecipe(
-            command=[
-                "/bin/sh",
-                "-c",
-                "echo '=== Checking /app/configs/L1 directory ===' && ls -la /app/configs/L1/ && echo '=== Contents of genesis file ===' && cat /app/configs/L1/*.json || echo 'ERROR: Genesis file not found'",
-            ]
-        ),
-    )
-
 
 def extract_fetch_rollup_config(plan, args):
     # Add a temporary service using the op-succinct-proposer image
