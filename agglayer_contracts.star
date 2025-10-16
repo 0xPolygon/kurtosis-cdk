@@ -198,7 +198,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             description="Create deploy_op_succinct_contract files artifact",
         )
         l1_genesis_artifact = plan.get_files_artifact(
-            name="l1-genesis-for-op-succinct",
+            name="el_cl_genesis_data_for_op_succinct",
             description="Get L1 genesis file for op-succinct",
         )
 

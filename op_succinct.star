@@ -6,9 +6,9 @@ def extract_l1_genesis(plan, args):
     """Extract L1 genesis file and store it as an artifact for op-succinct"""
     # Get the L1 genesis file artifact that was stored by ethereum.star
     l1_genesis_artifact = plan.get_files_artifact(
-        name="l1-genesis-for-op-succinct",
+        name="el_cl_genesis_data_for_op_succinct",
     )
-    return "l1-genesis-for-op-succinct"
+    return "el_cl_genesis_data_for_op_succinct"
 
 
 def op_succinct_proposer_run(plan, args):
