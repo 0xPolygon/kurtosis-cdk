@@ -128,59 +128,6 @@ def run(plan, args):
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
     _wait_for_l1_startup(plan, cl_rpc_url)
 
-    # Store L1 genesis file for op-succinct by querying the L1 RPC
-    # The file will be named {chainId}.json
-    l1_chain_id = str(args.get("l1_chain_id", 271828))
-    plan.print(
-        "Creating L1 genesis file with chain ID: "
-        + l1_chain_id
-        + ", filename: "
-        + l1_chain_id
-        + ".json"
-    )
-
-    # Create genesis template with chain ID
-    genesis_template = """{{
-  "config": {{
-    "chainId": {chain_id},
-    "homesteadBlock": 0,
-    "eip150Block": 0,
-    "eip155Block": 0,
-    "eip158Block": 0,
-    "byzantiumBlock": 0,
-    "constantinopleBlock": 0,
-    "petersburgBlock": 0,
-    "istanbulBlock": 0,
-    "muirGlacierBlock": 0,
-    "berlinBlock": 0,
-    "londonBlock": 0,
-    "arrowGlacierBlock": 0,
-    "grayGlacierBlock": 0,
-    "mergeNetsplitBlock": 0,
-    "shanghaiTime": 0,
-    "cancunTime": 0,
-    "pragueTime": 0
-  }},
-  "alloc": {{}}
-}}""".format(
-        chain_id=l1_chain_id
-    )
-
-    # Render the genesis file with the chain ID as filename
-    plan.render_templates(
-        name="l1-genesis-for-op-succinct",
-        config={
-            l1_chain_id
-            + ".json": struct(
-                template=genesis_template,
-                data={},
-            ),
-        },
-        description="Creating L1 genesis file at "
-        + l1_chain_id
-        + ".json for op-succinct",
-    )
-
 
 # Generate ethereum package public ports configuration.
 def generate_port_publisher_config(args):
