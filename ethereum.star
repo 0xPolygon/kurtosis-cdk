@@ -1,6 +1,6 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@fca81b36413bd1d0cbb17e25c8d2c576b3c0a408"
-)  # 2025-09-24
+    "github.com/ethpandaops/ethereum-package/main.star@a43368eb3085a20f5950de0c7d11dc4bece37348"
+)  # 2025-10-16
 constants = import_module("./src/package_io/constants.star")
 
 only_smc_genesis = "templates/genesis/only-smc-deployed-genesis.json"
@@ -45,9 +45,6 @@ def run(plan, args):
                 "cl_type": "lighthouse",
                 "cl_image": args.get("lighthouse_image"),
                 "cl_extra_params": [
-                    "--log-format=JSON"
-                    if log_format == constants.LOG_FORMAT.json
-                    else "",
                     # Disable optimistic finalized sync. This will force Lighthouse to
                     # verify every execution block hash with the execution client during
                     # finalized sync. By default block hashes will be checked in Lighthouse
@@ -59,7 +56,12 @@ def run(plan, args):
                     # generally choose to avoid this flag since backfill sync is not
                     # required for staking.
                     "--disable-backfill-rate-limiting",
-                ],
+                ]
+                + (
+                    ["--log-format=JSON"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
                 # Execution client
                 "el_type": "geth",
                 "el_image": args.get("geth_image"),
@@ -70,11 +72,9 @@ def run(plan, args):
                 # Validator client
                 "vc_type": "lighthouse",
                 "vc_image": args.get("lighthouse_image"),
-                "vc_extra_params": [
-                    "--log-format=JSON"
-                    if log_format == constants.LOG_FORMAT.json
-                    else "",
-                ],
+                "vc_extra_params": ["--log-format=JSON"]
+                if log_format == constants.LOG_FORMAT.json
+                else [],
                 # Fulu hard fork config
                 # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
                 # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
