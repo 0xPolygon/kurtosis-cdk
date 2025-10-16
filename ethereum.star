@@ -128,30 +128,6 @@ def run(plan, args):
     cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
     _wait_for_l1_startup(plan, cl_rpc_url)
 
-    # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
-    l1_genesis_artifact = plan.get_files_artifact(name="el_cl_genesis_data")
-    new_genesis_name = "{}.json".format(args.get("l1_chain_id"))
-    result = plan.run_sh(
-        name="rename-l1-genesis",
-        description="Rename L1 genesis",
-        files={"/tmp": l1_genesis_artifact},
-        run="mv /tmp/genesis.json /tmp/{}".format(new_genesis_name),
-        store=[
-            StoreSpec(
-                src="/tmp/{}".format(new_genesis_name),
-                name="el_cl_genesis_data_for_op_succinct",
-            )
-        ],
-    )
-    artifact_count = len(result.files_artifacts)
-    if artifact_count != 1:
-        fail(
-            "The service should have generated 1 artifact, got {}.".format(
-                artifact_count
-            )
-        )
-    # l1_new_genesis_artifact = result.files_artifacts[0]
-
 
 # Generate ethereum package public ports configuration.
 def generate_port_publisher_config(args):
