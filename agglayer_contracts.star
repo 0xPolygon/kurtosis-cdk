@@ -97,9 +97,9 @@ def run(plan, args, deployment_stages, op_stack_args):
         program_vkey = BYTES32_ZERO_HASH
 
     chains = op_stack_args.get("optimism_package").get("chains")
-    chain0_name = chains.keys()[0]
-    chain0 = chains.get(chain0_name)
-    op_stack_seconds_per_slot = chain0["network_params"]["seconds_per_slot"]
+    chain1_name = chains.keys()[0]
+    chain1 = chains.get(chain1_name)
+    op_stack_seconds_per_slot = chain1["network_params"]["seconds_per_slot"]
 
     template_data = args | {
         "is_cdk_validium": data_availability_package.is_cdk_validium(args),
