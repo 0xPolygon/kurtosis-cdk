@@ -22,7 +22,7 @@ def op_succinct_proposer_run(plan, args):
     )
 
 
-def extract_fetch_rollup_config(plan, args):
+def extract_fetch_l2oo_config(plan, args):
     # Add a temporary service using the op-succinct-proposer image
     temp_service_name = "temp-op-succinct-proposer"
 
