@@ -68,19 +68,24 @@ def test_sanity_check_failure(plan):
     )
 
 
-def test_no_chain1_defined(plan):
-    # Should fail because no "001" is defined
+def test_no_chain001_defined(plan):
+    args = {
+        "zkevm_rollup_chain_id": 1001,
+        "l1_seconds_per_slot": 2,
+    }
     op_args = {
         "chains": {
-            "002": {},
+            "002": {
+                "network_params": {
+                    "network_id": 1001,
+                    "seconds_per_slot": 2,
+                },
+            },
             "003": {},
         }
     }
     source = op_input_parser.DEFAULT_NON_NATIVE_ARGS.get("source")
-    expect.fails(
-        lambda: op_sanity_check.sanity_check(plan, {}, op_args, source),
-        "The package expects a chain named '001'",
-    )
+    op_sanity_check.sanity_check(plan, args, op_args, source)
 
 
 def test_check_first_chain_id_success(plan):
