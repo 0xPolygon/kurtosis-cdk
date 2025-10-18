@@ -128,6 +128,10 @@ def test_parse_args_with_user_overrides(plan):
     network_params1 = chain1.get("network_params")
     # overrides
     expect.eq(node1.get("cl").get("image"), "op-node:latest")
+    expect.eq(
+        node1.get("cl").get("extra_params"),
+        ["--log.format=json", "--rollup.l1-chain-config=/l1/genesis.json"],
+    )
     expect.eq(proposer_params1.get("enabled"), False)
 
     # defaults

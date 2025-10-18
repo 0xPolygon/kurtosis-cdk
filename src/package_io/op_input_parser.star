@@ -166,7 +166,7 @@ def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
         for kk, vv in default_op_chain.items():
             if kk in c:
                 if kk == "participants":
-                    c[kk] = _parse_participants(c[kk])
+                    c[kk] = _parse_participants(c[kk], log_format)
                 else:
                     # Apply defaults
                     for kkk, vvv in default_op_chain[kk].items():
@@ -192,7 +192,13 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
     for k, v in participants.items():
         p = dict(v)  # create a mutable copy
         for kk, vv in default_participant.items():
-            p.setdefault(kk, vv)
+            if kk in p:
+                # Deep merge for el/cl configs
+                for kkk, vvv in default_participant[kk].items():
+                    p[kk].setdefault(kkk, vvv)
+                p[kk] = _sort_dict_by_values(p[kk])
+            else:
+                p[kk] = vv
         participants_with_defaults[k] = p
 
     sorted_participants = {
