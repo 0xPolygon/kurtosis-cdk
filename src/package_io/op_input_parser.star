@@ -46,20 +46,22 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
                     "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
                     "extra_params": [
                         "--txmgr.enable-cell-proofs",  # required for the fusaka hf
-                        "--log.format=json"
+                    ]
+                    + (
+                        ["--log.format=json"]
                         if log_format == constants.LOG_FORMAT.json
-                        else "",
-                    ],
+                        else []
+                    ),
                 }
             ),
             "proposer_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_proposer_image"),
-                    "extra_params": [
-                        "--log.format=json"
+                    "extra_params": (
+                        ["--log.format=json"]
                         if log_format == constants.LOG_FORMAT.json
-                        else "",
-                    ],
+                        else []
+                    ),
                 }
             ),
             "network_params": _sort_dict_by_values(
