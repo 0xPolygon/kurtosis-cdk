@@ -130,7 +130,7 @@ def test_parse_args_with_user_overrides(plan):
     expect.eq(node1.get("cl").get("image"), "op-node:latest")
     expect.eq(
         node1.get("cl").get("extra_params"),
-        ["--log.format=json", "--rollup.l1-chain-config=/l1/genesis.json"],
+        ["--rollup.l1-chain-config=/l1/genesis.json", "--log.format=json"],
     )
     expect.eq(proposer_params1.get("enabled"), False)
 

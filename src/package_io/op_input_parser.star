@@ -13,15 +13,23 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
             "el": {
                 "type": "op-geth",
                 "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
-                "extra_params": ["--log.format=json"],
+                "extra_params": (
+                    ["--log.format=json"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
             },
             "cl": {
                 "type": "op-node",
                 "image": constants.DEFAULT_IMAGES.get("op_node_image"),
                 "extra_params": [
-                    "--log.format=json",
                     "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
-                ],
+                ]
+                + (
+                    ["--log.format=json"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
             },
         }
     )
