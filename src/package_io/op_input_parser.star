@@ -13,15 +13,23 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
             "el": {
                 "type": "op-geth",
                 "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
-                "extra_params": ["--log.format=json"],
+                "extra_params": (
+                    ["--log.format=json"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
             },
             "cl": {
                 "type": "op-node",
                 "image": constants.DEFAULT_IMAGES.get("op_node_image"),
                 "extra_params": [
-                    "--log.format=json",
                     "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
-                ],
+                ]
+                + (
+                    ["--log.format=json"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
             },
         }
     )
@@ -38,20 +46,22 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
                     "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
                     "extra_params": [
                         "--txmgr.enable-cell-proofs",  # required for the fusaka hf
-                        "--log.format=json"
+                    ]
+                    + (
+                        ["--log.format=json"]
                         if log_format == constants.LOG_FORMAT.json
-                        else "",
-                    ],
+                        else []
+                    ),
                 }
             ),
             "proposer_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_proposer_image"),
-                    "extra_params": [
-                        "--log.format=json"
+                    "extra_params": (
+                        ["--log.format=json"]
                         if log_format == constants.LOG_FORMAT.json
-                        else "",
-                    ],
+                        else []
+                    ),
                 }
             ),
             "network_params": _sort_dict_by_values(
@@ -92,7 +102,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@8b282670ad90dd17cc33fad323ee17d86da35c9e",  # overlay/main - 2025-10-09
+        "source": "github.com/agglayer/optimism-package/main.star@2769472af9802d5e0f460ce27ebba32de1d21005",  # overlay/main - 2025-10-18
         "predeployed_contracts": True,
     }
 )
@@ -166,7 +176,7 @@ def _parse_chains(chains, log_format=constants.LOG_FORMAT.json):
         for kk, vv in default_op_chain.items():
             if kk in c:
                 if kk == "participants":
-                    c[kk] = _parse_participants(c[kk])
+                    c[kk] = _parse_participants(c[kk], log_format)
                 else:
                     # Apply defaults
                     for kkk, vvv in default_op_chain[kk].items():
@@ -192,7 +202,13 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
     for k, v in participants.items():
         p = dict(v)  # create a mutable copy
         for kk, vv in default_participant.items():
-            p.setdefault(kk, vv)
+            if kk in p:
+                # Deep merge for el/cl configs
+                for kkk, vvv in default_participant[kk].items():
+                    p[kk].setdefault(kkk, vvv)
+                p[kk] = _sort_dict_by_values(p[kk])
+            else:
+                p[kk] = vv
         participants_with_defaults[k] = p
 
     sorted_participants = {
