@@ -92,7 +92,7 @@ This section lists all test environments with their configurations and component
 | op-deployer | [0.4.3-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.3-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | deprecated ⚠️ |
 | op-geth | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | latest ✅ |
 | op-node | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | latest ✅ |
-| op-succinct-proposer | [3.2.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.2.3-agglayer) | [3.2.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.2.3-agglayer) | latest ✅ |
+| op-succinct-proposer | [3.2.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.2.3-agglayer) | [3.3.0-agglayer-beta.2](https://github.com/agglayer/op-succinct/releases/tag/v3.3.0-agglayer-beta.2) | deprecated ⚠️ |
 | zkevm-bridge-service | [0.6.2-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC5) | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | deprecated ⚠️ |
 
 ## Default Images
@@ -112,7 +112,7 @@ This section lists all test environments with their configurations and component
 | op-geth | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | latest ✅ |
 | op-node | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | latest ✅ |
 | op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [op-node/v1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/vop-node/v1.14.1) | experimental 🧪 |
-| op-succinct-proposer | [3.2.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.2.3-agglayer) | [3.2.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.2.3-agglayer) | latest ✅ |
+| op-succinct-proposer | [3.2.3-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.2.3-agglayer) | [3.3.0-agglayer-beta.2](https://github.com/agglayer/op-succinct/releases/tag/v3.3.0-agglayer-beta.2) | deprecated ⚠️ |
 | zkevm-bridge-service | [0.6.2-RC5](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.2-RC5) | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | deprecated ⚠️ |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
