@@ -44,7 +44,7 @@
             "startingBlockNumber": {{ with .sp1_starting_block_number }}{{ . }}{{ else }}null{{ end }},
             "startingTimestamp": {{ with .sp1_starting_timestamp}}{{ . }}{{ else }}null{{ end }},
             "submissionInterval": "{{ .sp1_submission_interval }}",
-            "optimisticModeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+            "optimisticModeManager": "{{ .zkevm_l2_admin_address }}",
             "aggregationVkey": "{{ .sp1_aggregation_vkey }}",
             "rangeVkeyCommitment": "{{ .sp1_range_vkey_commitment }}"
         },
