@@ -14,7 +14,7 @@
     "rollupAdminAddress": "{{ .zkevm_l2_sovereignadmin_address }}",
     "gasTokenAddress": "{{ .gas_token_address }}",
     "deployerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
-    "aggchainManagerPvtKey": "{{ .zkevm_l2_sovereignadmin_private_key }}",
+    "aggchainManagerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
     "maxFeePerGas": "",
     "maxPriorityFeePerGas": "",
     "multiplierGas": "",
@@ -36,7 +36,7 @@
         "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}"
     },
     "aggchainParams": {
-        "aggchainManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+        "aggchainManager": "{{ .zkevm_l2_admin_address }}",
         "initParams": {
             "l2BlockTime": "{{ .sp1_l2_block_time }}",
             "rollupConfigHash": "{{.sp1_rollup_config_hash}}",
