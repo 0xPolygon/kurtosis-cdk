@@ -152,9 +152,6 @@ def create_agglayer_config_artifact(
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    "zkevm_l2_proofsigner_address": args[
-                        "zkevm_l2_proofsigner_address"
-                    ],
                     "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],

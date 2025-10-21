@@ -30,12 +30,8 @@ args:
   zkevm_l2_claimtxmanager_private_key: "0x38718f22097afba13be48d818964326c9c5c48133f51e3c3bfd6faf05f813b34"
   zkevm_l2_timelock_address: "0xDB22C6f61A82d6AA6d3607289fC93774AC09413a"
   zkevm_l2_timelock_private_key: "0xae4a69010583a09709baa563fa66f9e6f2dacf9e9c84b89932406b9a0521b561"
-  zkevm_l2_loadtest_address: "0xD5278fC3Dc72A226d5C04c3d2C85fd397A46fA08"
-  zkevm_l2_loadtest_private_key: "0xef4db4f97684b8307adc332ed6c1bc82d66d160f08e7427d082d66a23889625e"
   zkevm_l2_dac_address: "0xDa07AAD7226B136bc24157Dc4Ff5A813490E20D0"
   zkevm_l2_dac_private_key: "0x992c9ab11d5eab6b6c2634b8bb0b85f3d8d1acf25024dc99c359cb2afd9b40a7"
-  zkevm_l2_proofsigner_address: "0xf1a661D7b601Ec46a040f57193cC99aB8c4132FA"
-  zkevm_l2_proofsigner_private_key: "0xc7fe3a006d75ba9326d9792523385abb49057c66aee0b8b4248821a89713f975"
 
   zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
   zkevm_prover_image: hermeznetwork/zkevm-prover:v6.0.8
@@ -249,7 +245,6 @@ args:
   zkevm_rollup_chain_id: 30303
   zkevm_rollup_id: 3
 
-  # polycli wallet inspect --mnemonic 'holiday crunch rule artefact cinnamon suit uphold evil shrimp topic core abstract' --addresses 11 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: " $1 ""; print "zkevm_l2_" roles[NR] "_private_key: 0x" $2 "\n"}'
 
   # sequencer
   zkevm_l2_sequencer_address: 0x0d59BC8C02A089D48d9Cd465b74Cb6E23dEB950D
@@ -271,10 +266,6 @@ args:
   # zkevm_l2_admin_address: 0x5666Cc6B46ad32b469D9Aec7C1eE6d02f7312759
   # zkevm_l2_admin_private_key: 0xd2ee309113fc97bed6030201fea0d1234d6b4acbc47b9a4fe12a8fa5270052aa
 
-  # loadtest
-  zkevm_l2_loadtest_address: 0x5198d92d278Fd36e5745C308F728d256198A0e3d
-  zkevm_l2_loadtest_private_key: 0xcc594c53eca19f9e56200cadf60c94757b0bdee1fc4bc73552ba879d51fd82b3
-
   # agglayer
   zkevm_l2_agglayer_address: 0x9b5A1f2bC7bb48419d9f6407CFcA454F87884072
   zkevm_l2_agglayer_private_key: 0x7b1164f53f633e940089031a3c265c308d2bcf4756bc8dcf9046bf00e21ec3b1
@@ -282,14 +273,6 @@ args:
   # dac
   zkevm_l2_dac_address: 0xA9875E9B9FE3BD46da758ba69a5d4B9dFCA6F133
   zkevm_l2_dac_private_key: 0x5d1a923f60e2423932f782dab9510e1c2fd64b0f29b0893978864191ecdd6f4f
-
-  # proofsigner
-  zkevm_l2_proofsigner_address: 0x3AA075513578d86dC63f9344cD9489b948d7686a
-  zkevm_l2_proofsigner_private_key: 0xfd402dcc8c7fc7ce0df59fe12f33da7ac2ed760a619188ff16974fde16f9b00e
-
-  # l1testing
-  zkevm_l2_l1testing_address: 0x943413d3b2E1B6aF09a758c35b6F5d23a4d6d262
-  zkevm_l2_l1testing_private_key: 0x27d8ab2d65296d0da072b172ca9ca874583f9930adb6ac3222fd9494ae7c7f0d
 
   # claimsponsor
   zkevm_l2_claimsponsor_address: 0xeA06890A8A547aDd71f98A6845542eb3B63C2862
