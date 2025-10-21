@@ -111,6 +111,8 @@ fi
 # we'll need in the rest of smart contract deployment
 mv /opt/op-succinct/fetch-l2oo-config /usr/local/bin/
 touch .git
+mkdir contracts
+OP_SUCCINCT_L2_OUTPUT_ORACLE_CONFIG_PATH=./opsuccinctl2ooconfig.json \
 RUST_LOG=info fetch-l2oo-config --env-file .env 2> fetch-l2oo-config.out
 
 # Print out the rollup config for reference / debugging
@@ -234,5 +236,5 @@ check_deployed_contracts() {
 # Check deployed contracts
 # check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
 
-jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json contracts/opsuccinctl2ooconfig.json > /opt/op-succinct/op-succinct-env-vars.json.merged
+jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json opsuccinctl2ooconfig.json > /opt/op-succinct/op-succinct-env-vars.json.merged
 mv /opt/op-succinct/op-succinct-env-vars.json.merged /opt/op-succinct/op-succinct-env-vars.json
