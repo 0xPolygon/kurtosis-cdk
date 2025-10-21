@@ -151,11 +151,6 @@ def get_keystores_artifacts(plan, args):
         # service_name="contracts" + args["deployment_suffix"],
         # src=constants.KEYSTORES_DIR+"/aggregator.keystore",
     )
-    proofsigner_keystore_artifact = plan.store_service_files(
-        name="proofsigner-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/proofsigner.keystore",
-    )
     dac_keystore_artifact = plan.store_service_files(
         name="dac-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -169,7 +164,6 @@ def get_keystores_artifacts(plan, args):
     return struct(
         sequencer=sequencer_keystore_artifact,
         aggregator=aggregator_keystore_artifact,
-        proofsigner=proofsigner_keystore_artifact,
         dac=dac_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
     )
