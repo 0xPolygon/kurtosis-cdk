@@ -103,7 +103,6 @@ def create_aggregator_service_config(
     genesis_artifact,
     sequencer_keystore_artifact,
     aggregator_keystore_artifact,
-    proofsigner_keystore_artifact,
 ):
     aggregator_name = "zkevm-node-aggregator" + args["deployment_suffix"]
     aggregator_service_config = _create_node_component_service_config(
@@ -123,7 +122,6 @@ def create_aggregator_service_config(
                 genesis_artifact,
                 sequencer_keystore_artifact,
                 aggregator_keystore_artifact,
-                proofsigner_keystore_artifact,
             ]
         ),
         components=NODE_COMPONENTS.aggregator,
@@ -207,7 +205,6 @@ def create_zkevm_node_components_config(
         genesis_artifact,
         keystore_artifacts.sequencer,
         keystore_artifacts.aggregator,
-        keystore_artifacts.proofsigner,
     )
     rpc_config = create_rpc_service_config(args, config_artifact, genesis_artifact)
     eth_tx_manager_config = create_eth_tx_manager_service_config(
