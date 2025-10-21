@@ -229,7 +229,7 @@ def get_op_succinct_l2oo_config(plan, args):
         command=[
             "/bin/sh",
             "-c",
-            "cat /opt/op-succinct/contracts/opsuccinctl2ooconfig.json",
+            "cat /opt/op-succinct/opsuccinctl2ooconfig.json",
         ],
         extract=extract,
     )

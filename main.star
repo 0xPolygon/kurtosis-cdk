@@ -68,7 +68,7 @@ def run(plan, args={}):
         # ethereum_package.extract_genesis_json(plan)
         # Temporarily run op-succinct-proposer service and fetch-l2oo-config binary
         # The extract binary will be passed into the contracts-001 service
-        op_succinct_package.extract_fetch_rollup_config(plan, args)
+        op_succinct_package.extract_fetch_l2oo_config(plan, args)
 
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
