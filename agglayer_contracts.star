@@ -96,6 +96,11 @@ def run(plan, args, deployment_stages, op_stack_args):
     ]:
         program_vkey = BYTES32_ZERO_HASH
 
+    chains = op_stack_args.get("optimism_package").get("chains")
+    chain1_name = chains.keys()[0]
+    chain1 = chains.get(chain1_name)
+    op_stack_seconds_per_slot = chain1["network_params"]["seconds_per_slot"]
+
     template_data = args | {
         "is_cdk_validium": data_availability_package.is_cdk_validium(args),
         "is_vanilla_client": is_vanilla_client(args, deployment_stages),
@@ -106,9 +111,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "deploy_optimism_rollup": deployment_stages.get(
             "deploy_optimism_rollup", False
         ),
-        "op_stack_seconds_per_slot": op_stack_args["optimism_package"]["chains"]["001"][
-            "network_params"
-        ]["seconds_per_slot"],
+        "op_stack_seconds_per_slot": op_stack_seconds_per_slot,
         # vkeys and selectors
         "pp_vkey_hash": pp_vkey_hash,
         "pp_vkey_selector": pp_vkey_selector,
