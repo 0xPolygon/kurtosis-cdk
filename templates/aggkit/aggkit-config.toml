@@ -112,6 +112,12 @@ GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 {{- end }}
 
+{{- if .deploy_optimism_rollup }}
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else }}
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+{{- end }}
+
 # ==============================================================================
 #  _     ___   ____
 # | |   / _ \ / ___|
@@ -195,7 +201,7 @@ Port = "{{.aggkit_node_rest_api_port}}"
 AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
 
 # ------------------------------------------------------------------------------
-# Defines if a check on aggsender proposer startup will be performed 
+# Defines if a check on aggsender proposer startup will be performed
 # to see if the proposer is in the multisig committee
 # ------------------------------------------------------------------------------
 # RequireCommitteeMembershipCheck = false
