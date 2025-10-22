@@ -818,10 +818,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
     # 0x000...000 in the situations where we know it must be zero
 
     # Blockscout additional service is only supported on L2
-    if constants.ADDITIONAL_SERVICES.blockscout in args.get("l1_additional_services", []):
-        fail(
-                "Blockscout is only supported to target L2 network."
-            )
+    if constants.ADDITIONAL_SERVICES.blockscout in args.get(
+        "l1_additional_services", []
+    ):
+        fail("Blockscout is only supported to target L2 network.")
+
 
 def validate_consensus_type(consensus_type):
     if consensus_type not in VALID_CONSENSUS_TYPES:
