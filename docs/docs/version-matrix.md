@@ -44,7 +44,7 @@ This section lists all test environments with their configurations and component
 | zkevm-bridge-service | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | latest ✅ |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [9.0.0-RC3](https://github.com/0xPolygon/zkevm-prover/releases/tag/v9.0.0-RC3) | deprecated ⚠️ |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
 
 ### cdk-erigon-zkrollup
 
@@ -59,7 +59,7 @@ This section lists all test environments with their configurations and component
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | zkevm-bridge-service | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | latest ✅ |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [9.0.0-RC3](https://github.com/0xPolygon/zkevm-prover/releases/tag/v9.0.0-RC3) | deprecated ⚠️ |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
 
 ### cdk-opgeth-sovereign
 
@@ -116,4 +116,4 @@ This section lists all test environments with their configurations and component
 | zkevm-bridge-service | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | latest ✅ |
 | zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [9.0.0-RC3](https://github.com/0xPolygon/zkevm-prover/releases/tag/v9.0.0-RC3) | deprecated ⚠️ |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |

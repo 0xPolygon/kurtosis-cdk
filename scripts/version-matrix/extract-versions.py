@@ -233,7 +233,7 @@ class VersionMatrixExtractor:
                     print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                     return None
 
-            # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
+            # These components don't have any release, thus we rely on tags
             if component in [
                 'zkevm-prover', 'zkevm-bridge-service', 'op-succinct-proposer',
                 'zkevm-pool-manager', 'zkevm-da'
@@ -245,10 +245,16 @@ class VersionMatrixExtractor:
                 )
                 if response.status_code == 200:
                     tags = response.json()
-                    if tags:
-                        latest_tag = tags[0].get('name')
-                        latest_version = re.sub(r'^v?', '', latest_tag)
-                        return latest_version
+                    for tag in tags:
+                        if 'name' in tag:
+                            tag_name = tag['name']
+
+                            # Don't consider v9 tags for zkevm-prover
+                            if component == 'zkevm-prover' and tag_name.startswith('v9'):
+                                continue
+    
+                            latest_version = re.sub(r'^v?', '', tag_name)
+                            return latest_version
                 else:
                     print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                     return None
