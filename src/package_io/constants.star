@@ -73,7 +73,7 @@ DEFAULT_IMAGES = {
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
-    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.64.0-rc7",  # Type-1 CDK Erigon Sovereign
+    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.64.0-rc6",  # Type-1 CDK Erigon Sovereign
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:17.6",
