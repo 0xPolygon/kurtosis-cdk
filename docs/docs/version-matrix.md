@@ -26,7 +26,7 @@ This section lists all test environments with their configurations and component
 | aggkit-prover | [1.5.1](https://github.com/agglayer/provers/releases/tag/v1.5.1) | [1.4.2](https://github.com/agglayer/provers/releases/tag/v1.4.2) | experimental 🧪 |
 | agglayer | [0.4.0-rc.21](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.21) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [11.0.0-rc.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.3) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
-| cdk-erigon | [2.64.0-rc7](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-rc6) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
+| cdk-erigon | [2.64.0-RC6](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC6) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
 | zkevm-bridge-service | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | [0.6.3-RC1](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC1) | latest ✅ |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 
