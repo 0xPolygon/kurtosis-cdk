@@ -38,7 +38,6 @@ args:
   l1_ws_url: wss://rpc.invalid@your-ws-rpc-would-go-here/
 
   ## L2 Config
-  # polycli wallet inspect --mnemonic 'pelican slice organ thunder odor blood hedgehog busy elevator make spare crystal' --addresses 11 | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
   # sequencer
   zkevm_l2_sequencer_address: "0x99315dc829d9C54bdA511a3fF544733025041Ee2"
   zkevm_l2_sequencer_private_key: "0xdabba7cf6c9eba30b56cf1d5764e86b5d4e4f89e560e4930a750e2cd1f7b84e7"
@@ -59,10 +58,6 @@ args:
   zkevm_l2_admin_address: "0x3802C134A821874a00363c72d4EA0aCAa5321627"
   zkevm_l2_admin_private_key: "0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
 
-  # loadtest
-  zkevm_l2_loadtest_address: "0xFa482AE445A5F032d8C9F2F35A9A015cF560160A"
-  zkevm_l2_loadtest_private_key: "0x646116120b39f55bd6b82f1873d9a54f3a71e3894272af182543c6e64231230d"
-
   # agglayer
   zkevm_l2_agglayer_address: "0x18481b38dd03208d179019E7352c9aC9cD6d540E"
   zkevm_l2_agglayer_private_key: "0xf9a3ca361254388ce6242c76ed339b016707e49f4207867cfa41b7b38d8df88e"
@@ -70,14 +65,6 @@ args:
   # dac
   zkevm_l2_dac_address: "0xAaB75050a8981a1C90e7fec940D51058127Af425"
   zkevm_l2_dac_private_key: "0xefa54be13b9df9fdec01a3dbe1538a7998859a946cf2b56ca42d11a795d8e8ac"
-
-  # proofsigner
-  zkevm_l2_proofsigner_address: "0xd0c1ABc68EE9DD7dfc193a3d29086D2158F1C797"
-  zkevm_l2_proofsigner_private_key: "0x40f801a53e1895914c5e87a93b97d95133abd70b06586a79ff2c9091fe9d0daf"
-
-  # l1testing
-  zkevm_l2_l1testing_address: "0xE251b176E2861921d515E5020120C7D65470FA00"
-  zkevm_l2_l1testing_private_key: "0xf3954120ab1d82e3f848ccc03ebd0e45ec214f36227155756b9926539f9aed6d"
 
   # claimsponsor
   zkevm_l2_claimsponsor_address: "0xF5BED6F96394A054553a037743fdbfc6e6065A4d"

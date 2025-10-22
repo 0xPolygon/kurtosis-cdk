@@ -15,7 +15,6 @@ args:
 
   ## L2 Config
   # TODO: Create a new mnemonic seed phrase to derive L2 application keys.
-  # polycli wallet inspect --mnemonic 'coil oxygen lounge spawn quiz join color else possible flight alter couple' --addresses 11 | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
   zkevm_l2_sequencer_address: CHANGE_ME
   zkevm_l2_sequencer_private_key: CHANGE_ME
 
@@ -31,14 +30,8 @@ args:
   zkevm_l2_admin_address: CHANGE_ME
   zkevm_l2_admin_private_key: CHANGE_ME
 
-  zkevm_l2_loadtest_address: CHANGE_ME
-  zkevm_l2_loadtest_private_key: CHANGE_ME
-
   zkevm_l2_agglayer_address: CHANGE_ME
   zkevm_l2_agglayer_private_key: CHANGE_ME
 
   zkevm_l2_dac_address: CHANGE_ME
   zkevm_l2_dac_private_key: CHANGE_ME
-
-  zkevm_l2_proofsigner_address: CHANGE_ME
-  zkevm_l2_proofsigner_private_key: CHANGE_ME

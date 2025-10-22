@@ -1293,8 +1293,6 @@ SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 [Aggregator.SequencerPrivateKey]
 Path = "/etc/zkevm/sequencer.keystore"
 Password = "{{.zkevm_l2_keystore_password}}"
-# Path = "/etc/zkevm/proofsigner.keystore"
-# Password = "{{.zkevm_l2_keystore_password}}"
 
 # ==============================================================================
 #   _     ____   ____    _    ____  ____  ____  ___ ____ _____

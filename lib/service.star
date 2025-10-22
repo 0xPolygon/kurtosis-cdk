@@ -250,11 +250,8 @@ def get_kurtosis_addresses(args):
     zkevm_l2_claimtxmanager_address = args["zkevm_l2_claimtxmanager_address"]
     zkevm_l2_timelock_address = args["zkevm_l2_timelock_address"]
     zkevm_l2_admin_address = args["zkevm_l2_admin_address"]
-    zkevm_l2_loadtest_address = args["zkevm_l2_loadtest_address"]
     zkevm_l2_agglayer_address = args["zkevm_l2_agglayer_address"]
     zkevm_l2_dac_address = args["zkevm_l2_dac_address"]
-    zkevm_l2_proofsigner_address = args["zkevm_l2_proofsigner_address"]
-    zkevm_l2_l1testing_address = args["zkevm_l2_l1testing_address"]
     zkevm_l2_aggoracle_address = args["zkevm_l2_aggoracle_address"]
     zkevm_l2_sovereignadmin_address = args["zkevm_l2_sovereignadmin_address"]
 
@@ -264,11 +261,8 @@ def get_kurtosis_addresses(args):
         "zkevm_l2_claimtxmanager_address": zkevm_l2_claimtxmanager_address,
         "zkevm_l2_timelock_address": zkevm_l2_timelock_address,
         "zkevm_l2_admin_address": zkevm_l2_admin_address,
-        "zkevm_l2_loadtest_address": zkevm_l2_loadtest_address,
         "zkevm_l2_agglayer_address": zkevm_l2_agglayer_address,
         "zkevm_l2_dac_address": zkevm_l2_dac_address,
-        "zkevm_l2_proofsigner_address": zkevm_l2_proofsigner_address,
-        "zkevm_l2_l1testing_address": zkevm_l2_l1testing_address,
         "zkevm_l2_aggoracle_address": zkevm_l2_aggoracle_address,
         "zkevm_l2_sovereignadmin_address": zkevm_l2_sovereignadmin_address,
     }
