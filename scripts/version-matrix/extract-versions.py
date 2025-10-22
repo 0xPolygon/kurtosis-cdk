@@ -216,7 +216,7 @@ class VersionMatrixExtractor:
 
         try:
             if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
-                url = f"https://api.github.com/repos/{repo}/releases"
+                url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
 
