@@ -72,7 +72,7 @@ This section lists all test environments with their configurations and component
 | agglayer | [0.4.0-rc.21](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.21) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [11.0.0-rc.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0-rc.3) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | experimental 🧪 |
 | op-batcher | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.0) | latest ✅ |
-| op-deployer | [0.4.3-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.3-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | deprecated ⚠️ |
+| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | experimental 🧪 |
 | op-geth | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | latest ✅ |
 | op-node | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | latest ✅ |
 | op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | latest ✅ |
@@ -89,7 +89,7 @@ This section lists all test environments with their configurations and component
 | agglayer | [0.4.0-rc.21](https://github.com/agglayer/agglayer/releases/tag/v0.4.0-rc.21) | [0.3.5](https://github.com/agglayer/agglayer/releases/tag/v0.3.5) | experimental 🧪 |
 | agglayer-contracts | [0.0.0-rc.3.aggchain.multisig](https://github.com/agglayer/agglayer-contracts/releases/tag/v0.0.0-rc.3.aggchain.multisig) | [9.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v9.0.0) | deprecated ⚠️ |
 | op-batcher | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.0) | latest ✅ |
-| op-deployer | [0.4.3-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.3-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | deprecated ⚠️ |
+| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | experimental 🧪 |
 | op-geth | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | latest ✅ |
 | op-node | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | latest ✅ |
 | op-succinct-proposer | [3.3.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.3.0-agglayer) | [3.3.0-agglayer-beta.2](https://github.com/agglayer/op-succinct/releases/tag/v3.3.0-agglayer-beta.2) | latest ✅ |
@@ -108,7 +108,7 @@ This section lists all test environments with their configurations and component
 | geth | [1.16.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.5) | [1.16.5](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.5) | latest ✅ |
 | lighthouse | [8.0.0-rc.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.0-rc.1) | [7.1.0](https://github.com/sigp/lighthouse/releases/tag/v7.1.0) | experimental 🧪 |
 | op-batcher | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.0) | latest ✅ |
-| op-deployer | [0.4.3-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.3-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | deprecated ⚠️ |
+| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.4.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5) | experimental 🧪 |
 | op-geth | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | [1.101603.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.1) | latest ✅ |
 | op-node | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | [1.14.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.14.1) | latest ✅ |
 | op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | latest ✅ |
