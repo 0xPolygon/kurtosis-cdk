@@ -307,8 +307,7 @@ class VersionMatrixExtractor:
             version_float = version_to_int(version)
             version_suffix = version.split('-')[1] if '-' in version else ''
             latest_float = version_to_int(latest_version)
-            latest_suffix = latest_version.split(
-                '-')[1] if '-' in latest_version else ''
+            latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
 
             if version_float > latest_float:
                 return "experimental"
@@ -316,6 +315,9 @@ class VersionMatrixExtractor:
                 return "deprecated"
             else:
                 if version_suffix == latest_suffix:
+                    return "latest"
+                # special case for op-deployer where we use latest version with a small fix on top, labelled as `-cdk`
+                if version_suffix == "cdk" and not latest_suffix:
                     return "latest"
                 return "experimental"
 
