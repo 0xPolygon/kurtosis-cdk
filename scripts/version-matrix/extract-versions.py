@@ -309,6 +309,10 @@ class VersionMatrixExtractor:
             latest_float = version_to_int(latest_version)
             latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
 
+            # special case for agglayer-contracts
+            if version_suffix.endswith("aggchain.multisig"):
+                return "experimental"
+
             if version_float > latest_float:
                 return "experimental"
             elif version_float < latest_float:
