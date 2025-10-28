@@ -3,13 +3,13 @@
     "rollupID": {{ .zkevm_rollup_id }},
     "chainID": {{.zkevm_rollup_chain_id}},
     "gasTokenAddress": "{{ .gas_token_address }}",
-    "bridgeManager": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "bridgeManager": "{{ .l2_sovereignadmin_address }}",
     "sovereignWETHAddress": "{{ .gas_token_address }}",
     "sovereignWETHAddressIsNotMintable": false,
-    "globalExitRootRemover": "{{ .zkevm_l2_sovereignadmin_address }}",
-    "emergencyBridgePauser": "{{ .zkevm_l2_sovereignadmin_address }}",
-    "emergencyBridgeUnpauser": "{{ .zkevm_l2_sovereignadmin_address }}",
-    "proxiedTokensManager" : "{{ .zkevm_l2_sovereignadmin_address }}",
+    "globalExitRootRemover": "{{ .l2_sovereignadmin_address }}",
+    "emergencyBridgePauser": "{{ .l2_sovereignadmin_address }}",
+    "emergencyBridgeUnpauser": "{{ .l2_sovereignadmin_address }}",
+    "proxiedTokensManager" : "{{ .l2_sovereignadmin_address }}",
     "setPreMintAccounts": true,
     "preMintAccounts": [
         {
@@ -19,23 +19,23 @@
     ],
     "setTimelockParameters": true,
     "timelockParameters": {
-        "adminAddress": "{{ .zkevm_l2_admin_address }}",
+        "adminAddress": "{{ .l2_admin_address }}",
         "minDelay": 3600
     },
 
 
     {{if .use_agg_oracle_committee}}
     "useAggOracleCommittee": true,
-    "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}"],
+    "aggOracleCommittee": ["{{ .l2_aggoracle_address }}"],
     "quorum": "{{ .agg_oracle_committee_quorum }}",
-    "aggOracleOwner": "{{ .zkevm_l2_sovereignadmin_address }}",
+    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
     "globalExitRootUpdater": "",
     {{else}}
     "useAggOracleCommittee": false,
     "aggOracleCommittee": [],
     "quorum": 0,
-    "aggOracleOwner": "{{ .zkevm_l2_sovereignadmin_address }}",
-    "globalExitRootUpdater": "{{ .zkevm_l2_aggoracle_address }}",
+    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
+    "globalExitRootUpdater": "{{ .l2_aggoracle_address }}",
     {{end}}
 
     "formatGenesis": "geth"

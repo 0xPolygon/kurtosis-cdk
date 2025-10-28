@@ -6,7 +6,7 @@
     {
       "rollupID": {{ .l2_rollup_id }},
       "l2rpc": "{{ .l2_rpc_url }}",
-      "agchainmanager_key": "{{ .zkevm_l2_sovereignadmin_private_key }}"
+      "agchainmanager_key": "{{ .l2_sovereignadmin_private_key }}"
     }
   ]
 

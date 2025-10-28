@@ -58,7 +58,7 @@ cast send \
 ### Deploy Contracts on L2
 
 This is similar to L1, just that the major difference is the pre-funded account
-on L2 is the `zkevm_l2_admin_private_key`.
+on L2 is the `l2_admin_private_key`.
 
 ```bash
 cast send \
@@ -102,7 +102,7 @@ echo_ts "Testing deterministic deployment proxy on l2"
 cast send \
     --legacy \
     --rpc-url "{{.l2_rpc_url}}" \
-    --private-key "{{.zkevm_l2_admin_private_key}}" \
+    --private-key "{{.l2_admin_private_key}}" \
     "$deployer_address" \
     "$salt$bytecode"
 l2_actual=$(cast call --rpc-url "{{.l2_rpc_url}}" "$contract_address" "$contract_method_signature")

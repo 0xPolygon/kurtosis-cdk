@@ -15,23 +15,23 @@ args:
 
   ## L2 Config
   # TODO: Create a new mnemonic seed phrase to derive L2 application keys.
-  zkevm_l2_sequencer_address: CHANGE_ME
-  zkevm_l2_sequencer_private_key: CHANGE_ME
+  l2_sequencer_address: CHANGE_ME
+  l2_sequencer_private_key: CHANGE_ME
 
-  zkevm_l2_aggregator_address: CHANGE_ME
-  zkevm_l2_aggregator_private_key: CHANGE_ME
+  l2_aggregator_address: CHANGE_ME
+  l2_aggregator_private_key: CHANGE_ME
 
-  zkevm_l2_claimtxmanager_address: CHANGE_ME
-  zkevm_l2_claimtxmanager_private_key: CHANGE_ME
+  l2_claimtxmanager_address: CHANGE_ME
+  l2_claimtxmanager_private_key: CHANGE_ME
 
-  zkevm_l2_timelock_address: CHANGE_ME
-  zkevm_l2_timelock_private_key: CHANGE_ME
+  l2_timelock_address: CHANGE_ME
+  l2_timelock_private_key: CHANGE_ME
 
-  zkevm_l2_admin_address: CHANGE_ME
-  zkevm_l2_admin_private_key: CHANGE_ME
+  l2_admin_address: CHANGE_ME
+  l2_admin_private_key: CHANGE_ME
 
-  zkevm_l2_agglayer_address: CHANGE_ME
-  zkevm_l2_agglayer_private_key: CHANGE_ME
+  l2_agglayer_address: CHANGE_ME
+  l2_agglayer_private_key: CHANGE_ME
 
-  zkevm_l2_dac_address: CHANGE_ME
-  zkevm_l2_dac_private_key: CHANGE_ME
+  l2_dac_address: CHANGE_ME
+  l2_dac_private_key: CHANGE_ME

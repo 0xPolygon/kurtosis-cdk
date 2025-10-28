@@ -62,7 +62,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-    cast send --legacy --private-key "$(yq -r .args.zkevm_l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
+    cast send --legacy --private-key "$(yq -r .args.l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
     cast rpc zkevm_batchNumber
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber
@@ -257,7 +257,7 @@ We're going to revert the parameters back to the versions of the node that worke
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-    cast send --legacy --private-key "$(yq -r .args.zkevm_l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
+    cast send --legacy --private-key "$(yq -r .args.l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
     cast rpc zkevm_batchNumber
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber

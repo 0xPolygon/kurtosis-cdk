@@ -8,7 +8,7 @@
     "forkID": 0,
     "timelockDelay": 0,
     "timelockSalt": "",
-    "deployerPvtKey": "{{ .zkevm_l2_admin_private_key }}",
+    "deployerPvtKey": "{{ .l2_admin_private_key }}",
     "maxFeePerGas":"",
     "maxPriorityFeePerGas":"",
     "multiplierGas": "",
