@@ -170,9 +170,7 @@ def create_agglayer_config_artifact(
                         "deploy_optimism_rollup", False
                     ),
                     "op_el_rpc_url": args["op_el_rpc_url"],
-                    "l2_sovereignadmin_address": args[
-                        "l2_sovereignadmin_address"
-                    ],
+                    "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
                     "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | contract_setup_addresses

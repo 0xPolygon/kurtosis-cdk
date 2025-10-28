@@ -31,9 +31,7 @@ def get_dashboard_config(plan, args, contract_setup_addresses):
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
         ),
         "agglayer_rpc_url": args.get("agglayer_readrpc_url"),
-        "l2_sovereignadmin_private_key": args.get(
-            "l2_sovereignadmin_private_key"
-        ),
+        "l2_sovereignadmin_private_key": args.get("l2_sovereignadmin_private_key"),
     } | contract_setup_addresses
 
     return Directory(
