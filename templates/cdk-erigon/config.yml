@@ -400,7 +400,7 @@ zkevm.address-admin: "{{.zkevm_admin_address}}"
 # Specify the address of the sequencer's Externally Owned Account (EOA).
 # This address is responsible for creating and submitting batches of transactions to L1.
 # Default: ""
-zkevm.address-sequencer: "{{.zkevm_l2_sequencer_address}}"
+zkevm.address-sequencer: "{{.l2_sequencer_address}}"
 
 # Specify the address of the PolygonRollupManager smart contract.
 # This contract manages the overall rollup process and coordinates different rollups.

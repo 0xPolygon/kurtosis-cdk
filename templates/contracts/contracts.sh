@@ -46,7 +46,7 @@ _wait_for_rpc_to_be_available() {
 
     counter=0
     max_retries=20
-    until cast send --rpc-url "$rpc_url" --mnemonic "$mnemonic" --value 0 "{{.zkevm_l2_sequencer_address}}" &> /dev/null; do
+    until cast send --rpc-url "$rpc_url" --mnemonic "$mnemonic" --value 0 "{{.l2_sequencer_address}}" &> /dev/null; do
         ((counter++))
         _echo_ts "Can't send L1 transfers yet... Retrying ($counter)..."
         if [[ $counter -ge $max_retries ]]; then
@@ -119,14 +119,14 @@ _extract_addresses() {
 
 # Always called by the contracts service
 create_keystores() {
-    _create_geth_keystore "sequencer.keystore"       "{{.zkevm_l2_sequencer_private_key}}"       "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "aggregator.keystore"      "{{.zkevm_l2_aggregator_private_key}}"      "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "claimtxmanager.keystore"  "{{.zkevm_l2_claimtxmanager_private_key}}"  "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "agglayer.keystore"        "{{.zkevm_l2_agglayer_private_key}}"        "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "dac.keystore"             "{{.zkevm_l2_dac_private_key}}"             "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "aggoracle.keystore"       "{{.zkevm_l2_aggoracle_private_key}}"       "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "sovereignadmin.keystore"  "{{.zkevm_l2_sovereignadmin_private_key}}"  "{{.zkevm_l2_keystore_password}}"
-    _create_geth_keystore "claimsponsor.keystore"    "{{.zkevm_l2_claimsponsor_private_key}}"    "{{.zkevm_l2_keystore_password}}"
+    _create_geth_keystore "sequencer.keystore"       "{{.l2_sequencer_private_key}}"       "{{.l2_keystore_password}}"
+    _create_geth_keystore "aggregator.keystore"      "{{.l2_aggregator_private_key}}"      "{{.l2_keystore_password}}"
+    _create_geth_keystore "claimtxmanager.keystore"  "{{.l2_claimtxmanager_private_key}}"  "{{.l2_keystore_password}}"
+    _create_geth_keystore "agglayer.keystore"        "{{.l2_agglayer_private_key}}"        "{{.l2_keystore_password}}"
+    _create_geth_keystore "dac.keystore"             "{{.l2_dac_private_key}}"             "{{.l2_keystore_password}}"
+    _create_geth_keystore "aggoracle.keystore"       "{{.l2_aggoracle_private_key}}"       "{{.l2_keystore_password}}"
+    _create_geth_keystore "sovereignadmin.keystore"  "{{.l2_sovereignadmin_private_key}}"  "{{.l2_keystore_password}}"
+    _create_geth_keystore "claimsponsor.keystore"    "{{.l2_claimsponsor_private_key}}"    "{{.l2_keystore_password}}"
 
     # Generate multiple aggoracle keystores for committee members
     # shellcheck disable=SC2050
@@ -137,7 +137,7 @@ create_keystores() {
         if [[ "$COMMITTEE_SIZE" -ge 1 ]]; then
             for (( index=0; index<COMMITTEE_SIZE; index++ )); do
                 aggoracle_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $index)
-                _create_geth_keystore "aggoracle-$index.keystore" "$aggoracle_private_key" "{{.zkevm_l2_keystore_password}}"
+                _create_geth_keystore "aggoracle-$index.keystore" "$aggoracle_private_key" "{{.l2_keystore_password}}"
             done
         fi
     fi
@@ -158,7 +158,7 @@ create_keystores() {
                 aggsendervalidator_private_key=$(cast wallet private-key --mnemonic "$MNEMONIC" --mnemonic-index $((index + 100)))
                 aggsender_validator_address=$(cast wallet address --private-key "$aggsendervalidator_private_key")
 
-                _create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.zkevm_l2_keystore_password}}"
+                _create_geth_keystore "aggsendervalidator-$index.keystore" "$aggsendervalidator_private_key" "{{.l2_keystore_password}}"
 
                 json_output+='{"index":'$index',"address":"'$aggsender_validator_address'","private_key":"'$aggsendervalidator_private_key'"}'
                 if [[ $index -lt $VALIDATOR_COUNT ]]; then
@@ -205,7 +205,7 @@ configure_contract_container_custom_genesis() {
     cp "$output_dir"/combined.json "$output_dir"/combined-001.json
 
     global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' "$output_dir"/combined.json)
-    cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+    cast send "$global_exit_root_address" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
 # Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
@@ -217,7 +217,7 @@ configure_contract_container_custom_genesis_cdk_erigon() {
     cp "$output_dir"/combined.json "$output_dir"/deploy_output.json
 
     global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' "$output_dir"/combined.json)
-    cast send "$global_exit_root_address" "initialize()" --private-key "{{.zkevm_l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+    cast send "$global_exit_root_address" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
 # Called when no l1 custom genesis
@@ -252,11 +252,11 @@ deploy_agglayer_core_contracts() {
     _echo_ts "L1 RPC is now available"
 
     _echo_ts "Funding important accounts on L1"
-    _fund_account_on_l1 "admin" "{{.zkevm_l2_admin_address}}"
-    _fund_account_on_l1 "sequencer" "{{.zkevm_l2_sequencer_address}}"
-    _fund_account_on_l1 "aggregator" "{{.zkevm_l2_aggregator_address}}"
-    _fund_account_on_l1 "agglayer" "{{.zkevm_l2_agglayer_address}}"
-    _fund_account_on_l1 "sovereignadmin" "{{.zkevm_l2_sovereignadmin_address}}"
+    _fund_account_on_l1 "admin" "{{.l2_admin_address}}"
+    _fund_account_on_l1 "sequencer" "{{.l2_sequencer_address}}"
+    _fund_account_on_l1 "aggregator" "{{.l2_aggregator_address}}"
+    _fund_account_on_l1 "agglayer" "{{.l2_agglayer_address}}"
+    _fund_account_on_l1 "sovereignadmin" "{{.l2_sovereignadmin_address}}"
 
     _echo_ts "Setting up local agglayer-contracts repo for deployment"
     pushd "$contracts_dir" || exit 1
@@ -311,11 +311,11 @@ deploy_agglayer_core_contracts() {
         # cast keccak "TRUSTED_AGGREGATOR_ROLE"
         _echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
         cast send \
-            --private-key "{{.zkevm_l2_admin_private_key}}" \
+            --private-key "{{.l2_admin_private_key}}" \
             --rpc-url "{{.l1_rpc_url}}" \
             "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
             'grantRole(bytes32,address)' \
-            "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.zkevm_l2_agglayer_address}}"
+            "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.l2_agglayer_address}}"
     fi
 
     # The sequencer needs to pay POL when it sequences batches.
@@ -323,12 +323,12 @@ deploy_agglayer_core_contracts() {
     # In order for this to work the rollup address must be approved to transfer the sequencers' POL tokens.
     _echo_ts "Minting POL token on L1 for the sequencer"
     cast send \
-        --private-key "{{.zkevm_l2_sequencer_private_key}}" \
+        --private-key "{{.l2_sequencer_private_key}}" \
         --legacy \
         --rpc-url "{{.l1_rpc_url}}" \
         "$(jq -r '.polTokenAddress' combined.json)" \
         'mint(address,uint256)' \
-        "{{.zkevm_l2_sequencer_address}}" 1000000000000000000000000000
+        "{{.l2_sequencer_address}}" 1000000000000000000000000000
 
     # Deploy deterministic proxy.
     # https://github.com/Arachnid/deterministic-deployment-proxy
@@ -408,7 +408,7 @@ create_agglayer_rollup() {
                 --rpc-url "{{.l1_rpc_url}}" \
                 --mnemonic "{{.l1_preallocated_mnemonic}}" \
                 contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-                --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+                --constructor-args "CDK Gas Token" "CDK" "{{.l2_admin_address}}" "1000000000000000000000000" \
                 > gasToken-erc20.json
             jq \
                 --slurpfile c gasToken-erc20.json \
@@ -422,7 +422,7 @@ create_agglayer_rollup() {
                 --rpc-url "{{.l1_rpc_url}}" \
                 --mnemonic "{{.l1_preallocated_mnemonic}}" \
                 contracts/mocks/ERC20PermitMock.sol:ERC20PermitMock \
-                --constructor-args "CDK Gas Token" "CDK" "{{.zkevm_l2_admin_address}}" "1000000000000000000000000" \
+                --constructor-args "CDK Gas Token" "CDK" "{{.l2_admin_address}}" "1000000000000000000000000" \
                 > gasToken-erc20.json
             jq \
                 --slurpfile c gasToken-erc20.json \
@@ -537,7 +537,7 @@ create_agglayer_rollup() {
         --bridge-address "$l1_bridge_addr" \
         --destination-address "0x0000000000000000000000000000000000000000" \
         --destination-network "{{.zkevm_rollup_id}}" \
-        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --private-key "{{.l2_admin_private_key}}" \
         --rpc-url "{{.l1_rpc_url}}" \
         --value 10000000000000000000000 \
         --token-address $gas_token_address
@@ -571,7 +571,7 @@ create_agglayer_rollup() {
 
     _echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
     cast send \
-        --private-key "{{.zkevm_l2_sequencer_private_key}}" \
+        --private-key "{{.l2_sequencer_private_key}}" \
         --legacy \
         --rpc-url "{{.l1_rpc_url}}" \
         "$(jq -r '.polTokenAddress' combined.json)" \
@@ -584,16 +584,16 @@ create_agglayer_rollup() {
     # If we add more nodes, we'll need to make sure the urls and keys are sorted.
     _echo_ts "Setting the data availability committee"
     cast send \
-        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --private-key "{{.l2_admin_private_key}}" \
         --rpc-url "{{.l1_rpc_url}}" \
         "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
         'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
-        1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.zkevm_l2_dac_address}}"
+        1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_port}}"] "{{.l2_dac_address}}"
 
     # The DAC needs to be enabled with a call to set the DA protocol.
     _echo_ts "Setting the data availability protocol"
     cast send \
-        --private-key "{{.zkevm_l2_admin_private_key}}" \
+        --private-key "{{.l2_admin_private_key}}" \
         --rpc-url "{{.l1_rpc_url}}" \
         "$(jq -r '.rollupAddress' combined.json)" \
         'setDataAvailabilityProtocol(address)' \
@@ -675,7 +675,7 @@ update_ger() {
 
     # Setup some vars for use later on
     # The private key used to send transactions
-    private_key="{{.zkevm_l2_admin_private_key}}"
+    private_key="{{.l2_admin_private_key}}"
 
     # The bridge address
     bridge_address="$(jq --raw-output '.polygonZkEVMBridgeAddress' ${output_dir}/combined.json)"
@@ -753,10 +753,10 @@ initialize_rollup() {
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
-    bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"
-    aggoracle_addr="{{.zkevm_l2_aggoracle_address}}"
-    claimtxmanager_addr="{{.zkevm_l2_claimtxmanager_address}}"
-    claimsponsor_addr="{{.zkevm_l2_claimsponsor_address}}"
+    bridge_admin_addr="{{.l2_sovereignadmin_address}}"
+    aggoracle_addr="{{.l2_aggoracle_address}}"
+    claimtxmanager_addr="{{.l2_claimtxmanager_address}}"
+    claimsponsor_addr="{{.l2_claimsponsor_address}}"
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
@@ -902,7 +902,7 @@ initialize_rollup() {
     # shellcheck disable=SC2050
     if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured
-        cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.zkevm_l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
+        cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
         true
     fi
 }
@@ -987,8 +987,8 @@ l2_legacy_fund_accounts() {
 
         until cast send --legacy \
                         --rpc-url "$l2_rpc_url" \
-                        --private-key "{{.zkevm_l2_admin_private_key}}" \
-                        --value 0 "{{.zkevm_l2_sequencer_address}}" &> /dev/null; do
+                        --private-key "{{.l2_admin_private_key}}" \
+                        --value 0 "{{.l2_sequencer_address}}" &> /dev/null; do
             ((counter++))
             _echo_ts "Can't send L2 transfers yet... Retrying ($counter)..."
             if [[ $counter -ge $max_retries ]]; then
@@ -1007,7 +1007,7 @@ l2_legacy_fund_accounts() {
             --async \
             --nonce "$account_nonce" \
             --rpc-url "$l2_rpc_url" \
-            --private-key "{{.zkevm_l2_admin_private_key}}" \
+            --private-key "{{.l2_admin_private_key}}" \
             --value "{{.l2_funding_amount}}" \
             "$address"
         account_nonce="$((account_nonce + 1))"
@@ -1027,14 +1027,14 @@ l2_legacy_fund_accounts() {
     _wait_for_rpc_to_be_available
     _echo_ts "L2 RPC is now available"
 
-    eth_address="$(cast wallet address --private-key "{{.zkevm_l2_admin_private_key}}")"
+    eth_address="$(cast wallet address --private-key "{{.l2_admin_private_key}}")"
     account_nonce="$(cast nonce --rpc-url "$l2_rpc_url" "$eth_address")"
 
     _echo_ts "Funding bridge autoclaimer account on l2"
-    _fund_account_on_l2 "{{.zkevm_l2_claimtxmanager_address}}"
+    _fund_account_on_l2 "{{.l2_claimtxmanager_address}}"
 
     _echo_ts "Funding claim sponsor account on l2"
-    _fund_account_on_l2 "{{.zkevm_l2_claimsponsor_address}}"   
+    _fund_account_on_l2 "{{.l2_claimsponsor_address}}"   
 }
 
 # Called for erigon stacks
@@ -1060,13 +1060,13 @@ l2_contract_setup() {
             --async \
             --nonce "$account_nonce" \
             --rpc-url "$l2_rpc_url" \
-            --private-key "{{.zkevm_l2_admin_private_key}}" \
+            --private-key "{{.l2_admin_private_key}}" \
             --value "{{.l2_funding_amount}}" \
             "$address"
         account_nonce="$((account_nonce + 1))"
     }
 
-    eth_address="$(cast wallet address --private-key "{{.zkevm_l2_admin_private_key}}")"
+    eth_address="$(cast wallet address --private-key "{{.l2_admin_private_key}}")"
     account_nonce="$(cast nonce --rpc-url "$l2_rpc_url" "$eth_address")"
 
     _echo_ts "Funding accounts on l2"
@@ -1097,7 +1097,7 @@ l2_contract_setup() {
         cast send \
             --legacy \
             --rpc-url "$l2_rpc_url" \
-            --private-key "{{.zkevm_l2_admin_private_key}}" \
+            --private-key "{{.l2_admin_private_key}}" \
             --value "$gas_cost" \
             --nonce "$account_nonce" \
             "$signer_address"
@@ -1131,7 +1131,7 @@ l2_contract_setup() {
     # shellcheck disable=SC2078
     if [[ "{{.l2_deploy_lxly_bridge_and_call}}" ]]; then
         _echo_ts "Deploying lxly bridge and call on l2"
-        export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
+        export DEPLOYER_PRIVATE_KEY="{{.l2_admin_private_key}}"
         forge script script/DeployInitBridgeAndCall.s.sol --rpc-url "$l2_rpc_url" --legacy --broadcast
     else
         _echo_ts "Skipping deployment of lxly bridge and call on l2"
@@ -1168,7 +1168,7 @@ create_predeployed_op_genesis() {
         cast wallet address --mnemonic "lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop" --mnemonic-index "$index"
     done | jq -R . | jq -s .)
 
-    # By default, the AggOracle sender will be "{{ .zkevm_l2_aggoracle_address }}", which is also the signer to update L2 GER.
+    # By default, the AggOracle sender will be "{{ .l2_aggoracle_address }}", which is also the signer to update L2 GER.
     # But any of the addresses from the aggOracleCommittee should be able to sign the transaction. This will require change to AggOracle.EVMSender.EthTxManager.PrivateKeys
     # Append to aggOracleCommittee in the JSON file
     jq --argjson addrs "$agg_oracle_committee_members" '
@@ -1242,7 +1242,7 @@ create_sovereign_rollup_predeployed() {
     pushd "$contracts_dir" || exit 1
 
     # Requirement to correctly configure contracts deployer
-    export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
+    export DEPLOYER_PRIVATE_KEY="{{.l2_admin_private_key}}"
 
     ts=$(date +%s)
 
@@ -1304,7 +1304,7 @@ create_sovereign_rollup_predeployed() {
 # Caleld for optimism rollup when predeployed_contracts is set to false, which I do believe never happens
 create_sovereign_rollup() {
     # Requirement to correctly configure contracts deployer
-    export DEPLOYER_PRIVATE_KEY="{{.zkevm_l2_admin_private_key}}"
+    export DEPLOYER_PRIVATE_KEY="{{.l2_admin_private_key}}"
 
     # Fund L1 OP addresses.
     IFS=';' read -ra addresses <<<"${L1_OP_ADDRESSES}"
@@ -1358,14 +1358,14 @@ create_sovereign_rollup() {
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
-    bridge_admin_addr="{{.zkevm_l2_sovereignadmin_address}}"
-    bridge_admin_private_key="{{.zkevm_l2_sovereignadmin_private_key}}"
-    aggoracle_addr="{{.zkevm_l2_aggoracle_address}}"
-    # aggoracle_private_key="{{.zkevm_l2_aggoracle_private_key}}"
-    claimtxmanager_addr="{{.zkevm_l2_claimtxmanager_address}}"
-    # claimtx_private_key="{{.zkevm_l2_claimtxmanager_private_key}}"
-    claimsponsor_addr="{{.zkevm_l2_claimsponsor_address}}"
-    # claimsponsor_private_key="{{.zkevm_l2_claimsponsor_private_key}}"
+    bridge_admin_addr="{{.l2_sovereignadmin_address}}"
+    bridge_admin_private_key="{{.l2_sovereignadmin_private_key}}"
+    aggoracle_addr="{{.l2_aggoracle_address}}"
+    # aggoracle_private_key="{{.l2_aggoracle_private_key}}"
+    claimtxmanager_addr="{{.l2_claimtxmanager_address}}"
+    # claimtx_private_key="{{.l2_claimtxmanager_private_key}}"
+    claimsponsor_addr="{{.l2_claimsponsor_address}}"
+    # claimsponsor_private_key="{{.l2_claimsponsor_private_key}}"
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network

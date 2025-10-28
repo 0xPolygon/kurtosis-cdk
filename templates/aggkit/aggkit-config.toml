@@ -33,7 +33,7 @@ NetworkID = {{.zkevm_rollup_id}}
 
 {{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
-SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
@@ -192,7 +192,7 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
-AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}"}
 
 # ------------------------------------------------------------------------------
 # Defines if a check on aggsender proposer startup will be performed 
@@ -225,7 +225,7 @@ UseTLS = false
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
-TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}"}
 RequireKeyMatchTrustedSequencer = true
 {{- end}}
 
@@ -400,9 +400,9 @@ AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
 {{- if and .use_agg_oracle_committee .agg_oracle_committee_member_index }}
-PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.agg_oracle_committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.agg_oracle_committee_member_index}}.keystore", Password = "{{.l2_keystore_password}}"}]
 {{- else }}
-PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.l2_keystore_password}}"}]
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -609,7 +609,7 @@ Enabled = "{{.enable_aggkit_claim_sponsor}}"
 # ------------------------------------------------------------------------------
 # SenderAddr is the address that will be used to send the claim txs
 # ------------------------------------------------------------------------------
-SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
+SenderAddr = "{{.l2_claimsponsor_address}}"
 
 # ------------------------------------------------------------------------------
 # BridgeAddrL2 is the address of the bridge smart contract on L2
@@ -626,7 +626,7 @@ BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
 PrivateKeys = [
-    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"},
 ]
 
 # ------------------------------------------------------------------------------
@@ -717,9 +717,9 @@ ProfilingEnabled = {{.aggkit_pprof_enabled}}
 EnableRPC = true
 # Signer = { Method = "mock" }
 {{- if .agg_sender_validator_member_index }}
-Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sender_validator_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sender_validator_member_index}}.keystore", Password = "{{.l2_keystore_password}}" }
 {{- else}}
-Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}" }
 {{- end}}
 # PessimisticProof or AggchainProof
 {{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
