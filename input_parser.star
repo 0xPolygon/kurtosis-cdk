@@ -159,6 +159,8 @@ DEFAULT_ACCOUNTS = {
     "l2_aggsendervalidator_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
 }
 
+LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
+
 DEFAULT_L1_ARGS = {
     # The L1 engine to use, either "geth" or "anvil".
     "l1_engine": "geth",
@@ -416,6 +418,7 @@ DEFAULT_ARGS = (
     | constants.DEFAULT_IMAGES
     | DEFAULT_PORTS
     | DEFAULT_ACCOUNTS
+    | LEGACY_DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
