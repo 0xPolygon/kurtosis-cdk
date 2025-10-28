@@ -245,26 +245,26 @@ def get_op_succinct_l2oo_config(plan, args):
 
 
 def get_kurtosis_addresses(args):
-    zkevm_l2_sequencer_address = args["zkevm_l2_sequencer_address"]
-    zkevm_l2_aggregator_address = args["zkevm_l2_aggregator_address"]
-    zkevm_l2_claimtxmanager_address = args["zkevm_l2_claimtxmanager_address"]
-    zkevm_l2_timelock_address = args["zkevm_l2_timelock_address"]
-    zkevm_l2_admin_address = args["zkevm_l2_admin_address"]
-    zkevm_l2_agglayer_address = args["zkevm_l2_agglayer_address"]
-    zkevm_l2_dac_address = args["zkevm_l2_dac_address"]
-    zkevm_l2_aggoracle_address = args["zkevm_l2_aggoracle_address"]
-    zkevm_l2_sovereignadmin_address = args["zkevm_l2_sovereignadmin_address"]
+    l2_sequencer_address = args["l2_sequencer_address"]
+    l2_aggregator_address = args["l2_aggregator_address"]
+    l2_claimtxmanager_address = args["l2_claimtxmanager_address"]
+    l2_timelock_address = args["l2_timelock_address"]
+    l2_admin_address = args["l2_admin_address"]
+    l2_agglayer_address = args["l2_agglayer_address"]
+    l2_dac_address = args["l2_dac_address"]
+    l2_aggoracle_address = args["l2_aggoracle_address"]
+    l2_sovereignadmin_address = args["l2_sovereignadmin_address"]
 
     return {
-        "zkevm_l2_sequencer_address": zkevm_l2_sequencer_address,
-        "zkevm_l2_aggregator_address": zkevm_l2_aggregator_address,
-        "zkevm_l2_claimtxmanager_address": zkevm_l2_claimtxmanager_address,
-        "zkevm_l2_timelock_address": zkevm_l2_timelock_address,
-        "zkevm_l2_admin_address": zkevm_l2_admin_address,
-        "zkevm_l2_agglayer_address": zkevm_l2_agglayer_address,
-        "zkevm_l2_dac_address": zkevm_l2_dac_address,
-        "zkevm_l2_aggoracle_address": zkevm_l2_aggoracle_address,
-        "zkevm_l2_sovereignadmin_address": zkevm_l2_sovereignadmin_address,
+        "l2_sequencer_address": l2_sequencer_address,
+        "l2_aggregator_address": l2_aggregator_address,
+        "l2_claimtxmanager_address": l2_claimtxmanager_address,
+        "l2_timelock_address": l2_timelock_address,
+        "l2_admin_address": l2_admin_address,
+        "l2_agglayer_address": l2_agglayer_address,
+        "l2_dac_address": l2_dac_address,
+        "l2_aggoracle_address": l2_aggoracle_address,
+        "l2_sovereignadmin_address": l2_sovereignadmin_address,
     }
 
 

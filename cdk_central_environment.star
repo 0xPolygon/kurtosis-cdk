@@ -182,7 +182,7 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
                     "environment": args.get("environment"),
                     "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
                     "l1_ws_url": args["l1_ws_url"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "l2_keystore_password": args["l2_keystore_password"],
                     # ports
                     "zkevm_dac_port": args["zkevm_dac_port"],
                 }

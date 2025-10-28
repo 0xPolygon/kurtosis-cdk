@@ -4,8 +4,8 @@ L2URL="http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 AggLayerURL="{{.agglayer_grpc_url}}"
 
 NetworkID = {{.zkevm_rollup_id}}
-SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
-SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
+SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
@@ -41,12 +41,12 @@ CheckSettledInterval = "5s"
 [ClaimSponsor]
 DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 Enabled = "{{.enable_aggkit_claim_sponsor}}"
-SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
+SenderAddr = "{{.l2_claimsponsor_address}}"
 BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
 
 [ClaimSponsor.EthTxManager]
 PrivateKeys = [
-    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"},
 ]
 StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 

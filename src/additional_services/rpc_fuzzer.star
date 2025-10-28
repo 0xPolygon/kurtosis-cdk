@@ -10,7 +10,7 @@ def run(plan, args):
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
     l1_funder_private_key = args.get("l1_preallocated_private_key")
-    l2_funder_private_key = args.get("zkevm_l2_admin_private_key")
+    l2_funder_private_key = args.get("l2_admin_private_key")
 
     # Start the fuzzer services.
     rpc_fuzz_artifact = plan.upload_files(
