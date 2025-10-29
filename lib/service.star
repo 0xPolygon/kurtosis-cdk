@@ -247,7 +247,6 @@ def get_op_succinct_l2oo_config(plan, args):
 def get_kurtosis_addresses(args):
     l2_sequencer_address = args["l2_sequencer_address"]
     l2_aggregator_address = args["l2_aggregator_address"]
-    l2_claimtxmanager_address = args["l2_claimtxmanager_address"]
     l2_timelock_address = args["l2_timelock_address"]
     l2_admin_address = args["l2_admin_address"]
     l2_agglayer_address = args["l2_agglayer_address"]
@@ -258,7 +257,6 @@ def get_kurtosis_addresses(args):
     return {
         "l2_sequencer_address": l2_sequencer_address,
         "l2_aggregator_address": l2_aggregator_address,
-        "l2_claimtxmanager_address": l2_claimtxmanager_address,
         "l2_timelock_address": l2_timelock_address,
         "l2_admin_address": l2_admin_address,
         "l2_agglayer_address": l2_agglayer_address,

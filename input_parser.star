@@ -122,7 +122,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,aggoracle,sovereignadmin,claimsponsor,aggsendervalidator",roles,",")} {print "# " roles[NR] "\n\"l2_" roles[NR] "_address\": \"" $1 "\","; print "\"l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,timelock,admin,loadtest,agglayer,dac,aggoracle,sovereignadmin,claimsponsor,aggsendervalidator",roles,",")} {print "# " roles[NR] "\n\"l2_" roles[NR] "_address\": \"" $1 "\","; print "\"l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
@@ -130,9 +130,6 @@ DEFAULT_ACCOUNTS = {
     # aggregator
     "l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
     "l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970",
-    # claimtxmanager
-    "l2_claimtxmanager_address": "0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8",
-    "l2_claimtxmanager_private_key": "0x8d5c9ecd4ba2a195db3777c8412f8e3370ae9adffac222a54a84e116c7f8b934",
     # timelock
     "l2_timelock_address": "0x130aA39Aa80407BD251c3d274d161ca302c52B7A",
     "l2_timelock_private_key": "0x80051baf5a0a749296b9dcdb4a38a264d2eea6d43edcf012d20b5560708cf45f",

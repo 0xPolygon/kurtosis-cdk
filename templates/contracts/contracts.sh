@@ -121,7 +121,6 @@ _extract_addresses() {
 create_keystores() {
     _create_geth_keystore "sequencer.keystore"       "{{.l2_sequencer_private_key}}"       "{{.l2_keystore_password}}"
     _create_geth_keystore "aggregator.keystore"      "{{.l2_aggregator_private_key}}"      "{{.l2_keystore_password}}"
-    _create_geth_keystore "claimtxmanager.keystore"  "{{.l2_claimtxmanager_private_key}}"  "{{.l2_keystore_password}}"
     _create_geth_keystore "agglayer.keystore"        "{{.l2_agglayer_private_key}}"        "{{.l2_keystore_password}}"
     _create_geth_keystore "dac.keystore"             "{{.l2_dac_private_key}}"             "{{.l2_keystore_password}}"
     _create_geth_keystore "aggoracle.keystore"       "{{.l2_aggoracle_private_key}}"       "{{.l2_keystore_password}}"
@@ -755,7 +754,6 @@ initialize_rollup() {
     # These are some accounts that we want to fund for operations for running claims.
     bridge_admin_addr="{{.l2_sovereignadmin_address}}"
     aggoracle_addr="{{.l2_aggoracle_address}}"
-    claimtxmanager_addr="{{.l2_claimtxmanager_address}}"
     claimsponsor_addr="{{.l2_claimsponsor_address}}"
 
     rpc_url="{{.op_el_rpc_url}}"
@@ -764,7 +762,6 @@ initialize_rollup() {
 
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtxmanager_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
 
     bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
@@ -1029,9 +1026,6 @@ l2_legacy_fund_accounts() {
 
     eth_address="$(cast wallet address --private-key "{{.l2_admin_private_key}}")"
     account_nonce="$(cast nonce --rpc-url "$l2_rpc_url" "$eth_address")"
-
-    _echo_ts "Funding bridge autoclaimer account on l2"
-    _fund_account_on_l2 "{{.l2_claimtxmanager_address}}"
 
     _echo_ts "Funding claim sponsor account on l2"
     _fund_account_on_l2 "{{.l2_claimsponsor_address}}"   
@@ -1362,10 +1356,7 @@ create_sovereign_rollup() {
     bridge_admin_private_key="{{.l2_sovereignadmin_private_key}}"
     aggoracle_addr="{{.l2_aggoracle_address}}"
     # aggoracle_private_key="{{.l2_aggoracle_private_key}}"
-    claimtxmanager_addr="{{.l2_claimtxmanager_address}}"
-    # claimtx_private_key="{{.l2_claimtxmanager_private_key}}"
     claimsponsor_addr="{{.l2_claimsponsor_address}}"
-    # claimsponsor_private_key="{{.l2_claimsponsor_private_key}}"
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
@@ -1373,7 +1364,6 @@ create_sovereign_rollup() {
 
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtxmanager_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
 
     # Contract Deployment Step

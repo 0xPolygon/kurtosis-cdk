@@ -330,7 +330,7 @@ def run(
             deployment_stages,
         )
         bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-            args, bridge_config_artifact, keystore_artifacts.claimtx
+            args, bridge_config_artifact, keystore_artifacts.claim_sponsor
         )
         plan.add_service(
             name="zkevm-bridge-service" + args["deployment_suffix"],
@@ -348,11 +348,6 @@ def get_keystores_artifacts(plan, args):
         name="sovereignadmin-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/sovereignadmin.keystore",
-    )
-    claimtx_keystore_artifact = plan.store_service_files(
-        name="aggkit-claimtxmanager-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/claimtxmanager.keystore",
     )
     sequencer_keystore_artifact = plan.store_service_files(
         name="aggkit-sequencer-keystore",
@@ -402,7 +397,6 @@ def get_keystores_artifacts(plan, args):
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
-        claimtx=claimtx_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
         committee_keystores=committee_keystores,

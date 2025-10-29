@@ -21,8 +21,8 @@ args:
   l2_aggregator_address: CHANGE_ME
   l2_aggregator_private_key: CHANGE_ME
 
-  l2_claimtxmanager_address: CHANGE_ME
-  l2_claimtxmanager_private_key: CHANGE_ME
+  l2_claimsponsor_address: CHANGE_ME
+  l2_claimsponsor_private_key: CHANGE_ME
 
   l2_timelock_address: CHANGE_ME
   l2_timelock_private_key: CHANGE_ME
