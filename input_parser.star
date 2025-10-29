@@ -154,9 +154,6 @@ DEFAULT_ACCOUNTS = {
     # claimsponsor
     "l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
     "l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
-    # aggsendervalidator
-    "l2_aggsendervalidator_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
-    "l2_aggsendervalidator_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
 }
 
 LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
