@@ -67,7 +67,7 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0",
     "aggkit_sovereign_image": "ghcr.io/agglayer/aggkit:0.5.4",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.5.1",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.5.2",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.21",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
@@ -85,7 +85,7 @@ DEFAULT_IMAGES = {
     "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101603.1",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.14.1",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.3.0-agglayer",
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.3.1-agglayer-rc.3",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "ghcr.io/agglayer/e2e:3118ff2",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
