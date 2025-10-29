@@ -1350,7 +1350,6 @@ create_sovereign_rollup() {
     sovereign_admin_addr="{{.l2_sovereignadmin_address}}"
     sovereign_admin_private_key="{{.l2_sovereignadmin_private_key}}"
     aggoracle_addr="{{.l2_aggoracle_address}}"
-    # aggoracle_private_key="{{.l2_aggoracle_private_key}}"
     claimsponsor_addr="{{.l2_claimsponsor_address}}"
 
     rpc_url="{{.op_el_rpc_url}}"
