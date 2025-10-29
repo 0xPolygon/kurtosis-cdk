@@ -16,7 +16,7 @@ def run(plan, args, contract_setup_addresses):
     l2_rpc_url = _get_l2_rpc_url(plan, args)
 
     # Generate new wallet for the bridge spammer.
-    funder_private_key = args.get("zkevm_l2_admin_private_key")
+    funder_private_key = args.get("l2_admin_private_key")
     wallet = _generate_new_funded_l1_l2_wallet(
         plan, funder_private_key, l1_rpc_url, l2_rpc_url
     )
@@ -24,7 +24,7 @@ def run(plan, args, contract_setup_addresses):
     # Fund the l2 claim tx manager address.
     wallet_module.fund(
         plan,
-        address=args.get("zkevm_l2_claimtxmanager_address"),
+        address=args.get("l2_claimtxmanager_address"),
         rpc_url=l2_rpc_url,
         funder_private_key=funder_private_key,
         value="50ether",

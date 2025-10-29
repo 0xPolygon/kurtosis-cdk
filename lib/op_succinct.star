@@ -31,7 +31,7 @@ def create_op_succinct_proposer_service_config(
         "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
         + args["deployment_suffix"]
         + ":5432/op_succinct_db",
-        "PROVER_ADDRESS": args["zkevm_l2_sequencer_address"],
+        "PROVER_ADDRESS": args["l2_sequencer_address"],
         "METRICS_PORT": str(args["op_succinct_proposer_metrics_port"]),
         # "DGF_ADDRESS": "", # Address of the DisputeGameFactory contract. Note: If set, the proposer will create a dispute game with the DisputeGameFactory, rather than the OPSuccinctL2OutputOracle. Compatible with OptimismPortal2.
         # "LOOP_INTERVAL": 60, # Default: 60. The interval (in seconds) between each iteration of the OP Succinct service.

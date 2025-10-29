@@ -8,22 +8,17 @@ args:
   zkevm_rollup_id: 3
 
   # The following accounts have been generated using the following command:
-  # polycli wallet inspect --mnemonic 'true suggest umbrella mountain try enrich donate can inform tragic camp venue' --addresses 9 | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "zkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
   # Note that admin and agglayer accounts have been removed since we're using the default accounts.
-  zkevm_l2_sequencer_address: "0x1583bf88Dfee6B10a7c6D18FEA8c85584Bc8ae8E"
-  zkevm_l2_sequencer_private_key: "0x741830ef92d530ad0c8a83e2296f866e4078bacaac2ea1357e870afc384302f3"
-  zkevm_l2_aggregator_address: "0xCAEfA8401448f79dAE0935A0ca6aA8CD4d665E7B"
-  zkevm_l2_aggregator_private_key: "0x4a44c4dbbebff3d7537a6049a36110854e25b8bf14b81f29ed00ce5ef934e952"
-  zkevm_l2_claimtxmanager_address: "0x8edC8CE0DB10137d513aB5767ffF13D1c51885a8"
-  zkevm_l2_claimtxmanager_private_key: "0x46bf651fcd46161385147081efc5befa229ae5254de1dfc61b41a1b65a11caeb"
-  zkevm_l2_timelock_address: "0x7Bf6Ce527660cF839AB43b1ce1F889256BAa0724"
-  zkevm_l2_timelock_private_key: "0xc374eb5487cbbb5f13a02ef848379695e9e101a35860679c9d63c3530921f973"
-  zkevm_l2_loadtest_address: "0x5198F56c367Dbfe36FC768dbb6565663EEded55b"
-  zkevm_l2_loadtest_private_key: "0xa1c26dd89c0c6253d180525afd0e152e41c7deba5525f90df66c2f19288e21c4"
-  zkevm_l2_dac_address: "0x6f5E3D0b07Ed95F5c4c72168F3A85C42aEF3789e"
-  zkevm_l2_dac_private_key: "0x78eea556baadadf043e43b54ab440a89b32cb6f51d7c317cfa5ed5d1289e7157"
-  zkevm_l2_proofsigner_address: "0xDcd1d53324a9Ae5a50a55F62556A771376Fe434D"
-  zkevm_l2_proofsigner_private_key: "0xcb1f295abf6538023fcf96eaa8e81969a65ba70ab61590187b77e2c01aaba748"
+  l2_sequencer_address: "0x1583bf88Dfee6B10a7c6D18FEA8c85584Bc8ae8E"
+  l2_sequencer_private_key: "0x741830ef92d530ad0c8a83e2296f866e4078bacaac2ea1357e870afc384302f3"
+  l2_aggregator_address: "0xCAEfA8401448f79dAE0935A0ca6aA8CD4d665E7B"
+  l2_aggregator_private_key: "0x4a44c4dbbebff3d7537a6049a36110854e25b8bf14b81f29ed00ce5ef934e952"
+  l2_claimtxmanager_address: "0x8edC8CE0DB10137d513aB5767ffF13D1c51885a8"
+  l2_claimtxmanager_private_key: "0x46bf651fcd46161385147081efc5befa229ae5254de1dfc61b41a1b65a11caeb"
+  l2_timelock_address: "0x7Bf6Ce527660cF839AB43b1ce1F889256BAa0724"
+  l2_timelock_private_key: "0xc374eb5487cbbb5f13a02ef848379695e9e101a35860679c9d63c3530921f973"
+  l2_dac_address: "0x6f5E3D0b07Ed95F5c4c72168F3A85C42aEF3789e"
+  l2_dac_private_key: "0x78eea556baadadf043e43b54ab440a89b32cb6f51d7c317cfa5ed5d1289e7157"
 
   agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
   additional_services: []

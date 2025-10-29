@@ -151,11 +151,6 @@ def get_keystores_artifacts(plan, args):
         # service_name="contracts" + args["deployment_suffix"],
         # src=constants.KEYSTORES_DIR+"/aggregator.keystore",
     )
-    proofsigner_keystore_artifact = plan.store_service_files(
-        name="proofsigner-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/proofsigner.keystore",
-    )
     dac_keystore_artifact = plan.store_service_files(
         name="dac-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -169,7 +164,6 @@ def get_keystores_artifacts(plan, args):
     return struct(
         sequencer=sequencer_keystore_artifact,
         aggregator=aggregator_keystore_artifact,
-        proofsigner=proofsigner_keystore_artifact,
         dac=dac_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
     )
@@ -188,7 +182,7 @@ def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses)
                     "environment": args.get("environment"),
                     "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
                     "l1_ws_url": args["l1_ws_url"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "l2_keystore_password": args["l2_keystore_password"],
                     # ports
                     "zkevm_dac_port": args["zkevm_dac_port"],
                 }
