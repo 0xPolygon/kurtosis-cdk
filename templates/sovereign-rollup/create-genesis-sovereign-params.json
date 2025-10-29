@@ -23,18 +23,17 @@
         "minDelay": 3600
     },
 
+    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
 
     {{if .use_agg_oracle_committee}}
     "useAggOracleCommittee": true,
     "aggOracleCommittee": ["{{ .l2_aggoracle_address }}"],
     "quorum": "{{ .agg_oracle_committee_quorum }}",
-    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
     "globalExitRootUpdater": "",
     {{else}}
     "useAggOracleCommittee": false,
     "aggOracleCommittee": [],
     "quorum": 0,
-    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
     "globalExitRootUpdater": "{{ .l2_aggoracle_address }}",
     {{end}}
 
