@@ -15,8 +15,6 @@ args:
   l2_aggregator_private_key: "0xa70db9fb4b84a6ba18c03cd2266116dd110538d6c4c88e67ca35a29b910da25d"
   l2_claimsponsor_address: "0x93F63c24735f45Cd0266E87353071B64dd86bc05"
   l2_claimsponsor_private_key: "0x38718f22097afba13be48d818964326c9c5c48133f51e3c3bfd6faf05f813b34"
-  l2_timelock_address: "0xDB22C6f61A82d6AA6d3607289fC93774AC09413a"
-  l2_timelock_private_key: "0xae4a69010583a09709baa563fa66f9e6f2dacf9e9c84b89932406b9a0521b561"
   l2_dac_address: "0xDa07AAD7226B136bc24157Dc4Ff5A813490E20D0"
   l2_dac_private_key: "0x992c9ab11d5eab6b6c2634b8bb0b85f3d8d1acf25024dc99c359cb2afd9b40a7"
 

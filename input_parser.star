@@ -130,9 +130,6 @@ DEFAULT_ACCOUNTS = {
     # aggregator
     "l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
     "l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970",
-    # timelock
-    "l2_timelock_address": "0x130aA39Aa80407BD251c3d274d161ca302c52B7A",
-    "l2_timelock_private_key": "0x80051baf5a0a749296b9dcdb4a38a264d2eea6d43edcf012d20b5560708cf45f",
     # admin
     "l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
     "l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",

@@ -46,10 +46,6 @@ args:
   l2_aggregator_address: "0x85dd37b4DbBdEB0Ff2ad6e717C2BbA18a2eD4B03"
   l2_aggregator_private_key: "0xa7a66b300528fa1f0bfe73c0ece1ff59c51b68bf2d1e7ac2511a2496960e14b7"
 
-  # timelock
-  l2_timelock_address: "0xaDED1f4f50b64b2f061C79B81E9bF315353477e8"
-  l2_timelock_private_key: "0x500bd5911e13f367f2de1b218db425d83cc2ab7dbad16262cd00d51ee4829139"
-
   # admin
   l2_admin_address: "0x3802C134A821874a00363c72d4EA0aCAa5321627"
   l2_admin_private_key: "0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"

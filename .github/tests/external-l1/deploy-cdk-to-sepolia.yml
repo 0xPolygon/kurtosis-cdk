@@ -24,9 +24,6 @@ args:
   l2_claimsponsor_address: CHANGE_ME
   l2_claimsponsor_private_key: CHANGE_ME
 
-  l2_timelock_address: CHANGE_ME
-  l2_timelock_private_key: CHANGE_ME
-
   l2_admin_address: CHANGE_ME
   l2_admin_private_key: CHANGE_ME
 
