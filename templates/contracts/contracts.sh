@@ -121,7 +121,6 @@ _extract_addresses() {
 create_keystores() {
     _create_geth_keystore "sequencer.keystore"       "{{.l2_sequencer_private_key}}"       "{{.l2_keystore_password}}"
     _create_geth_keystore "aggregator.keystore"      "{{.l2_aggregator_private_key}}"      "{{.l2_keystore_password}}"
-    _create_geth_keystore "agglayer.keystore"        "{{.l2_agglayer_private_key}}"        "{{.l2_keystore_password}}"
     _create_geth_keystore "dac.keystore"             "{{.l2_dac_private_key}}"             "{{.l2_keystore_password}}"
     _create_geth_keystore "aggoracle.keystore"       "{{.l2_aggoracle_private_key}}"       "{{.l2_keystore_password}}"
     _create_geth_keystore "sovereignadmin.keystore"  "{{.l2_sovereignadmin_private_key}}"  "{{.l2_keystore_password}}"
@@ -254,7 +253,6 @@ deploy_agglayer_core_contracts() {
     _fund_account_on_l1 "admin" "{{.l2_admin_address}}"
     _fund_account_on_l1 "sequencer" "{{.l2_sequencer_address}}"
     _fund_account_on_l1 "aggregator" "{{.l2_aggregator_address}}"
-    _fund_account_on_l1 "agglayer" "{{.l2_agglayer_address}}"
     _fund_account_on_l1 "sovereignadmin" "{{.l2_sovereignadmin_address}}"
 
     _echo_ts "Setting up local agglayer-contracts repo for deployment"
@@ -314,7 +312,7 @@ deploy_agglayer_core_contracts() {
             --rpc-url "{{.l1_rpc_url}}" \
             "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
             'grantRole(bytes32,address)' \
-            "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.l2_agglayer_address}}"
+            "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.l2_aggregator_address}}"
     fi
 
     # The sequencer needs to pay POL when it sequences batches.

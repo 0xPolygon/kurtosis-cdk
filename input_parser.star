@@ -136,9 +136,6 @@ DEFAULT_ACCOUNTS = {
     # admin
     "l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
     "l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
-    # agglayer
-    "l2_agglayer_address": "0x351e560852ee001d5D19b5912a269F849f59479a",
-    "l2_agglayer_private_key": "0x1d45f90c0a9814d8b8af968fa0677dab2a8ff0266f33b136e560fe420858a419",
     # dac
     "l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6",
     "l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b",

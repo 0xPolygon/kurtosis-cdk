@@ -81,9 +81,6 @@ l2_timelock_private_key: "0xa0e35402da2dcebb8a33b89806d043bb5785a6a04aa5d9cf47f0
 l2_admin_address: "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf"
 l2_admin_private_key: "0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f"
 
-l2_agglayer_address: "0x61773f7fca22cF7fb960DEDC6aEd0FE795018837"
-l2_agglayer_private_key: "0xf44263cc5699fe3889f892834885111164eb1bea1c9f16322c5577165c578ae4"
-
 l2_dac_address: "0x9150404Cc4d66673b1598dA00a9AC6ce1df53582"
 l2_dac_private_key: "0xc1345e1b9680c8623df4f74d4b4f7bc8d9a5bebfebde34786e2146d30b1c68c0"
 #+end_example

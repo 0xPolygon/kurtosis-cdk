@@ -30,8 +30,5 @@ args:
   l2_admin_address: CHANGE_ME
   l2_admin_private_key: CHANGE_ME
 
-  l2_agglayer_address: CHANGE_ME
-  l2_agglayer_private_key: CHANGE_ME
-
   l2_dac_address: CHANGE_ME
   l2_dac_private_key: CHANGE_ME

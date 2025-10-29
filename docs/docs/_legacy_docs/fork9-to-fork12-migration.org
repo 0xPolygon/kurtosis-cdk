@@ -54,10 +54,6 @@ args:
   l2_admin_address: "0x3802C134A821874a00363c72d4EA0aCAa5321627"
   l2_admin_private_key: "0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
 
-  # agglayer
-  l2_agglayer_address: "0x18481b38dd03208d179019E7352c9aC9cD6d540E"
-  l2_agglayer_private_key: "0xf9a3ca361254388ce6242c76ed339b016707e49f4207867cfa41b7b38d8df88e"
-
   # dac
   l2_dac_address: "0xAaB75050a8981a1C90e7fec940D51058127Af425"
   l2_dac_private_key: "0xefa54be13b9df9fdec01a3dbe1538a7998859a946cf2b56ca42d11a795d8e8ac"

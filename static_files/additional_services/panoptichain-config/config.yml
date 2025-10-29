@@ -27,7 +27,6 @@ providers:
         - "{{.l2_claimsponsor_address}}"
         - "{{.l2_timelock_address}}"
         - "{{.l2_admin_address}}"
-        - "{{.l2_agglayer_address}}"
         - "{{.l2_dac_address}}"
 
     - name: "L2"

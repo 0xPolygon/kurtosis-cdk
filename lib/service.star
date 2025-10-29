@@ -249,7 +249,6 @@ def get_kurtosis_addresses(args):
     l2_aggregator_address = args["l2_aggregator_address"]
     l2_timelock_address = args["l2_timelock_address"]
     l2_admin_address = args["l2_admin_address"]
-    l2_agglayer_address = args["l2_agglayer_address"]
     l2_dac_address = args["l2_dac_address"]
     l2_aggoracle_address = args["l2_aggoracle_address"]
     l2_sovereignadmin_address = args["l2_sovereignadmin_address"]
@@ -259,7 +258,6 @@ def get_kurtosis_addresses(args):
         "l2_aggregator_address": l2_aggregator_address,
         "l2_timelock_address": l2_timelock_address,
         "l2_admin_address": l2_admin_address,
-        "l2_agglayer_address": l2_agglayer_address,
         "l2_dac_address": l2_dac_address,
         "l2_aggoracle_address": l2_aggoracle_address,
         "l2_sovereignadmin_address": l2_sovereignadmin_address,
