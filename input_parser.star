@@ -122,7 +122,7 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 12 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,timelock,admin,loadtest,agglayer,dac,aggoracle,sovereignadmin,claimsponsor,aggsendervalidator",roles,",")} {print "# " roles[NR] "\n\"l2_" roles[NR] "_address\": \"" $1 "\","; print "\"l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 7 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,admin,dac,aggoracle,sovereignadmin,claimsponsor",roles,",")} {print "# " roles[NR] "\n\"l2_" roles[NR] "_address\": \"" $1 "\","; print "\"l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
     "l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
