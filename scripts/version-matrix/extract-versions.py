@@ -216,7 +216,7 @@ class VersionMatrixExtractor:
 
         try:
             if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
-                url = f"https://api.github.com/repos/{repo}/releases"
+                url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
 
@@ -233,7 +233,7 @@ class VersionMatrixExtractor:
                     print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                     return None
 
-            # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
+            # These components don't have any release, thus we rely on tags
             if component in [
                 'zkevm-prover', 'zkevm-bridge-service', 'op-succinct-proposer',
                 'zkevm-pool-manager', 'zkevm-da'
@@ -245,10 +245,16 @@ class VersionMatrixExtractor:
                 )
                 if response.status_code == 200:
                     tags = response.json()
-                    if tags:
-                        latest_tag = tags[0].get('name')
-                        latest_version = re.sub(r'^v?', '', latest_tag)
-                        return latest_version
+                    for tag in tags:
+                        if 'name' in tag:
+                            tag_name = tag['name']
+
+                            # Don't consider v9 tags for zkevm-prover
+                            if component == 'zkevm-prover' and tag_name.startswith('v9'):
+                                continue
+    
+                            latest_version = re.sub(r'^v?', '', tag_name)
+                            return latest_version
                 else:
                     print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                     return None
@@ -301,8 +307,11 @@ class VersionMatrixExtractor:
             version_float = version_to_int(version)
             version_suffix = version.split('-')[1] if '-' in version else ''
             latest_float = version_to_int(latest_version)
-            latest_suffix = latest_version.split(
-                '-')[1] if '-' in latest_version else ''
+            latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
+
+            # special case for agglayer-contracts
+            if version_suffix.endswith("aggchain.multisig"):
+                return "experimental"
 
             if version_float > latest_float:
                 return "experimental"
@@ -310,6 +319,9 @@ class VersionMatrixExtractor:
                 return "deprecated"
             else:
                 if version_suffix == latest_suffix:
+                    return "latest"
+                # special case for op-deployer where we use latest version with a small fix on top, labelled as `-cdk`
+                if version_suffix == "cdk" and not latest_suffix:
                     return "latest"
                 return "experimental"
 

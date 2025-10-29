@@ -105,7 +105,8 @@ FinalizedGEREnabled = true
 # L1 bridge genesis block.
 [NetworkConfig]
 # Block number where the L1 bridge smart contract was deployed. The bridge needs to compute the merkle tree based on events from that block.
-GenBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+L1GenBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+L2GenBlockNumbers = [0]
 # Address of the Polygon bridge smc
 PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 # Address of the Global exit root smc
