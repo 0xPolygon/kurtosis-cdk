@@ -751,18 +751,13 @@ initialize_rollup() {
     rollup_manager_addr=$(jq -r '.polygonRollupManagerAddress' "$output_dir"/combined.json)
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
-    # These are some accounts that we want to fund for operations for running claims.
-    bridge_admin_addr="{{.l2_sovereignadmin_address}}"
-    aggoracle_addr="{{.l2_aggoracle_address}}"
-    claimsponsor_addr="{{.l2_claimsponsor_address}}"
-
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
     private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_sovereignadmin_address}}"
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_aggoracle_address}}"
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_claimsponsor_address}}"
 
     bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
     bridge_proxy_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
