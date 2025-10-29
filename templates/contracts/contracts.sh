@@ -307,12 +307,13 @@ deploy_agglayer_core_contracts() {
         # Grant the aggregator role to the agglayer so that it can also verify batches.
         # cast keccak "TRUSTED_AGGREGATOR_ROLE"
         _echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
+        role_bytes32=$(cast keccak "TRUSTED_AGGREGATOR_ROLE")
         cast send \
             --private-key "{{.l2_admin_private_key}}" \
             --rpc-url "{{.l1_rpc_url}}" \
             "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
             'grantRole(bytes32,address)' \
-            "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.l2_aggregator_address}}"
+            "$role_bytes32" "{{.l2_aggregator_address}}"
     fi
 
     # The sequencer needs to pay POL when it sequences batches.
