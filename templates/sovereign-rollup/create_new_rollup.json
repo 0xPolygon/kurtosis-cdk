@@ -14,7 +14,7 @@
     "rollupAdminAddress": "{{ .l2_sovereignadmin_address }}",
     "gasTokenAddress": "{{ .gas_token_address }}",
     "deployerPvtKey": "{{ .l2_admin_private_key }}",
-    "aggchainManagerPvtKey": "{{ .l2_admin_private_key }}",
+    "aggchainManagerPvtKey": "{{ .l2_sovereignadmin_private_key }}",
     "maxFeePerGas": "",
     "maxPriorityFeePerGas": "",
     "multiplierGas": "",

@@ -715,35 +715,35 @@ initialize_rollup() {
     # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
     deployOPSuccinct="{{ .deploy_op_succinct }}"
     if [[ $deployOPSuccinct == true ]]; then
-    echo "Configuring OP Succinct setup..."
-    jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json '
-    .deployerPvtKey = .aggchainManagerPvtKey |
-    .aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
-    .aggchainParams.initParams.rollupConfigHash = $l2[0].rollupConfigHash |
-    .aggchainParams.initParams.startingOutputRoot = $l2[0].startingOutputRoot |
-    .aggchainParams.initParams.startingTimestamp = $l2[0].startingTimestamp |
-    .aggchainParams.initParams.startingBlockNumber = $l2[0].startingBlockNumber |
-    .aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval |
-    .aggchainParams.initParams.aggregationVkey = $l2[0].aggregationVkey |
-    .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
-    ' "$input_dir"/create_new_rollup.json > "$output_dir"/initialize_rollup.json
+        echo "Configuring OP Succinct setup..."
+        jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json '
+        .deployerPvtKey = .aggchainManagerPvtKey |
+        .aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
+        .aggchainParams.initParams.rollupConfigHash = $l2[0].rollupConfigHash |
+        .aggchainParams.initParams.startingOutputRoot = $l2[0].startingOutputRoot |
+        .aggchainParams.initParams.startingTimestamp = $l2[0].startingTimestamp |
+        .aggchainParams.initParams.startingBlockNumber = $l2[0].startingBlockNumber |
+        .aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval |
+        .aggchainParams.initParams.aggregationVkey = $l2[0].aggregationVkey |
+        .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
+        ' "$input_dir"/create_new_rollup.json > "$output_dir"/initialize_rollup.json
 
-    jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup${ts}.json
-    cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
+        jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup${ts}.json
+        cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
 
-    # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-    # So a manual extraction of polygonRollupManagerAddress is done here.
-    # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
-    rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
+        # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+        # So a manual extraction of polygonRollupManagerAddress is done here.
+        # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
+        rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
+        rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
-    # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-    jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
-    mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
+        # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
+        jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
+        mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
 
-    cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
+        cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
 
-    npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
+        npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
     fi
 
     # Save Rollup Information to a file.
