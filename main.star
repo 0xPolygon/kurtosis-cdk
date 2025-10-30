@@ -113,10 +113,8 @@ def run(plan, args={}):
             )
 
             # Fund Kurtosis addresses on OP L2
-            l2_kurtosis_addresses = service_package.get_kurtosis_addresses(args)
-
             deploy_sovereign_contracts_package.fund_addresses(
-                plan, args, l2_kurtosis_addresses, args["op_el_rpc_url"]
+                plan, args, service_package.get_l2_addresses_to_fund(args), args["op_el_rpc_url"]
             )
 
             if deployment_stages.get("deploy_op_succinct", False):

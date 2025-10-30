@@ -244,21 +244,14 @@ def get_op_succinct_l2oo_config(plan, args):
     return get_exec_recipe_result(result)
 
 
-def get_kurtosis_addresses(args):
-    l2_sequencer_address = args["l2_sequencer_address"]
-    l2_aggregator_address = args["l2_aggregator_address"]
-    l2_admin_address = args["l2_admin_address"]
-    l2_dac_address = args["l2_dac_address"]
-    l2_aggoracle_address = args["l2_aggoracle_address"]
-    l2_sovereignadmin_address = args["l2_sovereignadmin_address"]
-
+def get_l2_addresses_to_fund(args):
     return {
-        "l2_sequencer_address": l2_sequencer_address,
-        "l2_aggregator_address": l2_aggregator_address,
-        "l2_admin_address": l2_admin_address,
-        "l2_dac_address": l2_dac_address,
-        "l2_aggoracle_address": l2_aggoracle_address,
-        "l2_sovereignadmin_address": l2_sovereignadmin_address,
+        "l2_sequencer_address": args["l2_sequencer_address"],
+        "l2_aggregator_address": args["l2_aggregator_address"],
+        "l2_admin_address": args["l2_admin_address"],
+        "l2_dac_address": args["l2_dac_address"],
+        "l2_aggoracle_address": args["l2_aggoracle_address"],
+        "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
     }
 
 
