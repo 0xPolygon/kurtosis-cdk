@@ -36,7 +36,7 @@
         "proxiedTokensManager" : "{{ .l2_sovereignadmin_address }}"
     },
     "aggchainParams": {
-        "aggchainManager": "{{ .l2_admin_address }}",
+        "aggchainManager": "{{ .l2_sovereignadmin_address }}",
         "initParams": {
             "l2BlockTime": "{{ .sp1_l2_block_time }}",
             "rollupConfigHash": "{{.sp1_rollup_config_hash}}",
@@ -44,7 +44,7 @@
             "startingBlockNumber": {{ with .sp1_starting_block_number }}{{ . }}{{ else }}null{{ end }},
             "startingTimestamp": {{ with .sp1_starting_timestamp}}{{ . }}{{ else }}null{{ end }},
             "submissionInterval": "{{ .sp1_submission_interval }}",
-            "optimisticModeManager": "{{ .l2_admin_address }}",
+            "optimisticModeManager": "{{ .l2_sovereignadmin_address }}",
             "aggregationVkey": "{{ .sp1_aggregation_vkey }}",
             "rangeVkeyCommitment": "{{ .sp1_range_vkey_commitment }}"
         },
