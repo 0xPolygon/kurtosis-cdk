@@ -11,12 +11,7 @@
     "emergencyBridgeUnpauser": "{{ .l2_sovereignadmin_address }}",
     "proxiedTokensManager" : "{{ .l2_sovereignadmin_address }}",
     "setPreMintAccounts": true,
-    "preMintAccounts": [
-        {
-            "balance": "1000000000000000000",
-            "address": "0x8576158a89648aA88B6036f47B8b74Fc0C2b5c66"
-        }
-    ],
+    "preMintAccounts": [],
     "setTimelockParameters": true,
     "timelockParameters": {
         "adminAddress": "{{ .l2_admin_address }}",
