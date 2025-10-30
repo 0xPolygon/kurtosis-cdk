@@ -37,6 +37,7 @@
     },
     "aggchainParams": {
         "aggchainManager": "{{ .l2_sovereignadmin_address }}",
+        "aggchainManagerPvtKey": "{{.l2_sovereignadmin_private_key}}",
         "initParams": {
             "l2BlockTime": "{{ .sp1_l2_block_time }}",
             "rollupConfigHash": "{{.sp1_rollup_config_hash}}",
