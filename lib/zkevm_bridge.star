@@ -1,7 +1,7 @@
 ports_package = import_module("../src/package_io/ports.star")
 
 
-def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifact):
+def create_bridge_service_config(args, config_artifact, claimsponsor_keystore_artifact):
     (ports, public_ports) = get_bridge_service_ports(args)
     return ServiceConfig(
         image=args["zkevm_bridge_service_image"],
@@ -9,7 +9,7 @@ def create_bridge_service_config(args, config_artifact, claimtx_keystore_artifac
         public_ports=public_ports,
         files={
             "/etc/zkevm": Directory(
-                artifact_names=[config_artifact, claimtx_keystore_artifact]
+                artifact_names=[config_artifact, claimsponsor_keystore_artifact]
             ),
         },
         entrypoint=[

@@ -22,13 +22,13 @@ def run(
         db_configs,
         deploy_optimism_rollup,
     )
-    claimtx_keystore_artifact = plan.store_service_files(
-        name="claimtxmanager-keystore",
+    claimsponsor_keystore_artifact = plan.store_service_files(
+        name="claimsponsor-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/claimtxmanager.keystore",
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
     bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-        args, bridge_config_artifact, claimtx_keystore_artifact
+        args, bridge_config_artifact, claimsponsor_keystore_artifact
     )
     plan.add_service(
         name="zkevm-bridge-service" + args["deployment_suffix"],
