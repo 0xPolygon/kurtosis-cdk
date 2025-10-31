@@ -1254,7 +1254,7 @@ UpgradeEtrogBatchNumber = 0
 # configured here must match the ultimate sender of the aggregated
 # proof to L1. In this case the final sender is the agglayer itself
 # ------------------------------------------------------------------------------
-SenderAddress = "{{.l2_agglayer_address}}"
+SenderAddress = "{{.l2_aggregator_address}}"
 
 # ------------------------------------------------------------------------------
 # SettlementBackend determines if we're settling with the `agglayer'

@@ -24,19 +24,19 @@ In Kurtosis CDK, the `bridge-service` has a built-in bridge transaction claimer 
 ```bash
 kurtosis_enclave_name=cdk
 
-# Fund CDK-Erigon Validium l2_claimtxmanager_address
+# Fund CDK-Erigon Validium l2_claimsponsor_address
 cast send --legacy --value 1ether \
     --rpc-url "$(kurtosis port print $kurtosis_enclave_name cdk-erigon-rpc-001 rpc)" \
     --private-key "12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-    "0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8"
+    "0x635243A11B41072264Df6c9186e3f473402F94e9"
 
-# Fund CDK-Erigon Rollup l2_claimtxmanager_address
+# Fund CDK-Erigon Rollup l2_claimsponsor_address
 cast send --legacy --value 1ether \
     --rpc-url "$(kurtosis port print $kurtosis_enclave_name cdk-erigon-rpc-002 rpc)" \
     --private-key "12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
     "0x1a1C53bA714643B53b39D82409915b513349a1ff"
 
-# Fund CDK-Erigon PP l2_claimtxmanager_address
+# Fund CDK-Erigon PP l2_claimsponsor_address
 cast send --legacy --value 1ether \
     --rpc-url "$(kurtosis port print $kurtosis_enclave_name cdk-erigon-rpc-003 rpc)" \
     --private-key "12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \

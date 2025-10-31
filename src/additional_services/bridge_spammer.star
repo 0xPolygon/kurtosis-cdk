@@ -24,7 +24,7 @@ def run(plan, args, contract_setup_addresses):
     # Fund the l2 claim tx manager address.
     wallet_module.fund(
         plan,
-        address=args.get("l2_claimtxmanager_address"),
+        address=args.get("l2_claimsponsor_address"),
         rpc_url=l2_rpc_url,
         funder_private_key=funder_private_key,
         value="50ether",

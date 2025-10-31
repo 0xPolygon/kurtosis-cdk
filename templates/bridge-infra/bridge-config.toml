@@ -143,7 +143,7 @@ Enabled = true
 # Frequency to monitor transactions
 FrequencyToMonitorTxs = "5s"
 # Path and password for the private key
-PrivateKey = {Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.l2_keystore_password}}"}
+PrivateKey = {Path = "/etc/zkevm/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"}
 # Interval between retries
 RetryInterval = "1s"
 # Number of retry attempts

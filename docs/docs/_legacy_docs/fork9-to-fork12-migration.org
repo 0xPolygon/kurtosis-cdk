@@ -46,21 +46,9 @@ args:
   l2_aggregator_address: "0x85dd37b4DbBdEB0Ff2ad6e717C2BbA18a2eD4B03"
   l2_aggregator_private_key: "0xa7a66b300528fa1f0bfe73c0ece1ff59c51b68bf2d1e7ac2511a2496960e14b7"
 
-  # claimtxmanager
-  l2_claimtxmanager_address: "0x619e4F055B87cB61Ef728423995166B4Cdb876C3"
-  l2_claimtxmanager_private_key: "0xb5855e717dc21c8cb036a12c08566d95558644177362f1d64a1dfe3a6dae57b0"
-
-  # timelock
-  l2_timelock_address: "0xaDED1f4f50b64b2f061C79B81E9bF315353477e8"
-  l2_timelock_private_key: "0x500bd5911e13f367f2de1b218db425d83cc2ab7dbad16262cd00d51ee4829139"
-
   # admin
   l2_admin_address: "0x3802C134A821874a00363c72d4EA0aCAa5321627"
   l2_admin_private_key: "0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
-
-  # agglayer
-  l2_agglayer_address: "0x18481b38dd03208d179019E7352c9aC9cD6d540E"
-  l2_agglayer_private_key: "0xf9a3ca361254388ce6242c76ed339b016707e49f4207867cfa41b7b38d8df88e"
 
   # dac
   l2_dac_address: "0xAaB75050a8981a1C90e7fec940D51058127Af425"
@@ -735,7 +723,7 @@ To try to get this unstuck, we'll try to do some bridge deposits.
 rpc_url="$(kurtosis port print cdk cdk-erigon-sequencer-001 rpc)"
 private_key="0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
 cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x278C89e074B9227E2aaC61FEa7DFf5c1356A419e"
-cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8"
+cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x635243A11B41072264Df6c9186e3f473402F94e9"
 cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046"
 cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x619e4F055B87cB61Ef728423995166B4Cdb876C3"
 
