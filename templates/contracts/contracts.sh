@@ -788,10 +788,10 @@ initialize_rollup() {
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_aggoracle_address}}"
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_claimsponsor_address}}"
 
-    bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
-    bridge_proxy_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
-    ger_impl_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
-    ger_proxy_addr=$(jq -r '.genesisSCNames["GlobalExitRootManagerL2SovereignChain proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
+    bridge_impl_addr=$(jq -r '.genesisSCNames["AgglayerBridgeL2 implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
+    bridge_proxy_addr=$(jq -r '.genesisSCNames["AgglayerBridgeL2 proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
+    ger_impl_addr=$(jq -r '.genesisSCNames["AgglayerGERL2 implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
+    ger_proxy_addr=$(jq -r '.genesisSCNames["AgglayerGERL2 proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
 
     # Save the contract addresses to the sovereign-rollup-out.json file
     jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' "$contracts_dir"/sovereign-rollup-out.json > "$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
