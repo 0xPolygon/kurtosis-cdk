@@ -12,7 +12,7 @@ LABEL author="devtools@polygon.technology"
 LABEL description="Helper image to deploy agglayer contracts"
 
 # ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="c8d0a429998f2ef2f8df3b1e9fe8f69be22fa9a8" # 2025-07-01
-ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v11.0.0" # 2025-10-22
+ARG AGGLAYER_CONTRACTS_TAG_OR_COMMIT_SHA="v12.1.5" # 2025-10-30
 ARG FOUNDRY_VERSION="v1.4.3"
 
 # STEP 1: Download agglayer contracts dependencies and compile contracts.
