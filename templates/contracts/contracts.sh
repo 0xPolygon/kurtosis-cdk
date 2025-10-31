@@ -95,6 +95,31 @@ _deploy_agglayer_manager() {
     if [[ ! -e deployment/v2/deploy_output.json ]]; then
         _echo_ts "The deploy_output.json file was not created after running deployContracts"
         exit 1
+    else
+        # jq  \
+        # '
+        #     .AgglayerManager = .polygonRollupManagerAddress | del(.polygonRollupManagerAddress) |
+        #     .AgglayerBridge = .polygonZkEVMBridgeAddress | del(.polygonZkEVMBridgeAddress) |
+        #     .AgglayerGER = .polygonZkEVMGlobalExitRootAddress | del(.polygonZkEVMGlobalExitRootAddress) |
+        #     .AgglayerGateway = .aggLayerGatewayAddress | del(.aggLayerGatewayAddress)
+        # ' \
+        # deployment/v2/deploy_output.json > deployment/v2/deploy_output.json.tmp \
+        # && mv deployment/v2/deploy_output.json deployment/v2/deploy_output.json.original \
+        # && mv deployment/v2/deploy_output.json.tmp deployment/v2/deploy_output.json
+
+        # Contract's tools required OLD names as input... so we can't remove old fields.
+        jq  \
+        '
+            .AgglayerManager = .polygonRollupManagerAddress|
+            .AgglayerBridge = .polygonZkEVMBridgeAddress |
+            .AgglayerGER = .polygonZkEVMGlobalExitRootAddress |
+            .AgglayerGateway = .aggLayerGatewayAddress
+        ' \
+        deployment/v2/deploy_output.json > deployment/v2/deploy_output.json.tmp \
+        && mv deployment/v2/deploy_output.json deployment/v2/deploy_output.json.original \
+        && mv deployment/v2/deploy_output.json.tmp deployment/v2/deploy_output.json
+        _echo_ts "Got a deploy_output.json file"
+        cat deployment/v2/deploy_output.json
     fi
 }
 
@@ -115,22 +140,6 @@ _extract_addresses() {
 
     # Extract addresses using jq and return them
     jq -r "[$jq_filter][] | select(. != null)" "$json_file"
-}
-
-# V12 has renamed contracts, but deploy_output.json created during exeecution of deployment/v2/3_deployContracts.ts still uses the old names.
-# For better understanding, we rename the output until contract's team fix this.
-_create_combined_json_from_deploy_output() {
-    local deploy_output_json_file="$1"
-    local combined_json_file="$2"
-
-    jq  \
-    '
-        .AgglayerManager = .polygonRollupManagerAddress | del(.polygonRollupManagerAddress) |
-        .AgglayerBridge = .polygonZkEVMBridgeAddress | del(.polygonZkEVMBridgeAddress) |
-        .AgglayerGER = .polygonZkEVMGlobalExitRootAddress | del(.polygonZkEVMGlobalExitRootAddress) |
-        .AgglayerGateway = .aggLayerGatewayAddress | del(.aggLayerGatewayAddress)
-    ' \
-    "$deploy_output_json_file" > "$combined_json_file"
 }
 
 
@@ -237,6 +246,8 @@ configure_contract_container_custom_genesis_cdk_erigon() {
 
 # Called when no l1 custom genesis
 deploy_agglayer_core_contracts() {
+    _echo_ts "Executing function deploy_agglayer_core_contracts"
+
     # This script is responsible for deploying the contracts for zkEVM/CDK.
     global_log_level="{{.global_log_level}}"
     if [[ $global_log_level == "debug" ]]; then
@@ -302,8 +313,7 @@ deploy_agglayer_core_contracts() {
 
     _echo_ts "Creating combined.json"
     pushd "$output_dir"/ || exit 1
-    # HERE combined.json is created for first time from deploy_output.json
-    _create_combined_json_from_deploy_output deploy_output.json combined.json
+    cp deploy_output.json combined.json
     cat combined.json
 
     # There are a bunch of fields that need to be renamed in order for the
@@ -386,6 +396,8 @@ deploy_agglayer_core_contracts() {
 
 # used always except for l1_custom_genesis=True and pessimistic consensus
 create_agglayer_rollup() {
+    _echo_ts "Executing function create_agglayer_rollup"
+
     # This script is responsible for deploying the contracts for zkEVM/CDK.
     global_log_level="{{.global_log_level}}"
     if [[ $global_log_level == "debug" ]]; then
@@ -548,7 +560,7 @@ create_agglayer_rollup() {
     gas_token_address=$(jq -r '.gasTokenAddress' "$output_dir"/combined.json)
     agglayer_bridge=$(jq -r '.AgglayerBridge' "$output_dir"/combined.json)
     # Bridge gas token to L2 to prevent bridge underflow reverts
-    echo "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
+    _echo_ts "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
     polycli ulxly bridge asset \
         --bridge-address "$agglayer_bridge" \
         --destination-address "0x0000000000000000000000000000000000000000" \
@@ -585,14 +597,14 @@ create_agglayer_rollup() {
     cp combined.json "combined{{.deployment_suffix}}.json"
     cat combined.json
 
-    _echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
-    cast send \
-        --private-key "{{.l2_sequencer_private_key}}" \
-        --legacy \
-        --rpc-url "{{.l1_rpc_url}}" \
-        "$(jq -r '.polTokenAddress' combined.json)" \
-        'approve(address,uint256)(bool)' \
-        "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+    # _echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
+    # cast send \
+    #     --private-key "{{.l2_sequencer_private_key}}" \
+    #     --legacy \
+    #     --rpc-url "{{.l1_rpc_url}}" \
+    #     "$(jq -r '.polTokenAddress' combined.json)" \
+    #     'approve(address,uint256)(bool)' \
+    #     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
     {{ if ne .consensus_contract_type "ecdsa_multisig" }}
     # The DAC needs to be configured with a required number of signatures.
@@ -1244,6 +1256,8 @@ create_predeployed_op_genesis() {
 
 # Called from main when optimism rollup to create the rollup, using predeployed contracts on L2
 create_sovereign_rollup_predeployed() {
+    _echo_ts "Executing function create_sovereign_rollup_predeployed"
+
     # Create New Rollup Step
     pushd "$contracts_dir" || exit 1
 
@@ -1282,24 +1296,24 @@ create_sovereign_rollup_predeployed() {
 
     deployOPSuccinct="{{ .deploy_op_succinct }}"
     if [[ $deployOPSuccinct == true ]]; then
-    rm "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json
-    npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
-    cp "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json "${output_dir}/add_rollup_type_output.json"
-    rollup_type_id=$(jq -r '.rollupTypeID' "${output_dir}/add_rollup_type_output.json")
-    jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' "$contracts_dir"/tools/createNewRollup/create_new_rollup.json > "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp
-    mv "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp "$contracts_dir"/tools/createNewRollup/create_new_rollup.json
+        rm "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json
+        npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out
+        cp "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json "${output_dir}/add_rollup_type_output.json"
+        rollup_type_id=$(jq -r '.rollupTypeID' "${output_dir}/add_rollup_type_output.json")
+        jq --arg rtid "$rollup_type_id"  '.rollupTypeId = $rtid' "$contracts_dir"/tools/createNewRollup/create_new_rollup.json > "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp
+        mv "$contracts_dir"/tools/createNewRollup/create_new_rollup.json.tmp "$contracts_dir"/tools/createNewRollup/create_new_rollup.json
 
-    rm "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json
-    npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
-    cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json "${output_dir}/create_rollup_output.json"
+        rm "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json
+        npx hardhat run ./tools/createNewRollup/createNewRollup.ts --network localhost 2>&1 | tee 07_create_sovereign_rollup.out
+        cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json "${output_dir}/create_rollup_output.json"
     else
-    # shellcheck disable=SC2050
-    if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
-    sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
-    fi
-    # In the case for PP deployments without OP-Succinct, use the 4_createRollup.ts script instead of the createNewRollup.ts tool.
-    cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
-    npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
+        # shellcheck disable=SC2050
+        if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
+            sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
+        fi
+        # In the case for PP deployments without OP-Succinct, use the 4_createRollup.ts script instead of the createNewRollup.ts tool.
+        cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
+        npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
     fi
 
     # Save Rollup Information to a file.
@@ -1309,6 +1323,8 @@ create_sovereign_rollup_predeployed() {
 
 # Caleld for optimism rollup when predeployed_contracts is set to false, which I do believe never happens
 create_sovereign_rollup() {
+    _echo_ts "Executing function create_sovereign_rollup"
+
     # Requirement to correctly configure contracts deployer
     export DEPLOYER_PRIVATE_KEY="{{.l2_admin_private_key}}"
 
