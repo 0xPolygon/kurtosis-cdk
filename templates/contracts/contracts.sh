@@ -117,6 +117,22 @@ _extract_addresses() {
     jq -r "[$jq_filter][] | select(. != null)" "$json_file"
 }
 
+# V12 has renamed contracts, but deploy_output.json created during exeecution of deployment/v2/3_deployContracts.ts still uses the old names.
+# For better understanding, we rename the output until contract's team fix this.
+_create_combined_json_from_deploy_output() {
+    local deploy_output_json_file="$1"
+    local combined_json_file="$2"
+
+    jq  \
+    '
+        .AgglayerManager = .polygonRollupManagerAddress | del(.polygonRollupManagerAddress) |
+        .AgglayerBridge = .polygonZkEVMBridgeAddress | del(.polygonZkEVMBridgeAddress) |
+        .AgglayerGER = .polygonZkEVMGlobalExitRootAddress | del(.polygonZkEVMGlobalExitRootAddress) |
+        .AgglayerGateway = .aggLayerGatewayAddress | del(.aggLayerGatewayAddress) \
+    '  "$deploy_output_json_file" > "$combined_json_file"
+}
+
+
 # Always called by the contracts service
 create_keystores() {
     _create_geth_keystore "sequencer.keystore"       "{{.l2_sequencer_private_key}}"       "{{.l2_keystore_password}}"
@@ -202,7 +218,7 @@ configure_contract_container_custom_genesis() {
     cp "$input_dir"/create_rollup_parameters.json "$output_dir"/
     cp "$output_dir"/combined.json "$output_dir"/combined-001.json
 
-    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' "$output_dir"/combined.json)
+    global_exit_root_address=$(jq -r '.AgglayerGER' "$output_dir"/combined.json)
     cast send "$global_exit_root_address" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
@@ -214,7 +230,7 @@ configure_contract_container_custom_genesis_cdk_erigon() {
     cp "$output_dir"/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
     cp "$output_dir"/combined.json "$output_dir"/deploy_output.json
 
-    global_exit_root_address=$(jq -r '.polygonZkEVMGlobalExitRootAddress' "$output_dir"/combined.json)
+    global_exit_root_address=$(jq -r '.AgglayerGER' "$output_dir"/combined.json)
     cast send "$global_exit_root_address" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
@@ -285,7 +301,8 @@ deploy_agglayer_core_contracts() {
 
     _echo_ts "Creating combined.json"
     pushd "$output_dir"/ || exit 1
-    cp deploy_output.json combined.json
+    # HERE combined.json is created for first time from deploy_output.json
+    _create_combined_json_from_deploy_output deploy_output.json combined.json
     cat combined.json
 
     # There are a bunch of fields that need to be renamed in order for the
@@ -295,7 +312,7 @@ deploy_agglayer_core_contracts() {
     # DEPRECATED we will likely remove support for anything before fork 9 soon
     fork_id="{{.zkevm_rollup_fork_id}}"
     if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
-        jq '.polygonRollupManagerAddress = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
+        jq '.AgglayerManager = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
         jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
         jq '.upgradeToULxLyBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
         jq '.polygonDataCommitteeAddress = .polygonDataCommittee' combined.json > c.json; mv c.json combined.json
@@ -311,7 +328,7 @@ deploy_agglayer_core_contracts() {
         cast send \
             --private-key "{{.l2_admin_private_key}}" \
             --rpc-url "{{.l1_rpc_url}}" \
-            "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
+            "$(jq -r '.AgglayerManager' combined.json)" \
             'grantRole(bytes32,address)' \
             "$role_bytes32" "{{.l2_aggregator_address}}"
     fi
@@ -518,7 +535,7 @@ create_agglayer_rollup() {
         echo "File create_rollup_output.json does not exist. Trying to copy deploy_output.json to combined.json."
         cp deploy_output.json combined.json
     fi
-    jq '.polygonZkEVML2BridgeAddress = .polygonZkEVMBridgeAddress' combined.json > c.json; mv c.json combined.json
+    jq '.polygonZkEVML2BridgeAddress = .AgglayerBridge' combined.json > c.json; mv c.json combined.json
 
     # Add the L2 GER Proxy address in combined.json (for panoptichain).
     zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
@@ -528,7 +545,7 @@ create_agglayer_rollup() {
     jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
 
     gas_token_address=$(jq -r '.gasTokenAddress' "$output_dir"/combined.json)
-    l1_bridge_addr=$(jq -r '.polygonZkEVMBridgeAddress' "$output_dir"/combined.json)
+    l1_bridge_addr=$(jq -r '.AgglayerBridge' "$output_dir"/combined.json)
     # Bridge gas token to L2 to prevent bridge underflow reverts
     echo "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
     polycli ulxly bridge asset \
@@ -557,8 +574,8 @@ create_agglayer_rollup() {
     jq --slurpfile c combined.json '.rollupManagerCreationBlockNumber = $c[0].upgradeToULxLyBlockNumber' genesis.json > g.json; mv g.json genesis.json
     jq --slurpfile c combined.json '.genesisBlockNumber = $c[0].createRollupBlockNumber' genesis.json > g.json; mv g.json genesis.json
     jq --slurpfile c combined.json '.L1Config = {chainId:{{.l1_chain_id}}}' genesis.json > g.json; mv g.json genesis.json
-    jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c[0].polygonZkEVMGlobalExitRootAddress' genesis.json > g.json; mv g.json genesis.json
-    jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].polygonRollupManagerAddress' genesis.json > g.json; mv g.json genesis.json
+    jq --slurpfile c combined.json '.L1Config.polygonZkEVMGlobalExitRootAddress = $c[0].AgglayerGER' genesis.json > g.json; mv g.json genesis.json
+    jq --slurpfile c combined.json '.L1Config.polygonRollupManagerAddress = $c[0].AgglayerManager' genesis.json > g.json; mv g.json genesis.json
     jq --slurpfile c combined.json '.L1Config.polTokenAddress = $c[0].polTokenAddress' genesis.json > g.json; mv g.json genesis.json
     jq --slurpfile c combined.json '.L1Config.polygonZkEVMAddress = $c[0].rollupAddress' genesis.json > g.json; mv g.json genesis.json
     jq --slurpfile c combined.json '.bridgeGenBlockNumber = $c[0].createRollupBlockNumber' combined.json > c.json; mv c.json combined.json
@@ -676,7 +693,7 @@ update_ger() {
     private_key="{{.l2_admin_private_key}}"
 
     # The bridge address
-    bridge_address="$(jq --raw-output '.polygonZkEVMBridgeAddress' ${output_dir}/combined.json)"
+    bridge_address="$(jq --raw-output '.AgglayerBridge' ${output_dir}/combined.json)"
 
     # Grab the endpoints for l1
     l1_rpc_url="{{.l1_rpc_url}}"
@@ -732,7 +749,7 @@ initialize_rollup() {
         cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
 
         # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-        # So a manual extraction of polygonRollupManagerAddress is done here.
+        # So a manual extraction of AgglayerManager is done here.
         # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
         rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
         rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
@@ -747,7 +764,7 @@ initialize_rollup() {
     fi
 
     # Save Rollup Information to a file.
-    rollup_manager_addr=$(jq -r '.polygonRollupManagerAddress' "$output_dir"/combined.json)
+    rollup_manager_addr=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
     rpc_url="{{.op_el_rpc_url}}"
@@ -822,10 +839,10 @@ initialize_rollup() {
     # Contract addresses to extract from combined.json and check for bytecode
     # shellcheck disable=SC2034
     l1_contract_names=(
-        "polygonRollupManagerAddress"
-        "polygonZkEVMBridgeAddress"
-        "polygonZkEVMGlobalExitRootAddress"
-        "aggLayerGatewayAddress"
+        "AgglayerManager"
+        "AgglayerBridge"
+        "AgglayerGER"
+        "AgglayerGateway"
         "pessimisticVKeyRouteALGateway.verifier"
         "polTokenAddress"
         "zkEVMDeployerContract"
@@ -893,7 +910,7 @@ initialize_rollup() {
     # shellcheck disable=SC2050
     if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured
-        cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.l2_admin_private_key}}" "$(jq -r '.aggLayerGatewayAddress' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
+        cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.l2_admin_private_key}}" "$(jq -r '.AgglayerGateway' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
         true
     fi
 }
@@ -1140,9 +1157,9 @@ create_predeployed_op_genesis() {
     # git config --global --add safe.directory "$contracts_dir"
 
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-    # So a manual extraction of polygonRollupManagerAddress is done here.
+    # So a manual extraction of AgglayerManager is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
+    rollup_manager_addr="$(jq -r '.AgglayerManager' "${output_dir}/combined{{.deployment_suffix}}.json")"
     chainID="$(jq -r '.chainID' "${output_dir}/create_rollup_parameters.json")"
     rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
     gas_token_addr="$(jq -r '.gasTokenAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
@@ -1235,15 +1252,15 @@ create_sovereign_rollup_predeployed() {
     ts=$(date +%s)
 
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-    # So a manual extraction of polygonRollupManagerAddress is done here.
+    # So a manual extraction of AgglayerManager is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
+    rollup_manager_addr="$(jq -r '.AgglayerManager' "${output_dir}/combined{{.deployment_suffix}}.json")"
 
     # Replace rollupManagerAddress with the extracted address
     jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' "$input_dir"/create_new_rollup.json > "${input_dir}/create_new_rollup${ts}.json"
     cp "${input_dir}/create_new_rollup${ts}.json" "$input_dir"/create_new_rollup.json
 
-    # Replace polygonRollupManagerAddress with the extracted address
+    # Replace AgglayerManager with the extracted address
     jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' "${input_dir}/add_rollup_type.json" > "${input_dir}/add_rollup_type${ts}.json"
     cp "${input_dir}/add_rollup_type${ts}.json" "${input_dir}/add_rollup_type.json"
 
@@ -1320,14 +1337,14 @@ create_sovereign_rollup() {
     "$input_dir"/create_new_rollup.json
 
     # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-    # So a manual extraction of polygonRollupManagerAddress is done here.
+    # So a manual extraction of AgglayerManager is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.polygonRollupManagerAddress' "${output_dir}/combined.json")"
+    rollup_manager_addr="$(jq -r '.AgglayerManager' "${output_dir}/combined.json")"
 
     # Replace rollupManagerAddress with the extracted address
     sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/create_new_rollup.json
 
-    # Replace polygonRollupManagerAddress with the extracted address
+    # Replace AgglayerManager with the extracted address
     sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/add_rollup_type.json
 
     # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
@@ -1459,10 +1476,10 @@ create_sovereign_rollup() {
     # Contract addresses to extract from combined.json and check for bytecode
     # shellcheck disable=SC2034
     l1_contract_names=(
-        "polygonRollupManagerAddress"
-        "polygonZkEVMBridgeAddress"
-        "polygonZkEVMGlobalExitRootAddress"
-        "aggLayerGatewayAddress"
+        "AgglayerManager"
+        "AgglayerBridge"
+        "AgglayerGER"
+        "AgglayerGateway"
         "pessimisticVKeyRouteALGateway.verifier"
         "polTokenAddress"
         "zkEVMDeployerContract"
