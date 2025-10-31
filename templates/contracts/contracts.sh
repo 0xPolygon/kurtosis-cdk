@@ -82,7 +82,7 @@ _fund_account_on_l1() {
 }
 
 # Internal function, used by deploy_agglayer_core_contracts
-_deploy_rollup_manager() {
+_deploy_agglayer_manager() {
     # Deploy contracts.
     _echo_ts "Step 1: Preparing testnet"
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
@@ -218,8 +218,8 @@ configure_contract_container_custom_genesis() {
     cp "$input_dir"/create_rollup_parameters.json "$output_dir"/
     cp "$output_dir"/combined.json "$output_dir"/combined-001.json
 
-    global_exit_root_address=$(jq -r '.AgglayerGER' "$output_dir"/combined.json)
-    cast send "$global_exit_root_address" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+    agglayer_ger=$(jq -r '.AgglayerGER' "$output_dir"/combined.json)
+    cast send "$agglayer_ger" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
 # Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
@@ -230,8 +230,8 @@ configure_contract_container_custom_genesis_cdk_erigon() {
     cp "$output_dir"/combined.json "$contracts_dir"/deployment/v2/deploy_output.json
     cp "$output_dir"/combined.json "$output_dir"/deploy_output.json
 
-    global_exit_root_address=$(jq -r '.AgglayerGER' "$output_dir"/combined.json)
-    cast send "$global_exit_root_address" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
+    agglayer_ger=$(jq -r '.AgglayerGER' "$output_dir"/combined.json)
+    cast send "$agglayer_ger" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
 # Called when no l1 custom genesis
@@ -283,7 +283,7 @@ deploy_agglayer_core_contracts() {
     is_first_rollup=0 # an indicator if this deployment is doing the first setup of the agglayer etc
     if [[ ! -e "$output_dir"/combined.json ]]; then
         _echo_ts "It looks like this is the first rollup so we'll deploy the LxLy and Rollup Manager"
-        _deploy_rollup_manager
+        _deploy_agglayer_manager
         is_first_rollup=1
     else
         _echo_ts "Skipping deployment of the Rollup Manager and LxLy"
@@ -545,11 +545,11 @@ create_agglayer_rollup() {
     jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
 
     gas_token_address=$(jq -r '.gasTokenAddress' "$output_dir"/combined.json)
-    l1_bridge_addr=$(jq -r '.AgglayerBridge' "$output_dir"/combined.json)
+    agglayer_bridge=$(jq -r '.AgglayerBridge' "$output_dir"/combined.json)
     # Bridge gas token to L2 to prevent bridge underflow reverts
     echo "Bridging initial gas token to L2 to prevent bridge underflow reverts..."
     polycli ulxly bridge asset \
-        --bridge-address "$l1_bridge_addr" \
+        --bridge-address "$agglayer_bridge" \
         --destination-address "0x0000000000000000000000000000000000000000" \
         --destination-network "{{.zkevm_rollup_id}}" \
         --private-key "{{.l2_admin_private_key}}" \
@@ -693,7 +693,7 @@ update_ger() {
     private_key="{{.l2_admin_private_key}}"
 
     # The bridge address
-    bridge_address="$(jq --raw-output '.AgglayerBridge' ${output_dir}/combined.json)"
+    agglayer_bridge="$(jq --raw-output '.AgglayerBridge' ${output_dir}/combined.json)"
 
     # Grab the endpoints for l1
     l1_rpc_url="{{.l1_rpc_url}}"
@@ -715,11 +715,11 @@ update_ger() {
 
     # Perform an eth_call to make sure the tx will work
     echo "Performing an eth call to make sure the bridge tx will work..."
-    cast call --rpc-url "$l1_rpc_url" "$bridge_address" "$bridge_sig" "$destination_net" "$destination_addr" "$amount" "$token" "$update_ger" "$permit_data"
+    cast call --rpc-url "$l1_rpc_url" "$agglayer_bridge" "$bridge_sig" "$destination_net" "$destination_addr" "$amount" "$token" "$update_ger" "$permit_data"
 
     # Publish the actual transaction!
     echo "Publishing the bridge tx..."
-    cast send --rpc-url "$l1_rpc_url" --private-key "$private_key" "$bridge_address" "$bridge_sig" "$destination_net" "$destination_addr" "$amount" "$token" "$update_ger" "$permit_data"
+    cast send --rpc-url "$l1_rpc_url" --private-key "$private_key" "$agglayer_bridge" "$bridge_sig" "$destination_net" "$destination_addr" "$amount" "$token" "$update_ger" "$permit_data"
 
 }
 
@@ -748,14 +748,14 @@ initialize_rollup() {
         jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup${ts}.json
         cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
 
-        # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+        # Extract the rollup manager address from the JSON file. .zkevm_agglayer_manageress is not available at the time of importing this script.
         # So a manual extraction of AgglayerManager is done here.
         # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-        rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
+        agglayer_manager=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
         rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
         # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-        jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
+        jq --arg rum "$agglayer_manager" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
         mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
 
         cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
@@ -764,8 +764,8 @@ initialize_rollup() {
     fi
 
     # Save Rollup Information to a file.
-    rollup_manager_addr=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
+    agglayer_manager=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
@@ -906,7 +906,7 @@ initialize_rollup() {
     check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
 
     # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
-    rollupID=$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "{{.zkevm_rollup_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
+    rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.zkevm_rollup_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
     # shellcheck disable=SC2050
     if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured
@@ -1156,16 +1156,16 @@ create_predeployed_op_genesis() {
     # FIXME Just in case for now... ideally we don't need this but the base image is hacky right now
     # git config --global --add safe.directory "$contracts_dir"
 
-    # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+    # Extract the rollup manager address from the JSON file. .zkevm_agglayer_manageress is not available at the time of importing this script.
     # So a manual extraction of AgglayerManager is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.AgglayerManager' "${output_dir}/combined{{.deployment_suffix}}.json")"
+    agglayer_manager="$(jq -r '.AgglayerManager' "${output_dir}/combined{{.deployment_suffix}}.json")"
     chainID="$(jq -r '.chainID' "${output_dir}/create_rollup_parameters.json")"
-    rollup_id="$(cast call "$rollup_manager_addr" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
+    rollup_id="$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "$chainID" --rpc-url "{{.l1_rpc_url}}")"
     gas_token_addr="$(jq -r '.gasTokenAddress' "${output_dir}/combined{{.deployment_suffix}}.json")"
 
     # Replace rollupManagerAddress with the extracted address
-    # sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
+    # sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$agglayer_manager\"|" /opt/contract-deploy/create-genesis-sovereign-params.json
     # jq --arg ruid "$rollup_id" '.rollupID = ($ruid | tonumber)'  /opt/contract-deploy/create-genesis-sovereign-params.json > /opt/contract-deploy/create-genesis-sovereign-params.json.tmp
 
     # Extract AggOracle Committee member addresses as a JSON array
@@ -1187,7 +1187,7 @@ create_predeployed_op_genesis() {
     # shellcheck disable=SC1009,SC1054,SC1073
     {{ end }}
 
-    jq --arg ROLLUPMAN "$rollup_manager_addr" \
+    jq --arg ROLLUPMAN "$agglayer_manager" \
     --arg ROLLUPID $rollup_id \
     --arg GAS_TOKEN_ADDR "$gas_token_addr" \
     '
@@ -1251,17 +1251,17 @@ create_sovereign_rollup_predeployed() {
 
     ts=$(date +%s)
 
-    # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+    # Extract the rollup manager address from the JSON file. .zkevm_agglayer_manageress is not available at the time of importing this script.
     # So a manual extraction of AgglayerManager is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.AgglayerManager' "${output_dir}/combined{{.deployment_suffix}}.json")"
+    agglayer_manager="$(jq -r '.AgglayerManager' "${output_dir}/combined{{.deployment_suffix}}.json")"
 
     # Replace rollupManagerAddress with the extracted address
-    jq --arg rum "$rollup_manager_addr" '.rollupManagerAddress = $rum' "$input_dir"/create_new_rollup.json > "${input_dir}/create_new_rollup${ts}.json"
+    jq --arg rum "$agglayer_manager" '.rollupManagerAddress = $rum' "$input_dir"/create_new_rollup.json > "${input_dir}/create_new_rollup${ts}.json"
     cp "${input_dir}/create_new_rollup${ts}.json" "$input_dir"/create_new_rollup.json
 
     # Replace AgglayerManager with the extracted address
-    jq --arg rum "$rollup_manager_addr" '.polygonRollupManagerAddress = $rum' "${input_dir}/add_rollup_type.json" > "${input_dir}/add_rollup_type${ts}.json"
+    jq --arg rum "$agglayer_manager" '.polygonRollupManagerAddress = $rum' "${input_dir}/add_rollup_type.json" > "${input_dir}/add_rollup_type${ts}.json"
     cp "${input_dir}/add_rollup_type${ts}.json" "${input_dir}/add_rollup_type.json"
 
     # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
@@ -1302,7 +1302,7 @@ create_sovereign_rollup_predeployed() {
     fi
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
 }
 
@@ -1336,16 +1336,16 @@ create_sovereign_rollup() {
     -e "s/\"startingTimestamp\": [^,}]*/\"startingTimestamp\": $starting_timestamp/" \
     "$input_dir"/create_new_rollup.json
 
-    # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+    # Extract the rollup manager address from the JSON file. .zkevm_agglayer_manageress is not available at the time of importing this script.
     # So a manual extraction of AgglayerManager is done here.
     # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined.json because it must be constant.
-    rollup_manager_addr="$(jq -r '.AgglayerManager' "${output_dir}/combined.json")"
+    agglayer_manager="$(jq -r '.AgglayerManager' "${output_dir}/combined.json")"
 
     # Replace rollupManagerAddress with the extracted address
-    sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/create_new_rollup.json
+    sed -i "s|\"rollupManagerAddress\": \".*\"|\"rollupManagerAddress\":\"$agglayer_manager\"|" "$input_dir"/create_new_rollup.json
 
     # Replace AgglayerManager with the extracted address
-    sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$rollup_manager_addr\"|" "$input_dir"/add_rollup_type.json
+    sed -i "s|\"polygonRollupManagerAddress\": \".*\"|\"polygonRollupManagerAddress\":\"$agglayer_manager\"|" "$input_dir"/add_rollup_type.json
 
     # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
     # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
@@ -1360,7 +1360,7 @@ create_sovereign_rollup() {
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
     sovereign_admin_addr="{{.l2_sovereignadmin_address}}"
@@ -1405,7 +1405,7 @@ create_sovereign_rollup() {
     initGasTokenAddress="{{.gas_token_address}}"
     initGasTokenNetwork="{{.gas_token_network}}"
     initGlobalExitRootManager=$ger_proxy_addr
-    initPolygonRollupManager=$rollup_manager_addr
+    initPolygonRollupManager=$agglayer_manager
     initGasTokenMetadata=0x
     initBridgeManager=$sovereign_admin_addr
     initSovereignWETHAddress="{{.sovereign_weth_address}}"
