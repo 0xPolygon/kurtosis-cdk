@@ -39,8 +39,6 @@ SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 {{- end}}
 
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
-
 {{- if .deploy_optimism_rollup }}
 RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
@@ -93,6 +91,8 @@ polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 {{- else }}
 polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 {{- end }}
+
+BridgeAddr = "{{.zkevm_bridge_address}}"
 
 # ==============================================================================
 #  _     ____   ____ ___  _   _ _____ ___ ____
