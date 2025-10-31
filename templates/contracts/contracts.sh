@@ -470,9 +470,9 @@ create_agglayer_rollup() {
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
     jq 'walk(if type == "object" then 
             with_entries(
-                if .key == "gasTokenAddress" and (.value == "<no value>" || .value == "") then 
+                if .key == "gasTokenAddress" and (.value == "<no value>" or .value == "") then 
                     .value = "0x0000000000000000000000000000000000000000" 
-                elif .key == "sovereignWETHAddress" and (.value == "<no value>" || .value == "") then 
+                elif .key == "sovereignWETHAddress" and (.value == "<no value>" or .value == "") then 
                     .value = "0x0000000000000000000000000000000000000000"
                 else 
                     . 
