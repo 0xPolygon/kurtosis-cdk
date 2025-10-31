@@ -128,8 +128,9 @@ _create_combined_json_from_deploy_output() {
         .AgglayerManager = .polygonRollupManagerAddress | del(.polygonRollupManagerAddress) |
         .AgglayerBridge = .polygonZkEVMBridgeAddress | del(.polygonZkEVMBridgeAddress) |
         .AgglayerGER = .polygonZkEVMGlobalExitRootAddress | del(.polygonZkEVMGlobalExitRootAddress) |
-        .AgglayerGateway = .aggLayerGatewayAddress | del(.aggLayerGatewayAddress) \
-    '  "$deploy_output_json_file" > "$combined_json_file"
+        .AgglayerGateway = .aggLayerGatewayAddress | del(.aggLayerGatewayAddress)
+    ' \
+    "$deploy_output_json_file" > "$combined_json_file"
 }
 
 
