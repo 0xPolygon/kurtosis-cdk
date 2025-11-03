@@ -556,8 +556,15 @@ create_agglayer_rollup() {
     fi
     jq '.polygonZkEVML2BridgeAddress = .AgglayerBridge' combined.json > c.json; mv c.json combined.json
 
-    # Add the L2 GER Proxy address in combined.json (for panoptichain).
+    # Add the L2 GER Proxy address in combined.json
     zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
+    if [[ -z "$zkevm_global_exit_root_l2_address" ]]; then
+        zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "LegacyAgglayerGERL2 proxy") | .address' "$output_dir"/genesis.json)
+    fi
+    if [[ -z "$zkevm_global_exit_root_l2_address" ]]; then
+        _echo_ts "Error: No L2 GER Proxy address found in genesis.json"
+        exit 1
+    fi
     jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
 
     {{ if .gas_token_enabled }}
@@ -804,6 +811,8 @@ initialize_rollup() {
     bridge_proxy_addr=$(jq -r '.genesisSCNames["AgglayerBridgeL2 proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
     ger_impl_addr=$(jq -r '.genesisSCNames["AgglayerGERL2 implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
     ger_proxy_addr=$(jq -r '.genesisSCNames["AgglayerGERL2 proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
+
+    _echo_ts "bridge_impl_addr: $bridge_impl_addr, bridge_proxy_addr: $bridge_proxy_addr, ger_impl_addr: $ger_impl_addr, ger_proxy_addr: $ger_proxy_addr"
 
     # Save the contract addresses to the sovereign-rollup-out.json file
     jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' "$contracts_dir"/sovereign-rollup-out.json > "$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json
@@ -1431,6 +1440,8 @@ create_sovereign_rollup() {
     ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 2)) $sovereign_admin_addr | sed 's/.*: //')
     bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 3)) $sovereign_admin_addr | sed 's/.*: //')
 
+    _echo_ts "bridge_impl_addr: $bridge_impl_addr, bridge_proxy_addr: $bridge_proxy_addr, ger_impl_addr: $ger_impl_addr, ger_proxy_addr: $ger_proxy_addr"
+
     # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
     forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key BridgeL2SovereignChain
@@ -1474,6 +1485,8 @@ create_sovereign_rollup() {
     ger_impl_addr=$(jq -r '.ger_impl_addr' "$contracts_dir"/sovereign-rollup-out.json)
     ger_proxy_addr=$(jq -r '.ger_proxy_addr' "$contracts_dir"/sovereign-rollup-out.json)
     bridge_proxy_addr=$(jq -r '.bridge_proxy_addr' "$contracts_dir"/sovereign-rollup-out.json)
+
+    _echo_ts "bridge_impl_addr: $bridge_impl_addr, bridge_proxy_addr: $bridge_proxy_addr, ger_impl_addr: $ger_impl_addr, ger_proxy_addr: $ger_proxy_addr"
 
     # Update existing fields and append new ones to combined.json
     jq --arg ger_proxy_addr "$ger_proxy_addr" \
