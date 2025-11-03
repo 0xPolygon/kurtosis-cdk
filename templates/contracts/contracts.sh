@@ -145,6 +145,8 @@ _extract_addresses() {
 
 # Always called by the contracts service
 create_keystores() {
+    _echo_ts "Executing function create_keystores"
+
     _create_geth_keystore "sequencer.keystore"       "{{.l2_sequencer_private_key}}"       "{{.l2_keystore_password}}"
     _create_geth_keystore "aggregator.keystore"      "{{.l2_aggregator_private_key}}"      "{{.l2_keystore_password}}"
     _create_geth_keystore "dac.keystore"             "{{.l2_dac_private_key}}"             "{{.l2_keystore_password}}"
@@ -215,6 +217,8 @@ create_keystores() {
 
 # Called if l1_custom_genesis and consensus_contract_type is pessimistic
 configure_contract_container_custom_genesis() {
+    _echo_ts "Executing function configure_contract_container_custom_genesis"
+
     cp "$input_dir"/op-custom-genesis-addresses.json "$output_dir"/combined.json
 
     sed -i 's#http://127.0.0.1:8545#{{.l1_rpc_url}}#' "$contracts_dir"/hardhat.config.ts
@@ -234,6 +238,8 @@ configure_contract_container_custom_genesis() {
 
 # Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
 configure_contract_container_custom_genesis_cdk_erigon() {
+    _echo_ts "Executing function configure_contract_container_custom_genesis_cdk_erigon"
+
     # deploymentRollupManagerBlockNumber field inside cdk-erigon-custom-genesis-addresses.json must be different to 0 because cdk-erigon and cdk-node requires this value (zkevm.l1-first-block) to be different to 0
     cp "$input_dir"/cdk-erigon-custom-genesis-addresses.json "$output_dir"/combined.json
 
@@ -699,6 +705,8 @@ create_agglayer_rollup() {
 
 # Called always as last step after l1 agglayer contracts are deployed
 update_ger() {
+    _echo_ts "Executing function update_ger"
+
     set -e
     # TODO we should understand if this is still need and if so we
     # shouldn't run it if the network has already been deployed
@@ -740,6 +748,8 @@ update_ger() {
 
 # Called always if we are deploying an Optimism Rollup
 initialize_rollup() {
+    _echo_ts "Executing function initialize_rollup"
+
     # Initialize rollup
     pushd "$contracts_dir" || exit 1
 
@@ -932,6 +942,8 @@ initialize_rollup() {
 
 # Called from main when optimism rollup
 fund_addresses() {
+    _echo_ts "Executing function fund_addresses"
+
     # Exit on error
     set -e
 
@@ -998,6 +1010,8 @@ fund_addresses() {
 
 # Called for erigon stacks
 l2_legacy_fund_accounts() {
+    _echo_ts "Executing function l2_legacy_fund_accounts"
+
     global_log_level="{{.global_log_level}}"
     if [[ $global_log_level == "debug" ]]; then
         set -x
@@ -1059,6 +1073,8 @@ l2_legacy_fund_accounts() {
 
 # Called for erigon stacks
 l2_contract_setup() {
+    _echo_ts "Executing function l2_contract_setup"
+
     global_log_level="{{.global_log_level}}"
     if [[ $global_log_level == "debug" ]]; then
         set -x
@@ -1164,6 +1180,8 @@ l2_contract_setup() {
 
 # This is called from main when optimism rollup to create the allocs that will be used by optimism-package
 create_predeployed_op_genesis() {
+    _echo_ts "Executing function create_predeployed_op_genesis"
+
     set -e
 
     pushd "$contracts_dir" || exit 1
