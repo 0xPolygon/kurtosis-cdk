@@ -597,14 +597,16 @@ create_agglayer_rollup() {
     cp combined.json "combined{{.deployment_suffix}}.json"
     cat combined.json
 
-    # _echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
-    # cast send \
-    #     --private-key "{{.l2_sequencer_private_key}}" \
-    #     --legacy \
-    #     --rpc-url "{{.l1_rpc_url}}" \
-    #     "$(jq -r '.polTokenAddress' combined.json)" \
-    #     'approve(address,uint256)(bool)' \
-    #     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+    {{ if eq .sequencer_type "erigon" }}
+    _echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
+    cast send \
+        --private-key "{{.l2_sequencer_private_key}}" \
+        --legacy \
+        --rpc-url "{{.l1_rpc_url}}" \
+        "$(jq -r '.polTokenAddress' combined.json)" \
+        'approve(address,uint256)(bool)' \
+        "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
+    {{ end }}
 
     {{ if eq .consensus_contract_type "cdk_validium" }}
     # The DAC needs to be configured with a required number of signatures.
