@@ -45,11 +45,6 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
     agglayer_config_artifact = create_agglayer_config_artifact(
         plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
     )
-    agglayer_keystore_artifact = plan.store_service_files(
-        name="agglayer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/agglayer.keystore",
-    )
     aggregator_keystore_artifact = plan.store_service_files(
         name="aggregator-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -67,7 +62,6 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
                 "/etc/agglayer": Directory(
                     artifact_names=[
                         agglayer_config_artifact,
-                        agglayer_keystore_artifact,
                         aggregator_keystore_artifact,
                     ]
                 ),

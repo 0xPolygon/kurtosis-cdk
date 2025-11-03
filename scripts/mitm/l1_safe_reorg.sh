@@ -51,9 +51,9 @@ kurtosis run --enclave $ENCLAVE_NAME . "$KURTOSIS_ARGS"
 L1_RPC_URL=$(kurtosis port print $ENCLAVE_NAME anvil-001 rpc)
 L2_RPC_URL=$(kurtosis port print $ENCLAVE_NAME cdk-erigon-rpc-001 rpc)
 
-# Fund claimtxmanager
+# Fund claimsponsor
 sleep 10
-cast send --legacy --rpc-url "$L2_RPC_URL" --private-key "$FUNDED_PRV_KEY" --value 10ether 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+cast send --legacy --rpc-url "$L2_RPC_URL" --private-key "$FUNDED_PRV_KEY" --value 10ether 0x635243A11B41072264Df6c9186e3f473402F94e9
 
 # Deposit on L1 to avoid negative balance
 polycli ulxly bridge asset \

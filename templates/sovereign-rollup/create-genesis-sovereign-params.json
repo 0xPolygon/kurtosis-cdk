@@ -11,30 +11,24 @@
     "emergencyBridgeUnpauser": "{{ .l2_sovereignadmin_address }}",
     "proxiedTokensManager" : "{{ .l2_sovereignadmin_address }}",
     "setPreMintAccounts": true,
-    "preMintAccounts": [
-        {
-            "balance": "1000000000000000000",
-            "address": "0x8576158a89648aA88B6036f47B8b74Fc0C2b5c66"
-        }
-    ],
+    "preMintAccounts": [],
     "setTimelockParameters": true,
     "timelockParameters": {
         "adminAddress": "{{ .l2_admin_address }}",
         "minDelay": 3600
     },
 
+    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
 
     {{if .use_agg_oracle_committee}}
     "useAggOracleCommittee": true,
     "aggOracleCommittee": ["{{ .l2_aggoracle_address }}"],
     "quorum": "{{ .agg_oracle_committee_quorum }}",
-    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
     "globalExitRootUpdater": "",
     {{else}}
     "useAggOracleCommittee": false,
     "aggOracleCommittee": [],
     "quorum": 0,
-    "aggOracleOwner": "{{ .l2_sovereignadmin_address }}",
     "globalExitRootUpdater": "{{ .l2_aggoracle_address }}",
     {{end}}
 

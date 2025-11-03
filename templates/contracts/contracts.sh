@@ -121,8 +121,6 @@ _extract_addresses() {
 create_keystores() {
     _create_geth_keystore "sequencer.keystore"       "{{.l2_sequencer_private_key}}"       "{{.l2_keystore_password}}"
     _create_geth_keystore "aggregator.keystore"      "{{.l2_aggregator_private_key}}"      "{{.l2_keystore_password}}"
-    _create_geth_keystore "claimtxmanager.keystore"  "{{.l2_claimtxmanager_private_key}}"  "{{.l2_keystore_password}}"
-    _create_geth_keystore "agglayer.keystore"        "{{.l2_agglayer_private_key}}"        "{{.l2_keystore_password}}"
     _create_geth_keystore "dac.keystore"             "{{.l2_dac_private_key}}"             "{{.l2_keystore_password}}"
     _create_geth_keystore "aggoracle.keystore"       "{{.l2_aggoracle_private_key}}"       "{{.l2_keystore_password}}"
     _create_geth_keystore "sovereignadmin.keystore"  "{{.l2_sovereignadmin_private_key}}"  "{{.l2_keystore_password}}"
@@ -255,7 +253,6 @@ deploy_agglayer_core_contracts() {
     _fund_account_on_l1 "admin" "{{.l2_admin_address}}"
     _fund_account_on_l1 "sequencer" "{{.l2_sequencer_address}}"
     _fund_account_on_l1 "aggregator" "{{.l2_aggregator_address}}"
-    _fund_account_on_l1 "agglayer" "{{.l2_agglayer_address}}"
     _fund_account_on_l1 "sovereignadmin" "{{.l2_sovereignadmin_address}}"
 
     _echo_ts "Setting up local agglayer-contracts repo for deployment"
@@ -310,12 +307,13 @@ deploy_agglayer_core_contracts() {
         # Grant the aggregator role to the agglayer so that it can also verify batches.
         # cast keccak "TRUSTED_AGGREGATOR_ROLE"
         _echo_ts "Granting the aggregator role to the agglayer so that it can also verify batches"
+        role_bytes32=$(cast keccak "TRUSTED_AGGREGATOR_ROLE")
         cast send \
             --private-key "{{.l2_admin_private_key}}" \
             --rpc-url "{{.l1_rpc_url}}" \
             "$(jq -r '.polygonRollupManagerAddress' combined.json)" \
             'grantRole(bytes32,address)' \
-            "0x084e94f375e9d647f87f5b2ceffba1e062c70f6009fdbcf80291e803b5c9edd4" "{{.l2_agglayer_address}}"
+            "$role_bytes32" "{{.l2_aggregator_address}}"
     fi
 
     # The sequencer needs to pay POL when it sequences batches.
@@ -717,55 +715,48 @@ initialize_rollup() {
     # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
     deployOPSuccinct="{{ .deploy_op_succinct }}"
     if [[ $deployOPSuccinct == true ]]; then
-    echo "Configuring OP Succinct setup..."
-    jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json '
-    .deployerPvtKey = .aggchainManagerPvtKey |
-    .aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
-    .aggchainParams.initParams.rollupConfigHash = $l2[0].rollupConfigHash |
-    .aggchainParams.initParams.startingOutputRoot = $l2[0].startingOutputRoot |
-    .aggchainParams.initParams.startingTimestamp = $l2[0].startingTimestamp |
-    .aggchainParams.initParams.startingBlockNumber = $l2[0].startingBlockNumber |
-    .aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval |
-    .aggchainParams.initParams.aggregationVkey = $l2[0].aggregationVkey |
-    .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
-    ' "$input_dir"/create_new_rollup.json > "$output_dir"/initialize_rollup.json
+        echo "Configuring OP Succinct setup..."
+        jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json '
+        .deployerPvtKey = .aggchainManagerPvtKey |
+        .aggchainParams.initParams.l2BlockTime = $l2[0].l2BlockTime |
+        .aggchainParams.initParams.rollupConfigHash = $l2[0].rollupConfigHash |
+        .aggchainParams.initParams.startingOutputRoot = $l2[0].startingOutputRoot |
+        .aggchainParams.initParams.startingTimestamp = $l2[0].startingTimestamp |
+        .aggchainParams.initParams.startingBlockNumber = $l2[0].startingBlockNumber |
+        .aggchainParams.initParams.submissionInterval = $l2[0].submissionInterval |
+        .aggchainParams.initParams.aggregationVkey = $l2[0].aggregationVkey |
+        .aggchainParams.initParams.rangeVkeyCommitment = $l2[0].rangeVkeyCommitment
+        ' "$input_dir"/create_new_rollup.json > "$output_dir"/initialize_rollup.json
 
-    jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup${ts}.json
-    cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
+        jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json \ '.verifierAddress = $l2[0].verifier' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup${ts}.json
+        cp "$output_dir"/initialize_rollup${ts}.json "$output_dir"/initialize_rollup.json
 
-    # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
-    # So a manual extraction of polygonRollupManagerAddress is done here.
-    # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
-    rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
-    rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
+        # Extract the rollup manager address from the JSON file. .zkevm_rollup_manager_address is not available at the time of importing this script.
+        # So a manual extraction of polygonRollupManagerAddress is done here.
+        # Even with multiple op stack deployments, the rollup manager address can be retrieved from combined{{.deployment_suffix}}.json because it must be constant.
+        rollup_manager_addr=$(jq -r '.rollupManagerAddress' "$output_dir"/create_rollup_output.json)
+        rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
-    # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-    jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
-    mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
+        # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
+        jq --arg rum "$rollup_manager_addr" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
+        mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
 
-    cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
+        cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
 
-    npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
+        npx hardhat run tools/initializeRollup/initializeRollup.ts --network localhost 2>&1 | tee 08_init_rollup.out
     fi
 
     # Save Rollup Information to a file.
     rollup_manager_addr=$(jq -r '.polygonRollupManagerAddress' "$output_dir"/combined.json)
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
-    # These are some accounts that we want to fund for operations for running claims.
-    bridge_admin_addr="{{.l2_sovereignadmin_address}}"
-    aggoracle_addr="{{.l2_aggoracle_address}}"
-    claimtxmanager_addr="{{.l2_claimtxmanager_address}}"
-    claimsponsor_addr="{{.l2_claimsponsor_address}}"
-
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
     private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtxmanager_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_sovereignadmin_address}}"
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_aggoracle_address}}"
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "{{.l2_claimsponsor_address}}"
 
     bridge_impl_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain implementation"]' "$output_dir"/create-sovereign-genesis-output.json)
     bridge_proxy_addr=$(jq -r '.genesisSCNames["BridgeL2SovereignChain proxy"]' "$output_dir"/create-sovereign-genesis-output.json)
@@ -1029,9 +1020,6 @@ l2_legacy_fund_accounts() {
 
     eth_address="$(cast wallet address --private-key "{{.l2_admin_private_key}}")"
     account_nonce="$(cast nonce --rpc-url "$l2_rpc_url" "$eth_address")"
-
-    _echo_ts "Funding bridge autoclaimer account on l2"
-    _fund_account_on_l2 "{{.l2_claimtxmanager_address}}"
 
     _echo_ts "Funding claim sponsor account on l2"
     _fund_account_on_l2 "{{.l2_claimsponsor_address}}"   
@@ -1358,22 +1346,17 @@ create_sovereign_rollup() {
     cast call --json --rpc-url "{{.l1_rpc_url}}" "$rollup_manager_addr" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
-    bridge_admin_addr="{{.l2_sovereignadmin_address}}"
-    bridge_admin_private_key="{{.l2_sovereignadmin_private_key}}"
+    sovereign_admin_addr="{{.l2_sovereignadmin_address}}"
+    sovereign_admin_private_key="{{.l2_sovereignadmin_private_key}}"
     aggoracle_addr="{{.l2_aggoracle_address}}"
-    # aggoracle_private_key="{{.l2_aggoracle_private_key}}"
-    claimtxmanager_addr="{{.l2_claimtxmanager_address}}"
-    # claimtx_private_key="{{.l2_claimtxmanager_private_key}}"
     claimsponsor_addr="{{.l2_claimsponsor_address}}"
-    # claimsponsor_private_key="{{.l2_claimsponsor_private_key}}"
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
     private_key=$(cast wallet private-key --mnemonic 'test test test test test test test test test test test junk')
 
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $bridge_admin_addr
+    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $sovereign_admin_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $aggoracle_addr
-    cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimtxmanager_addr
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" $claimsponsor_addr
 
     # Contract Deployment Step
@@ -1388,18 +1371,18 @@ create_sovereign_rollup() {
 
     echo "Building contracts with forge build"
     forge build contracts/v2/sovereignChains/BridgeL2SovereignChain.sol contracts/v2/sovereignChains/GlobalExitRootManagerL2SovereignChain.sol
-    bridge_impl_nonce=$(cast nonce --rpc-url $rpc_url $bridge_admin_addr)
-    bridge_impl_addr=$(cast compute-address --nonce "$bridge_impl_nonce" $bridge_admin_addr | sed 's/.*: //')
-    ger_impl_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 1)) $bridge_admin_addr | sed 's/.*: //')
-    ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 2)) $bridge_admin_addr | sed 's/.*: //')
-    bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 3)) $bridge_admin_addr | sed 's/.*: //')
+    bridge_impl_nonce=$(cast nonce --rpc-url $rpc_url $sovereign_admin_addr)
+    bridge_impl_addr=$(cast compute-address --nonce "$bridge_impl_nonce" $sovereign_admin_addr | sed 's/.*: //')
+    ger_impl_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 1)) $sovereign_admin_addr | sed 's/.*: //')
+    ger_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 2)) $sovereign_admin_addr | sed 's/.*: //')
+    bridge_proxy_addr=$(cast compute-address --nonce $((bridge_impl_nonce + 3)) $sovereign_admin_addr | sed 's/.*: //')
 
     # This is one way to prefund the bridge. It can also be done with a deposit to some unclaimable network. This step is important and needs to be discussed
     cast send --legacy --value "{{.l2_funding_amount}}" --rpc-url $rpc_url --private-key "$private_key" "$bridge_proxy_addr"
-    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key BridgeL2SovereignChain
-    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args "$bridge_proxy_addr"
-    calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $bridge_admin_addr)
-    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $bridge_admin_addr "$calldata"
+    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key BridgeL2SovereignChain
+    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key GlobalExitRootManagerL2SovereignChain --constructor-args "$bridge_proxy_addr"
+    calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $sovereign_admin_addr)
+    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $sovereign_admin_addr "$calldata"
 
     initNetworkID="{{.zkevm_rollup_id}}"
     initGasTokenAddress="{{.gas_token_address}}"
@@ -1407,12 +1390,12 @@ create_sovereign_rollup() {
     initGlobalExitRootManager=$ger_proxy_addr
     initPolygonRollupManager=$rollup_manager_addr
     initGasTokenMetadata=0x
-    initBridgeManager=$bridge_admin_addr
+    initBridgeManager=$sovereign_admin_addr
     initSovereignWETHAddress="{{.sovereign_weth_address}}"
     initSovereignWETHAddressIsNotMintable="{{.sovereign_weth_address_not_mintable}}"
 
     calldata=$(cast calldata 'function initialize(uint32 _networkID, address _gasTokenAddress, uint32 _gasTokenNetwork, address _globalExitRootManager, address _polygonRollupManager, bytes _gasTokenMetadata, address _bridgeManager, address _sovereignWETHAddress, bool _sovereignWETHAddressIsNotMintable)' $initNetworkID "$initGasTokenAddress" $initGasTokenNetwork "$initGlobalExitRootManager" "$initPolygonRollupManager" $initGasTokenMetadata $initBridgeManager "$initSovereignWETHAddress" $initSovereignWETHAddressIsNotMintable)
-    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $bridge_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $bridge_admin_addr "$calldata"
+    forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key TransparentUpgradeableProxy --constructor-args "$bridge_impl_addr" $sovereign_admin_addr "$calldata"
 
     # Save the contract addresses to the sovereign-rollup-out.json file
     jq --arg bridge_impl_addr "$bridge_impl_addr" '. += {"bridge_impl_addr": $bridge_impl_addr}' "$contracts_dir"/sovereign-rollup-out.json >"$contracts_dir"/sovereign-rollup-out.json.temp && mv "$contracts_dir"/sovereign-rollup-out.json.temp "$contracts_dir"/sovereign-rollup-out.json

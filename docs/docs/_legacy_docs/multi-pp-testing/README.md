@@ -140,7 +140,7 @@ file). The claim tx manager will automatically perform claims on our
 behalf for bridge assets
 
 ```
-cast send --legacy --value 100ether --rpc-url $l2_pp1_url --private-key $private_key 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+cast send --legacy --value 100ether --rpc-url $l2_pp1_url --private-key $private_key 0x635243A11B41072264Df6c9186e3f473402F94e9
 cast send --legacy --value 100ether --rpc-url $l2_pp2_url --private-key $private_key 0x93F63c24735f45Cd0266E87353071B64dd86bc05
 cast send --legacy --value 100ether --rpc-url $l2_fep_url --private-key $private_key 0x8edC8CE0DB10137d513aB5767ffF13D1c51885a8
 ```

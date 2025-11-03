@@ -40,7 +40,7 @@ def run(
                 # Agglayer and bridge.
                 "AGGLAYER_RPC_URL": args.get("agglayer_readrpc_url"),
                 "BRIDGE_SERVICE_URL": bridge_service_url,
-                "CLAIMTXMANAGER_ADDR": args.get("l2_claimtxmanager_address"),
+                "CLAIMTXMANAGER_ADDR": args.get("l2_claimsponsor_address"),
                 # L1.
                 "L1_PRIVATE_KEY": wallet.private_key,
                 "L1_RPC_URL": l1_rpc_url,

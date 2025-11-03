@@ -61,7 +61,7 @@ phrase and derive application keys.
 seed="film crazy inform bind stomach weather cruel hold quarter stage country purpose"
 polycli wallet inspect --mnemonic "$seed" --addresses 9 | \
     jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | \
-    awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "l2_" roles[NR] "_address: \"" $1 "\""; print "l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
+    awk 'BEGIN{split("sequencer,aggregator,claimsponsor,timelock,admin,loadtest,agglayer,dac,proofsigner",roles,",")} {print "l2_" roles[NR] "_address: \"" $1 "\""; print "l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
 #+end_src
 
 #+RESULTS:
@@ -72,17 +72,11 @@ l2_sequencer_private_key: "0x2a109c981f2fd6614f6cfbd40461cc9605904e5d4139f106a0f
 l2_aggregator_address: "0x25697f040f8EE9145452b115F36aEd35a12d32AD"
 l2_aggregator_private_key: "0xedab8a45bea025ec96808a63368ad2c8099b85944965c26256f987ff9ad712f4"
 
-l2_claimtxmanager_address: "0xc8273E02E94598F39e8Ec8867902D4807917A165"
-l2_claimtxmanager_private_key: "0x216a4646ea3dd753f799b7eb7d7f8fe57b96c01c1fcd5eec496d888f5a7677cd"
-
-l2_timelock_address: "0x187aA720B98E064cCaCd1533be1B664D7F93F032"
-l2_timelock_private_key: "0xa0e35402da2dcebb8a33b89806d043bb5785a6a04aa5d9cf47f0950d88668c65"
+l2_claimsponsor_address: "0xc8273E02E94598F39e8Ec8867902D4807917A165"
+l2_claimsponsor_private_key: "0x216a4646ea3dd753f799b7eb7d7f8fe57b96c01c1fcd5eec496d888f5a7677cd"
 
 l2_admin_address: "0x87Ae0E9416ca1497c4AdDE7E1057D4E29f1714Cf"
 l2_admin_private_key: "0x69659a88bd0950e4914f69aaa867e258ff39bc6274d1576a23c477c65987e31f"
-
-l2_agglayer_address: "0x61773f7fca22cF7fb960DEDC6aEd0FE795018837"
-l2_agglayer_private_key: "0xf44263cc5699fe3889f892834885111164eb1bea1c9f16322c5577165c578ae4"
 
 l2_dac_address: "0x9150404Cc4d66673b1598dA00a9AC6ce1df53582"
 l2_dac_private_key: "0xc1345e1b9680c8623df4f74d4b4f7bc8d9a5bebfebde34786e2146d30b1c68c0"
