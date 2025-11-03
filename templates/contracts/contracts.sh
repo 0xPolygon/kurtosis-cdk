@@ -606,7 +606,7 @@ create_agglayer_rollup() {
     #     'approve(address,uint256)(bool)' \
     #     "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
 
-    {{ if ne .consensus_contract_type "ecdsa_multisig" }}
+    {{ if eq .consensus_contract_type "cdk_validium" }}
     # The DAC needs to be configured with a required number of signatures.
     # Right now the number of DAC nodes is not configurable.
     # If we add more nodes, we'll need to make sure the urls and keys are sorted.
