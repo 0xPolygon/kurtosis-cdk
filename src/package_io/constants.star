@@ -67,7 +67,7 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0",
     "aggkit_sovereign_image": "ghcr.io/agglayer/aggkit:0.5.4",
-    "aggkit_prover_image": "atanmarko/aggkit-prover:ger-removal",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.5.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.0-rc.21",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v0.0.0-rc.3.aggchain.multisig",  # https://github.com/agglayer/agglayer-contracts/compare/v12.1.0-rc.3...feature/initialize-tool-refactor
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
