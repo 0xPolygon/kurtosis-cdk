@@ -565,7 +565,7 @@ create_agglayer_rollup() {
         _echo_ts "Error: No L2 GER Proxy address found in genesis.json"
         exit 1
     fi
-    jq --arg a "$zkevm_global_exit_root_l2_address" '.polygonZkEVMGlobalExitRootL2Address = $a' combined.json > c.json; mv c.json combined.json
+    jq --arg a "$zkevm_global_exit_root_l2_address" '.LegacyAgglayerGERL2 = $a' combined.json > c.json; mv c.json combined.json
 
     {{ if .gas_token_enabled }}
     jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
@@ -849,7 +849,7 @@ initialize_rollup() {
         --arg _legacyLastPendingStateConsolidated "$_legacyLastPendingStateConsolidated" \
         --arg lastVerifiedBatchBeforeUpgrade "$lastVerifiedBatchBeforeUpgrade" \
         --arg rollupVerifierType "$rollupVerifierType" \
-        '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr |
+        '.LegacyAgglayerGERL2 = $ger_proxy_addr |
         .polygonZkEVML2BridgeAddress = $bridge_proxy_addr |
         .rollupTypeId = $rollupTypeID |
         .verifierAddress = $verifier |
@@ -887,7 +887,7 @@ initialize_rollup() {
     # shellcheck disable=SC2034
     l2_contract_names=(
         "polygonZkEVML2BridgeAddress"
-        "polygonZkEVMGlobalExitRootL2Address"
+        "LegacyAgglayerGERL2"
     )
 
     # JSON file to extract addresses from
@@ -1503,7 +1503,7 @@ create_sovereign_rollup() {
         --arg _legacyLastPendingStateConsolidated "$_legacyLastPendingStateConsolidated" \
         --arg lastVerifiedBatchBeforeUpgrade "$lastVerifiedBatchBeforeUpgrade" \
         --arg rollupVerifierType "$rollupVerifierType" \
-        '.polygonZkEVMGlobalExitRootL2Address = $ger_proxy_addr |
+        '.LegacyAgglayerGERL2 = $ger_proxy_addr |
         .polygonZkEVML2BridgeAddress = $bridge_proxy_addr |
         .rollupTypeId = $rollupTypeID |
         .verifierAddress = $verifier |
@@ -1540,7 +1540,7 @@ create_sovereign_rollup() {
     # shellcheck disable=SC2034
     l2_contract_names=(
         "polygonZkEVML2BridgeAddress"
-        "polygonZkEVMGlobalExitRootL2Address"
+        "LegacyAgglayerGERL2"
     )
 
     # JSON file to extract addresses from

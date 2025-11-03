@@ -10,7 +10,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "zkevm_rollup_manager_address": "fromjson | .AgglayerManager",
         "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         "zkevm_global_exit_root_address": "fromjson | .AgglayerGER",
-        "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+        "zkevm_global_exit_root_l2_address": "fromjson | .LegacyAgglayerGERL2",
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
     }
