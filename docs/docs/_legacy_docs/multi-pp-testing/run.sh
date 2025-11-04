@@ -29,7 +29,7 @@ network_id_pp1=1
 network_id_pp2=2
 network_id_fep=3
 
-bridge_address=$(cat combined-001.json | jq -r .polygonZkEVMBridgeAddress)
+bridge_address=$(cat combined-001.json | jq -r .AgglayerBridge)
 pol_address=$(cat combined-001.json | jq -r .polTokenAddress)
 gas_token_address=$(<gas-token-address.json)
 
