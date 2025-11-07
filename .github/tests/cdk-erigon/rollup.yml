@@ -6,6 +6,4 @@ deployment_stages:
 args:
   sequencer_type: erigon
   consensus_contract_type: rollup
-
-  agglayer_contracts_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v11.0.0
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
