@@ -94,6 +94,8 @@ polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 {{- end }}
 
+BridgeAddr = "{{.zkevm_bridge_address}}"
+
 # ==============================================================================
 #  _     ____   ____ ___  _   _ _____ ___ ____
 # | |   |___ \ / ___/ _ \| \ | |  ___|_ _/ ___|
