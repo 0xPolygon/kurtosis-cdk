@@ -67,7 +67,7 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0",
     "aggkit_sovereign_image": "ghcr.io/agglayer/aggkit:0.5.4",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.7.0",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.7.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.2",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.1.5-fork.0",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
@@ -85,7 +85,7 @@ DEFAULT_IMAGES = {
     "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101603.1",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.14.1",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.0",
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.3.2-agglayer",
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.3.3-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "ghcr.io/agglayer/e2e:3118ff2",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
