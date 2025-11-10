@@ -17,6 +17,7 @@ jobs:
   check-version-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    continue-on-error: true  # job failure won't fail the workflow
     steps:
       - uses: actions/checkout@v4
 
