@@ -29,8 +29,6 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
-NetworkID = {{.zkevm_rollup_id}}
-
 {{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
