@@ -65,7 +65,7 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.0",
+    "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.1",
     "aggkit_sovereign_image": "ghcr.io/agglayer/aggkit:0.5.4",
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.7.1",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.2",
