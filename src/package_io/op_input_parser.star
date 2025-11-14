@@ -44,11 +44,9 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
             "batcher_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
-                    + (
-                        ["--log.format=json"]
-                        if log_format == constants.LOG_FORMAT.json
-                        else []
-                    ),
+                    "extra_params": ["--log.format=json"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else [],
                 }
             ),
             "proposer_params": _sort_dict_by_values(
