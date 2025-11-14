@@ -83,13 +83,13 @@ jobs:
           payload: |
             {
               "channel": "C04DS0SG599",
-              "text": "Kurtosis CDK Nightly Version Matrix Check",
+              "text": "Kurtosis CDK Nightly",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly Version Matrix Check>: ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly> - Version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
                   }
                 }${{ env.HAS_DIFF == 'true' && ',
                 {
