@@ -80,28 +80,28 @@ jobs:
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage # https://api.slack.com/methods/chat.postMessage
+          # channel C04DS0SG599 corresponds to #feed_devtools-alerts
           payload: |
-            {
-              "text": "🌙 *Kurtosis CDK Nightly Version Matrix Check*: ${{ steps.version-check.outcome == 'success' && 'up to date ✅' || 'not up to date ❌' }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Check the documentation at `scripts/version-matrix` to update it."
-                  }
+            "channel": "C04DS0SG599",
+            "text": "*Kurtosis CDK Nightly Version Matrix Check*: ${{ steps.version-check.outcome == 'success' && 'up to date ✅' || 'not up to date ❌' }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
                 }
-              ]
-            }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Check the documentation at `scripts/version-matrix` to update it."
+                }
+              }
+            ]
 
   run-without-args:
     runs-on: ubuntu-latest
@@ -541,25 +541,25 @@ jobs:
     steps:
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage # https://api.slack.com/methods/chat.postMessage
+          # channel C04DS0SG599 corresponds to #feed_devtools-alerts
           payload: |
-            {
-              "text": "🌙 *Kurtosis CDK Nightly Workflow*: ${{ contains(needs.*.result, 'failure') && 'Failed ❌' || 'Success ✅' }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "format('\n\n*Failed jobs:*\n{0}{1}{2}{3}{4}{5}{6}', 
-                      needs.check-version-matrix.result == 'failure' && '• Version Matrix\n' || '',
-                      needs.run-without-args.result == 'failure' && '• Run Without Args\n' || '',
-                      needs.run-with-args.result == 'failure' && '• Run With Args\n' || '',
-                      needs.run-with-op-succinct.result == 'failure' && '• OP Succinct\n' || '',
-                      needs.run-with-additional-services.result == 'failure' && '• Additional Services\n' || '',
-                      needs.run-with-external-l1.result == 'failure' && '• External L1\n' || '',
-                      needs.run-with-pre-deployed-gas-token.result == 'failure' && '• Pre-deployed Gas Token\n' || '') || '' }}\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
-                  }
+            "channel": "C04DS0SG599",
+            "text": "*Kurtosis CDK Nightly Workflow*: ${{ contains(needs.*.result, 'failure') && 'Failed ❌' || 'Success ✅' }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "format('\n\n*Failed jobs:*\n{0}{1}{2}{3}{4}{5}{6}', 
+                    needs.check-version-matrix.result == 'failure' && '• Version Matrix\n' || '',
+                    needs.run-without-args.result == 'failure' && '• Run Without Args\n' || '',
+                    needs.run-with-args.result == 'failure' && '• Run With Args\n' || '',
+                    needs.run-with-op-succinct.result == 'failure' && '• OP Succinct\n' || '',
+                    needs.run-with-additional-services.result == 'failure' && '• Additional Services\n' || '',
+                    needs.run-with-external-l1.result == 'failure' && '• External L1\n' || '',
+                    needs.run-with-pre-deployed-gas-token.result == 'failure' && '• Pre-deployed Gas Token\n' || '') || '' }}\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
                 }
-              ]
-            }
+              }
+            ]
