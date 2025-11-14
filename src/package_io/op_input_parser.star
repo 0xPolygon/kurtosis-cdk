@@ -44,9 +44,6 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
             "batcher_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
-                    "extra_params": [
-                        "--txmgr.enable-cell-proofs",  # required for the fusaka hf
-                    ]
                     + (
                         ["--log.format=json"]
                         if log_format == constants.LOG_FORMAT.json
