@@ -64,7 +64,9 @@ jobs:
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Check if there are changes
+        id: version-check
         if: ${{ steps.check-run.outputs.skip == 'false' }}
+        continue-on-error: true
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
@@ -74,6 +76,32 @@ jobs:
           else
             echo "✅ Version matrix is up to date."
           fi
+
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        if: ${{ steps.check-run.outputs.skip == 'false' && always() }}
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "🌙 *Kurtosis-cdk Nightly Version Matrix Check*: ${{ steps.version-check.outcome == 'success' && 'up to date ✅' || 'not up to date ❌' }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Check the documentation at `scripts/version-matrix` to update it."
+                  }
+                }
+              ]
+            }
 
   run-without-args:
     runs-on: ubuntu-latest
