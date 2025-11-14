@@ -67,13 +67,13 @@ SCRIPTS_DIR = "/opt/scripts"
 DEFAULT_IMAGES = {
     "aggkit_image": "ghcr.io/agglayer/aggkit:0.7.1",
     "aggkit_sovereign_image": "ghcr.io/agglayer/aggkit:0.5.4",
-    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.7.1",
+    "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.7.2",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.4",
-    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.1.5-fork.0",
+    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.1.6-fork.0",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
-    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.64.0-RC6",  # Type-1 CDK Erigon Sovereign
+    "cdk_sovereign_erigon_node_image": "hermeznetwork/cdk-erigon:v2.64.0-RC10",  # Type-1 CDK Erigon Sovereign
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:17.6",
