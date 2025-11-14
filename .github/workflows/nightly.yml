@@ -66,16 +66,13 @@ jobs:
       - name: Check if there are changes
         id: version-check
         if: ${{ steps.check-run.outputs.skip == 'false' }}
-        continue-on-error: true
         run: |
+          has_diff=false
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
-            git status --porcelain
-            git diff
-            exit 1
-          else
-            echo "✅ Version matrix is up to date."
+            has_diff=true
           fi
+          echo "HAS_DIFF=${has_diff}" >> $GITHUB_ENV
+          echo "HAS_DIFF=${has_diff}"
 
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         if: ${{ steps.check-run.outputs.skip == 'false' }}
@@ -84,24 +81,38 @@ jobs:
           method: chat.postMessage # https://api.slack.com/methods/chat.postMessage
           # channel C04DS0SG599 corresponds to #feed_devtools-alerts
           payload: |
-            "channel": "C04DS0SG599",
-            "text": "*Kurtosis CDK Nightly Version Matrix Check*: ${{ steps.version-check.outcome == 'success' && 'up to date ✅' || 'not up to date ❌' }}",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+            {
+              "channel": "C04DS0SG599",
+              "text": "*Kurtosis CDK Nightly Version Matrix Check*: ${{ env.HAS_DIFF == 'true' && 'not up to date ❌' || 'up to date ✅' }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Check the documentation at `scripts/version-matrix` to update it."
+                  }
                 }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "Check the documentation at `scripts/version-matrix` to update it."
-                }
-              }
-            ]
+              ]
+            }
+
+      - name: Display check result
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: |
+          if [[ "${{ env.HAS_DIFF }}" == "true" ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it"
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Version matrix is up to date"
+          fi
 
   run-without-args:
     runs-on: ubuntu-latest
