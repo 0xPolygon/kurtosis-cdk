@@ -12,6 +12,7 @@ permissions:
 
 env:
   ENCLAVE_NAME: cdk
+  DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
 
 jobs:
   check-version-matrix:
@@ -78,18 +79,17 @@ jobs:
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
-          method: chat.postMessage # https://api.slack.com/methods/chat.postMessage
-          # channel C04DS0SG599 corresponds to #feed_devtools-alerts
+          method: chat.postMessage
           payload: |
             {
-              "channel": "C04DS0SG599",
-              "text": "Kurtosis CDK Nightly",
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK Nightly - Version matrix check",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly> - Version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
                   }
                 }${{ env.HAS_DIFF == 'true' && ',
                 {
@@ -553,24 +553,18 @@ jobs:
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
-          method: chat.postMessage # https://api.slack.com/methods/chat.postMessage
-          # channel C04DS0SG599 corresponds to #feed_devtools-alerts
+          method: chat.postMessage
           payload: |
-            "channel": "C04DS0SG599",
-            "text": "*Kurtosis CDK Nightly Workflow*: ${{ contains(needs.*.result, 'failure') && 'Failed ❌' || 'Success ✅' }}",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "format('\n\n*Failed jobs:*\n{0}{1}{2}{3}{4}{5}{6}', 
-                    needs.check-version-matrix.result == 'failure' && '• Version Matrix\n' || '',
-                    needs.run-without-args.result == 'failure' && '• Run Without Args\n' || '',
-                    needs.run-with-args.result == 'failure' && '• Run With Args\n' || '',
-                    needs.run-with-op-succinct.result == 'failure' && '• OP Succinct\n' || '',
-                    needs.run-with-additional-services.result == 'failure' && '• Additional Services\n' || '',
-                    needs.run-with-external-l1.result == 'failure' && '• External L1\n' || '',
-                    needs.run-with-pre-deployed-gas-token.result == 'failure' && '• Pre-deployed Gas Token\n' || '') || '' }}\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+            {
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK Nightly - Test Summary",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || 'all tests passed ✅' }}",
+                  }
                 }
-              }
-            ]
+              ]
+            }
