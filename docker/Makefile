@@ -1,6 +1,6 @@
 # Image names
 TOOLBOX_IMAGE_NAME := toolbox:0.0.12
-AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v11.0.0
+AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v12.1.6-fork.0
 
 # GCR registry
 GCR_REGISTRY := europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public

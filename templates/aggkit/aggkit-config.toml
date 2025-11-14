@@ -29,8 +29,6 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
-NetworkID = {{.zkevm_rollup_id}}
-
 {{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
@@ -243,13 +241,6 @@ RequireKeyMatchTrustedSequencer = true
 # URLRPCL2 = "{{.op_el_rpc_url}}"
 
 # ------------------------------------------------------------------------------
-# BlockFinality indicates which finality follows AggLayer accepted values are:
-# LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
-# Default value is "LatestBlock"
-# ------------------------------------------------------------------------------
-BlockFinality = "LatestBlock"
-
-# ------------------------------------------------------------------------------
 # EpochNotificationPercentage indicates the percentage of the epoch
 # the AggSender should send the certificate
 # 0 -> Begin
@@ -270,11 +261,6 @@ BlockFinality = "LatestBlock"
 # DelayBetweenRetries = 5s
 
 # ------------------------------------------------------------------------------
-# KeepCertificatesHistory is a flag to keep the certificates history on storage
-# ------------------------------------------------------------------------------
-# KeepCertificatesHistory = false
-
-# ------------------------------------------------------------------------------
 # BridgeMetadataAsHash is a flag to import the bridge metadata as hash
 # ------------------------------------------------------------------------------
 # BridgeMetadataAsHash = false
@@ -291,21 +277,37 @@ BlockFinality = "LatestBlock"
 # EnableRPC = false
 
 [AggSender.AgglayerClient]
+
 [[AggSender.AgglayerClient.APIRateLimits]]
 MethodName = "SendCertificate"
+
 [AggSender.AgglayerClient.APIRateLimits.RateLimit]
 # Disable limit
 NumRequests = 0
+
 [AggSender.AgglayerClient.GRPC]
 URL = "{{.agglayer_grpc_url}}"
 MinConnectTimeout = "5s"
 RequestTimeout = "300s"
 UseTLS = false
+
 [AggSender.AgglayerClient.GRPC.Retry]
 InitialBackoff = "1s"
 MaxBackoff = "10s"
 BackoffMultiplier = 2.0
 MaxAttempts = 20
+
+[AggSender.StorageRetainCertificatesPolicy]
+# ------------------------------------------------------------------------------
+# RetainCertificatesCount controls how many certificates to retain on storage.
+# If set to zero, all certificates will be stored.
+# ------------------------------------------------------------------------------
+# RetainCertificatesCount = 0
+
+# ------------------------------------------------------------------------------
+# KeepCertificatesHistory is a flag to keep the certificates history on storage
+# ------------------------------------------------------------------------------
+# KeepCertificatesHistory = true
 
 # ------------------------------------------------------------------------------
 # RetryCertAfterInError when a cert pass to 'InError'state

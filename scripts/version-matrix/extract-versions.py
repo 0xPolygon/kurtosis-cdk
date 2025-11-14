@@ -320,9 +320,13 @@ class VersionMatrixExtractor:
             else:
                 if version_suffix == latest_suffix:
                     return "latest"
-                # special case for op-deployer where we use latest version with a small fix on top, labelled as `-cdk`
+                # special case for op-deployer - we use the latest version with a small fix on top, suffixed with `-cdk`
                 if version_suffix == "cdk" and not latest_suffix:
                     return "latest"
+                # special case for op-succinct-proposer - we use the latest version with a small fix on top, suffixed with `-agglayer`
+                if version_suffix == "agglayer" and not latest_suffix:
+                    return "latest"
+
                 return "experimental"
 
         except Exception as e:
