@@ -78,13 +78,13 @@ jobs:
           fi
 
       - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-        if: ${{ steps.check-run.outputs.skip == 'false' && always() }}
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "🌙 *Kurtosis-cdk Nightly Version Matrix Check*: ${{ steps.version-check.outcome == 'success' && 'up to date ✅' || 'not up to date ❌' }}",
+              "text": "🌙 *Kurtosis CDK Nightly Version Matrix Check*: ${{ steps.version-check.outcome == 'success' && 'up to date ✅' || 'not up to date ❌' }}",
               "blocks": [
                 {
                   "type": "section",
@@ -539,14 +539,13 @@ jobs:
       - run-with-external-l1
       - run-with-pre-deployed-gas-token
     steps:
-      - name: Send workflow summary to Slack
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             {
-              "text": "🌙 *Kurtosis-cdk Nightly Workflow*: ${{ contains(needs.*.result, 'failure') && 'Failed ❌' || 'Success ✅' }}",
+              "text": "🌙 *Kurtosis CDK Nightly Workflow*: ${{ contains(needs.*.result, 'failure') && 'Failed ❌' || 'Success ✅' }}",
               "blocks": [
                 {
                   "type": "section",
