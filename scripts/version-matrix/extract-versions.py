@@ -355,6 +355,11 @@ class VersionMatrixExtractor:
 
                     # Extract component versions from the config
                     components = self._extract_components_from_config(args)
+                    
+                    # Also extract OP components from optimism_package section
+                    op_components = self._extract_op_components_from_config(config)
+                    components.update(op_components)
+                    
                     components_with_defaults = {
                         name: comp for name, comp in components.items()
                     }
@@ -474,6 +479,7 @@ class VersionMatrixExtractor:
         """Extract component versions from test configuration args."""
         components = {}
 
+        # Extract from direct args (e.g., aggkit_image, etc.)
         for key, value in args.items():
             if key.endswith('_image') and key in self.component_mapping:
                 name = self.component_mapping[key]
@@ -492,6 +498,127 @@ class VersionMatrixExtractor:
                     status=self._determine_status(version, latest_version)
                 )
 
+        return components
+
+    def _extract_op_components_from_config(self, config: dict) -> Dict[str, ComponentVersion]:
+        """Extract OP component versions from optimism_package configuration."""
+        components = {}
+        
+        optimism_package = config.get('optimism_package', {})
+        if not optimism_package:
+            return components
+        
+        # Extract from chains configuration
+        chains = optimism_package.get('chains', {})
+        for chain_id, chain_config in chains.items():
+            if not isinstance(chain_config, dict):
+                continue
+                
+            # Extract from participants (op-node and op-geth)
+            participants = chain_config.get('participants', {})
+            for participant_name, participant_config in participants.items():
+                if not isinstance(participant_config, dict):
+                    continue
+                    
+                # Extract op-geth from el (execution layer)
+                el_config = participant_config.get('el', {})
+                if isinstance(el_config, dict) and 'image' in el_config:
+                    image = el_config['image']
+                    if 'op-geth' in image:
+                        name = 'op-geth'
+                        version = self._extract_version_from_image(image)
+                        version_source_url = self._get_source_url(name, version)
+                        latest_version = self._get_latest_version(name)
+                        latest_version_source_url = self._get_source_url(name, latest_version)
+                        
+                        components[name] = ComponentVersion(
+                            image=image,
+                            version=version,
+                            version_source_url=version_source_url,
+                            latest_version=latest_version,
+                            latest_version_source_url=latest_version_source_url,
+                            status=self._determine_status(version, latest_version)
+                        )
+                
+                # Extract op-node from cl (consensus layer)
+                cl_config = participant_config.get('cl', {})
+                if isinstance(cl_config, dict) and 'image' in cl_config:
+                    image = cl_config['image']
+                    if 'op-node' in image:
+                        name = 'op-node'
+                        version = self._extract_version_from_image(image)
+                        version_source_url = self._get_source_url(name, version)
+                        latest_version = self._get_latest_version(name)
+                        latest_version_source_url = self._get_source_url(name, latest_version)
+                        
+                        components[name] = ComponentVersion(
+                            image=image,
+                            version=version,
+                            version_source_url=version_source_url,
+                            latest_version=latest_version,
+                            latest_version_source_url=latest_version_source_url,
+                            status=self._determine_status(version, latest_version)
+                        )
+            
+            # Extract from batcher_params
+            batcher_params = chain_config.get('batcher_params', {})
+            if isinstance(batcher_params, dict) and 'image' in batcher_params:
+                image = batcher_params['image']
+                if 'op-batcher' in image:
+                    name = 'op-batcher'
+                    version = self._extract_version_from_image(image)
+                    version_source_url = self._get_source_url(name, version)
+                    latest_version = self._get_latest_version(name)
+                    latest_version_source_url = self._get_source_url(name, latest_version)
+                    
+                    components[name] = ComponentVersion(
+                        image=image,
+                        version=version,
+                        version_source_url=version_source_url,
+                        latest_version=latest_version,
+                        latest_version_source_url=latest_version_source_url,
+                        status=self._determine_status(version, latest_version)
+                    )
+            
+            # Extract from proposer_params
+            proposer_params = chain_config.get('proposer_params', {})
+            if isinstance(proposer_params, dict) and 'image' in proposer_params:
+                image = proposer_params['image']
+                if 'op-proposer' in image:
+                    name = 'op-proposer'
+                    version = self._extract_version_from_image(image)
+                    version_source_url = self._get_source_url(name, version)
+                    latest_version = self._get_latest_version(name)
+                    latest_version_source_url = self._get_source_url(name, latest_version)
+                    
+                    components[name] = ComponentVersion(
+                        image=image,
+                        version=version,
+                        version_source_url=version_source_url,
+                        latest_version=latest_version,
+                        latest_version_source_url=latest_version_source_url,
+                        status=self._determine_status(version, latest_version)
+                    )
+        
+        # Extract from top-level optimism_package configurations
+        # Check for direct image specifications
+        for key, value in optimism_package.items():
+            if isinstance(value, str) and key.endswith('_image') and key in self.component_mapping:
+                name = self.component_mapping[key]
+                version = self._extract_version_from_image(value)
+                version_source_url = self._get_source_url(name, version)
+                latest_version = self._get_latest_version(name)
+                latest_version_source_url = self._get_source_url(name, latest_version)
+                
+                components[name] = ComponentVersion(
+                    image=value,
+                    version=version,
+                    version_source_url=version_source_url,
+                    latest_version=latest_version,
+                    latest_version_source_url=latest_version_source_url,
+                    status=self._determine_status(version, latest_version)
+                )
+        
         return components
 
     def generate_version_matrix(self) -> Dict:
