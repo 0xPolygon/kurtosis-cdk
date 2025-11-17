@@ -12,12 +12,13 @@ permissions:
 
 env:
   ENCLAVE_NAME: cdk
+  DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
 
 jobs:
   check-version-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    continue-on-error: true  # job failure won't fail the workflow
+    continue-on-error: true  # prevent this job from failing the workflow
     steps:
       - uses: actions/checkout@v4
 
@@ -64,15 +65,53 @@ jobs:
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Check if there are changes
+        id: version-check
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: |
+          has_diff=false
           if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            has_diff=true
+          fi
+          echo "HAS_DIFF=${has_diff}" >> $GITHUB_ENV
+          echo "HAS_DIFF=${has_diff}"
+
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            {
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK Nightly - Version matrix check",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
+                  }
+                }${{ env.HAS_DIFF == 'true' && ',
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Check the documentation at `scripts/version-matrix` to update it"
+                  }
+                }' || '' }}
+              ]
+            }
+
+      - name: Display check result
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: |
+          if [[ "${{ env.HAS_DIFF }}" == "true" ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it"
             git status --porcelain
             git diff
             exit 1
           else
-            echo "✅ Version matrix is up to date."
+            echo "✅ Version matrix is up to date"
           fi
 
   run-without-args:
@@ -499,3 +538,33 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: pre-deployed-gas-token
+
+  workflow-summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: 
+      - run-without-args
+      - run-with-args
+      - run-with-op-succinct
+      - run-with-additional-services
+      - run-with-external-l1
+      - run-with-pre-deployed-gas-token
+    steps:
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            {
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK Nightly - Test Summary",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || 'all tests passed ✅' }}",
+                  }
+                }
+              ]
+            }
