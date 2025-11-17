@@ -23,7 +23,7 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
                 "type": "op-node",
                 "image": constants.DEFAULT_IMAGES.get("op_node_image"),
                 "extra_params": [
-                    "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14.1
+                    "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14 and greater
                 ]
                 + (
                     ["--log.format=json"]
@@ -44,14 +44,9 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
             "batcher_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
-                    "extra_params": [
-                        "--txmgr.enable-cell-proofs",  # required for the fusaka hf
-                    ]
-                    + (
-                        ["--log.format=json"]
-                        if log_format == constants.LOG_FORMAT.json
-                        else []
-                    ),
+                    "extra_params": ["--log.format=json"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else [],
                 }
             ),
             "proposer_params": _sort_dict_by_values(
@@ -102,7 +97,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@2769472af9802d5e0f460ce27ebba32de1d21005",  # overlay/main - 2025-10-18
+        "source": "github.com/agglayer/optimism-package/main.star@39b1c04fd094eae8ccf3add55ed158156ff8fe4d",  # overlay/main - 2025-11-14
         "predeployed_contracts": True,
     }
 )
