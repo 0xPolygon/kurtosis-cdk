@@ -437,7 +437,7 @@ create_agglayer_rollup() {
         _echo_ts "Deploying gas token to L1"
         # Foundry cache is corrupted/invalid at this point for some reason
         # Maybe the source image has cached older contract versions
-        rm -fr out/*
+        rm -fr out cache
             {{ if eq .consensus_contract_type "ecdsa_multisig" }}
             forge create \
                 --broadcast \
