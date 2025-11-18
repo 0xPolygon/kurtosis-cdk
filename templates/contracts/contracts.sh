@@ -435,6 +435,9 @@ create_agglayer_rollup() {
     {{ if .gas_token_enabled }}
         {{ if or (eq .gas_token_address "0x0000000000000000000000000000000000000000") (eq .gas_token_address "") }}
         _echo_ts "Deploying gas token to L1"
+        # Foundry cache is corrupted/invalid at this point for some reason
+        # Maybe the source image has cached older contract versions
+        rm -fr out/*
             {{ if eq .consensus_contract_type "ecdsa_multisig" }}
             forge create \
                 --broadcast \
