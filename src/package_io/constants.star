@@ -78,7 +78,7 @@ DEFAULT_IMAGES = {
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:17.6",
     "geth_image": "ethereum/client-go:v1.16.7",
-    "lighthouse_image": "sigp/lighthouse:v8.0.0",
+    "lighthouse_image": "sigp/lighthouse:v8.0.1",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.2",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.4.5-cdk",
