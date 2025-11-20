@@ -106,7 +106,7 @@ This section lists all test environments with their configurations and component
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | geth | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | latest ✅ |
-| lighthouse | [8.0.0](https://github.com/sigp/lighthouse/releases/tag/v8.0.0) | [8.0.0](https://github.com/sigp/lighthouse/releases/tag/v8.0.0) | latest ✅ |
+| lighthouse | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | latest ✅ |
 | op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
 | op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.5.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.0-rc.2) | deprecated ⚠️ |
 | op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | latest ✅ |
