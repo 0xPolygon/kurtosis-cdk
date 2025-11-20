@@ -29,10 +29,8 @@ def new(plan):
 
 def fund(plan, address, rpc_url, funder_private_key, value="1000ether"):
     plan.run_sh(
-        name="conditional-address-funder",
-        description="Checking balance and conditionally funding address {} on network {}".format(
-            address, rpc_url
-        ),
+        name="address-funder",
+        description="Funding address {} on network {}".format(address, rpc_url),
         image=constants.TOOLBOX_IMAGE,
         run="cast send --legacy --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --value ${VALUE} ${ADDRESS}",
         env_vars={
