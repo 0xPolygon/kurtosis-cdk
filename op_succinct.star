@@ -24,10 +24,11 @@ def op_succinct_proposer_run(plan, args):
 
 def extract_fetch_l2oo_config(plan, args):
     cmds = [
-        "if [[ ! -f /usr/local/bin/fetch-rollup-config ]]; then echo 'fetch-rollup-config binary not found'; exit 1; fi",
-        # File name was fetch-rollup-config, changed to fetch-l2oo-config at some point.
-        "cp /usr/local/bin/fetch-rollup-config /tmp/fetch-l2oo-config",
-        "echo 'Successfully found fetch-l2oo-config binary'",
+        # Older version of the op-succinct-proposer used "fetch-rollup-config" binary while newer versions use "fetch-l2oo-config". To handle both cases, we use the following logic.
+        "BINARY_PATH=$(ls /usr/local/bin/fetch-l2oo-config 2>/dev/null || ls /usr/local/bin/fetch-rollup-config 2>/dev/null || (echo 'No compatible binary found'; exit 1))",
+        'echo "Found binary at: $BINARY_PATH"',
+        'cp "$BINARY_PATH" /tmp/fetch-l2oo-config',
+        "echo 'Successfully extracted fetch-l2oo-config binary'",
     ]
     plan.run_sh(
         description="Extract fetch-l2oo-config binary",
