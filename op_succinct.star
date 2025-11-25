@@ -24,7 +24,7 @@ def op_succinct_proposer_run(plan, args):
 
 def extract_fetch_l2oo_config(plan, args):
     cmds = [
-        # Older version of the op-succinct-proposer used "fetch-rollup-config" binary while newer versions use "fetch-l2oo-config". To handle both cases, we use the following logic.
+        # Check for fetch-l2oo-config (newer) or fetch-rollup-config (legacy) binary
         "BINARY_PATH=$(ls /usr/local/bin/fetch-l2oo-config 2>/dev/null || ls /usr/local/bin/fetch-rollup-config 2>/dev/null || (echo 'No compatible binary found'; exit 1))",
         'echo "Found binary at: $BINARY_PATH"',
         'cp "$BINARY_PATH" /tmp/fetch-l2oo-config',
