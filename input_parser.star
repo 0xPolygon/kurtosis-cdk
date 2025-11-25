@@ -200,10 +200,10 @@ DEFAULT_L1_ARGS = {
     # "minimal" preset will spin up a network with minimal preset. This is useful for rapid testing and development.
     # 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults
     # Please note that minimal preset requires alternative client images.
-    "l1_preset": "minimal",
+    "l1_preset": "mainnet",
     # Number of seconds per slot on the Beacon chain
     # Default: 12
-    "l1_seconds_per_slot": 2,
+    "l1_seconds_per_slot": 4,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Default: 2
