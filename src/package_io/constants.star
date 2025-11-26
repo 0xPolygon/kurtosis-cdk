@@ -65,11 +65,11 @@ INPUT_DIR = "/opt/input"
 SCRIPTS_DIR = "/opt/scripts"
 
 DEFAULT_IMAGES = {
-    "aggkit_image": "aggkit:local",
+    "aggkit_image": "arpittemani/aggkit:local",
     "aggkit_sovereign_image": "ghcr.io/agglayer/aggkit:0.5.4",
     "aggkit_prover_image": "atanmarko/aggkit-prover:ger-removal",
     "agglayer_image": "ghcr.io/agglayer/agglayer:0.4.4",
-    "agglayer_contracts_image": "stefanethernal/agglayer-contracts:v12.1.6",
+    "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.1.6-fork.0",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
     "cdk_erigon_node_image": "hermeznetwork/cdk-erigon:v2.61.24",
