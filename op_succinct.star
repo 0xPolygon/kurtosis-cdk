@@ -23,26 +23,23 @@ def op_succinct_proposer_run(plan, args):
 
 
 def extract_fetch_l2oo_config(plan, args):
-    # Add a temporary service using the op-succinct-proposer image
-    temp_service_name = "temp-op-succinct-proposer"
-
-    service_config = ServiceConfig(
-        image=args["op_succinct_proposer_image"],
-        cmd=["sleep", "infinity"],  # Keep container running
-    )
-
+    cmds = [
+        # Check for fetch-l2oo-config (newer) or fetch-rollup-config (legacy) binary
+        "BINARY_PATH=$(ls /usr/local/bin/fetch-l2oo-config 2>/dev/null || ls /usr/local/bin/fetch-rollup-config 2>/dev/null || (echo 'No compatible binary found'; exit 1))",
+        'echo "Found binary at: $BINARY_PATH"',
+        'cp "$BINARY_PATH" /tmp/fetch-l2oo-config',
+        "echo 'Successfully extracted fetch-l2oo-config binary'",
+    ]
     plan.run_sh(
-        # File name was fetch-rollup-config, changed to fetch-l2oo-config at some point
-        run="[ -e /usr/local/bin/fetch-rollup-config ] && cp -f /usr/local/bin/fetch-rollup-config /usr/local/bin/fetch-l2oo-config; echo 'copying fetch-l2oo-config binary to files artifact...'",
+        description="Extract fetch-l2oo-config binary",
         image=args.get("op_succinct_proposer_image"),
+        run=" && ".join(cmds),
         store=[
             StoreSpec(
-                src="/usr/local/bin/fetch-l2oo-config",
+                src="/tmp/fetch-l2oo-config",
                 name="fetch-l2oo-config",
             )
         ],
-        wait=None,
-        description="Extract fetch-l2oo-config from the op-succinct-proposer image to files artifact",
     )
 
 
