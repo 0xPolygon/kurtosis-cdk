@@ -571,7 +571,7 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # Default: 0
 # ------------------------------------------------------------------------------
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
-FinalizedBlock = "LatestBlock/-6"
+BlockFinality = "LatestBlock/-6"
 
 # ==============================================================================
 #  _     ____   ____ _____ ____  ______   ___   _  ____
