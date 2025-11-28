@@ -531,12 +531,6 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # DBPath = "{{.zkevm_path_rw_data}}/bridgel2sync.sqlite"
 
 # ------------------------------------------------------------------------------
-# BlockFinality indicates the status of the blocks that will be queried to sync
-# LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
-# Default value is "LatestBlock"
-# ------------------------------------------------------------------------------
-
-# ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.
 # It should be a number equal or bellow the creation of the bridge contract
 # ------------------------------------------------------------------------------
@@ -577,6 +571,7 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # Default: 0
 # ------------------------------------------------------------------------------
 InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
+FinalizedBlock = "LatestBlock/-6"
 
 # ==============================================================================
 #  _     ____   ____ _____ ____  ______   ___   _  ____
