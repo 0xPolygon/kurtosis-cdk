@@ -18,7 +18,6 @@ SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 AggregatorPrivateKeyPath = "{{or .l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
 AggregatorPrivateKeyPassword  = "{{.l2_keystore_password}}"
 SenderProofToL1Addr = "{{.l2_aggregator_address}}"   
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 WitnessURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
