@@ -90,7 +90,7 @@ DEFAULT_IMAGES = {
     "test_runner_image": "ghcr.io/agglayer/e2e:ae92165",
     "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
-    "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.3-RC7",
+    "zkevm_bridge_service_image": "zkevm-bridge-service:latest",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
