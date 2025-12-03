@@ -34,7 +34,7 @@ mock = {{ .op_succinct_mock }}
 
 [aggchain-proof-service.proposer-service.client]
 proposer-endpoint = "{{ .proposer_url }}"
-sp1-cluster-endpoint = "{{ .agglayer_prover_network_url }}"
+sp1-cluster-endpoint = "{{ .sp1_cluster_endpoint }}"
 request-timeout = 600
 proving-timeout = 3600
 

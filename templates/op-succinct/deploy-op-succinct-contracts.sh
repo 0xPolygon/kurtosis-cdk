@@ -79,7 +79,7 @@ OP_SUCCINCT_MOCK="{{.op_succinct_mock}}"
 AGGLAYER="{{.op_succinct_agglayer}}"
 
 # The RPC endpoint for the Succinct Prover Network
-NETWORK_RPC_URL="{{.agglayer_prover_network_url}}"
+NETWORK_RPC_URL="{{.sp1_cluster_endpoint}}"
 
 # Proof type. Must match the verifier gateway contract type. Options: "plonk" or "groth16"
 AGG_PROOF_MODE="{{.op_succinct_agg_proof_mode}}"

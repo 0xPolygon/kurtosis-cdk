@@ -514,7 +514,7 @@ def create_aggkit_prover_config_artifact(
                     #     args["deployment_suffix"], args["op_proposer_port"]
                     # ),
                     "network_id": args["zkevm_rollup_id"],
-                    "agglayer_prover_network_url": args["agglayer_prover_network_url"],
+                    "sp1_cluster_endpoint": args["sp1_cluster_endpoint"],
                     "op_succinct_mock": args["op_succinct_mock"],
                     "aggkit_legacy": aggkit_legacy,
                 },
