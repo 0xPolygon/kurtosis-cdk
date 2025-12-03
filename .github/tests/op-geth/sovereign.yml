@@ -2,5 +2,5 @@ deployment_stages:
   deploy_optimism_rollup: true
 
 args:
-  aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+  aggkit_image: ghcr.io/agglayer/aggkit:0.8.0-beta1
   consensus_contract_type: pessimistic
