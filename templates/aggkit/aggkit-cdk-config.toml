@@ -7,8 +7,6 @@ NetworkID = {{.zkevm_rollup_id}}
 SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
-
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 # This values can be override directly from genesis.json
@@ -22,7 +20,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-	
+
 [L2Config]
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
@@ -33,7 +31,7 @@ Environment = "{{.environment}}"
 
 [REST]
 Port = "{{.aggkit_node_rest_api_port}}"
-       
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
