@@ -37,7 +37,9 @@ SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 {{- end}}
 
+{{- if lt .aggkit_version "0.8" }}
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+{{- end }}
 
 {{- if .deploy_optimism_rollup }}
 RPCURL = "{{.op_el_rpc_url}}"
@@ -529,12 +531,6 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # DBPath path of the sqlite db
 # ------------------------------------------------------------------------------
 # DBPath = "{{.zkevm_path_rw_data}}/bridgel2sync.sqlite"
-
-# ------------------------------------------------------------------------------
-# BlockFinality indicates the status of the blocks that will be queried to sync
-# LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
-# Default value is "LatestBlock"
-# ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.
