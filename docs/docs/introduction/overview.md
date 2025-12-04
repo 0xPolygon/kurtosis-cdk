@@ -40,6 +40,10 @@ Learn how to configure your devnet deployment.
 
 A list of all test environments with their configurations and component versions.
 
+### [Advanced](./docs/docs/advanced/overview.md)
+
+Advanced guides and resources for performing complex operations within a devnet.
+
 ### [Contributing](../contributing.md)
 
 Help us improve the package.
