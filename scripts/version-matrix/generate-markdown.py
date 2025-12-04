@@ -78,7 +78,7 @@ sidebar_position: 3
 
         # Generate table of contents
         if op_geth_envs:
-            md += "### OP Geth\n\n"
+            md += "### CDK OP Geth\n\n"
             for env_key, environment in sorted(op_geth_envs.items()):
                 environment_type = environment.get('type')
                 md += f"- [{environment_type}](#{environment_type})\n"
@@ -91,9 +91,9 @@ sidebar_position: 3
                 md += f"- [{environment_type}](#{environment_type})\n"
             md += "\n"
 
-        # Generate OP Geth section
+        # Generate CDK OP Geth section
         if op_geth_envs:
-            md += "## OP Geth\n\n"
+            md += "## CDK OP Geth\n\n"
             md += "Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as the L2 execution client.\n\n"
             
             for env_key, environment in sorted(op_geth_envs.items()):

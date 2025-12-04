@@ -10,7 +10,7 @@ sidebar_position: 3
 
 This section lists all test environments with their configurations and component versions, organized by execution client.
 
-### OP Geth
+### CDK OP Geth
 
 - [cdk-opgeth-sovereign-ecdsa-multisig](#cdk-opgeth-sovereign-ecdsa-multisig)
 - [cdk-opgeth-sovereign-pessimistic](#cdk-opgeth-sovereign-pessimistic)
@@ -23,7 +23,7 @@ This section lists all test environments with their configurations and component
 - [cdk-erigon-validium](#cdk-erigon-validium)
 - [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
 
-## OP Geth
+## CDK OP Geth
 
 Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as the L2 execution client.
 
