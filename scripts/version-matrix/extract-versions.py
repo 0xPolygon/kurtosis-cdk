@@ -46,21 +46,20 @@ class VersionMatrixExtractor:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
+
+        cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
+        op_geth_tests_path = repo_root / ".github" / "tests" / "op-geth"
+        op_succinct_tests_path = repo_root / ".github" / "tests" / "op-succinct"
         self.test_files_paths = [
             # cdk-erigon
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "rollup.yml", "cdk-erigon-zkrollup"),
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "validium.yml", "cdk-erigon-validium"),
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "sovereign.yml", "cdk-erigon-sovereign"),
+            ("cdk-erigon-zkrollup", cdk_erigon_tests_path / "rollup.yml"),
+            ("cdk-erigon-validium", cdk_erigon_tests_path / "validium.yml"),
+            ("cdk-erigon-sovereign-pessimistic", cdk_erigon_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-erigon-sovereign-ecdsa-multisig", cdk_erigon_tests_path / "sovereign-ecdsa-multisig.yml"),
             # op-geth
-            (repo_root / ".github" / "tests" / "op-geth" /
-             "sovereign.yml", "cdk-opgeth-sovereign"),
-            # (repo_root / ".github" / "tests" / "op-geth" /
-            #  "ecdsa.yml", "cdk-opgeth-ecdsa"),
-            (repo_root / ".github" / "tests" / "op-succinct" /
-             "mock-prover.yml", "cdk-opgeth-zkrollup"),
+            ("cdk-opgeth-sovereign-pessimistic", op_geth_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-opgeth-sovereign-ecdsa-multisig", op_geth_tests_path / "sovereign-ecdsa-multisig.yml"),
+            ("cdk-opgeth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
         ]
 
         # Component mapping
@@ -339,7 +338,7 @@ class VersionMatrixExtractor:
 
         try:
             # Walk through test configuration files
-            for (yaml_file, environment_type) in self.test_files_paths:
+            for (environment_type, yaml_file) in self.test_files_paths:
                 try:
                     with open(yaml_file, 'r') as f:
                         config = yaml.safe_load(f)
@@ -419,7 +418,7 @@ class VersionMatrixExtractor:
                 'zkevm-pool-manager',
                 'zkevm-prover',
             ],
-            "cdk-erigon-sovereign": [
+            "cdk-erigon-sovereign-pessimistic": [
                 'aggkit-prover',
                 'aggkit',  # different from cdk-erigon-zkrollup and cdk-erigon-validium
                 'agglayer',
@@ -428,8 +427,17 @@ class VersionMatrixExtractor:
                 'zkevm-bridge-service',
                 'zkevm-pool-manager',
             ],
+            "cdk-erigon-sovereign-ecdsa-multisig": [
+                'aggkit-prover',
+                'aggkit',
+                'agglayer',
+                'agglayer-contracts',
+                'cdk-erigon',
+                'zkevm-bridge-service',
+                'zkevm-pool-manager',
+            ],
             # cdk-opgeth
-            "cdk-opgeth-sovereign": [
+            "cdk-opgeth-sovereign-pessimistic": [
                 'aggkit',
                 'aggkit-prover',
                 'agglayer',
@@ -441,18 +449,18 @@ class VersionMatrixExtractor:
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            # "cdk-opgeth-ecdsa": [
-            #     'aggkit',
-            #     'aggkit-prover',
-            #     'agglayer',
-            #     'agglayer-contracts',
-            #     'op-batcher',
-            #     'op-deployer',
-            #     'op-node',
-            #     'op-geth',
-            #     'op-proposer',
-            #     'zkevm-bridge-service',
-            # ],
+            "cdk-opgeth-sovereign-ecdsa-multisig": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-deployer',
+                'op-node',
+                'op-geth',
+                'op-proposer',
+                'zkevm-bridge-service',
+            ],
             "cdk-opgeth-zkrollup": [
                 'aggkit',
                 'aggkit-prover',

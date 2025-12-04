@@ -10,15 +10,31 @@ sidebar_position: 3
 
 This section lists all test environments with their configurations and component versions.
 
-- [cdk-erigon-sovereign](#cdk-erigon-sovereign)
+- [cdk-erigon-sovereign-ecdsa-multisig](#cdk-erigon-sovereign-ecdsa-multisig)
+- [cdk-erigon-sovereign-pessimistic](#cdk-erigon-sovereign-pessimistic)
 - [cdk-erigon-validium](#cdk-erigon-validium)
 - [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
-- [cdk-opgeth-sovereign](#cdk-opgeth-sovereign)
+- [cdk-opgeth-sovereign-ecdsa-multisig](#cdk-opgeth-sovereign-ecdsa-multisig)
+- [cdk-opgeth-sovereign-pessimistic](#cdk-opgeth-sovereign-pessimistic)
 - [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
 
-### cdk-erigon-sovereign
+### cdk-erigon-sovereign-ecdsa-multisig
 
-- File path: .github/tests/cdk-erigon/sovereign.yml
+- File path: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
+
+| Component | Current Version | Latest Version | Status |
+|-----------|-----------------|----------------|--------|
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | experimental 🧪 |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
+| cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
+| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
+
+### cdk-erigon-sovereign-pessimistic
+
+- File path: .github/tests/cdk-erigon/sovereign-pessimistic.yml
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
@@ -61,9 +77,26 @@ This section lists all test environments with their configurations and component
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
 
-### cdk-opgeth-sovereign
+### cdk-opgeth-sovereign-ecdsa-multisig
 
-- File path: .github/tests/op-geth/sovereign.yml
+- File path: .github/tests/op-geth/sovereign-ecdsa-multisig.yml
+
+| Component | Current Version | Latest Version | Status |
+|-----------|-----------------|----------------|--------|
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | experimental 🧪 |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
+| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
+| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.5.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.0-rc.2) | deprecated ⚠️ |
+| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | latest ✅ |
+| op-node | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | latest ✅ |
+| op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | latest ✅ |
+| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
+
+### cdk-opgeth-sovereign-pessimistic
+
+- File path: .github/tests/op-geth/sovereign-pessimistic.yml
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
