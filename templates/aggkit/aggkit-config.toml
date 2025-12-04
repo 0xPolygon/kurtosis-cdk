@@ -37,6 +37,10 @@ SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 {{- end}}
 
+{{- if lt .aggkit_version "0.8" }}
+polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+{{- end }}
+
 {{- if .deploy_optimism_rollup }}
 RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}

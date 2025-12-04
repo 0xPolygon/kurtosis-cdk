@@ -7,6 +7,10 @@ NetworkID = {{.zkevm_rollup_id}}
 SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
+{{- if lt .aggkit_version "0.8" }}
+polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+{{- end }}
+
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
 
 # This values can be override directly from genesis.json
