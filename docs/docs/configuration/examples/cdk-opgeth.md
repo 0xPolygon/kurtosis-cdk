@@ -65,7 +65,7 @@ This setup is perfect for testing as it simulates the OP Succinct proving system
 To deploy this environment:
 
 ```bash
-kurtosis run --enclave cdk --args-file .github/tests/chains/op-succinct.yml .
+kurtosis run --enclave cdk --args-file .github/tests/op-succinct/mock-prover.yml .
 ```
 
 ### Real Prover
@@ -91,5 +91,5 @@ This configuration deploys a production-like environment with actual zero-knowle
 To deploy this environment:
 
 ```bash
-kurtosis run --enclave cdk --args-file .github/tests/chains/op-succinct-real-prover.yml .
+kurtosis run --enclave cdk --args-file .github/tests/op-succinct/real-prover.yml .
 ```
