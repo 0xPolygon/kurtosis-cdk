@@ -1,4 +1,4 @@
-# Keys Usage
+# Key Usage
 
 This doc tracks keys being used in Kurtosis CDK. It aims to document:
 - The associated role/component

@@ -6,10 +6,6 @@ sidebar_position: 2
 
 These configurations are based on [cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon) and fork 12 of the [agglayer contracts](https://github.com/agglayer/agglayer-contracts).
 
-:::info
-Configurations for other forks (9 and 11) can be found in the `.github/tests/combinations/` directory.
-:::
-
 ## ZK Rollup
 
 This configuration deploys a ZK rollup environment powered by Polygon's [zkEVM Prover](https://github.com/0xPolygonHermez/zkevm-prover). It ensures data availability on-chain, providing high security and Ethereum-level guarantees.
@@ -31,7 +27,7 @@ This configuration deploys a ZK rollup environment powered by Polygon's [zkEVM P
 To deploy this environment:
 
 ```bash
-kurtosis run --enclave cdk --args-file .github/tests/combinations/fork12-cdk-erigon-rollup.yml .
+kurtosis run --enclave cdk --args-file .github/tests/cdk-erigon/rollup.yml .
 ```
 
 ## ZK Validium
@@ -57,7 +53,7 @@ This configuration deploys a ZK validium environment, which stores data off-chai
 To deploy this environment:
 
 ```bash
-kurtosis run --enclave cdk --args-file .github/tests/combinations/fork12-cdk-erigon-validium.yml .
+kurtosis run --enclave cdk --args-file .github/tests/cdk-erigon/validium.yml .
 ```
 
 ## Sovereign
@@ -82,5 +78,5 @@ This configuration deploys a sovereign chain that operates independently of L1 w
 To deploy this environment:
 
 ```bash
-kurtosis run --enclave cdk --args-file .github/tests/combinations/fork12-cdk-erigon-sovereign.yml .
+kurtosis run --enclave cdk --args-file .github/tests/cdk-erigon/sovereign.yml .
 ```

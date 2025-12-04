@@ -57,7 +57,7 @@ sidebar_position: 3
 
 # Version Matrix
 
-> This version matrix is automatically generated.
+> This document is automatically generated.
 """
 
         # Test environments.
