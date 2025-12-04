@@ -77,7 +77,7 @@ jobs:
 
       - name: Install kurtosis-test
         run: |
-          git clone --branch v0.0.5 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
+          git clone --branch v0.0.6 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
           cd /tmp/kurtosis-test
           go build -o kurtosis-test cli/main.go
           cp kurtosis-test /usr/local/bin

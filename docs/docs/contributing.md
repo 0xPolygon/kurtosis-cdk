@@ -34,7 +34,7 @@ We rely on [kurtosis-test](https://github.com/ethereum-optimism/kurtosis-test) t
 ```bash
 git clone https://github.com/ethereum-optimism/kurtosis-test.git
 pushd kurtosis-test
-git checkout v0.0.5
+git checkout v0.0.6
 go build -o kurtosis-test cli/main.go
 cp kurtosis-test /usr/local/bin
 ```
