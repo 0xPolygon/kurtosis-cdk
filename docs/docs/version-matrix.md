@@ -23,7 +23,7 @@ This section lists all test environments with their configurations and component
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | deprecated ⚠️ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
 | cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
@@ -36,7 +36,7 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
@@ -52,7 +52,7 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
@@ -68,7 +68,7 @@ This section lists all test environments with their configurations and component
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | deprecated ⚠️ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
 | op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
@@ -84,8 +84,8 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | latest ✅ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | experimental 🧪 |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
 | op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
@@ -99,8 +99,8 @@ This section lists all test environments with their configurations and component
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | latest ✅ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | experimental 🧪 |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
