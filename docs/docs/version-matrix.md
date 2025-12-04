@@ -141,7 +141,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
 | zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
 
-# Default Images
+## Default Images
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|

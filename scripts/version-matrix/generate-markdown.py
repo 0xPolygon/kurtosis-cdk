@@ -122,7 +122,7 @@ sidebar_position: 3
                 md += "\n"
 
         # Default images table
-        md += "# Default Images\n\n"
+        md += "## Default Images\n\n"
         md += self._generate_component_table(data.get('default_images', {}))
 
         return md
