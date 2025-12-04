@@ -29,6 +29,13 @@ To deploy this environment:
 
 ```bash
 kurtosis run --enclave cdk .
+# or kurtosis run --enclave cdk --args-file .github/tests/op-geth/sovereign-ecdsa-multisig.yml
+```
+
+The former sovereign environment based on the `pessimistic` consensus contract type can be deployed with:
+
+```bash
+kurtosis run --enclave cdk --args-file .github/tests/op-geth/sovereign-pessimistic.yml .
 ```
 
 ## ZK Rollup

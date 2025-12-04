@@ -4,23 +4,23 @@ deployment_stages:
   deploy_cdk_bridge_infra: true
   deploy_optimism_rollup: false
 args:
-  consensus_contract_type: ecdsa_multisig
+  consensus_contract_type: ecdsa_multisig # new sovereign consensus
 
-  # Aggsender-validator related params
+  # aggsender-validator related params
   use_agg_sender_validator: false
   agg_sender_multisig_threshold: 1
   agg_sender_validator_total_number: 0
 
-  # Aggkit related params
+  # aggkit related params
   binary_name: aggkit
   aggkit_components: aggsender
 
-  # Agglayer related params
+  # agglayer related params
   agglayer_prover_primary_prover: mock-prover
   zkevm_use_real_verifier: false
   sp1_prover_key: ""
 
-  # CDK-Erigon related params
+  # cdk-erigon related params
   sequencer_type: erigon
   cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.64.0-RC10
   enable_normalcy: true
