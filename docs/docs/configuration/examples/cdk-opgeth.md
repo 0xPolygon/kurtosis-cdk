@@ -46,7 +46,7 @@ These configurations enhance the standard [CDK OP Geth Sovereign](#sovereign) en
 - [Real Prover](#real-prover)
 
 :::info
-The key difference is that the mock prover simulates proof generation, while the real prover uses the [Succinct Prover Network](https://docs.succinct.xyz/docs/network/introduction) for actual zero-knowledge proofs.
+The key difference is that the mock prover simulates proof generation, while the real prover uses the [Succinct Prover Network](https://docs.succinct.xyz/docs/protocol/spn/architecture) for actual zero-knowledge proofs.
 :::
 
 ### Mock Prover
@@ -82,7 +82,7 @@ This configuration deploys a production-like environment with actual zero-knowle
 #### What gets deployed?
 
 - L1 Ethereum blockchain (lighthouse/geth).
-- Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer](https://github.com/agglayer/agglayer) service and [SP1 prover](https://docs.succinct.xyz/docs/sp1/introduction) - the prover is not deployed locally, instead we leverage the [Succinct Prover Network](https://docs.succinct.xyz/docs/network/introduction)).
+- Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer](https://github.com/agglayer/agglayer) service and [SP1 prover](https://docs.succinct.xyz/docs/sp1/introduction) - the prover is not deployed locally, instead we leverage the [Succinct Prover Network](https://docs.succinct.xyz/docs/protocol/spn/architecture)).
 - [Succinct's SP1 contracts](https://github.com/succinctlabs/sp1-contracts) for onchain verification of SP1 EVM proofs.
 - L2 Optimism blockchain (op-geth/op-node) enhanced with [AggKit](https://github.com/agglayer/aggkit) and its prover for seamless Agglayer connectivity as well as [OP Succinct's proposer](https://github.com/succinctlabs/op-succinct), instead of the regular OP proposer.
 - [zkEVM bridge](https://github.com/0xPolygonHermez/zkevm-bridge-service) to facilitate asset bridging between L1 and L2 chains.
