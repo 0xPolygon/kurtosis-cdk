@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: lycheeverse/lychee-action@885c65f3dc543b57c898c8099f4e08c8afd178a2 # v2.6.1
+      - uses: lycheeverse/lychee-action@3ebbf768233523c210666575e9ff519fab12743b # vO.22.0
         with:
           args: |
             --exclude-loopback \
