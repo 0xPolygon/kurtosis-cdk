@@ -87,6 +87,26 @@ class VersionMatrixExtractor:
             # "zkevm_sequence_sender_image": "zkevm-sequence-sender",
         }
 
+        # Components that should be excluded from default images since they're covered in test environments
+        self.important_components = {
+            "aggkit",
+            "aggkit-prover", 
+            "agglayer",
+            "agglayer-contracts",
+            "cdk-erigon",
+            "cdk-node",
+            "op-batcher",
+            "op-deployer", 
+            "op-geth",
+            "op-node",
+            "op-proposer",
+            "op-succinct-proposer",
+            "zkevm-bridge-service",
+            "zkevm-da",
+            "zkevm-pool-manager",
+            "zkevm-prover"
+        }
+
         # GitHub repositories for version checking
         self.repos = {
             # polygon cdk components
@@ -166,8 +186,13 @@ class VersionMatrixExtractor:
 
         except Exception as e:
             print(f"Error extracting default images: {e}")
-
         return components
+
+    def filter_default_images(self, default_images: Dict[str, ComponentVersion]) -> Dict[str, ComponentVersion]:
+        return {
+            name: component for name, component in default_images.items()
+            if name not in self.important_components
+        }
 
     def _extract_version_from_image(self, image: str) -> str:
         """Extract version from Docker image tag."""
@@ -639,6 +664,7 @@ class VersionMatrixExtractor:
         """Generate comprehensive version matrix."""
         print("Extracting default images...")
         default_images = self.extract_default_images()
+        filtered_default_images = self.filter_default_images(default_images)
 
         print("Extracting test environments...")
         test_environments = self.extract_test_environments(default_images)
@@ -660,7 +686,7 @@ class VersionMatrixExtractor:
         # Build comprehensive matrix
         matrix = {
             'generated_at': datetime.now().isoformat(),
-            'default_images': {name: asdict(comp) for name, comp in default_images.items()},
+            'default_images': {name: asdict(comp) for name, comp in filtered_default_images.items()},
             'test_environments': {name: asdict(environment) for name, environment in test_environments.items()},
             'summary': {
                 'total_components': len(default_images),

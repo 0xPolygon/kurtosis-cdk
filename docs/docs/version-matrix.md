@@ -145,21 +145,5 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 
 | Component | Current Version | Latest Version | Status |
 |-----------|-----------------|----------------|--------|
-| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | experimental 🧪 |
-| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | experimental 🧪 |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
-| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
 | geth | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | latest ✅ |
 | lighthouse | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | latest ✅ |
-| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
-| op-deployer | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | latest ✅ |
-| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | latest ✅ |
-| op-node | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | latest ✅ |
-| op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | latest ✅ |
-| op-succinct-proposer | [3.4.0-rc.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1-agglayer) | [3.4.0-rc.1](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1) | latest ✅ |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
-| zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
-| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
