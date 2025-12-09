@@ -340,24 +340,28 @@ class VersionMatrixExtractor:
             latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
 
             # special case for agglayer-contracts
+            experimental_status = "newer than stable"
+            stable_status = "matches stable"
+            deprecated_status = "behind stable"
+            
             if version_suffix.endswith("aggchain.multisig"):
-                return "experimental"
+                return experimental_status
 
             if version_float > latest_float:
-                return "experimental"
+                return experimental_status
             elif version_float < latest_float:
-                return "deprecated"
+                return deprecated_status
             else:
                 if version_suffix == latest_suffix:
-                    return "latest"
+                    return stable_status
                 # special case for op-deployer - we use the latest version with a small fix on top, suffixed with `-cdk`
                 if version_suffix == "cdk" and not latest_suffix:
-                    return "latest"
+                    return stable_status
                 # special case for op-succinct-proposer - we use the latest version with a small fix on top, suffixed with `-agglayer`
                 if version_suffix == "agglayer" and not latest_suffix:
-                    return "latest"
+                    return stable_status
 
-                return "experimental"
+                return experimental_status
 
         except Exception as e:
             print(f"Error determining status for version {version}: {e}")
