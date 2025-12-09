@@ -89,27 +89,29 @@ class VersionMatrixExtractor:
 
         # GitHub repositories for version checking
         self.repos = {
+            # polygon cdk components
             "aggkit": "agglayer/aggkit",
             "aggkit-prover": "agglayer/provers",
             "agglayer": "agglayer/agglayer",
             "agglayer-contracts": "agglayer/agglayer-contracts",
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
-            # "cdk-validium-node": "0xPolygon/cdk-validium-node",
-            "geth": "ethereum/go-ethereum",
-            "lighthouse": "sigp/lighthouse",
+            # legacy zkevm components
+            "zkevm-da": "0xPolygon/cdk-data-availability",
+            "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
+            "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
+            "zkevm-prover": "0xPolygon/zkevm-prover",
+            # optimism components
             "op-batcher": "ethereum-optimism/optimism",
             "op-deployer": "ethereum-optimism/optimism",
             "op-geth": "ethereum-optimism/op-geth",
             "op-node": "ethereum-optimism/optimism",
             "op-proposer": "ethereum-optimism/optimism",
+            # succinct components
             "op-succinct-proposer": "agglayer/op-succinct",
-            "zkevm-da": "0xPolygon/cdk-data-availability",
-            "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
-            # "zkevm-node": "0xPolygon/zkevm-node",
-            "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
-            "zkevm-prover": "0xPolygon/zkevm-prover",
-            # "zkevm-sequence-sender": "0xPolygon/zkevm-sequence-sender", # TODO: Remove this component from kurtosis-cdk
+            # ethereum components
+            "geth": "ethereum/go-ethereum",
+            "lighthouse": "sigp/lighthouse",
         }
 
     def extract_default_images(self) -> Dict[str, ComponentVersion]:
@@ -185,6 +187,10 @@ class VersionMatrixExtractor:
         # Specific handling for zkevm-prover images
         if 'zkevm-prover' in image and tag.find('-fork.'):
             tag = tag.split('-fork.')[0]
+        
+        # Specific handling for op-deployer images
+        if 'op-deployer' in image and tag.find('-cdk'):
+            tag = tag.split('-cdk')[0]
 
         # Remove common prefixes
         version = re.sub(r'^v?', '', tag)
