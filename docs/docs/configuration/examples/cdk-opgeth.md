@@ -46,7 +46,7 @@ These configurations enhance the standard [CDK OP Geth Sovereign](#sovereign) en
 - [Real Prover](#real-prover)
 
 :::info
-The key difference is that the mock prover simulates proof generation, while the real prover uses the [Succinct Prover Network](https://docs.succinct.xyz/docs/network/introduction) for actual zero-knowledge proofs.
+The key difference is that the mock prover simulates proof generation, while the real prover uses the [Succinct Prover Network](https://docs.succinct.xyz/docs/protocol/spn/architecture) for actual zero-knowledge proofs.
 :::
 
 ### Mock Prover
