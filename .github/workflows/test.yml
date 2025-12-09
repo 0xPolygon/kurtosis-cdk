@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
         with:
-          args: --exclude-loopback --exclude-path docs/node_modules/ --exclude-path docs/docs/_legacy_docs/edit-contracts.md --exclude https://github.com/0xPolygon/arpeggio --exclude http://anvil-001:8545 --exclude https://unix.stackexchange.com/questions/65475/ephemeral-port-what-is-it-and-what-does-it-do './**/*.md'
+          args: --exclude-loopback --exclude-path docs/node_modules/ --exclude-path docs/docs/_legacy_docs/edit-contracts.md --exclude https://github.com/0xPolygon/arpeggio --exclude http://anvil-001:8545 --exclude https://unix.stackexchange.com/questions/65475/ephemeral-port-what-is-it-and-what-does-it-do **/*.md
           fail: true
 
   unit:
