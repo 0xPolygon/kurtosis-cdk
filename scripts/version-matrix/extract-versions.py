@@ -88,7 +88,7 @@ class VersionMatrixExtractor:
         }
 
         # Components that should be excluded from default images since they're covered in test environments
-        self.important_components = {
+        self.cdk_core_components = {
             "aggkit",
             "aggkit-prover", 
             "agglayer",
@@ -191,7 +191,7 @@ class VersionMatrixExtractor:
     def filter_default_images(self, default_images: Dict[str, ComponentVersion]) -> Dict[str, ComponentVersion]:
         return {
             name: component for name, component in default_images.items()
-            if name not in self.important_components
+            if name not in self.cdk_core_components
         }
 
     def _extract_version_from_image(self, image: str) -> str:
