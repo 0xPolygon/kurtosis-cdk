@@ -82,7 +82,7 @@ jobs:
             - http://anvil-001:8545
             - --exclude
             - https://unix.stackexchange.com/questions/65475/ephemeral-port-what-is-it-and-what-does-it-do
-            - **/*.md
+            - "**/*.md"
           fail: true
 
   unit:
