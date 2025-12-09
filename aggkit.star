@@ -134,6 +134,7 @@ def run(
 
     # Create the cdk aggoracle config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+    aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
@@ -145,6 +146,7 @@ def run(
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                     "agglayer_endpoint": agglayer_endpoint,
+                    "aggkit_version": aggkit_version,
                     "l2_rpc_url": l2_rpc_url,
                 }
                 | db_configs
@@ -154,18 +156,11 @@ def run(
         },
     )
 
-    sovereign_genesis_file = read_file(src=args["sovereign_genesis_file"])
-    sovereign_genesis_artifact = plan.render_templates(
-        name="sovereign_genesis",
-        config={"genesis.json": struct(template=sovereign_genesis_file, data={})},
-    )
-
     # Start the single aggkit component with standard naming
     aggkit_configs = aggkit_package.create_root_aggkit_service_config(
         plan,
         args,
         aggkit_config_artifact,
-        sovereign_genesis_artifact,
         keystore_artifacts,
         0,  # Use member_index 0 for single service
     )
@@ -180,7 +175,6 @@ def run(
         plan,
         args,
         aggkit_config_artifact,
-        sovereign_genesis_artifact,
         keystore_artifacts,
         0,  # Use member_index 0 for single service
     )
@@ -209,6 +203,7 @@ def run(
 
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+        aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
 
         # Start multiple aggoracle components based on committee size
@@ -235,6 +230,7 @@ def run(
                                 args
                             ),
                             "agglayer_endpoint": agglayer_endpoint,
+                            "aggkit_version": aggkit_version,
                             "l2_rpc_url": l2_rpc_url,
                             "agg_oracle_committee_member_index": agg_oracle_committee_member_index,
                         }
@@ -250,7 +246,6 @@ def run(
                 plan,
                 args,
                 aggkit_config_artifact,
-                sovereign_genesis_artifact,
                 keystore_artifacts,
                 agg_oracle_committee_member_index,
             )
@@ -273,6 +268,7 @@ def run(
 
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+        aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
 
         # Start multiple aggoracle components based on committee size
@@ -299,6 +295,7 @@ def run(
                                 args
                             ),
                             "agglayer_endpoint": agglayer_endpoint,
+                            "aggkit_version": aggkit_version,
                             "l2_rpc_url": l2_rpc_url,
                             "agg_sender_validator_member_index": agg_sender_validator_member_index,
                         }
@@ -315,7 +312,6 @@ def run(
                     plan,
                     args,
                     aggkit_config_artifact,
-                    sovereign_genesis_artifact,
                     keystore_artifacts,
                     agg_sender_validator_member_index,
                 )
@@ -340,7 +336,7 @@ def run(
             deployment_stages,
         )
         bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-            args, bridge_config_artifact, keystore_artifacts.claimtx
+            args, bridge_config_artifact, keystore_artifacts.claim_sponsor
         )
         plan.add_service(
             name="zkevm-bridge-service" + args["deployment_suffix"],
@@ -352,27 +348,22 @@ def get_keystores_artifacts(plan, args):
     aggoracle_keystore_artifact = plan.store_service_files(
         name="aggoracle-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggoracle.keystore",
+        src=constants.KEYSTORES_DIR + "/aggoracle.keystore",
     )
     sovereignadmin_keystore_artifact = plan.store_service_files(
         name="sovereignadmin-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sovereignadmin.keystore",
-    )
-    claimtx_keystore_artifact = plan.store_service_files(
-        name="aggkit-claimtxmanager-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimtxmanager.keystore",
+        src=constants.KEYSTORES_DIR + "/sovereignadmin.keystore",
     )
     sequencer_keystore_artifact = plan.store_service_files(
         name="aggkit-sequencer-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/sequencer.keystore",
+        src=constants.KEYSTORES_DIR + "/sequencer.keystore",
     )
     claim_sponsor_keystore_artifact = plan.store_service_files(
         name="claimsponsor-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimsponsor.keystore",
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
 
     # Store multiple aggoracle committee member keystores
@@ -385,7 +376,8 @@ def get_keystores_artifacts(plan, args):
             committee_keystore = plan.store_service_files(
                 name="aggoracle-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
-                src="/opt/zkevm/aggoracle-{}.keystore".format(member_index),
+                src=constants.KEYSTORES_DIR
+                + "/aggoracle-{}.keystore".format(member_index),
             )
             committee_keystores.append(committee_keystore)
     else:
@@ -403,14 +395,14 @@ def get_keystores_artifacts(plan, args):
             aggsender_validator_keystore = plan.store_service_files(
                 name="aggsendervalidator-{}-keystore".format(member_index),
                 service_name="contracts" + args["deployment_suffix"],
-                src="/opt/zkevm/aggsendervalidator-{}.keystore".format(member_index),
+                src=constants.KEYSTORES_DIR
+                + "/aggsendervalidator-{}.keystore".format(member_index),
             )
             aggsender_validator_keystores.append(aggsender_validator_keystore)
 
     return struct(
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
-        claimtx=claimtx_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
         committee_keystores=committee_keystores,
@@ -459,8 +451,9 @@ def create_bridge_config_artifact(
             "bridge-config.toml": struct(
                 template=bridge_config_template,
                 data={
-                    "global_log_level": args["global_log_level"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
+                    "l2_keystore_password": args["l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     # rpc urls
@@ -484,6 +477,11 @@ def create_aggkit_prover_config_artifact(
         src="./templates/bridge-infra/aggkit-prover-config.toml"
     )
 
+    aggkit_version = args.get("aggkit_prover_image").split(":")[1]
+    aggkit_legacy = False
+    if any([aggkit_version.startswith(x) for x in ("1.0", "1.1", "1.2")]):
+        aggkit_legacy = True
+
     return plan.render_templates(
         name="aggkit-prover-artifact",
         config={
@@ -491,7 +489,8 @@ def create_aggkit_prover_config_artifact(
                 template=aggkit_prover_config_template,
                 # TODO: Organize those args.
                 data={
-                    "log_level": args["aggkit_prover_log_level"],
+                    "log_level": args.get("log_level"),
+                    "log_format": args.get("log_format"),
                     # ports
                     "aggkit_prover_grpc_port": args["aggkit_prover_grpc_port"],
                     "metrics_port": args["aggkit_prover_metrics_port"],
@@ -523,6 +522,7 @@ def create_aggkit_prover_config_artifact(
                     "network_id": args["zkevm_rollup_id"],
                     "agglayer_prover_network_url": args["agglayer_prover_network_url"],
                     "op_succinct_mock": args["op_succinct_mock"],
+                    "aggkit_legacy": aggkit_legacy,
                 },
             )
         },
@@ -562,6 +562,11 @@ def _extract_aggkit_version(aggkit_image):
 
     # ghcr.io/agglayer/aggkit:v0.5.0-beta1 -> v0.5.0-beta1
     tag = aggkit_image.split(":")[-1]
+
+    # Aggkit CI will use aggkit:local to test latest changes.
+    # Assume local is the latest version
+    if tag == "local":
+        return 999.9
 
     # v0.5.0-beta1 -> v0.5.0
     tag_without_suffix = tag.split("-")[0]

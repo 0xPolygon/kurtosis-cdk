@@ -38,50 +38,25 @@ args:
   l1_ws_url: wss://rpc.invalid@your-ws-rpc-would-go-here/
 
   ## L2 Config
-  # polycli wallet inspect --mnemonic 'pelican slice organ thunder odor blood hedgehog busy elevator make spare crystal' --addresses 11 | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,claimsponsor",roles,",")} {print "# " roles[NR] "\nzkevm_l2_" roles[NR] "_address: \"" $1 "\""; print "zkevm_l2_" roles[NR] "_private_key: \"0x" $2 "\"\n"}'
   # sequencer
-  zkevm_l2_sequencer_address: "0x99315dc829d9C54bdA511a3fF544733025041Ee2"
-  zkevm_l2_sequencer_private_key: "0xdabba7cf6c9eba30b56cf1d5764e86b5d4e4f89e560e4930a750e2cd1f7b84e7"
+  l2_sequencer_address: "0x99315dc829d9C54bdA511a3fF544733025041Ee2"
+  l2_sequencer_private_key: "0xdabba7cf6c9eba30b56cf1d5764e86b5d4e4f89e560e4930a750e2cd1f7b84e7"
 
   # aggregator
-  zkevm_l2_aggregator_address: "0x85dd37b4DbBdEB0Ff2ad6e717C2BbA18a2eD4B03"
-  zkevm_l2_aggregator_private_key: "0xa7a66b300528fa1f0bfe73c0ece1ff59c51b68bf2d1e7ac2511a2496960e14b7"
-
-  # claimtxmanager
-  zkevm_l2_claimtxmanager_address: "0x619e4F055B87cB61Ef728423995166B4Cdb876C3"
-  zkevm_l2_claimtxmanager_private_key: "0xb5855e717dc21c8cb036a12c08566d95558644177362f1d64a1dfe3a6dae57b0"
-
-  # timelock
-  zkevm_l2_timelock_address: "0xaDED1f4f50b64b2f061C79B81E9bF315353477e8"
-  zkevm_l2_timelock_private_key: "0x500bd5911e13f367f2de1b218db425d83cc2ab7dbad16262cd00d51ee4829139"
+  l2_aggregator_address: "0x85dd37b4DbBdEB0Ff2ad6e717C2BbA18a2eD4B03"
+  l2_aggregator_private_key: "0xa7a66b300528fa1f0bfe73c0ece1ff59c51b68bf2d1e7ac2511a2496960e14b7"
 
   # admin
-  zkevm_l2_admin_address: "0x3802C134A821874a00363c72d4EA0aCAa5321627"
-  zkevm_l2_admin_private_key: "0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
-
-  # loadtest
-  zkevm_l2_loadtest_address: "0xFa482AE445A5F032d8C9F2F35A9A015cF560160A"
-  zkevm_l2_loadtest_private_key: "0x646116120b39f55bd6b82f1873d9a54f3a71e3894272af182543c6e64231230d"
-
-  # agglayer
-  zkevm_l2_agglayer_address: "0x18481b38dd03208d179019E7352c9aC9cD6d540E"
-  zkevm_l2_agglayer_private_key: "0xf9a3ca361254388ce6242c76ed339b016707e49f4207867cfa41b7b38d8df88e"
+  l2_admin_address: "0x3802C134A821874a00363c72d4EA0aCAa5321627"
+  l2_admin_private_key: "0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
 
   # dac
-  zkevm_l2_dac_address: "0xAaB75050a8981a1C90e7fec940D51058127Af425"
-  zkevm_l2_dac_private_key: "0xefa54be13b9df9fdec01a3dbe1538a7998859a946cf2b56ca42d11a795d8e8ac"
-
-  # proofsigner
-  zkevm_l2_proofsigner_address: "0xd0c1ABc68EE9DD7dfc193a3d29086D2158F1C797"
-  zkevm_l2_proofsigner_private_key: "0x40f801a53e1895914c5e87a93b97d95133abd70b06586a79ff2c9091fe9d0daf"
-
-  # l1testing
-  zkevm_l2_l1testing_address: "0xE251b176E2861921d515E5020120C7D65470FA00"
-  zkevm_l2_l1testing_private_key: "0xf3954120ab1d82e3f848ccc03ebd0e45ec214f36227155756b9926539f9aed6d"
+  l2_dac_address: "0xAaB75050a8981a1C90e7fec940D51058127Af425"
+  l2_dac_private_key: "0xefa54be13b9df9fdec01a3dbe1538a7998859a946cf2b56ca42d11a795d8e8ac"
 
   # claimsponsor
-  zkevm_l2_claimsponsor_address: "0xF5BED6F96394A054553a037743fdbfc6e6065A4d"
-  zkevm_l2_claimsponsor_private_key: "0xe84cf50e79539b794f2f8f4879c8742e71b1e72f74e6863786ac95d6b60ac33c"
+  l2_claimsponsor_address: "0xF5BED6F96394A054553a037743fdbfc6e6065A4d"
+  l2_claimsponsor_private_key: "0xe84cf50e79539b794f2f8f4879c8742e71b1e72f74e6863786ac95d6b60ac33c"
 
   # I've appended this section to make sure that we deploy a legacy stack first
   zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
@@ -110,7 +85,7 @@ parameters. This gets logged out during the run, but you can also
 print it directly with a call like this:
 
 #+begin_src bash
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json'
+kurtosis service exec cdk contracts-001 'cat /opt/output/combined.json'
 #+end_src
 
 #+begin_src javascript
@@ -216,8 +191,8 @@ with the combined.json:
 #+begin_src bash
 work_dir=$(mktemp -d)
 pushd $work_dir
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/genesis.json' | tail -n +2 > genesis.json
-kurtosis service exec cdk contracts-001 'cat /opt/zkevm/combined.json' | tail -n +2 > combined.json
+kurtosis service exec cdk contracts-001 'cat /opt/output/genesis.json' | tail -n +2 > genesis.json
+kurtosis service exec cdk contracts-001 'cat /opt/output/combined.json' | tail -n +2 > combined.json
 #+end_src
 
 This files will need to be tweaked for Erigon compatibility.
@@ -489,7 +464,7 @@ all done within docker for convenience as well.
 docker exec -it contracts-001--abc8888306a74c7fa5148c0c3ce5e796 /bin/bash
 # run the docker command first, but note the image name will be different
 
-cd /opt/zkevm-contracts
+cd /opt/agglayer-contracts
 git pull
 git stash
 git checkout v8.1.0-rc.1-fork.13
@@ -498,7 +473,7 @@ rm -rf artifacts cache node_modules
 npm i
 
 # confirm these with our own configs
-rollup_manager_addr="$(cat /opt/zkevm/combined.json | jq -r '.polygonRollupManagerAddress')"
+rollup_manager_addr="$(cat /opt/output/combined.json | jq -r '.polygonRollupManagerAddress')"
 admin_private_key="$(cat deployment/v2/deploy_parameters.json | jq -r '.deployerPvtKey')"
 
 cat upgrade/upgradeBanana/upgrade_parameters.json.example |
@@ -525,7 +500,7 @@ Continuing on from within the contracts container, we're going to use
 the two calldatas to schedule and then execute.
 
 #+begin_src bash
-time_lock_address="$(cat /opt/zkevm/combined.json | jq -r '.timelockContractAddress')"
+time_lock_address="$(cat /opt/output/combined.json | jq -r '.timelockContractAddress')"
 private_key="$(cat deployment/v2/deploy_parameters.json | jq -r '.deployerPvtKey')"
 
 # rpc_url="http://172.19.0.2:8545/"
@@ -548,13 +523,13 @@ that. Now we need to add a new rollup type for fork 12. The commands
 below would still be executed from within the contracts image.
 
 #+begin_src bash
-genesis_root="$(cat /opt/zkevm/genesis.json | jq -r '.root')"
+genesis_root="$(cat /opt/output/genesis.json | jq -r '.root')"
 description="migrationexample genesis"
 
 # We're going to use the SAME verifier for this test because it's use a mock prover here anyway
 # If this were a real network, we'd need to deploy the fflonk 12 verifier
-verifier_addr="$(cat /opt/zkevm/combined.json | jq -r '.verifierAddress')"
-cp /opt/zkevm/genesis.json tools/addRollupType/genesis.json
+verifier_addr="$(cat /opt/output/combined.json | jq -r '.verifierAddress')"
+cp /opt/output/genesis.json tools/addRollupType/genesis.json
 
 cat tools/addRollupType/add_rollup_type.json.example |
     jq --arg rum $rollup_manager_addr \
@@ -583,7 +558,7 @@ Now we get to do the same thing (pretty much) one more time to make
 sure that the rollup is updated to the new type.
 
 #+begin_src bash
-rollup_addr="$(cat /opt/zkevm/combined.json | jq -r '.rollupAddress')"
+rollup_addr="$(cat /opt/output/combined.json | jq -r '.rollupAddress')"
 
 cat tools/updateRollup/updateRollup.json.example |
     jq --arg rum $rollup_manager_addr \
@@ -608,7 +583,7 @@ sequencer URL because it's going to change from
 ~zkevm-node-sequencer-001~ to ~cdk-erigon-sequencer-001~.
 
 #+begin_src bash
-rollup_addr="$(cat /opt/zkevm/combined.json | jq -r '.rollupAddress')"
+rollup_addr="$(cat /opt/output/combined.json | jq -r '.rollupAddress')"
 
 cast send --private-key "$private_key" --rpc-url "$rpc_url" "$rollup_addr" 'setTrustedSequencerURL(string)' http://cdk-erigon-sequencer-001:8123
 #+end_src
@@ -748,7 +723,7 @@ To try to get this unstuck, we'll try to do some bridge deposits.
 rpc_url="$(kurtosis port print cdk cdk-erigon-sequencer-001 rpc)"
 private_key="0x163d6d315db71700ad91eae84439a4cd1afa6f80372a84859070672c0a8bca04"
 cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x278C89e074B9227E2aaC61FEa7DFf5c1356A419e"
-cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8"
+cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x635243A11B41072264Df6c9186e3f473402F94e9"
 cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046"
 cast send --legacy --rpc-url "$rpc_url" --private-key "$private_key" --value 100ether "0x619e4F055B87cB61Ef728423995166B4Cdb876C3"
 

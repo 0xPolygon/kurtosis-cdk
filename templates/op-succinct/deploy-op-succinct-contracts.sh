@@ -96,10 +96,23 @@ cat .env
 # Save environment variables to .json file for Kurtosis ExecRecipe extract.
 # The extracted environment variables will be passed into the OP-Succinct components' environment variables.
 
+# Copy L1 genesis file from /configs/L1 to /opt/op-succinct/configs/L1
+# The fetch-l2oo-config tool expects it at configs/L1/{chainId}.json relative to working directory
+mkdir -p /opt/op-succinct/configs/L1
+if [ -d "/configs/L1" ]; then
+    cp -r /configs/L1/* /opt/op-succinct/configs/L1/
+    echo "Copied L1 genesis files from /configs/L1 to /opt/op-succinct/configs/L1"
+    ls -la /opt/op-succinct/configs/L1/
+else
+    echo "Warning: /configs/L1 directory not found"
+fi
+
 # Run fetch-l2oo-config to get the various configuration values that
 # we'll need in the rest of smart contract deployment
 mv /opt/op-succinct/fetch-l2oo-config /usr/local/bin/
 touch .git
+mkdir contracts
+OP_SUCCINCT_L2_OUTPUT_ORACLE_CONFIG_PATH=./opsuccinctl2ooconfig.json \
 RUST_LOG=info fetch-l2oo-config --env-file .env 2> fetch-l2oo-config.out
 
 # Print out the rollup config for reference / debugging
@@ -223,5 +236,5 @@ check_deployed_contracts() {
 # Check deployed contracts
 # check_deployed_contracts "$l1_contract_addresses" "{{.l1_rpc_url}}"
 
-jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json contracts/opsuccinctl2ooconfig.json > /opt/op-succinct/op-succinct-env-vars.json.merged
+jq -s '.[0] * .[1]' /opt/op-succinct/op-succinct-env-vars.json opsuccinctl2ooconfig.json > /opt/op-succinct/op-succinct-env-vars.json.merged
 mv /opt/op-succinct/op-succinct-env-vars.json.merged /opt/op-succinct/op-succinct-env-vars.json

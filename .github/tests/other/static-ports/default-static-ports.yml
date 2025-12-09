@@ -1,0 +1,5 @@
+# All services will be exposed through static ports, with default ranges defined in `input_parser.star`.
+# - L1 services will be exposed on the range 50000-50999.
+# - L2 services on the range 51000-51999.
+args:
+  use_dynamic_ports: false

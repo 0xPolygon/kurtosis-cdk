@@ -61,14 +61,14 @@ ForkUpgradeNewForkId = 0
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 
 # ------------------------------------------------------------------------------
 # Outputs define the output paths for writing logs. The default is to
@@ -204,11 +204,11 @@ MaxGasPriceLimit = 0
 # ------------------------------------------------------------------------------
 [[EthTxManager.PrivateKeys]]
 Path = "/etc/zkevm/sequencer.keystore"
-Password = "{{.zkevm_l2_keystore_password}}"
+Password = "{{.l2_keystore_password}}"
 
 [[EthTxManager.PrivateKeys]]
 Path = "/etc/zkevm/aggregator.keystore"
-Password = "{{.zkevm_l2_keystore_password}}"
+Password = "{{.l2_keystore_password}}"
 
 # ==============================================================================
 #  ____   ___   ___  _
@@ -1030,14 +1030,14 @@ UpgradeEtrogBatchNumber = 0
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 
 # ==============================================================================
 #  ____  _____ ___  _   _ _____ _   _  ____ _____ ____  _____ _   _ ____  _____ ____
@@ -1113,14 +1113,14 @@ MaxBatchesForL1 = 10
 # sequence batches on L1, we pay a batch fee. When the batches are
 # eventually proven that collateral is refunded to the L2Coinbase.
 # ------------------------------------------------------------------------------
-L2Coinbase = "{{.zkevm_l2_sequencer_address}}"
+L2Coinbase = "{{.l2_sequencer_address}}"
 
 # ------------------------------------------------------------------------------
 # SenderAddress should generally be the address of the trusted
 # sequencer. This is the address that the manager uses for
 # signing the L1 txs.
 # ------------------------------------------------------------------------------
-SenderAddress = "{{.zkevm_l2_sequencer_address}}"
+SenderAddress = "{{.l2_sequencer_address}}"
 
 # ------------------------------------------------------------------------------
 # PrivateKey is an object with the keystore and password that are used
@@ -1130,7 +1130,7 @@ SenderAddress = "{{.zkevm_l2_sequencer_address}}"
 # ------------------------------------------------------------------------------
 [SequenceSender.PrivateKey]
 Path = "/etc/zkevm/sequencer.keystore"
-Password = "{{.zkevm_l2_keystore_password}}"
+Password = "{{.l2_keystore_password}}"
 
 # ==============================================================================
 #     _    ____  ____ ____  _____ ____    _  _____ ___  ____
@@ -1254,7 +1254,7 @@ UpgradeEtrogBatchNumber = 0
 # configured here must match the ultimate sender of the aggregated
 # proof to L1. In this case the final sender is the agglayer itself
 # ------------------------------------------------------------------------------
-SenderAddress = "{{.zkevm_l2_agglayer_address}}"
+SenderAddress = "{{.l2_aggregator_address}}"
 
 # ------------------------------------------------------------------------------
 # SettlementBackend determines if we're settling with the `agglayer'
@@ -1281,7 +1281,7 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 # ------------------------------------------------------------------------------
 # SenderAddress represents the address of the trusted aggregator
 # ------------------------------------------------------------------------------
-SenderAddress = "{{.zkevm_l2_aggregator_address}}"
+SenderAddress = "{{.l2_aggregator_address}}"
 {{end}}
 
 # ------------------------------------------------------------------------------
@@ -1292,9 +1292,7 @@ SenderAddress = "{{.zkevm_l2_aggregator_address}}"
 # ------------------------------------------------------------------------------
 [Aggregator.SequencerPrivateKey]
 Path = "/etc/zkevm/sequencer.keystore"
-Password = "{{.zkevm_l2_keystore_password}}"
-# Path = "/etc/zkevm/proofsigner.keystore"
-# Password = "{{.zkevm_l2_keystore_password}}"
+Password = "{{.l2_keystore_password}}"
 
 # ==============================================================================
 #   _     ____   ____    _    ____  ____  ____  ___ ____ _____

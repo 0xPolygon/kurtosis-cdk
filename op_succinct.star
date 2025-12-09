@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 op_succinct_package = import_module("./lib/op_succinct.star")
 
 
@@ -6,8 +7,13 @@ def op_succinct_proposer_run(plan, args):
     # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
 
     # Start the op-succinct-proposer component.
+    l1_genesis_artifact = plan.get_files_artifact(
+        name="el_cl_genesis_data_for_op_succinct",
+    )
     op_succinct_proposer_configs = (
-        op_succinct_package.create_op_succinct_proposer_service_config(args)
+        op_succinct_package.create_op_succinct_proposer_service_config(
+            args, l1_genesis_artifact
+        )
     )
 
     plan.add_services(
@@ -16,26 +22,24 @@ def op_succinct_proposer_run(plan, args):
     )
 
 
-def extract_fetch_rollup_config(plan, args):
-    # Add a temporary service using the op-succinct-proposer image
-    temp_service_name = "temp-op-succinct-proposer"
-
-    service_config = ServiceConfig(
-        image=args["op_succinct_proposer_image"],
-        cmd=["sleep", "infinity"],  # Keep container running
-    )
-
+def extract_fetch_l2oo_config(plan, args):
+    cmds = [
+        # Check for fetch-l2oo-config (newer) or fetch-rollup-config (legacy) binary
+        "BINARY_PATH=$(ls /usr/local/bin/fetch-l2oo-config 2>/dev/null || ls /usr/local/bin/fetch-rollup-config 2>/dev/null || (echo 'No compatible binary found'; exit 1))",
+        'echo "Found binary at: $BINARY_PATH"',
+        'cp "$BINARY_PATH" /tmp/fetch-l2oo-config',
+        "echo 'Successfully extracted fetch-l2oo-config binary'",
+    ]
     plan.run_sh(
-        run="echo copying fetch-l2oo-config binary to files artifact...",
+        description="Extract fetch-l2oo-config binary",
         image=args.get("op_succinct_proposer_image"),
+        run=" && ".join(cmds),
         store=[
             StoreSpec(
-                src="/usr/local/bin/fetch-l2oo-config",
+                src="/tmp/fetch-l2oo-config",
                 name="fetch-l2oo-config",
             )
         ],
-        wait=None,
-        description="Extract fetch-l2oo-config from the op-succinct-proposer image to files artifact",
     )
 
 
@@ -66,7 +70,7 @@ def create_evm_sketch_genesis(plan, args):
     files = {}
     files["/opt/op-succinct/"] = Directory(artifact_names=[op_geth_genesis])
 
-    files["/opt/scripts/"] = Directory(
+    files[constants.SCRIPTS_DIR] = Directory(
         artifact_names=[parse_evm_sketch_genesis_artifact]
     )
 
@@ -91,8 +95,9 @@ def create_evm_sketch_genesis(plan, args):
             command=[
                 "/bin/bash",
                 "-c",
-                "cp /opt/scripts/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                    "/opt/op-succinct/parse-evm-sketch-genesis.sh"
+                "cp {1}/parse-evm-sketch-genesis.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                    "/opt/op-succinct/parse-evm-sketch-genesis.sh",
+                    constants.SCRIPTS_DIR,
                 ),
             ]
         ),

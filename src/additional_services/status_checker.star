@@ -42,7 +42,7 @@ def run(plan, args):
                     artifact_names=[status_checker_checks_artifact]
                 ),
                 # Mount this directory to have have access to contract addresses.
-                "/opt/zkevm": Directory(persistent_key="zkevm-artifacts"),
+                "/opt/output": Directory(persistent_key="output-artifacts"),
                 "/opt/aggkit": Directory(persistent_key="aggkit-tmp"),
             },
             ports=ports,

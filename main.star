@@ -13,13 +13,9 @@ cdk_bridge_infra_package = "./cdk_bridge_infra.star"
 cdk_central_environment_package = "./cdk_central_environment.star"
 cdk_erigon_package = "./cdk_erigon.star"
 databases_package = "./databases.star"
-deploy_agglayer_contracts_package = "./deploy_agglayer_contracts.star"
+agglayer_contracts_package = "./agglayer_contracts.star"
 anvil_package = "./anvil.star"
 zkevm_pool_manager_package = "./zkevm_pool_manager.star"
-deploy_l2_contracts_package = "./deploy_l2_contracts.star"
-create_sovereign_predeployed_genesis_package = (
-    "./create_sovereign_predeployed_genesis.star"
-)
 mitm_package = "./mitm.star"
 
 
@@ -27,9 +23,7 @@ def run(plan, args={}):
     # Parse args.
     (deployment_stages, args, op_stack_args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
-    verbosity = args.get("verbosity", "")
-    if verbosity == constants.LOG_LEVEL.debug or verbosity == constants.LOG_LEVEL.trace:
-        plan.print("Deploying CDK stack with the following configuration: " + str(args))
+    plan.print("Deploying CDK stack with the following configuration: " + str(args))
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
@@ -42,20 +36,46 @@ def run(plan, args={}):
             ethereum_package.run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
+
+    # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
+    # TODO: Fix the logic when using anvil and op-succinct
+    if deployment_stages.get("deploy_op_succinct", False):
+        l1_genesis_artifact = plan.get_files_artifact(name="el_cl_genesis_data")
+        new_genesis_name = "{}.json".format(args.get("l1_chain_id"))
+        result = plan.run_sh(
+            name="rename-l1-genesis",
+            description="Rename L1 genesis",
+            files={"/tmp": l1_genesis_artifact},
+            run="mv /tmp/genesis.json /tmp/{}".format(new_genesis_name),
+            store=[
+                StoreSpec(
+                    src="/tmp/{}".format(new_genesis_name),
+                    name="el_cl_genesis_data_for_op_succinct",
+                )
+            ],
+        )
+        artifact_count = len(result.files_artifacts)
+        if artifact_count != 1:
+            fail(
+                "The service should have generated 1 artifact, got {}.".format(
+                    artifact_count
+                )
+            )
+
     # Extract the fetch-l2oo-config binary before starting contracts-001 service.
     if deployment_stages.get("deploy_op_succinct", False):
         # Extract genesis to feed into evm-sketch-genesis
         # ethereum_package.extract_genesis_json(plan)
         # Temporarily run op-succinct-proposer service and fetch-l2oo-config binary
         # The extract binary will be passed into the contracts-001 service
-        op_succinct_package.extract_fetch_rollup_config(plan, args)
+        op_succinct_package.extract_fetch_l2oo_config(plan, args)
 
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
     if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
         plan.print("Deploying agglayer contracts on L1")
-        import_module(deploy_agglayer_contracts_package).run(
+        import_module(agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
         )
 
@@ -68,7 +88,10 @@ def run(plan, args={}):
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
-            import_module(create_sovereign_predeployed_genesis_package).run(plan, args)
+            # This is required to push an artifact for predeployed_allocs that will be used from optimism-package
+            import_module(
+                agglayer_contracts_package
+            ).create_sovereign_predeployed_genesis(plan, args)
 
             # Deploy OP Stack infrastructure
             plan.print("Deploying an OP Stack rollup with args: " + str(op_stack_args))
@@ -90,10 +113,11 @@ def run(plan, args={}):
             )
 
             # Fund Kurtosis addresses on OP L2
-            l2_kurtosis_addresses = service_package.get_kurtosis_addresses(args)
-
             deploy_sovereign_contracts_package.fund_addresses(
-                plan, args, l2_kurtosis_addresses, args["op_el_rpc_url"]
+                plan,
+                args,
+                service_package.get_l2_addresses_to_fund(args),
+                args["op_el_rpc_url"],
             )
 
             if deployment_stages.get("deploy_op_succinct", False):
@@ -108,8 +132,9 @@ def run(plan, args={}):
                         command=[
                             "/bin/bash",
                             "-c",
-                            "cp /opt/scripts/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
-                                "/opt/op-succinct/deploy-op-succinct-contracts.sh"
+                            "cp {1}/deploy-op-succinct-contracts.sh /opt/op-succinct/ && chmod +x {0} && {0}".format(
+                                "/opt/op-succinct/deploy-op-succinct-contracts.sh",
+                                constants.SCRIPTS_DIR,
                             ),
                         ]
                     ),
@@ -168,7 +193,7 @@ def run(plan, args={}):
             genesis_artifact = plan.store_service_files(
                 name="genesis",
                 service_name="contracts" + args["deployment_suffix"],
-                src="/opt/zkevm/genesis.json",
+                src=constants.OUTPUT_DIR + "/genesis.json",
             )
 
     # Deploy MITM
@@ -258,12 +283,17 @@ def run(plan, args={}):
             else:
                 plan.print("Skipping the deployment of aggkit infrastructure")
 
-            # Deploy contracts on L2.
-            plan.print("Deploying contracts on L2")
-            deploy_l2_contracts = deployment_stages.get("deploy_l2_contracts", False)
-            import_module(deploy_l2_contracts_package).run(
-                plan, args, deploy_l2_contracts
+            # fund account on L2
+            import_module(agglayer_contracts_package).l2_legacy_fund_accounts(
+                plan, args
             )
+
+            # Deploy contracts on L2.
+            if deployment_stages.get("deploy_l2_contracts", False):
+                plan.print("Deploying contracts on L2")
+                import_module(agglayer_contracts_package).deploy_l2_contracts(
+                    plan, args
+                )
 
         else:
             plan.print("Skipping the deployment of cdk central/trusted environment")
@@ -338,6 +368,7 @@ def deploy_helper_service(plan, args):
                 data=args
                 | {
                     "rpc_url": args["l1_rpc_url"],
+                    "output_dir": constants.OUTPUT_DIR,
                 },
             )
         },
@@ -349,7 +380,7 @@ def deploy_helper_service(plan, args):
         name=helper_service_name,
         config=ServiceConfig(
             image=constants.TOOLBOX_IMAGE,
-            files={"/opt/zkevm": get_rollup_info_artifact},
+            files={constants.OUTPUT_DIR: get_rollup_info_artifact},
             # These two lines are only necessary to deploy to any Kubernetes environment (e.g. GKE).
             entrypoint=["bash", "-c"],
             cmd=["sleep infinity"],
@@ -365,7 +396,7 @@ def deploy_helper_service(plan, args):
                 "/bin/sh",
                 "-c",
                 "chmod +x {0} && {0}".format(
-                    "/opt/zkevm/get-rollup-info.sh",
+                    "{}/get-rollup-info.sh".format(constants.OUTPUT_DIR),
                 ),
             ]
         ),

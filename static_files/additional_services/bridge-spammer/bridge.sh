@@ -94,8 +94,7 @@ while true; do
     --private-key "$PRIVATE_KEY" \
     --chain-id "$L1_CHAIN_ID" \
     --pretty-logs=false
-  sleep 1
-
+  sleep 60
   log_info "Bridging from L2 to L1"
   polycli ulxly bridge asset \
     --value "$(date +%s)" \

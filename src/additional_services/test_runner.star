@@ -24,7 +24,7 @@ def run(
     )
 
     # Generate new wallet for the test runner.
-    funder_private_key = args.get("zkevm_l2_admin_private_key")
+    funder_private_key = args.get("l2_admin_private_key")
     wallet = _generate_new_funded_l1_l2_wallet(
         plan, funder_private_key, l1_rpc_url, l2_rpc_url
     )
@@ -40,7 +40,7 @@ def run(
                 # Agglayer and bridge.
                 "AGGLAYER_RPC_URL": args.get("agglayer_readrpc_url"),
                 "BRIDGE_SERVICE_URL": bridge_service_url,
-                "CLAIMTXMANAGER_ADDR": args.get("zkevm_l2_claimtxmanager_address"),
+                "CLAIMTXMANAGER_ADDR": args.get("l2_claimsponsor_address"),
                 # L1.
                 "L1_PRIVATE_KEY": wallet.private_key,
                 "L1_RPC_URL": l1_rpc_url,

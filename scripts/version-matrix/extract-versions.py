@@ -46,21 +46,20 @@ class VersionMatrixExtractor:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
+
+        cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
+        op_geth_tests_path = repo_root / ".github" / "tests" / "op-geth"
+        op_succinct_tests_path = repo_root / ".github" / "tests" / "op-succinct"
         self.test_files_paths = [
             # cdk-erigon
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "rollup.yml", "cdk-erigon-zkrollup"),
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "validium.yml", "cdk-erigon-validium"),
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "sovereign.yml", "cdk-erigon-sovereign"),
+            ("cdk-erigon-zkrollup", cdk_erigon_tests_path / "rollup.yml"),
+            ("cdk-erigon-validium", cdk_erigon_tests_path / "validium.yml"),
+            ("cdk-erigon-sovereign-pessimistic", cdk_erigon_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-erigon-sovereign-ecdsa-multisig", cdk_erigon_tests_path / "sovereign-ecdsa-multisig.yml"),
             # op-geth
-            (repo_root / ".github" / "tests" / "op-geth" /
-             "sovereign.yml", "cdk-opgeth-sovereign"),
-            # (repo_root / ".github" / "tests" / "op-geth" /
-            #  "ecdsa.yml", "cdk-opgeth-ecdsa"),
-            (repo_root / ".github" / "tests" / "op-succinct" /
-             "mock-prover.yml", "cdk-opgeth-zkrollup"),
+            ("cdk-opgeth-sovereign-pessimistic", op_geth_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-opgeth-sovereign-ecdsa-multisig", op_geth_tests_path / "sovereign-ecdsa-multisig.yml"),
+            ("cdk-opgeth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
         ]
 
         # Component mapping
@@ -216,7 +215,7 @@ class VersionMatrixExtractor:
 
         try:
             if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
-                url = f"https://api.github.com/repos/{repo}/releases"
+                url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
 
@@ -233,7 +232,7 @@ class VersionMatrixExtractor:
                     print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                     return None
 
-            # zkevm-prover latest version is v9.0.0-RC3, which is a tag and not a release
+            # These components don't have any release, thus we rely on tags
             if component in [
                 'zkevm-prover', 'zkevm-bridge-service', 'op-succinct-proposer',
                 'zkevm-pool-manager', 'zkevm-da'
@@ -245,10 +244,16 @@ class VersionMatrixExtractor:
                 )
                 if response.status_code == 200:
                     tags = response.json()
-                    if tags:
-                        latest_tag = tags[0].get('name')
-                        latest_version = re.sub(r'^v?', '', latest_tag)
-                        return latest_version
+                    for tag in tags:
+                        if 'name' in tag:
+                            tag_name = tag['name']
+
+                            # Don't consider v9 tags for zkevm-prover
+                            if component == 'zkevm-prover' and tag_name.startswith('v9'):
+                                continue
+    
+                            latest_version = re.sub(r'^v?', '', tag_name)
+                            return latest_version
                 else:
                     print(f"Error fetching latest version for {component}: {response.status_code} from {url}")
                     return None
@@ -301,8 +306,11 @@ class VersionMatrixExtractor:
             version_float = version_to_int(version)
             version_suffix = version.split('-')[1] if '-' in version else ''
             latest_float = version_to_int(latest_version)
-            latest_suffix = latest_version.split(
-                '-')[1] if '-' in latest_version else ''
+            latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
+
+            # special case for agglayer-contracts
+            if version_suffix.endswith("aggchain.multisig"):
+                return "experimental"
 
             if version_float > latest_float:
                 return "experimental"
@@ -311,6 +319,13 @@ class VersionMatrixExtractor:
             else:
                 if version_suffix == latest_suffix:
                     return "latest"
+                # special case for op-deployer - we use the latest version with a small fix on top, suffixed with `-cdk`
+                if version_suffix == "cdk" and not latest_suffix:
+                    return "latest"
+                # special case for op-succinct-proposer - we use the latest version with a small fix on top, suffixed with `-agglayer`
+                if version_suffix == "agglayer" and not latest_suffix:
+                    return "latest"
+
                 return "experimental"
 
         except Exception as e:
@@ -323,7 +338,7 @@ class VersionMatrixExtractor:
 
         try:
             # Walk through test configuration files
-            for (yaml_file, environment_type) in self.test_files_paths:
+            for (environment_type, yaml_file) in self.test_files_paths:
                 try:
                     with open(yaml_file, 'r') as f:
                         config = yaml.safe_load(f)
@@ -339,6 +354,11 @@ class VersionMatrixExtractor:
 
                     # Extract component versions from the config
                     components = self._extract_components_from_config(args)
+                    
+                    # Also extract OP components from optimism_package section
+                    op_components = self._extract_op_components_from_config(config)
+                    components.update(op_components)
+                    
                     components_with_defaults = {
                         name: comp for name, comp in components.items()
                     }
@@ -398,7 +418,7 @@ class VersionMatrixExtractor:
                 'zkevm-pool-manager',
                 'zkevm-prover',
             ],
-            "cdk-erigon-sovereign": [
+            "cdk-erigon-sovereign-pessimistic": [
                 'aggkit-prover',
                 'aggkit',  # different from cdk-erigon-zkrollup and cdk-erigon-validium
                 'agglayer',
@@ -407,8 +427,17 @@ class VersionMatrixExtractor:
                 'zkevm-bridge-service',
                 'zkevm-pool-manager',
             ],
+            "cdk-erigon-sovereign-ecdsa-multisig": [
+                'aggkit-prover',
+                'aggkit',
+                'agglayer',
+                'agglayer-contracts',
+                'cdk-erigon',
+                'zkevm-bridge-service',
+                'zkevm-pool-manager',
+            ],
             # cdk-opgeth
-            "cdk-opgeth-sovereign": [
+            "cdk-opgeth-sovereign-pessimistic": [
                 'aggkit',
                 'aggkit-prover',
                 'agglayer',
@@ -420,18 +449,18 @@ class VersionMatrixExtractor:
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            # "cdk-opgeth-ecdsa": [
-            #     'aggkit',
-            #     'aggkit-prover',
-            #     'agglayer',
-            #     'agglayer-contracts',
-            #     'op-batcher',
-            #     'op-deployer',
-            #     'op-node',
-            #     'op-geth',
-            #     'op-proposer',
-            #     'zkevm-bridge-service',
-            # ],
+            "cdk-opgeth-sovereign-ecdsa-multisig": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-deployer',
+                'op-node',
+                'op-geth',
+                'op-proposer',
+                'zkevm-bridge-service',
+            ],
             "cdk-opgeth-zkrollup": [
                 'aggkit',
                 'aggkit-prover',
@@ -458,6 +487,7 @@ class VersionMatrixExtractor:
         """Extract component versions from test configuration args."""
         components = {}
 
+        # Extract from direct args (e.g., aggkit_image, etc.)
         for key, value in args.items():
             if key.endswith('_image') and key in self.component_mapping:
                 name = self.component_mapping[key]
@@ -476,6 +506,127 @@ class VersionMatrixExtractor:
                     status=self._determine_status(version, latest_version)
                 )
 
+        return components
+
+    def _extract_op_components_from_config(self, config: dict) -> Dict[str, ComponentVersion]:
+        """Extract OP component versions from optimism_package configuration."""
+        components = {}
+        
+        optimism_package = config.get('optimism_package', {})
+        if not optimism_package:
+            return components
+        
+        # Extract from chains configuration
+        chains = optimism_package.get('chains', {})
+        for chain_id, chain_config in chains.items():
+            if not isinstance(chain_config, dict):
+                continue
+                
+            # Extract from participants (op-node and op-geth)
+            participants = chain_config.get('participants', {})
+            for participant_name, participant_config in participants.items():
+                if not isinstance(participant_config, dict):
+                    continue
+                    
+                # Extract op-geth from el (execution layer)
+                el_config = participant_config.get('el', {})
+                if isinstance(el_config, dict) and 'image' in el_config:
+                    image = el_config['image']
+                    if 'op-geth' in image:
+                        name = 'op-geth'
+                        version = self._extract_version_from_image(image)
+                        version_source_url = self._get_source_url(name, version)
+                        latest_version = self._get_latest_version(name)
+                        latest_version_source_url = self._get_source_url(name, latest_version)
+                        
+                        components[name] = ComponentVersion(
+                            image=image,
+                            version=version,
+                            version_source_url=version_source_url,
+                            latest_version=latest_version,
+                            latest_version_source_url=latest_version_source_url,
+                            status=self._determine_status(version, latest_version)
+                        )
+                
+                # Extract op-node from cl (consensus layer)
+                cl_config = participant_config.get('cl', {})
+                if isinstance(cl_config, dict) and 'image' in cl_config:
+                    image = cl_config['image']
+                    if 'op-node' in image:
+                        name = 'op-node'
+                        version = self._extract_version_from_image(image)
+                        version_source_url = self._get_source_url(name, version)
+                        latest_version = self._get_latest_version(name)
+                        latest_version_source_url = self._get_source_url(name, latest_version)
+                        
+                        components[name] = ComponentVersion(
+                            image=image,
+                            version=version,
+                            version_source_url=version_source_url,
+                            latest_version=latest_version,
+                            latest_version_source_url=latest_version_source_url,
+                            status=self._determine_status(version, latest_version)
+                        )
+            
+            # Extract from batcher_params
+            batcher_params = chain_config.get('batcher_params', {})
+            if isinstance(batcher_params, dict) and 'image' in batcher_params:
+                image = batcher_params['image']
+                if 'op-batcher' in image:
+                    name = 'op-batcher'
+                    version = self._extract_version_from_image(image)
+                    version_source_url = self._get_source_url(name, version)
+                    latest_version = self._get_latest_version(name)
+                    latest_version_source_url = self._get_source_url(name, latest_version)
+                    
+                    components[name] = ComponentVersion(
+                        image=image,
+                        version=version,
+                        version_source_url=version_source_url,
+                        latest_version=latest_version,
+                        latest_version_source_url=latest_version_source_url,
+                        status=self._determine_status(version, latest_version)
+                    )
+            
+            # Extract from proposer_params
+            proposer_params = chain_config.get('proposer_params', {})
+            if isinstance(proposer_params, dict) and 'image' in proposer_params:
+                image = proposer_params['image']
+                if 'op-proposer' in image:
+                    name = 'op-proposer'
+                    version = self._extract_version_from_image(image)
+                    version_source_url = self._get_source_url(name, version)
+                    latest_version = self._get_latest_version(name)
+                    latest_version_source_url = self._get_source_url(name, latest_version)
+                    
+                    components[name] = ComponentVersion(
+                        image=image,
+                        version=version,
+                        version_source_url=version_source_url,
+                        latest_version=latest_version,
+                        latest_version_source_url=latest_version_source_url,
+                        status=self._determine_status(version, latest_version)
+                    )
+        
+        # Extract from top-level optimism_package configurations
+        # Check for direct image specifications
+        for key, value in optimism_package.items():
+            if isinstance(value, str) and key.endswith('_image') and key in self.component_mapping:
+                name = self.component_mapping[key]
+                version = self._extract_version_from_image(value)
+                version_source_url = self._get_source_url(name, version)
+                latest_version = self._get_latest_version(name)
+                latest_version_source_url = self._get_source_url(name, latest_version)
+                
+                components[name] = ComponentVersion(
+                    image=value,
+                    version=version,
+                    version_source_url=version_source_url,
+                    latest_version=latest_version,
+                    latest_version_source_url=latest_version_source_url,
+                    status=self._determine_status(version, latest_version)
+                )
+        
         return components
 
     def generate_version_matrix(self) -> Dict:

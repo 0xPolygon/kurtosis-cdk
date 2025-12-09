@@ -1,7 +1,0 @@
-# Only expose the datastream port of the cdk-erigon sequencer to a static public port.
-# All the other ports will be allocated dynamically using Kurtosis.
-args:
-  verbosity: debug
-  use_dynamic_ports: false
-  static_ports:
-    cdk_erigon_sequencer_start_port: 61700

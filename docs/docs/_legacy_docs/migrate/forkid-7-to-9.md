@@ -62,7 +62,7 @@ This document shows you how to migrate from fork 7 to fork 9 using the Kurtosis 
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-    cast send --legacy --private-key "$(yq -r .args.zkevm_l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
+    cast send --legacy --private-key "$(yq -r .args.l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
     cast rpc zkevm_batchNumber
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber
@@ -142,7 +142,7 @@ After a few minutes, the number of verified batches should increase (the first b
 
     ```sh
     git clone git@github.com:0xPolygonHermez/zkevm-contracts.git
-    pushd zkevm-contracts/
+    pushd agglayer-contracts/
     git reset --hard a38e68b5466d1997cea8466dbd4fc8dacd4e11d8
     npm install
     printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
@@ -167,10 +167,10 @@ After a few minutes, the number of verified batches should increase (the first b
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 el-1-geth-lighthouse rpc)"
-    ger="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMGlobalExitRootAddress /opt/zkevm/combined.json" | tail -n +2)"
-    pol="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polTokenAddress /opt/zkevm/combined.json" | tail -n +2)"
-    bridge="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMBridgeAddress /opt/zkevm/combined.json" | tail -n +2)"
-    mngr="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonRollupManager /opt/zkevm/combined.json" | tail -n +2)"
+    ger="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMGlobalExitRootAddress /opt/output/combined.json" | tail -n +2)"
+    pol="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polTokenAddress /opt/output/combined.json" | tail -n +2)"
+    bridge="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonZkEVMBridgeAddress /opt/output/combined.json" | tail -n +2)"
+    mngr="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonRollupManager /opt/output/combined.json" | tail -n +2)"
     forge create \
         --broadcast \
         --json \
@@ -182,7 +182,7 @@ After a few minutes, the number of verified batches should increase (the first b
 4. Add a new rollup type to the rollup manager:
 
     ```sh
-    genesis="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .genesis /opt/zkevm/combined.json" | tail -n +2)"
+    genesis="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .genesis /opt/output/combined.json" | tail -n +2)"
     cast send \
         --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
@@ -202,7 +202,7 @@ After a few minutes, the number of verified batches should increase (the first b
 6. Update the rollup with the id:
 
     ```sh
-    rollup="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .rollupAddress /opt/zkevm/combined.json" | tail -n +2)"
+    rollup="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .rollupAddress /opt/output/combined.json" | tail -n +2)"
     cast send \
         --json \
         --private-key 0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625 \
@@ -222,7 +222,7 @@ After a few minutes, the number of verified batches should increase (the first b
 8. Set up the data availability protocol again:
 
     ```sh
-    dac="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonDataCommittee /opt/zkevm/combined.json" | tail -n +2)"
+    dac="$(kurtosis service exec cdk-v1 contracts-001 "jq -r .polygonDataCommittee /opt/output/combined.json" | tail -n +2)"
     cast send \
         --json \
         --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
@@ -257,7 +257,7 @@ We're going to revert the parameters back to the versions of the node that worke
 
     ```sh
     export ETH_RPC_URL="$(kurtosis port print cdk-v1 zkevm-node-rpc-001 http-rpc)"
-    cast send --legacy --private-key "$(yq -r .args.zkevm_l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
+    cast send --legacy --private-key "$(yq -r .args.l2_admin_private_key params.yml)" --value 0.01ether 0x0000000000000000000000000000000000000000
     cast rpc zkevm_batchNumber
     cast rpc zkevm_virtualBatchNumber
     cast rpc zkevm_verifiedBatchNumber

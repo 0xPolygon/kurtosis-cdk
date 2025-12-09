@@ -9,24 +9,16 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 ForkId = {{.zkevm_rollup_fork_id}}
 IsValidiumMode = {{.is_cdk_validium}}
 NetworkID = {{.zkevm_rollup_id}}
+ContractVersions = "{{.zkevm_rollup_fork_name}}"
 
-{{if eq .zkevm_rollup_fork_id "12"}}
-ContractVersions = "banana"
-{{else if eq .zkevm_rollup_fork_id "13"}}
-# Doesn't look like this is needed at the moment, but soon perhaps?
-# ContractVersions = "durian"
-ContractVersions = "banana"
-{{else}}
-ContractVersions = "elderberry"
-{{end}}
+L2Coinbase =  "{{.l2_sequencer_address}}"
+SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
+SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
-L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
-SequencerPrivateKeyPath = "{{or .zkevm_l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
-SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-
-AggregatorPrivateKeyPath = "{{or .zkevm_l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
-AggregatorPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
-SenderProofToL1Addr = "{{.zkevm_l2_agglayer_address}}"   
+AggregatorPrivateKeyPath = "{{or .l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
+AggregatorPrivateKeyPassword  = "{{.l2_keystore_password}}"
+SenderProofToL1Addr = "{{.l2_aggregator_address}}"
+# polygonBridgeAddr param is removed in Aggkit versions >= 0.8, but this config file is strictly for CDK-Node, so the changes won't apply here.
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
@@ -42,14 +34,14 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-	
+
 [L2Config]
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
 [Log]
-Environment = "development" # "production" or "development"
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 Outputs = ["stderr"]
+Environment = "{{.environment}}"
 
 [Aggregator]
         Port = "{{.zkevm_aggregator_port}}"
@@ -65,7 +57,7 @@ Outputs = ["stderr"]
                 Port = "{{.aggregator_db.port}}"
                 EnableLog = false
                 MaxConns = 200
-       
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"
@@ -73,12 +65,12 @@ CheckSettledInterval = "5s"
 [ClaimSponsor]
 DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 Enabled = "{{.enable_aggkit_claim_sponsor}}"
-SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
+SenderAddr = "{{.l2_claimsponsor_address}}"
 BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
 
 [ClaimSponsor.EthTxManager]
 PrivateKeys = [
-    {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/cdk/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"},
 ]
 StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 

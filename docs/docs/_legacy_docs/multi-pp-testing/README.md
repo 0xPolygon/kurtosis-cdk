@@ -43,10 +43,10 @@ chains. We'll specifically want the create rollup parameters file
 from the second chain because we need to know the gas token address.
 
 ```
-kurtosis service exec pp contracts-001 "cat /opt/zkevm/combined-001.json"  | tail -n +2 | jq '.' > combined-001.json
-kurtosis service exec pp contracts-002 "cat /opt/zkevm/combined-002.json"  | tail -n +2 | jq '.' > combined-002.json
-kurtosis service exec pp contracts-002 "cat /opt/zkevm-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq -r '.gasTokenAddress' > gas-token-address.json
-kurtosis service exec pp contracts-003 "cat /opt/zkevm/combined-003.json"  | tail -n +2 | jq '.' > combined-003.json
+kurtosis service exec pp contracts-001 "cat /opt/output/combined-001.json"  | tail -n +2 | jq '.' > combined-001.json
+kurtosis service exec pp contracts-002 "cat /opt/output/combined-002.json"  | tail -n +2 | jq '.' > combined-002.json
+kurtosis service exec pp contracts-002 "cat /opt/output-contracts/deployment/v2/create_rollup_parameters.json" | tail -n +2 | jq -r '.gasTokenAddress' > gas-token-address.json
+kurtosis service exec pp contracts-003 "cat /opt/output/combined-003.json"  | tail -n +2 | jq '.' > combined-003.json
 ```
 
 This diagnosis isn't critical, but it's nice to confirm that we are
@@ -61,7 +61,7 @@ cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(
 Check that the hash of the verifier is actually the sp1 verifier. It should be f33fc6bc90b5ea5e0272a7ab87d701bdd05ecd78b8111ca4f450eeff1e6df26a
 
 ```
-kurtosis service exec pp contracts-001 'cat /opt/zkevm-contracts/artifacts/contracts/verifiers/SP1Verifier.sol/SP1Verifier.json' | tail -n +2 | jq -r '.deployedBytecode' | sha256sum
+kurtosis service exec pp contracts-001 'cat /opt/agglayer-contracts/artifacts/contracts/verifiers/SP1Verifier.sol/SP1Verifier.json' | tail -n +2 | jq -r '.deployedBytecode' | sha256sum
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-001.json | jq -r '.verifierAddress') | sha256sum
 cast code --rpc-url http://$(kurtosis port print pp el-1-geth-lighthouse rpc) $(cat combined-002.json | jq -r '.verifierAddress') | sha256sum
 ```
@@ -140,7 +140,7 @@ file). The claim tx manager will automatically perform claims on our
 behalf for bridge assets
 
 ```
-cast send --legacy --value 100ether --rpc-url $l2_pp1_url --private-key $private_key 0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8
+cast send --legacy --value 100ether --rpc-url $l2_pp1_url --private-key $private_key 0x635243A11B41072264Df6c9186e3f473402F94e9
 cast send --legacy --value 100ether --rpc-url $l2_pp2_url --private-key $private_key 0x93F63c24735f45Cd0266E87353071B64dd86bc05
 cast send --legacy --value 100ether --rpc-url $l2_fep_url --private-key $private_key 0x8edC8CE0DB10137d513aB5767ffF13D1c51885a8
 ```

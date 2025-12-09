@@ -22,13 +22,13 @@ def run(
         db_configs,
         deploy_optimism_rollup,
     )
-    claimtx_keystore_artifact = plan.store_service_files(
-        name="claimtxmanager-keystore",
+    claimsponsor_keystore_artifact = plan.store_service_files(
+        name="claimsponsor-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/claimtxmanager.keystore",
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
     bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-        args, bridge_config_artifact, claimtx_keystore_artifact
+        args, bridge_config_artifact, claimsponsor_keystore_artifact
     )
     plan.add_service(
         name="zkevm-bridge-service" + args["deployment_suffix"],
@@ -75,8 +75,9 @@ def create_bridge_config_artifact(
             "bridge-config.toml": struct(
                 template=bridge_config_template,
                 data={
-                    "global_log_level": args["global_log_level"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
+                    "l2_keystore_password": args["l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,
                     # rpc urls

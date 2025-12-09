@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
-          sudo apt install -y kurtosis-cli=1.7.2
+          sudo apt install -y kurtosis-cli=1.11.1
           kurtosis analytics disable
 
       - name: Install yamllint
@@ -64,66 +64,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
 
-  check-version-matrix:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check if job should be run
-        id: check-run
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
-        run: |
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            echo "Prevent running this job on forks. Skipping this job."
-            echo "skip=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          if [[ -z "$GITHUB_TOKEN" ]]; then
-            echo "No Github token provided. Skipping this job."
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "::warning title=version-matrix::Version matrix job skipped."
-            exit 0
-          fi
-
-          echo "Running version matrix job."
-          echo "skip=false" >> $GITHUB_OUTPUT
-
-      - uses: actions/setup-python@v4
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        with:
-          python-version: 3.13
-
-      - name: Install dependencies
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        run: pip install -r scripts/version-matrix/requirements.txt
-
-      - name: Generate version matrix
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
-        run: |
-          echo "Generating version matrix with GitHub API..."
-          python scripts/version-matrix/extract-versions.py
-
-      - name: Generate markdown documentation
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        run: python scripts/version-matrix/generate-markdown.py
-
-      - name: Check if there are changes
-        if: ${{ steps.check-run.outputs.skip == 'false' }}
-        run: |
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
-            git status --porcelain
-            git diff
-            exit 1
-          else
-            echo "✅ Version matrix is up to date."
-          fi
-
   unit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -137,7 +77,7 @@ jobs:
 
       - name: Install kurtosis-test
         run: |
-          git clone --branch v0.0.5 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
+          git clone --branch v0.0.6 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
           cd /tmp/kurtosis-test
           go build -o kurtosis-test cli/main.go
           cp kurtosis-test /usr/local/bin
@@ -169,7 +109,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -282,7 +222,7 @@ jobs:
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
           else
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
@@ -306,17 +246,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Free up disk space
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: false
-          docker-images: true
-          swap-storage: true
-
       - name: Pre kurtosis run
         uses: ./.github/actions/kurtosis-pre-run
         with:
@@ -328,6 +257,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
@@ -351,7 +287,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: bcbff97a600e090dd5cd912a5838c9514f8724e5
+          ref: ae92165db92fcda4dd6bab323ab2b7b8fe579d82
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -493,7 +429,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests

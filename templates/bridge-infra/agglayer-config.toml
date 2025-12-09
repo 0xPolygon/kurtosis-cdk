@@ -16,7 +16,7 @@ mock-verifier = {{.mock_verifier}}
 {{- end }}
 
 [proof-signers]
-1 = "{{.zkevm_l2_sequencer_address}}"
+1 = "{{.l2_sequencer_address}}"
 
 [rpc]
 {{- if eq (slice .agglayer_version 0 4) "0.2." }}
@@ -49,15 +49,14 @@ settlement-timeout = 1200
 gas-multiplier-factor = 175
 
 [log]
-# level = "{{.global_log_level}}"
-# we want debug visibility here for now
-level = "debug"
+# level = "{{.log_level}}"
+level = "debug" # we want debug visibility for now
 outputs = ["stderr"]
-format = "json"
+format = "{{.log_format}}"
 
 [auth.local]
 private-keys = [
-    { path = "/etc/agglayer/aggregator.keystore", password = "{{.zkevm_l2_keystore_password}}" },
+    { path = "/etc/agglayer/aggregator.keystore", password = "{{.l2_keystore_password}}" },
 ]
 
 [l1]

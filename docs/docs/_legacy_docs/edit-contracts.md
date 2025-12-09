@@ -10,9 +10,9 @@ This document draws from the following resources:
 
 ## Goals
 
-- Edit the Solidity code in repo `zkevm-contracts` in file `VerifierRollupHelperMock.sol` in function `verifyProof`.
-- Rebuild the `zkevm-contracts` docker image.
-- Edit this repo `kurtosis-cdk` to use our new build of `zkevm-contracts`.
+- Edit the Solidity code in repo `agglayer-contracts` in file `VerifierRollupHelperMock.sol` in function `verifyProof`.
+- Rebuild the `agglayer-contracts` docker image.
+- Edit this repo `kurtosis-cdk` to use our new build of `agglayer-contracts`.
 - Spin up a Polygon CDK devnet and observe our changes in the active devnet.
 
 # Set up your system
@@ -42,7 +42,7 @@ kurtosis service shell cdk-v1 contracts-001
 In the attached shell take a peek at the Solidity code for `verifyProof`:
 
 ```bash
-cat zkevm-contracts/contracts/mocks/VerifierRollupHelperMock.sol
+cat agglayer-contracts/contracts/mocks/VerifierRollupHelperMock.sol
 ```
 
 You should see
@@ -88,24 +88,24 @@ Tear down your devnet after you're done playing:
 kurtosis clean --all
 ```
 
-# Fetch and edit the docker image `zkevm-contracts`
+# Fetch and edit the docker image `agglayer-contracts`
 
-Clone the repo [`zkevm-contracts`](https://github.com/0xPolygonHermez/zkevm-contracts). Due to Docker's constraints on copying files from the local build context, it will help us later to clone this repo into a new subdirectory `docker/local-test-zkevm-contracts` of the current repo `kurtosis-cdk`:
+Clone the repo [`agglayer-contracts`](https://github.com/0xPolygonHermez/agglayer-contracts). Due to Docker's constraints on copying files from the local build context, it will help us later to clone this repo into a new subdirectory `docker/local-test-agglayer-contracts` of the current repo `kurtosis-cdk`:
 
 ```bash
-git clone git@github.com:0xPolygonHermez/zkevm-contracts.git docker/local-test-zkevm-contracts
+git clone git@github.com:0xPolygonHermez/agglayer-contracts.git docker/local-test-agglayer-contracts
 ```
 
-Optional: add `docker/local-test-zkevm-contracts` to your `.gitignore` file in repo `kurtosis-cdk` to suppress git messages about the repo you just cloned.
+Optional: add `docker/local-test-agglayer-contracts` to your `.gitignore` file in repo `kurtosis-cdk` to suppress git messages about the repo you just cloned.
 
 We don't want any nasty surprises, so let's checkout the version of this repo that's currently used in `kurtosis-cdk`:
 
 ```bash
-cd docker/local-test-zkevm-contracts
+cd docker/local-test-agglayer-contracts
 git checkout v6.0.0-rc.1-fork.9
 ```
 
-Open the file `docker/local-test-zkevm-contracts/contracts/mocks/VerifierRollupHelperMock.sol` and make a silly change:
+Open the file `docker/local-test-agglayer-contracts/contracts/mocks/VerifierRollupHelperMock.sol` and make a silly change:
 
 ```diff
 diff --git a/contracts/mocks/VerifierRollupHelperMock.sol b/contracts/mocks/VerifierRollupHelperMock.sol
@@ -124,68 +124,68 @@ index 85e6b91..20e51c4 100644
 
 This change causes the function `verifyProof` to reject any proof it's given.
 
-# Rebuild the docker image `zkevm-contracts`
+# Rebuild the docker image `agglayer-contracts`
 
-Let's modify the repo `kurtosis-cdk` to build the docker image `zkevm-contracts` from your local file system, and then use that new image in the devnet.
+Let's modify the repo `kurtosis-cdk` to build the docker image `agglayer-contracts` from your local file system, and then use that new image in the devnet.
 
 You can make the following edits manually, or fetch them from the `edit-contracts-demo` branch of [Espresso's fork of `kurtosis-cdk`](https://github.com/EspressoSystems/kurtosis-cdk/tree/edit-contracts-demo).
 
-Open the file `docker/zkevm-contracts.Dockerfile` and make the following edits:
+Open the file `docker/agglayer-contracts.Dockerfile` and make the following edits:
 
 ```diff
-diff --git a/docker/zkevm-contracts.Dockerfile b/docker/zkevm-contracts.Dockerfile
+diff --git a/docker/agglayer-contracts.Dockerfile b/docker/agglayer-contracts.Dockerfile
 index 1a18e9c..531f667 100644
---- a/docker/zkevm-contracts.Dockerfile
-+++ b/docker/zkevm-contracts.Dockerfile
+--- a/docker/agglayer-contracts.Dockerfile
++++ b/docker/agglayer-contracts.Dockerfile
 @@ -12,10 +12,13 @@ LABEL description="Helper image to deploy zkevm contracts"
  # STEP 1: Download zkevm contracts dependencies and compile contracts.
  ARG ZKEVM_CONTRACTS_BRANCH
- WORKDIR /opt/zkevm-contracts
+ WORKDIR /opt/agglayer-contracts
 +
 +# TEMPORARY: clone from my local storage instead of github.
-+COPY local-test-zkevm-contracts .
++COPY local-test-agglayer-contracts .
 +
  # FIX: `npm install` randomly fails with ECONNRESET and ETIMEDOUT errors by installing npm>=10.5.1.
  # https://github.com/npm/cli/releases/tag/v10.5.1
--RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/0xPolygonHermez/zkevm-contracts . \
+-RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/0xPolygonHermez/agglayer-contracts . \
 -  && npm install --global npm@10.6.0 \
 +RUN npm install --global npm@10.6.0 \
    && npm install \
    && npx hardhat compile
 ```
 
-This change tells Docker to build the image `zkevm-contracts` from your new local version of that repo instead of fetching it from github.
+This change tells Docker to build the image `agglayer-contracts` from your new local version of that repo instead of fetching it from github.
 
-Next let's rebuild our edited docker image `zkevm-contracts`. Open a terminal in your repo `kurtosis-cdk`, move to the `docker` directory, and rebuild the image:
+Next let's rebuild our edited docker image `agglayer-contracts`. Open a terminal in your repo `kurtosis-cdk`, move to the `docker` directory, and rebuild the image:
 
 ```bash
 cd docker
 docker build . \
- --tag local/zkevm-contracts:v6.0.0-rc.1-fork.9 \
+ --tag local/agglayer-contracts:v6.0.0-rc.1-fork.9 \
  --build-arg ZKEVM_CONTRACTS_BRANCH=v6.0.0-rc.1-fork.9 \
  --build-arg POLYCLI_VERSION=main \
 --build-arg FOUNDRY_VERSION=nightly \
- --file zkevm-contracts.Dockerfile
+ --file agglayer-contracts.Dockerfile
 ```
 
 Your new image should now be visible in docker. The command
 
 ```bash
-docker images --filter "reference=local/zkevm-contracts"
+docker images --filter "reference=local/agglayer-contracts"
 ```
 
 should produce output like
 
 ```
 REPOSITORY              TAG                    IMAGE ID       CREATED          SIZE
-local/zkevm-contracts   v6.0.0-rc.1-fork.9     fbd050369e61   22 minutes ago   2.37GB
+local/agglayer-contracts   v6.0.0-rc.1-fork.9     fbd050369e61   22 minutes ago   2.37GB
 ```
 
 # Spin up a devnet with your new docker image
 
-Let's spin up a new Polygon CDK devnet with your edited docker image `zkevm-contracts`.
+Let's spin up a new Polygon CDK devnet with your edited docker image `agglayer-contracts`.
 
-Point your devnet to your local docker image. Open the file `params.yml` and change `leovct/zkevm-contracts` to `local/zkevm-contracts`:
+Point your devnet to your local docker image. Open the file `params.yml` and change `leovct/agglayer-contracts` to `local/agglayer-contracts`:
 
 ```diff
 diff --git a/params.yml b/params.yml
@@ -196,8 +196,8 @@ index 5293da7..5e451b6 100644
    zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.7
    # zkevm_da_image: 0xpolygon/cdk-data-availability:0.0.6
 
--  zkevm_contracts_image: leovct/zkevm-contracts:v6.0.0-rc.1-fork.9
-+  zkevm_contracts_image: local/zkevm-contracts:v6.0.0-rc.1-fork.9
+-  zkevm_contracts_image: leovct/agglayer-contracts:v6.0.0-rc.1-fork.9
++  zkevm_contracts_image: local/agglayer-contracts:v6.0.0-rc.1-fork.9
 
    # agglayer_image: 0xpolygon/agglayer:0.1.3
    agglayer_image: ghcr.io/agglayer/agglayer-rs:main
@@ -220,7 +220,7 @@ kurtosis service shell cdk-v1 contracts-001
 Then in the attached shell do
 
 ```bash
-cat zkevm-contracts/contracts/mocks/VerifierRollupHelperMock.sol
+cat agglayer-contracts/contracts/mocks/VerifierRollupHelperMock.sol
 ```
 
 You should see your edits in the live code: `return false` instead of `return true`.

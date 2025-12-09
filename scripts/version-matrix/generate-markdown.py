@@ -57,28 +57,69 @@ sidebar_position: 3
 
 # Version Matrix
 
-> This version matrix is automatically generated.
+> This document is automatically generated.
 """
 
-        # Test environments.
+        # Test environments organized by execution client
         md += "\n## Test Environments\n\n"
-        md += "This section lists all test environments with their configurations and component versions.\n\n"
+        md += "This section lists all test environments with their configurations and component versions, organized by execution client.\n\n"
 
         test_environments = data.get('test_environments', {})
-        for _, environment in sorted(test_environments.items()):
-            environment_type = environment.get('type', 'unknown')
-            md += f"- [{environment_type}](#{environment_type})\n"
-        md += "\n"
+        
+        # Categorize environments by execution client
+        op_geth_envs = {}
+        cdk_erigon_envs = {}
+        
+        for env_key, environment in test_environments.items():
+            if 'cdk-opgeth' in env_key:
+                op_geth_envs[env_key] = environment
+            elif 'cdk-erigon' in env_key:
+                cdk_erigon_envs[env_key] = environment
 
-        for _, environment in sorted(test_environments.items()):
-            environment_type = environment.get('type', 'unknown')
-            config_file_path = environment.get('config_file_path', '')
-            components = environment.get('components', {})
-
-            md += f"### {environment_type}\n\n"
-            md += f"- File path: {config_file_path}\n\n"
-            md += self._generate_component_table(components)
+        # Generate table of contents
+        if op_geth_envs:
+            md += "### CDK OP Geth\n\n"
+            for env_key, environment in sorted(op_geth_envs.items()):
+                environment_type = environment.get('type')
+                md += f"- [{environment_type}](#{environment_type})\n"
             md += "\n"
+        
+        if cdk_erigon_envs:
+            md += "### CDK Erigon\n\n"
+            for env_key, environment in sorted(cdk_erigon_envs.items()):
+                environment_type = environment.get('type')
+                md += f"- [{environment_type}](#{environment_type})\n"
+            md += "\n"
+
+        # Generate CDK OP Geth section
+        if op_geth_envs:
+            md += "## CDK OP Geth\n\n"
+            md += "Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as the L2 execution client.\n\n"
+            
+            for env_key, environment in sorted(op_geth_envs.items()):
+                environment_type = environment.get('type', 'unknown')
+                config_file_path = environment.get('config_file_path', '')
+                components = environment.get('components', {})
+
+                md += f"### {environment_type}\n\n"
+                md += f"- File path: `{config_file_path}`\n\n"
+                md += self._generate_component_table(components)
+                md += "\n"
+
+        # Generate CDK Erigon section
+        if cdk_erigon_envs:
+            md += "## CDK Erigon\n\n"
+            md += "Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the L2 execution client.\n\n"
+            
+            for env_key, environment in sorted(cdk_erigon_envs.items()):
+                environment_type = environment.get('type', 'unknown')
+                config_file_path = environment.get('config_file_path', '')
+                components = environment.get('components', {})
+
+                md += f"### {environment_type}\n\n"
+                md += f"- File path: `{config_file_path}`\n\n"
+                md += self._generate_component_table(components)
+                md += "\n"
 
         # Default images table
         md += "## Default Images\n\n"

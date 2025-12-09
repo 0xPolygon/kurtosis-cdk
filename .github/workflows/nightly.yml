@@ -12,11 +12,13 @@ permissions:
 
 env:
   ENCLAVE_NAME: cdk
+  DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
 
 jobs:
   check-version-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    continue-on-error: true  # prevent this job from failing the workflow
     steps:
       - uses: actions/checkout@v4
 
@@ -54,26 +56,67 @@ jobs:
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_READ }}
-        run: python scripts/version-matrix/extract-versions.py
+        run: |
+          echo "Generating version matrix with GitHub API..."
+          python scripts/version-matrix/extract-versions.py
 
       - name: Generate markdown documentation
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: python scripts/version-matrix/generate-markdown.py
 
       - name: Check if there are changes
+        id: version-check
         if: ${{ steps.check-run.outputs.skip == 'false' }}
         run: |
+          has_diff=false
           if [[ -n $(git status --porcelain) ]]; then
-            echo "::warning title=version-matrix::Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it."
+            has_diff=true
+          fi
+          echo "HAS_DIFF=${has_diff}" >> $GITHUB_ENV
+          echo "HAS_DIFF=${has_diff}"
+
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            {
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK Nightly - Version matrix check",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: version matrix is ${{ env.HAS_DIFF == 'true' && 'outdated ❌' || 'up to date ✅' }}"
+                  }
+                }${{ env.HAS_DIFF == 'true' && ',
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Check the documentation at `scripts/version-matrix` to update it"
+                  }
+                }' || '' }}
+              ]
+            }
+
+      - name: Display check result
+        if: ${{ steps.check-run.outputs.skip == 'false' }}
+        run: |
+          if [[ "${{ env.HAS_DIFF }}" == "true" ]]; then
+            echo "❌ Error: Version matrix is not up to date. Check the documentation at scripts/version-matrix to update it"
             git status --porcelain
             git diff
+            exit 1
           else
-            echo "✅ Version matrix is up to date."
+            echo "✅ Version matrix is up to date"
           fi
 
   run-without-args:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +132,13 @@ jobs:
 
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
+
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -111,10 +161,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R \
-            ./.github/tests/cdk-erigon/*.yml \
-            ./.github/tests/nightly/cdk-erigon/*.yml \
-            ./.github/tests/op-geth/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-geth/*.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -122,9 +169,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" && ! "${file_path}" =~ "nightly" ]]; then
-              job_name="fork12-${folder_name}-${file_name}"
-            elif [[ "${folder_name}" == "op-geth" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
               job_name="${folder_name}-${file_name}"
             elif [[ "${folder_name}" == "nightly" ]]; then
               job_name="nightly-${file_name}"
@@ -141,7 +186,7 @@ jobs:
     needs: list-ymls
     name: run-with-${{ matrix.file.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -161,10 +206,10 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (Central RPC)
+      - name: Monitor pessimistic chain virtual batches (Central RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
             echo "Skipping block verification as consensus is pessimistic."
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
@@ -180,7 +225,7 @@ jobs:
               exit 1
             fi
             echo "RPC name: $rpc_name"
-            ./.github/scripts/monitor-cdk-chain.sh \
+            ./.github/scripts/monitor-pessimistic-chain.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
               --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
           fi
@@ -188,8 +233,8 @@ jobs:
       - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
         run: |
           result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
+          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
+            echo "Skipping block verification as consensus is pessimistic or ecdsa_multisig."
           else
             result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
             if [[ "$result" == "true" ]]; then
@@ -207,7 +252,7 @@ jobs:
           if [[ "$result" == "true" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
           else
             echo "Skipping block verification as there is no OP rollup in the environment"
           fi
@@ -242,6 +287,13 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
+      - name: Monitor rollup
+        working-directory: .github/scripts
+        run: |
+          ./monitor-op-rollup.sh \
+              --enclave ${{ env.ENCLAVE_NAME }} \
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
+
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
         with:
@@ -264,7 +316,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: 4763c63cb11c5e605bff749823bf514abcdac7b6 # 2028-07-10
+          ref: ae92165db92fcda4dd6bab323ab2b7b8fe579d82
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -404,7 +456,7 @@ jobs:
         run: |
           ./monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 http)
+              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -486,3 +538,33 @@ jobs:
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
           args_filename: pre-deployed-gas-token
+
+  workflow-summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: 
+      - run-without-args
+      - run-with-args
+      - run-with-op-succinct
+      - run-with-additional-services
+      - run-with-external-l1
+      - run-with-pre-deployed-gas-token
+    steps:
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          payload: |
+            {
+              "channel": ${{ env.DEVTOOLS_SLACK_ALERTS_CHANNEL_ID }},
+              "text": "Kurtosis CDK Nightly - Test Summary",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Kurtosis CDK Nightly>: ${{ contains(needs.*.result, 'failure') && 'some tests failed ❌' || (contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')) && 'some tests were skipped ⚠️' || 'all tests passed ✅' }}",
+                  }
+                }
+              ]
+            }

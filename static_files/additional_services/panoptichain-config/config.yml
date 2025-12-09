@@ -22,16 +22,11 @@ providers:
         gas_price_factor: 3
       accounts:
         - "{{.l1_sender_address}}"
-        - "{{.zkevm_l2_sequencer_address}}"
-        - "{{.zkevm_l2_aggregator_address}}"
-        - "{{.zkevm_l2_claimtxmanager_address}}"
-        - "{{.zkevm_l2_timelock_address}}"
-        - "{{.zkevm_l2_admin_address}}"
-        - "{{.zkevm_l2_loadtest_address}}"
-        - "{{.zkevm_l2_agglayer_address}}"
-        - "{{.zkevm_l2_dac_address}}"
-        - "{{.zkevm_l2_proofsigner_address}}"
-        - "{{.zkevm_l2_l1testing_address}}"
+        - "{{.l2_sequencer_address}}"
+        - "{{.l2_aggregator_address}}"
+        - "{{.l2_claimsponsor_address}}"
+        - "{{.l2_admin_address}}"
+        - "{{.l2_dac_address}}"
 
     - name: "L2"
       url: "{{.l2_rpc_url}}"
@@ -48,8 +43,8 @@ providers:
         gas_price_factor: 3
       accounts:
         - "{{.l2_sender_address}}"
-        - "{{.zkevm_l2_admin_address}}"
-        - "{{.zkevm_l2_claimtxmanager_address}}"
+        - "{{.l2_admin_address}}"
+        - "{{.l2_claimsponsor_address}}"
 
 networks:
   - name: "L1"
@@ -60,4 +55,4 @@ networks:
     polygon_zkevm: true
 
 logs:
-  verbosity: "{{.global_log_level}}"
+  verbosity: "{{.log_level}}"

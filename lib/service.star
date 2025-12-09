@@ -4,18 +4,18 @@ constants = import_module("../src/package_io/constants.star")
 
 def get_contract_setup_addresses(plan, args, deployment_stages):
     extract = {
-        "zkevm_bridge_address": "fromjson | .polygonZkEVMBridgeAddress",
+        "zkevm_bridge_address": "fromjson | .AgglayerBridge",
         "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
         "zkevm_rollup_address": "fromjson | .rollupAddress",
-        "zkevm_rollup_manager_address": "fromjson | .polygonRollupManagerAddress",
+        "zkevm_rollup_manager_address": "fromjson | .AgglayerManager",
         "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
-        "zkevm_global_exit_root_address": "fromjson | .polygonZkEVMGlobalExitRootAddress",
-        "zkevm_global_exit_root_l2_address": "fromjson | .polygonZkEVMGlobalExitRootL2Address",
+        "zkevm_global_exit_root_address": "fromjson | .AgglayerGER",
+        "zkevm_global_exit_root_l2_address": "fromjson | .LegacyAgglayerGERL2",
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
     }
     if deployment_stages.get("deploy_optimism_rollup", False):
-        extract["agglayer_gateway_address"] = "fromjson | .aggLayerGatewayAddress"
+        extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"
 
     if data_availability_package.is_cdk_validium(args):
         extract[
@@ -23,7 +23,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         ] = "fromjson | .polygonDataCommitteeAddress"
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
+        command=["/bin/sh", "-c", "cat {}/combined.json".format(constants.OUTPUT_DIR)],
         extract=extract,
     )
     service_name = "contracts"
@@ -105,7 +105,11 @@ def get_sovereign_contract_setup_addresses(plan, args):
     }
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat /opt/zkevm-contracts/sovereign-rollup-out.json"],
+        command=[
+            "/bin/sh",
+            "-c",
+            "cat {}/sovereign-rollup-out.json".format(constants.CONTRACTS_DIR),
+        ],
         extract=extract,
     )
     service_name = "contracts" + args["deployment_suffix"]
@@ -225,7 +229,7 @@ def get_op_succinct_l2oo_config(plan, args):
         command=[
             "/bin/sh",
             "-c",
-            "cat /opt/op-succinct/contracts/opsuccinctl2ooconfig.json",
+            "cat /opt/op-succinct/opsuccinctl2ooconfig.json",
         ],
         extract=extract,
     )
@@ -240,33 +244,14 @@ def get_op_succinct_l2oo_config(plan, args):
     return get_exec_recipe_result(result)
 
 
-def get_kurtosis_addresses(args):
-    zkevm_l2_sequencer_address = args["zkevm_l2_sequencer_address"]
-    zkevm_l2_aggregator_address = args["zkevm_l2_aggregator_address"]
-    zkevm_l2_claimtxmanager_address = args["zkevm_l2_claimtxmanager_address"]
-    zkevm_l2_timelock_address = args["zkevm_l2_timelock_address"]
-    zkevm_l2_admin_address = args["zkevm_l2_admin_address"]
-    zkevm_l2_loadtest_address = args["zkevm_l2_loadtest_address"]
-    zkevm_l2_agglayer_address = args["zkevm_l2_agglayer_address"]
-    zkevm_l2_dac_address = args["zkevm_l2_dac_address"]
-    zkevm_l2_proofsigner_address = args["zkevm_l2_proofsigner_address"]
-    zkevm_l2_l1testing_address = args["zkevm_l2_l1testing_address"]
-    zkevm_l2_aggoracle_address = args["zkevm_l2_aggoracle_address"]
-    zkevm_l2_sovereignadmin_address = args["zkevm_l2_sovereignadmin_address"]
-
+def get_l2_addresses_to_fund(args):
     return {
-        "zkevm_l2_sequencer_address": zkevm_l2_sequencer_address,
-        "zkevm_l2_aggregator_address": zkevm_l2_aggregator_address,
-        "zkevm_l2_claimtxmanager_address": zkevm_l2_claimtxmanager_address,
-        "zkevm_l2_timelock_address": zkevm_l2_timelock_address,
-        "zkevm_l2_admin_address": zkevm_l2_admin_address,
-        "zkevm_l2_loadtest_address": zkevm_l2_loadtest_address,
-        "zkevm_l2_agglayer_address": zkevm_l2_agglayer_address,
-        "zkevm_l2_dac_address": zkevm_l2_dac_address,
-        "zkevm_l2_proofsigner_address": zkevm_l2_proofsigner_address,
-        "zkevm_l2_l1testing_address": zkevm_l2_l1testing_address,
-        "zkevm_l2_aggoracle_address": zkevm_l2_aggoracle_address,
-        "zkevm_l2_sovereignadmin_address": zkevm_l2_sovereignadmin_address,
+        "l2_sequencer_address": args["l2_sequencer_address"],
+        "l2_aggregator_address": args["l2_aggregator_address"],
+        "l2_admin_address": args["l2_admin_address"],
+        "l2_dac_address": args["l2_dac_address"],
+        "l2_aggoracle_address": args["l2_aggoracle_address"],
+        "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
     }
 
 
@@ -277,7 +262,7 @@ def get_aggoracle_committee_address(plan, args):
     }
 
     exec_recipe = ExecRecipe(
-        command=["/bin/sh", "-c", "cat /opt/zkevm/combined.json"],
+        command=["/bin/sh", "-c", "cat {}/combined.json".format(constants.OUTPUT_DIR)],
         extract=extract,
     )
 

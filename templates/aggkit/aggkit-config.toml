@@ -18,6 +18,7 @@ L2URL = "{{.op_el_rpc_url}}"
 {{- else }}
 L2URL = "{{.l2_rpc_url}}"
 {{- end }}
+OpNodeURL = "{{.op_cl_rpc_url}}"
 
 # Check if agglayer grpc or readrpc should be used for AggLayerURL
 {{- if eq .agglayer_endpoint "grpc" }}
@@ -28,17 +29,17 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
-NetworkID = {{.zkevm_rollup_id}}
-
 {{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
-SequencerPrivateKeyPassword  = "{{.zkevm_l2_keystore_password}}"
+SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
 SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 {{- end}}
 
+{{- if lt .aggkit_version "0.8" }}
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+{{- end }}
 
 {{- if .deploy_optimism_rollup }}
 RPCURL = "{{.op_el_rpc_url}}"
@@ -93,6 +94,8 @@ polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 {{- end }}
 
+BridgeAddr = "{{.zkevm_bridge_address}}"
+
 # ==============================================================================
 #  _     ____   ____ ___  _   _ _____ ___ ____
 # | |   |___ \ / ___/ _ \| \ | |  ___|_ _/ ___|
@@ -109,6 +112,12 @@ polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
+{{- end }}
+
+{{- if .deploy_optimism_rollup }}
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else }}
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 {{- end }}
 
 # ==============================================================================
@@ -128,14 +137,14 @@ GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L120
 # https://github.com/uber-go/zap/blob/a55bdc32f526699c3b4cc51a2cc97e944d02fbbf/config.go#L161
 # ------------------------------------------------------------------------------
-Environment = "production" # "production" or "development"
+Environment = "{{.environment}}"
 
 # ------------------------------------------------------------------------------
 # Level determines the log level that will be written to the
 # log. Generally we'll switch to debug if we want to troubleshoot
 # something specifically otherwise we leave it at info
 # ------------------------------------------------------------------------------
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 
 # ------------------------------------------------------------------------------
 # Outputs define the output paths for writing logs. The default is to
@@ -191,10 +200,10 @@ Port = "{{.aggkit_node_rest_api_port}}"
 # ------------------------------------------------------------------------------
 # AggsenderPrivateKey is the private key which is used to sign certificates
 # ------------------------------------------------------------------------------
-AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}"}
 
 # ------------------------------------------------------------------------------
-# Defines if a check on aggsender proposer startup will be performed 
+# Defines if a check on aggsender proposer startup will be performed
 # to see if the proposer is in the multisig committee
 # ------------------------------------------------------------------------------
 # RequireCommitteeMembershipCheck = false
@@ -224,8 +233,7 @@ UseTLS = false
 {{- if eq .consensus_contract_type "fep"}}
 [AggSender.OptimisticModeConfig]
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
-TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
-OpNodeURL = "{{.op_cl_rpc_url}}"
+TrustedSequencerKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}"}
 RequireKeyMatchTrustedSequencer = true
 {{- end}}
 
@@ -233,13 +241,6 @@ RequireKeyMatchTrustedSequencer = true
 # URLRPCL2 is the URL of the L2 RPC node
 # ------------------------------------------------------------------------------
 # URLRPCL2 = "{{.op_el_rpc_url}}"
-
-# ------------------------------------------------------------------------------
-# BlockFinality indicates which finality follows AggLayer accepted values are:
-# LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
-# Default value is "LatestBlock"
-# ------------------------------------------------------------------------------
-BlockFinality = "LatestBlock"
 
 # ------------------------------------------------------------------------------
 # EpochNotificationPercentage indicates the percentage of the epoch
@@ -262,11 +263,6 @@ BlockFinality = "LatestBlock"
 # DelayBetweenRetries = 5s
 
 # ------------------------------------------------------------------------------
-# KeepCertificatesHistory is a flag to keep the certificates history on storage
-# ------------------------------------------------------------------------------
-# KeepCertificatesHistory = false
-
-# ------------------------------------------------------------------------------
 # BridgeMetadataAsHash is a flag to import the bridge metadata as hash
 # ------------------------------------------------------------------------------
 # BridgeMetadataAsHash = false
@@ -283,20 +279,37 @@ BlockFinality = "LatestBlock"
 # EnableRPC = false
 
 [AggSender.AgglayerClient]
-Cached = true
-[ValidaAggSendertor.AgglayerClient.ConfigurationCache]
-TTL = "15m"
-Capacity = 100
+
+[[AggSender.AgglayerClient.APIRateLimits]]
+MethodName = "SendCertificate"
+
+[AggSender.AgglayerClient.APIRateLimits.RateLimit]
+# Disable limit
+NumRequests = 0
+
 [AggSender.AgglayerClient.GRPC]
 URL = "{{.agglayer_grpc_url}}"
 MinConnectTimeout = "5s"
 RequestTimeout = "300s"
 UseTLS = false
+
 [AggSender.AgglayerClient.GRPC.Retry]
 InitialBackoff = "1s"
 MaxBackoff = "10s"
 BackoffMultiplier = 2.0
 MaxAttempts = 20
+
+[AggSender.StorageRetainCertificatesPolicy]
+# ------------------------------------------------------------------------------
+# RetainCertificatesCount controls how many certificates to retain on storage.
+# If set to zero, all certificates will be stored.
+# ------------------------------------------------------------------------------
+# RetainCertificatesCount = 0
+
+# ------------------------------------------------------------------------------
+# KeepCertificatesHistory is a flag to keep the certificates history on storage
+# ------------------------------------------------------------------------------
+# KeepCertificatesHistory = true
 
 # ------------------------------------------------------------------------------
 # RetryCertAfterInError when a cert pass to 'InError'state
@@ -399,9 +412,9 @@ AggOracleCommitteeAddr = "{{ .agg_oracle_committee_address }}"
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
 {{- if and .use_agg_oracle_committee .agg_oracle_committee_member_index }}
-PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.agg_oracle_committee_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle-{{.agg_oracle_committee_member_index}}.keystore", Password = "{{.l2_keystore_password}}"}]
 {{- else }}
-PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.zkevm_l2_keystore_password}}"}]
+PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.l2_keystore_password}}"}]
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -520,17 +533,6 @@ BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 # DBPath = "{{.zkevm_path_rw_data}}/bridgel2sync.sqlite"
 
 # ------------------------------------------------------------------------------
-# BlockFinality indicates the status of the blocks that will be queried to sync
-# LatestBlock, SafeBlock, PendingBlock, FinalizedBlock, EarliestBlock
-# Default value is "LatestBlock"
-# ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
-BlockFinality = "FinalizedBlock"
-{{- else }}
-BlockFinality = "LatestBlock"
-{{- end }}
-
-# ------------------------------------------------------------------------------
 # First block that will be queried when starting the synchronization from scratch.
 # It should be a number equal or bellow the creation of the bridge contract
 # ------------------------------------------------------------------------------
@@ -608,7 +610,7 @@ Enabled = "{{.enable_aggkit_claim_sponsor}}"
 # ------------------------------------------------------------------------------
 # SenderAddr is the address that will be used to send the claim txs
 # ------------------------------------------------------------------------------
-SenderAddr = "{{.zkevm_l2_claimsponsor_address}}"
+SenderAddr = "{{.l2_claimsponsor_address}}"
 
 # ------------------------------------------------------------------------------
 # BridgeAddrL2 is the address of the bridge smart contract on L2
@@ -625,7 +627,7 @@ BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
 # to be read in order to provide the private keys to sign the L1 txs
 # ------------------------------------------------------------------------------
 PrivateKeys = [
-    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"},
 ]
 
 # ------------------------------------------------------------------------------
@@ -716,9 +718,9 @@ ProfilingEnabled = {{.aggkit_pprof_enabled}}
 EnableRPC = true
 # Signer = { Method = "mock" }
 {{- if .agg_sender_validator_member_index }}
-Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sender_validator_member_index}}.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sender_validator_member_index}}.keystore", Password = "{{.l2_keystore_password}}" }
 {{- else}}
-Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}" }
+Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}" }
 {{- end}}
 # PessimisticProof or AggchainProof
 {{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}

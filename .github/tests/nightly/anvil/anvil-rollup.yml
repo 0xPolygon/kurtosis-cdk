@@ -1,4 +1,0 @@
-args:
-  verbosity: debug
-  l1_engine: anvil
-  consensus_contract_type: rollup

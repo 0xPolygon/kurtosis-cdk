@@ -122,54 +122,32 @@ DEFAULT_STATIC_PORTS = {
 
 # Addresses and private keys of the different components.
 # They have been generated using the following command:
-# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 14 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,claimtxmanager,timelock,admin,loadtest,agglayer,dac,proofsigner,l1testing,aggoracle,sovereignadmin,claimsponsor,aggsendervalidator",roles,",")} {print "# " roles[NR] "\n\"zkevm_l2_" roles[NR] "_address\": \"" $1 "\","; print "\"zkevm_l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
+# polycli wallet inspect --mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop' --addresses 7 | tee keys.txt | jq -r '.Addresses[] | [.ETHAddress, .HexPrivateKey] | @tsv' | awk 'BEGIN{split("sequencer,aggregator,admin,dac,aggoracle,sovereignadmin,claimsponsor",roles,",")} {print "# " roles[NR] "\n\"l2_" roles[NR] "_address\": \"" $1 "\","; print "\"l2_" roles[NR] "_private_key\": \"0x" $2 "\",\n"}'
 DEFAULT_ACCOUNTS = {
     # sequencer
-    "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
-    "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
+    "l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
+    "l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
     # aggregator
-    "zkevm_l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
-    "zkevm_l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970",
-    # claimtxmanager
-    "zkevm_l2_claimtxmanager_address": "0x5f5dB0D4D58310F53713eF4Df80ba6717868A9f8",
-    "zkevm_l2_claimtxmanager_private_key": "0x8d5c9ecd4ba2a195db3777c8412f8e3370ae9adffac222a54a84e116c7f8b934",
-    # timelock
-    "zkevm_l2_timelock_address": "0x130aA39Aa80407BD251c3d274d161ca302c52B7A",
-    "zkevm_l2_timelock_private_key": "0x80051baf5a0a749296b9dcdb4a38a264d2eea6d43edcf012d20b5560708cf45f",
+    "l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+    "l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970",
     # admin
-    "zkevm_l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
-    "zkevm_l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
-    # loadtest
-    "zkevm_l2_loadtest_address": "0x81457240ff5b49CaF176885ED07e3E7BFbE9Fb81",
-    "zkevm_l2_loadtest_private_key": "0xd7df6d64c569ffdfe7c56e6b34e7a2bdc7b7583db74512a9ffe26fe07faaa5de",
-    # agglayer
-    "zkevm_l2_agglayer_address": "0x351e560852ee001d5D19b5912a269F849f59479a",
-    "zkevm_l2_agglayer_private_key": "0x1d45f90c0a9814d8b8af968fa0677dab2a8ff0266f33b136e560fe420858a419",
+    "l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+    "l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
     # dac
-    "zkevm_l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6",
-    "zkevm_l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b",
-    # proofsigner
-    "zkevm_l2_proofsigner_address": "0x7569cc70950726784c8D3bB256F48e43259Cb445",
-    "zkevm_l2_proofsigner_private_key": "0x77254a70a02223acebf84b6ed8afddff9d3203e31ad219b2bf900f4780cf9b51",
-    # l1testing
-    "zkevm_l2_l1testing_address": "0xfa291C5f54E4669aF59c6cE1447Dc0b3371EF046",
-    "zkevm_l2_l1testing_private_key": "0x1324200455e437cd9d9dc4aa61c702f06fb5bc495dc8ad94ae1504107a216b59",
+    "l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6",
+    "l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b",
     # aggoracle
-    "zkevm_l2_aggoracle_address": "0x0b68058E5b2592b1f472AdFe106305295A332A7C",
-    "zkevm_l2_aggoracle_private_key": "0x6d1d3ef5765cf34176d42276edd7a479ed5dc8dbf35182dfdb12e8aafe0a4919",
+    "l2_aggoracle_address": "0x0b68058E5b2592b1f472AdFe106305295A332A7C",
+    "l2_aggoracle_private_key": "0x6d1d3ef5765cf34176d42276edd7a479ed5dc8dbf35182dfdb12e8aafe0a4919",
     # sovereignadmin
-    # "zkevm_l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
-    # "zkevm_l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
-    # TEMPORARY USE SAME WALLET FOR ADMIN AND AGGCHAINMANAGER AS 4_CREATEROLLUP IS FAILING OTHERWISE
-    "zkevm_l2_sovereignadmin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
-    "zkevm_l2_sovereignadmin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
+    "l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
+    "l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
     # claimsponsor
-    "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
-    "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
-    # aggsendervalidator
-    "zkevm_l2_aggsendervalidator_address": "0xE0005545D8b2a84c2380fAaa2201D92345Bd0F6F",
-    "zkevm_l2_aggsendervalidator_private_key": "0x01a2cdedc257344b84a53d2056a85ad58fdf51e8f65d9259028d89595d4768a8",
+    "l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+    "l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
 }
+
+LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
 
 DEFAULT_L1_ARGS = {
     # The L1 engine to use, either "geth" or "anvil".
@@ -202,7 +180,6 @@ DEFAULT_L1_ARGS = {
     #   - custom_flood
     #   - goomy_blob
     #   - el_forkmon
-    #   - blockscout
     #   - beacon_metrics_gazer
     #   - dora
     #   - full_beaconchain_explorer
@@ -277,7 +254,7 @@ DEFAULT_L2_ARGS = {
 
 DEFAULT_ROLLUP_ARGS = {
     # The keystore password.
-    "zkevm_l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
+    "l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
     # The rollup network identifier.
     "zkevm_rollup_chain_id": 2151908,
     # The unique identifier for the rollup within the RollupManager contract.
@@ -354,7 +331,7 @@ DEFAULT_ROLLUP_ARGS = {
     "use_agg_oracle_committee": False,
     "agg_oracle_committee_quorum": 0,
     # The below parameter will be automatically populated based on "agg_oracle_committee_total_members"
-    # "aggOracleCommittee": ["{{ .zkevm_l2_aggoracle_address }}", "{{ .zkevm_l2_admin_address }}", "{{ .zkevm_l2_sovereignadmin_address }}"],
+    # "aggOracleCommittee": ["{{ .l2_aggoracle_address }}", "{{ .l2_admin_address }}", "{{ .l2_sovereignadmin_address }}"],
     # By default, the L2 mnemonic 'lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop'
     # which is being used to generate the accounts in DEFAULT_ACCOUNTS will also be used to generate the committee members.
     "agg_oracle_committee_total_members": 1,
@@ -368,7 +345,6 @@ DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
     "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
     "zkevm_aggregator_host": "zkevm-node-aggregator-001",
     "genesis_file": "templates/permissionless-node/genesis.json",
-    "sovereign_genesis_file": "templates/sovereign-genesis.json",
 }
 
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
@@ -382,14 +358,12 @@ DEFAULT_ARGS = (
         # Suffix appended to service names.
         # Note: It should be a string.
         "deployment_suffix": "-001",
-        # Verbosity of the `kurtosis run` output.
-        # Valid values are "error", "warn", "info", "debug", and "trace".
-        # By default, the verbosity is set to "info". It won't log the value of the args.
-        "verbosity": "info",
         # The global log level that all components of the stack should log at.
         # Valid values are "error", "warn", "info", "debug", and "trace".
-        "global_log_level": "info",
-        "aggkit_prover_log_level": "info",
+        "log_level": constants.LOG_LEVEL.info,
+        # The log format that all components of the stack should use.
+        # Valid values are "json" and "pretty".
+        "log_format": constants.LOG_FORMAT.pretty,
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
@@ -432,6 +406,7 @@ DEFAULT_ARGS = (
     | constants.DEFAULT_IMAGES
     | DEFAULT_PORTS
     | DEFAULT_ACCOUNTS
+    | LEGACY_DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
     | DEFAULT_PLESS_ZKEVM_NODE_ARGS
@@ -443,9 +418,6 @@ VALID_ADDITIONAL_SERVICES = [
     getattr(constants.ADDITIONAL_SERVICES, field)
     for field in dir(constants.ADDITIONAL_SERVICES)
 ]
-
-# A list of fork identifiers currently supported by Kurtosis CDK.
-SUPPORTED_FORK_IDS = [0, 9, 11, 12, 13]
 
 VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.rollup,
@@ -463,6 +435,8 @@ def parse_args(plan, user_args):
     )
     args = DEFAULT_ARGS | user_args.get("args", {})
     op_input_args = user_args.get("optimism_package", {})
+    deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
+    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
 
     # Change some params if anvil set to make it work
     # As it changes L1 config it needs to be run before other functions/checks
@@ -471,7 +445,8 @@ def parse_args(plan, user_args):
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args)
 
-    validate_consensus_type(args.get("consensus_contract_type"))
+    consensus_contract_type = args.get("consensus_contract_type")
+    validate_consensus_type(consensus_contract_type)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -485,24 +460,25 @@ def parse_args(plan, user_args):
     }
 
     # Validation step.
-    verbosity = args.get("verbosity", "")
-    validate_log_level("verbosity", verbosity)
+    log_level = args.get("log_level")
+    validate_log_level(log_level)
 
-    global_log_level = args.get("global_log_level", "")
-    validate_log_level("global log level", global_log_level)
+    log_format = args.get("log_format")
+    validate_log_format(log_format)
+    environment = log_format_to_environment(log_format)
+    args["environment"] = environment
 
     validate_additional_services(args.get("additional_services", []))
 
     # Determine fork id from the agglayer contracts image tag.
-    agglayer_contracts_image = args.get("agglayer_contracts_image", "")
-    (fork_id, fork_name) = get_fork_id(args, agglayer_contracts_image)
+    zkevm_prover_image = args.get("zkevm_prover_image")
+    (fork_id, fork_name) = get_fork_id(
+        consensus_contract_type, deploy_op_node, zkevm_prover_image
+    )
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
     sequencer_name = get_sequencer_name(sequencer_type)
-
-    deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
-    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
 
     # Determine static ports, if specified.
@@ -546,25 +522,44 @@ def parse_args(plan, user_args):
     return (sorted_deployment_stages, sorted_args, op_args)
 
 
-def validate_log_level(name, log_level):
-    if log_level not in (
+def validate_log_level(log_level):
+    VALID_LOG_LEVELS = [
         constants.LOG_LEVEL.error,
         constants.LOG_LEVEL.warn,
         constants.LOG_LEVEL.info,
         constants.LOG_LEVEL.debug,
         constants.LOG_LEVEL.trace,
-    ):
+    ]
+    if log_level not in VALID_LOG_LEVELS:
         fail(
-            "Unsupported {}: '{}', please use '{}', '{}', '{}', '{}' or '{}'".format(
-                name,
-                log_level,
-                constants.LOG_LEVEL.error,
-                constants.LOG_LEVEL.warn,
-                constants.LOG_LEVEL.info,
-                constants.LOG_LEVEL.debug,
-                constants.LOG_LEVEL.trace,
+            "Unsupported log level: '{}', please use one of: '{}'".format(
+                log_level, VALID_LOG_LEVELS
             )
         )
+
+
+def validate_log_format(log_format):
+    VALID_LOG_FORMATS = [
+        constants.LOG_FORMAT.json,
+        constants.LOG_FORMAT.pretty,
+    ]
+    if log_format not in VALID_LOG_FORMATS:
+        fail(
+            "Unsupported log format: '{}', please use one of: '{}'".format(
+                log_format, VALID_LOG_FORMATS
+            )
+        )
+
+
+def log_format_to_environment(log_format):
+    mapping = {
+        constants.LOG_FORMAT.json: "production",
+        constants.LOG_FORMAT.pretty: "development",
+    }
+    environment = mapping.get(log_format)
+    if not environment:
+        fail("Unknown log format: {}".format(log_format))
+    return environment
 
 
 def validate_additional_services(additional_services):
@@ -577,50 +572,33 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(args, agglayer_contracts_image):
-    """
-    Extract the fork identifier and fork name from a agglayer contracts image name.
-
-    The agglayer contracts tags follow the convention:
-    v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>[-patch.<PATCH_NUMBER>]
-
-    Where:
-    - <SEMVER> is the semantic versioning (MAJOR.MINOR.PATCH).
-    - <RC_NUMBER> is the release candidate number.
-    - <FORK_ID> is the fork identifier.
-    - -patch.<PATCH_NUMBER> is optional and represents the patch number.
-
-    Example:
-    - v8.0.0-rc.2-fork.12
-    - v7.0.0-rc.1-fork.10
-    - v7.0.0-rc.1-fork.11-patch.1
-    """
-    # If aggchain consensus is being used, return 0
+def get_fork_id(consensus_contract_type, deploy_optimism_rollup, zkevm_prover_image):
+    # If aggchain consensus is being used or optimism rollup is being deployed, return zero.
     if (
-        args["consensus_contract_type"] == "ecdsa_multisig"
-        or args["consensus_contract_type"] == "fep"
+        consensus_contract_type
+        in [
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
+            constants.CONSENSUS_TYPE.fep,
+        ]
+        or deploy_optimism_rollup
     ):
         return (0, "aggchain")
-    else:
-        result = agglayer_contracts_image.split("-patch.")[0].split("-fork.")
-        if len(result) != 2:
-            fail(
-                "The agglayer contracts image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
-                    agglayer_contracts_image
-                )
+
+    # Otherwise, parse the fork id from the zkevm-prover image tag.
+    result = zkevm_prover_image.split("-fork.")
+    if len(result) != 2:
+        fail(
+            "The zkevm prover image tag '{}' does not follow the standard v<SEMVER>-rc.<RC_NUMBER>-fork.<FORK_ID>".format(
+                zkevm_prover_image
             )
+        )
 
-        fork_id = int(result[1])
-        if fork_id not in SUPPORTED_FORK_IDS:
-            fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
+    fork_id = int(result[1])
+    if fork_id not in constants.FORK_ID_TO_NAME:
+        fail("The fork id '{}' is not supported by Kurtosis CDK".format(fork_id))
 
-        fork_name = "elderberry"
-        if fork_id >= 12:
-            fork_name = "banana"
-        else:
-            fork_name = "aggchain"
-
-        return (fork_id, fork_name)
+    fork_name = constants.FORK_ID_TO_NAME[fork_id]
+    return (fork_id, fork_name)
 
 
 def get_sequencer_name(sequencer_type):
@@ -829,6 +807,12 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
     # (VKeyCannotBeZero() 0x6745305e), but if we're creating an
     # aggchainFEP it must not be set) or we can hard code to be
     # 0x000...000 in the situations where we know it must be zero
+
+    # Blockscout additional service is only supported on L2
+    if constants.ADDITIONAL_SERVICES.blockscout in args.get(
+        "l1_additional_services", []
+    ):
+        fail("Blockscout is only supported to target L2 network.")
 
 
 def validate_consensus_type(consensus_type):

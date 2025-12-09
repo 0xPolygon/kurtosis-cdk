@@ -36,7 +36,7 @@ def create_aggkit_cdk_service_config(
                 ],
             ),
             "/data": Directory(
-                artifact_names=[],
+                persistent_key="aggkit-data" + args["deployment_suffix"]
             ),
             "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
         },
@@ -53,7 +53,6 @@ def create_root_aggkit_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -77,17 +76,16 @@ def create_root_aggkit_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
-                    keystore_artifact.claimtx,
                     keystore_artifact.sequencer,
                     keystore_artifact.claim_sponsor,
                 ],
             ),
             "/data": Directory(
-                artifact_names=[],
+                persistent_key="aggkit-data" + args["deployment_suffix"]
             ),
+            "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
         },
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=service_command,
@@ -101,7 +99,6 @@ def create_aggkit_bridge_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -111,7 +108,7 @@ def create_aggkit_bridge_service_config(
     aggkit_name = "aggkit" + args["deployment_suffix"] + "-bridge"
     selected_keystore = keystore_artifact.aggoracle
 
-    (ports, public_ports) = get_aggkit_ports(args, None)
+    (ports, public_ports) = get_aggkit_ports(args, forced_bridge_port=True)
     # Only run bridge component for committee members
     service_command = [
         "run",
@@ -127,10 +124,8 @@ def create_aggkit_bridge_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
-                    keystore_artifact.claimtx,
                     keystore_artifact.sequencer,
                     keystore_artifact.claim_sponsor,
                 ],
@@ -151,7 +146,6 @@ def create_aggoracle_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -196,10 +190,8 @@ def create_aggoracle_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
-                    keystore_artifact.claimtx,
                     keystore_artifact.sequencer,
                 ],
             ),
@@ -225,7 +217,6 @@ def create_aggsender_validator_service_config(
     plan,
     args,
     config_artifact,
-    genesis_artifact,
     keystore_artifact,
     member_index=0,
 ):
@@ -265,10 +256,8 @@ def create_aggsender_validator_service_config(
             "/etc/aggkit": Directory(
                 artifact_names=[
                     config_artifact,
-                    genesis_artifact,
                     selected_keystore,
                     keystore_artifact.sovereignadmin,
-                    keystore_artifact.claimtx,
                     keystore_artifact.sequencer,
                 ],
             ),
@@ -284,19 +273,21 @@ def create_aggsender_validator_service_config(
     return configs_to_return
 
 
-def get_aggkit_ports(args, service_type=None):
+def get_aggkit_ports(args, service_type=None, forced_bridge_port=False):
     ports = {
         "rpc": PortSpec(
             args.get("cdk_node_rpc_port"),
             application_protocol="http",
             wait=None,
         ),
-        "rest": PortSpec(
+    }
+
+    if forced_bridge_port or "bridge" in args.get("aggkit_components", ""):
+        ports["rest"] = PortSpec(
             args.get("aggkit_node_rest_api_port"),
             application_protocol="http",
             wait=None,
-        ),
-    }
+        )
 
     if args.get("aggkit_pprof_enabled"):
         ports["pprof"] = PortSpec(

@@ -17,9 +17,9 @@
 # environment, and output destination for logs.                                                                                                                  
 [Log]
 # Set the logging level (e.g., debug, info, warn, error) to control verbosity
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 # Specify the environment in which the application is running (e.g., production, development)
-Environment = "production"
+Environment = "{{.environment}}"
 # Define where to output logs; options include stderr (standard error) or stdout
 Outputs = ["stderr"]
 
@@ -105,7 +105,8 @@ FinalizedGEREnabled = true
 # L1 bridge genesis block.
 [NetworkConfig]
 # Block number where the L1 bridge smart contract was deployed. The bridge needs to compute the merkle tree based on events from that block.
-GenBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+L1GenBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+L2GenBlockNumbers = [0]
 # Address of the Polygon bridge smc
 PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 # Address of the Global exit root smc
@@ -142,7 +143,7 @@ Enabled = true
 # Frequency to monitor transactions
 FrequencyToMonitorTxs = "5s"
 # Path and password for the private key
-PrivateKey = {Path = "/etc/zkevm/claimtxmanager.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+PrivateKey = {Path = "/etc/zkevm/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"}
 # Interval between retries
 RetryInterval = "1s"
 # Number of retry attempts

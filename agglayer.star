@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 databases_package = import_module("./databases.star")
 ports_package = import_module("./src/package_io/ports.star")
 
@@ -44,15 +45,10 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
     agglayer_config_artifact = create_agglayer_config_artifact(
         plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
     )
-    agglayer_keystore_artifact = plan.store_service_files(
-        name="agglayer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/agglayer.keystore",
-    )
     aggregator_keystore_artifact = plan.store_service_files(
         name="aggregator-keystore",
         service_name="contracts" + args["deployment_suffix"],
-        src="/opt/zkevm/aggregator.keystore",
+        src=constants.KEYSTORES_DIR + "/aggregator.keystore",
     )
 
     (ports, public_ports) = get_agglayer_ports(args)
@@ -66,7 +62,6 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
                 "/etc/agglayer": Directory(
                     artifact_names=[
                         agglayer_config_artifact,
-                        agglayer_keystore_artifact,
                         aggregator_keystore_artifact,
                     ]
                 ),
@@ -98,7 +93,8 @@ def create_agglayer_prover_config_artifact(plan, args):
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "global_log_level": args["global_log_level"],
+                    "log_level": args.get("log_level"),
+                    "log_format": args.get("log_format"),
                     "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
                     # ports
                     "agglayer_prover_port": args["agglayer_prover_port"],
@@ -141,18 +137,16 @@ def create_agglayer_config_artifact(
                 # TODO: Organize those args.
                 data={
                     "deployment_suffix": args["deployment_suffix"],
-                    "global_log_level": args["global_log_level"],
+                    "log_level": args.get("log_level"),
+                    "log_format": args.get("log_format"),
                     "l1_chain_id": args["l1_chain_id"],
                     "l1_rpc_url": args["mitm_rpc_url"].get(
                         "agglayer", args["l1_rpc_url"]
                     ),
                     "l1_ws_url": args["l1_ws_url"],
                     "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
-                    "zkevm_l2_keystore_password": args["zkevm_l2_keystore_password"],
-                    "zkevm_l2_proofsigner_address": args[
-                        "zkevm_l2_proofsigner_address"
-                    ],
-                    "zkevm_l2_sequencer_address": args["zkevm_l2_sequencer_address"],
+                    "l2_keystore_password": args["l2_keystore_password"],
+                    "l2_sequencer_address": args["l2_sequencer_address"],
                     # ports
                     "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
                     "agglayer_version": agglayer_version(args),
@@ -170,9 +164,7 @@ def create_agglayer_config_artifact(
                         "deploy_optimism_rollup", False
                     ),
                     "op_el_rpc_url": args["op_el_rpc_url"],
-                    "zkevm_l2_sovereignadmin_address": args[
-                        "zkevm_l2_sovereignadmin_address"
-                    ],
+                    "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
                     "consensus_contract_type": args["consensus_contract_type"],
                 }
                 | contract_setup_addresses

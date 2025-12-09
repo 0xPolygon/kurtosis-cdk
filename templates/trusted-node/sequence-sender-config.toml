@@ -1,15 +1,15 @@
 [Log]
-Environment = "development"
-Level = "{{.global_log_level}}"
+Level = "{{.log_level}}"
 Outputs = ["stdout"]
+Environment = "{{.environment}}"
 
 [SequenceSender]
 IsValidiumMode={{.zkevm_is_validium}}
 WaitPeriodSendSequence = "15s"
 LastBatchVirtualizationTimeMaxWaitPeriod = "10s"
 MaxTxSizeForL1 = 131072
-L2Coinbase =  "{{.zkevm_l2_sequencer_address}}"
-PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"}
+L2Coinbase =  "{{.l2_sequencer_address}}"
+PrivateKey = {Path = "/etc/zkevm/sequencer.keystore", Password = "{{.l2_keystore_password}}"}
 SequencesTxFileName = "/app/data/sequencesender.json"
 WaitPeriodPurgeTxFile = "48h"
 MaxPendingTx = 1
@@ -22,7 +22,7 @@ MaxPendingTx = 1
 		FinalizationL1ConfirmationBlocks = 10
 		WaitReceiptToBeGenerated = "8s"
 		PrivateKeys = [
-			{Path = "/etc/zkevm/sequencer.keystore", Password = "{{.zkevm_l2_keystore_password}}"},
+			{Path = "/etc/zkevm/sequencer.keystore", Password = "{{.l2_keystore_password}}"},
 		]
 		ForcedGas = 0
 		GasPriceMarginFactor = 1
