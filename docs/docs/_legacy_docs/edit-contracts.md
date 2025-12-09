@@ -90,7 +90,7 @@ kurtosis clean --all
 
 # Fetch and edit the docker image `agglayer-contracts`
 
-Clone the repo [`agglayer-contracts`](https://github.com/0xPolygonHermez/agglayer-contracts). Due to Docker's constraints on copying files from the local build context, it will help us later to clone this repo into a new subdirectory `docker/local-test-agglayer-contracts` of the current repo `kurtosis-cdk`:
+Clone the repo [`agglayer-contracts`](https://github.com/agglayer/agglayer-contracts). Due to Docker's constraints on copying files from the local build context, it will help us later to clone this repo into a new subdirectory `docker/local-test-agglayer-contracts` of the current repo `kurtosis-cdk`:
 
 ```bash
 git clone git@github.com:0xPolygonHermez/agglayer-contracts.git docker/local-test-agglayer-contracts
@@ -147,7 +147,7 @@ index 1a18e9c..531f667 100644
 +
  # FIX: `npm install` randomly fails with ECONNRESET and ETIMEDOUT errors by installing npm>=10.5.1.
  # https://github.com/npm/cli/releases/tag/v10.5.1
--RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/0xPolygonHermez/agglayer-contracts . \
+-RUN git clone --branch ${ZKEVM_CONTRACTS_BRANCH} https://github.com/agglayer/agglayer-contracts . \
 -  && npm install --global npm@10.6.0 \
 +RUN npm install --global npm@10.6.0 \
    && npm install \

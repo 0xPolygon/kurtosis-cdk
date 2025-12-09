@@ -209,7 +209,7 @@ op_succinct_submission_interval: "100" # Minimum L2 block interval for checkpoin
 
 ### OP Succinct Contracts Setup
 
-Refer to [official docs](https://succinctlabs.github.io/op-succinct/quick-start/mock.html) for more details.
+Refer to [official docs](https://docs.succinct.xyz/docs/sp1/introduction) for more details.
 
 Steps:
 
