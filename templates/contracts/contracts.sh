@@ -45,7 +45,7 @@ _wait_for_rpc_to_be_available() {
     local mnemonic="$2"
 
     counter=0
-    max_retries=20
+    max_retries=60
     until cast send --rpc-url "$rpc_url" --mnemonic "$mnemonic" --value 0 "{{.l2_sequencer_address}}" &> /dev/null; do
         ((counter++))
         _echo_ts "Can't send L1 transfers yet... Retrying ($counter)..."
