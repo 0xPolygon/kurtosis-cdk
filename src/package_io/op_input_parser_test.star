@@ -28,7 +28,7 @@ def test_parse_args_with_empty_args(plan):
         "zkevm_rollup_chain_id": 2151908,
         "l1_seconds_per_slot": 2,
     }
-    result = op_input_parser.parse_args(plan, user_args, {})
+    result = op_input_parser.parse_args(plan, user_args, {}, {})
     optimism_package = result.get("optimism_package")
 
     # Check native fields
@@ -110,7 +110,7 @@ def test_parse_args_with_user_overrides(plan):
         },
     }
 
-    result = op_input_parser.parse_args(plan, user_args, user_op_args)
+    result = op_input_parser.parse_args(plan, user_args, user_op_args, deployment_stages)
     optimism_package = result.get("optimism_package")
 
     # Check chains structure

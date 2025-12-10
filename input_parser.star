@@ -514,8 +514,8 @@ def parse_args(plan, user_args):
     }
 
     # Parse and sanity check op args
-    op_args = op_input_parser.parse_args(plan, args, op_input_args)
-
+    op_args = op_input_parser.parse_args(plan, args, op_input_args, deployment_stages)
+    
     # Sort dictionaries for debug purposes.
     sorted_deployment_stages = dict.sort_dict_by_values(deployment_stages)
     sorted_args = dict.sort_dict_by_values(args)

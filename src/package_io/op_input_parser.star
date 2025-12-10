@@ -97,18 +97,21 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@a0576d842d01c437ff1b1835623d451c959d0748",  # overlay/main - 2025-11-14
+        "source": "github.com/agglayer/optimism-package/main.star@a88e0431c65bb234d3daac095326243c9d8378a2",  # overlay/main - 2025-11-14
         "predeployed_contracts": True,
     }
 )
 
 
-def parse_args(plan, args, op_args):
+def parse_args(plan, args, op_args, deployment_stages):
     log_format = args.get("log_format")
     default_op_args = _default_args(log_format)
 
     # Get L1 network configuration
     external_l1_network_params = _get_l1_config(plan, args)
+
+    # Get deploy_l1 from deployment_stages if provided, otherwise default to True
+    deploy_l1 = deployment_stages.get("deploy_l1", True)
 
     # Process optimism args
     if op_args == {}:
@@ -118,7 +121,6 @@ def parse_args(plan, args, op_args):
         op_args["chains"] = _parse_chains(op_args["chains"], log_format)
         source = op_args.pop("source")
         predeployed_contracts = op_args.pop("predeployed_contracts")
-        deploy_l1 = args.get("deploy_l1")
         return _sort_dict_by_values(
             {
                 "source": source,
@@ -147,7 +149,6 @@ def parse_args(plan, args, op_args):
     # Extract meta fields
     source = sorted_op_args.pop("source")
     predeployed_contracts = sorted_op_args.pop("predeployed_contracts")
-    deploy_l1 = args.get("deploy_l1")
     # Sanity check
     op_sanity_check.sanity_check(plan, args, sorted_op_args, source)
 
