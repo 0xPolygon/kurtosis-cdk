@@ -192,7 +192,7 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
     default_participant = _default_participant(log_format)
 
     if len(participants.keys()) == 0:
-        return {"node1": default_participant}
+        return {"sequencer1": default_participant}
 
     participants_with_defaults = {}
     for k, v in participants.items():

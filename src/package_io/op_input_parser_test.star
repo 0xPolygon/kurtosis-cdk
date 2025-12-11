@@ -37,8 +37,8 @@ def test_parse_args_with_empty_args(plan):
     chain1 = chains.get("001")
 
     participants = chain1.get("participants")
-    expect.eq(len(participants.keys()), 1)
-    node1 = participants.get("node1")
+    expect.eq(len(participants.keys()), 2)
+    node1 = participants.get("sequencer1")
     expect.eq(
         node1.get("el").get("image"),
         constants.DEFAULT_IMAGES.get("op_geth_image"),
@@ -76,7 +76,7 @@ def test_parse_args_with_user_overrides(plan):
         "chains": {
             "001": {
                 "participants": {
-                    "node1": {
+                    "sequencer1": {
                         "cl": {
                             "image": "op-node:latest",
                         },
@@ -88,7 +88,7 @@ def test_parse_args_with_user_overrides(plan):
             },
             "002": {
                 "participants": {
-                    "node1": {
+                    "sequencer1": {
                         "el": {
                             "image": "op-geth:latest",
                         },
@@ -122,7 +122,7 @@ def test_parse_args_with_user_overrides(plan):
     participants1 = chain1.get("participants")
     expect.eq(len(participants1.keys()), 1)
 
-    node1 = participants1.get("node1")
+    node1 = participants1.get("sequencer1")
     proposer_params1 = chain1.get("proposer_params")
     batcher_params1 = chain1.get("batcher_params")
     network_params1 = chain1.get("network_params")
@@ -153,7 +153,7 @@ def test_parse_args_with_user_overrides(plan):
     participants2 = chain2.get("participants")
     expect.eq(len(participants2.keys()), 1)
 
-    node2 = participants2.get("node1")
+    node2 = participants2.get("sequencer1")
     proposer_params2 = chain2.get("proposer_params")
     batcher_params2 = chain2.get("batcher_params")
     network_params2 = chain2.get("network_params")
@@ -178,9 +178,9 @@ def test_parse_args_with_user_overrides(plan):
     ## Chain 3: Custom batcher params, defaults elsewhere
     chain3 = chains.get("003")
     participants3 = chain3.get("participants")
-    expect.eq(len(participants3.keys()), 1)
+    expect.eq(len(participants3.keys()), 2)
 
-    node3 = participants3.get("node1")
+    node3 = participants3.get("sequencer1")
     proposer_params3 = chain3.get("proposer_params")
     batcher_params3 = chain3.get("batcher_params")
     network_params3 = chain3.get("network_params")
@@ -266,18 +266,18 @@ def test_parse_participants_with_empty_participants(plan):
     # Should return default participant when empty dict is provided
     result = op_input_parser._parse_participants({})
     expect.eq(len(result.keys()), 1)
-    expect.eq(result.get("node1"), op_input_parser._default_participant())
+    expect.eq(result.get("sequencer1"), op_input_parser._default_participant())
 
 
 def test_parse_participants_with_partial_config(plan):
     # Should apply defaults to partially configured participants
     participants = {
-        "node1": {
+        "sequencer1": {
             "el": {
                 "image": "custom-geth:latest",
             },
         },
-        "node2": {
+        "rpc1": {
             "cl": {
                 "image": "custom-node:latest",
             },
@@ -288,14 +288,14 @@ def test_parse_participants_with_partial_config(plan):
     expect.eq(len(result.keys()), 2)
 
     # First participant should have custom EL image but default CL image
-    node1 = result.get("node1")
+    node1 = result.get("sequencer1")
     expect.eq(node1.get("el").get("image"), "custom-geth:latest")
     expect.eq(
         node1.get("cl").get("image"), constants.DEFAULT_IMAGES.get("op_node_image")
     )
 
     # Second participant should have custom CL image but default everything else
-    node2 = result.get("node2")
+    node2 = result.get("rpc1")
     expect.eq(node2.get("cl").get("image"), "custom-node:latest")
     expect.eq(
         node2.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
