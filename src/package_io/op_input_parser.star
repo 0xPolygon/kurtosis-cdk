@@ -39,7 +39,8 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
     return _sort_dict_by_values(
         {
             "participants": {
-                "node1": _default_participant(log_format),
+                "sequencer1": _default_participant(log_format) | {"sequencer": True},
+                "rpc1": _default_participant(log_format) | {"sequencer": "sequencer1"},
             },
             "batcher_params": _sort_dict_by_values(
                 {
@@ -195,7 +196,9 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
     default_participant = _default_participant(log_format)
 
     if len(participants.keys()) == 0:
-        return {"node1": default_participant}
+        default_chain = _default_chain(log_format)
+        default_participants = default_chain.get("participants")
+        return default_participants
 
     participants_with_defaults = {}
     for k, v in participants.items():
