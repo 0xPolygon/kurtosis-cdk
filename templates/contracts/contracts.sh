@@ -83,6 +83,52 @@ _fund_account_on_l1() {
 
 # Internal function, used by deploy_agglayer_core_contracts
 _deploy_agglayer_manager() {
+# HACK workaround for nonce issues in deploying verifier
+    cat << 'EOF' | patch /opt/agglayer-contracts/deployment/v2/3_deployContracts.ts
+--- a/deployment/v2/3_deployContracts.ts
++++ b/deployment/v2/3_deployContracts.ts
+@@ -229,6 +229,7 @@ async function main() {
+     let precalculateGlobalExitRootAddress;
+     let precalculateRollupManager;
+     let timelockContract;
++    let nonceVerifier: number | undefined;
+ 
+     const timelockContractFactory = await ethers.getContractFactory('PolygonZkEVMTimelock', deployer);
+ 
+@@ -246,13 +247,17 @@ async function main() {
+         delete ongoingDeployment.polygonZkEVMGlobalExitRoot;
+         delete ongoingDeployment.polygonRollupManagerContract;
+         fs.writeFileSync(pathOngoingDeploymentJson, JSON.stringify(ongoingDeployment, null, 1));
++        const baseNonce = Number(await ethers.provider.getTransactionCount(deployer.address));
+ 
+         // Nonce globalExitRoot: currentNonce + 1 (deploy bridge proxy) + 1(impl globalExitRoot)
+         // + 1 (deployTimelock) + 1 (transfer Ownership Admin) = +4
+-        const nonceProxyGlobalExitRoot = Number(await ethers.provider.getTransactionCount(deployer.address)) + 4;
++        const nonceProxyGlobalExitRoot = baseNonce + 4;
+ 
+-        // nonceProxyRollupManager :Nonce globalExitRoot + 1 (proxy globalExitRoot) + 1 (verifier) + 1 (impl agglayer gateway) + 1 (proxy agglayer gateway) + 1 (impl rollupManager) = +5
+-        const nonceProxyRollupManager = nonceProxyGlobalExitRoot + 5;
++        // Verifier: after proxy globalExitRoot
++        nonceVerifier = nonceProxyGlobalExitRoot + 1;
++
++        // nonceProxyRollupManager: after verifier + impl agglayer gateway + proxy agglayer gateway + impl rollupManager = +4 more
++        const nonceProxyRollupManager = nonceVerifier + 4;
+ 
+         // Contracts are not deployed, normal deployment
+         precalculateGlobalExitRootAddress = ethers.getCreateAddress({
+@@ -420,7 +425,10 @@ async function main() {
+         verifierName = 'VerifierRollupHelperMock';
+     }
+     const VerifierRollupFactory = await ethers.getContractFactory(verifierName, deployer);
+-    const verifierContract = await VerifierRollupFactory.deploy();
++    const verifierContract =
++        typeof nonceVerifier !== 'undefined'
++            ? await VerifierRollupFactory.deploy({ nonce: nonceVerifier })
++            : await VerifierRollupFactory.deploy();
+     await verifierContract.waitForDeployment();
+ 
+     console.log('#######################\n');
+EOF
     # Deploy contracts.
     _echo_ts "Step 1: Preparing testnet"
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out
