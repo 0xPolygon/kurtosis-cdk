@@ -129,6 +129,128 @@ _deploy_agglayer_manager() {
  
      console.log('#######################\n');
 EOF
+
+    # HACK to overcome nonce issues in 4_createRollup.ts
+    cat << 'EOF' | patch /opt/agglayer-contracts/deployment/v2/4_createRollup.ts
+--- a/deployment/v2/4_createRollup.ts
++++ b/deployment/v2/4_createRollup.ts
+@@ -502,7 +502,7 @@ async function main() {
+         if (aggchainManagerPvtKey && aggchainManagerPvtKey.trim() !== '') {
+             // Use provided private key for aggchainManager
+             console.log('Using provided aggchainManagerPvtKey...');
+-            aggchainManagerSigner = new ethers.Wallet(aggchainManagerPvtKey, ethers.provider);
++            aggchainManagerSigner = new ethers.Wallet(aggchainManagerPvtKey, currentProvider);
+ 
+             // Verify that the private key matches the expected address
+             if (aggchainManagerSigner.address.toLowerCase() !== aggchainManagerAddress.toLowerCase()) {
+@@ -525,38 +525,76 @@ async function main() {
+         // Connect contract with aggchainManager signer
+         const aggchainContractWithManager = aggchainContract.connect(aggchainManagerSigner);
+ 
++        // Use retry logic similar to other deployments
++        const attemptsInitialize = 20;
+         let txInitAggChain;
+-        if (consensusContract === utilsAggchain.AGGCHAIN_CONTRACT_NAMES.FEP) {
+-            // Initialize FEP contract with direct parameters using aggchainManager
+-            txInitAggChain = await aggchainContractWithManager.initialize(
+-                aggchainInitParams.initParams,
+-                aggchainInitParams.signers,
+-                aggchainInitParams.threshold,
+-                aggchainInitParams.useDefaultVkeys,
+-                aggchainInitParams.useDefaultSigners,
+-                aggchainInitParams.initOwnedAggchainVKey,
+-                aggchainInitParams.initAggchainVKeySelector,
+-                aggchainInitParams.adminZkEVM,
+-                aggchainInitParams.trustedSequencer,
+-                aggchainInitParams.gasTokenAddress,
+-                aggchainInitParams.trustedSequencerURL,
+-                aggchainInitParams.networkName,
+-            );
+-        } else if (consensusContract === utilsAggchain.AGGCHAIN_CONTRACT_NAMES.ECDSA) {
+-            // Initialize ECDSA Multisig contract with direct parameters using aggchainManager
+-            txInitAggChain = await aggchainContractWithManager.initialize(
+-                aggchainInitParams.adminZkEVM,
+-                aggchainInitParams.trustedSequencer,
+-                aggchainInitParams.gasTokenAddress,
+-                aggchainInitParams.trustedSequencerURL,
+-                aggchainInitParams.networkName,
+-                aggchainInitParams.useDefaultSigners,
+-                aggchainInitParams.signers,
+-                aggchainInitParams.threshold,
+-            );
+-        }
++        let initSuccess = false;
++
++        for (let i = 0; i < attemptsInitialize; i++) {
++            try {
++                // Get fresh nonce for each attempt
++                const freshNonce = await aggchainManagerSigner.getNonce('latest');
++                
++                // Get fresh fee data for each attempt
++                const feeData = await currentProvider.getFeeData();
++                const gasOptions = {
++                    nonce: freshNonce,
++                    maxFeePerGas: feeData.maxFeePerGas ? (feeData.maxFeePerGas * 120n) / 100n : undefined,
++                    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? (feeData.maxPriorityFeePerGas * 120n) / 100n : undefined,
++                };
++                
++                console.log(`Attempt ${i + 1}: Using nonce ${freshNonce} with 20% gas boost`);
++                
++                if (consensusContract === utilsAggchain.AGGCHAIN_CONTRACT_NAMES.FEP) {
++                    // Initialize FEP contract with direct parameters using aggchainManager
++                    txInitAggChain = await aggchainContractWithManager.initialize(
++                        aggchainInitParams.initParams,
++                        aggchainInitParams.signers,
++                        aggchainInitParams.threshold,
++                        aggchainInitParams.useDefaultVkeys,
++                        aggchainInitParams.useDefaultSigners,
++                        aggchainInitParams.initOwnedAggchainVKey,
++                        aggchainInitParams.initAggchainVKeySelector,
++                        aggchainInitParams.adminZkEVM,
++                        aggchainInitParams.trustedSequencer,
++                        aggchainInitParams.gasTokenAddress,
++                        aggchainInitParams.trustedSequencerURL,
++                        aggchainInitParams.networkName,
++                        gasOptions,
++                    );
++                } else if (consensusContract === utilsAggchain.AGGCHAIN_CONTRACT_NAMES.ECDSA) {
++                    // Initialize ECDSA Multisig contract with direct parameters using aggchainManager
++                    txInitAggChain = await aggchainContractWithManager.initialize(
++                        aggchainInitParams.adminZkEVM,
++                        aggchainInitParams.trustedSequencer,
++                        aggchainInitParams.gasTokenAddress,
++                        aggchainInitParams.trustedSequencerURL,
++                        aggchainInitParams.networkName,
++                        aggchainInitParams.useDefaultSigners,
++                        aggchainInitParams.signers,
++                        aggchainInitParams.threshold,
++                        gasOptions,
++                    );
++                }
+ 
+-        await txInitAggChain.wait();
++                await txInitAggChain.wait();
++                console.log('✓ Aggchain initialized successfully');
++                initSuccess = true;
++                break;
++            } catch (error: any) {
++                console.log(`Attempt ${i + 1} failed:`, error.message);
++                
++                // Wait a bit before retrying to let pending transactions clear
++                if (i < attemptsInitialize - 1) {
++                    console.log('Waiting 5 seconds before retry...');
++                    await new Promise(resolve => setTimeout(resolve, 5000));
++                }
++            }
++        }
++        
++        if (!initSuccess) {
++            throw new Error('Aggchain initialization failed after all attempts');
++        }
+     }
+ 
+     if (consensusContract.includes('PolygonValidiumEtrog') && dataAvailabilityProtocol === 'PolygonDataCommittee') {
+EOF
     # Deploy contracts.
     _echo_ts "Step 1: Preparing testnet"
     npx hardhat run deployment/testnet/prepareTestnet.ts --network localhost 2>&1 | tee 01_prepare_testnet.out

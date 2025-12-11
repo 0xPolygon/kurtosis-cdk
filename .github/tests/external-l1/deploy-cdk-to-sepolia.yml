@@ -6,13 +6,22 @@ args:
   ## L1 Config
   l1_chain_id: 11155111
   # TODO: Create another mnemonic seed phrase for running the contract deployment on L1.
-  l1_preallocated_mnemonic: CHANGE_ME
+  # Phrase:
+  # address icon kingdom orphan pencil hotel goddess raw toast include anchor boil
+  l1_preallocated_mnemonic: "<REDACTED>"
   # TODO: Adjust the amount of ETH you want to spend on this deployment.
-  l1_funding_amount: 0.1ether
-  # TODO: Configure the L1 RPC URLs to be valid Sepolia endpoints.
-  l1_rpc_url: CHANGE_ME
-  l1_ws_url: CHANGE_ME
+  l1_funding_amount: "0.1ether"
+  l2_funding_amount: "0.1ether"
+  l1_rpc_url: "<REDACTED>"
+  l1_ws_url: "<REDACTED>"
+  l1_beacon_url: "<REDACTED>"
 
   ## L2 Config
-  l2_admin_address: CHANGE_ME
-  l2_admin_private_key: CHANGE_ME
+  # admin
+  l2_admin_address: "<REDACTED>"
+  l2_admin_private_key: "<REDACTED>"
+  # sovereignadmin
+  l2_sovereignadmin_address: "<REDACTED>"
+  l2_sovereignadmin_private_key: "<REDACTED>"
+
+  additional_services: []
