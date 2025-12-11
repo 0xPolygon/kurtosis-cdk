@@ -9,6 +9,7 @@ args:
   # Phrase:
   # address icon kingdom orphan pencil hotel goddess raw toast include anchor boil
   l1_preallocated_mnemonic: "<REDACTED>"
+  # Accounts:
   # TODO: Adjust the amount of ETH you want to spend on this deployment.
   l1_funding_amount: "0.1ether"
   l2_funding_amount: "0.1ether"
@@ -17,11 +18,15 @@ args:
   l1_beacon_url: "<REDACTED>"
 
   ## L2 Config
+  ## Make sure all the addresses below are sufficiently funded
   # admin
   l2_admin_address: "<REDACTED>"
   l2_admin_private_key: "<REDACTED>"
   # sovereignadmin
   l2_sovereignadmin_address: "<REDACTED>"
   l2_sovereignadmin_private_key: "<REDACTED>"
+  # aggregator
+  l2_aggregator_address: "<REDACTED>"
+  l2_aggregator_private_key: "<REDACTED>"
 
   additional_services: []
