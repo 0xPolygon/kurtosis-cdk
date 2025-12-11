@@ -122,21 +122,21 @@ def test_parse_args_with_user_overrides(plan):
     participants1 = chain1.get("participants")
     expect.eq(len(participants1.keys()), 1)
 
-    node1 = participants1.get("sequencer1")
+    sequencer1 = participants1.get("sequencer1")
     proposer_params1 = chain1.get("proposer_params")
     batcher_params1 = chain1.get("batcher_params")
     network_params1 = chain1.get("network_params")
     # overrides
-    expect.eq(node1.get("cl").get("image"), "op-node:latest")
+    expect.eq(sequencer1.get("cl").get("image"), "op-node:latest")
     expect.eq(
-        node1.get("cl").get("extra_params"),
+        sequencer1.get("cl").get("extra_params"),
         ["--rollup.l1-chain-config=/l1/genesis.json", "--log.format=json"],
     )
     expect.eq(proposer_params1.get("enabled"), False)
 
     # defaults
     expect.eq(
-        node1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
+        sequencer1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
     )
     expect.eq(
         proposer_params1.get("image"),
@@ -265,8 +265,15 @@ def test_parse_chains_with_partial_config(plan):
 def test_parse_participants_with_empty_participants(plan):
     # Should return default participant when empty dict is provided
     result = op_input_parser._parse_participants({})
-    expect.eq(len(result.keys()), 1)
-    expect.eq(result.get("sequencer1"), op_input_parser._default_participant())
+    expect.eq(len(result.keys()), 2)
+    expect.eq(
+        result.get("sequencer1"),
+        op_input_parser._default_participant() | {"sequencer": True},
+    )
+    expect.eq(
+        result.get("rpc1"),
+        op_input_parser._default_participant() | {"sequencer": "sequencer1"},
+    )
 
 
 def test_parse_participants_with_partial_config(plan):
@@ -288,17 +295,17 @@ def test_parse_participants_with_partial_config(plan):
     expect.eq(len(result.keys()), 2)
 
     # First participant should have custom EL image but default CL image
-    node1 = result.get("sequencer1")
-    expect.eq(node1.get("el").get("image"), "custom-geth:latest")
+    sequencer1 = result.get("sequencer1")
+    expect.eq(sequencer1.get("el").get("image"), "custom-geth:latest")
     expect.eq(
-        node1.get("cl").get("image"), constants.DEFAULT_IMAGES.get("op_node_image")
+        sequencer1.get("cl").get("image"), constants.DEFAULT_IMAGES.get("op_node_image")
     )
 
     # Second participant should have custom CL image but default everything else
-    node2 = result.get("rpc1")
-    expect.eq(node2.get("cl").get("image"), "custom-node:latest")
+    rpc1 = result.get("rpc1")
+    expect.eq(rpc1.get("cl").get("image"), "custom-node:latest")
     expect.eq(
-        node2.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
+        rpc1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
     )
 
 
