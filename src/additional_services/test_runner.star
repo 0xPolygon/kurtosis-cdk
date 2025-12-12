@@ -1,3 +1,4 @@
+constants = import_module("../package_io/constants.star")
 hex = import_module("../hex/hex.star")
 service_package = import_module("../../lib/service.star")
 wallet_module = import_module("../wallet/wallet.star")
@@ -9,6 +10,7 @@ def run(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
     deployment_stages,
+    sequencer_type,
 ):
     # Get urls.
     l1_rpc_url = args.get("l1_rpc_url")
@@ -18,7 +20,7 @@ def run(
     )
     l2_bridge_address = _get_l2_bridge_address(
         plan,
-        deployment_stages.get("deploy_optimism_rollup"),
+        sequencer_type,
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
     )
@@ -80,11 +82,11 @@ def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
 
 def _get_l2_bridge_address(
     plan,
-    deploy_optimism_rollup,
+    sequencer_type,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
 ):
-    if deploy_optimism_rollup:
+    if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         return sovereign_contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
     if "zkevm_bridge_l2_address" in contract_setup_addresses:

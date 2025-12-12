@@ -36,8 +36,19 @@ CONSENSUS_TYPE = struct(
 )
 
 SEQUENCER_TYPE = struct(
-    CDK_ERIGON="erigon",
+    cdk_erigon="cdk-erigon",
+    op_geth="op-geth",
 )
+
+L2_SEQUENCER_MAPPING = {
+    SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
+    SEQUENCER_TYPE.op_geth: "op-el-1-op-geth-op-node",
+}
+
+L2_RPC_MAPPING = {
+    SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
+    SEQUENCER_TYPE.op_geth: "op-el-2-op-geth-op-node",
+}
 
 FORK_ID_TO_NAME = {
     9: "elderberry",

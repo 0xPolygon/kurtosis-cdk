@@ -90,7 +90,7 @@ def run(plan, args):
 
 def get_db_configs(suffix, sequencer_type):
     dbs = None
-    if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
+    if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
         dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS | OP_SUCCINCT_PROPOSER_DBS
     else:
         fail("Unsupported sequencer type: %s" % sequencer_type)

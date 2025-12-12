@@ -8,6 +8,7 @@ def launch(
     sovereign_contract_setup_addresses,
     genesis_artifact,
     deployment_stages,
+    sequencer_type,
 ):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.agglogger:
@@ -16,7 +17,7 @@ def launch(
                 args,
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
-                deployment_stages.get("deploy_optimism_rollup"),
+                sequencer_type,
             )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
             import_module("./arpeggio.star").run(plan, args)
@@ -49,6 +50,7 @@ def launch(
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
                 deployment_stages,
+                sequencer_type,
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args)

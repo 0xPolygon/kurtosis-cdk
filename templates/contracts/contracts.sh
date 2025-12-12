@@ -512,8 +512,7 @@ create_agglayer_rollup() {
     fi
 
     # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
-    deploy_optimism_rollup="{{.deploy_optimism_rollup}}"
-    if [[ "$deploy_optimism_rollup" != "true" ]]; then
+    if [[ "{{.sequencer_type}}" != "op-geth" ]]; then
         _echo_ts "Step 5: Creating Rollup/Validium"
         npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
         # Support for new output file format
@@ -535,7 +534,7 @@ create_agglayer_rollup() {
     # Now we can combine all of the files and put them into the general zkevm folder.
 
     # Check create_rollup_output.json exists before copying it.
-    # For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
+    # For the case of OP rollup, create_rollup_output.json will not be created.
     if [[ -e "$contracts_dir"/deployment/v2/create_rollup_output.json ]]; then
         cp "$contracts_dir"/deployment/v2/create_rollup_output.json "$output_dir"/
     else
@@ -549,7 +548,7 @@ create_agglayer_rollup() {
 
     cp genesis.json genesis.original.json
     # Check create_rollup_output.json exists before copying it.
-    # For the case of deploy_optimism_rollup, create_rollup_output.json will not be created.
+    # For the case of OP rollup, create_rollup_output.json will not be created.
     if [[ -e create_rollup_output.json ]]; then
         echo "File create_rollup_output.json exists. Combining files..."
         jq --slurpfile rollup create_rollup_output.json '. + $rollup[0]' deploy_output.json > combined.json
