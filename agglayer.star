@@ -4,52 +4,22 @@ ports_package = import_module("./src/package_io/ports.star")
 
 
 def run(plan, deployment_stages, args, contract_setup_addresses):
-    # Create agglayer prover service.
-    agglayer_prover_config_artifact = create_agglayer_prover_config_artifact(plan, args)
-    (ports, public_ports) = get_agglayer_prover_ports(args)
-
-    prover_env_vars = {}
-
-    prover_env_vars["RUST_BACKTRACE"] = "1"
-    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
-        prover_env_vars["NETWORK_PRIVATE_KEY"] = args["sp1_prover_key"]
-        # Keeping this for backward compatibility for now
-        prover_env_vars["SP1_PRIVATE_KEY"] = args["sp1_prover_key"]
-        prover_env_vars["NETWORK_RPC_URL"] = args["agglayer_prover_network_url"]
-
-    agglayer_prover = plan.add_service(
-        name="agglayer-prover",
-        config=ServiceConfig(
-            image=args["agglayer_image"],
-            ports=ports,
-            public_ports=public_ports,
-            files={
-                "/etc/agglayer": Directory(
-                    artifact_names=[
-                        agglayer_prover_config_artifact,
-                    ]
-                ),
-            },
-            entrypoint=[
-                "/usr/local/bin/agglayer",
-            ],
-            env_vars=prover_env_vars,
-            cmd=["prover", "--cfg", "/etc/agglayer/agglayer-prover-config.toml"],
-        ),
-    )
-    agglayer_prover_url = "http://{}:{}".format(
-        agglayer_prover.ip_address, agglayer_prover.ports["api"].number
-    )
-
     # Deploy agglayer service.
     agglayer_config_artifact = create_agglayer_config_artifact(
-        plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
+        plan, deployment_stages, args, contract_setup_addresses
     )
     aggregator_keystore_artifact = plan.store_service_files(
         name="aggregator-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/aggregator.keystore",
     )
+    sp1_env_vars = {}
+    sp1_env_vars["RUST_BACKTRACE"] = "1"
+    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
+        sp1_env_vars["NETWORK_PRIVATE_KEY"] = args["sp1_prover_key"]
+        # Keeping this for backward compatibility for now
+        sp1_env_vars["SP1_PRIVATE_KEY"] = args["sp1_prover_key"]
+        sp1_env_vars["NETWORK_RPC_URL"] = args["sp1_cluster_endpoint"]
 
     (ports, public_ports) = get_agglayer_ports(args)
     plan.add_service(
@@ -69,44 +39,9 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
             entrypoint=[
                 "/usr/local/bin/agglayer",
             ],
+            env_vars=sp1_env_vars,
             cmd=["run", "--cfg", "/etc/agglayer/agglayer-config.toml"],
         ),
-    )
-
-
-def create_agglayer_prover_config_artifact(plan, args):
-    agglayer_prover_config_template = read_file(
-        src="./templates/bridge-infra/agglayer-prover-config.toml"
-    )
-
-    is_cpu_prover_enabled = "true"
-    is_network_prover_enabled = "false"
-    if "sp1_prover_key" in args and args["sp1_prover_key"] != None:
-        is_cpu_prover_enabled = "false"
-        is_network_prover_enabled = "true"
-
-    return plan.render_templates(
-        name="agglayer-prover-config-artifact",
-        config={
-            "agglayer-prover-config.toml": struct(
-                template=agglayer_prover_config_template,
-                # TODO: Organize those args.
-                data={
-                    "deployment_suffix": args["deployment_suffix"],
-                    "log_level": args.get("log_level"),
-                    "log_format": args.get("log_format"),
-                    "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
-                    # ports
-                    "agglayer_prover_port": args["agglayer_prover_port"],
-                    "prometheus_port": args["agglayer_prover_metrics_port"],
-                    # prover settings (fork9/11)
-                    "is_cpu_prover_enabled": is_cpu_prover_enabled,
-                    "is_network_prover_enabled": is_network_prover_enabled,
-                    # prover settings (fork12+)
-                    "primary_prover": args["agglayer_prover_primary_prover"],
-                },
-            )
-        },
     )
 
 
@@ -120,7 +55,7 @@ def agglayer_version(args):
 
 
 def create_agglayer_config_artifact(
-    plan, deployment_stages, args, agglayer_prover_url, contract_setup_addresses
+    plan, deployment_stages, args, contract_setup_addresses
 ):
     agglayer_config_template = read_file(
         src="./templates/bridge-infra/agglayer-config.toml"
@@ -153,7 +88,6 @@ def create_agglayer_config_artifact(
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],
                     "agglayer_admin_port": args["agglayer_admin_port"],
-                    "agglayer_prover_entrypoint": agglayer_prover_url,
                     "prometheus_port": args["agglayer_metrics_port"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     # verifier
