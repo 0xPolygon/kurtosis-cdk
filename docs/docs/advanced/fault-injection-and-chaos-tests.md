@@ -1,7 +1,3 @@
----
-sidebar_position: 4
----
-
 # Fault Injection and Chaos Tests using Kurtosis CDK
 
 ## Introduction

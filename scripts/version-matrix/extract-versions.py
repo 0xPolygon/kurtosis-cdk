@@ -46,21 +46,20 @@ class VersionMatrixExtractor:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
+
+        cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
+        op_geth_tests_path = repo_root / ".github" / "tests" / "op-geth"
+        op_succinct_tests_path = repo_root / ".github" / "tests" / "op-succinct"
         self.test_files_paths = [
             # cdk-erigon
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "rollup.yml", "cdk-erigon-zkrollup"),
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "validium.yml", "cdk-erigon-validium"),
-            (repo_root / ".github" / "tests" / "cdk-erigon" /
-             "sovereign.yml", "cdk-erigon-sovereign"),
+            ("cdk-erigon-zkrollup", cdk_erigon_tests_path / "rollup.yml"),
+            ("cdk-erigon-validium", cdk_erigon_tests_path / "validium.yml"),
+            ("cdk-erigon-sovereign-pessimistic", cdk_erigon_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-erigon-sovereign-ecdsa-multisig", cdk_erigon_tests_path / "sovereign-ecdsa-multisig.yml"),
             # op-geth
-            (repo_root / ".github" / "tests" / "op-geth" /
-             "sovereign.yml", "cdk-opgeth-sovereign"),
-            # (repo_root / ".github" / "tests" / "op-geth" /
-            #  "ecdsa.yml", "cdk-opgeth-ecdsa"),
-            (repo_root / ".github" / "tests" / "op-succinct" /
-             "mock-prover.yml", "cdk-opgeth-zkrollup"),
+            ("cdk-opgeth-sovereign-pessimistic", op_geth_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-opgeth-sovereign-ecdsa-multisig", op_geth_tests_path / "sovereign-ecdsa-multisig.yml"),
+            ("cdk-opgeth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
         ]
 
         # Component mapping
@@ -88,29 +87,51 @@ class VersionMatrixExtractor:
             # "zkevm_sequence_sender_image": "zkevm-sequence-sender",
         }
 
+        # Components that should be excluded from default images since they're covered in test environments
+        self.cdk_core_components = {
+            "aggkit",
+            "aggkit-prover", 
+            "agglayer",
+            "agglayer-contracts",
+            "cdk-erigon",
+            "cdk-node",
+            "op-batcher",
+            "op-deployer", 
+            "op-geth",
+            "op-node",
+            "op-proposer",
+            "op-succinct-proposer",
+            "zkevm-bridge-service",
+            "zkevm-da",
+            "zkevm-pool-manager",
+            "zkevm-prover"
+        }
+
         # GitHub repositories for version checking
         self.repos = {
+            # polygon cdk components
             "aggkit": "agglayer/aggkit",
             "aggkit-prover": "agglayer/provers",
             "agglayer": "agglayer/agglayer",
             "agglayer-contracts": "agglayer/agglayer-contracts",
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
-            # "cdk-validium-node": "0xPolygon/cdk-validium-node",
-            "geth": "ethereum/go-ethereum",
-            "lighthouse": "sigp/lighthouse",
+            # legacy zkevm components
+            "zkevm-da": "0xPolygon/cdk-data-availability",
+            "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
+            "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
+            "zkevm-prover": "0xPolygon/zkevm-prover",
+            # optimism components
             "op-batcher": "ethereum-optimism/optimism",
             "op-deployer": "ethereum-optimism/optimism",
             "op-geth": "ethereum-optimism/op-geth",
             "op-node": "ethereum-optimism/optimism",
             "op-proposer": "ethereum-optimism/optimism",
+            # succinct components
             "op-succinct-proposer": "agglayer/op-succinct",
-            "zkevm-da": "0xPolygon/cdk-data-availability",
-            "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
-            # "zkevm-node": "0xPolygon/zkevm-node",
-            "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
-            "zkevm-prover": "0xPolygon/zkevm-prover",
-            # "zkevm-sequence-sender": "0xPolygon/zkevm-sequence-sender", # TODO: Remove this component from kurtosis-cdk
+            # ethereum components
+            "geth": "ethereum/go-ethereum",
+            "lighthouse": "sigp/lighthouse",
         }
 
     def extract_default_images(self) -> Dict[str, ComponentVersion]:
@@ -165,8 +186,13 @@ class VersionMatrixExtractor:
 
         except Exception as e:
             print(f"Error extracting default images: {e}")
-
         return components
+
+    def filter_default_images(self, default_images: Dict[str, ComponentVersion]) -> Dict[str, ComponentVersion]:
+        return {
+            name: component for name, component in default_images.items()
+            if name not in self.cdk_core_components
+        }
 
     def _extract_version_from_image(self, image: str) -> str:
         """Extract version from Docker image tag."""
@@ -186,6 +212,10 @@ class VersionMatrixExtractor:
         # Specific handling for zkevm-prover images
         if 'zkevm-prover' in image and tag.find('-fork.'):
             tag = tag.split('-fork.')[0]
+        
+        # Specific handling for op-deployer images
+        if 'op-deployer' in image and tag.find('-cdk'):
+            tag = tag.split('-cdk')[0]
 
         # Remove common prefixes
         version = re.sub(r'^v?', '', tag)
@@ -310,24 +340,28 @@ class VersionMatrixExtractor:
             latest_suffix = latest_version.split('-')[1] if '-' in latest_version else ''
 
             # special case for agglayer-contracts
+            experimental_status = "newer than stable"
+            stable_status = "matches stable"
+            deprecated_status = "behind stable"
+            
             if version_suffix.endswith("aggchain.multisig"):
-                return "experimental"
+                return experimental_status
 
             if version_float > latest_float:
-                return "experimental"
+                return experimental_status
             elif version_float < latest_float:
-                return "deprecated"
+                return deprecated_status
             else:
                 if version_suffix == latest_suffix:
-                    return "latest"
+                    return stable_status
                 # special case for op-deployer - we use the latest version with a small fix on top, suffixed with `-cdk`
                 if version_suffix == "cdk" and not latest_suffix:
-                    return "latest"
+                    return stable_status
                 # special case for op-succinct-proposer - we use the latest version with a small fix on top, suffixed with `-agglayer`
                 if version_suffix == "agglayer" and not latest_suffix:
-                    return "latest"
+                    return stable_status
 
-                return "experimental"
+                return experimental_status
 
         except Exception as e:
             print(f"Error determining status for version {version}: {e}")
@@ -339,7 +373,7 @@ class VersionMatrixExtractor:
 
         try:
             # Walk through test configuration files
-            for (yaml_file, environment_type) in self.test_files_paths:
+            for (environment_type, yaml_file) in self.test_files_paths:
                 try:
                     with open(yaml_file, 'r') as f:
                         config = yaml.safe_load(f)
@@ -419,7 +453,7 @@ class VersionMatrixExtractor:
                 'zkevm-pool-manager',
                 'zkevm-prover',
             ],
-            "cdk-erigon-sovereign": [
+            "cdk-erigon-sovereign-pessimistic": [
                 'aggkit-prover',
                 'aggkit',  # different from cdk-erigon-zkrollup and cdk-erigon-validium
                 'agglayer',
@@ -428,8 +462,17 @@ class VersionMatrixExtractor:
                 'zkevm-bridge-service',
                 'zkevm-pool-manager',
             ],
+            "cdk-erigon-sovereign-ecdsa-multisig": [
+                'aggkit-prover',
+                'aggkit',
+                'agglayer',
+                'agglayer-contracts',
+                'cdk-erigon',
+                'zkevm-bridge-service',
+                'zkevm-pool-manager',
+            ],
             # cdk-opgeth
-            "cdk-opgeth-sovereign": [
+            "cdk-opgeth-sovereign-pessimistic": [
                 'aggkit',
                 'aggkit-prover',
                 'agglayer',
@@ -441,18 +484,18 @@ class VersionMatrixExtractor:
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            # "cdk-opgeth-ecdsa": [
-            #     'aggkit',
-            #     'aggkit-prover',
-            #     'agglayer',
-            #     'agglayer-contracts',
-            #     'op-batcher',
-            #     'op-deployer',
-            #     'op-node',
-            #     'op-geth',
-            #     'op-proposer',
-            #     'zkevm-bridge-service',
-            # ],
+            "cdk-opgeth-sovereign-ecdsa-multisig": [
+                'aggkit',
+                'aggkit-prover',
+                'agglayer',
+                'agglayer-contracts',
+                'op-batcher',
+                'op-deployer',
+                'op-node',
+                'op-geth',
+                'op-proposer',
+                'zkevm-bridge-service',
+            ],
             "cdk-opgeth-zkrollup": [
                 'aggkit',
                 'aggkit-prover',
@@ -625,6 +668,7 @@ class VersionMatrixExtractor:
         """Generate comprehensive version matrix."""
         print("Extracting default images...")
         default_images = self.extract_default_images()
+        filtered_default_images = self.filter_default_images(default_images)
 
         print("Extracting test environments...")
         test_environments = self.extract_test_environments(default_images)
@@ -646,7 +690,7 @@ class VersionMatrixExtractor:
         # Build comprehensive matrix
         matrix = {
             'generated_at': datetime.now().isoformat(),
-            'default_images': {name: asdict(comp) for name, comp in default_images.items()},
+            'default_images': {name: asdict(comp) for name, comp in filtered_default_images.items()},
             'test_environments': {name: asdict(environment) for name, environment in test_environments.items()},
             'summary': {
                 'total_components': len(default_images),

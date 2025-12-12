@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Attaching Multiple Rollups in a Single Kurtosis Enclave
 
 ## Introduction

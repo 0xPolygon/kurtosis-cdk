@@ -2,11 +2,11 @@
 deployment_stages:
   deploy_op_succinct: false
 
-args:  
-  # Agghcain ecdsa_multisig consensus.
-  consensus_contract_type: ecdsa_multisig
+args:
+  consensus_contract_type: ecdsa_multisig # new sovereign consensus
+
+  # aggsender-validator related params
   use_agg_sender_validator: True
-  # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
   agg_sender_validator_total_number: 1
   agg_sender_multisig_threshold: 1
 

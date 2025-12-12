@@ -17,7 +17,8 @@ SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
 AggregatorPrivateKeyPath = "{{or .l2_aggregator_keystore_file "/etc/cdk/aggregator.keystore"}}"
 AggregatorPrivateKeyPassword  = "{{.l2_keystore_password}}"
-SenderProofToL1Addr = "{{.l2_aggregator_address}}"   
+SenderProofToL1Addr = "{{.l2_aggregator_address}}"
+# polygonBridgeAddr param is removed in Aggkit versions >= 0.8, but this config file is strictly for CDK-Node, so the changes won't apply here.
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 
 RPCURL = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
@@ -33,7 +34,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
-	
+
 [L2Config]
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
 
@@ -56,7 +57,7 @@ Environment = "{{.environment}}"
                 Port = "{{.aggregator_db.port}}"
                 EnableLog = false
                 MaxConns = 200
-       
+
 [AggSender]
 CertificateSendInterval = "1m"
 CheckSettledInterval = "5s"

@@ -134,6 +134,7 @@ def run(
 
     # Create the cdk aggoracle config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+    aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
     aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
@@ -145,6 +146,7 @@ def run(
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                     "agglayer_endpoint": agglayer_endpoint,
+                    "aggkit_version": aggkit_version,
                     "l2_rpc_url": l2_rpc_url,
                 }
                 | db_configs
@@ -201,6 +203,7 @@ def run(
 
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+        aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
 
         # Start multiple aggoracle components based on committee size
@@ -227,6 +230,7 @@ def run(
                                 args
                             ),
                             "agglayer_endpoint": agglayer_endpoint,
+                            "aggkit_version": aggkit_version,
                             "l2_rpc_url": l2_rpc_url,
                             "agg_oracle_committee_member_index": agg_oracle_committee_member_index,
                         }
@@ -264,6 +268,7 @@ def run(
 
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+        aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
         aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
 
         # Start multiple aggoracle components based on committee size
@@ -290,6 +295,7 @@ def run(
                                 args
                             ),
                             "agglayer_endpoint": agglayer_endpoint,
+                            "aggkit_version": aggkit_version,
                             "l2_rpc_url": l2_rpc_url,
                             "agg_sender_validator_member_index": agg_sender_validator_member_index,
                         }
@@ -556,6 +562,11 @@ def _extract_aggkit_version(aggkit_image):
 
     # ghcr.io/agglayer/aggkit:v0.5.0-beta1 -> v0.5.0-beta1
     tag = aggkit_image.split(":")[-1]
+
+    # Aggkit CI will use aggkit:local to test latest changes.
+    # Assume local is the latest version
+    if tag == "local":
+        return 999.9
 
     # v0.5.0-beta1 -> v0.5.0
     tag_without_suffix = tag.split("-")[0]

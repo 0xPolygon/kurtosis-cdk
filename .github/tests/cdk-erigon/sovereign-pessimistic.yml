@@ -5,7 +5,7 @@ deployment_stages:
 
 args:
   sequencer_type: erigon
-  consensus_contract_type: pessimistic
+  consensus_contract_type: pessimistic # former sovereign consensus
 
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12

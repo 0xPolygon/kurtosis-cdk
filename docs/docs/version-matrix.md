@@ -4,116 +4,146 @@ sidebar_position: 3
 
 # Version Matrix
 
-> This version matrix is automatically generated.
+> This document is automatically generated.
 
 ## Test Environments
 
-This section lists all test environments with their configurations and component versions.
+This section lists all test environments with their configurations and component versions, organized by execution client.
 
-- [cdk-erigon-sovereign](#cdk-erigon-sovereign)
-- [cdk-erigon-validium](#cdk-erigon-validium)
-- [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
-- [cdk-opgeth-sovereign](#cdk-opgeth-sovereign)
+### CDK OP Geth
+
+- [cdk-opgeth-sovereign-ecdsa-multisig](#cdk-opgeth-sovereign-ecdsa-multisig)
+- [cdk-opgeth-sovereign-pessimistic](#cdk-opgeth-sovereign-pessimistic)
 - [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
 
-### cdk-erigon-sovereign
+### CDK Erigon
 
-- File path: .github/tests/cdk-erigon/sovereign.yml
+- [cdk-erigon-sovereign-ecdsa-multisig](#cdk-erigon-sovereign-ecdsa-multisig)
+- [cdk-erigon-sovereign-pessimistic](#cdk-erigon-sovereign-pessimistic)
+- [cdk-erigon-validium](#cdk-erigon-validium)
+- [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
 
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | deprecated ⚠️ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | experimental 🧪 |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
-| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
+## CDK OP Geth
 
-### cdk-erigon-validium
+Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as the L2 execution client.
 
-- File path: .github/tests/cdk-erigon/validium.yml
+### cdk-opgeth-sovereign-ecdsa-multisig
 
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
-| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
-| zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
-| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
+- File path: `.github/tests/op-geth/sovereign-ecdsa-multisig.yml`
 
-### cdk-erigon-zkrollup
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | ⚡️ newer than stable |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | ✅ matches stable |
+| op-deployer | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | ✅ matches stable |
+| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | ✅ matches stable |
+| op-node | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | ✅ matches stable |
+| op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | ✅ matches stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
 
-- File path: .github/tests/cdk-erigon/rollup.yml
+### cdk-opgeth-sovereign-pessimistic
 
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
-| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
-| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
+- File path: `.github/tests/op-geth/sovereign-pessimistic.yml`
 
-### cdk-opgeth-sovereign
-
-- File path: .github/tests/op-geth/sovereign.yml
-
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | deprecated ⚠️ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
-| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.5.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.0-rc.2) | deprecated ⚠️ |
-| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | latest ✅ |
-| op-node | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | latest ✅ |
-| op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | latest ✅ |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | 🚨 behind stable |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | ✅ matches stable |
+| op-deployer | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | ✅ matches stable |
+| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | ✅ matches stable |
+| op-node | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | ✅ matches stable |
+| op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | ✅ matches stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
 
 ### cdk-opgeth-zkrollup
 
-- File path: .github/tests/op-succinct/mock-prover.yml
+- File path: `.github/tests/op-succinct/mock-prover.yml`
 
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | latest ✅ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
-| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.5.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.0-rc.2) | deprecated ⚠️ |
-| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | latest ✅ |
-| op-node | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | latest ✅ |
-| op-succinct-proposer | [3.4.0-rc.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1-agglayer) | [3.4.0-rc.1](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1) | latest ✅ |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | ⚡️ newer than stable |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | ✅ matches stable |
+| op-deployer | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | [0.5.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.1) | ✅ matches stable |
+| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | ✅ matches stable |
+| op-node | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | [1.16.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.3) | ✅ matches stable |
+| op-succinct-proposer | [3.4.0-rc.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1-agglayer) | [3.4.0-rc.1](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1) | ✅ matches stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
+
+## CDK Erigon
+
+Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the L2 execution client.
+
+### cdk-erigon-sovereign-ecdsa-multisig
+
+- File path: `.github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml`
+
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit | [0.8.0-beta1](https://github.com/agglayer/aggkit/releases/tag/v0.8.0-beta1) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | ⚡️ newer than stable |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ⚡️ newer than stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
+
+### cdk-erigon-sovereign-pessimistic
+
+- File path: `.github/tests/cdk-erigon/sovereign-pessimistic.yml`
+
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | 🚨 behind stable |
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ⚡️ newer than stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
+
+### cdk-erigon-validium
+
+- File path: `.github/tests/cdk-erigon/validium.yml`
+
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ✅ matches stable |
+| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | ✅ matches stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
+| zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | ✅ matches stable |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | ✅ matches stable |
+
+### cdk-erigon-zkrollup
+
+- File path: `.github/tests/cdk-erigon/rollup.yml`
+
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
+| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
+| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
+| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ✅ matches stable |
+| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | ✅ matches stable |
+| zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
+| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
+| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | ✅ matches stable |
 
 ## Default Images
 
-| Component | Current Version | Latest Version | Status |
-|-----------|-----------------|----------------|--------|
-| aggkit | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | [0.7.2](https://github.com/agglayer/aggkit/releases/tag/v0.7.2) | latest ✅ |
-| aggkit-prover | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | latest ✅ |
-| agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | latest ✅ |
-| agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | experimental 🧪 |
-| cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | latest ✅ |
-| cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | latest ✅ |
-| geth | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | latest ✅ |
-| lighthouse | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | latest ✅ |
-| op-batcher | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.2) | latest ✅ |
-| op-deployer | [0.4.5-cdk](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.4.5-cdk) | [0.5.0-rc.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.5.0-rc.2) | deprecated ⚠️ |
-| op-geth | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | [1.101603.5](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101603.5) | latest ✅ |
-| op-node | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | [1.16.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.2) | latest ✅ |
-| op-proposer | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | [1.10.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.0) | latest ✅ |
-| op-succinct-proposer | [3.4.0-rc.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1-agglayer) | [3.4.0-rc.1](https://github.com/agglayer/op-succinct/releases/tag/v3.4.0-rc.1) | latest ✅ |
-| zkevm-bridge-service | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | [0.6.3-RC7](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3-RC7) | latest ✅ |
-| zkevm-da | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | latest ✅ |
-| zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | latest ✅ |
-| zkevm-prover | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | [8.0.0-RC16](https://github.com/0xPolygon/zkevm-prover/releases/tag/v8.0.0-RC16) | latest ✅ |
+| Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
+|-----------|-------------------------------|-----------------------|--------|
+| geth | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | ✅ matches stable |
+| lighthouse | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | ✅ matches stable |

@@ -39,7 +39,8 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
     return _sort_dict_by_values(
         {
             "participants": {
-                "node1": _default_participant(log_format),
+                "sequencer1": _default_participant(log_format) | {"sequencer": True},
+                "rpc1": _default_participant(log_format) | {"sequencer": "sequencer1"},
             },
             "batcher_params": _sort_dict_by_values(
                 {
@@ -97,7 +98,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@39b1c04fd094eae8ccf3add55ed158156ff8fe4d",  # overlay/main - 2025-11-14
+        "source": "github.com/agglayer/optimism-package/main.star@a22efaa2c24054f289cd2c3770b602aa85c06b56",  # overlay/main - 2025-11-14
         "predeployed_contracts": True,
     }
 )
@@ -191,7 +192,9 @@ def _parse_participants(participants, log_format=constants.LOG_FORMAT.json):
     default_participant = _default_participant(log_format)
 
     if len(participants.keys()) == 0:
-        return {"node1": default_participant}
+        default_chain = _default_chain(log_format)
+        default_participants = default_chain.get("participants")
+        return default_participants
 
     participants_with_defaults = {}
     for k, v in participants.items():

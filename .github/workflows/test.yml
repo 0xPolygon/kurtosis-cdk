@@ -64,6 +64,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
 
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
+        with:
+          args: --root-dir "$(pwd)" --verbose --no-progress --exclude-loopback --exclude-path .kurtosis-test/ --exclude-path docs/node_modules/ --exclude file:// --exclude https://github.com/0xPolygon/arpeggio --exclude http://anvil-001:8545 --exclude https://unix.stackexchange.com/questions/65475/ephemeral-port-what-is-it-and-what-does-it-do './**/*.md'
+          fail: true
+
   unit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -77,7 +87,7 @@ jobs:
 
       - name: Install kurtosis-test
         run: |
-          git clone --branch v0.0.5 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
+          git clone --branch v0.0.6 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
           cd /tmp/kurtosis-test
           go build -o kurtosis-test cli/main.go
           cp kurtosis-test /usr/local/bin
