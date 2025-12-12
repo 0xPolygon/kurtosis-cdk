@@ -1,5 +1,5 @@
 prometheus_package = import_module(
-    "github.com/kurtosis-tech/prometheus-package/main.star@f5ce159aec728898e3deb827f6b921f8ecfc527f"
+    "github.com/kurtosis-tech/prometheus-package/main.star@v1.1.0"
 )
 
 PROMETHEUS_IMAGE = "prom/prometheus:v3.0.1"
