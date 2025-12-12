@@ -469,7 +469,7 @@ def parse_args(plan, user_args):
 
     # Determine sequencer and l2 rpc names.
     sequencer_type = args.get("sequencer_type", "")
-    sequencer_name = get_sequencer_name(sequencer_type)
+    sequencer_name = get_sequencer_name(sequencer_type, deploy_op_node)
     l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
 
     # Determine static ports, if specified.
