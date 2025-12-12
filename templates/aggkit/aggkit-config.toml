@@ -13,10 +13,12 @@
 
 PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL = "{{.l1_rpc_url}}"
-{{- if .deploy_optimism_rollup }}
-L2URL = "{{.op_el_rpc_url}}"
-{{- else }}
+{{- if eq .sequencer_type "cdk-erigon"}}
 L2URL = "{{.l2_rpc_url}}"
+{{- else if eq .sequencer_type "op-geth" }}
+L2URL = "{{.op_el_rpc_url}}"
+{{- else}}
+L2URL = ""
 {{- end }}
 OpNodeURL = "{{.op_cl_rpc_url}}"
 
@@ -29,7 +31,7 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
 
-{{- if or .deploy_optimism_rollup (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
+{{- if or (eq .sequencer_type "op-geth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
@@ -41,7 +43,7 @@ SequencerPrivateKeyPassword  = ""
 polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 {{- end }}
 
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "op-geth" }}
 RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
 
@@ -88,10 +90,12 @@ polTokenAddress = "{{.pol_token_address}}"
 # ------------------------------------------------------------------------------
 # Address of the sovereign rollup contract on L2
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 {{- else }}
-polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+polygonZkEVMAddress = ""
 {{- end }}
 
 BridgeAddr = "{{.zkevm_bridge_address}}"
@@ -108,16 +112,15 @@ BridgeAddr = "{{.zkevm_bridge_address}}"
 # ------------------------------------------------------------------------------
 # Address of the sovereign global exit root proxy contract on L2
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
-GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
-{{- else }}
+{{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
-{{- end }}
-
-{{- if .deploy_optimism_rollup }}
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
+GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+GlobalExitRootAddr = ""
+BridgeAddr = ""
 {{- end }}
 
 # ==============================================================================
@@ -378,10 +381,12 @@ EnableAggOracleCommittee = false
 # ------------------------------------------------------------------------------
 # Address of the sovereign global exit root proxy contract on L2
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
-GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootL2 = ""
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -521,10 +526,12 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # ------------------------------------------------------------------------------
 # BridgeAddr is the address of the sovereign bridge contract on L2
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+BridgeAddr = ""
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -615,10 +622,12 @@ SenderAddr = "{{.l2_claimsponsor_address}}"
 # ------------------------------------------------------------------------------
 # BridgeAddrL2 is the address of the bridge smart contract on L2
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
 BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
-BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+BridgeAddrL2 = ""
 {{- end }}
 
 [ClaimSponsor.EthTxManager]
@@ -639,10 +648,12 @@ StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 # ------------------------------------------------------------------------------
 # URL is the URL of the Ethereum node for L2
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+URL= "{{.l2_rpc_url}}"
+{{- else if eq .sequencer_type "op-geth" }}
 URL = "{{.op_el_rpc_url}}"
 {{- else }}
-URL= "{{.l2_rpc_url}}"
+URL = ""
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -663,20 +674,24 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # ------------------------------------------------------------------------------
 # SovereignRollupAddr is the address of the sovereign rollup contract on L1
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+SovereignRollupAddr = "{{.zkevm_rollup_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 {{- else }}
-SovereignRollupAddr = "{{.zkevm_rollup_address}}"
+SovereignRollupAddr = ""
 {{- end }}
 
 # ------------------------------------------------------------------------------
 # GlobalExitRootL2Addr is the address of the GlobalExitRootManager contract on l2 sovereign chain
 # this address is needed for the AggchainProof mode of the AggSender
 # ------------------------------------------------------------------------------
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "cdk-erigon" }}
+GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+{{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
-GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootL2 = ""
 {{- end }}
 
 [AggchainProofGen.AggkitProverClient]

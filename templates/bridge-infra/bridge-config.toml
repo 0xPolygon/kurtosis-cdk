@@ -113,7 +113,7 @@ PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 # Address of the rollup manager smc
 PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
-{{- if .deploy_optimism_rollup }}
+{{- if eq .sequencer_type "op-geth" }}
 # Address of the zkEVM smc
 PolygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 # List of Layer 2 Polygon bridge addresses. It must have the same length as L2URLs. e.g. If 5 networks need to be synced, the urls must be in this array.

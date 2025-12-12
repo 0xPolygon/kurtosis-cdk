@@ -148,11 +148,7 @@
      * aggregatorClientHost is the hostname that this prover will
      * attempt to use while connecting to the aggregator
      */ -}}
-    {{if eq .sequencer_type "zkevm"}}
-    "aggregatorClientHost": "zkevm-node-aggregator{{.deployment_suffix}}",
-    {{else if eq .sequencer_type "erigon"}}
     "aggregatorClientHost": "cdk-node{{.deployment_suffix}}",
-    {{end}}
 
 {{- /*
      * keccakScriptFile is the keccak-f state machine script file

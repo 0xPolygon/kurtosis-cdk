@@ -1,8 +1,7 @@
 deployment_stages:
   deploy_l2_contracts: true
-  deploy_op_succinct: false
   deploy_cdk_bridge_infra: true
-  deploy_optimism_rollup: false
+
 args:
   consensus_contract_type: ecdsa_multisig # new sovereign consensus
 
@@ -21,7 +20,7 @@ args:
   sp1_prover_key: ""
 
   # cdk-erigon related params
-  sequencer_type: erigon
+  sequencer_type: cdk-erigon
   cdk_erigon_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1
   enable_normalcy: true
   erigon_strict_mode: false

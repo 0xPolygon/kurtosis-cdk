@@ -108,9 +108,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "zkevm_rollup_consensus": data_availability_package.get_consensus_contract(
             args
         ),
-        "deploy_optimism_rollup": deployment_stages.get(
-            "deploy_optimism_rollup", False
-        ),
+        "sequencer_type": args["sequencer_type"],
         "op_stack_seconds_per_slot": op_stack_seconds_per_slot,
         # vkeys and selectors
         "pp_vkey_hash": pp_vkey_hash,
@@ -416,7 +414,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 def is_vanilla_client(args, deployment_stages):
     if (
         args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
-        and deployment_stages.get("deploy_optimism_rollup") == True
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
     ):
         return True
     else:

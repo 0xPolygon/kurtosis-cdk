@@ -1,3 +1,4 @@
+constants = import_module("../package_io/constants.star")
 service_package = import_module("../../lib/service.star")
 
 
@@ -6,11 +7,11 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_optimism_rollup,
+    sequencer_type,
 ):
     l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
 
-    if deploy_optimism_rollup:
+    if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         agglogger_config_template_file = "op-config.json"
     else:
         agglogger_config_template_file = "zkevm-config.json"

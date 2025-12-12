@@ -8,7 +8,6 @@ def run(
     args,
     contract_setup_addresses,
     deploy_bridge_ui=True,
-    deploy_optimism_rollup=False,
 ):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
@@ -20,7 +19,6 @@ def run(
         args,
         contract_setup_addresses,
         db_configs,
-        deploy_optimism_rollup,
     )
     claimsponsor_keystore_artifact = plan.store_service_files(
         name="claimsponsor-keystore",
@@ -48,9 +46,7 @@ def run(
             zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
 
 
-def create_bridge_config_artifact(
-    plan, args, contract_setup_addresses, db_configs, deploy_optimism_rollup
-):
+def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"
     )
@@ -63,7 +59,7 @@ def create_bridge_config_artifact(
     require_sovereign_chain_contract = (
         (
             consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic
-            and deploy_optimism_rollup
+            and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
         )
         or consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig
         or consensus_contract_type == constants.CONSENSUS_TYPE.fep
@@ -80,6 +76,7 @@ def create_bridge_config_artifact(
                     "l2_keystore_password": args["l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,
+                    "sequencer_type": args["sequencer_type"],
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,

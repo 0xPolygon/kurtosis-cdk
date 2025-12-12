@@ -21,7 +21,7 @@ args:
   agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
   additional_services: []
   consensus_contract_type: pessimistic
-  sequencer_type: erigon
+  sequencer_type: cdk-erigon
   erigon_strict_mode: false
   gas_token_enabled: true
   zkevm_use_real_verifier: true

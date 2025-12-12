@@ -14,7 +14,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "pol_token_address": "fromjson | .polTokenAddress",
         "zkevm_admin_address": "fromjson | .admin",
     }
-    if deployment_stages.get("deploy_optimism_rollup", False):
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
         extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"
 
     if data_availability_package.is_cdk_validium(args):

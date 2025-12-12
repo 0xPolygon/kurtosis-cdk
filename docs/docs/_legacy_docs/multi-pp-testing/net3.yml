@@ -20,4 +20,4 @@ args:
 
   agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.4-pp-fork.12
   additional_services: []
-  sequencer_type: erigon
+  sequencer_type: cdk-erigon

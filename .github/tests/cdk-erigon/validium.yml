@@ -1,9 +1,7 @@
 deployment_stages:
   deploy_l2_contracts: true
-  deploy_optimism_rollup: false
-  deploy_op_succinct: false
 
 args:
-  sequencer_type: erigon
+  sequencer_type: cdk-erigon
   consensus_contract_type: cdk_validium
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12

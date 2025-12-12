@@ -93,10 +93,8 @@ def create_agglayer_config_artifact(
                     # verifier
                     "mock_verifier": args["agglayer_prover_primary_prover"]
                     == "mock-prover",
-                    # op stack
-                    "deploy_optimism_rollup": deployment_stages.get(
-                        "deploy_optimism_rollup", False
-                    ),
+                    # op-stack
+                    "sequencer_type": args["sequencer_type"],
                     "op_el_rpc_url": args["op_el_rpc_url"],
                     "l2_sovereignadmin_address": args["l2_sovereignadmin_address"],
                     "consensus_contract_type": args["consensus_contract_type"],

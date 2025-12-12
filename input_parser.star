@@ -25,14 +25,6 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_cdk_bridge_ui": False,
     # Deploy the agglayer.
     "deploy_agglayer": True,
-    # Deploy cdk-erigon node.
-    # TODO: Remove this parameter to incorporate cdk-erigon inside the central environment.
-    "deploy_cdk_erigon_node": True,
-    # Deploy Optimism rollup.
-    # Note the default behavior will only deploy the OP Stack without CDK Erigon stack.
-    # Setting to True will deploy the Aggkit components and Sovereign contracts as well.
-    # Requires consensus_contract_type to be "pessimistic".
-    "deploy_optimism_rollup": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
@@ -341,12 +333,6 @@ DEFAULT_ROLLUP_ARGS = {
     "agg_sender_multisig_threshold": 1,
 }
 
-DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
-    "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
-    "zkevm_aggregator_host": "zkevm-node-aggregator-001",
-    "genesis_file": "templates/permissionless-node/genesis.json",
-}
-
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
     "blockscout_params": {
         "blockscout_public_port": DEFAULT_PORTS.get("blockscout_frontend_port"),
@@ -366,9 +352,9 @@ DEFAULT_ARGS = (
         "log_format": constants.LOG_FORMAT.pretty,
         # The type of the sequencer to deploy.
         # Options:
-        # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
-        # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
-        "sequencer_type": "erigon",
+        # - 'cdk-erigon': Use the cdk-erigon sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
+        # - 'op-geth': Use the OP stack sequencer (https://github.com/ethereum-optimism/op-geth).
+        "sequencer_type": constants.SEQUENCER_TYPE.op_geth,
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
@@ -388,7 +374,6 @@ DEFAULT_ARGS = (
         # - bridge_spammer
         # - erpc
         # - observability
-        # - pless_zkevm_node
         # - rpc_fuzzer
         # - status_checker
         # - test_runner
@@ -409,7 +394,6 @@ DEFAULT_ARGS = (
     | LEGACY_DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
-    | DEFAULT_PLESS_ZKEVM_NODE_ARGS
     | DEFAULT_L2_ARGS
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
@@ -427,6 +411,11 @@ VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.ecdsa_multisig,
 ]
 
+VALID_SEQUENCER_TYPES = [
+    constants.SEQUENCER_TYPE.cdk_erigon,
+    constants.SEQUENCER_TYPE.op_geth,
+]
+
 
 def parse_args(plan, user_args):
     # Merge the provided args with defaults.
@@ -435,8 +424,6 @@ def parse_args(plan, user_args):
     )
     args = DEFAULT_ARGS | user_args.get("args", {})
     op_input_args = user_args.get("optimism_package", {})
-    deploy_cdk_erigon_node = deployment_stages.get("deploy_cdk_erigon_node", False)
-    deploy_op_node = deployment_stages.get("deploy_optimism_rollup", False)
 
     # Change some params if anvil set to make it work
     # As it changes L1 config it needs to be run before other functions/checks
@@ -447,6 +434,9 @@ def parse_args(plan, user_args):
 
     consensus_contract_type = args.get("consensus_contract_type")
     validate_consensus_type(consensus_contract_type)
+
+    sequencer_type = args.get("sequencer_type")
+    validate_sequencer_type(sequencer_type)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -473,13 +463,21 @@ def parse_args(plan, user_args):
     # Determine fork id from the agglayer contracts image tag.
     zkevm_prover_image = args.get("zkevm_prover_image")
     (fork_id, fork_name) = get_fork_id(
-        consensus_contract_type, deploy_op_node, zkevm_prover_image
+        consensus_contract_type, sequencer_type, zkevm_prover_image
     )
 
     # Determine sequencer and l2 rpc names.
-    sequencer_type = args.get("sequencer_type", "")
-    sequencer_name = get_sequencer_name(sequencer_type)
-    l2_rpc_name = get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node)
+    if (
+        sequencer_type not in constants.L2_SEQUENCER_MAPPING
+        or sequencer_type not in constants.L2_RPC_MAPPING
+    ):
+        fail(
+            "Unsupported sequencer type: '{}', please use one of: '{}'".format(
+                sequencer_type, list(constants.L2_SEQUENCER_MAPPING.keys())
+            )
+        )
+    sequencer_name = constants.L2_SEQUENCER_MAPPING[sequencer_type]
+    l2_rpc_name = constants.L2_RPC_MAPPING[sequencer_type]
 
     # Determine static ports, if specified.
     if not args.get("use_dynamic_ports", True):
@@ -572,7 +570,7 @@ def validate_additional_services(additional_services):
             )
 
 
-def get_fork_id(consensus_contract_type, deploy_optimism_rollup, zkevm_prover_image):
+def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
     # If aggchain consensus is being used or optimism rollup is being deployed, return zero.
     if (
         consensus_contract_type
@@ -580,7 +578,7 @@ def get_fork_id(consensus_contract_type, deploy_optimism_rollup, zkevm_prover_im
             constants.CONSENSUS_TYPE.ecdsa_multisig,
             constants.CONSENSUS_TYPE.fep,
         ]
-        or deploy_optimism_rollup
+        or sequencer_type == constants.SEQUENCER_TYPE.op_geth
     ):
         return (0, "aggchain")
 
@@ -599,29 +597,6 @@ def get_fork_id(consensus_contract_type, deploy_optimism_rollup, zkevm_prover_im
 
     fork_name = constants.FORK_ID_TO_NAME[fork_id]
     return (fork_id, fork_name)
-
-
-def get_sequencer_name(sequencer_type):
-    if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
-        return "cdk-erigon-sequencer"
-    elif sequencer_type == constants.SEQUENCER_TYPE.ZKEVM:
-        return "zkevm-node-sequencer"
-    else:
-        fail(
-            "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
-                sequencer_type,
-                constants.SEQUENCER_TYPE.CDK_ERIGON,
-                constants.SEQUENCER_TYPE.ZKEVM,
-            )
-        )
-
-
-def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
-    if deploy_op_node:
-        return "op-el-1-op-geth-op-node"
-    if deploy_cdk_erigon_node:
-        return "cdk-erigon-rpc"
-    return "zkevm-node-rpc"
 
 
 def set_anvil_args(plan, args, user_args):
@@ -659,8 +634,7 @@ def set_anvil_args(plan, args, user_args):
 def args_sanity_check(plan, deployment_stages, args, user_args):
     # Disable CDK-Erigon and AggOracle Committee combination deployments
     if (
-        args["sequencer_type"] == "erigon"
-        and deployment_stages.get("deploy_optimism_rollup", False) == False
+        args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon
         and args["use_agg_oracle_committee"] == True
     ):
         fail("AggOracle Committee unsupported for CDK-Erigon")
@@ -740,9 +714,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         )
 
     # Fix the op stack el rpc urls according to the deployment_suffix.
-    if args["op_el_rpc_url"] != "http://op-el-1-op-geth-op-node" + args[
-        "deployment_suffix"
-    ] + ":8545" and deployment_stages.get("deploy_optimism_rollup", False):
+    if (
+        args["op_el_rpc_url"]
+        != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
+    ):
         plan.print(
             "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
                 args["op_el_rpc_url"], args["deployment_suffix"]
@@ -752,9 +728,11 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
             "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
         )
     # Fix the op stack cl rpc urls according to the deployment_suffix.
-    if args["op_cl_rpc_url"] != "http://op-cl-1-op-node-op-geth" + args[
-        "deployment_suffix"
-    ] + ":8547" and deployment_stages.get("deploy_optimism_rollup", False):
+    if (
+        args["op_cl_rpc_url"]
+        != "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
+    ):
         plan.print(
             "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
                 args["op_cl_rpc_url"], args["deployment_suffix"]
@@ -777,7 +755,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         fail("normalcy and strict mode cannot be enabled together")
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
-    if deployment_stages.get("deploy_optimism_rollup", False):
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
             if (
                 args["consensus_contract_type"] != "fep"
@@ -793,9 +771,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
-        if deployment_stages.get("deploy_optimism_rollup", False) == False:
+        if args["sequencer_type"] != constants.SEQUENCER_TYPE.op_geth:
             fail(
-                "OP Succinct requires OP Rollup to be enabled. Change the deploy_optimism_rollup parameter"
+                "OP Succinct requires OP Rollup to be enabled. Change the sequencer_type parameter to 'op-geth'."
             )
         if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
             fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")
@@ -820,5 +798,14 @@ def validate_consensus_type(consensus_type):
         fail(
             'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
                 consensus_type, VALID_CONSENSUS_TYPES
+            )
+        )
+
+
+def validate_sequencer_type(sequencer_type):
+    if sequencer_type not in VALID_SEQUENCER_TYPES:
+        fail(
+            'Invalid sequencer type: "{}". Allowed value(s): {}.'.format(
+                sequencer_type, VALID_SEQUENCER_TYPES
             )
         )
