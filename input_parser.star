@@ -592,7 +592,7 @@ def get_fork_id(consensus_contract_type, deploy_optimism_rollup, zkevm_prover_im
     return (fork_id, fork_name)
 
 
-def get_sequencer_name(sequencer_type):
+def get_sequencer_name(sequencer_type, deploy_op_node):
     if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
         return "cdk-erigon-sequencer"
     else:
@@ -602,6 +602,7 @@ def get_sequencer_name(sequencer_type):
                 constants.SEQUENCER_TYPE.CDK_ERIGON,
             )
         )
+    return "op-el-1-op-geth-op-node"
 
 
 def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
