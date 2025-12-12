@@ -22,7 +22,7 @@ args:
 
   # cdk-erigon related params
   sequencer_type: erigon
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.64.0-RC10
+  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.65.0-RC1
   enable_normalcy: true
   erigon_strict_mode: false
   gas_token_enabled: false

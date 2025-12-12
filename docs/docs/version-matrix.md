@@ -92,7 +92,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
-| cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ⚡️ newer than stable |
+| cdk-erigon | [2.65.0-RC1](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC1) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
 
@@ -106,7 +106,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | aggkit-prover | [1.9.0](https://github.com/agglayer/provers/releases/tag/v1.9.0) | [1.8.0](https://github.com/agglayer/provers/releases/tag/v1.8.0) | ⚡️ newer than stable |
 | agglayer | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ✅ matches stable |
 | agglayer-contracts | [12.2.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.0) | [11.0.0](https://github.com/agglayer/agglayer-contracts/releases/tag/v11.0.0) | ⚡️ newer than stable |
-| cdk-erigon | [2.64.0-RC10](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.0-RC10) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ⚡️ newer than stable |
+| cdk-erigon | [2.65.0-RC1](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC1) | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ✅ matches stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
 
