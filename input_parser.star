@@ -605,11 +605,9 @@ def get_sequencer_name(sequencer_type):
 
 
 def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
-    if deploy_op_node:
-        return "op-el-1-op-geth-op-node"
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
-    fail("Cannot determine L2 RPC name")
+    return "op-el-1-op-geth-op-node"
 
 
 def set_anvil_args(plan, args, user_args):
