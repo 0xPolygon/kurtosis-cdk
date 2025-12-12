@@ -70,7 +70,6 @@ class VersionMatrixExtractor:
             "agglayer_contracts_image": "agglayer-contracts",
             "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
-            # "cdk_validium_node_image": "cdk-validium-node",
             "geth_image": "geth",
             "lighthouse_image": "lighthouse",
             "op_batcher_image": "op-batcher",
