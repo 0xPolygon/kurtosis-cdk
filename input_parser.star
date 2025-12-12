@@ -341,12 +341,6 @@ DEFAULT_ROLLUP_ARGS = {
     "agg_sender_multisig_threshold": 1,
 }
 
-DEFAULT_PLESS_ZKEVM_NODE_ARGS = {
-    "trusted_sequencer_node_uri": "zkevm-node-sequencer-001:6900",
-    "zkevm_aggregator_host": "zkevm-node-aggregator-001",
-    "genesis_file": "templates/permissionless-node/genesis.json",
-}
-
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
     "blockscout_params": {
         "blockscout_public_port": DEFAULT_PORTS.get("blockscout_frontend_port"),
@@ -367,8 +361,7 @@ DEFAULT_ARGS = (
         # The type of the sequencer to deploy.
         # Options:
         # - 'erigon': Use the new sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
-        # - 'zkevm': Use the legacy sequencer (https://github.com/0xPolygonHermez/zkevm-node).
-        "sequencer_type": "erigon",
+        "sequencer_type": constants.SEQUENCER_TYPE.CDK_ERIGON,
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
@@ -388,7 +381,6 @@ DEFAULT_ARGS = (
         # - bridge_spammer
         # - erpc
         # - observability
-        # - pless_zkevm_node
         # - rpc_fuzzer
         # - status_checker
         # - test_runner
@@ -409,7 +401,6 @@ DEFAULT_ARGS = (
     | LEGACY_DEFAULT_ACCOUNTS
     | DEFAULT_L1_ARGS
     | DEFAULT_ROLLUP_ARGS
-    | DEFAULT_PLESS_ZKEVM_NODE_ARGS
     | DEFAULT_L2_ARGS
     | DEFAULT_ADDITIONAL_SERVICES_PARAMS
 )
@@ -604,14 +595,11 @@ def get_fork_id(consensus_contract_type, deploy_optimism_rollup, zkevm_prover_im
 def get_sequencer_name(sequencer_type):
     if sequencer_type == constants.SEQUENCER_TYPE.CDK_ERIGON:
         return "cdk-erigon-sequencer"
-    elif sequencer_type == constants.SEQUENCER_TYPE.ZKEVM:
-        return "zkevm-node-sequencer"
     else:
         fail(
             "Unsupported sequencer type: '{}', please use '{}' or '{}'".format(
                 sequencer_type,
                 constants.SEQUENCER_TYPE.CDK_ERIGON,
-                constants.SEQUENCER_TYPE.ZKEVM,
             )
         )
 
@@ -621,7 +609,7 @@ def get_l2_rpc_name(deploy_cdk_erigon_node, deploy_op_node):
         return "op-el-1-op-geth-op-node"
     if deploy_cdk_erigon_node:
         return "cdk-erigon-rpc"
-    return "zkevm-node-rpc"
+    fail("Cannot determine L2 RPC name")
 
 
 def set_anvil_args(plan, args, user_args):
@@ -659,7 +647,7 @@ def set_anvil_args(plan, args, user_args):
 def args_sanity_check(plan, deployment_stages, args, user_args):
     # Disable CDK-Erigon and AggOracle Committee combination deployments
     if (
-        args["sequencer_type"] == "erigon"
+        args["sequencer_type"] == constants.SEQUENCER_TYPE.CDK_ERIGON
         and deployment_stages.get("deploy_optimism_rollup", False) == False
         and args["use_agg_oracle_committee"] == True
     ):

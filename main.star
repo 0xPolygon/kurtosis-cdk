@@ -216,7 +216,7 @@ def run(plan, args={}):
         # Deploy cdk central/trusted environment.
         if deployment_stages.get("deploy_cdk_central_environment", False):
             # Deploy cdk-erigon sequencer node.
-            if args["sequencer_type"] == "erigon":
+            if args["sequencer_type"] == constants.SEQUENCER_TYPE.CDK_ERIGON:
                 plan.print("Deploying cdk-erigon sequencer")
                 import_module(cdk_erigon_package).run_sequencer(
                     plan,

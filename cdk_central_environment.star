@@ -1,7 +1,6 @@
 constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
-zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
 cdk_node_package = import_module("./lib/cdk_node.star")
 databases = import_module("./databases.star")
@@ -50,43 +49,6 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
         )
 
     keystore_artifacts = get_keystores_artifacts(plan, args)
-    if args["sequencer_type"] == "zkevm":
-        # Create the zkevm node config.
-        node_config_template = read_file(
-            src="./templates/trusted-node/node-config.toml"
-        )
-        node_config_artifact = plan.render_templates(
-            config={
-                "node-config.toml": struct(
-                    template=node_config_template,
-                    data=args
-                    | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(
-                            args
-                        ),
-                    }
-                    | db_configs,
-                )
-            },
-            name="trusted-node-config",
-        )
-
-        # Start the synchronizer.
-        zkevm_node_package.start_synchronizer(
-            plan, args, node_config_artifact, genesis_artifact
-        )
-
-        # Start the rest of the zkevm node components.
-        zkevm_node_components_configs = (
-            zkevm_node_package.create_zkevm_node_components_config(
-                args, node_config_artifact, genesis_artifact, keystore_artifacts
-            )
-        )
-
-        plan.add_services(
-            configs=zkevm_node_components_configs,
-            description="Starting the rest of the zkevm node components",
-        )
 
     # Start the DAC if in validium mode.
     if data_availability_package.is_cdk_validium(args):
@@ -101,7 +63,7 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
             description="Starting the DAC",
         )
 
-    if args["sequencer_type"] == "erigon":
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.CDK_ERIGON:
         agglayer_endpoint = get_agglayer_endpoint(plan, args, deployment_stages)
         # Create the cdk node config.
         node_config_template = read_file(

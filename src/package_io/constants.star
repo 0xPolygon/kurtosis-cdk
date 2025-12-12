@@ -7,7 +7,6 @@ ADDITIONAL_SERVICES = struct(
     bridge_spammer="bridge_spammer",
     erpc="erpc",
     observability="observability",
-    pless_zkevm_node="pless_zkevm_node",
     rpc_fuzzer="rpc_fuzzer",
     status_checker="status_checker",
     test_runner="test_runner",
@@ -38,7 +37,6 @@ CONSENSUS_TYPE = struct(
 
 SEQUENCER_TYPE = struct(
     CDK_ERIGON="erigon",
-    ZKEVM="zkevm",
 )
 
 FORK_ID_TO_NAME = {
@@ -94,7 +92,6 @@ DEFAULT_IMAGES = {
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
     "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.3",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
-    "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
 }

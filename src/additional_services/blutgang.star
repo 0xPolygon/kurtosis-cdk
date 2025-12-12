@@ -48,24 +48,7 @@ def get_blutgang_config(plan, args):
         "l2_sequencer_url": zkevm_sequencer_http_url,
         "l2_rpc_url": l2_rpc_url.http,
         "l2_ws_url": l2_rpc_url.ws,
-        "pless_zkevm_node_rpc": False,
     }
-
-    if "pless_zkevm_node" in args["additional_services"]:
-        zkevm_rpc_pless_service = plan.get_service(
-            name="zkevm-node-rpc-pless" + args["deployment_suffix"]
-        )
-        zkevm_rpc_pless_http_url = "http://{}:{}".format(
-            zkevm_rpc_pless_service.ip_address,
-            zkevm_rpc_pless_service.ports["rpc"].number,
-        )
-        zkevm_rpc_pless_ws_url = "ws://{}:{}".format(
-            zkevm_rpc_pless_service.ip_address,
-            zkevm_rpc_pless_service.ports["ws-rpc"].number,
-        )
-        blutgang_data["pless_zkevm_node_rpc"] = True
-        blutgang_data["zkevm_rpc_pless_http_url"] = zkevm_rpc_pless_http_url
-        blutgang_data["zkevm_rpc_pless_ws_url"] = zkevm_rpc_pless_ws_url
 
     return plan.render_templates(
         name="blutgang-config",
