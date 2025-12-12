@@ -71,7 +71,7 @@ DEFAULT_IMAGES = {
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.0",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
-    "cdk_erigon_node_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24",
+    "cdk_erigon_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24",
     # type 1 cdk-erigon sovereign image
     "cdk_sovereign_erigon_node_image": "ghcr.io/0xpolygon/cdk-erigon:9049b4b" # 9049b4b is equivalent to v2.65.0-RC1
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",

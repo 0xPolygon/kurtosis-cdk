@@ -238,7 +238,7 @@ zkevm.data-stream-port: {{.zkevm_data_stream_port}}
 # - 2: BigEndian (improved format)
 # - 3: Latest format with additional features
 # Default: 2
-# {{if eq .cdk_erigon_node_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
+# {{if eq .cdk_erigon_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
 # zkevm.datastream-version: not supported
 # fork12 or after {{else if or (eq .zkevm_rollup_fork_name "banana") (eq .zkevm_rollup_fork_name "aggchain")}}
 zkevm.datastream-version: 3

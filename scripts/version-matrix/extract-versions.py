@@ -68,7 +68,7 @@ class VersionMatrixExtractor:
             "aggkit_prover_image": "aggkit-prover",
             "agglayer_image": "agglayer",
             "agglayer_contracts_image": "agglayer-contracts",
-            "cdk_erigon_node_image": "cdk-erigon",
+            "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
             # "cdk_validium_node_image": "cdk-validium-node",
             "geth_image": "geth",

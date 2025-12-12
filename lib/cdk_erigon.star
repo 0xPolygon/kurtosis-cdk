@@ -78,7 +78,7 @@ def _start_service(
     plan.add_service(
         name="cdk-erigon-" + type + args["deployment_suffix"],
         config=ServiceConfig(
-            image=args["cdk_erigon_node_image"],
+            image=args["cdk_erigon_image"],
             ports=ports,
             user=User(uid=0, gid=0),
             public_ports=public_ports,

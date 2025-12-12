@@ -22,7 +22,7 @@ args:
 
   # cdk-erigon related params
   sequencer_type: erigon
-  cdk_erigon_node_image: ghcr.io/0xpolygon/cdk-erigon:9049b4b # 9049b4b is equivalent to v2.65.0-RC1
+  cdk_erigon_image: ghcr.io/0xpolygon/cdk-erigon:9049b4b # 9049b4b is equivalent to v2.65.0-RC1
   enable_normalcy: true
   erigon_strict_mode: false
   gas_token_enabled: false
