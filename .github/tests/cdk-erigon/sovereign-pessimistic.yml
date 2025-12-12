@@ -9,7 +9,7 @@ args:
 
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
-  cdk_erigon_node_image: hermeznetwork/cdk-erigon:v2.64.0-RC10
+  cdk_erigon_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1
 
   sp1_prover_key: ""
   agglayer_prover_primary_prover: mock-prover
