@@ -801,6 +801,7 @@ def validate_consensus_type(consensus_type):
             )
         )
 
+
 def validate_sequencer_type(sequencer_type):
     if sequencer_type not in VALID_SEQUENCER_TYPES:
         fail(
