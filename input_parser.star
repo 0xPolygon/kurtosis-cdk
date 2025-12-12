@@ -411,6 +411,11 @@ VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.ecdsa_multisig,
 ]
 
+VALID_SEQUENCER_TYPES = [
+    constants.SEQUENCER_TYPE.cdk_erigon,
+    constants.SEQUENCER_TYPE.op_geth,
+]
+
 
 def parse_args(plan, user_args):
     # Merge the provided args with defaults.
@@ -429,6 +434,9 @@ def parse_args(plan, user_args):
 
     consensus_contract_type = args.get("consensus_contract_type")
     validate_consensus_type(consensus_contract_type)
+
+    sequencer_type = args.get("sequencer_type")
+    validate_sequencer_type(sequencer_type)
 
     # Setting mitm for each element set to true on mitm dict
     mitm_rpc_url = (
@@ -453,7 +461,6 @@ def parse_args(plan, user_args):
     validate_additional_services(args.get("additional_services", []))
 
     # Determine fork id from the agglayer contracts image tag.
-    sequencer_type = args.get("sequencer_type")
     zkevm_prover_image = args.get("zkevm_prover_image")
     (fork_id, fork_name) = get_fork_id(
         consensus_contract_type, sequencer_type, zkevm_prover_image
@@ -791,5 +798,13 @@ def validate_consensus_type(consensus_type):
         fail(
             'Invalid consensus type: "{}". Allowed value(s): {}.'.format(
                 consensus_type, VALID_CONSENSUS_TYPES
+            )
+        )
+
+def validate_sequencer_type(sequencer_type):
+    if sequencer_type not in VALID_SEQUENCER_TYPES:
+        fail(
+            'Invalid sequencer type: "{}". Allowed value(s): {}.'.format(
+                sequencer_type, VALID_SEQUENCER_TYPES
             )
         )
