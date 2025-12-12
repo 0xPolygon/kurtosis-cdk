@@ -75,7 +75,6 @@ DEFAULT_IMAGES = {
     # For example: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
     "cdk_erigon_sovereign_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
-    "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:17.6",
     "geth_image": "ethereum/client-go:v1.16.7",
     "lighthouse_image": "sigp/lighthouse:v8.0.1",
