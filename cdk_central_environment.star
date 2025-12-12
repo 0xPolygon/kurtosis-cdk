@@ -3,7 +3,6 @@ data_availability_package = import_module("./lib/data_availability.star")
 zkevm_dac_package = import_module("./lib/zkevm_dac.star")
 zkevm_node_package = import_module("./lib/zkevm_node.star")
 zkevm_prover_package = import_module("./lib/zkevm_prover.star")
-zkevm_sequence_sender_package = import_module("./lib/zkevm_sequence_sender.star")
 cdk_node_package = import_module("./lib/cdk_node.star")
 databases = import_module("./databases.star")
 

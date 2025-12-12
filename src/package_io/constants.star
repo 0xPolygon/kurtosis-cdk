@@ -97,5 +97,4 @@ DEFAULT_IMAGES = {
     "zkevm_node_image": "hermeznetwork/zkevm-node:v0.7.3",
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
-    "zkevm_sequence_sender_image": "hermeznetwork/zkevm-sequence-sender:v0.2.4",
 }

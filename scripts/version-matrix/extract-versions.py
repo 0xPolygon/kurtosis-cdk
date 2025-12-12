@@ -81,10 +81,8 @@ class VersionMatrixExtractor:
             "op_succinct_proposer_image": "op-succinct-proposer",
             "zkevm_da_image": "zkevm-da",
             "zkevm_bridge_service_image": "zkevm-bridge-service",
-            # "zkevm_node_image": "zkevm-node",
             "zkevm_pool_manager_image": "zkevm-pool-manager",
             "zkevm_prover_image": "zkevm-prover",
-            # "zkevm_sequence_sender_image": "zkevm-sequence-sender",
         }
 
         # Components that should be excluded from default images since they're covered in test environments
