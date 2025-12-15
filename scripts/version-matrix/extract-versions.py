@@ -229,6 +229,9 @@ class VersionMatrixExtractor:
 
         for comp_name, repo in self.repos.items():
             if comp_name.lower() == name.lower():
+                if comp_name == 'agglayer' and version == '0.4.4-remove-agglayer-prover':
+                    return f"https://github.com/{repo}/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f"
+
                 if comp_name in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
                     return f"https://github.com/{repo}/releases/tag/{comp_name}/v{version.lstrip('v')}"
 
