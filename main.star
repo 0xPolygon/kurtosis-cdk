@@ -259,7 +259,7 @@ def run(plan, args={}):
 
             # Deploy AggKit infrastructure + Dedicated Bridge Service
             if deployment_stages.get("deploy_aggkit_node", False):
-                plan.print("Deploying aggkit")
+                plan.print("Deploying aggkit (cdk node)")
                 import_module(aggkit_package).run_aggkit_cdk_node(
                     plan,
                     args,
@@ -326,6 +326,7 @@ def run(plan, args={}):
             ]
         ):
             plan.print("Deploying aggkit infrastructure")
+            plan.print("DEBUG - sovereign_contract_setup_addresses: " + str(sovereign_contract_setup_addresses))
             aggkit_package.run(
                 plan,
                 args,
