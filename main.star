@@ -24,6 +24,8 @@ def run(plan, args={}):
     (deployment_stages, args, op_stack_args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
     plan.print("Deploying CDK stack with the following configuration: " + str(args))
+    sequencer_type = args.get("sequencer_type")
+    consensus_type = args.get("consensus_contract_type")
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
@@ -79,7 +81,7 @@ def run(plan, args={}):
             plan, args, deployment_stages, op_stack_args
         )
 
-        if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
+        if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
             # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
@@ -187,7 +189,7 @@ def run(plan, args={}):
 
     # Get the genesis file.
     genesis_artifact = ""
-    if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon:
+    if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
         if deployment_stages.get("deploy_cdk_central_environment", False):
             plan.print("Getting genesis file")
             genesis_artifact = plan.store_service_files(
@@ -214,8 +216,6 @@ def run(plan, args={}):
 
     # Deploy cdk central/trusted environment.
     if deployment_stages.get("deploy_cdk_central_environment", False):
-        sequencer_type = args["sequencer_type"]
-        consensus_type = args["consensus_contract_type"]
         if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
             plan.print("Deploying cdk-erigon stack")
 
@@ -283,9 +283,11 @@ def run(plan, args={}):
 
             # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
             if deployment_stages.get("deploy_cdk_bridge_infra", False) and (
-                args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
-                or args["consensus_contract_type"]
-                == constants.CONSENSUS_TYPE.cdk_validium
+                consensus_type
+                in [
+                    constants.CONSENSUS_TYPE.rollup,
+                    constants.CONSENSUS_TYPE.cdk_validium,
+                ]
             ):
                 plan.print("Deploying cdk/bridge infrastructure")
                 import_module(cdk_bridge_infra_package).run(
@@ -315,23 +317,22 @@ def run(plan, args={}):
                 )
             )
 
-    # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth or (
-        deployment_stages.get("deploy_cdk_central_environment", False)
-        and (
-            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-            or args["consensus_contract_type"]
-            == constants.CONSENSUS_TYPE.ecdsa_multisig
-        )
-    ):
-        plan.print("Deploying AggKit infrastructure")
-        aggkit_package.run(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            deployment_stages,
-        )
+        # Deploy AggKit infrastructure + Dedicated Bridge Service
+        if sequencer_type == constants.SEQUENCER_TYPE.op_geth or (
+            consensus_type
+            in [
+                constants.CONSENSUS_TYPE.pessimistic,
+                constants.CONSENSUS_TYPE.ecdsa_multisig,
+            ]
+        ):
+            plan.print("Deploying aggkit infrastructure")
+            aggkit_package.run(
+                plan,
+                args,
+                contract_setup_addresses,
+                sovereign_contract_setup_addresses,
+                deployment_stages,
+            )
 
     # Deploy additional services.
     additional_services.launch(
@@ -341,7 +342,7 @@ def run(plan, args={}):
         sovereign_contract_setup_addresses,
         genesis_artifact,
         deployment_stages,
-        args["sequencer_type"],
+        sequencer_type,
     )
 
 
