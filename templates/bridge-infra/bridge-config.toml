@@ -122,7 +122,7 @@ L2PolygonBridgeAddresses = ["{{.sovereign_bridge_proxy_addr}}"]
 RequireSovereignChainSmcs = [true]
 # List of global exit root addresses for Layer 2. Same length as L2PolygonBridgeAddresses
 L2PolygonZkEVMGlobalExitRootAddresses = ["{{.sovereign_ger_proxy_addr}}"]
-{{- else }}
+{{- else if eq .sequencer_type "cdk-erigon" }}
 # Address of the zkEVM smc
 PolygonZkEVMAddress = "{{.zkevm_rollup_address}}"
 # List of Layer 2 Polygon bridge addresses. It must have the same length as L2URLs. e.g. If 5 networks need to be synced, the urls must be in this array.
@@ -131,6 +131,10 @@ L2PolygonBridgeAddresses = ["{{.zkevm_bridge_l2_address}}"]
 RequireSovereignChainSmcs = [{{.require_sovereign_chain_contract}}]
 # List of global exit root addresses for Layer 2. Same length as L2PolygonBridgeAddresses
 L2PolygonZkEVMGlobalExitRootAddresses = ["{{.zkevm_global_exit_root_l2_address}}"]
+{{- else}}
+PolygonZkEVMAddress = ""
+RequireSovereignChainSmcs = []
+L2PolygonZkEVMGlobalExitRootAddresses = []
 {{- end }}
 
 # Claim Transaction Manager Configuration
