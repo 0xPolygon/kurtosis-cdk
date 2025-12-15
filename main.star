@@ -326,7 +326,10 @@ def run(plan, args={}):
             ]
         ):
             plan.print("Deploying aggkit infrastructure")
-            plan.print("DEBUG - sovereign_contract_setup_addresses: " + str(sovereign_contract_setup_addresses))
+            plan.print(
+                "DEBUG - sovereign_contract_setup_addresses: "
+                + str(sovereign_contract_setup_addresses)
+            )
             aggkit_package.run(
                 plan,
                 args,
