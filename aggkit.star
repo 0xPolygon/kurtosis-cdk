@@ -422,7 +422,7 @@ def create_bridge_config_artifact(
         src="./templates/bridge-infra/bridge-config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
-    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth and (
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (
         args["consensus_contract_type"]
         in [
             constants.CONSENSUS_TYPE.pessimistic,
