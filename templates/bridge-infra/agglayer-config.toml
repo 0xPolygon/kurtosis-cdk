@@ -1,4 +1,3 @@
-prover-entrypoint = "{{.agglayer_prover_entrypoint}}"
 debug-mode = true
 
 {{if and (ne .zkevm_rollup_fork_id "9") (ne .zkevm_rollup_fork_id "11")}}
@@ -18,6 +17,16 @@ mock-verifier = {{.mock_verifier}}
 [proof-signers]
 1 = "{{.l2_sequencer_address}}"
 
+{{- if eq .agglayer_prover_primary_prover "network-prover" }}
+[prover.network-prover]
+proving-timeout = "5m"
+sp1-cluster-endpoint = "{{.sp1_cluster_endpoint}}"
+{{- else }}
+[prover.mock-prover]
+proving-timeout = "5m"
+proving_request_timeout = "300s"
+{{- end }}
+
 [rpc]
 {{- if eq (slice .agglayer_version 0 4) "0.2." }}
 port = {{.agglayer_readrpc_port}}
@@ -35,7 +44,7 @@ request-timeout = 180
 # default value is equal to 10MB
 max-request-body-size = 104857600
 
-[prover.grpc]
+[grpc]
 # size is define in bytes e.g. 100 * 1024 * 1024
 # same for `max-encoding-message-size`
 # default value is equal to 4MB
