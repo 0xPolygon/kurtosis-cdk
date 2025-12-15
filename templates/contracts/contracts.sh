@@ -612,7 +612,7 @@ create_agglayer_rollup() {
     cp combined.json "combined{{.deployment_suffix}}.json"
     cat combined.json
 
-    {{ if eq .sequencer_type "erigon" }}
+    {{ if eq .sequencer_type "cdk-erigon" }}
     _echo_ts "Approving the rollup address to transfer POL tokens on behalf of the sequencer"
     cast send \
         --private-key "{{.l2_sequencer_private_key}}" \

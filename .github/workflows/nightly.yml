@@ -214,7 +214,7 @@ jobs:
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
             rpc_name=""
-            if [[ "$sequencer_type" == "erigon" ]]; then
+            if [[ "$sequencer_type" == "cdk-erigon" ]]; then
               rpc_name="cdk-erigon-rpc-001"
             elif [[ "$sequencer_type" == "null" ]]; then
               rpc_name="cdk-erigon-rpc-001"
