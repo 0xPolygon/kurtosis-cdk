@@ -457,7 +457,8 @@ def create_bridge_config_artifact(
                     "rpc_port_number": args["zkevm_bridge_rpc_port"],
                     "metrics_port_number": args["zkevm_bridge_metrics_port"],
                 }
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | sovereign_contract_setup_addresses,
             )
         },
     )
