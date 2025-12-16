@@ -11,11 +11,11 @@ def run(plan, args, contract_setup_addresses):
         args.get("deployment_suffix"), args.get("sequencer_type")
     )
     config_artifact = plan.render_templates(
-        name="zkevm-dac-config",
+        name="cdk-data-availability-config",
         config={
             "config.toml": struct(
                 template=read_file(
-                    src="../../../templates/cdk-erigon/zkevm-dac/config.toml"
+                    src="../../../templates/cdk-erigon/cdk-data-availability/config.toml"
                 ),
                 data={
                     "keystore_password": args.get("l2_keystore_password"),
@@ -36,26 +36,26 @@ def run(plan, args, contract_setup_addresses):
     )
 
     keystore_artifact = plan.store_service_files(
-        name="zkevm-dac-keystore",
+        name="cdk-data-availability-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/dac.keystore",
     )
 
     plan.add_service(
-        name="zkevm-dac" + args.get("deployment_suffix"),
+        name="cdk-data-availability" + args.get("deployment_suffix"),
         config=ServiceConfig(
-            image=args.get("zkevm_da_image"),
+            image=args.get("cdk_data_availability_image"),
             ports={
                 RPC_PORT_ID: PortSpec(RPC_PORT_NUMBER),
             },
             files={
-                "/etc/zkevm-dac": Directory(
+                "/etc/cdk-data-availability": Directory(
                     artifact_names=[config_artifact, keystore_artifact]
                 ),
             },
             entrypoint=[
                 "/app/cdk-data-availability",
             ],
-            cmd=["run", "--cfg", "/etc/zkevm-dac/config.toml"],
+            cmd=["run", "--cfg", "/etc/cdk-data-availability/config.toml"],
         ),
     )

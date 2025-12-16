@@ -6,7 +6,7 @@ cdk_node_package = import_module("../../../lib/cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../../../databases.star")
 data_availability_package = import_module("../../../lib/data_availability.star")
-zkevm_dac = import_module("./zkevm_dac.star")
+cdk_data_availability = import_module("./cdk_data_availability.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
@@ -57,7 +57,7 @@ def launch(
 
         # Start the DAC if in validium mode.
         if data_availability_package.is_cdk_validium(args):
-            zkevm_dac.run(plan, args, contract_setup_addresses)
+            cdk_data_availability.run(plan, args, contract_setup_addresses)
 
         agglayer_endpoint = get_agglayer_endpoint(plan, args)
         # Create the cdk node config.
