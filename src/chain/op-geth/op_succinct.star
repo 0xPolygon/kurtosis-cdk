@@ -1,24 +1,76 @@
-constants = import_module("./src/package_io/constants.star")
-op_succinct_package = import_module("./lib/op_succinct.star")
+constants = import_module("../../package_io/constants.star")
 
 
-def op_succinct_proposer_run(plan, args):
-    # FIXME... what is this point of this.. I think we can use a script to do this and we can avoid the weird hard coded chain id
-    # echo 'CREATE TABLE `proof_requests` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `type` text NOT NULL, `start_block` integer NOT NULL, `end_block` integer NOT NULL, `status` text NOT NULL, `request_added_time` integer NOT NULL, `prover_request_id` text NULL, `proof_request_time` integer NULL, `last_updated_time` integer NOT NULL, `l1_block_number` integer NULL, `l1_block_hash` text NULL, `proof` blob NULL);'  | sqlite3 foo.db
+# Port identifiers and numbers.
+GRPC_PORT_ID = "grpc"
+GRPC_PORT_NUMBER = 50051
 
-    # Start the op-succinct-proposer component.
+METRICS_PORT_ID = "prometheus"
+METRICS_PORT_NUMBER = 8080
+
+
+def run(plan, args):
     l1_genesis_artifact = plan.get_files_artifact(
         name="el_cl_genesis_data_for_op_succinct",
     )
-    op_succinct_proposer_configs = (
-        op_succinct_package.create_op_succinct_proposer_service_config(
-            args, l1_genesis_artifact
-        )
-    )
 
-    plan.add_services(
-        configs=op_succinct_proposer_configs,
-        description="Starting the op-succinct-proposer component",
+    plan.add_service(
+        name="op-succinct-proposer" + args.get("deployment_suffix"),
+        config=ServiceConfig(
+            image=args.get("op_succinct_proposer_image"),
+            ports={
+                METRICS_PORT_ID: PortSpec(
+                    METRICS_PORT_NUMBER,
+                    wait="60s",
+                ),
+                GRPC_PORT_ID: PortSpec(
+                    GRPC_PORT_NUMBER,
+                    application_protocol="grpc",
+                    wait="60s",
+                ),
+            },
+            env_vars={
+                "L1_RPC": args.get("l1_rpc_url"),
+                "L1_BEACON_RPC": args.get("l1_beacon_url"),
+                "L2_RPC": args.get("op_el_rpc_url"),
+                "L2_NODE_RPC": args.get("op_cl_rpc_url"),
+                # TODO understand why the PRIVATE_KEY needs to be set and if it actually need to be the sequencer key... The value 0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458 is made up just to ensure that the value isn't needed
+                "PRIVATE_KEY": "0xc797616a567ffd3f7d80f110f4c19900e55258ac2aa96d96ded790e0bd727458",
+                "ETHERSCAN_API_KEY": "",
+                "VERIFIER_ADDRESS": args.get("agglayer_gateway_address"),
+                "AGG_PROOF_MODE": args.get("op_succinct_agg_proof_mode"),
+                "L2OO_ADDRESS": args.get("zkevm_rollup_address"),
+                "OP_SUCCINCT_MOCK": args.get("op_succinct_mock"),
+                "AGGLAYER": args.get("op_succinct_agglayer"),  # agglayer/op-succinct specific.
+                "GRPC_ADDRESS": "0.0.0.0:{}".format(GRPC_PORT_NUMBER),  # agglayer/op-succinct specific.
+                "NETWORK_PRIVATE_KEY": args.get("sp1_prover_key"),
+                "MAX_CONCURRENT_PROOF_REQUESTS": args.get(
+                    "op_succinct_max_concurrent_proof_requests"
+                ),
+                "MAX_CONCURRENT_WITNESS_GEN": args.get("op_succinct_max_concurrent_witness_gen"),
+                "RANGE_PROOF_INTERVAL": args.get("op_succinct_range_proof_interval"),
+                "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
+                + args.get("deployment_suffix")
+                + ":5432/op_succinct_db",
+                "PROVER_ADDRESS": args.get("l2_sequencer_address"),
+                "METRICS_PORT": str(METRICS_PORT_NUMBER),
+                # "DGF_ADDRESS": "", # Address of the DisputeGameFactory contract. Note: If set, the proposer will create a dispute game with the DisputeGameFactory, rather than the OPSuccinctL2OutputOracle. Compatible with OptimismPortal2.
+                # "LOOP_INTERVAL": 60, # Default: 60. The interval (in seconds) between each iteration of the OP Succinct service.
+                # "SAFE_DB_FALLBACK": False, # Default: false. Whether to fallback to timestamp-based L1 head estimation even though SafeDB is not activated for op-node. When false, proposer will panic if SafeDB is not available. It is by default false since using the fallback mechanism will result in higher proving cost.
+                # "SIGNER_URL": "", # URL for the Web3Signer. Note: This takes precedence over the `PRIVATE_KEY` environment variable.
+                # "SIGNER_ADDRESS": "", # Address of the account that will be posting output roots to L1. Note: Only set this if the signer is a Web3Signer. Note: Required if `SIGNER_URL` is set.
+                # Kurtosis CDK specific - required to see logs in the op-succinct-proposer after https://github.com/agglayer/op-succinct/commit/892085405a65a2b1c245beca3dcb9d9f5626af0e commit
+                # Kurtosis CDK specific - https://github.com/agglayer/op-succinct/commit/cffd968bd744cddc262543e1195fdd36110ecf83
+                "RUST_LOG": args.get("log_level"),
+                "LOG_FORMAT": args.get("log_format"),
+            },
+            files={
+                # Mount L1 genesis file.
+                # The op-succinct binary runs from /app working directory (see Dockerfile)
+                # It looks for configs/L1/{chainId}.json relative to working directory
+                "/app/configs/L1": Directory(artifact_names=[l1_genesis_artifact])
+            },
+        )
     )
 
 

@@ -13,7 +13,7 @@ def launch(
     # Deploy op-succinct-proposer
     if deploy_op_succinct:
         plan.print("Deploying op-succinct-proposer")
-        op_succinct.op_succinct_proposer_run(plan, args | contract_setup_addresses)
+        op_succinct.run(plan, args | contract_setup_addresses)
 
     # Deploy aggkit infrastructure + dedicated bridge service
     plan.print("Deploying aggkit infrastructure")

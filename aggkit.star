@@ -5,6 +5,7 @@ databases = import_module("./databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
 service_package = import_module("./lib/service.star")
+op_succinct = import_module("./src/chain/op-geth/op_succinct.star")
 
 
 def run_aggkit_cdk_node(
@@ -502,7 +503,7 @@ def create_aggkit_prover_config_artifact(
                     # TODO: For op-succinct, agglayer/op-succinct is currently on the golang version. This might change if we move to the rust version.
                     "proposer_url": "http://op-succinct-proposer{}:{}".format(
                         args["deployment_suffix"],
-                        args["op_succinct_proposer_grpc_port"],
+                        op_succinct.GRPC_PORT_NUMBER,
                     ),
                     # TODO: For legacy op, this would be different - something like http://op-proposer-001:8560
                     # "proposer_url": "http://op-proposer{}:{}".format(
