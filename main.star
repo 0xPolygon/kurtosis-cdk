@@ -2,7 +2,10 @@ constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
 op_succinct_package = import_module("./src/chain/op-geth/op_succinct_proposer.star")
-ethereum_package = import_module("./ethereum.star")
+
+# layer 1
+ethereum_package = "./src/l1/ethereum.star"
+anvil_package = "./src/l1/anvil.star"
 
 # Main service packages.
 additional_services_launcher = import_module("./src/additional_services/launcher.star")
@@ -11,7 +14,6 @@ chain_launcher = import_module("./src/chain/launcher.star")
 databases_package = "./databases.star"
 agglayer_contracts_package = "./src/contracts/agglayer.star"
 sovereign_contracts_package = import_module("./src/contracts/sovereign.star.star")
-anvil_package = "./anvil.star"
 mitm_package = "./mitm.star"
 
 
@@ -31,7 +33,7 @@ def run(plan, args={}):
         if args.get("l1_engine", "geth") == "anvil":
             import_module(anvil_package).run(plan, args)
         else:
-            ethereum_package.run(plan, args)
+            import_module(ethereum_package).run(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 
