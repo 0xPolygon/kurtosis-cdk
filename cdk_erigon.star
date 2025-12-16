@@ -19,7 +19,7 @@ def run_sequencer(plan, args, contract_setup_addresses):
                 )
             },
         )
-        zkevm_prover_package.start_stateless_executor(
+        zkevm_prover.start_stateless_executor(
             plan,
             args,
             stateless_executor_config_artifact,
