@@ -1,5 +1,5 @@
 cdk_erigon_package = import_module("./lib/cdk_erigon.star")
-zkevm_prover_package = import_module("./lib/zkevm_prover.star")
+zkevm_prover = import_module("./src/chain/cdk-erigon/zkevm_prover.star")
 
 
 def run_sequencer(plan, args, contract_setup_addresses):
@@ -38,6 +38,7 @@ def run_sequencer(plan, args, contract_setup_addresses):
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
                     "prometheus_port": args["prometheus_port"],
+                    "zkevm_executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
                 }
                 | args
                 | contract_setup_addresses,
@@ -124,6 +125,7 @@ def run_rpc(plan, args, contract_setup_addresses):
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 0,
                     "prometheus_port": args["prometheus_port"],
+                    "zkevm_executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
                 }
                 | args
                 | contract_setup_addresses,

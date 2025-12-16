@@ -363,7 +363,7 @@ zkevm.executor-strict: {{.erigon_strict_mode}}
 # Multiple URLs can be provided for load balancing or redundancy.
 # Default: ""
 # {{if .erigon_strict_mode}}
-zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port}}
+zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port_number}}
 # {{end}}
 
 # Define the maximum time allowed for an executor to respond to a request.

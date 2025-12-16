@@ -11,31 +11,6 @@ def run(plan, args, contract_setup_addresses):
         args["deployment_suffix"], args["sequencer_type"]
     )
 
-    # Start prover.
-    prover_config_template = read_file(
-        src="./templates/trusted-node/prover-config.json"
-    )
-    prover_config_artifact = plan.render_templates(
-        name="prover-config-artifact",
-        config={
-            "prover-config.json": struct(
-                template=prover_config_template,
-                data=args | db_configs,
-            )
-        },
-    )
-
-    if (
-        not args["zkevm_use_real_verifier"]
-        and not args["enable_normalcy"]
-        and not args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-        and not args["consensus_contract_type"]
-        == constants.CONSENSUS_TYPE.ecdsa_multisig
-    ):
-        zkevm_prover_package.start_prover(
-            plan, args, prover_config_artifact, "zkevm_prover_start_port"
-        )
-
     # Get the genesis file artifact.
     # TODO: Retrieve the genesis file artifact once it is available in Kurtosis.
     genesis_artifact = ""

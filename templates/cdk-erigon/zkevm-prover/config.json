@@ -116,14 +116,14 @@
      * listen on. This is generally used within the `Executor.URI'
      * config within the node.
      */ -}}
-    "executorServerPort": {{.zkevm_executor_port}},
+    "executorServerPort": {{.executor_port_number}},
 
 {{- /*
      * hashDBServerPort is the HashDB server GRPC port that the node
      * will connect to. This is generally used with the `MTClient.URI'
      * setting within the node config.
      */ -}}
-    "hashDBServerPort": {{.zkevm_hash_db_port}},
+    "hashDBServerPort": {{.hash_db_port_number}},
 
 {{- /*
      * hashDBURL is the URL used by the Executor to connect to the
@@ -478,7 +478,7 @@
      * executorClientPort is the executor client GRPC port it connects
      * to
      */ -}}
-    "executorClientPort": {{.zkevm_executor_port}},
+    "executorClientPort": {{.executor_port_number}},
 
 {{- /*
      * executorClientHost is the executor host that the client will

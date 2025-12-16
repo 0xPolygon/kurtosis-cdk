@@ -4,7 +4,8 @@ cdk_central_environment_package = import_module("../../../cdk_central_environmen
 cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
 cdk_erigon_package = import_module("../../../cdk_erigon.star")
 constants = import_module("../../package_io/constants.star")
-zkevm_pool_manager_package = import_module("../../../zkevm_pool_manager.star")
+zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+zkevm_prover = import_module("./zkevm_prover.star")
 
 
 def launch(
@@ -40,13 +41,17 @@ def launch(
 
     args["genesis_artifact"] = genesis_artifact
 
-    consensus_type = args.get("consensus_type")
+    consensus_type = args.get("consensus_contract_type")
     if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
     ]:
         plan.print("Deploying cdk-node")
         cdk_central_environment_package.run(plan, args, contract_setup_addresses)
+
+        # Start zkevm prover.
+        if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
+            zkevm_prover.run(plan, args)
 
     if deployment_stages.get("deploy_aggkit_node"):
         plan.print("Deploying aggkit (cdk node)")
