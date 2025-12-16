@@ -53,7 +53,6 @@ DEFAULT_PORTS = {
     "zkevm_bridge_rpc_port": 8080,
     "zkevm_bridge_ui_port": 80,
     "zkevm_bridge_metrics_port": 8090,
-    "zkevm_dac_port": 8484,
     "zkevm_data_streamer_port": 6900,
     "zkevm_pprof_port": 6060,
     "zkevm_rpc_http_port": 8123,

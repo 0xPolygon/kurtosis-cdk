@@ -1,4 +1,4 @@
-PrivateKey = {Path = "/etc/zkevm/dac.keystore", Password = "{{.l2_keystore_password}}"}
+PrivateKey = {Path = "/etc/zkevm/dac.keystore", Password = "{{.keystore_password}}"}
 
 [L1]
 WsURL = "{{.l1_ws_url}}"

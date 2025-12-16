@@ -6,7 +6,7 @@ cdk_node_package = import_module("../../../lib/cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../../../databases.star")
 data_availability_package = import_module("../../../lib/data_availability.star")
-zkevm_dac_package = import_module("../../../lib/zkevm_dac.star")
+zkevm_dac = import_module("./zkevm_dac.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
@@ -57,16 +57,7 @@ def launch(
 
         # Start the DAC if in validium mode.
         if data_availability_package.is_cdk_validium(args):
-            dac_config_artifact = create_dac_config_artifact(
-                plan, args, db_configs, contract_setup_addresses
-            )
-            dac_config = zkevm_dac_package.create_dac_service_config(
-                args, dac_config_artifact, keystore_artifacts.dac
-            )
-            plan.add_services(
-                configs=dac_config,
-                description="Starting the DAC",
-            )
+            zkevm_dac.run(plan, args, contract_setup_addresses)
 
         agglayer_endpoint = get_agglayer_endpoint(plan, args)
         # Create the cdk node config.
@@ -163,11 +154,6 @@ def get_keystores_artifacts(plan, args):
         # service_name="contracts" + args["deployment_suffix"],
         # src=constants.KEYSTORES_DIR+"/aggregator.keystore",
     )
-    dac_keystore_artifact = plan.store_service_files(
-        name="dac-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/dac.keystore",
-    )
     claim_sponsor_keystore_artifact = plan.store_service_files(
         name="claimsponsor-keystore-cdk",
         service_name="contracts" + args["deployment_suffix"],
@@ -178,32 +164,6 @@ def get_keystores_artifacts(plan, args):
         aggregator=aggregator_keystore_artifact,
         dac=dac_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
-    )
-
-
-def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses):
-    dac_config_template = read_file(
-        src="../../../templates/trusted-node/dac-config.toml"
-    )
-    return plan.render_templates(
-        name="dac-config-artifact",
-        config={
-            "dac-config.toml": struct(
-                template=dac_config_template,
-                data={
-                    "deployment_suffix": args["deployment_suffix"],
-                    "log_level": args.get("log_level"),
-                    "environment": args.get("environment"),
-                    "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
-                    "l1_ws_url": args["l1_ws_url"],
-                    "l2_keystore_password": args["l2_keystore_password"],
-                    # ports
-                    "zkevm_dac_port": args["zkevm_dac_port"],
-                }
-                | contract_setup_addresses
-                | db_configs,
-            )
-        },
     )
 
 

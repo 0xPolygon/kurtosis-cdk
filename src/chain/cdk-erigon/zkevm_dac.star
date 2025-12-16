@@ -1,0 +1,61 @@
+databases = import_module("../../../databases.star")
+
+
+# Port identifiers and numbers.
+RPC_PORT_ID = "dac"
+RPC_PORT_NUMBER = 8484
+
+
+def run(plan, args, contract_setup_addresses):
+    db_configs = databases.get_db_configs(
+        args.get("deployment_suffix"), args.get("sequencer_type")
+    )
+    config_artifact = plan.render_templates(
+        name="zkevm-dac-config",
+        config={
+            "config.toml": struct(
+                template=read_file(
+                    src="../../../templates/cdk-erigon/zkevm-dac/config.toml"
+                ),
+                data={
+                    "keystore_password": args.get("l2_keystore_password"),
+                    "rpc_port_number": RPC_PORT_NUMBER,
+                    # log
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
+                    # layer 1
+                    "l1_rpc_url": args.get("mitm_rpc_url").get(
+                        "dac", args["l1_rpc_url"]
+                    ),
+                    "l1_ws_url": args.get("l1_ws_url"),
+                }
+                | contract_setup_addresses
+                | db_configs,
+            )
+        },
+    )
+
+    keystore_artifact = plan.store_service_files(
+        name="zkevm-dac-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src=constants.KEYSTORES_DIR + "/dac.keystore",
+    )
+
+    plan.add_service(
+        name="zkevm-dac" + args.get("deployment_suffix"),
+        config=ServiceConfig(
+            image=args.get("zkevm_da_image"),
+            ports={
+                RPC_PORT_ID: PortSpec(RPC_PORT_NUMBER),
+            },
+            files={
+                "/etc/zkevm-dac": Directory(
+                    artifact_names=[config_artifact, keystore_artifact]
+                ),
+            },
+            entrypoint=[
+                "/app/cdk-data-availability",
+            ],
+            cmd=["run", "--cfg", "/etc/zkevm-dac/config.toml"],
+        ),
+    )
