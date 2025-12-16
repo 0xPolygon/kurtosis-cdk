@@ -1,4 +1,4 @@
-databases_package = import_module("../src/chain/shared/databases.star")
+databases_package = import_module("../chain/shared/databases.star")
 grafana_package = import_module(
     "github.com/kurtosis-tech/grafana-package/main.star@cc66468b167d16c0fc7153980be5b67550be01be"
 )
