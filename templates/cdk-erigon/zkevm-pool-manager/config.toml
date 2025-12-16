@@ -4,8 +4,8 @@ Outputs = ["stderr"]
 Environment = "{{.environment}}"
 
 [Server]
-Port = {{.zkevm_pool_manager_port}}
-Host = "zkevm-pool-manager{{.deployment_suffix}}"
+Port = {{.server_port_number}}
+Host = "{{.server_hostname}}"
 ReadTimeout = "60s"
 WriteTimeout = "60s"
 MaxRequestsPerIPAndSecond = 500
@@ -23,13 +23,13 @@ EnableLog = false
 MaxConns = 200
 
 [Sender]
-SequencerURL = "http://cdk-erigon-sequencer{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+SequencerURL = "{{.sequencer_url}}"
 ResendTxsCheckInterval = "1s"
 Workers = 5
 QueueSize = 25
 
 [Monitor]
-L2NodeURL = "http://cdk-erigon-rpc{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+L2NodeURL = "{{.l2_node_url}}"
 Workers = 5
 QueueSize = 25
 RetryWaitInterval = "3s"
