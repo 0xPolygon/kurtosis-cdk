@@ -55,7 +55,9 @@ def launch(
         keystore_artifacts = get_keystores_artifacts(plan, args)
 
         # Start the DAC if in validium mode.
-        is_validium_mode = args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+        is_validium_mode = (
+            args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+        )
         if is_validium_mode:
             cdk_data_availability.run(plan, args, contract_setup_addresses)
 

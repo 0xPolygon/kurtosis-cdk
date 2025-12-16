@@ -25,9 +25,7 @@ def run_aggkit_cdk_node(
         config={
             "config.toml": struct(
                 template=aggkit_cdk_config_template,
-                data=args
-                | db_configs
-                | contract_setup_addresses,
+                data=args | db_configs | contract_setup_addresses,
             )
         },
     )
