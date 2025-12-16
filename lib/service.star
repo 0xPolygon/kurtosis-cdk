@@ -1,4 +1,3 @@
-data_availability_package = import_module("./data_availability.star")
 constants = import_module("../src/package_io/constants.star")
 
 
@@ -17,7 +16,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
         extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"
 
-    if data_availability_package.is_cdk_validium(args):
+    if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium:
         extract[
             "polygon_data_committee_address"
         ] = "fromjson | .polygonDataCommitteeAddress"

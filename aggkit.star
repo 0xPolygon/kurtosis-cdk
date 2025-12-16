@@ -1,5 +1,4 @@
 constants = import_module("./src/package_io/constants.star")
-data_availability_package = import_module("./lib/data_availability.star")
 aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
@@ -27,9 +26,6 @@ def run_aggkit_cdk_node(
             "config.toml": struct(
                 template=aggkit_cdk_config_template,
                 data=args
-                | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
-                }
                 | db_configs
                 | contract_setup_addresses,
             )
@@ -144,7 +140,6 @@ def run(
                 template=aggkit_config_template,
                 data=args
                 | {
-                    "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                     "agglayer_endpoint": agglayer_endpoint,
                     "aggkit_version": aggkit_version,
                     "l2_rpc_url": l2_rpc_url,
@@ -225,9 +220,6 @@ def run(
                         template=aggkit_config_template,
                         data=args
                         | {
-                            "is_cdk_validium": data_availability_package.is_cdk_validium(
-                                args
-                            ),
                             "agglayer_endpoint": agglayer_endpoint,
                             "aggkit_version": aggkit_version,
                             "l2_rpc_url": l2_rpc_url,
@@ -289,9 +281,6 @@ def run(
                         template=aggkit_config_template,
                         data=args
                         | {
-                            "is_cdk_validium": data_availability_package.is_cdk_validium(
-                                args
-                            ),
                             "agglayer_endpoint": agglayer_endpoint,
                             "aggkit_version": aggkit_version,
                             "l2_rpc_url": l2_rpc_url,

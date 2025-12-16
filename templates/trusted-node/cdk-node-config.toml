@@ -7,7 +7,7 @@ AggLayerURL="{{.agglayer_grpc_url}}"
 AggLayerURL="{{.agglayer_readrpc_url}}"
 {{- end }}
 ForkId = {{.zkevm_rollup_fork_id}}
-IsValidiumMode = {{.is_cdk_validium}}
+IsValidiumMode = {{.is_validium_mode}}
 NetworkID = {{.zkevm_rollup_id}}
 ContractVersions = "{{.zkevm_rollup_fork_name}}"
 

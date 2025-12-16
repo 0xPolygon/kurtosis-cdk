@@ -1,5 +1,4 @@
 constants = import_module("../src/package_io/constants.star")
-data_availability_package = import_module("./data_availability.star")
 ports_package = import_module("../src/package_io/ports.star")
 
 AGGKIT_BINARY_NAME = "aggkit"

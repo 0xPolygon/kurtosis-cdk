@@ -35,6 +35,14 @@ CONSENSUS_TYPE = struct(
     fep="fep",
 )
 
+CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
+    CONSENSUS_TYPE.rollup: "PolygonZkEVMEtrog",
+    CONSENSUS_TYPE.cdk_validium: "PolygonValidiumEtrog",
+    CONSENSUS_TYPE.pessimistic: "PolygonPessimisticConsensus",
+    CONSENSUS_TYPE.ecdsa_multisig: "AggchainECDSAMultisig",
+    CONSENSUS_TYPE.fep: "AggchainFEP",
+}
+
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_geth="op-geth",

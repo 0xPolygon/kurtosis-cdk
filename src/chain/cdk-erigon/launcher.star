@@ -5,7 +5,6 @@ cdk_erigon_package = import_module("../../../cdk_erigon.star")
 cdk_node_package = import_module("../../../lib/cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../../../databases.star")
-data_availability_package = import_module("../../../lib/data_availability.star")
 cdk_data_availability = import_module("./cdk_data_availability.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
@@ -56,7 +55,8 @@ def launch(
         keystore_artifacts = get_keystores_artifacts(plan, args)
 
         # Start the DAC if in validium mode.
-        if data_availability_package.is_cdk_validium(args):
+        is_validium_mode = args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+        if is_validium_mode:
             cdk_data_availability.run(plan, args, contract_setup_addresses)
 
         agglayer_endpoint = get_agglayer_endpoint(plan, args)
@@ -71,9 +71,7 @@ def launch(
                     template=node_config_template,
                     data=args
                     | {
-                        "is_cdk_validium": data_availability_package.is_cdk_validium(
-                            args
-                        ),
+                        "is_validium_mode": is_validium_mode,
                         "l1_rpc_url": args["mitm_rpc_url"].get(
                             "cdk-node", args["l1_rpc_url"]
                         ),
