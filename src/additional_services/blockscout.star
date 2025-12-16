@@ -1,7 +1,7 @@
 blockscout_package = import_module(
     "github.com/xavier-romero/kurtosis-blockscout/main.star@9de7765a6c98c8c357f747ff953fdbc0e39ebc3d"
 )
-contracts_util = import_module("./src/contracts/util.star")
+contracts_util = import_module("../contracts/util.star")
 
 
 def run(plan, args):

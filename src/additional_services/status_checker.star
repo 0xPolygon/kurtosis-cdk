@@ -1,5 +1,5 @@
 ports_package = import_module("../package_io/ports.star")
-contracts_util = import_module("./src/contracts/util.star")
+contracts_util = import_module("../contracts/util.star")
 
 
 def run(plan, args):
