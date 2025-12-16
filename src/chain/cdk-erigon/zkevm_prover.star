@@ -1,3 +1,6 @@
+databases = import_module("../../../databases.star")
+
+
 # Port identifiers and numbers.
 HASH_DB_PORT_ID = "hash-db"
 HASH_DB_PORT_NUMBER = 50061
@@ -7,6 +10,9 @@ EXECUTOR_PORT_NUMBER = 50071
 
 
 def run(plan, args):
+    db_configs = databases.get_db_configs(
+        args.get("deployment_suffix"), args.get("sequencer_type")
+    )
     config_artifact = plan.render_templates(
         name="zkevm-prover-config-artifact",
         config={
@@ -33,7 +39,7 @@ def run(plan, args):
         config=ServiceConfig(
             image=args.get("zkevm_prover_image"),
             ports={
-                HASH_DB_PORT_ID: PortSPec(
+                HASH_DB_PORT_ID: PortSpec(
                     HASH_DB_PORT_NUMBER, application_protocol="grpc"
                 ),
                 EXECUTOR_PORT_ID: PortSpec(
