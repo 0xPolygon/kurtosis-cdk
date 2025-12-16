@@ -1,4 +1,4 @@
-constants = import_module("./src/package_io/constants.star")
+constants = import_module("../package_io/constants.star")
 
 
 def run(plan, args, predeployed_contracts=False):
