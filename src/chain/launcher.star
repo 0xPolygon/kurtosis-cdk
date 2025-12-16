@@ -1,7 +1,7 @@
-cdk_erigon_launcher = "./cdk-erigon/launcher.star"
-constants = "../package_io/constants.star"
-input_parser = "../../input_parser.star"
-op_geth_launcher = "./op-geth/launcher.star"
+cdk_erigon_launcher = import_module("./cdk-erigon/launcher.star")
+constants = import_module("../package_io/constants.star")
+input_parser = import_module("../../input_parser.star")
+op_geth_launcher = import_module("./op-geth/launcher.star")
 
 
 def launch(
