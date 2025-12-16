@@ -1,7 +1,7 @@
 aggchain_vkey = import_module("../vkey/aggchain.star")
 agglayer_vkey = import_module("../vkey/agglayer.star")
 constants = import_module("../package_io/constants.star")
-contracts_util = import_module("./src/contracts/util.star")
+contracts_util = import_module("./util.star")
 cdk_data_availability = import_module(
     "../chain/cdk-erigon/cdk_data_availability.star"
 )
