@@ -633,7 +633,7 @@ create_agglayer_rollup() {
         --rpc-url "{{.l1_rpc_url}}" \
         "$(jq -r '.polygonDataCommitteeAddress' combined.json)" \
         'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
-        1 ["http://zkevm-dac{{.deployment_suffix}}:{{.zkevm_dac_rpc_port_number}}"] "{{.l2_dac_address}}"
+        1 ["http://cdk-data-availability{{.deployment_suffix}}:{{.cdk_data_availability_rpc_port_number}}"] "{{.l2_dac_address}}"
 
     # The DAC needs to be enabled with a call to set the DA protocol.
     _echo_ts "Setting the data availability protocol"

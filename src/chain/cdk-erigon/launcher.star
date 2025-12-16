@@ -162,7 +162,6 @@ def get_keystores_artifacts(plan, args):
     return struct(
         sequencer=sequencer_keystore_artifact,
         aggregator=aggregator_keystore_artifact,
-        dac=dac_keystore_artifact,
         claim_sponsor=claim_sponsor_keystore_artifact,
     )
 

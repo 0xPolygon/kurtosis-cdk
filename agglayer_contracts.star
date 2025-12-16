@@ -3,7 +3,9 @@ agglayer_vkey = import_module("./src/vkey/agglayer.star")
 constants = import_module("./src/package_io/constants.star")
 data_availability_package = import_module("./lib/data_availability.star")
 service_package = import_module("./lib/service.star")
-zkevm_dac = import_module("./src/chain/cdk-erigon/zkevm_dac.star")
+cdk_data_availability = import_module(
+    "./src/chain/cdk-erigon/cdk_data_availability.star"
+)
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -122,7 +124,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "output_dir": constants.OUTPUT_DIR,
         "input_dir": constants.INPUT_DIR,
         "scripts_dir": constants.SCRIPTS_DIR,
-        "zkevm_dac_rpc_port_number": zkevm_dac.RPC_PORT_NUMBER,
+        "cdk_data_availability_rpc_port_number": cdk_data_availability.RPC_PORT_NUMBER,
     }
 
     input_artifacts = []
