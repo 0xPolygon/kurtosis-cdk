@@ -48,7 +48,7 @@ def launch(
         plan.print("Deploying cdk-node")
         cdk_central_environment_package.run(plan, args, contract_setup_addresses)
 
-    if deployment_stages.get("deploy_aggkit_node", False):
+    if deployment_stages.get("deploy_aggkit_node"):
         plan.print("Deploying aggkit (cdk node)")
         aggkit_package.run_aggkit_cdk_node(
             plan,
@@ -60,7 +60,7 @@ def launch(
     agglayer_contracts_package.l2_legacy_fund_accounts(plan, args)
 
     # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
-    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra", False)
+    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra")
     if deploy_cdk_bridge_infra and (
         consensus_type
         in [
@@ -71,9 +71,9 @@ def launch(
         plan.print("Deploying cdk/bridge infrastructure")
         cdk_bridge_infra_package.run(
             plan,
-            args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
+            args | {"use_local_l1": deployment_stages.get("deploy_l1")},
             contract_setup_addresses,
-            deployment_stages.get("deploy_cdk_bridge_ui", True),
+            deployment_stages.get("deploy_cdk_bridge_ui"),
         )
 
     # Deploy aggkit infrastructure + dedicated bridge service
