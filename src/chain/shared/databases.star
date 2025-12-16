@@ -1,5 +1,5 @@
-constants = import_module("./src/package_io/constants.star")
-ports_package = import_module("./src/package_io/ports.star")
+constants = import_module("../../package_io/constants.star")
+ports_package = import_module("../../package_io/ports.star")
 
 # We support both local and remote Postgres databases within our Kurtosis-CDK package
 # When 'USE_REMOTE_POSTGRES' is False, service automatically creates all CDK databases locally

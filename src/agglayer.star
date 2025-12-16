@@ -1,6 +1,6 @@
-constants = import_module("./src/package_io/constants.star")
-databases_package = import_module("./databases.star")
-ports_package = import_module("./src/package_io/ports.star")
+constants = import_module("./package_io/constants.star")
+databases_package = import_module("./chain/shared/databases.star")
+ports_package = import_module("./package_io/ports.star")
 
 
 def run(plan, deployment_stages, args, contract_setup_addresses):
@@ -58,7 +58,7 @@ def create_agglayer_config_artifact(
     plan, deployment_stages, args, contract_setup_addresses
 ):
     agglayer_config_template = read_file(
-        src="./templates/bridge-infra/agglayer-config.toml"
+        src="../templates/bridge-infra/agglayer-config.toml"
     )
     db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]

@@ -1,5 +1,5 @@
 constants = import_module("./src/package_io/constants.star")
-databases = import_module("./databases.star")
+databases = import_module("./src/chain/shared/databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 
 

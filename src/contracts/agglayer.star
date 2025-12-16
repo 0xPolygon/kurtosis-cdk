@@ -2,9 +2,7 @@ aggchain_vkey = import_module("../vkey/aggchain.star")
 agglayer_vkey = import_module("../vkey/agglayer.star")
 constants = import_module("../package_io/constants.star")
 contracts_util = import_module("./util.star")
-cdk_data_availability = import_module(
-    "../chain/cdk-erigon/cdk_data_availability.star"
-)
+cdk_data_availability = import_module("../chain/cdk-erigon/cdk_data_availability.star")
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 

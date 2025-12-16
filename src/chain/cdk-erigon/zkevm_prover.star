@@ -1,4 +1,4 @@
-databases = import_module("../../../databases.star")
+databases = import_module("../shared/databases.star")
 
 
 # Port identifiers and numbers.

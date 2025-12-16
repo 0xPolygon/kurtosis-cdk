@@ -9,9 +9,9 @@ anvil_package = "./src/l1/anvil.star"
 
 # Main service packages.
 additional_services_launcher = import_module("./src/additional_services/launcher.star")
-agglayer_package = "./agglayer.star"
+agglayer_package = "./src/agglayer.star"
 chain_launcher = import_module("./src/chain/launcher.star")
-databases_package = "./databases.star"
+databases_package = "./src/chain/shared/databases.star"
 agglayer_contracts_package = "./src/contracts/agglayer.star"
 sovereign_contracts_package = import_module("./src/contracts/sovereign.star")
 mitm_package = "./mitm.star"
@@ -149,9 +149,7 @@ def run(plan, args={}):
 
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
-            sovereign_contracts_package.init_rollup(
-                plan, args, deployment_stages
-            )
+            sovereign_contracts_package.init_rollup(plan, args, deployment_stages)
             # Extract Sovereign contract addresses
             sovereign_contract_setup_addresses = (
                 contracts_util.get_sovereign_contract_setup_addresses(plan, args)
