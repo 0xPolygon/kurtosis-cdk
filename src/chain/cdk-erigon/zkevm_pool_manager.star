@@ -7,9 +7,6 @@ SERVER_PORT_NUMBER = 8545
 
 
 def run(plan, args):
-    name = "zkevm-pool-manager" + args.get("deployment_suffix")
-
-    # Create config.
     deployment_suffix = args.get("deployment_suffix")
     db_configs = databases.get_db_configs(deployment_suffix, args.get("sequencer_type"))
     zkevm_rpc_port = args.get("zkevm_rpc_http_port")
@@ -28,7 +25,6 @@ def run(plan, args):
                 ),
                 data=args
                 | {
-                    "server_hostname": name,
                     "server_port_number": SERVER_PORT_NUMBER,
                     "sequencer_url": cdk_erigon_sequencer_url,
                     "l2_node_url": cdk_erigon_rpc_url,
@@ -38,9 +34,8 @@ def run(plan, args):
         },
     )
 
-    # Deploy service.
     plan.add_service(
-        name=name,
+        name="zkevm-pool-manager" + args.get("deployment_suffix"),
         config=ServiceConfig(
             image=args.get("zkevm_pool_manager_image"),
             ports={
