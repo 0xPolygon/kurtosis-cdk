@@ -1,10 +1,10 @@
-aggkit_package = import_module("../../aggkit.star")
-agglayer_contracts_package = import_module("../../agglayer_contracts.star")
-cdk_central_environment_package = import_module("../../cdk_central_environment.star")
-cdk_bridge_infra_package = import_module("../../cdk_bridge_infra.star")
-cdk_erigon_package = import_module("../../cdk_erigon.star")
+aggkit_package = import_module("../../../aggkit.star")
+agglayer_contracts_package = import_module("../../../agglayer_contracts.star")
+cdk_central_environment_package = import_module("../../../cdk_central_environment.star")
+cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
+cdk_erigon_package = import_module("../../../cdk_erigon.star")
 constants = import_module("../../package_io/constants.star")
-zkevm_pool_manager_package = import_module("../../zkevm_pool_manager.star")
+zkevm_pool_manager_package = import_module("../../../zkevm_pool_manager.star")
 
 
 def launch(

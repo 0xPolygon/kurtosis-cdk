@@ -1,5 +1,5 @@
-aggkit_package = import_module("../../aggkit.star")
-op_succinct = import_module("../../op_succinct.star")
+aggkit_package = import_module("../../../aggkit.star")
+op_succinct = import_module("../../../op_succinct.star")
 
 
 def launch(
