@@ -71,11 +71,7 @@ DEFAULT_IMAGES = {
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.0",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
-    "cdk_erigon_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24",
-    # Type 1 cdk-erigon sovereign image.
-    # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
-    # For example: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
-    "cdk_erigon_sovereign_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1",
+    "cdk_erigon_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "cdk_validium_node_image": "ghcr.io/0xpolygon/cdk-validium-node:0.6.4-cdk.10",
     "db_image": "postgres:17.6",
