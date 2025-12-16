@@ -8,7 +8,7 @@ def run_sequencer(plan, args, contract_setup_addresses):
         stateless_configs = {}
         stateless_configs["stateless_executor"] = True
         stateless_executor_config_template = read_file(
-            src="./templates/trusted-node/prover-config.json"
+            src="./templates/cdk-erigon/zkevm-prover/config.json"
         )
         stateless_executor_config_artifact = plan.render_templates(
             name="stateless-executor-config-artifact",
