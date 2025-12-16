@@ -57,7 +57,7 @@ PROVER_DB = {
         "name": "prover_db",
         "user": "prover_user",
         "password": "redacted",
-        "init": read_file(src="./templates/databases/prover-db-init.sql"),
+        "init": read_file(src="../../../templates/databases/prover-db-init.sql"),
     }
 }
 

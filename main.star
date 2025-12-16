@@ -1,5 +1,5 @@
 constants = import_module("./src/package_io/constants.star")
-input_parser = import_module("./input_parser.star")
+input_parser = import_module("./src/package_io/input_parser.star")
 contracts_util = import_module("./src/contracts/util.star")
 op_succinct_package = import_module("./src/chain/op-geth/op_succinct_proposer.star")
 

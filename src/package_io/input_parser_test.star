@@ -1,4 +1,4 @@
-constants = import_module("./src/package_io/constants.star")
+constants = import_module("./constants.star")
 input_parser = import_module("./input_parser.star")
 
 

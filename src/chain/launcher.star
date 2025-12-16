@@ -1,6 +1,6 @@
 cdk_erigon_launcher = import_module("./cdk-erigon/launcher.star")
 constants = import_module("../package_io/constants.star")
-input_parser = import_module("../../input_parser.star")
+input_parser = import_module("../package_io/input_parser.star")
 op_geth_launcher = import_module("./op-geth/launcher.star")
 
 
