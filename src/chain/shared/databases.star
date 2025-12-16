@@ -115,7 +115,7 @@ def _service_name(suffix):
 
 
 def create_postgres_service(plan, db_configs, args, start_port_name):
-    init_script_tpl = read_file(src="./templates/databases/init.sql")
+    init_script_tpl = read_file(src="../../../templates/databases/init.sql")
     init_script = plan.render_templates(
         name="init.sql" + args["deployment_suffix"],
         config={
