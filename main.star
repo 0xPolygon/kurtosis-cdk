@@ -1,7 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
 service_package = import_module("./lib/service.star")
-op_succinct_package = import_module("./src/chain/op-geth/op_succinct.star")
+op_succinct_package = import_module("./src/chain/op-geth/op_succinct_proposer.star")
 deploy_sovereign_contracts_package = import_module("./deploy_sovereign_contracts.star")
 ethereum_package = import_module("./ethereum.star")
 

@@ -1,5 +1,5 @@
 aggkit_package = import_module("../../../aggkit.star")
-op_succinct = import_module("./op_succinct.star")
+op_succinct_proposer = import_module("./op_succinct_proposer.star")
 
 
 def launch(
@@ -13,7 +13,7 @@ def launch(
     # Deploy op-succinct-proposer
     if deploy_op_succinct:
         plan.print("Deploying op-succinct-proposer")
-        op_succinct.run(plan, args | contract_setup_addresses)
+        op_succinct_proposer.run(plan, args | contract_setup_addresses)
 
     # Deploy aggkit infrastructure + dedicated bridge service
     plan.print("Deploying aggkit infrastructure")

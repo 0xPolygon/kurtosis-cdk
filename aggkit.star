@@ -5,7 +5,7 @@ databases = import_module("./databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
 service_package = import_module("./lib/service.star")
-op_succinct = import_module("./src/chain/op-geth/op_succinct.star")
+op_succinct = import_module("./src/chain/op-geth/op_succinct_proposer.star")
 
 
 def run_aggkit_cdk_node(
