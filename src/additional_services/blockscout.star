@@ -1,11 +1,11 @@
 blockscout_package = import_module(
     "github.com/xavier-romero/kurtosis-blockscout/main.star@9de7765a6c98c8c357f747ff953fdbc0e39ebc3d"
 )
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 
 
 def run(plan, args):
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
 
     blockscout_params = {
         "rpc_url": l2_rpc_url.http,

@@ -1,5 +1,5 @@
 constants = import_module("../package_io/constants.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("../contracts/util.star")
 
 
 def run(
@@ -9,7 +9,7 @@ def run(
     sovereign_contract_setup_addresses,
     sequencer_type,
 ):
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args).http
 
     if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         agglogger_config_template_file = "op-config.json"

@@ -1,6 +1,5 @@
 constants = import_module("../package_io/constants.star")
 hex = import_module("../hex/hex.star")
-service_package = import_module("../../lib/service.star")
 wallet_module = import_module("../wallet/wallet.star")
 
 

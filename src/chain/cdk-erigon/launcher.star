@@ -1,5 +1,5 @@
 aggkit_package = import_module("../../../aggkit.star")
-agglayer_contracts_package = import_module("../../../agglayer_contracts.star")
+agglayer_contracts_package = import_module("../../contracts/agglayer.star")
 cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
 cdk_erigon_package = import_module("../../../cdk_erigon.star")
 cdk_node_package = import_module("../../../lib/cdk_node.star")

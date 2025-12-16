@@ -1,5 +1,5 @@
 ports_package = import_module("../package_io/ports.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 
 ARPEGGIO_IMAGE = "christophercampbell/arpeggio:v0.0.1"
 RPC_PROXY_PORT = 8545
@@ -25,7 +25,7 @@ def get_arpeggio_config(plan, args):
     arpeggio_config_template = read_file(
         src="../../static_files/additional_services/arpeggio-config/config.yml"
     )
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
     return plan.render_templates(
         name="arpeggio-config",
         config={

@@ -1,5 +1,5 @@
 ports_package = import_module("../package_io/ports.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 
 # https://github.com/0xPolygon/panoptichain/releases
 PANOPTICHAIN_IMAGE = "ghcr.io/0xpolygon/panoptichain:v3.0.4"
@@ -25,7 +25,7 @@ def get_panoptichain_config(plan, args, contract_setup_addresses):
     panoptichain_config_template = read_file(
         src="../../static_files/additional_services/panoptichain-config/config.yml"
     )
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
 
     # Ensure that the `l2_accounts_to_fund` parameter is > 0 or else the l2 time
     # to mine provider will fail.

@@ -1,10 +1,10 @@
 ports_package = import_module("../package_io/ports.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 
 
 def run(plan, args):
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
-    sequencer_rpc_url = service_package.get_sequencer_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args).http
+    sequencer_rpc_url = contracts_util.get_sequencer_rpc_url(plan, args)
 
     status_checker_config_artifact = plan.render_templates(
         name="status-checker-config",

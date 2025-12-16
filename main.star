@@ -1,6 +1,6 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./input_parser.star")
-service_package = import_module("./lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 op_succinct_package = import_module("./src/chain/op-geth/op_succinct_proposer.star")
 
 # layer 1
@@ -13,7 +13,7 @@ agglayer_package = "./agglayer.star"
 chain_launcher = import_module("./src/chain/launcher.star")
 databases_package = "./databases.star"
 agglayer_contracts_package = "./src/contracts/agglayer.star"
-sovereign_contracts_package = import_module("./src/contracts/sovereign.star.star")
+sovereign_contracts_package = import_module("./src/contracts/sovereign.star")
 mitm_package = "./mitm.star"
 
 
@@ -84,7 +84,7 @@ def run(plan, args={}):
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
             plan.print("Creating new rollup type and creating rollup on L1")
-            deploy_sovereign_contracts_package.run(
+            sovereign_contracts_package.run(
                 plan, args, op_stack_args["predeployed_contracts"]
             )
 
@@ -104,19 +104,19 @@ def run(plan, args={}):
             )
 
             # Fund OP Addresses on L1
-            l1_op_contract_addresses = service_package.get_l1_op_contract_addresses(
+            l1_op_contract_addresses = contracts_util.get_l1_op_contract_addresses(
                 plan, args, op_deployer_configs_artifact
             )
 
-            deploy_sovereign_contracts_package.fund_addresses(
+            sovereign_contracts_package.fund_addresses(
                 plan, args, l1_op_contract_addresses, args["l1_rpc_url"]
             )
 
             # Fund Kurtosis addresses on OP L2
-            deploy_sovereign_contracts_package.fund_addresses(
+            sovereign_contracts_package.fund_addresses(
                 plan,
                 args,
-                service_package.get_l2_addresses_to_fund(args),
+                contracts_util.get_l2_addresses_to_fund(args),
                 args["op_el_rpc_url"],
             )
 
@@ -140,24 +140,24 @@ def run(plan, args={}):
                     ),
                 )
                 plan.print("Extracting environment variables for op-succinct")
-                op_succinct_env_vars = service_package.get_op_succinct_env_vars(
+                op_succinct_env_vars = contracts_util.get_op_succinct_env_vars(
                     plan, args
                 )
                 args = args | op_succinct_env_vars
-                l2oo_vars = service_package.get_op_succinct_l2oo_config(plan, args)
+                l2oo_vars = contracts_util.get_op_succinct_l2oo_config(plan, args)
                 args = args | l2oo_vars
 
             # TODO/FIXME this might break PP. We need to make sure that this process can work with PP and FEP. If it can work with PP, then we need to remove the dependency on l2oo (i think)
             plan.print("Initializing rollup")
-            deploy_sovereign_contracts_package.init_rollup(
+            sovereign_contracts_package.init_rollup(
                 plan, args, deployment_stages
             )
             # Extract Sovereign contract addresses
             sovereign_contract_setup_addresses = (
-                service_package.get_sovereign_contract_setup_addresses(plan, args)
+                contracts_util.get_sovereign_contract_setup_addresses(plan, args)
             )
 
-        contract_setup_addresses = service_package.get_contract_setup_addresses(
+        contract_setup_addresses = contracts_util.get_contract_setup_addresses(
             plan, args, deployment_stages
         )
     else:
@@ -172,7 +172,7 @@ def run(plan, args={}):
     ):
         plan.print("Deploying helper service to retrieve rollup data")
         deploy_helper_service(plan, args)
-        contract_setup_addresses = service_package.get_contract_setup_addresses(
+        contract_setup_addresses = contracts_util.get_contract_setup_addresses(
             plan, args
         )
     else:

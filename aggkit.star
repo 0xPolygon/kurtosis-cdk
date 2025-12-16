@@ -3,7 +3,7 @@ aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./databases.star")
 zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
 ports_package = import_module("./src/package_io/ports.star")
-service_package = import_module("./lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 op_succinct = import_module("./src/chain/op-geth/op_succinct_proposer.star")
 
 
@@ -120,7 +120,7 @@ def run(
         and args["agg_oracle_committee_quorum"] > 0
     ):
         # Fetch aggoracle_committee_address
-        aggoracle_committee_address = service_package.get_aggoracle_committee_address(
+        aggoracle_committee_address = contracts_util.get_aggoracle_committee_address(
             plan, args
         )
         sovereign_contract_setup_addresses = (
@@ -187,7 +187,7 @@ def run(
         plan.print("Deploying aggkit committee members")
 
         # Fetch aggoracle_committee_address
-        aggoracle_committee_address = service_package.get_aggoracle_committee_address(
+        aggoracle_committee_address = contracts_util.get_aggoracle_committee_address(
             plan, args
         )
         sovereign_contract_setup_addresses = (

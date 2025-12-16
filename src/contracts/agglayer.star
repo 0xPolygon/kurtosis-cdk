@@ -1,7 +1,7 @@
 aggchain_vkey = import_module("../vkey/aggchain.star")
 agglayer_vkey = import_module("../vkey/agglayer.star")
 constants = import_module("../package_io/constants.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("./src/contracts/util.star")
 cdk_data_availability = import_module(
     "../chain/cdk-erigon/cdk_data_availability.star"
 )
@@ -427,7 +427,7 @@ def is_vanilla_client(args, deployment_stages):
 
 # Called from main for erigon stacks
 def l2_legacy_fund_accounts(plan, args):
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
     contracts_service_name = "contracts" + args["deployment_suffix"]
     env_string = "l2_rpc_url={0}".format(l2_rpc_url.http)
 
@@ -451,7 +451,7 @@ def l2_legacy_fund_accounts(plan, args):
 
 # Called from main for erigon stacks
 def deploy_l2_contracts(plan, args):
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
     contracts_service_name = "contracts" + args["deployment_suffix"]
     env_string = "l2_rpc_url={0}".format(l2_rpc_url.http)
 
