@@ -1,9 +1,9 @@
 aggkit_package = import_module("../../../aggkit.star")
 agglayer_contracts_package = import_module("../../../agglayer_contracts.star")
-cdk_central_environment_package = import_module("../../../cdk_central_environment.star")
 cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
 cdk_erigon_package = import_module("../../../cdk_erigon.star")
 constants = import_module("../../package_io/constants.star")
+databases = import_module("../../../databases.star")
 zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
@@ -46,8 +46,60 @@ def launch(
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
     ]:
-        plan.print("Deploying cdk-node")
-        cdk_central_environment_package.run(plan, args, contract_setup_addresses)
+        db_configs = databases.get_db_configs(
+            args["deployment_suffix"], args["sequencer_type"]
+        )
+
+        keystore_artifacts = get_keystores_artifacts(plan, args)
+
+        # Start the DAC if in validium mode.
+        if data_availability_package.is_cdk_validium(args):
+            dac_config_artifact = create_dac_config_artifact(
+                plan, args, db_configs, contract_setup_addresses
+            )
+            dac_config = zkevm_dac_package.create_dac_service_config(
+                args, dac_config_artifact, keystore_artifacts.dac
+            )
+            plan.add_services(
+                configs=dac_config,
+                description="Starting the DAC",
+            )
+
+        agglayer_endpoint = get_agglayer_endpoint(plan, args)
+        # Create the cdk node config.
+        node_config_template = read_file(
+            src="./templates/trusted-node/cdk-node-config.toml"
+        )
+        node_config_artifact = plan.render_templates(
+            name="cdk-node-config-artifact",
+            config={
+                "cdk-node-config.toml": struct(
+                    template=node_config_template,
+                    data=args
+                    | {
+                        "is_cdk_validium": data_availability_package.is_cdk_validium(
+                            args
+                        ),
+                        "l1_rpc_url": args["mitm_rpc_url"].get(
+                            "cdk-node", args["l1_rpc_url"]
+                        ),
+                        "agglayer_endpoint": agglayer_endpoint,
+                    }
+                    | db_configs
+                    | contract_setup_addresses,
+                )
+            },
+        )
+
+        # Start the cdk components.
+        cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
+            args, node_config_artifact, genesis_artifact, keystore_artifacts
+        )
+
+        plan.add_services(
+            configs=cdk_node_configs,
+            description="Starting the cdk node components",
+        )
 
         # Start zkevm prover.
         if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
@@ -95,3 +147,71 @@ def launch(
             deploy_cdk_bridge_infra,
             False,
         )
+
+
+def get_keystores_artifacts(plan, args):
+    sequencer_keystore_artifact = plan.store_service_files(
+        name="sequencer-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src=constants.KEYSTORES_DIR + "/sequencer.keystore",
+    )
+    aggregator_keystore_artifact = plan.get_files_artifact(
+        name="aggregator-keystore",
+        # service_name="contracts" + args["deployment_suffix"],
+        # src=constants.KEYSTORES_DIR+"/aggregator.keystore",
+    )
+    dac_keystore_artifact = plan.store_service_files(
+        name="dac-keystore",
+        service_name="contracts" + args["deployment_suffix"],
+        src=constants.KEYSTORES_DIR + "/dac.keystore",
+    )
+    claim_sponsor_keystore_artifact = plan.store_service_files(
+        name="claimsponsor-keystore-cdk",
+        service_name="contracts" + args["deployment_suffix"],
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
+    )
+    return struct(
+        sequencer=sequencer_keystore_artifact,
+        aggregator=aggregator_keystore_artifact,
+        dac=dac_keystore_artifact,
+        claim_sponsor=claim_sponsor_keystore_artifact,
+    )
+
+
+def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses):
+    dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
+    return plan.render_templates(
+        name="dac-config-artifact",
+        config={
+            "dac-config.toml": struct(
+                template=dac_config_template,
+                data={
+                    "deployment_suffix": args["deployment_suffix"],
+                    "log_level": args.get("log_level"),
+                    "environment": args.get("environment"),
+                    "l1_rpc_url": args["mitm_rpc_url"].get("dac", args["l1_rpc_url"]),
+                    "l1_ws_url": args["l1_ws_url"],
+                    "l2_keystore_password": args["l2_keystore_password"],
+                    # ports
+                    "zkevm_dac_port": args["zkevm_dac_port"],
+                }
+                | contract_setup_addresses
+                | db_configs,
+            )
+        },
+    )
+
+
+# Function to allow cdk-node-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
+# On aggkit/cdk-node point of view, only the agglayer_image version is important. Both services can work with both grpc/readrpc and this depends on the agglayer version.
+# On Kurtosis point of view, we are checking whether the cdk-node or the aggkit node is being used to filter the grpc/readrpc.
+def get_agglayer_endpoint(plan, args):
+    if (
+        "0.3" in args["agglayer_image"]
+        and args.get("binary_name") == cdk_node_package.AGGKIT_BINARY_NAME
+    ):
+        return "grpc"
+    elif args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
+        return "grpc"
+    else:
+        return "readrpc"
