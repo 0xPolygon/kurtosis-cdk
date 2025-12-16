@@ -13,7 +13,7 @@ def run(plan, args):
     deployment_suffix = args.get("deployment_suffix")
     db_configs = databases.get_db_configs(deployment_suffix, args.get("sequencer_type"))
     zkevm_rpc_port = args.get("zkevm_rpc_http_port")
-    cdk_erigon_sequencer_url = "http://cdk-erigon-sequencer{}:}{}".format(
+    cdk_erigon_sequencer_url = "http://cdk-erigon-sequencer{}:{}".format(
         deployment_suffix, zkevm_rpc_port
     )
     cdk_erigon_rpc_url = "http://cdk-erigon-rpc{}:{}".format(

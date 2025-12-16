@@ -7,7 +7,7 @@ constants = import_module("../../package_io/constants.star")
 databases = import_module("../../../databases.star")
 data_availability_package = import_module("../../../lib/data_availability.star")
 zkevm_dac_package = import_module("../../../lib/zkevm_dac.star")
-zkevm_pool_manager_package = import_module("./zkevm_pool_manager.star")
+zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
 
@@ -32,7 +32,7 @@ def launch(
     )
 
     plan.print("Deploying zkevm-pool-manager")
-    zkevm_pool_manager_package.run_zkevm_pool_manager(plan, args)
+    zkevm_pool_manager.run(plan, args)
 
     plan.print("Deploying cdk-erigon node")
     cdk_erigon_package.run_rpc(
@@ -71,7 +71,7 @@ def launch(
         agglayer_endpoint = get_agglayer_endpoint(plan, args)
         # Create the cdk node config.
         node_config_template = read_file(
-            src="./templates/trusted-node/cdk-node-config.toml"
+            src="../../../templates/trusted-node/cdk-node-config.toml"
         )
         node_config_artifact = plan.render_templates(
             name="cdk-node-config-artifact",
@@ -106,7 +106,7 @@ def launch(
 
         # Start zkevm prover.
         if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
-            zkevm_prover.run(plan, args)
+            zkevm_prover.run_prover(plan, args)
 
     if deployment_stages.get("deploy_aggkit_node"):
         plan.print("Deploying aggkit (cdk node)")
@@ -182,7 +182,9 @@ def get_keystores_artifacts(plan, args):
 
 
 def create_dac_config_artifact(plan, args, db_configs, contract_setup_addresses):
-    dac_config_template = read_file(src="./templates/trusted-node/dac-config.toml")
+    dac_config_template = read_file(
+        src="../../../templates/trusted-node/dac-config.toml"
+    )
     return plan.render_templates(
         name="dac-config-artifact",
         config={

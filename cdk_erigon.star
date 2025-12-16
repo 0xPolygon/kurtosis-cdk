@@ -5,26 +5,7 @@ zkevm_prover = import_module("./src/chain/cdk-erigon/zkevm_prover.star")
 def run_sequencer(plan, args, contract_setup_addresses):
     # Start the zkevm stateless executor if strict mode is enabled.
     if args["erigon_strict_mode"]:
-        stateless_configs = {}
-        stateless_configs["stateless_executor"] = True
-        stateless_executor_config_template = read_file(
-            src="./templates/cdk-erigon/zkevm-prover/config.json"
-        )
-        stateless_executor_config_artifact = plan.render_templates(
-            name="stateless-executor-config-artifact",
-            config={
-                "stateless-executor-config.json": struct(
-                    template=stateless_executor_config_template,
-                    data=args | stateless_configs,
-                )
-            },
-        )
-        zkevm_prover.start_stateless_executor(
-            plan,
-            args,
-            stateless_executor_config_artifact,
-            "zkevm_stateless_executor_start_port",
-        )
+        zkevm_prover.run_stateless_executor(plan, args)
 
     cdk_erigon_config_template = read_file(src="./templates/cdk-erigon/config.yml")
     cdk_erigon_sequencer_config_artifact = plan.render_templates(
