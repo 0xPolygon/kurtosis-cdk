@@ -41,13 +41,19 @@ def run(plan, args):
                 "AGG_PROOF_MODE": args.get("op_succinct_agg_proof_mode"),
                 "L2OO_ADDRESS": args.get("zkevm_rollup_address"),
                 "OP_SUCCINCT_MOCK": args.get("op_succinct_mock"),
-                "AGGLAYER": args.get("op_succinct_agglayer"),  # agglayer/op-succinct specific.
-                "GRPC_ADDRESS": "0.0.0.0:{}".format(GRPC_PORT_NUMBER),  # agglayer/op-succinct specific.
+                "AGGLAYER": args.get(
+                    "op_succinct_agglayer"
+                ),  # agglayer/op-succinct specific.
+                "GRPC_ADDRESS": "0.0.0.0:{}".format(
+                    GRPC_PORT_NUMBER
+                ),  # agglayer/op-succinct specific.
                 "NETWORK_PRIVATE_KEY": args.get("sp1_prover_key"),
                 "MAX_CONCURRENT_PROOF_REQUESTS": args.get(
                     "op_succinct_max_concurrent_proof_requests"
                 ),
-                "MAX_CONCURRENT_WITNESS_GEN": args.get("op_succinct_max_concurrent_witness_gen"),
+                "MAX_CONCURRENT_WITNESS_GEN": args.get(
+                    "op_succinct_max_concurrent_witness_gen"
+                ),
                 "RANGE_PROOF_INTERVAL": args.get("op_succinct_range_proof_interval"),
                 "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
                 + args.get("deployment_suffix")
@@ -70,7 +76,7 @@ def run(plan, args):
                 # It looks for configs/L1/{chainId}.json relative to working directory
                 "/app/configs/L1": Directory(artifact_names=[l1_genesis_artifact])
             },
-        )
+        ),
     )
 
 
