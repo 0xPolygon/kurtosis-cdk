@@ -107,7 +107,7 @@ def create_evm_sketch_genesis(plan, args):
         config={
             "parse-evm-sketch-genesis.sh": struct(
                 template=read_file(
-                    src="../../../templates/op-succinct/parse-evm-sketch-genesis.sh"
+                    src="../../../static_files/op-succinct-proposer/parse-evm-sketch-genesis.sh"
                 ),
                 data=args,
             ),

@@ -30,7 +30,7 @@ def _run(plan, args, name="prover"):
         config={
             "config.json": struct(
                 template=read_file(
-                    src="../../../templates/cdk-erigon/zkevm-prover/config.json"
+                    src="../../../static_files/cdk-erigon/zkevm-prover/config.json"
                 ),
                 data=args
                 | db_configs

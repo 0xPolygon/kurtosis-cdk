@@ -24,7 +24,7 @@ def run(plan, args):
         config={
             "pool-manager-config.toml": struct(
                 template=read_file(
-                    src="../../../templates/cdk-erigon/zkevm-pool-manager/config.toml"
+                    src="../../../static_files/cdk-erigon/zkevm-pool-manager/config.toml"
                 ),
                 data=args
                 | {
