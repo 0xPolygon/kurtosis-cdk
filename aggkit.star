@@ -11,7 +11,6 @@ def run_aggkit_cdk_node(
     plan,
     args,
     contract_setup_addresses,
-    deployment_stages,
 ):
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
@@ -54,10 +53,11 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deployment_stages,
+    deploy_cdk_bridge_infra,
+    deploy_op_succinct,
 ):
     if (
-        deployment_stages.get("deploy_op_succinct", False)
+        deploy_op_succinct
         and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.fep
     ):
         # Create aggkit-prover
@@ -142,7 +142,6 @@ def run(
             "config.toml": struct(
                 template=aggkit_config_template,
                 data=args
-                | deployment_stages
                 | {
                     "is_cdk_validium": data_availability_package.is_cdk_validium(args),
                     "agglayer_endpoint": agglayer_endpoint,
@@ -224,7 +223,6 @@ def run(
                     "config.toml": struct(
                         template=aggkit_config_template,
                         data=args
-                        | deployment_stages
                         | {
                             "is_cdk_validium": data_availability_package.is_cdk_validium(
                                 args
@@ -289,7 +287,6 @@ def run(
                     "config.toml": struct(
                         template=aggkit_config_template,
                         data=args
-                        | deployment_stages
                         | {
                             "is_cdk_validium": data_availability_package.is_cdk_validium(
                                 args
@@ -326,14 +323,13 @@ def run(
         )
 
     # Start the bridge service only once (regardless of committee mode)
-    if deployment_stages.get("deploy_cdk_bridge_infra"):
+    if deploy_cdk_bridge_infra:
         bridge_config_artifact = create_bridge_config_artifact(
             plan,
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
             db_configs,
-            deployment_stages,
         )
         bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
             args, bridge_config_artifact, keystore_artifacts.claim_sponsor
@@ -416,7 +412,6 @@ def create_bridge_config_artifact(
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
     db_configs,
-    deployment_stages,
 ):
     bridge_config_template = read_file(
         src="./templates/bridge-infra/bridge-config.toml"
