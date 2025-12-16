@@ -73,7 +73,7 @@ def launch(
             plan,
             args | {"use_local_l1": deployment_stages.get("deploy_l1")},
             contract_setup_addresses,
-            deployment_stages.get("deploy_cdk_bridge_ui"),
+            deploy_bridge_ui=deployment_stages.get("deploy_cdk_bridge_ui"),
         )
 
     # Deploy aggkit infrastructure + dedicated bridge service
