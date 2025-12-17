@@ -19,7 +19,9 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         name="aggkit-prover-config",
         config={
             "config.toml": struct(
-                template=read_file(src="../../static_files/aggkit-prover/config.toml"),
+                template=read_file(
+                    src="../../../static_files/aggkit-prover/config.toml"
+                ),
                 data={
                     "log_level": args.get("log_level"),
                     "log_format": args.get("log_format"),
