@@ -1,10 +1,10 @@
-constants = import_module("./src/package_io/constants.star")
+constants = import_module("../../package_io/constants.star")
 aggkit_package = import_module("./aggkit_lib.star")
-databases = import_module("./src/chain/shared/databases.star")
-zkevm_bridge_service = import_module("./src/chain/shared/zkevm-bridge/service.star")
-ports_package = import_module("./src/package_io/ports.star")
-contracts_util = import_module("./src/contracts/util.star")
-op_succinct = import_module("./src/chain/op-geth/op_succinct_proposer.star")
+databases = import_module("../shared/databases.star")
+zkevm_bridge_service = import_module("../shared/zkevm-bridge/service.star")
+ports_package = import_module("../../package_io/ports.star")
+contracts_util = import_module("../../contracts/util.star")
+op_succinct = import_module("../op-geth/op_succinct_proposer.star")
 
 
 def run_aggkit_cdk_node(
@@ -18,7 +18,7 @@ def run_aggkit_cdk_node(
 
     # Create the aggkit cdk config.
     aggkit_cdk_config_template = read_file(
-        src="./templates/aggkit/aggkit-cdk-config.toml"
+        src="../../static_files//aggkit-cdk-config.toml"
     )
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-cdk-config-artifact",
@@ -130,7 +130,7 @@ def run(
     # Create the cdk aggoracle config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
     aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-    aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
+    aggkit_config_template = read_file(src="../../static_files//aggkit-config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
         config={
@@ -197,7 +197,7 @@ def run(
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
+        aggkit_config_template = read_file(src="../../static_files//aggkit-config.toml")
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
@@ -258,7 +258,7 @@ def run(
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="./templates/aggkit/aggkit-config.toml")
+        aggkit_config_template = read_file(src="../../static_files//aggkit-config.toml")
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
@@ -398,7 +398,7 @@ def create_bridge_config_artifact(
     db_configs,
 ):
     bridge_config_template = read_file(
-        src="./templates/bridge-infra/bridge-config.toml"
+        src="../../static_files/zkevm-bridge-service/config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (
@@ -447,7 +447,7 @@ def create_aggkit_prover_config_artifact(
     plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
 ):
     aggkit_prover_config_template = read_file(
-        src="./templates/bridge-infra/aggkit-prover-config.toml"
+        src="../../static_files/aggkit/prover-config.toml"
     )
 
     aggkit_version = args.get("aggkit_prover_image").split(":")[1]

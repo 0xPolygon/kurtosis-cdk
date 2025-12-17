@@ -46,7 +46,7 @@ def run(
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
     bridge_config_template = read_file(
-        src="./templates/bridge-infra/bridge-config.toml"
+        src="./static_files/zkevm-bridge-service/config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
     l2_rpc_url = "http://{}{}:{}".format(

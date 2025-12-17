@@ -1,5 +1,5 @@
-constants = import_module("../package_io/constants.star")
-ports_package = import_module("../package_io/ports.star")
+constants = import_module("../../package_io/constants.star")
+ports_package = import_module("../../package_io/ports.star")
 
 
 def log_claim_sponsor_warning(plan, args):
