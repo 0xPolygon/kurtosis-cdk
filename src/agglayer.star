@@ -57,9 +57,7 @@ def agglayer_version(args):
 def create_agglayer_config_artifact(
     plan, deployment_stages, args, contract_setup_addresses
 ):
-    agglayer_config_template = read_file(
-        src="../static_files/agglayer/config.toml"
-    )
+    agglayer_config_template = read_file(src="../static_files/agglayer/config.toml")
     db_configs = databases_package.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
