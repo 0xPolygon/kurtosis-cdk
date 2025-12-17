@@ -1,7 +1,7 @@
 aggkit_package = import_module("../../../aggkit.star")
 agglayer_contracts_package = import_module("../../contracts/agglayer.star")
 cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
-cdk_erigon_package = import_module("../../../cdk_erigon.star")
+cdk_erigon = import_module("./cdk_erigon.star")
 cdk_node_package = import_module("../../../lib/cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
@@ -19,7 +19,11 @@ def launch(
     genesis_artifact,
 ):
     plan.print("Deploying cdk-erigon sequencer")
-    cdk_erigon_package.run_sequencer(
+
+    if args.get("erigon_strict_mode"):
+        zkevm_prover.run_stateless_executor(plan, args)
+
+    cdk_erigon.run_sequencer(
         plan,
         args
         | {
@@ -34,7 +38,7 @@ def launch(
     zkevm_pool_manager.run(plan, args)
 
     plan.print("Deploying cdk-erigon node")
-    cdk_erigon_package.run_rpc(
+    cdk_erigon.run_rpc(
         plan,
         args
         | {"l1_rpc_url": args["mitm_rpc_url"].get("erigon-rpc", args["l1_rpc_url"])},
