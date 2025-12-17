@@ -398,7 +398,7 @@ def create_bridge_config_artifact(
     db_configs,
 ):
     bridge_config_template = read_file(
-        src="../../static_files/zkevm-bridge-service/config.toml"
+        src="../../../static_files/zkevm-bridge-service/config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (
