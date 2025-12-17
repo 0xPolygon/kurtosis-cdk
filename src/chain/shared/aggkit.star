@@ -1,7 +1,7 @@
 constants = import_module("../../package_io/constants.star")
 aggkit_package = import_module("./aggkit_lib.star")
 databases = import_module("../shared/databases.star")
-zkevm_bridge_service = import_module("../shared/zkevm-bridge/service.star")
+zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
 ports_package = import_module("../../package_io/ports.star")
 contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-geth/op_succinct_proposer.star")
@@ -398,7 +398,7 @@ def create_bridge_config_artifact(
     db_configs,
 ):
     bridge_config_template = read_file(
-        src="../../static_files/zkevm-bridge/service/config.toml"
+        src="../../static_files/zkevm-bridge-service/config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (

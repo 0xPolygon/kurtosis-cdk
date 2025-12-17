@@ -1,4 +1,5 @@
-databases = import_module("../databases.star")
+constants = import_module("../../package_io/constants.star")
+databases = import_module("./databases.star")
 
 
 # Port identifiers and numbers.
@@ -37,7 +38,7 @@ def run(plan, args, contract_setup_addresses):
         config={
             "bridge-config.toml": struct(
                 template=read_file(
-                    src="../../../static_files/zkevm-bridge/service/config.toml"
+                    src="../../../static_files/zkevm-bridge-service/config.toml"
                 ),
                 data={
                     "log_level": args.get("log_level"),

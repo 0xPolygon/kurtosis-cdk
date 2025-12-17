@@ -8,7 +8,9 @@ def run(plan, args, contract_setup_addresses):
         name="bridge-ui-config-artifact",
         config={
             ".env": struct(
-                template=read_file("../../../static_files/zkevm-bridge/ui/.env"),
+                template=read_file(
+                    "../../../static_files/cdk-erigon/zkevm-bridge-ui/.env"
+                ),
                 data={
                     "l1_explorer_url": args["l1_explorer_url"],
                     "zkevm_explorer_url": args["polygon_zkevm_explorer"],
