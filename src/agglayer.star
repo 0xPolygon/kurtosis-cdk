@@ -111,10 +111,7 @@ def get_agglayer_prover_ports(args):
             args["agglayer_prover_metrics_port"], application_protocol="http"
         ),
     }
-    public_ports = ports_package.get_public_ports(
-        ports, "agglayer_prover_start_port", args
-    )
-    return (ports, public_ports)
+    return (ports, None)
 
 
 def get_agglayer_ports(args):
@@ -134,5 +131,4 @@ def get_agglayer_ports(args):
             ports["aglr-admin"] = PortSpec(
                 args["agglayer_admin_port"], application_protocol="http"
             )
-    public_ports = ports_package.get_public_ports(ports, "agglayer_start_port", args)
-    return (ports, public_ports)
+    return (ports, None)
