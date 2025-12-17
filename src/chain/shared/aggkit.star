@@ -18,7 +18,7 @@ def run_aggkit_cdk_node(
 
     # Create the aggkit cdk config.
     aggkit_cdk_config_template = read_file(
-        src="../../static_files//aggkit-cdk-config.toml"
+        src="../../../static_files/aggkit/cdk-config.toml"
     )
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-cdk-config-artifact",
@@ -90,7 +90,7 @@ def run(
                     "/usr/local/bin/aggkit-prover",
                 ],
                 env_vars=prover_env_vars,
-                cmd=["run", "--config-path", "/etc/aggkit/aggkit-prover-config.toml"],
+                cmd=["run", "--config-path", "/etc/aggkit-prover/config.toml"],
             ),
         )
         aggkit_prover_url = "{}:{}".format(
@@ -130,7 +130,7 @@ def run(
     # Create the cdk aggoracle config.
     agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
     aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-    aggkit_config_template = read_file(src="../../static_files/aggkit/aggkit-config.toml")
+    aggkit_config_template = read_file(src="../../../static_files/aggkit/config.toml")
     aggkit_config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
         config={
@@ -197,7 +197,7 @@ def run(
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="../../static_files/aggkit/aggkit-config.toml")
+        aggkit_config_template = read_file(src="../../../static_files/aggkit/config.toml")
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
@@ -258,7 +258,7 @@ def run(
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="../../static_files/aggkit/aggkit-config.toml")
+        aggkit_config_template = read_file(src="../../../static_files/aggkit/config.toml")
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
