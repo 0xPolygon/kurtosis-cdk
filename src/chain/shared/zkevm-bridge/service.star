@@ -22,7 +22,9 @@ def run(plan, args, config_artifact, claimsponsor_keystore_artifact):
             ports={
                 RPC_PORT_ID: PortSpec(RPC_PORT_NUMBER, application_protocol="http"),
                 GRPC_PORT_ID: PortSpec(GRPC_PORT_NUMBER, application_protocol="grpc"),
-                METRICS_PORT_ID: PortSpec(METRICS_PORT_NUMBER, application_protocol="http"),
+                METRICS_PORT_ID: PortSpec(
+                    METRICS_PORT_NUMBER, application_protocol="http"
+                ),
             },
             entrypoint=[
                 "/app/zkevm-bridge",
