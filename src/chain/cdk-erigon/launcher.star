@@ -71,7 +71,8 @@ def launch(
                     template=node_config_template,
                     data=args
                     | {
-                        "is_validium_mode": is_validium_mode,
+                        "is_validium_mode": consensus_type
+                        == constants.CONSENSUS_TYPE.cdk_validium,
                         "l1_rpc_url": args["mitm_rpc_url"].get(
                             "cdk-node", args["l1_rpc_url"]
                         ),
