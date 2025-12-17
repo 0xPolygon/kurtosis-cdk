@@ -1,3 +1,4 @@
+aggkit_prover = import_module("./aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
 aggkit_package = import_module("./aggkit_lib.star")
 databases = import_module("../shared/databases.star")
@@ -55,49 +56,11 @@ def run(
         deploy_op_succinct
         and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.fep
     ):
-        # Create aggkit-prover
-        aggkit_prover_config_artifact = create_aggkit_prover_config_artifact(
-            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
-        )
-        (ports, public_ports) = get_aggkit_prover_ports(args)
-
-        # Fetch evm-sketch-genesis-conf artifact
-        evm_sketch_genesis_conf = get_evm_sketch_genesis(plan, args)
-
-        prover_env_vars = {
-            # TODO one of these values can be deprecated soon 2025-04-15
-            "PROPOSER_NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "NETWORK_PRIVATE_KEY": args["sp1_prover_key"],
-            "RUST_LOG": "info,aggkit_prover=debug,prover=debug,aggchain=debug",
-            "RUST_BACKTRACE": "1",
-        }
-
-        aggkit_prover = plan.add_service(
-            name="aggkit-prover" + args["deployment_suffix"],
-            config=ServiceConfig(
-                image=args["aggkit_prover_image"],
-                ports=ports,
-                public_ports=public_ports,
-                files={
-                    "/etc/aggkit": Directory(
-                        artifact_names=[
-                            aggkit_prover_config_artifact,
-                            evm_sketch_genesis_conf,
-                        ]
-                    ),
-                },
-                entrypoint=[
-                    "/usr/local/bin/aggkit-prover",
-                ],
-                env_vars=prover_env_vars,
-                cmd=["run", "--config-path", "/etc/aggkit-prover/config.toml"],
-            ),
-        )
-        aggkit_prover_url = "{}:{}".format(
-            aggkit_prover.ip_address,
-            aggkit_prover.ports[
-                "grpc"
-            ].number,  # TODO: Check whether "grpc" or "api" is the correct port. If api is correct, we need to add it below.
+        aggkit_prover.run(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
         )
 
     db_configs = databases.get_db_configs(
@@ -430,78 +393,6 @@ def create_bridge_config_artifact(
             )
         },
     )
-
-
-def create_aggkit_prover_config_artifact(
-    plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
-):
-    aggkit_prover_config_template = read_file(
-        src="../../static_files/aggkit/prover-config.toml"
-    )
-
-    aggkit_version = args.get("aggkit_prover_image").split(":")[1]
-    aggkit_legacy = False
-    if any([aggkit_version.startswith(x) for x in ("1.0", "1.1", "1.2")]):
-        aggkit_legacy = True
-
-    return plan.render_templates(
-        name="aggkit-prover-artifact",
-        config={
-            "aggkit-prover-config.toml": struct(
-                template=aggkit_prover_config_template,
-                # TODO: Organize those args.
-                data={
-                    "log_level": args.get("log_level"),
-                    "log_format": args.get("log_format"),
-                    # ports
-                    "aggkit_prover_grpc_port": args["aggkit_prover_grpc_port"],
-                    "metrics_port": args["aggkit_prover_metrics_port"],
-                    # prover settings (fork12+)
-                    "primary_prover": args["aggkit_prover_primary_prover"],
-                    # L1
-                    # TODO: Is it the right way of creating the L1_RPC_URL for aggkit related component ?
-                    "l1_rpc_url": args["mitm_rpc_url"].get(
-                        "aggkit", args["l1_rpc_url"]
-                    ),
-                    # L2
-                    "l2_el_rpc_url": args["op_el_rpc_url"],
-                    "l2_cl_rpc_url": args["op_cl_rpc_url"],
-                    "rollup_manager_address": contract_setup_addresses[
-                        "zkevm_rollup_manager_address"
-                    ],  # TODO: Check if it's the right address - is it the L1 rollup manager address ?
-                    "global_exit_root_address": sovereign_contract_setup_addresses[
-                        "sovereign_ger_proxy_addr"
-                    ],  # TODO: Check if it's the right address - is it the L2 sovereign global exit root address ?
-                    # TODO: For op-succinct, agglayer/op-succinct is currently on the golang version. This might change if we move to the rust version.
-                    "proposer_url": "http://op-succinct-proposer{}:{}".format(
-                        args["deployment_suffix"],
-                        op_succinct.GRPC_PORT_NUMBER,
-                    ),
-                    # TODO: For legacy op, this would be different - something like http://op-proposer-001:8560
-                    # "proposer_url": "http://op-proposer{}:{}".format(
-                    #     args["deployment_suffix"], args["op_proposer_port"]
-                    # ),
-                    "network_id": args["zkevm_rollup_id"],
-                    "sp1_cluster_endpoint": args["sp1_cluster_endpoint"],
-                    "op_succinct_mock": args["op_succinct_mock"],
-                    "aggkit_legacy": aggkit_legacy,
-                },
-            )
-        },
-    )
-
-
-def get_aggkit_prover_ports(args):
-    ports = {
-        "grpc": PortSpec(args["aggkit_prover_grpc_port"], application_protocol="grpc"),
-        "metrics": PortSpec(
-            args["aggkit_prover_metrics_port"], application_protocol="http"
-        ),
-    }
-    public_ports = ports_package.get_public_ports(
-        ports, "aggkit_prover_start_port", args
-    )
-    return (ports, public_ports)
 
 
 # Function to allow aggkit-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
