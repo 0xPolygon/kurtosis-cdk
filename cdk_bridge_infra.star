@@ -32,11 +32,7 @@ def run(
     )
 
     if deploy_bridge_ui:
-        # Start the bridge UI.
-        bridge_ui_config_artifact = create_bridge_ui_config_artifact(
-            plan, args, contract_setup_addresses
-        )
-        zkevm_bridge_ui.run(plan, args, bridge_ui_config_artifact)
+        zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
 
         # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
         if args["use_local_l1"]:
@@ -81,23 +77,6 @@ def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_confi
                     "grpc_port_number": args["zkevm_bridge_grpc_port"],
                     "rpc_port_number": args["zkevm_bridge_rpc_port"],
                     "metrics_port_number": args["zkevm_bridge_metrics_port"],
-                }
-                | contract_setup_addresses,
-            )
-        },
-    )
-
-
-def create_bridge_ui_config_artifact(plan, args, contract_setup_addresses):
-    bridge_ui_config_template = read_file("./templates/bridge-infra/.env")
-    return plan.render_templates(
-        name="bridge-ui-config-artifact",
-        config={
-            ".env": struct(
-                template=bridge_ui_config_template,
-                data={
-                    "l1_explorer_url": args["l1_explorer_url"],
-                    "zkevm_explorer_url": args["polygon_zkevm_explorer"],
                 }
                 | contract_setup_addresses,
             )

@@ -3,7 +3,21 @@ SERVER_PORT_ID = "web-ui"
 SERVER_PORT_NUMBER = 80
 
 
-def run(plan, args, config_artifact):
+def run(plan, args, contract_setup_addresses):
+    config_artifact = plan.render_templates(
+        name="bridge-ui-config-artifact",
+        config={
+            ".env": struct(
+                template=read_file("../../../static_files/zkevm-bridge/ui/.env"),
+                data={
+                    "l1_explorer_url": args["l1_explorer_url"],
+                    "zkevm_explorer_url": args["polygon_zkevm_explorer"],
+                }
+                | contract_setup_addresses,
+            )
+        },
+    )
+
     plan.add_service(
         name="zkevm-bridge-ui{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
