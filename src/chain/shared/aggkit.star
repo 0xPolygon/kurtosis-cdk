@@ -464,6 +464,7 @@ def _build_config_data(args, deployment_context, extra_data=None):
             "agglayer_endpoint": agglayer_endpoint,
             "aggkit_version": aggkit_version,
             "l2_rpc_url": deployment_context.l2_rpc_url,
+            "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
         }
         | deployment_context.db_configs
         | deployment_context.contract_setup_addresses

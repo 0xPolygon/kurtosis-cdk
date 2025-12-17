@@ -29,7 +29,7 @@ AggLayerURL = "{{.agglayer_grpc_url}}"
 AggLayerURL = "{{.agglayer_readrpc_url}}"
 {{- end }}
 
-AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port}}"
+AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port_number}}"
 
 {{- if or (eq .sequencer_type "op-geth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"

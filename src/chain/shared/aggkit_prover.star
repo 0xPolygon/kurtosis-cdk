@@ -26,8 +26,8 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
                     "log_level": args.get("log_level"),
                     "log_format": args.get("log_format"),
                     # ports
-                    "aggkit_prover_grpc_port": args["aggkit_prover_grpc_port"],
-                    "metrics_port": args["aggkit_prover_metrics_port"],
+                    "grpc_port_number": GRPC_PORT_NUMBER,
+                    "metrics_port_number": METRICS_PORT_NUMBER,
                     # prover settings (fork12+)
                     "primary_prover": args["aggkit_prover_primary_prover"],
                     # L1

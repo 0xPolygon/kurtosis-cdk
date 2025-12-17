@@ -142,7 +142,7 @@
      * aggregatorClientPort is the grpc port that this prover will
      * attempt to use while connecting to the aggregator
      */ -}}
-    "aggregatorClientPort": {{.zkevm_aggregator_port}},
+    "aggregatorClientPort": {{.aggregator_port_number}},
 
 {{- /*
      * aggregatorClientHost is the hostname that this prover will
@@ -489,7 +489,7 @@
 {{- /*
      * aggregatorServerPort is the aggregator server GRPC port
      */ -}}
-    "aggregatorServerPort": {{.zkevm_aggregator_port}},
+    "aggregatorServerPort": {{.aggregator_port_number}},
 
 
 {{- /*

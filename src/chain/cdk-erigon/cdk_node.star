@@ -42,6 +42,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
                     ),
                     "l2_rpc_url": l2_rpc_url,
                     "agglayer_endpoint": agglayer_endpoint,
+                    "aggregator_port_number": AGGREGATOR_PORT_NUMBER,
                 }
                 | db_configs
                 | contract_setup_addresses,

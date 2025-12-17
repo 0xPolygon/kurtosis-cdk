@@ -1,4 +1,4 @@
-grpc-endpoint = "0.0.0.0:{{ .aggkit_prover_grpc_port }}"
+grpc-endpoint = "0.0.0.0:{{.grpc_port_number}}"
 
 [log]
 level = "{{.log_level}}"
@@ -6,7 +6,7 @@ outputs = []
 format = "{{.log_format}}"
 
 [telemetry]
-prometheus-addr = "0.0.0.0:{{ .metrics_port }}"
+prometheus-addr = "0.0.0.0:{{.metrics_port_number}}"
 
 [shutdown]
 runtime-timeout = "5s"
