@@ -1,6 +1,6 @@
 constants = import_module("./package_io/constants.star")
 databases_package = import_module("./chain/shared/databases.star")
-ports_package = import_module("./package_io/ports.star")
+ports_package = import_module("./chain/shared/ports.star")
 
 
 def run(plan, deployment_stages, args, contract_setup_addresses):
