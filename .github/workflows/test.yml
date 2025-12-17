@@ -49,10 +49,10 @@ jobs:
         run: kurtosis lint .
 
       - name: Run yamllint
-        run: yamllint --config-file ${{ github.workspace }}/.yamllint.yml .
+        run: yamllint --config-file ${{ github.workspace }}/.github/scripts/.yamllint.yml .
 
       - name: Run hadolint
-        run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.hadolint.yml {}
+        run: find . -type f -name '*.Dockerfile' | sort | xargs -I {} hadolint --config ${{ github.workspace }}/.github/scripts/.hadolint.yml {}
 
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
@@ -63,6 +63,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
+        with:
+          config: ${{ github.workspace }}/.github/scripts/.typos.yml
 
   links:
     runs-on: ubuntu-latest
