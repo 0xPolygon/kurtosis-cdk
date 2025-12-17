@@ -40,13 +40,12 @@ def run(
 
         # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
         if args["use_local_l1"]:
-            proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
-            zkevm_bridge_proxy.run(plan, args, proxy_config_artifact)
+            zkevm_bridge_proxy.run(plan, args)
 
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
     bridge_config_template = read_file(
-        src="./static_files/zkevm-bridge-service/config.toml"
+        src="./static_files/zkevm-bridge/service/config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
     l2_rpc_url = "http://{}{}:{}".format(
@@ -101,44 +100,6 @@ def create_bridge_ui_config_artifact(plan, args, contract_setup_addresses):
                     "zkevm_explorer_url": args["polygon_zkevm_explorer"],
                 }
                 | contract_setup_addresses,
-            )
-        },
-    )
-
-
-def create_reverse_proxy_config_artifact(plan, args):
-    bridge_ui_proxy_config_template = read_file(
-        src="./templates/bridge-infra/haproxy.cfg"
-    )
-
-    l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
-    l1rpc_host = l1_rpc_url.split(":")[1].replace("//", "")
-    l1rpc_port = l1_rpc_url.split(":")[2]
-    l2rpc_service = plan.get_service(
-        name=args["l2_rpc_name"] + args["deployment_suffix"]
-    )
-    bridge_service = plan.get_service(
-        name="zkevm-bridge-service" + args["deployment_suffix"]
-    )
-    bridgeui_service = plan.get_service(
-        name="zkevm-bridge-ui" + args["deployment_suffix"]
-    )
-
-    return plan.render_templates(
-        name="bridge-ui-proxy",
-        config={
-            "haproxy.cfg": struct(
-                template=bridge_ui_proxy_config_template,
-                data={
-                    "l1rpc_ip": l1rpc_host,
-                    "l1rpc_port": l1rpc_port,
-                    "l2rpc_ip": l2rpc_service.ip_address,
-                    "l2rpc_port": l2rpc_service.ports["rpc"].number,
-                    "bridgeservice_ip": bridge_service.ip_address,
-                    "bridgeservice_port": bridge_service.ports["rpc"].number,
-                    "bridgeui_ip": bridgeui_service.ip_address,
-                    "bridgeui_port": bridgeui_service.ports["web-ui"].number,
-                },
             )
         },
     )
