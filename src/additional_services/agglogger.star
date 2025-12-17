@@ -21,7 +21,7 @@ def run(
         config={
             "config.json": struct(
                 template=read_file(
-                    src="../../static_files/additional_services/agglogger-config/{}".format(
+                    src="../../static_files/additional_services/agglogger/{}".format(
                         agglogger_config_template_file
                     ),
                 ),
