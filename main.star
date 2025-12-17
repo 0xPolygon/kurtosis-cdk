@@ -24,6 +24,8 @@ def run(plan, args={}):
     (deployment_stages, args, op_stack_args) = input_parser.parse_args(plan, args)
     plan.print("Deploying the following components: " + str(deployment_stages))
     plan.print("Deploying CDK stack with the following configuration: " + str(args))
+    sequencer_type = args.get("sequencer_type")
+    consensus_type = args.get("consensus_contract_type")
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
@@ -79,7 +81,7 @@ def run(plan, args={}):
             plan, args, deployment_stages, op_stack_args
         )
 
-        if deployment_stages.get("deploy_optimism_rollup", False):
+        if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
             # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script
@@ -187,7 +189,7 @@ def run(plan, args={}):
 
     # Get the genesis file.
     genesis_artifact = ""
-    if not deployment_stages.get("deploy_optimism_rollup", False):
+    if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
         if deployment_stages.get("deploy_cdk_central_environment", False):
             plan.print("Getting genesis file")
             genesis_artifact = plan.store_service_files(
@@ -212,68 +214,52 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of the agglayer")
 
-    if not deployment_stages.get("deploy_optimism_rollup", False):
-        # Deploy cdk central/trusted environment.
-        if deployment_stages.get("deploy_cdk_central_environment", False):
-            # Deploy cdk-erigon sequencer node.
-            if args["sequencer_type"] == "erigon":
-                plan.print("Deploying cdk-erigon sequencer")
-                import_module(cdk_erigon_package).run_sequencer(
-                    plan,
-                    args
-                    | {
-                        "l1_rpc_url": args["mitm_rpc_url"].get(
-                            "erigon-sequencer", args["l1_rpc_url"]
-                        )
-                    },
-                    contract_setup_addresses,
-                )
-            else:
-                plan.print("Skipping the deployment of cdk-erigon sequencer")
+    # Deploy cdk central/trusted environment.
+    if deployment_stages.get("deploy_cdk_central_environment", False):
+        if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
+            plan.print("Deploying cdk-erigon stack")
 
-            # Deploy zkevm-pool-manager service.
-            if deployment_stages.get("deploy_cdk_erigon_node", False):
-                plan.print("Deploying zkevm-pool-manager service")
-                import_module(zkevm_pool_manager_package).run_zkevm_pool_manager(
-                    plan, args
-                )
-            else:
-                plan.print("Skipping the deployment of zkevm-pool-manager service")
+            plan.print("Deploying cdk-erigon sequencer")
+            import_module(cdk_erigon_package).run_sequencer(
+                plan,
+                args
+                | {
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "erigon-sequencer", args["l1_rpc_url"]
+                    )
+                },
+                contract_setup_addresses,
+            )
 
-            # Deploy cdk-erigon node.
-            if deployment_stages.get("deploy_cdk_erigon_node", False):
-                plan.print("Deploying cdk-erigon node")
-                import_module(cdk_erigon_package).run_rpc(
-                    plan,
-                    args
-                    | {
-                        "l1_rpc_url": args["mitm_rpc_url"].get(
-                            "erigon-rpc", args["l1_rpc_url"]
-                        )
-                    },
-                    contract_setup_addresses,
-                )
-            else:
-                plan.print("Skipping the deployment of cdk-erigon node")
+            plan.print("Deploying zkevm-pool-manager")
+            import_module(zkevm_pool_manager_package).run_zkevm_pool_manager(plan, args)
 
-            plan.print("Deploying cdk central/trusted environment")
+            plan.print("Deploying cdk-erigon node")
+            import_module(cdk_erigon_package).run_rpc(
+                plan,
+                args
+                | {
+                    "l1_rpc_url": args["mitm_rpc_url"].get(
+                        "erigon-rpc", args["l1_rpc_url"]
+                    )
+                },
+                contract_setup_addresses,
+            )
+
             args["genesis_artifact"] = genesis_artifact
 
-            if (
-                args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
-                or args["consensus_contract_type"]
-                == constants.CONSENSUS_TYPE.cdk_validium
-            ):
-                plan.print("Deploying CDK Node infrastructure")
+            if consensus_type in [
+                constants.CONSENSUS_TYPE.rollup,
+                constants.CONSENSUS_TYPE.cdk_validium,
+            ]:
+                plan.print("Deploying cdk-node")
                 import_module(cdk_central_environment_package).run(
-                    plan, args, deployment_stages, contract_setup_addresses
+                    plan, args, contract_setup_addresses
                 )
-            else:
-                plan.print("Skipping the deployment of CDK Node")
 
             # Deploy AggKit infrastructure + Dedicated Bridge Service
             if deployment_stages.get("deploy_aggkit_node", False):
-                plan.print("Deploying AggKit infrastructure")
+                plan.print("Deploying aggkit (cdk node)")
                 import_module(aggkit_package).run_aggkit_cdk_node(
                     plan,
                     args,
@@ -295,56 +281,62 @@ def run(plan, args={}):
                     plan, args
                 )
 
-        else:
-            plan.print("Skipping the deployment of cdk central/trusted environment")
+            # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
+            if deployment_stages.get("deploy_cdk_bridge_infra", False) and (
+                consensus_type
+                in [
+                    constants.CONSENSUS_TYPE.rollup,
+                    constants.CONSENSUS_TYPE.cdk_validium,
+                ]
+            ):
+                plan.print("Deploying cdk/bridge infrastructure")
+                import_module(cdk_bridge_infra_package).run(
+                    plan,
+                    args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
+                    contract_setup_addresses,
+                    deploy_bridge_ui=deployment_stages.get(
+                        "deploy_cdk_bridge_ui", True
+                    ),
+                )
+            else:
+                plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-        # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
-        if deployment_stages.get("deploy_cdk_bridge_infra", False) and (
-            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.rollup
-            or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.cdk_validium
-        ):
-            plan.print("Deploying cdk/bridge infrastructure")
-            import_module(cdk_bridge_infra_package).run(
-                plan,
-                args | {"use_local_l1": deployment_stages.get("deploy_l1", False)},
-                contract_setup_addresses,
-                deploy_bridge_ui=deployment_stages.get("deploy_cdk_bridge_ui", True),
-                deploy_optimism_rollup=deployment_stages.get(
-                    "deploy_optimism_rollup", False
-                ),
+        elif sequencer_type == constants.SEQUENCER_TYPE.op_geth:
+            plan.print("Deploying op-geth stack")
+
+            # Deploy op-succinct-proposer
+            if deployment_stages.get("deploy_op_succinct", False):
+                plan.print("Deploying op-succinct-proposer")
+                op_succinct_package.op_succinct_proposer_run(
+                    plan, args | contract_setup_addresses
+                )
+        else:
+            fail(
+                "Unsupported sequencer type: '{}', please use one of: '{}'".format(
+                    sequencer_type, list(constants.L2_SEQUENCER_MAPPING.keys())
+                )
             )
-        else:
-            plan.print("Skipping the deployment of cdk/bridge infrastructure")
 
-    # Deploy OP Succinct.
-    if deployment_stages.get("deploy_op_succinct", False):
-        # Run op-succinct-proposer service
-        plan.print("Running the op-succinct-proposer service")
-        op_succinct_package.op_succinct_proposer_run(
-            plan, args | contract_setup_addresses
-        )
-    else:
-        plan.print("Skipping the deployment of OP Succinct")
-
-    # Deploy AggKit infrastructure + Dedicated Bridge Service
-    if deployment_stages.get("deploy_optimism_rollup", False) or (
-        deployment_stages.get("deploy_cdk_central_environment", False)
-        and (
-            args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-            or args["consensus_contract_type"]
-            == constants.CONSENSUS_TYPE.ecdsa_multisig
-        )
-    ):
-        plan.print("Deploying AggKit infrastructure")
-        aggkit_package.run(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            deployment_stages,
-        )
-    else:
-        plan.print("Skipping the deployment of aggkit infrastructure")
+        # Deploy AggKit infrastructure + Dedicated Bridge Service
+        if sequencer_type == constants.SEQUENCER_TYPE.op_geth or (
+            consensus_type
+            in [
+                constants.CONSENSUS_TYPE.pessimistic,
+                constants.CONSENSUS_TYPE.ecdsa_multisig,
+            ]
+        ):
+            plan.print("Deploying aggkit infrastructure")
+            plan.print(
+                "DEBUG - sovereign_contract_setup_addresses: "
+                + str(sovereign_contract_setup_addresses)
+            )
+            aggkit_package.run(
+                plan,
+                args,
+                contract_setup_addresses,
+                sovereign_contract_setup_addresses,
+                deployment_stages,
+            )
 
     # Deploy additional services.
     additional_services.launch(
@@ -354,6 +346,7 @@ def run(plan, args={}):
         sovereign_contract_setup_addresses,
         genesis_artifact,
         deployment_stages,
+        sequencer_type,
     )
 
 

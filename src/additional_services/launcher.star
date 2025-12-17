@@ -8,6 +8,7 @@ def launch(
     sovereign_contract_setup_addresses,
     genesis_artifact,
     deployment_stages,
+    sequencer_type,
 ):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.agglogger:
@@ -16,7 +17,7 @@ def launch(
                 args,
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
-                deployment_stages.get("deploy_optimism_rollup"),
+                sequencer_type,
             )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
             import_module("./arpeggio.star").run(plan, args)
@@ -32,16 +33,6 @@ def launch(
             )
         elif svc == constants.ADDITIONAL_SERVICES.erpc:
             import_module("./erpc.star").run(plan, args)
-        elif svc == constants.ADDITIONAL_SERVICES.pless_zkevm_node:
-            # Note that an additional suffix will be added to the permissionless services.
-            permissionless_node_args = dict(args)
-            permissionless_node_args["original_suffix"] = args["deployment_suffix"]
-            permissionless_node_args["deployment_suffix"] = (
-                "-pless" + args["deployment_suffix"]
-            )
-            import_module("./pless_zkevm_node.star").run(
-                plan, permissionless_node_args, genesis_artifact
-            )
         elif svc == constants.ADDITIONAL_SERVICES.observability:
             import_module("./panoptichain.star").run(
                 plan, args, contract_setup_addresses
@@ -59,6 +50,7 @@ def launch(
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
                 deployment_stages,
+                sequencer_type,
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args)

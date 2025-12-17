@@ -214,10 +214,8 @@ jobs:
           else
             sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
             rpc_name=""
-            if [[ "$sequencer_type" == "erigon" ]]; then
+            if [[ "$sequencer_type" == "cdk-erigon" ]]; then
               rpc_name="cdk-erigon-rpc-001"
-            elif [[ "$sequencer_type" == "zkevm" ]]; then
-              rpc_name="zkevm-node-rpc-001"
             elif [[ "$sequencer_type" == "null" ]]; then
               rpc_name="cdk-erigon-rpc-001"
             else
@@ -230,26 +228,10 @@ jobs:
               --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
           fi
 
-      - name: Monitor CDK chain verified batches (zkEVM Permissionless RPC)
-        run: |
-          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
-            echo "Skipping block verification as consensus is pessimistic or ecdsa_multisig."
-          else
-            result=$(yq --raw-output '.args.additional_services // [] | contains(["pless_zkevm_node"])' ${{ matrix.file.path }})
-            if [[ "$result" == "true" ]]; then
-              ./.github/scripts/monitor-cdk-chain.sh \
-                --enclave ${{ env.ENCLAVE_NAME }} \
-                --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
-            else
-              echo "Skipping batch verification as there is no zkevm permissionless RPC in the environment"
-            fi
-          fi
-
       - name: Monitor OP rollup finalized blocks (OP CL RPC)
         run: |
-          result=$(yq --raw-output '.deployment_stages.deploy_optimism_rollup' ${{ matrix.file.path }})
-          if [[ "$result" == "true" ]]; then
+          result=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
+          if [[ "$result" == "op-geth" ]]; then
             ./.github/scripts/monitor-op-rollup.sh \
               --enclave ${{ env.ENCLAVE_NAME }} \
               --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
@@ -390,15 +372,6 @@ jobs:
             cast bn --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} erpc-001 rpc)/main/evm/2151908"
           else
             echo "ERPC is not deployed."
-          fi
-
-      - name: Verify permissionless zkevm-node rpc
-        run: |
-          result=$(yq '.args.additional_services | contains(["pless_zkevm_node"])' ./.github/tests/additional-services.yml)
-          if [ "$result" = "true" ]; then
-            cast bn --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} zkevm-node-rpc-pless-001 rpc)
-          else
-            echo "Permissionless zkevm-node is not deployed."
           fi
 
       - name: Verify that prometheus collects panoptichain metrics

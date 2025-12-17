@@ -422,29 +422,21 @@ def create_bridge_config_artifact(
         src="./templates/bridge-infra/bridge-config.toml"
     )
     l1_rpc_url = args["mitm_rpc_url"].get("aggkit", args["l1_rpc_url"])
-    if not deployment_stages.get("deploy_optimism_rollup", False) and (
-        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
-        or args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.cdk_erigon and (
+        args["consensus_contract_type"]
+        in [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
+        ]
     ):
         l2_rpc_url = "http://{}{}:{}".format(
             args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
         )
-        contract_addresses = contract_setup_addresses
         require_sovereign_chain_contract = False
     else:
         l2_rpc_url = args["op_el_rpc_url"]
-        contract_addresses = contract_setup_addresses | {
-            "zkevm_rollup_address": sovereign_contract_setup_addresses.get(
-                "sovereign_rollup_addr"
-            ),
-            "zkevm_bridge_l2_address": sovereign_contract_setup_addresses.get(
-                "sovereign_bridge_proxy_addr"
-            ),
-            "zkevm_global_exit_root_l2_address": sovereign_contract_setup_addresses.get(
-                "sovereign_ger_proxy_addr"
-            ),
-        }
         require_sovereign_chain_contract = True
+
     return plan.render_templates(
         name="bridge-config-artifact",
         config={
@@ -456,6 +448,7 @@ def create_bridge_config_artifact(
                     "l2_keystore_password": args["l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,
+                    "sequencer_type": args["sequencer_type"],
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
@@ -464,7 +457,8 @@ def create_bridge_config_artifact(
                     "rpc_port_number": args["zkevm_bridge_rpc_port"],
                     "metrics_port_number": args["zkevm_bridge_metrics_port"],
                 }
-                | contract_addresses,
+                | contract_setup_addresses
+                | sovereign_contract_setup_addresses,
             )
         },
     )

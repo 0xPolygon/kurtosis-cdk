@@ -1,3 +1,4 @@
+constants = import_module("./src/package_io/constants.star")
 ports_package = import_module("./src/package_io/ports.star")
 
 # We support both local and remote Postgres databases within our Kurtosis-CDK package
@@ -60,26 +61,6 @@ PROVER_DB = {
     }
 }
 
-# Databases required for a zkevm node to function as either a sequencer or a permissionless node.
-ZKEVM_NODE_DBS = {
-    "event_db": {
-        "name": "event_db",
-        "user": "event_user",
-        "password": "redacted",
-        "init": read_file(src="./templates/databases/event-db-init.sql"),
-    },
-    "pool_db": {
-        "name": "pool_db",
-        "user": "pool_user",
-        "password": "redacted",
-    },
-    "state_db": {
-        "name": "state_db",
-        "user": "state_user",
-        "password": "redacted",
-    },
-}
-
 # Databases required for a cdk erigon node to function as either a sequencer or a permissionless node.
 CDK_ERIGON_DBS = {
     "pool_manager_db": {
@@ -98,13 +79,7 @@ OP_SUCCINCT_PROPOSER_DBS = {
     }
 }
 
-DATABASES = (
-    CENTRAL_ENV_DBS
-    | PROVER_DB
-    | ZKEVM_NODE_DBS
-    | CDK_ERIGON_DBS
-    | OP_SUCCINCT_PROPOSER_DBS
-)
+DATABASES = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS | OP_SUCCINCT_PROPOSER_DBS
 
 
 def run(plan, args):
@@ -115,10 +90,10 @@ def run(plan, args):
 
 def get_db_configs(suffix, sequencer_type):
     dbs = None
-    if sequencer_type == "erigon":
-        dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS | OP_SUCCINCT_PROPOSER_DBS
-    elif sequencer_type == "zkevm":
-        dbs = CENTRAL_ENV_DBS | PROVER_DB | ZKEVM_NODE_DBS
+    if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
+        dbs = CENTRAL_ENV_DBS | PROVER_DB | CDK_ERIGON_DBS
+    elif sequencer_type == constants.SEQUENCER_TYPE.op_geth:
+        dbs = CENTRAL_ENV_DBS | OP_SUCCINCT_PROPOSER_DBS
     else:
         fail("Unsupported sequencer type: %s" % sequencer_type)
 
@@ -137,30 +112,6 @@ def get_db_configs(suffix, sequencer_type):
 
 def _service_name(suffix):
     return POSTGRES_SERVICE_NAME + suffix
-
-
-def run_pless_zkevm(plan, args):
-    db_configs = get_pless_zkevm_db_configs(args["original_suffix"])
-    create_postgres_service(plan, db_configs, args, "pless_database_start_port")
-
-
-def get_pless_zkevm_db_configs(suffix):
-    dbs = ZKEVM_NODE_DBS | PROVER_DB
-    configs = {
-        k: v
-        | {
-            "hostname": POSTGRES_HOSTNAME
-            if USE_REMOTE_POSTGRES
-            else _service_name(_pless_suffix(suffix)),
-            "port": POSTGRES_PORT,
-        }
-        for k, v in dbs.items()
-    }
-    return configs
-
-
-def _pless_suffix(suffix):
-    return "-pless" + suffix
 
 
 def create_postgres_service(plan, db_configs, args, start_port_name):
