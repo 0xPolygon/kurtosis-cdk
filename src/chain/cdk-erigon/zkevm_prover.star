@@ -1,3 +1,4 @@
+cdk_node = import_module("./cdk_node.star")
 databases = import_module("../shared/databases.star")
 
 
@@ -50,6 +51,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
                     "hash_db_port_number": HASH_DB_PORT_NUMBER,
                     "executor_port_number": EXECUTOR_PORT_NUMBER,
                     "stateless_executor": stateless_executor,
+                    "aggregator_port_number": cdk_node.AGGREGATOR_PORT_NUMBER,
                 },
             )
         },

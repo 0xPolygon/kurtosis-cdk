@@ -2,7 +2,6 @@ aggkit_prover = import_module("./aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
-ports_package = import_module("../../package_io/ports.star")
 ports_package = import_module("./ports.star")
 contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-geth/op_succinct_proposer.star")
@@ -42,7 +41,6 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
     # Create and deploy service
     service_name = "aggkit" + args["deployment_suffix"]
     ports = _get_aggkit_ports(args)
-    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
 
     files_config = {
         "/etc/aggkit": Directory(
@@ -63,7 +61,6 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
     service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
-        public_ports=public_ports,
         files=files_config,
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=[
@@ -200,7 +197,6 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
     # Create and deploy service
     service_name = "aggkit" + args["deployment_suffix"]
     ports = _get_aggkit_ports(args)
-    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
 
     files_config = {
         "/etc/aggkit": Directory(
@@ -223,7 +219,6 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
     service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
-        public_ports=public_ports,
         files=files_config,
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=[
@@ -253,7 +248,6 @@ def _deploy_bridge_service(plan, args, deployment_context):
     # Create and deploy bridge service
     service_name = "aggkit" + args["deployment_suffix"] + "-bridge"
     ports = _get_aggkit_bridge_ports(args)
-    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
 
     files_config = {
         "/etc/aggkit": Directory(
@@ -275,7 +269,6 @@ def _deploy_bridge_service(plan, args, deployment_context):
     service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
-        public_ports=public_ports,
         files=files_config,
         entrypoint=["/usr/local/bin/aggkit"],
         cmd=[
@@ -336,12 +329,10 @@ def _deploy_committee_member(plan, args, deployment_context, member_index):
         + "-aggoracle-committee-00{}".format(member_index)
     )
     ports = _get_aggkit_ports(args)
-    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
 
     service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
-        public_ports=public_ports,
         files={
             "/etc/aggkit": Directory(
                 artifact_names=[
@@ -413,12 +404,10 @@ def _deploy_validator_service(plan, args, deployment_context, validator_index):
         + "-aggsender-validator-00{}".format(validator_index)
     )
     ports = _get_aggkit_validator_ports(args)
-    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
 
     service_config = ServiceConfig(
         image=args["aggkit_image"],
         ports=ports,
-        public_ports=public_ports,
         files={
             "/etc/aggkit": Directory(
                 artifact_names=[
