@@ -3,7 +3,7 @@ CONFIG_PATH = "/etc/dasboard"
 CONFIG_FILE = "config.json"
 DASHBOARD_PORT = 8000
 DASHBOARD_CONFIG_TEMPLATE = (
-    "../../static_files/additional_services/agglayer-dashboard-config/config.json"
+    "../../static_files/additional_services/agglayer-dashboard/config.json"
 )
 
 

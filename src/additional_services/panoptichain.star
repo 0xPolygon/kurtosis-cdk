@@ -23,7 +23,7 @@ def run(plan, args, contract_setup_addresses):
 
 def get_panoptichain_config(plan, args, contract_setup_addresses):
     panoptichain_config_template = read_file(
-        src="../../static_files/additional_services/panoptichain-config/config.yml"
+        src="../../static_files/additional_services/panoptichain/config.yml"
     )
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
 

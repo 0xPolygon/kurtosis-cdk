@@ -23,7 +23,7 @@ def run(plan, args):
 
 def get_arpeggio_config(plan, args):
     arpeggio_config_template = read_file(
-        src="../../static_files/additional_services/arpeggio-config/config.yml"
+        src="../../static_files/additional_services/arpeggio/config.yml"
     )
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
     return plan.render_templates(

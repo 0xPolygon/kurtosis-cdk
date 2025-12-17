@@ -4,8 +4,8 @@ grafana_package = import_module(
 )
 
 GRAFANA_VERSION = "11.1.4"
-GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana-config/dashboards"
-GRAFANA_ALERTING_TEMPLATE = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana-config/alerting.yml.tmpl"
+GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/dashboards"
+GRAFANA_ALERTING_TEMPLATE = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/alerting.yml.tmpl"
 
 SLACK_CHANNEL = ""
 SLACK_TOKEN = ""

@@ -17,7 +17,7 @@ def run(
         agglogger_config_template_file = "zkevm-config.json"
 
     agglogger_config_artifact = plan.render_templates(
-        name="agglogger-config",
+        name="agglogger",
         config={
             "config.json": struct(
                 template=read_file(

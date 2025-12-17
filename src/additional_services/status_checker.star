@@ -11,7 +11,7 @@ def run(plan, args):
         config={
             "config.yml": struct(
                 template=read_file(
-                    src="../../static_files/additional_services/status-checker-config/config.yml",
+                    src="../../static_files/additional_services/status-checker/config.yml",
                 ),
                 data={},
             ),
@@ -19,7 +19,7 @@ def run(plan, args):
     )
 
     status_checker_checks_artifact = plan.upload_files(
-        src="../../static_files/additional_services/status-checker-config/checks",
+        src="../../static_files/additional_services/status-checker/checks",
         name="status-checker-checks",
     )
 

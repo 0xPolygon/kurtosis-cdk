@@ -25,7 +25,7 @@ def run(plan, args):
 
 def get_erpc_config(plan, args):
     config_template = read_file(
-        src="../../static_files/additional_services/erpc-config/erpc.yaml"
+        src="../../static_files/additional_services/erpc/erpc.yaml"
     )
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
     return plan.render_templates(
