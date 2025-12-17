@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: crate-ci/typos@392b78fe18a52790c53f42456e46124f77346842 # v1.34.0
         with:
-          config: ${{ github.workspace }}/.github/scripts/typos.yml
+          config: ${{ github.workspace }}/.github/scripts/typos.toml
 
   links:
     runs-on: ubuntu-latest
