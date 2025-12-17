@@ -14,7 +14,7 @@ chain_launcher = import_module("./src/chain/launcher.star")
 databases_package = "./src/chain/shared/databases.star"
 agglayer_contracts_package = "./src/contracts/agglayer.star"
 sovereign_contracts_package = import_module("./src/contracts/sovereign.star")
-mitm_package = "./mitm.star"
+mitm_package = "./src/mitm.star"
 
 
 def run(plan, args={}):
@@ -240,7 +240,9 @@ def run(plan, args={}):
 
 def deploy_helper_service(plan, args):
     # Create script artifact.
-    get_rollup_info_template = read_file(src="./static_files/scripts/get-rollup-info.sh")
+    get_rollup_info_template = read_file(
+        src="./static_files/scripts/get-rollup-info.sh"
+    )
     get_rollup_info_artifact = plan.render_templates(
         name="get-rollup-info-artifact",
         config={
