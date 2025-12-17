@@ -1,7 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 aggkit_package = import_module("./lib/aggkit.star")
 databases = import_module("./src/chain/shared/databases.star")
-zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
+zkevm_bridge_service = import_module("./src/chain/shared/zkevm-bridge/service.star")
 ports_package = import_module("./src/package_io/ports.star")
 contracts_util = import_module("./src/contracts/util.star")
 op_succinct = import_module("./src/chain/op-geth/op_succinct_proposer.star")
@@ -319,12 +319,8 @@ def run(
             sovereign_contract_setup_addresses,
             db_configs,
         )
-        bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-            args, bridge_config_artifact, keystore_artifacts.claim_sponsor
-        )
-        plan.add_service(
-            name="zkevm-bridge-service" + args["deployment_suffix"],
-            config=bridge_service_config,
+        zkevm_bridge_service.run(
+            plan, args, bridge_config_artifact, keystore_artifacts.claim_sponsor
         )
 
 

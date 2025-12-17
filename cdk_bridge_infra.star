@@ -1,6 +1,8 @@
 constants = import_module("./src/package_io/constants.star")
 databases = import_module("./src/chain/shared/databases.star")
-zkevm_bridge_package = import_module("./lib/zkevm_bridge.star")
+zkevm_bridge_service = import_module("./src/chain/shared/zkevm-bridge/service.star")
+zkevm_bridge_ui = import_module("./src/chain/shared/zkevm-bridge/ui.star")
+zkevm_bridge_proxy = import_module("./src/chain/shared/zkevm-bridge/proxy.star")
 
 
 def run(
@@ -25,12 +27,8 @@ def run(
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
-    bridge_service_config = zkevm_bridge_package.create_bridge_service_config(
-        args, bridge_config_artifact, claimsponsor_keystore_artifact
-    )
-    plan.add_service(
-        name="zkevm-bridge-service" + args["deployment_suffix"],
-        config=bridge_service_config,
+    zkevm_bridge_service.run(
+        plan, args, bridge_config_artifact, claimsponsor_keystore_artifact
     )
 
     if deploy_bridge_ui:
@@ -38,12 +36,12 @@ def run(
         bridge_ui_config_artifact = create_bridge_ui_config_artifact(
             plan, args, contract_setup_addresses
         )
-        zkevm_bridge_package.start_bridge_ui(plan, args, bridge_ui_config_artifact)
+        zkevm_bridge_ui.run(plan, args, bridge_ui_config_artifact)
 
         # Start the bridge UI reverse proxy. This is only relevant / needed if we have a fake l1
         if args["use_local_l1"]:
             proxy_config_artifact = create_reverse_proxy_config_artifact(plan, args)
-            zkevm_bridge_package.start_reverse_proxy(plan, args, proxy_config_artifact)
+            zkevm_bridge_proxy.run(plan, args, proxy_config_artifact)
 
 
 def create_bridge_config_artifact(plan, args, contract_setup_addresses, db_configs):
