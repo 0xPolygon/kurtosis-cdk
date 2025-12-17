@@ -18,11 +18,11 @@ def launch(
     deployment_stages,
     genesis_artifact,
 ):
-    plan.print("Deploying cdk-erigon sequencer")
-
+    # cdk-erigon sequencer and its components
     if args.get("erigon_strict_mode"):
         zkevm_prover.run_stateless_executor(plan, args)
 
+    zkevm_pool_manager.run(plan, args)
     cdk_erigon.run_sequencer(
         plan,
         args
@@ -34,10 +34,7 @@ def launch(
         contract_setup_addresses,
     )
 
-    plan.print("Deploying zkevm-pool-manager")
-    zkevm_pool_manager.run(plan, args)
-
-    plan.print("Deploying cdk-erigon node")
+    # cdk-erigon rpc
     cdk_erigon.run_rpc(
         plan,
         args
@@ -45,28 +42,25 @@ def launch(
         contract_setup_addresses,
     )
 
+    # TODO: understand if genesis_artifact is needed here or can be removed
     args["genesis_artifact"] = genesis_artifact
 
+    # cdk-data-availability
     consensus_type = args.get("consensus_contract_type")
+    if consensus_type == constants.CONSENSUS_TYPE.cdk_validium:
+        cdk_data_availability.run(plan, args, contract_setup_addresses)
+
+    # rollup and validium specific
     if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
     ]:
+        # cdk-node
         db_configs = databases.get_db_configs(
             args["deployment_suffix"], args["sequencer_type"]
         )
-
         keystore_artifacts = get_keystores_artifacts(plan, args)
-
-        # Start the DAC if in validium mode.
-        is_validium_mode = (
-            args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
-        )
-        if is_validium_mode:
-            cdk_data_availability.run(plan, args, contract_setup_addresses)
-
         agglayer_endpoint = get_agglayer_endpoint(plan, args)
-        # Create the cdk node config.
         node_config_template = read_file(
             src="../../../templates/trusted-node/cdk-node-config.toml"
         )
@@ -88,30 +82,28 @@ def launch(
                 )
             },
         )
-
-        # Start the cdk components.
         cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
             args, node_config_artifact, genesis_artifact, keystore_artifacts
         )
-
         plan.add_services(
             configs=cdk_node_configs,
             description="Starting the cdk node components",
         )
 
-        # Start zkevm prover.
+        # zkevm-prover
         if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
             zkevm_prover.run_prover(plan, args)
 
+    # aggkit
     if deployment_stages.get("deploy_aggkit_node"):
-        plan.print("Deploying aggkit (cdk node)")
+        plan.print("Deploying aggkit")
         aggkit_package.run_aggkit_cdk_node(
             plan,
             args,
             contract_setup_addresses,
         )
 
-    # fund account on L2
+    # fund cdk-erigon account on L2
     agglayer_contracts_package.l2_legacy_fund_accounts(plan, args)
 
     # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
