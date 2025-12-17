@@ -35,7 +35,7 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
         fail("Unknown cdk-erigon type: {}".format(type))
 
     config_artifact = plan.render_templates(
-        name="cdk-erigon-rpc-config-artifact",
+        name="cdk-erigon-{}-config".format(type),
         config={
             "config.yaml": struct(
                 template=read_file(
