@@ -6,13 +6,10 @@ SERVER_PORT_ID = "http"
 SERVER_PORT_NUMBER = 8545
 
 
-def run(plan, args):
+def run(plan, args, sequencer_rpc_url):
     deployment_suffix = args.get("deployment_suffix")
     db_configs = databases.get_db_configs(deployment_suffix, args.get("sequencer_type"))
     zkevm_rpc_port = args.get("zkevm_rpc_http_port")
-    cdk_erigon_sequencer_url = "http://cdk-erigon-sequencer{}:{}".format(
-        deployment_suffix, zkevm_rpc_port
-    )
     cdk_erigon_rpc_url = "http://cdk-erigon-rpc{}:{}".format(
         deployment_suffix, zkevm_rpc_port
     )
@@ -26,7 +23,7 @@ def run(plan, args):
                 data=args
                 | {
                     "server_port_number": SERVER_PORT_NUMBER,
-                    "sequencer_url": cdk_erigon_sequencer_url,
+                    "sequencer_url": sequencer_rpc_url,
                     "l2_node_url": cdk_erigon_rpc_url,
                 }
                 | db_configs,
@@ -34,12 +31,14 @@ def run(plan, args):
         },
     )
 
-    plan.add_service(
+    return plan.add_service(
         name="zkevm-pool-manager" + args.get("deployment_suffix"),
         config=ServiceConfig(
             image=args.get("zkevm_pool_manager_image"),
             ports={
-                SERVER_PORT_ID: PortSpec(SERVER_PORT_NUMBER),
+                SERVER_PORT_ID: PortSpec(
+                    SERVER_PORT_NUMBER, application_protocol="http"
+                ),
             },
             files={
                 "/etc/pool-manager": Directory(artifact_names=[config_artifact]),

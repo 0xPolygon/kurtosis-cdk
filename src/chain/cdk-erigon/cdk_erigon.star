@@ -45,29 +45,17 @@ def run_sequencer(plan, args, contract_setup_addresses):
             ),
         },
     )
+    return _run(plan, args, CDK_ERIGON_TYPE.sequencer, config_artifact)
 
-    _run(plan, args, CDK_ERIGON_TYPE.sequencer, config_artifact)
 
-
-def run_rpc(plan, args, contract_setup_addresses):
-    zkevm_sequencer_service = plan.get_service(
-        name=args["sequencer_name"] + args["deployment_suffix"]
-    )
-    zkevm_sequencer_url = "http://{}:{}".format(
-        zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
-    )
-    zkevm_datastreamer_url = "{}:{}".format(
-        zkevm_sequencer_service.ip_address,
-        zkevm_sequencer_service.ports["data-streamer"].number,
-    )
-
-    zkevm_pool_manager_service = plan.get_service(
-        name="zkevm-pool-manager" + args["deployment_suffix"]
-    )
-    zkevm_pool_manager_url = "http://{}:{}".format(
-        zkevm_pool_manager_service.ip_address,
-        zkevm_pool_manager_service.ports["http"].number,
-    )
+def run_rpc(
+    plan,
+    args,
+    contract_setup_addresses,
+    sequencer_rpc_url,
+    datastreamer_url,
+    pool_manager_url,
+):
     config_artifact = plan.render_templates(
         name="cdk-erigon-rpc-config-artifact",
         config={
@@ -76,10 +64,10 @@ def run_rpc(plan, args, contract_setup_addresses):
                     src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
                 ),
                 data={
-                    "zkevm_sequencer_url": zkevm_sequencer_url,
-                    "zkevm_datastreamer_url": zkevm_datastreamer_url,
+                    "zkevm_sequencer_url": sequencer_rpc_url,
+                    "zkevm_datastreamer_url": datastreamer_url,
                     "is_sequencer": False,
-                    "pool_manager_url": zkevm_pool_manager_url,
+                    "pool_manager_url": pool_manager_url,
                     # common
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
@@ -92,7 +80,7 @@ def run_rpc(plan, args, contract_setup_addresses):
         },
     )
 
-    _run(plan, args, CDK_ERIGON_TYPE.rpc, config_artifact)
+    return _run(plan, args, CDK_ERIGON_TYPE.rpc, config_artifact)
 
 
 def _run(plan, args, type, config_artifact):
@@ -161,7 +149,7 @@ def _run(plan, args, type, config_artifact):
         src="../../../static_files/scripts/proc-runner.sh",
     )
 
-    plan.add_service(
+    return plan.add_service(
         name="cdk-erigon-{}{}".format(type, args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("cdk_erigon_image"),

@@ -24,8 +24,8 @@ def launch(
     if args.get("erigon_strict_mode"):
         zkevm_prover.run_stateless_executor(plan, args)
 
-    zkevm_pool_manager.run(plan, args)
-    cdk_erigon.run_sequencer(
+    # cdk-erigon sequencer
+    result = cdk_erigon.run_sequencer(
         plan,
         args
         | {
@@ -35,6 +35,12 @@ def launch(
         },
         contract_setup_addresses,
     )
+    sequencer_rpc_url = result.ports[cdk_erigon.HTTP_RPC_PORT_ID].url
+    datastreamer_url = result.ports[cdk_erigon.DATA_STREAMER_PORT_ID].url
+
+    # zkevm-pool-manager
+    result = zkevm_pool_manager.run(plan, args, sequencer_rpc_url)
+    zkevm_pool_manager_url = result.ports[zkevm_pool_manager.SERVER_PORT_ID].url
 
     # cdk-erigon rpc
     cdk_erigon.run_rpc(
@@ -42,6 +48,9 @@ def launch(
         args
         | {"l1_rpc_url": args["mitm_rpc_url"].get("erigon-rpc", args["l1_rpc_url"])},
         contract_setup_addresses,
+        sequencer_rpc_url,
+        datastreamer_url,
+        zkevm_pool_manager_url,
     )
 
     # TODO: understand if genesis_artifact is needed here or can be removed
