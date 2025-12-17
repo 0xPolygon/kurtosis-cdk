@@ -36,9 +36,9 @@ def launch(
         contract_setup_addresses,
     )
     sequencer_rpc_url = result.ports[cdk_erigon.HTTP_RPC_PORT_ID].url
-    datastreamer_url = result.ports[
-        cdk_erigon.DATA_STREAMER_PORT_ID
-    ].url.removeprefix("datastream://")
+    datastreamer_url = result.ports[cdk_erigon.DATA_STREAMER_PORT_ID].url.removeprefix(
+        "datastream://"
+    )
 
     # zkevm-pool-manager
     result = zkevm_pool_manager.run(plan, args, sequencer_rpc_url)
