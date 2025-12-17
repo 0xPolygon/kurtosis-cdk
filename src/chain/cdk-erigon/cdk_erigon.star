@@ -1,3 +1,4 @@
+ports = import_module("../../shared/ports.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
 
@@ -8,12 +9,6 @@ CDK_ERIGON_TYPE = struct(
 
 
 # Port identifiers and numbers.
-HTTP_RPC_PORT_ID = "rpc"
-HTTP_RPC_PORT_NUMBER = 8123
-
-WS_RPC_PORT_ID = "ws-rpc"
-WS_RPC_PORT_NUMBER = 8133
-
 DATA_STREAMER_PORT_ID = "data-streamer"
 DATA_STREAMER_PORT_NUMBER = 6900
 
@@ -21,7 +16,7 @@ PPROF_PORT_ID = "pprof"
 PPROF_PORT_NUMBER = 6060
 
 METRICS_PORT_ID = "prometheus"
-METRICS_PORT_NUMBER = 9091
+METRICS_PORT_NUMBER = 9090
 
 
 def run_sequencer(plan, args, contract_setup_addresses):
@@ -52,7 +47,7 @@ def run_rpc(
     plan,
     args,
     contract_setup_addresses,
-    sequencer_rpc_url,
+    sequencer_url,
     datastreamer_url,
     pool_manager_url,
 ):
@@ -64,7 +59,7 @@ def run_rpc(
                     src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
                 ),
                 data={
-                    "zkevm_sequencer_url": sequencer_rpc_url,
+                    "zkevm_sequencer_url": sequencer_url,
                     "zkevm_datastreamer_url": datastreamer_url,
                     "is_sequencer": False,
                     "pool_manager_url": pool_manager_url,
@@ -79,7 +74,6 @@ def run_rpc(
             ),
         },
     )
-
     return _run(plan, args, CDK_ERIGON_TYPE.rpc, config_artifact)
 
 
@@ -169,10 +163,12 @@ def _run(plan, args, type, config_artifact):
             }
             | files,
             ports={
-                HTTP_RPC_PORT_ID: PortSpec(
-                    HTTP_RPC_PORT_NUMBER, application_protocol="http"
+                ports.HTTP_RPC_PORT_ID: PortSpec(
+                    ports.HTTP_RPC_PORT_NUMBER, application_protocol="http"
                 ),
-                WS_RPC_PORT_ID: PortSpec(WS_RPC_PORT_NUMBER, application_protocol="ws"),
+                ports.WS_RPC_PORT_ID: PortSpec(
+                    ports.WS_RPC_PORT_NUMBER, application_protocol="ws"
+                ),
                 PPROF_PORT_ID: PortSpec(PPROF_PORT_NUMBER, wait=None),
                 METRICS_PORT_ID: PortSpec(METRICS_PORT_NUMBER, wait=None),
             }

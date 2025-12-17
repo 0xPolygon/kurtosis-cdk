@@ -5,6 +5,7 @@ cdk_node = import_module("./cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 cdk_data_availability = import_module("./cdk_data_availability.star")
+ports = import_module("../../shared/ports.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
@@ -35,25 +36,26 @@ def launch(
         },
         contract_setup_addresses,
     )
-    sequencer_rpc_url = result.ports[cdk_erigon.HTTP_RPC_PORT_ID].url
+    sequencer_url = result.ports[ports.HTTP_RPC_PORT_ID].url
     datastreamer_url = result.ports[cdk_erigon.DATA_STREAMER_PORT_ID].url.removeprefix(
         "datastream://"
     )
 
     # zkevm-pool-manager
-    result = zkevm_pool_manager.run(plan, args, sequencer_rpc_url)
+    result = zkevm_pool_manager.run(plan, args, sequencer_url)
     zkevm_pool_manager_url = result.ports[zkevm_pool_manager.SERVER_PORT_ID].url
 
     # cdk-erigon rpc
-    cdk_erigon.run_rpc(
+    result = cdk_erigon.run_rpc(
         plan,
         args
         | {"l1_rpc_url": args["mitm_rpc_url"].get("erigon-rpc", args["l1_rpc_url"])},
         contract_setup_addresses,
-        sequencer_rpc_url,
+        sequencer_url,
         datastreamer_url,
         zkevm_pool_manager_url,
     )
+    rpc_url = result.ports[ports.HTTP_RPC_PORT_ID].url
 
     # TODO: understand if genesis_artifact is needed here or can be removed
     args["genesis_artifact"] = genesis_artifact
@@ -97,7 +99,11 @@ def launch(
     ):
         plan.print("Deploying zkevm-bridge infrastructure (legacy)")
         zkevm_bridge_service.run(
-            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            rpc_url,
         )
 
         if deployment_stages.get("deploy_cdk_bridge_ui"):

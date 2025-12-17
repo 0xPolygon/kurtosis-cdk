@@ -3,6 +3,7 @@ constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
 ports_package = import_module("../../package_io/ports.star")
+ports = import_module("./ports.star")
 contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-geth/op_succinct_proposer.star")
 
@@ -99,8 +100,17 @@ def run(
 
     # Deploy bridge infrastructure if needed
     if deploy_cdk_bridge_infra:
+        l2_rpc_url = "http://{}{}:{}".format(
+            args.get("l2_rpc_name"),
+            args.get("deployment_suffix"),
+            ports.HTTP_RPC_PORT_NUMBER,
+        )
         zkevm_bridge_service.run(
-            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            l2_rpc_url,
         )
 
 

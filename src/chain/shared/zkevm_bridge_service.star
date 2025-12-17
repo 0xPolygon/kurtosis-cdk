@@ -1,23 +1,23 @@
 constants = import_module("../../package_io/constants.star")
 databases = import_module("./databases.star")
+ports = import_module("./ports.star")
 
 
 # Port identifiers and numbers.
 RPC_PORT_ID = "rpc"
-RPC_PORT_NUMBER = 8080
+RPC_PORT_NUMBER = 8545
 
 GRPC_PORT_ID = "grpc"
-GRPC_PORT_NUMBER = 9090
+GRPC_PORT_NUMBER = 50051
 
 METRICS_PORT_ID = "prometheus"
-METRICS_PORT_NUMBER = 8090
+METRICS_PORT_NUMBER = 9090
 
 
-def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
+def run(
+    plan, args, contract_setup_addresses, sovereign_contract_setup_addresses, l2_rpc_url
+):
     l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
-    l2_rpc_url = "http://{}{}:{}".format(
-        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
-    )
 
     consensus_contract_type = args["consensus_contract_type"]
     require_sovereign_chain_contract = (

@@ -6,7 +6,7 @@ GRPC_PORT_ID = "grpc"
 GRPC_PORT_NUMBER = 50051
 
 METRICS_PORT_ID = "prometheus"
-METRICS_PORT_NUMBER = 8080
+METRICS_PORT_NUMBER = 9090
 
 
 def run(plan, args):
