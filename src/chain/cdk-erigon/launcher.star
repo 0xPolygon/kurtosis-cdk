@@ -2,7 +2,7 @@ aggkit_package = import_module("../../../aggkit.star")
 agglayer_contracts_package = import_module("../../contracts/agglayer.star")
 cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
 cdk_erigon = import_module("./cdk_erigon.star")
-cdk_node_package = import_module("../../../lib/cdk_node.star")
+cdk_node = import_module("./cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 cdk_data_availability = import_module("./cdk_data_availability.star")
@@ -55,41 +55,7 @@ def launch(
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
     ]:
-        # cdk-node
-        db_configs = databases.get_db_configs(
-            args["deployment_suffix"], args["sequencer_type"]
-        )
-        keystore_artifacts = get_keystores_artifacts(plan, args)
-        agglayer_endpoint = get_agglayer_endpoint(plan, args)
-        node_config_template = read_file(
-            src="../../../templates/trusted-node/cdk-node-config.toml"
-        )
-        node_config_artifact = plan.render_templates(
-            name="cdk-node-config-artifact",
-            config={
-                "cdk-node-config.toml": struct(
-                    template=node_config_template,
-                    data=args
-                    | {
-                        "is_validium_mode": consensus_type
-                        == constants.CONSENSUS_TYPE.cdk_validium,
-                        "l1_rpc_url": args["mitm_rpc_url"].get(
-                            "cdk-node", args["l1_rpc_url"]
-                        ),
-                        "agglayer_endpoint": agglayer_endpoint,
-                    }
-                    | db_configs
-                    | contract_setup_addresses,
-                )
-            },
-        )
-        cdk_node_configs = cdk_node_package.create_cdk_node_service_config(
-            args, node_config_artifact, genesis_artifact, keystore_artifacts
-        )
-        plan.add_services(
-            configs=cdk_node_configs,
-            description="Starting the cdk node components",
-        )
+        cdk_node.run(plan, args, contract_setup_addresses, genesis_artifact)
 
         # zkevm-prover
         if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
@@ -138,41 +104,3 @@ def launch(
             deploy_cdk_bridge_infra,
             False,
         )
-
-
-def get_keystores_artifacts(plan, args):
-    sequencer_keystore_artifact = plan.store_service_files(
-        name="sequencer-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/sequencer.keystore",
-    )
-    aggregator_keystore_artifact = plan.get_files_artifact(
-        name="aggregator-keystore",
-        # service_name="contracts" + args["deployment_suffix"],
-        # src=constants.KEYSTORES_DIR+"/aggregator.keystore",
-    )
-    claim_sponsor_keystore_artifact = plan.store_service_files(
-        name="claimsponsor-keystore-cdk",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
-    )
-    return struct(
-        sequencer=sequencer_keystore_artifact,
-        aggregator=aggregator_keystore_artifact,
-        claim_sponsor=claim_sponsor_keystore_artifact,
-    )
-
-
-# Function to allow cdk-node-config to pick whether to use agglayer_readrpc_port or agglayer_grpc_port depending on whether cdk-node or aggkit-node is being deployed.
-# On aggkit/cdk-node point of view, only the agglayer_image version is important. Both services can work with both grpc/readrpc and this depends on the agglayer version.
-# On Kurtosis point of view, we are checking whether the cdk-node or the aggkit node is being used to filter the grpc/readrpc.
-def get_agglayer_endpoint(plan, args):
-    if (
-        "0.3" in args["agglayer_image"]
-        and args.get("binary_name") == cdk_node_package.AGGKIT_BINARY_NAME
-    ):
-        return "grpc"
-    elif args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
-        return "grpc"
-    else:
-        return "readrpc"
