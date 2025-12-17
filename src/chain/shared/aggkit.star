@@ -1,6 +1,5 @@
 aggkit_prover = import_module("./aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
-aggkit_package = import_module("./aggkit_lib.star")
 databases = import_module("../shared/databases.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
 ports_package = import_module("../../package_io/ports.star")
@@ -8,40 +7,62 @@ contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-geth/op_succinct_proposer.star")
 
 
-def run_aggkit_cdk_node(
-    plan,
-    args,
-    contract_setup_addresses,
-):
+def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
+    """Deploy aggkit CDK node with inline config creation."""
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
 
-    # Create the aggkit cdk config.
-    aggkit_cdk_config_template = read_file(
-        src="../../../static_files/aggkit/cdk-config.toml"
-    )
-    aggkit_config_artifact = plan.render_templates(
+    # Create config artifact
+    config_template = read_file(src="../../../static_files/aggkit/cdk-config.toml")
+    config_artifact = plan.render_templates(
         name="aggkit-cdk-config-artifact",
         config={
             "config.toml": struct(
-                template=aggkit_cdk_config_template,
+                template=config_template,
                 data=args | db_configs | contract_setup_addresses,
             )
         },
     )
 
+    # Get keystore artifacts
     keystore_artifacts = get_keystores_artifacts(plan, args)
 
-    # Start the components.
-    aggkit_configs = aggkit_package.create_aggkit_cdk_service_config(
-        plan, args, aggkit_config_artifact, keystore_artifacts
+    # Create and deploy service
+    service_name = "aggkit" + args["deployment_suffix"]
+    ports = _get_aggkit_ports(args)
+    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+
+    files_config = {
+        "/etc/aggkit": Directory(
+            artifact_names=[
+                config_artifact,
+                keystore_artifacts.sequencer,
+            ]
+            + (
+                [keystore_artifacts.claim_sponsor]
+                if keystore_artifacts.claim_sponsor
+                else []
+            ),
+        ),
+        "/data": Directory(persistent_key="aggkit-data" + args["deployment_suffix"]),
+        "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
+    }
+
+    service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files=files_config,
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=[
+            "run",
+            "--cfg=/etc/aggkit/config.toml",
+            "--components=" + args.get("aggkit_components", ""),
+        ],
     )
 
-    plan.add_services(
-        configs=aggkit_configs,
-        description="Starting the cdk aggkit components",
-    )
+    plan.add_service(name=service_name, config=service_config)
 
 
 def run(
@@ -52,237 +73,461 @@ def run(
     deploy_cdk_bridge_infra,
     deploy_op_succinct,
 ):
+    """Main orchestration function for deploying aggkit services."""
+    # Deploy OP Succinct if needed
+    _deploy_op_succinct_if_needed(
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        deploy_op_succinct,
+    )
+
+    # Get common dependencies
+    deployment_context = _create_deployment_context(
+        plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+    )
+
+    # Deploy core aggkit services
+    _deploy_core_aggkit_services(plan, args, deployment_context)
+
+    # Deploy committee members if needed
+    _deploy_committee_members_if_needed(plan, args, deployment_context)
+
+    # Deploy validator services if needed
+    _deploy_validator_services_if_needed(plan, args, deployment_context)
+
+    # Deploy bridge infrastructure if needed
+    if deploy_cdk_bridge_infra:
+        zkevm_bridge_service.run(plan, args, contract_setup_addresses)
+
+
+def _deploy_op_succinct_if_needed(
+    plan,
+    args,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
+    deploy_op_succinct,
+):
+    """Deploy OP Succinct if conditions are met."""
     if (
         deploy_op_succinct
         and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.fep
     ):
         aggkit_prover.run(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
+            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         )
 
+
+def _create_deployment_context(
+    plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+):
+    """Create common deployment context with shared configurations."""
     db_configs = databases.get_db_configs(
         args["deployment_suffix"], args["sequencer_type"]
     )
-
     keystore_artifacts = get_keystores_artifacts(plan, args)
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
     )
 
-    # Always deploy aggkit service
-    # Deploy single aggkit service with aggkit-001 naming
-    plan.print("Deploying single aggkit service")
+    # Update sovereign contract addresses with committee address if needed
+    updated_sovereign_addresses = _update_sovereign_addresses_with_committee(
+        plan, args, sovereign_contract_setup_addresses
+    )
 
-    # If use_agg_oracle_committee is True, fetch the aggoracle_committee_address
-    if (
-        args["use_agg_oracle_committee"] == True
-        and args["agg_oracle_committee_total_members"] > 0
-        and args["agg_oracle_committee_quorum"] > 0
-    ):
-        # Fetch aggoracle_committee_address
-        aggoracle_committee_address = contracts_util.get_aggoracle_committee_address(
-            plan, args
-        )
-        sovereign_contract_setup_addresses = (
-            sovereign_contract_setup_addresses | aggoracle_committee_address
-        )
+    return struct(
+        db_configs=db_configs,
+        keystore_artifacts=keystore_artifacts,
+        l2_rpc_url=l2_rpc_url,
+        contract_setup_addresses=contract_setup_addresses,
+        sovereign_contract_setup_addresses=updated_sovereign_addresses,
+    )
 
-    # Create the cdk aggoracle config.
-    agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
-    aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-    aggkit_config_template = read_file(src="../../../static_files/aggkit/config.toml")
-    aggkit_config_artifact = plan.render_templates(
+
+def _deploy_core_aggkit_services(plan, args, deployment_context):
+    """Deploy the core aggkit services (main service and bridge)."""
+    plan.print("Deploying core aggkit services")
+
+    # Create main aggkit service with inline config
+    _deploy_main_aggkit_service(plan, args, deployment_context)
+
+    # Create bridge service with inline config
+    _deploy_bridge_service(plan, args, deployment_context)
+
+
+def _deploy_main_aggkit_service(plan, args, deployment_context):
+    """Deploy the main aggkit service with inline config creation."""
+    # Create config artifact
+    config_template = read_file(src="../../../static_files/aggkit/config.toml")
+    config_artifact = plan.render_templates(
         name="aggkit-config-artifact",
         config={
             "config.toml": struct(
-                template=aggkit_config_template,
-                data=args
-                | {
-                    "agglayer_endpoint": agglayer_endpoint,
-                    "aggkit_version": aggkit_version,
-                    "l2_rpc_url": l2_rpc_url,
-                }
-                | db_configs
-                | contract_setup_addresses
-                | sovereign_contract_setup_addresses,
+                template=config_template,
+                data=_build_config_data(args, deployment_context),
             )
         },
     )
 
-    # Start the single aggkit component with standard naming
-    aggkit_configs = aggkit_package.create_root_aggkit_service_config(
-        plan,
-        args,
-        aggkit_config_artifact,
-        keystore_artifacts,
-        0,  # Use member_index 0 for single service
+    # Log warning if needed
+    _log_claim_sponsor_warning(plan, args)
+
+    # Create and deploy service
+    service_name = "aggkit" + args["deployment_suffix"]
+    ports = _get_aggkit_ports(args)
+    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+
+    files_config = {
+        "/etc/aggkit": Directory(
+            artifact_names=[
+                config_artifact,
+                deployment_context.keystore_artifacts.aggoracle,
+                deployment_context.keystore_artifacts.sovereignadmin,
+                deployment_context.keystore_artifacts.sequencer,
+            ]
+            + (
+                [deployment_context.keystore_artifacts.claim_sponsor]
+                if deployment_context.keystore_artifacts.claim_sponsor
+                else []
+            ),
+        ),
+        "/data": Directory(persistent_key="aggkit-data" + args["deployment_suffix"]),
+        "/tmp": Directory(persistent_key="aggkit-tmp" + args["deployment_suffix"]),
+    }
+
+    service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files=files_config,
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=[
+            "run",
+            "--cfg=/etc/aggkit/config.toml",
+            "--components=" + args.get("aggkit_components", ""),
+        ],
     )
 
-    plan.add_services(
-        configs=aggkit_configs,
-        description="Starting the single aggkit component",
+    plan.add_service(name=service_name, config=service_config)
+
+
+def _deploy_bridge_service(plan, args, deployment_context):
+    """Deploy the bridge service with inline config creation."""
+    # Create config artifact
+    config_template = read_file(src="../../../static_files/aggkit/config.toml")
+    config_artifact = plan.render_templates(
+        name="aggkit-bridge-config-artifact",
+        config={
+            "config.toml": struct(
+                template=config_template,
+                data=_build_config_data(args, deployment_context),
+            )
+        },
     )
 
-    # Start the aggkit bridge component with standard naming
-    aggkit_bridge_configs = aggkit_package.create_aggkit_bridge_service_config(
-        plan,
-        args,
-        aggkit_config_artifact,
-        keystore_artifacts,
-        0,  # Use member_index 0 for single service
+    # Create and deploy bridge service
+    service_name = "aggkit" + args["deployment_suffix"] + "-bridge"
+    ports = _get_aggkit_bridge_ports(args)
+    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+
+    files_config = {
+        "/etc/aggkit": Directory(
+            artifact_names=[
+                config_artifact,
+                deployment_context.keystore_artifacts.aggoracle,
+                deployment_context.keystore_artifacts.sovereignadmin,
+                deployment_context.keystore_artifacts.sequencer,
+            ]
+            + (
+                [deployment_context.keystore_artifacts.claim_sponsor]
+                if deployment_context.keystore_artifacts.claim_sponsor
+                else []
+            ),
+        ),
+        "/data": Directory(artifact_names=[]),
+    }
+
+    service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files=files_config,
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=[
+            "run",
+            "--cfg=/etc/aggkit/config.toml",
+            "--components=bridge",
+        ],
     )
 
-    plan.add_services(
-        configs=aggkit_bridge_configs,
-        description="Starting the aggkit bridge component",
+    plan.add_service(name=service_name, config=service_config)
+
+
+def _deploy_committee_members_if_needed(plan, args, deployment_context):
+    """Deploy additional oracle committee members if configured."""
+    if not _should_deploy_multiple_committee_members(args):
+        return
+
+    plan.print("Deploying aggkit committee members")
+    total_members = args.get("agg_oracle_committee_total_members", 1)
+
+    for member_index in range(total_members):
+        if member_index == 0:
+            # Skip member_index 0 as it's handled by main service
+            continue
+
+        _deploy_committee_member(plan, args, deployment_context, member_index)
+
+
+def _deploy_committee_member(plan, args, deployment_context, member_index):
+    """Deploy a single committee member with inline config creation."""
+    # Create config artifact
+    config_template = read_file(src="../../../static_files/aggkit/config.toml")
+    config_data = _build_config_data(
+        args, deployment_context, {"agg_oracle_committee_member_index": member_index}
     )
 
-    # Deploy multiple aggoracle committee members
-    if (
-        args["use_agg_oracle_committee"] == True
-        and args["agg_oracle_committee_total_members"] > 1
-        and args["agg_oracle_committee_quorum"] != 0
-    ):
-        # Deploy multiple committee members
-        plan.print("Deploying aggkit committee members")
+    config_artifact = plan.render_templates(
+        name="aggkit-aggoracle-config-artifact-{}".format(member_index),
+        config={
+            "config.toml": struct(
+                template=config_template,
+                data=config_data,
+            )
+        },
+    )
 
-        # Fetch aggoracle_committee_address
+    # Use committee-specific keystore
+    selected_keystore = (
+        deployment_context.keystore_artifacts.committee_keystores[member_index]
+        if member_index < len(deployment_context.keystore_artifacts.committee_keystores)
+        else deployment_context.keystore_artifacts.aggoracle
+    )
+
+    # Create and deploy committee member service
+    service_name = (
+        "aggkit"
+        + args["deployment_suffix"]
+        + "-aggoracle-committee-00{}".format(member_index)
+    )
+    ports = _get_aggkit_ports(args)
+    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+
+    service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/aggkit": Directory(
+                artifact_names=[
+                    config_artifact,
+                    selected_keystore,
+                    deployment_context.keystore_artifacts.sovereignadmin,
+                    deployment_context.keystore_artifacts.sequencer,
+                ],
+            ),
+            "/data": Directory(artifact_names=[]),
+            "/tmp": Directory(
+                persistent_key="aggkit-tmp"
+                + args["deployment_suffix"]
+                + "-aggoracle-committee-00{}".format(member_index)
+            ),
+        },
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=[
+            "run",
+            "--cfg=/etc/aggkit/config.toml",
+            "--components=aggoracle",
+        ],
+    )
+
+    plan.add_service(name=service_name, config=service_config)
+
+
+def _deploy_validator_services_if_needed(plan, args, deployment_context):
+    """Deploy aggsender validator services if configured."""
+    if not _should_deploy_validator_services(args):
+        return
+
+    plan.print("Deploying aggsender validators")
+    total_validators = args.get("agg_sender_validator_total_number", 1)
+
+    for validator_index in range(2, total_validators + 1):
+        _deploy_validator_service(plan, args, deployment_context, validator_index)
+
+
+def _deploy_validator_service(plan, args, deployment_context, validator_index):
+    """Deploy a single validator service with inline config creation."""
+    # Create config artifact
+    config_template = read_file(src="../../../static_files/aggkit/config.toml")
+    config_data = _build_config_data(
+        args, deployment_context, {"agg_sender_validator_member_index": validator_index}
+    )
+
+    config_artifact = plan.render_templates(
+        name="aggkit-aggsender-config-artifact-{}".format(validator_index),
+        config={
+            "config.toml": struct(
+                template=config_template,
+                data=config_data,
+            )
+        },
+    )
+
+    # Use aggsender validator keystore (convert from 2-based to 0-based indexing)
+    selected_keystore = (
+        deployment_context.keystore_artifacts.aggsender_validator_keystores[
+            validator_index - 2
+        ]
+    )
+
+    # Create and deploy validator service
+    service_name = (
+        "aggkit"
+        + args["deployment_suffix"]
+        + "-aggsender-validator-00{}".format(validator_index)
+    )
+    ports = _get_aggkit_validator_ports(args)
+    public_ports = ports_package.get_public_ports(ports, "cdk_node_start_port", args)
+
+    service_config = ServiceConfig(
+        image=args["aggkit_image"],
+        ports=ports,
+        public_ports=public_ports,
+        files={
+            "/etc/aggkit": Directory(
+                artifact_names=[
+                    config_artifact,
+                    selected_keystore,
+                    deployment_context.keystore_artifacts.sovereignadmin,
+                    deployment_context.keystore_artifacts.sequencer,
+                ],
+            ),
+            "/data": Directory(artifact_names=[]),
+        },
+        entrypoint=["/usr/local/bin/aggkit"],
+        cmd=[
+            "run",
+            "--cfg=/etc/aggkit/config.toml",
+            "--components=aggsender-validator",
+        ],
+    )
+
+    plan.add_service(name=service_name, config=service_config)
+
+
+def _update_sovereign_addresses_with_committee(
+    plan, args, sovereign_contract_setup_addresses
+):
+    """Update sovereign contract addresses with committee address if oracle committee is used."""
+    if _should_deploy_oracle_committee(args):
         aggoracle_committee_address = contracts_util.get_aggoracle_committee_address(
             plan, args
         )
-        sovereign_contract_setup_addresses = (
-            sovereign_contract_setup_addresses | aggoracle_committee_address
-        )
+        return sovereign_contract_setup_addresses | aggoracle_committee_address
+    return sovereign_contract_setup_addresses
 
-        # Create the cdk aggkit config.
-        agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
-        aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(
-            src="../../../static_files/aggkit/config.toml"
-        )
 
-        # Start multiple aggoracle components based on committee size
-        aggkit_configs = {}
-        agg_oracle_committee_total_members = args.get(
-            "agg_oracle_committee_total_members", 1
-        )
+def _build_config_data(args, deployment_context, extra_data=None):
+    """Build configuration data for aggkit services."""
+    agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
+    aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
 
-        for agg_oracle_committee_member_index in range(
-            agg_oracle_committee_total_members
-        ):
-            # Create individual config for each committee member
-            aggkit_config_artifact = plan.render_templates(
-                name="aggkit-aggoracle-config-artifact-{}".format(
-                    agg_oracle_committee_member_index
-                ),
-                config={
-                    "config.toml": struct(
-                        template=aggkit_config_template,
-                        data=args
-                        | {
-                            "agglayer_endpoint": agglayer_endpoint,
-                            "aggkit_version": aggkit_version,
-                            "l2_rpc_url": l2_rpc_url,
-                            "agg_oracle_committee_member_index": agg_oracle_committee_member_index,
-                        }
-                        | db_configs
-                        | contract_setup_addresses
-                        | sovereign_contract_setup_addresses,
-                    )
-                },
+    config_data = (
+        args
+        | {
+            "agglayer_endpoint": agglayer_endpoint,
+            "aggkit_version": aggkit_version,
+            "l2_rpc_url": deployment_context.l2_rpc_url,
+        }
+        | deployment_context.db_configs
+        | deployment_context.contract_setup_addresses
+        | deployment_context.sovereign_contract_setup_addresses
+    )
+
+    if extra_data:
+        config_data = config_data | extra_data
+
+    return config_data
+
+
+def _log_claim_sponsor_warning(plan, args):
+    """Log warning if claim sponsor is enabled without bridge component."""
+    if args.get("enable_aggkit_claim_sponsor", False):
+        components = args.get("aggkit_components", [])
+        if "bridge" not in components:
+            plan.print(
+                "⚠️  WARNING: Claim sponsor is enabled, but 'bridge' is not included in aggkit components — the claim sponsor feature will be disabled."
             )
 
-            # Create aggkit service config for each committee member
-            member_aggkit_configs = aggkit_package.create_aggoracle_service_config(
-                plan,
-                args,
-                aggkit_config_artifact,
-                keystore_artifacts,
-                agg_oracle_committee_member_index,
-            )
 
-            # Merge configs
-            aggkit_configs.update(member_aggkit_configs)
+def _get_aggkit_ports(args):
+    """Get standard port configuration for aggkit services."""
+    return {
+        "rpc": PortSpec(
+            args.get("cdk_node_rpc_port"),
+            application_protocol="http",
+            wait=None,
+        ),
+        "pprof": PortSpec(
+            args.get("aggkit_pprof_port"),
+            application_protocol="http",
+            wait=None,
+        ),
+    }
 
-        plan.add_services(
-            configs=aggkit_configs,
-            description="Starting the cdk aggkit components for all committee members",
+
+def _get_aggkit_bridge_ports(args):
+    """Get port configuration for aggkit bridge services."""
+    ports = _get_aggkit_ports(args)
+    ports["rest"] = PortSpec(
+        args.get("aggkit_node_rest_api_port"),
+        application_protocol="http",
+        wait=None,
+    )
+    return ports
+
+
+def _get_aggkit_validator_ports(args):
+    """Get port configuration for aggkit validator services."""
+    ports = _get_aggkit_ports(args)
+    if args.get("use_agg_sender_validator"):
+        ports["validator-grpc"] = PortSpec(
+            args.get("aggsender_validator_grpc_port"),
+            application_protocol="grpc",
+            wait=None,
         )
+    return ports
 
-    # Deploy multiple aggsender validators
-    if (
-        args["use_agg_sender_validator"] == True
-        and args["agg_sender_validator_total_number"] > 1
-    ):
-        # Deploy multiple committee members
-        plan.print("Deploying aggsender validators")
 
-        # Create the cdk aggkit config.
-        agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
-        aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(
-            src="../../../static_files/aggkit/config.toml"
-        )
+def _should_deploy_oracle_committee(args):
+    """Check if oracle committee should be deployed."""
+    return (
+        args.get("use_agg_oracle_committee", False)
+        and args.get("agg_oracle_committee_total_members", 0) > 0
+        and args.get("agg_oracle_committee_quorum", 0) > 0
+    )
 
-        # Start multiple aggoracle components based on committee size
-        aggkit_configs = {}
-        agg_sender_validator_total_members = args.get(
-            "agg_sender_validator_total_number", 1
-        )
 
-        for agg_sender_validator_member_index in range(
-            2, agg_sender_validator_total_members + 1
-        ):
-            # Create individual config for each committee member
-            aggkit_config_artifact = plan.render_templates(
-                name="aggkit-aggsender-config-artifact-{}".format(
-                    agg_sender_validator_member_index
-                ),
-                config={
-                    "config.toml": struct(
-                        template=aggkit_config_template,
-                        data=args
-                        | {
-                            "agglayer_endpoint": agglayer_endpoint,
-                            "aggkit_version": aggkit_version,
-                            "l2_rpc_url": l2_rpc_url,
-                            "agg_sender_validator_member_index": agg_sender_validator_member_index,
-                        }
-                        | db_configs
-                        | contract_setup_addresses
-                        | sovereign_contract_setup_addresses,
-                    )
-                },
-            )
+def _should_deploy_multiple_committee_members(args):
+    """Check if multiple committee members should be deployed."""
+    return (
+        _should_deploy_oracle_committee(args)
+        and args.get("agg_oracle_committee_total_members", 0) > 1
+    )
 
-            # Create aggkit service config for each committee member
-            member_aggkit_configs = (
-                aggkit_package.create_aggsender_validator_service_config(
-                    plan,
-                    args,
-                    aggkit_config_artifact,
-                    keystore_artifacts,
-                    agg_sender_validator_member_index,
-                )
-            )
 
-            # Merge configs
-            aggkit_configs.update(member_aggkit_configs)
-
-        plan.add_services(
-            configs=aggkit_configs,
-            description="Starting the cdk aggkit components for all aggsender validators",
-        )
-
-    # Start the bridge service only once (regardless of committee mode)
-    if deploy_cdk_bridge_infra:
-        zkevm_bridge_service.run(plan, args, contract_setup_addresses)
+def _should_deploy_validator_services(args):
+    """Check if validator services should be deployed."""
+    return (
+        args.get("use_agg_sender_validator", False)
+        and args.get("agg_sender_validator_total_number", 0) > 1
+    )
 
 
 def get_keystores_artifacts(plan, args):
+    """Get all keystore artifacts needed for aggkit services."""
     aggoracle_keystore_artifact = plan.store_service_files(
         name="aggoracle-keystore",
         service_name="contracts" + args["deployment_suffix"],
@@ -298,6 +543,15 @@ def get_keystores_artifacts(plan, args):
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/sequencer.keystore",
     )
+
+    # Get claim sponsor keystore if it exists
+    claim_sponsor_keystore_artifact = None
+    if args.get("enable_aggkit_claim_sponsor", False):
+        claim_sponsor_keystore_artifact = plan.store_service_files(
+            name="claim-sponsor-keystore",
+            service_name="contracts" + args["deployment_suffix"],
+            src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
+        )
 
     # Store multiple aggoracle committee member keystores
     committee_keystores = []
@@ -337,6 +591,7 @@ def get_keystores_artifacts(plan, args):
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
+        claim_sponsor=claim_sponsor_keystore_artifact,
         committee_keystores=committee_keystores,
         aggsender_validator_keystores=aggsender_validator_keystores,
     )
