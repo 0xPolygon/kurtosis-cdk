@@ -69,7 +69,10 @@ TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
 )
 
-L1_ENGINES = ("geth", "anvil")
+L1_ENGINE = struct(
+    geth="geth",
+    anvil="anvil",
+)
 
 # Standard zero address in Ethereum.
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"

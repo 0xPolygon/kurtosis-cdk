@@ -410,6 +410,11 @@ VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.op_geth,
 ]
 
+VALID_L1_ENGINE = [
+    constants.L1_ENGINE.geth,
+    constants.L1_ENGINE.anvil,
+]
+
 
 def parse_args(plan, user_args):
     # Merge the provided args with defaults.
@@ -737,10 +742,10 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         )
 
     # Unsupported L1 engine check
-    if args["l1_engine"] not in constants.L1_ENGINES:
+    if args["l1_engine"] not in VALID_L1_ENGINE:
         fail(
             "Unsupported L1 engine: '{}', please use one of {}".format(
-                args["l1_engine"], constants.L1_ENGINES
+                args["l1_engine"], VALID_L1_ENGINE
             )
         )
 
