@@ -21,13 +21,12 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
         sp1_env_vars["SP1_PRIVATE_KEY"] = args["sp1_prover_key"]
         sp1_env_vars["NETWORK_RPC_URL"] = args["sp1_cluster_endpoint"]
 
-    (ports, public_ports) = get_agglayer_ports(args)
+    ports = get_agglayer_ports(args)
     plan.add_service(
         name="agglayer",
         config=ServiceConfig(
             image=args["agglayer_image"],
             ports=ports,
-            public_ports=public_ports,
             files={
                 "/etc/agglayer": Directory(
                     artifact_names=[
@@ -104,16 +103,6 @@ def create_agglayer_config_artifact(
     )
 
 
-def get_agglayer_prover_ports(args):
-    ports = {
-        "api": PortSpec(args["agglayer_prover_port"], application_protocol="grpc"),
-        "prometheus": PortSpec(
-            args["agglayer_prover_metrics_port"], application_protocol="http"
-        ),
-    }
-    return (ports, None)
-
-
 def get_agglayer_ports(args):
     ports = {
         "aglr-readrpc": PortSpec(
@@ -131,4 +120,4 @@ def get_agglayer_ports(args):
             ports["aglr-admin"] = PortSpec(
                 args["agglayer_admin_port"], application_protocol="http"
             )
-    return (ports, None)
+    return ports
