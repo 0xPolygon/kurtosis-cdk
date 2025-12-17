@@ -60,7 +60,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         },
     )
 
-    evm_sketch_genesis_conf = get_evm_sketch_genesis(plan, args)
+    evm_sketch_genesis_conf = _get_evm_sketch_genesis(plan, args)
 
     plan.add_service(
         name="aggkit-prover{}".format(args.get("deployment_suffix")),
@@ -96,3 +96,27 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
             cmd=["run", "--config-path", "/etc/aggkit-prover/config.toml"],
         ),
     )
+
+
+# Fetch the parsed .config section of L1 geth genesis.
+def _get_evm_sketch_genesis(plan, args):
+    # Upload file to files artifact
+    evm_sketch_genesis_conf_artifact = plan.store_service_files(
+        service_name="temp-contracts",
+        name="evm-sketch-genesis-conf-artifact.json",
+        src="/opt/op-succinct/evm-sketch-genesis.json",
+        description="Storing evm-sketch-genesis.json for evm-sketch-genesis field in aggkit-prover.",
+    )
+
+    # Fetch evm-sketch-genesis-conf artifact
+    evm_sketch_genesis_conf = plan.get_files_artifact(
+        name="evm-sketch-genesis-conf-artifact.json",
+        description="Fetch evm-sketch-genesis-conf-artifact.json files artifact",
+    )
+
+    # Remove temp-contracts service after extracting evm-sketch-genesis
+    plan.remove_service(
+        name="temp-contracts",
+        description="Remove temp-contracts service after extracting evm-sketch-genesis",
+    )
+    return evm_sketch_genesis_conf
