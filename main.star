@@ -24,9 +24,7 @@ def run(plan, args={}):
 
     # Deploy a local L1.
     if deployment_stages.get("deploy_l1", False):
-        plan.print(
-            "Deploying a local L1 (based on {})".format(args.get("l1_engine", "geth"))
-        )
+        plan.print("Deploying a local L1")
         l1_launcher.launch(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")

@@ -8,6 +8,6 @@ def launch(plan, args):
     if l1_engine == constants.L1_ENGINE.geth:
         return ethereum.run(plan, args)
     elif l1_engine == constants.L1_ENGINE.anvil:
-        anvil.run(plan, args)
+        return anvil.run(plan, args)
     else:
         fail("Unsupported L1 engine type '%s'" % l1_engine)

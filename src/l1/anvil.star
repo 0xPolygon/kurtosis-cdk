@@ -1,3 +1,11 @@
+wallet = import_module("../wallet/wallet.star")
+
+
+# Port identifiers and numbers.
+RPC_PORT_ID = "rpc"
+RPC_PORT_NUMBER = 8545
+
+
 STATE_PATH = "/tmp"
 
 
@@ -39,14 +47,24 @@ def run(plan, args):
         }
         cmd += " --load-state " + STATE_PATH + "/" + args["anvil_state_file"]
 
-    plan.add_service(
+    result = plan.add_service(
         name="anvil" + args["deployment_suffix"],
         config=ServiceConfig(
             image=args["anvil_image"],
             ports={
-                "rpc": PortSpec(args["anvil_port"], application_protocol="http"),
+                RPC_PORT_ID: PortSpec(RPC_PORT_NUMBER, application_protocol="http"),
             },
             files=service_files,
             cmd=[cmd],
         ),
+    )
+    rpc_url = result.ports[RPC_PORT_ID].url
+
+    private_key = wallet.derive_private_key(plan, mnemonic)
+
+    return struct(
+        chain_id=chain_id,
+        private_key=private_key,
+        rpc_url=rpc_url,
+        all_participants=None,
     )
