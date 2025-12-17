@@ -102,7 +102,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
                 else {}
             ),
             entrypoint=["sh", "-c"],
-            cmd=" && ".join(["sleep 20", cmd]),
+            cmd=[" && ".join(["sleep 20", cmd])],
         ),
     )
 
