@@ -1,6 +1,6 @@
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
-ports_package = import_module("../../package_io/ports.star")
+ports_package = import_module("../shared/ports.star")
 
 AGGKIT_BINARY_NAME = "aggkit"
 
