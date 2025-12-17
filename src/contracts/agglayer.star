@@ -3,6 +3,8 @@ agglayer_vkey = import_module("../vkey/agglayer.star")
 constants = import_module("../package_io/constants.star")
 contracts_util = import_module("./util.star")
 cdk_data_availability = import_module("../chain/cdk-erigon/cdk_data_availability.star")
+ports_package = import_module("../chain/shared/ports.star")
+
 
 BYTES32_ZERO_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -123,6 +125,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "input_dir": constants.INPUT_DIR,
         "scripts_dir": constants.SCRIPTS_DIR,
         "cdk_data_availability_rpc_port_number": cdk_data_availability.RPC_PORT_NUMBER,
+        "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,
     }
 
     input_artifacts = []

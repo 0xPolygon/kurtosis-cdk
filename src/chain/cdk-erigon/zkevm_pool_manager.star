@@ -1,4 +1,5 @@
 databases = import_module("../shared/databases.star")
+ports_package = import_module("../shared/ports.star")
 
 
 # Port identifiers and numbers.
@@ -9,9 +10,8 @@ SERVER_PORT_NUMBER = 8545
 def run(plan, args, sequencer_rpc_url):
     deployment_suffix = args.get("deployment_suffix")
     db_configs = databases.get_db_configs(deployment_suffix, args.get("sequencer_type"))
-    zkevm_rpc_port = args.get("zkevm_rpc_http_port")
     cdk_erigon_rpc_url = "http://cdk-erigon-rpc{}:{}".format(
-        deployment_suffix, zkevm_rpc_port
+        deployment_suffix, ports_package.HTTP_RPC_PORT_NUMBER
     )
     config_artifact = plan.render_templates(
         name="pool-manager-config-artifact",

@@ -3,7 +3,7 @@ constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
 ports_package = import_module("../../package_io/ports.star")
-ports = import_module("./ports.star")
+ports_package = import_module("./ports.star")
 contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-geth/op_succinct_proposer.star")
 
@@ -16,12 +16,22 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
 
     # Create config artifact
     config_template = read_file(src="../../../static_files/aggkit/cdk-config.toml")
+    l2_rpc_url = "http://{}{}:{}".format(
+        args.get("l2_rpc_name"),
+        args.get("deployment_suffix"),
+        ports_package.HTTP_RPC_PORT_NUMBER,
+    )
     config_artifact = plan.render_templates(
         name="aggkit-cdk-config-artifact",
         config={
             "config.toml": struct(
                 template=config_template,
-                data=args | db_configs | contract_setup_addresses,
+                data=args
+                | db_configs
+                | contract_setup_addresses
+                | {
+                    "l2_rpc_url": l2_rpc_url,
+                },
             )
         },
     )
@@ -103,7 +113,7 @@ def run(
         l2_rpc_url = "http://{}{}:{}".format(
             args.get("l2_rpc_name"),
             args.get("deployment_suffix"),
-            ports.HTTP_RPC_PORT_NUMBER,
+            ports_package.HTTP_RPC_PORT_NUMBER,
         )
         zkevm_bridge_service.run(
             plan,
@@ -140,7 +150,9 @@ def _create_deployment_context(
     )
     keystore_artifacts = get_keystores_artifacts(plan, args)
     l2_rpc_url = "http://{}{}:{}".format(
-        args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+        args["l2_rpc_name"],
+        args["deployment_suffix"],
+        ports_package.HTTP_RPC_PORT_NUMBER,
     )
 
     # Update sovereign contract addresses with committee address if needed
@@ -628,7 +640,9 @@ def create_bridge_config_artifact(
         ]
     ):
         l2_rpc_url = "http://{}{}:{}".format(
-            args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
+            args["l2_rpc_name"],
+            args["deployment_suffix"],
+            ports_package.HTTP_RPC_PORT_NUMBER,
         )
         require_sovereign_chain_contract = False
     else:

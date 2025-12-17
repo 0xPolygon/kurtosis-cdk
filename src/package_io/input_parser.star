@@ -55,7 +55,6 @@ DEFAULT_PORTS = {
     "zkevm_bridge_metrics_port": 8090,
     "zkevm_data_streamer_port": 6900,
     "zkevm_pprof_port": 6060,
-    "zkevm_rpc_http_port": 8123,
     "zkevm_rpc_ws_port": 8133,
     "cdk_node_rpc_port": 5576,
     "aggkit_node_rest_api_port": 5577,

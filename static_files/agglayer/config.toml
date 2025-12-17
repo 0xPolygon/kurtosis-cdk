@@ -11,7 +11,7 @@ mock-verifier = {{.mock_verifier}}
 1 = "{{.op_el_rpc_url}}"
 {{- else }}
 # TODO switch this to permissionless
-1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}"
+1 = "http://{{.l2_rpc_name}}{{.deployment_suffix}}:{{.http_rpc_port_number}}"
 {{- end }}
 
 [proof-signers]

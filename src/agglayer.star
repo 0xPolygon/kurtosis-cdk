@@ -40,7 +40,7 @@ def run(plan, deployment_stages, args, contract_setup_addresses):
                 "/usr/local/bin/agglayer",
             ],
             env_vars=sp1_env_vars,
-            cmd=["run", "--cfg", "/etc/agglayer/agglayer-config.toml"],
+            cmd=["run", "--cfg", "/etc/agglayer/config.toml"],
         ),
     )
 
@@ -63,9 +63,9 @@ def create_agglayer_config_artifact(
     )
 
     return plan.render_templates(
-        name="agglayer-config-artifact",
+        name="agglayer-config",
         config={
-            "agglayer-config.toml": struct(
+            "config.toml": struct(
                 template=agglayer_config_template,
                 # TODO: Organize those args.
                 data={
@@ -81,7 +81,7 @@ def create_agglayer_config_artifact(
                     "l2_keystore_password": args["l2_keystore_password"],
                     "l2_sequencer_address": args["l2_sequencer_address"],
                     # ports
-                    "zkevm_rpc_http_port": args["zkevm_rpc_http_port"],
+                    "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,
                     "agglayer_version": agglayer_version(args),
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],

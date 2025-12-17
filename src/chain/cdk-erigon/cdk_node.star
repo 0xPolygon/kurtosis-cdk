@@ -21,6 +21,11 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
     )
     keystore_artifacts = get_keystore_artifacts(plan, args)
     agglayer_endpoint = get_agglayer_endpoint(plan, args)
+    l2_rpc_url = "http://{}{}:{}".format(
+        args.get("l2_rpc_name"),
+        args.get("deployment_suffix"),
+        ports_package.HTTP_RPC_PORT_NUMBER,
+    )
     config_artifact = plan.render_templates(
         name="cdk-node-config-artifact",
         config={
@@ -35,6 +40,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
                     "l1_rpc_url": args["mitm_rpc_url"].get(
                         "cdk-node", args["l1_rpc_url"]
                     ),
+                    "l2_rpc_url": l2_rpc_url,
                     "agglayer_endpoint": agglayer_endpoint,
                 }
                 | db_configs

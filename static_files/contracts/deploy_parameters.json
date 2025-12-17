@@ -12,7 +12,7 @@
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
     "timelockAdminAddress": "{{.l2_admin_address}}",
     "trustedSequencer": "{{.l2_sequencer_address}}",
-    "trustedSequencerURL": "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.zkevm_rpc_http_port}}",
+    "trustedSequencerURL": "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.http_rpc_port_number}}",
     "trustedAggregator":"{{.l2_aggregator_address}}",
     "trustedAggregatorTimeout": 604799,
     "forkID": {{.zkevm_rollup_fork_id}},
