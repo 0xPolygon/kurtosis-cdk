@@ -94,7 +94,9 @@ def launch(
         ]
     ):
         plan.print("Deploying zkevm-bridge infrastructure (legacy)")
-        zkevm_bridge_service.run(plan, args, contract_setup_addresses)
+        zkevm_bridge_service.run(
+            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+        )
 
         if deployment_stages.get("deploy_cdk_bridge_ui"):
             zkevm_bridge_ui.run(plan, args, contract_setup_addresses)

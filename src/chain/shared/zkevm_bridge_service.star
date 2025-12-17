@@ -13,7 +13,7 @@ METRICS_PORT_ID = "prometheus"
 METRICS_PORT_NUMBER = 8090
 
 
-def run(plan, args, contract_setup_addresses):
+def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
     l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
     l2_rpc_url = "http://{}{}:{}".format(
         args["l2_rpc_name"], args["deployment_suffix"], args["zkevm_rpc_http_port"]
@@ -55,7 +55,8 @@ def run(plan, args, contract_setup_addresses):
                     "rpc_port_number": args["zkevm_bridge_rpc_port"],
                     "metrics_port_number": args["zkevm_bridge_metrics_port"],
                 }
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | sovereign_contract_setup_addresses,
             )
         },
     )

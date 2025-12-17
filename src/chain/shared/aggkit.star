@@ -99,7 +99,9 @@ def run(
 
     # Deploy bridge infrastructure if needed
     if deploy_cdk_bridge_infra:
-        zkevm_bridge_service.run(plan, args, contract_setup_addresses)
+        zkevm_bridge_service.run(
+            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
+        )
 
 
 def _deploy_op_succinct_if_needed(
