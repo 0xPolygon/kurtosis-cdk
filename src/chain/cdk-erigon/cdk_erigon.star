@@ -28,12 +28,16 @@ def run_sequencer(plan, args, contract_setup_addresses):
                     src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
                 ),
                 data={
-                    "zkevm_data_stream_port": args["zkevm_data_streamer_port"],
                     "is_sequencer": True,
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
-                    "prometheus_port": args["prometheus_port"],
-                    "zkevm_executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    # ports
+                    "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,
+                    "ws_rpc_port_number": ports_package.WS_RPC_PORT_NUMBER,
+                    "executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    "data_streamer_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    "metrics_port_number": METRICS_PORT_NUMBER,
+                    "pprof_port_number": PPROF_PORT_NUMBER,
                 }
                 | args
                 | contract_setup_addresses,
@@ -59,15 +63,20 @@ def run_rpc(
                     src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
                 ),
                 data={
+                    "is_sequencer": False,
                     "zkevm_sequencer_url": sequencer_url,
                     "zkevm_datastreamer_url": datastreamer_url,
-                    "is_sequencer": False,
                     "pool_manager_url": pool_manager_url,
                     # common
                     "consensus_contract_type": args["consensus_contract_type"],
                     "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
-                    "prometheus_port": args["prometheus_port"],
-                    "zkevm_executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    # ports
+                    "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,
+                    "ws_rpc_port_number": ports_package.WS_RPC_PORT_NUMBER,
+                    "executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    "data_streamer_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    "metrics_port_number": METRICS_PORT_NUMBER,
+                    "pprof_port_number": PPROF_PORT_NUMBER,
                 }
                 | args
                 | contract_setup_addresses,

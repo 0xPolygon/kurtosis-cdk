@@ -230,7 +230,7 @@ zkevm.data-stream-host: 0.0.0.0
 
 # The listening port of the datastreamer.
 # Default: 0
-zkevm.data-stream-port: {{.zkevm_data_stream_port}}
+zkevm.data-stream-port: {{.data_streamer_port_number}}
 # {{end}}
 
 # Specify the encoding format used for data streaming:
@@ -363,7 +363,7 @@ zkevm.executor-strict: {{.erigon_strict_mode}}
 # Multiple URLs can be provided for load balancing or redundancy.
 # Default: ""
 # {{if .erigon_strict_mode}}
-zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.zkevm_executor_port_number}}
+zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.executor_port_number}}
 # {{end}}
 
 # Define the maximum time allowed for an executor to respond to a request.
@@ -816,7 +816,7 @@ http.addr: 0.0.0.0
 
 # The listening port of the HTTP RPC server.
 # Default: 8545
-http.port: {{.zkevm_rpc_http_port}}
+http.port: {{.http_rpc_port_number}}
 
 # Enable compression over HTTP.
 # Default: false
@@ -858,7 +858,7 @@ ws.addr: 0.0.0.0
 
 # The listening port of the WS RPC server.
 # Default: 8545
-ws.port: {{.zkevm_rpc_ws_port}}
+ws.port: {{.ws_rpc_port_number}}
 
 
 # ==============================================================================
@@ -903,7 +903,7 @@ metrics.addr: 0.0.0.0
 
 # The listening address of the metrics server.
 # Default: 6060
-metrics.port: {{.prometheus_port}}
+metrics.port: {{.metrics_port_number}}
 
 
 # ==============================================================================
@@ -924,7 +924,7 @@ pprof.addr: 0.0.0.0
 
 # The listening port of the pprof server.
 # Default: 6060
-pprof.port: 6060
+pprof.port: {{.pprof_port_number}}
 
 # Write CPU profile to the given file
 # pprof.cpuprofile: /tmp/cdk-erigon.cpuprofile
