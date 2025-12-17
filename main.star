@@ -240,7 +240,7 @@ def run(plan, args={}):
 
 def deploy_helper_service(plan, args):
     # Create script artifact.
-    get_rollup_info_template = read_file(src="./templates/get-rollup-info.sh")
+    get_rollup_info_template = read_file(src="./static_files/scripts/get-rollup-info.sh")
     get_rollup_info_artifact = plan.render_templates(
         name="get-rollup-info-artifact",
         config={

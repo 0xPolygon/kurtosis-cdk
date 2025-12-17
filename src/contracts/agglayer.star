@@ -9,31 +9,31 @@ BYTES32_ZERO_HASH = "0x000000000000000000000000000000000000000000000000000000000
 INPUTS = [
     {
         "name": "create_new_rollup.json",
-        "file": "../../templates/sovereign-rollup/create_new_rollup.json",
+        "file": "../../static_files/contracts/sovereign-rollup/create_new_rollup.json",
     },
     {
         "name": "op-custom-genesis-addresses.json",
-        "file": "../../templates/sovereign-rollup/op-custom-genesis-addresses.json",
+        "file": "../../static_files/contracts/sovereign-rollup/op-custom-genesis-addresses.json",
     },
     {
         "name": "deploy_parameters.json",
-        "file": "../../templates/contracts/deploy_parameters.json",
+        "file": "../../static_files/contracts/deploy_parameters.json",
     },
     {
         "name": "cdk-erigon-custom-genesis-addresses.json",
-        "file": "../../templates/cdk-erigon/cdk-erigon-custom-genesis-addresses.json",
+        "file": "../../static_files/contracts/cdk-erigon/custom-genesis-addresses.json",
     },
     {
         "name": "create_rollup_parameters.json",
-        "file": "../../templates/contracts/create_rollup_parameters.json",
+        "file": "../../static_files/contracts/create_rollup_parameters.json",
     },
     {
         "name": "add_rollup_type.json",
-        "file": "../../templates/sovereign-rollup/add_rollup_type.json",
+        "file": "../../static_files/contracts/sovereign-rollup/add_rollup_type.json",
     },
     {
         "name": "create-genesis-sovereign-params.json",
-        "file": "../../templates/sovereign-rollup/create-genesis-sovereign-params.json",
+        "file": "../../static_files/contracts/sovereign-rollup/create-genesis-sovereign-params.json",
     },
 ]
 
@@ -162,18 +162,18 @@ def run(plan, args, deployment_stages, op_stack_args):
             name="contracts.sh",
             config={
                 "contracts.sh": struct(
-                    template=read_file(src="../../templates/contracts/contracts.sh"),
+                    template=read_file(src="../../static_files/contracts/contracts.sh"),
                     data=template_data,
                 )
             },
         ),
         plan.upload_files(
-            src="../../templates/contracts/create_op_allocs.py",
+            src="../../static_files/contracts/create_op_allocs.py",
             name="create_op_allocs.py",
             description="Uploading create_op_allocs.py artifact",
         ),
         plan.upload_files(
-            src="../../templates/contracts/json2http.py",
+            src="../../static_files/contracts/json2http.py",
             name="json2http.py",
             description="Uploading json2http.py artifact",
         ),

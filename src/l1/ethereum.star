@@ -3,8 +3,8 @@ ethereum_package = import_module(
 )  # 2025-12-12
 constants = import_module("../package_io/constants.star")
 
-only_smc_genesis = "../../templates/genesis/only-smc-deployed-genesis.json"
-op_rollup_created_genesis = "../../templates/genesis/op-genesis.json"
+only_smc_genesis = "../../static_files/contracts/genesis/only-smc-deployed-genesis.json"
+op_rollup_created_genesis = "../../static_files/contracts/genesis/op-genesis.json"
 
 
 def run(plan, args):
