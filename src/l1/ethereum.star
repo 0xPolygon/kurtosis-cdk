@@ -124,9 +124,12 @@ def run(plan, args):
         "port_publisher": port_publisher,
     }
 
-    l1 = ethereum_package.run(plan, l1_args)
-    cl_rpc_url = l1.all_participants[0].cl_context.beacon_http_url
+    result = ethereum_package.run(plan, l1_args)
+
+    cl_rpc_url = result.all_participants[0].cl_context.beacon_http_url
     _wait_for_l1_startup(plan, cl_rpc_url)
+
+    return result
 
 
 # Generate ethereum package public ports configuration.
