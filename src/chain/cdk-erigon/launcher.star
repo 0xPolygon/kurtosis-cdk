@@ -43,7 +43,7 @@ def launch(
 
     # zkevm-pool-manager
     result = zkevm_pool_manager.run(plan, args, sequencer_url)
-    zkevm_pool_manager_url = result.ports[zkevm_pool_manager.SERVER_PORT_ID].url
+    pool_manager_url = result.ports[zkevm_pool_manager.SERVER_PORT_ID].url
 
     # cdk-erigon rpc
     result = cdk_erigon.run_rpc(
@@ -51,9 +51,11 @@ def launch(
         args
         | {"l1_rpc_url": args["mitm_rpc_url"].get("erigon-rpc", args["l1_rpc_url"])},
         contract_setup_addresses,
-        sequencer_url,
-        datastreamer_url,
-        zkevm_pool_manager_url,
+        struct(
+            sequencer_url=sequencer_url,
+            datastreamer_url=datastreamer_url,
+            pool_manager_url=pool_manager_url,
+        ),
     )
     rpc_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
 

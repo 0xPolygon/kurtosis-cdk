@@ -20,41 +20,20 @@ METRICS_PORT_NUMBER = 9091
 
 
 def run_sequencer(plan, args, contract_setup_addresses):
-    config_artifact = plan.render_templates(
-        name="cdk-erigon-sequencer-config-artifact",
-        config={
-            "config.yaml": struct(
-                template=read_file(
-                    src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
-                ),
-                data={
-                    "is_sequencer": True,
-                    "consensus_contract_type": args["consensus_contract_type"],
-                    "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
-                    # ports
-                    "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,
-                    "ws_rpc_port_number": ports_package.WS_RPC_PORT_NUMBER,
-                    "executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
-                    "data_streamer_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
-                    "metrics_port_number": METRICS_PORT_NUMBER,
-                    "pprof_port_number": PPROF_PORT_NUMBER,
-                }
-                | args
-                | contract_setup_addresses,
-            ),
-        },
-    )
-    return _run(plan, args, CDK_ERIGON_TYPE.sequencer, config_artifact)
+    return _run(plan, args, contract_setup_addresses, CDK_ERIGON_TYPE.sequencer)
 
 
-def run_rpc(
-    plan,
-    args,
-    contract_setup_addresses,
-    sequencer_url,
-    datastreamer_url,
-    pool_manager_url,
-):
+def run_rpc(plan, args, contract_setup_addresses, l2_context):
+    return _run(plan, args, contract_setup_addresses, CDK_ERIGON_TYPE.rpc, l2_context)
+
+
+def _run(plan, args, contract_setup_addresses, type, l2_context=None):
+    if type not in [
+        CDK_ERIGON_TYPE.sequencer,
+        CDK_ERIGON_TYPE.rpc,
+    ]:
+        fail("Unknown cdk-erigon type: {}".format(type))
+
     config_artifact = plan.render_templates(
         name="cdk-erigon-rpc-config-artifact",
         config={
@@ -63,35 +42,32 @@ def run_rpc(
                     src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
                 ),
                 data={
-                    "is_sequencer": False,
-                    "zkevm_sequencer_url": sequencer_url,
-                    "zkevm_datastreamer_url": datastreamer_url,
-                    "pool_manager_url": pool_manager_url,
-                    # common
-                    "consensus_contract_type": args["consensus_contract_type"],
-                    "l1_sync_start_block": 1 if args["anvil_state_file"] else 0,
+                    "is_sequencer": type == CDK_ERIGON_TYPE.sequencer,
+                    "consensus_contract_type": args.get("consensus_contract_type"),
+                    "l1_sync_start_block": 1 if args.get("anvil_state_file") else 0,
                     # ports
                     "http_rpc_port_number": ports_package.HTTP_RPC_PORT_NUMBER,
                     "ws_rpc_port_number": ports_package.WS_RPC_PORT_NUMBER,
                     "executor_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
-                    "data_streamer_port_number": zkevm_prover.EXECUTOR_PORT_NUMBER,
+                    "data_streamer_port_number": DATA_STREAMER_PORT_NUMBER,
                     "metrics_port_number": METRICS_PORT_NUMBER,
                     "pprof_port_number": PPROF_PORT_NUMBER,
                 }
                 | args
-                | contract_setup_addresses,
+                | contract_setup_addresses
+                | (
+                    {
+                        # rpc-specific configuration
+                        "zkevm_sequencer_url": l2_context.sequencer_url,
+                        "zkevm_datastreamer_url": l2_context.datastreamer_url,
+                        "pool_manager_url": l2_context.pool_manager_url,
+                    }
+                    if type == CDK_ERIGON_TYPE.rpc
+                    else {}
+                ),
             ),
         },
     )
-    return _run(plan, args, CDK_ERIGON_TYPE.rpc, config_artifact)
-
-
-def _run(plan, args, type, config_artifact):
-    if type not in [
-        CDK_ERIGON_TYPE.sequencer,
-        CDK_ERIGON_TYPE.rpc,
-    ]:
-        fail("Unknown cdk-erigon type: {}".format(type))
 
     # Sequencer-specific configuration
     files = {}
