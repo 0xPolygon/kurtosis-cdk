@@ -5,7 +5,7 @@ cdk_node = import_module("./cdk_node.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 cdk_data_availability = import_module("./cdk_data_availability.star")
-ports = import_module("../shared/ports.star")
+ports_package = import_module("../shared/ports.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
@@ -36,7 +36,7 @@ def launch(
         },
         contract_setup_addresses,
     )
-    sequencer_url = result.ports[ports.HTTP_RPC_PORT_ID].url
+    sequencer_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
     datastreamer_url = result.ports[cdk_erigon.DATA_STREAMER_PORT_ID].url.removeprefix(
         "datastream://"
     )
@@ -55,7 +55,7 @@ def launch(
         datastreamer_url,
         zkevm_pool_manager_url,
     )
-    rpc_url = result.ports[ports.HTTP_RPC_PORT_ID].url
+    rpc_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
 
     # TODO: understand if genesis_artifact is needed here or can be removed
     args["genesis_artifact"] = genesis_artifact

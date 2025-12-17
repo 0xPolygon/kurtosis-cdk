@@ -1,4 +1,4 @@
-ports = import_module("../shared/ports.star")
+ports_package = import_module("../shared/ports_package.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
 
@@ -163,11 +163,11 @@ def _run(plan, args, type, config_artifact):
             }
             | files,
             ports={
-                ports.HTTP_RPC_PORT_ID: PortSpec(
-                    ports.HTTP_RPC_PORT_NUMBER, application_protocol="http"
+                ports_package.HTTP_RPC_PORT_ID: PortSpec(
+                    ports_package.HTTP_RPC_PORT_NUMBER, application_protocol="http"
                 ),
-                ports.WS_RPC_PORT_ID: PortSpec(
-                    ports.WS_RPC_PORT_NUMBER, application_protocol="ws"
+                ports_package.WS_RPC_PORT_ID: PortSpec(
+                    ports_package.WS_RPC_PORT_NUMBER, application_protocol="ws"
                 ),
                 PPROF_PORT_ID: PortSpec(PPROF_PORT_NUMBER, wait=None),
                 METRICS_PORT_ID: PortSpec(METRICS_PORT_NUMBER, wait=None),
