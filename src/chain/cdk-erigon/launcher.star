@@ -45,12 +45,12 @@ def launch(
     # TODO: understand if genesis_artifact is needed here or can be removed
     args["genesis_artifact"] = genesis_artifact
 
-    # cdk-data-availability
+    # cdk-data-availability (validium only)
     consensus_type = args.get("consensus_contract_type")
     if consensus_type == constants.CONSENSUS_TYPE.cdk_validium:
         cdk_data_availability.run(plan, args, contract_setup_addresses)
 
-    # rollup and validium specific
+    # cdk-node and zkevm-prover (rollup and validium)
     if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
