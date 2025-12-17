@@ -197,7 +197,9 @@ def run(
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="../../../static_files/aggkit/config.toml")
+        aggkit_config_template = read_file(
+            src="../../../static_files/aggkit/config.toml"
+        )
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
@@ -258,7 +260,9 @@ def run(
         # Create the cdk aggkit config.
         agglayer_endpoint = _get_agglayer_endpoint(args.get("aggkit_image"))
         aggkit_version = _extract_aggkit_version(args.get("aggkit_image"))
-        aggkit_config_template = read_file(src="../../../static_files/aggkit/config.toml")
+        aggkit_config_template = read_file(
+            src="../../../static_files/aggkit/config.toml"
+        )
 
         # Start multiple aggoracle components based on committee size
         aggkit_configs = {}
@@ -312,16 +316,7 @@ def run(
 
     # Start the bridge service only once (regardless of committee mode)
     if deploy_cdk_bridge_infra:
-        bridge_config_artifact = create_bridge_config_artifact(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            db_configs,
-        )
-        zkevm_bridge_service.run(
-            plan, args, bridge_config_artifact, keystore_artifacts.claim_sponsor
-        )
+        zkevm_bridge_service.run(plan, args, contract_setup_addresses)
 
 
 def get_keystores_artifacts(plan, args):
@@ -339,11 +334,6 @@ def get_keystores_artifacts(plan, args):
         name="aggkit-sequencer-keystore",
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/sequencer.keystore",
-    )
-    claim_sponsor_keystore_artifact = plan.store_service_files(
-        name="claimsponsor-keystore",
-        service_name="contracts" + args["deployment_suffix"],
-        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
 
     # Store multiple aggoracle committee member keystores
@@ -384,7 +374,6 @@ def get_keystores_artifacts(plan, args):
         aggoracle=aggoracle_keystore_artifact,
         sovereignadmin=sovereignadmin_keystore_artifact,
         sequencer=sequencer_keystore_artifact,
-        claim_sponsor=claim_sponsor_keystore_artifact,
         committee_keystores=committee_keystores,
         aggsender_validator_keystores=aggsender_validator_keystores,
     )
