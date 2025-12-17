@@ -8,8 +8,8 @@ cdk_data_availability = import_module("./cdk_data_availability.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
-zkevm_bridge_ui = import_module("./zkevm-bridge-ui.star")
-zkevm_bridge_proxy = import_module("./zkevm-bridge-proxy.star")
+zkevm_bridge_ui = import_module("./zkevm_bridge_ui.star")
+zkevm_bridge_proxy = import_module("./zkevm_bridge_proxy.star")
 
 
 def launch(
