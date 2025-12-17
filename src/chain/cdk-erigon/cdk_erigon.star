@@ -181,7 +181,9 @@ def _run(plan, args, type, config_artifact):
             }
             | files,
             ports={
-                HTTP_RPC_PORT_ID: PortSpec(HTTP_RPC_PORT_NUMBER, application_protocol="http"),
+                HTTP_RPC_PORT_ID: PortSpec(
+                    HTTP_RPC_PORT_NUMBER, application_protocol="http"
+                ),
                 WS_RPC_PORT_ID: PortSpec(WS_RPC_PORT_NUMBER, application_protocol="ws"),
                 PPROF_PORT_ID: PortSpec(PPROF_PORT_NUMBER, wait=None),
                 METRICS_PORT_ID: PortSpec(METRICS_PORT_NUMBER, wait=None),
