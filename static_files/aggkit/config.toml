@@ -725,7 +725,7 @@ ProfilingPort = {{.aggkit_pprof_port}}
 # ProfilingEnabled is the flag to enable/disable the profiling server
 # Default: false
 # ------------------------------------------------------------------------------
-ProfilingEnabled = {{.aggkit_pprof_enabled}}
+ProfilingEnabled = true
 
 
 # https://github.com/agglayer/aggkit/pull/744

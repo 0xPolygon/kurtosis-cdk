@@ -297,8 +297,6 @@ DEFAULT_ROLLUP_ARGS = {
     "aggkit_prover_primary_prover": "mock-prover",
     # The URL where the aggkit-prover can be reached for gRPC
     "aggkit_prover_grpc_url_prefix": "aggkit-prover",
-    # Enable aggkit pprof profiling
-    "aggkit_pprof_enabled": True,
     # This is a path where the cdk-node will write data
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp",

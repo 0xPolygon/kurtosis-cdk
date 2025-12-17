@@ -280,18 +280,16 @@ def get_aggkit_ports(args, service_type=None, forced_bridge_port=False):
             application_protocol="http",
             wait=None,
         ),
+        "pprof": PortSpec(
+            args.get("aggkit_pprof_port"),
+            application_protocol="http",
+            wait=None,
+        ),
     }
 
     if forced_bridge_port or "bridge" in args.get("aggkit_components", ""):
         ports["rest"] = PortSpec(
             args.get("aggkit_node_rest_api_port"),
-            application_protocol="http",
-            wait=None,
-        )
-
-    if args.get("aggkit_pprof_enabled"):
-        ports["pprof"] = PortSpec(
-            args.get("aggkit_pprof_port"),
             application_protocol="http",
             wait=None,
         )
