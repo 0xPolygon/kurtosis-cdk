@@ -67,7 +67,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         config=ServiceConfig(
             image=args.get("aggkit_prover_image"),
             files={
-                "/etc/aggkit": Directory(
+                "/etc/aggkit-prover": Directory(
                     artifact_names=[
                         config_artifact,
                         evm_sketch_genesis_conf,
@@ -93,6 +93,6 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
             entrypoint=[
                 "/usr/local/bin/aggkit-prover",
             ],
-            cmd=["run", "--config-path", "/etc/aggkit/config.toml"],
+            cmd=["run", "--config-path", "/etc/aggkit-prover/config.toml"],
         ),
     )
