@@ -8,17 +8,17 @@ CDK_ERIGON_TYPE = struct(
 
 
 # Port identifiers and numbers.
-HTTP_RPC_PORT_ID = "http"
+HTTP_RPC_PORT_ID = "rpc"
 HTTP_RPC_PORT_NUMBER = 8123
 
-WS_RPC_PORT_ID = "ws"
+WS_RPC_PORT_ID = "ws-rpc"
 WS_RPC_PORT_NUMBER = 8133
 
 DATA_STREAMER_PORT_ID = "data-streamer"
 DATA_STREAMER_PORT_NUMBER = 6900
 
 PPROF_PORT_ID = "pprof"
-PPPROF_PORT_NUMBER = 6060
+PPROF_PORT_NUMBER = 6060
 
 METRICS_PORT_ID = "prometheus"
 METRICS_PORT_NUMBER = 9091
@@ -120,7 +120,7 @@ def _run(plan, args, type, config_artifact):
             "/home/erigon/data/dynamic-{}-sequencer".format(args.get("chain_name"))
         ] = datadir
 
-        ports[DATA_STREAMER_PORT_ID] = PortSpect(
+        ports[DATA_STREAMER_PORT_ID] = PortSpec(
             DATA_STREAMER_PORT_NUMBER, application_protocol="datastream"
         )
 
@@ -172,7 +172,7 @@ def _run(plan, args, type, config_artifact):
             },
             files={
                 "/etc/cdk-erigon": Directory(
-                    artifact_names=[config_artifact.config] + chain_artifacts,
+                    artifact_names=[config_artifact] + chain_artifacts,
                 ),
                 "/home/erigon/dynamic-configs/": Directory(
                     artifact_names=chain_artifacts,
@@ -181,7 +181,7 @@ def _run(plan, args, type, config_artifact):
             }
             | files,
             ports={
-                HTTP_RPC_PORT_ID: PortSpec(HTTP_RPC_PORT_NUMBER),
+                HTTP_RPC_PORT_ID: PortSpec(HTTP_RPC_PORT_NUMBER, application_protocol="http"),
                 WS_RPC_PORT_ID: PortSpec(WS_RPC_PORT_NUMBER, application_protocol="ws"),
                 PPROF_PORT_ID: PortSpec(PPROF_PORT_NUMBER, wait=None),
                 METRICS_PORT_ID: PortSpec(METRICS_PORT_NUMBER, wait=None),
