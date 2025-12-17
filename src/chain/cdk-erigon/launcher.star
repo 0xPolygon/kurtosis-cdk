@@ -1,6 +1,5 @@
 aggkit_package = import_module("../shared/aggkit.star")
 agglayer_contracts_package = import_module("../../contracts/agglayer.star")
-cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
 cdk_erigon = import_module("./cdk_erigon.star")
 cdk_node = import_module("./cdk_node.star")
 constants = import_module("../../package_io/constants.star")
@@ -8,6 +7,9 @@ databases = import_module("../shared/databases.star")
 cdk_data_availability = import_module("./cdk_data_availability.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
+zkevm_bridge_service = import_module("../chain/shared/zkevm-bridge/service.star")
+zkevm_bridge_ui = import_module("../chain/shared/zkevm-bridge/ui.star")
+zkevm_bridge_proxy = import_module("../chain/shared/zkevm-bridge/proxy.star")
 
 
 def launch(
@@ -82,13 +84,14 @@ def launch(
             constants.CONSENSUS_TYPE.cdk_validium,
         ]
     ):
-        plan.print("Deploying cdk/bridge infrastructure")
-        cdk_bridge_infra_package.run(
-            plan,
-            args | {"use_local_l1": deployment_stages.get("deploy_l1")},
-            contract_setup_addresses,
-            deploy_bridge_ui=deployment_stages.get("deploy_cdk_bridge_ui"),
-        )
+        plan.print("Deploying zkevm-bridge infrastructure (legacy)")
+        zkevm_bridge_service.run(plan, args, contract_setup_addresses)
+
+        if deployment_stages.get("deploy_cdk_bridge_ui"):
+            zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
+
+            if deployment_stages.get("deploy_l1"):
+                zkevm_bridge_proxy.run(plan, args)
 
     # Deploy aggkit infrastructure + dedicated bridge service
     if consensus_type in [
