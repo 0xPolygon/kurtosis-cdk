@@ -16,7 +16,7 @@ PPROF_PORT_ID = "pprof"
 PPROF_PORT_NUMBER = 6060
 
 METRICS_PORT_ID = "prometheus"
-METRICS_PORT_NUMBER = 9090
+METRICS_PORT_NUMBER = 9091
 
 
 def run_sequencer(plan, args, contract_setup_addresses):

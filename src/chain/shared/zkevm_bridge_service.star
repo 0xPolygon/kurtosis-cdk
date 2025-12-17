@@ -5,13 +5,13 @@ ports = import_module("./ports.star")
 
 # Port identifiers and numbers.
 RPC_PORT_ID = "rpc"
-RPC_PORT_NUMBER = 8545
+RPC_PORT_NUMBER = 8080
 
 GRPC_PORT_ID = "grpc"
-GRPC_PORT_NUMBER = 50051
+GRPC_PORT_NUMBER = 9090
 
 METRICS_PORT_ID = "prometheus"
-METRICS_PORT_NUMBER = 9090
+METRICS_PORT_NUMBER = 8090
 
 
 def run(

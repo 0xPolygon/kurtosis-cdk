@@ -3,10 +3,10 @@ op_succinct = import_module("../op-geth/op_succinct_proposer.star")
 
 # Port identifiers and numbers.
 GRPC_PORT_ID = "grpc"
-GRPC_PORT_NUMBER = 50051
+GRPC_PORT_NUMBER = 4446
 
 METRICS_PORT_ID = "metrics"
-METRICS_PORT_NUMBER = 9090
+METRICS_PORT_NUMBER = 9093
 
 
 def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses):
