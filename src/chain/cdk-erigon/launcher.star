@@ -1,4 +1,4 @@
-aggkit_package = import_module("../../../aggkit.star")
+aggkit_package = import_module("../shared/aggkit.star")
 agglayer_contracts_package = import_module("../../contracts/agglayer.star")
 cdk_bridge_infra_package = import_module("../../../cdk_bridge_infra.star")
 cdk_erigon = import_module("./cdk_erigon.star")

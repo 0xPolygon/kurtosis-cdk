@@ -1,5 +1,5 @@
 constants = import_module("./src/package_io/constants.star")
-aggkit_package = import_module("./lib/aggkit.star")
+aggkit_package = import_module("./aggkit_lib.star")
 databases = import_module("./src/chain/shared/databases.star")
 zkevm_bridge_service = import_module("./src/chain/shared/zkevm-bridge/service.star")
 ports_package = import_module("./src/package_io/ports.star")

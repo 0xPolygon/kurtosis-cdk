@@ -1,4 +1,4 @@
-aggkit_package = import_module("../../../aggkit.star")
+aggkit_package = import_module("../shared/aggkit.star")
 op_succinct_proposer = import_module("./op_succinct_proposer.star")
 
 

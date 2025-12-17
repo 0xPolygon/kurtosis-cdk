@@ -1,4 +1,4 @@
-aggkit = import_module("aggkit.star")
+aggkit = import_module("./aggkit.star")
 
 
 def test_extract_aggkit_version(plan):
