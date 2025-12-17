@@ -1,4 +1,4 @@
-ports = import_module("../../shared/ports.star")
+ports = import_module("../shared/ports.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 
 
