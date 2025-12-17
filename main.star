@@ -27,7 +27,7 @@ def run(plan, args={}):
         plan.print(
             "Deploying a local L1 (based on {})".format(args.get("l1_engine", "geth"))
         )
-        l1_launcher.run(plan, args)
+        l1_launcher.launch(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
 
