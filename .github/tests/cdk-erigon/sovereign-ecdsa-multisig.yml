@@ -11,7 +11,6 @@ args:
   agg_sender_validator_total_number: 0
 
   # aggkit related params
-  binary_name: aggkit
   aggkit_components: aggsender
 
   # agglayer related params
