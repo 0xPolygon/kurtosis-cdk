@@ -2,7 +2,6 @@ constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 ports_package = import_module("../shared/ports.star")
 
-AGGKIT_BINARY_NAME = "aggkit"
 
 # Port identifiers and numbers.
 RPC_PORT_ID = "rpc"
@@ -50,19 +49,37 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
         },
     )
 
+    # Determine which binary to use and which components to enable
+    binary_name = ""
+    components = ""
+    extra_flags = []
+    consensus_contract_type = args.get("consensus_contract_type")
+    if consensus_contract_type in [
+        constants.CONSENSUS_TYPE.rollup,
+        constants.CONSENSUS_TYPE.cdk_validium,
+    ]:
+        binary_name = "cdk-node"
+        components = "sequence-sender,aggregator"
+        extra_flags = ["--custom-network-file=/etc/cdk/genesis.json"]
+    elif consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic:
+        binary_name = "cdk-node"
+        components = "aggsender"
+        extra_flags = ["--custom-network-file=/etc/cdk/genesis.json"]
+    elif consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig:
+        binary_name = "aggkit"
+        components = "aggsender,bridge"
+    else:
+        fail(
+            "Unable to determine binary name for consensus type: {}".format(
+                consensus_contract_type
+            )
+        )
+
     # Build the service command
     # TODO: Simplify this when we have better support for arguments in Kurtosis
-    cmd = "cdk-node run --cfg=/etc/cdk/cdk-node-config.toml --save-config-path=/tmp"
-
-    components = "sequence-sender,aggregator"
-    if args.get("binary_name") == AGGKIT_BINARY_NAME:
-        components = "aggsender,bridge"
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic:
-        components = "aggsender"
-    cmd += " --components={}".format(components)
-
-    if args.get("binary_name") != AGGKIT_BINARY_NAME:
-        cmd += " --custom-network-file=/etc/cdk/genesis.json"
+    cmd = "{} run --cfg=/etc/cdk/cdk-node-config.toml --components={} --save-config-path=/tmp {}".format(
+        binary_name, components, " ".join(extra_flags)
+    )
 
     plan.add_service(
         name="cdk-node{}".format(args.get("deployment_suffix")),
@@ -120,7 +137,8 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
 def get_agglayer_endpoint(plan, args):
     if args.get("sequencer_type") == constants.SEQUENCER_TYPE.op_geth or (
         "0.3" in args.get("agglayer_image")
-        and args.get("binary_name") == AGGKIT_BINARY_NAME
+        and args.get("consensus_contract_type")
+        == constants.CONSENSUS_TYPE.ecdsa_multisig
     ):
         return "grpc"
     return "readrpc"
