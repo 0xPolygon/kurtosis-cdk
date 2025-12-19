@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/0xPolygonHermez/zkevm-node/state"
+	"github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/status-checker-config/checks/l1-info-tree-count/decoder"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	}
 
 	txs := common.FromHex(strings.TrimSpace(string(data)))
-	batch, err := state.DecodeBatchV2(txs)
+	batch, err := decoder.DecodeBatchV2(txs)
 	if err != nil {
 		slog.Error("Failed to decode L2 batch data", "err", err)
 		os.Exit(1)
