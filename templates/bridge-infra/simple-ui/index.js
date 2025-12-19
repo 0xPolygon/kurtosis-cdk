@@ -34,10 +34,54 @@ document.getElementById('connectButton').addEventListener('click', async () => {
     // reveal
     document.getElementById('deposit-form').style.display = 'block';
 
-    let defaultL1Rpc = document.getElementById('l1-rpc-url').value;
-    let defaultL2Rpc = document.getElementById('l2-rpc-url').value;
-    let defaultBridgeService = document.getElementById('bridge-api-url').value;
-    let bridgeAddress = document.getElementById('lxly-bridge-addr').value;
+    // Validate RPC URLs
+    let l1RpcInput = document.getElementById('l1-rpc-url').value;
+    let l2RpcInput = document.getElementById('l2-rpc-url').value;
+    
+    let defaultL1Rpc, defaultL2Rpc;
+    try {
+        const l1Url = new URL(l1RpcInput);
+        const l2Url = new URL(l2RpcInput);
+        if ((l1Url.protocol !== 'http:' && l1Url.protocol !== 'https:' && l1Url.protocol !== 'ws:' && l1Url.protocol !== 'wss:') ||
+            (l2Url.protocol !== 'http:' && l2Url.protocol !== 'https:' && l2Url.protocol !== 'ws:' && l2Url.protocol !== 'wss:')) {
+            alert('Invalid RPC URL protocol. Only HTTP/HTTPS/WS/WSS allowed.');
+            return;
+        }
+        defaultL1Rpc = l1Url.href;
+        defaultL2Rpc = l2Url.href;
+    } catch (e) {
+        alert('Invalid RPC URL format');
+        return;
+    }
+    
+    // Validate and sanitize the bridge service URL to prevent XSS
+    let bridgeServiceInput = document.getElementById('bridge-api-url').value;
+    let defaultBridgeService;
+    try {
+        // Parse and validate the URL
+        const url = new URL(bridgeServiceInput);
+        // Only allow http and https protocols
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+            // Reconstruct URL from parsed components to ensure safety
+            defaultBridgeService = url.origin + url.pathname;
+            // Remove any trailing slashes for consistency
+            defaultBridgeService = defaultBridgeService.replace(/\/$/, '');
+        } else {
+            alert('Invalid bridge service URL protocol. Only HTTP/HTTPS allowed.');
+            return;
+        }
+    } catch (e) {
+        alert('Invalid bridge service URL format');
+        return;
+    }
+    
+    let bridgeAddressInput = document.getElementById('lxly-bridge-addr').value;
+    // Validate Ethereum address format
+    if (!/^0x[a-fA-F0-9]{40}$/.test(bridgeAddressInput)) {
+        alert('Invalid bridge address format');
+        return;
+    }
+    let bridgeAddress = bridgeAddressInput;
 
     document.getElementById('l1-rpc-url').disabled = true;
     document.getElementById('l2-rpc-url').disabled = true;
@@ -185,6 +229,7 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         df.appendChild(txtDiv);
 
         let h2 = document.createElement("h2");
+        // defaultBridgeService is already validated, so safe to use
         let url = `${defaultBridgeService}/bridge?deposit_cnt=${encodeURIComponent(dep.deposit_cnt)}&net_id=${encodeURIComponent(dep.network_id)}`;
         let a = document.createElement("a");
         a.href = url;
