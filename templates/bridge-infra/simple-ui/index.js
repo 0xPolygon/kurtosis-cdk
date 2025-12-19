@@ -21,7 +21,7 @@ document.getElementById('connectButton').addEventListener('click', async () => {
         accounts = await web3.eth.getAccounts();
 
         // Display the connected account
-        document.getElementById('connectedAccount').innerText = accounts[0];
+        document.getElementById('connectedAccount').textContent = accounts[0];
         document.getElementById('dest_addr').value = accounts[0];
         document.getElementById('claim-account').value = accounts[0];
         console.log(accounts);
@@ -180,7 +180,7 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         let dep = deposits.deposits[i];
 
         let txtDiv = document.createElement("div");
-        txtDiv.innerText = "#########################################################################";
+        txtDiv.textContent = "#########################################################################";
         txtDiv.className = "divider";
         df.appendChild(txtDiv);
 
@@ -189,7 +189,7 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         let a = document.createElement("a");
         a.href = url;
         a.target = "_blank";
-        a.innerText = "Deposit: " + dep.deposit_cnt;
+        a.textContent = `Deposit: ${String(dep.deposit_cnt)}`;
         h2.appendChild(a);
         df.appendChild(h2);
 
@@ -197,16 +197,16 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         for (const [key, value] of Object.entries(dep)) {
 
             let dt = document.createElement("dt");
-            dt.innerText = key + ":";
+            dt.textContent = `${key}:`;
             let dd = document.createElement("dd");
-            dd.innerText = value;
+            dd.textContent = String(value);
 
             dl.appendChild(dt);
             dl.appendChild(dd);
         }
         df.appendChild(dl);
         let btn = document.createElement('button')
-        btn.innerText = "Claim Deposit: " + dep.deposit_cnt;
+        btn.textContent = `Claim Deposit: ${String(dep.deposit_cnt)}`;
         btn.addEventListener('click', async function() {
             attemptClaimTx(defaultBridgeService, bridgeAddress, dep);
         });
