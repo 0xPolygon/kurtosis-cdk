@@ -29,8 +29,8 @@ class RegistryPrefixAdder:
             'europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public',
             # oplabs tools artifacts registry
             'us-docker.pkg.dev/oplabs-tools-artifacts/images',
-            # github cloud registry
-            'ghcr.io',
+            # github container registry
+            'ghcr.io/',
         ]
 
     def should_skip_image(self, image: str) -> bool:
@@ -42,12 +42,6 @@ class RegistryPrefixAdder:
         # Skip images that already have a private registry prefix
         if self.should_skip_image(image):
             return image
-
-        # Handle ghcr.io images specifically
-        if image.startswith('ghcr.io/'):
-            # Remove the ghcr.io/ prefix and add our registry prefix
-            image_without_ghcr = image[8:]  # Remove 'ghcr.io/'
-            return f"{self.registry_prefix}/{image_without_ghcr}"
 
         # If image doesn't contain a registry (no '/' before first ':' or no '/' at all)
         # then it's a Docker Hub image and needs prefixing
