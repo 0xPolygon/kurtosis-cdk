@@ -185,7 +185,7 @@ function renderDeposits(defaultBridgeService, bridgeAddress, deposits) {
         df.appendChild(txtDiv);
 
         let h2 = document.createElement("h2");
-        let url = `${defaultBridgeService}/bridge?deposit_cnt=${dep.deposit_cnt}&net_id=${dep.network_id}`;
+        let url = `${defaultBridgeService}/bridge?deposit_cnt=${encodeURIComponent(dep.deposit_cnt)}&net_id=${encodeURIComponent(dep.network_id)}`;
         let a = document.createElement("a");
         a.href = url;
         a.target = "_blank";
@@ -269,7 +269,7 @@ async function attemptClaimTx(defaultBridgeService, bridgeAddress, deposit) {
 
 async function getMerkleProof(defaultBridgeService, deposit) {
     try {
-        const url = `${defaultBridgeService}/merkle-proof?deposit_cnt=${deposit.deposit_cnt}&net_id=${deposit.network_id}`;
+        const url = `${defaultBridgeService}/merkle-proof?deposit_cnt=${encodeURIComponent(deposit.deposit_cnt)}&net_id=${encodeURIComponent(deposit.network_id)}`;
         const mpRequest = new Request(url);
         const mpResponse = await fetch(mpRequest);
         const mpData = await mpResponse.json();
