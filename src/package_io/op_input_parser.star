@@ -85,6 +85,9 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
                     "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
                     "l1_artifacts_locator": "embedded",
                     "l2_artifacts_locator": "embedded",
+                    "overrides": {
+                        "faultGameAbsolutePrestate": "0x038512e02c4c3f7bdaec27d00edf55b7155e0905301e1a88083e4e0a6764d54c",  # standard canon vm prestate hash
+                    },
                 },
             ),
             "observability": _sort_dict_by_values(
