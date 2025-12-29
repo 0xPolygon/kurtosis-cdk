@@ -33,7 +33,7 @@ runs:
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install -y kurtosis-cli=1.11.1
+        sudo apt install -y kurtosis-cli=1.12.1
         kurtosis analytics disable
         kurtosis version
 
@@ -117,9 +117,9 @@ runs:
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
         images=(
-          "kurtosistech/engine:1.11.1"
-          "kurtosistech/core:1.11.1"
-          "kurtosistech/files-artifacts-expander:1.11.1"
+          "kurtosistech/engine:1.12.1"
+          "kurtosistech/core:1.12.1"
+          "kurtosistech/files-artifacts-expander:1.12.1"
           "timberio/vector:0.45.0-debian"
           "traefik:2.10.6"
           "alpine:3.17"
