@@ -37,7 +37,7 @@ def run(
             image=args.get("test_runner_image"),
             env_vars={
                 # For now, we've only defined variables used by `tests/agglayer/bridges.bats`.
-                # https://github.com/agglayer/e2e/blob/jhilliard/gas-token-test/tests/agglayer/bridges.bats
+                # https://github.com/AggLayer/e2e/blob/main/tests/agglayer/bridges.bats
                 # Agglayer and bridge.
                 "AGGLAYER_RPC_URL": args.get("agglayer_readrpc_url"),
                 "BRIDGE_SERVICE_URL": bridge_service_url,

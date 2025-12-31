@@ -45,9 +45,11 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
             "batcher_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_batcher_image"),
-                    "extra_params": ["--log.format=json"]
-                    if log_format == constants.LOG_FORMAT.json
-                    else [],
+                    "extra_params": (
+                        ["--log.format=json"]
+                        if log_format == constants.LOG_FORMAT.json
+                        else []
+                    ),
                 }
             ),
             "proposer_params": _sort_dict_by_values(
@@ -83,8 +85,6 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
             "op_contract_deployer_params": _sort_dict_by_values(
                 {
                     "image": constants.DEFAULT_IMAGES.get("op_contract_deployer_image"),
-                    "l1_artifacts_locator": "embedded",
-                    "l2_artifacts_locator": "embedded",
                 },
             ),
             "observability": _sort_dict_by_values(
@@ -98,7 +98,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@a22efaa2c24054f289cd2c3770b602aa85c06b56",  # overlay/main - 2025-12-09
+        "source": "github.com/agglayer/optimism-package/main.star@cc841d7f27d2e6febc8f9724249241b210436fc4",  # overlay/main - 2025-12-31
         "predeployed_contracts": True,
     }
 )
