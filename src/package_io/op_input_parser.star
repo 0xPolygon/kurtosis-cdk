@@ -101,7 +101,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@d267164dbc422c5a692dd50a0920d51986b0ebe0",  # feat/bump-ethereum-package - 2025-12-29
+        "source": "github.com/agglayer/optimism-package/main.star@cc841d7f27d2e6febc8f9724249241b210436fc4",  # overlay/main - 2025-12-31
         "predeployed_contracts": True,
     }
 )
