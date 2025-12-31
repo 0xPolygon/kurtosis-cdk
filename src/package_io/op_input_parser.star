@@ -22,7 +22,10 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
             "cl": {
                 "type": "op-node",
                 "image": constants.DEFAULT_IMAGES.get("op_node_image"),
-                "extra_params": (
+                "extra_params": [
+                    "--rollup.l1-chain-config=/l1/genesis.json",  # required by op-node:v1.14 and greater
+                ]
+                + (
                     ["--log.format=json"]
                     if log_format == constants.LOG_FORMAT.json
                     else []
