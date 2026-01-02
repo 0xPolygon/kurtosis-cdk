@@ -17,7 +17,7 @@ def run(
         agglogger_config_template_file = "zkevm-config.json"
 
     agglogger_config_artifact = plan.render_templates(
-        name="agglogger",
+        name="agglogger-config{}".format(args.get("deployment_suffix")),
         config={
             "config.json": struct(
                 template=read_file(
@@ -57,7 +57,7 @@ def run(
     )
 
     plan.add_service(
-        name="agglogger",
+        name="agglogger{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("agglogger_image"),
             files={

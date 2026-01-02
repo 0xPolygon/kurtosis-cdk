@@ -32,7 +32,7 @@ def run(
 
     # Start the test runner.
     plan.add_service(
-        name="test-runner",
+        name="test-runner{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("test_runner_image"),
             env_vars={
