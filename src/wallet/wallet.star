@@ -27,6 +27,20 @@ def new(plan):
     )
 
 
+def derive_private_key(plan, mnemonic):
+    result = plan.run_sh(
+        name="wallet-deriver",
+        description="Derive private key from mnemonic",
+        image=constants.TOOLBOX_IMAGE,
+        run="cast wallet private-key --mnemonic '${MNEMONIC}' | tr -d '\n'",
+        env_vars={
+            "MNEMONIC": mnemonic,
+        },
+    )
+    private_key = result.output
+    return private_key
+
+
 def fund(plan, address, rpc_url, funder_private_key, value="1000ether"):
     # Extract numeric value from the value parameter
     target_value = value.replace("ether", "")

@@ -32,7 +32,7 @@ def run(plan, args):
 
 def get_assertoor_config(plan, args):
     assertoor_config_template = read_file(
-        src="../../static_files/additional_services/assertoor-config/config.yaml"
+        src="../../static_files/additional_services/assertoor/config.yaml"
     )
 
     assertoor_data = {

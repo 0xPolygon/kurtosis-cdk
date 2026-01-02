@@ -125,8 +125,8 @@ runs:
           "alpine:3.17"
           "badouralix/curl-jq:latest"
           "protolambda/eth2-val-tools:latest"
-          "ethpandaops/ethereum-genesis-generator:5.0.6"
-          "mslipper/deployment-utils:latest"
+          "ethpandaops/ethereum-genesis-generator:5.2.2"
+          "mslipper/deployment-utils@sha256:4506b112e4261014329152b161997129e7ca577f39c85e59cfdfdcb47ab7b5cf"
         )
         for image in "${images[@]}"; do
           {

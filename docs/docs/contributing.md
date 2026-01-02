@@ -55,7 +55,7 @@ You will need to have the test runner deployed in your environment to run e2e te
 Run bridge tests:
 
 ```bash
-kurtosis service exec pos test-runner "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+kurtosis service exec pos test-runner-001 "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
 ```
 
 ### Documentation

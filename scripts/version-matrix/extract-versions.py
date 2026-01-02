@@ -78,7 +78,7 @@ class VersionMatrixExtractor:
             "op_node_image": "op-node",
             "op_proposer_image": "op-proposer",
             "op_succinct_proposer_image": "op-succinct-proposer",
-            "zkevm_da_image": "zkevm-da",
+            "cdk_data_availability_image": "cdk-data-availability",
             "zkevm_bridge_service_image": "zkevm-bridge-service",
             "zkevm_pool_manager_image": "zkevm-pool-manager",
             "zkevm_prover_image": "zkevm-prover",
@@ -99,7 +99,7 @@ class VersionMatrixExtractor:
             "op-proposer",
             "op-succinct-proposer",
             "zkevm-bridge-service",
-            "zkevm-da",
+            "cdk-data-availability",
             "zkevm-pool-manager",
             "zkevm-prover"
         }
@@ -114,7 +114,7 @@ class VersionMatrixExtractor:
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
             # legacy zkevm components
-            "zkevm-da": "0xPolygon/cdk-data-availability",
+            "cdk-data-availability": "0xPolygon/cdk-data-availability",
             "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
             "zkevm-pool-manager": "0xPolygon/zkevm-pool-manager",
             "zkevm-prover": "0xPolygon/zkevm-prover",
@@ -266,7 +266,7 @@ class VersionMatrixExtractor:
             # These components don't have any release, thus we rely on tags
             if component in [
                 'zkevm-prover', 'zkevm-bridge-service', 'op-succinct-proposer',
-                'zkevm-pool-manager', 'zkevm-da'
+                'zkevm-pool-manager', 'cdk-data-availability'
             ]:
                 url = f"https://api.github.com/repos/{repo}/tags"
                 response = requests.get(
@@ -449,7 +449,7 @@ class VersionMatrixExtractor:
                 'cdk-node',
                 # 'cdk-validium-node',  # different from cdk-erigon-zkrollup
                 'zkevm-bridge-service',
-                'zkevm-da',  # different from cdk-erigon-zkrollup
+                'cdk-data-availability',  # specific to validium
                 'zkevm-pool-manager',
                 'zkevm-prover',
             ],
