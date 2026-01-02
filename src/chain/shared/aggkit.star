@@ -21,7 +21,7 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
         ports_package.HTTP_RPC_PORT_NUMBER,
     )
     config_artifact = plan.render_templates(
-        name="aggkit-cdk-config-artifact",
+        name="aggkit-cdk-config{}".format(args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=config_template,
@@ -182,7 +182,7 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
     # Create config artifact
     config_template = read_file(src="../../../static_files/aggkit/config.toml")
     config_artifact = plan.render_templates(
-        name="aggkit-config-artifact",
+        name="aggkit-config{}".format(args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=config_template,
@@ -236,7 +236,7 @@ def _deploy_bridge_service(plan, args, deployment_context):
     # Create config artifact
     config_template = read_file(src="../../../static_files/aggkit/config.toml")
     config_artifact = plan.render_templates(
-        name="aggkit-bridge-config-artifact",
+        name="aggkit-bridge-config{}".format(args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=config_template,
@@ -306,7 +306,7 @@ def _deploy_committee_member(plan, args, deployment_context, member_index):
     )
 
     config_artifact = plan.render_templates(
-        name="aggkit-aggoracle-config-artifact-{}".format(member_index),
+        name="aggkit-aggoracle-config-{}{}".format(member_index, args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=config_template,
@@ -381,7 +381,7 @@ def _deploy_validator_service(plan, args, deployment_context, validator_index):
     )
 
     config_artifact = plan.render_templates(
-        name="aggkit-aggsender-config-artifact-{}".format(validator_index),
+        name="aggkit-aggsender-config-{}{}".format(validator_index, args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=config_template,
@@ -640,7 +640,7 @@ def create_bridge_config_artifact(
         require_sovereign_chain_contract = True
 
     return plan.render_templates(
-        name="bridge-config-artifact",
+        name="bridge-config{}".format(args.get("deployment_suffix")),
         config={
             "bridge-config.toml": struct(
                 template=bridge_config_template,

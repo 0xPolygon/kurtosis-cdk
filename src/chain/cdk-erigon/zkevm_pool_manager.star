@@ -14,9 +14,9 @@ def run(plan, args, sequencer_rpc_url):
         deployment_suffix, ports_package.HTTP_RPC_PORT_NUMBER
     )
     config_artifact = plan.render_templates(
-        name="pool-manager-config-artifact",
+        name="zkevm-pool-manager-config{}".format(args.get("deployment_suffix")),
         config={
-            "pool-manager-config.toml": struct(
+            "config.toml": struct(
                 template=read_file(
                     src="../../../static_files/cdk-erigon/zkevm-pool-manager/config.toml"
                 ),
@@ -32,7 +32,7 @@ def run(plan, args, sequencer_rpc_url):
     )
 
     return plan.add_service(
-        name="zkevm-pool-manager" + args.get("deployment_suffix"),
+        name="zkevm-pool-manager{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("zkevm_pool_manager_image"),
             ports={
@@ -45,7 +45,7 @@ def run(plan, args, sequencer_rpc_url):
             },
             entrypoint=["/bin/sh", "-c"],
             cmd=[
-                "/app/zkevm-pool-manager run --cfg /etc/pool-manager/pool-manager-config.toml",
+                "/app/zkevm-pool-manager run --cfg /etc/pool-manager/config.toml",
             ],
         ),
     )

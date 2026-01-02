@@ -15,7 +15,7 @@ def run(plan, args):
     )
 
     plan.add_service(
-        name="op-succinct-proposer" + args.get("deployment_suffix"),
+        name="op-succinct-proposer{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("op_succinct_proposer_image"),
             ports={

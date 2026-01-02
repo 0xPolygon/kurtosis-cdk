@@ -5,7 +5,7 @@ SERVER_PORT_NUMBER = 80
 
 def run(plan, args, contract_setup_addresses):
     config_artifact = plan.render_templates(
-        name="bridge-ui-config-artifact",
+        name="zkevm-bridge-ui-config{}".format(args.get("deployment_suffix")),
         config={
             ".env": struct(
                 template=read_file(

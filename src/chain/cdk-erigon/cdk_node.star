@@ -26,7 +26,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
         ports_package.HTTP_RPC_PORT_NUMBER,
     )
     config_artifact = plan.render_templates(
-        name="cdk-node-config",
+        name="cdk-node-config{}".format(args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=read_file(

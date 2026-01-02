@@ -16,7 +16,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
         aggkit_legacy = True
 
     config_artifact = plan.render_templates(
-        name="aggkit-prover-config",
+        name="aggkit-prover-config{}".format(args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=read_file(

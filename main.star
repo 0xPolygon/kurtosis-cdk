@@ -237,7 +237,7 @@ def deploy_helper_service(plan, args):
         src="./static_files/scripts/get-rollup-info.sh"
     )
     get_rollup_info_artifact = plan.render_templates(
-        name="get-rollup-info-artifact",
+        name="get-rollup-info",
         config={
             "get-rollup-info.sh": struct(
                 template=get_rollup_info_template,

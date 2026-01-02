@@ -17,7 +17,7 @@ def run(plan, args):
         name="zkevm-bridge-ui" + args.get("deployment_suffix")
     )
     config_artifact = plan.render_templates(
-        name="zkevm-bridge-proxy",
+        name="zkevm-bridge-proxy-config{}".format(args.get("deployment_suffix")),
         config={
             "haproxy.cfg": struct(
                 template=read_file(

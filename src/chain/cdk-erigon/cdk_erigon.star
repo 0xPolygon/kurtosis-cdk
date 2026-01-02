@@ -35,7 +35,7 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
         fail("Unknown cdk-erigon type: {}".format(type))
 
     config_artifact = plan.render_templates(
-        name="cdk-erigon-{}-config".format(type),
+        name="cdk-erigon-{}-config{}".format(type, args.get("deployment_suffix")),
         config={
             "config.yaml": struct(
                 template=read_file(
@@ -93,7 +93,7 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
 
     # Chain artifacts
     chain_spec_artifact = plan.render_templates(
-        name="cdk-erigon-{}-chain-spec-artifact".format(type),
+        name="cdk-erigon-{}-chain-spec{}".format(type, args.get("deployment_suffix")),
         config={
             "dynamic-{}-chainspec.json".format(args.get("chain_name")): struct(
                 template=read_file(
@@ -124,7 +124,7 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
     ]
 
     proc_runner_file_artifact = plan.upload_files(
-        name="cdk-erigon-" + type + "-proc-runner",
+        name="cdk-erigon-{}-proc-runner{}".format(type, args.get("deployment_suffix")),
         src="../../../static_files/scripts/proc-runner.sh",
     )
 

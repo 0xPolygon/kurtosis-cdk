@@ -12,7 +12,7 @@ def run(plan, args, contract_setup_addresses):
         args.get("deployment_suffix"), args.get("sequencer_type")
     )
     config_artifact = plan.render_templates(
-        name="cdk-data-availability-config",
+        name="cdk-data-availability-config{}".format(args.get("deployment_suffix")),
         config={
             "config.toml": struct(
                 template=read_file(
@@ -37,13 +37,13 @@ def run(plan, args, contract_setup_addresses):
     )
 
     keystore_artifact = plan.store_service_files(
-        name="cdk-data-availability-keystore",
+        name="cdk-data-availability-keystore{}".format(args.get("deployment_suffix")),
         service_name="contracts" + args["deployment_suffix"],
         src=constants.KEYSTORES_DIR + "/dac.keystore",
     )
 
     plan.add_service(
-        name="cdk-data-availability" + args.get("deployment_suffix"),
+        name="cdk-data-availability{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("cdk_data_availability_image"),
             ports={

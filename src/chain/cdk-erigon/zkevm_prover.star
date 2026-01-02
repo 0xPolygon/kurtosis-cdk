@@ -39,7 +39,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
         args.get("deployment_suffix"), args.get("sequencer_type")
     )
     config_artifact = plan.render_templates(
-        name="zkevm-{}-config-artifact".format(type),
+        name="zkevm-{}-config{}".format(type, args.get("deployment_suffix")),
         config={
             "config.json": struct(
                 template=read_file(
