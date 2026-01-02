@@ -26,9 +26,9 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
         ports_package.HTTP_RPC_PORT_NUMBER,
     )
     config_artifact = plan.render_templates(
-        name="cdk-node-config-artifact",
+        name="cdk-node-config",
         config={
-            "cdk-node-config.toml": struct(
+            "config.toml": struct(
                 template=read_file(
                     src="../../../static_files/cdk-erigon/cdk-node/config.toml"
                 ),
@@ -77,7 +77,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
 
     # Build the service command
     # TODO: Simplify this when we have better support for arguments in Kurtosis
-    cmd = "{} run --cfg=/etc/cdk/cdk-node-config.toml --components={} --save-config-path=/tmp {}".format(
+    cmd = "{} run --cfg=/etc/cdk/config.toml --components={} --save-config-path=/tmp {}".format(
         binary_name, components, " ".join(extra_flags)
     )
 
