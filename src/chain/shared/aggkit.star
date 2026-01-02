@@ -306,7 +306,9 @@ def _deploy_committee_member(plan, args, deployment_context, member_index):
     )
 
     config_artifact = plan.render_templates(
-        name="aggkit-aggoracle-config-{}{}".format(member_index, args.get("deployment_suffix")),
+        name="aggkit-aggoracle-config-{}{}".format(
+            member_index, args.get("deployment_suffix")
+        ),
         config={
             "config.toml": struct(
                 template=config_template,
@@ -381,7 +383,9 @@ def _deploy_validator_service(plan, args, deployment_context, validator_index):
     )
 
     config_artifact = plan.render_templates(
-        name="aggkit-aggsender-config-{}{}".format(validator_index, args.get("deployment_suffix")),
+        name="aggkit-aggsender-config-{}{}".format(
+            validator_index, args.get("deployment_suffix")
+        ),
         config={
             "config.toml": struct(
                 template=config_template,
