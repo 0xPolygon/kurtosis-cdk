@@ -32,14 +32,12 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
     ]:
         fail("Unknown zkevm prover type: {}".format(type))
 
-    stateless_executor = False
-    if (
-        args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
-        or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
-    ):
-        stateless_executor = False
-    elif args.get("erigon_strict_mode"):
-        stateless_executor = True
+    # stateless executor is enabled when strict mode is on, UNLESS it's a prover type with rollup/validium consensus.
+    stateless_executor = args.get("erigon_strict_mode") and not (
+        type == ZKEVM_PROVER_TYPE.prover
+        and args.get("consensus_contract_type")
+        in [constants.CONSENSUS_TYPE.rollup, constants.CONSENSUS_TYPE.cdk_validium]
+    )
 
     db_configs = databases.get_db_configs(
         args.get("deployment_suffix"), args.get("sequencer_type")
