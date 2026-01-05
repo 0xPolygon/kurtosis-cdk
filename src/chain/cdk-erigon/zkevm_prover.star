@@ -1,4 +1,5 @@
 cdk_node = import_module("./cdk_node.star")
+constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 
 
@@ -32,7 +33,12 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
         fail("Unknown zkevm prover type: {}".format(type))
 
     stateless_executor = False
-    if args.get("erigon_strict_mode"):
+    if (
+        args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.rollup
+        or args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium
+    ):
+        stateless_executor = False
+    elif args.get("erigon_strict_mode"):
         stateless_executor = True
 
     db_configs = databases.get_db_configs(
