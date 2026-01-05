@@ -1,5 +1,5 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@v6.0.0"
+    "github.com/ethpandaops/ethereum-package/main.star@6.0.0"
 )  # 2026-01-05
 constants = import_module("./src/package_io/constants.star")
 
