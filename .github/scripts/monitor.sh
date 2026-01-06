@@ -6,7 +6,7 @@ set -euo pipefail
 # Example: ./monitor.sh cdk op-geth ecdsa-multisig
 
 # Helper function to get the current timestamp
-timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
+_timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
 
 # Helper function to format key=value pairs
 _format_fields() {
@@ -20,8 +20,8 @@ _format_fields() {
 }
 
 # Logging functions
-log_info() { echo "$(timestamp) INFO $(_format_fields "$@")" >&2; }
-log_error() { echo "$(timestamp) ERROR $(_format_fields "$@")" >&2; }
+log_info() { echo "$(_timestamp) INFO $(_format_fields "$@")" >&2; }
+log_error() { echo "$(_timestamp) ERROR $(_format_fields "$@")" >&2; }
 
 log_info "Monitoring rollup progress"
 
