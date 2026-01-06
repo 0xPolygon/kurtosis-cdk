@@ -2,6 +2,8 @@
 set -euo pipefail
 
 # This script monitors the progress of a blockchain rollup.
+# Usage: ./monitor.sh <enclave_name> <sequencer_type> <consensus_contract_type>
+# Example: ./monitor.sh cdk op-geth ecdsa-multisig
 
 timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
 log_info() { echo "$(timestamp) INFO $(_format_fields "$@")" >&2; }
