@@ -186,11 +186,10 @@ jobs:
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
       - name: Monitor rollup
-        working-directory: .github/scripts
         run: |
           sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
           consensus_contract_type=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          ./monitor.sh ${{ env.ENCLAVE_NAME }} "$sequencer_type" "$consensus_contract_type"
+          ./.github/scripts/monitor.sh ${{ env.ENCLAVE_NAME }} "$sequencer_type" "$consensus_contract_type"
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
