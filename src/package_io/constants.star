@@ -35,6 +35,14 @@ CONSENSUS_TYPE = struct(
     fep="fep",
 )
 
+CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
+    CONSENSUS_TYPE.rollup: "PolygonZkEVMEtrog",
+    CONSENSUS_TYPE.cdk_validium: "PolygonValidiumEtrog",
+    CONSENSUS_TYPE.pessimistic: "PolygonPessimisticConsensus",
+    CONSENSUS_TYPE.ecdsa_multisig: "AggchainECDSAMultisig",
+    CONSENSUS_TYPE.fep: "AggchainFEP",
+}
+
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_geth="op-geth",
@@ -61,7 +69,10 @@ TOOLBOX_IMAGE = (
     "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12"
 )
 
-L1_ENGINES = ("geth", "anvil")
+L1_ENGINE = struct(
+    geth="geth",
+    anvil="anvil",
+)
 
 # Standard zero address in Ethereum.
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -98,7 +109,7 @@ DEFAULT_IMAGES = {
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.4.0-rc.1-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
-    "zkevm_da_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
+    "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
     "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC1",
     "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",

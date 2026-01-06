@@ -1,0 +1,1007 @@
+# CDK-Erigon Configuration File
+# https://github.com/0xPolygonHermez/cdk-erigon
+
+# --------------------------------------------------------------------------------------------------
+#   _     ___   ____
+#  | |   / _ \ / ___|
+#  | |  | | | | |  _
+#  | |__| |_| | |_| |
+#  |_____\___/ \____|
+
+# --------------------------------------------------------------------------------------------------
+# Format console logs with JSON.
+# Default: false
+log.console.json: false
+
+# Set the log verbosity for console logs.
+# Options: crit, error, warn, info, debug, trace
+# Default: info
+log.console.verbosity: {{.log_level}}
+
+# Format file logs with JSON
+# Default: false
+log.dir.json: false
+
+# Set the log verbosity for logs stored to disk.
+# Options: crit, error, warn, info, debug, trace
+# Default: info
+log.dir.verbosity: {{.log_level}}
+
+# Path to store user and errors logs to disk.
+# Default: ""
+log.dir.path: /tmp/cdk-erigon.log
+
+
+# --------------------------------------------------------------------------------------------------
+#    ____ _____ _   _ _____ ____      _    _
+#   / ___| ____| \ | | ____|  _ \    / \  | |
+#  | |  _|  _| |  \| |  _| | |_) |  / _ \ | |
+#  | |_| | |___| |\  | |___|  _ <  / ___ \| |___
+#   \____|_____|_| \_|_____|_| \_\/_/   \_\_____|
+
+# --------------------------------------------------------------------------------------------------
+# The data directory for the databases.
+datadir: ./data/dynamic-{{.chain_name}}-sequencer
+
+# The network identifier.
+# For testnets, use --chain <testnet-name> instead.
+networkid: 1 # ethereum
+
+# The block period to use in developer mode
+# Set to 0 to mine only if transactions are pending.
+# dev.period:
+
+# The name of the testnet to join.
+# To use a custom chain that is different from the default chains (zkevm cardona and zkevm mainnet),
+# you need to add the prefix "dynamic-" in front of the chain name.
+# Same thing for the dynamic configuration files.
+# https://github.com/0xPolygonHermez/cdk-erigon?tab=readme-ov-file#dynamic-chain-configuration
+chain: dynamic-{{.chain_name}}
+
+# Custom node name.
+# Default: ""
+# identity:
+
+# A comma separated block number-to-hash mappings to enforce (<number>=<hash>).
+# whitelist:
+
+# Manually specify Shanghai fork time, overriding the bundled setting.
+# override.shanghaiTime:
+
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __
+#  |__  / |/ / ____\ \   / /  \/  |
+#    / /| ' /|  _|  \ \ / /| |\/| |
+#   / /_| . \| |___  \ V / | |  | |
+#  /____|_|\_\_____|  \_/  |_|  |_|
+#
+# --------------------------------------------------------------------------------------------------
+## State Tree Management
+# Specify the number of blocks behind the current block after which the state tree will be rebuilt.
+# A higher value may improve performance but could increase the time taken to rebuild.
+# Default: 10_000
+zkevm.rebuild-tree-after: 10_000
+
+# When set to true, this option allows the state tree to be incremented without performing a rebuild.
+# Useful for reducing overhead in certain scenarios, but may lead to inconsistencies.
+# Default: false
+zkevm.increment-tree-always: false
+
+# This setting regenerates the Sparse Merkle Tree (SMT) in memory.
+# Note that this requires a significant amount of RAM, especially for larger chains.
+# Default: false
+zkevm.smt-regenerate-in-memory: false
+
+## Witness Generation
+# Define the size of the memory database (memdb) used during witness generation.
+# Insufficient size may cause batch generation to fail for historical data due to inadequate unwind depth.
+# Default: 2GB
+zkevm.witness-memdb-size: 2GB
+
+# Enables full witness generation, which provides comprehensive proof data for transactions.
+# This can be useful for debugging and verification purposes.
+# Default: true
+zkevm.witness-full: false
+
+## Limbo Processing
+# Activate processing for batches that failed verification, allowing the network to recover gracefully.
+# This setting helps maintain network functionality while providing insights into failed batches.
+# Default: false
+zkevm.limbo: true
+
+## Gas Price Settings
+# Sets the effective gas price as a percentage for various transaction types:
+# - ETH transfers
+# - ERC20 token transfers
+# - Contract invocations
+# - Contract deployments
+# A value of 1 means 1% of the base gas price will be applied.
+# Defaults: 1
+zkevm.effective-gas-price-eth-transfer: 1
+zkevm.effective-gas-price-erc20-transfer: 1
+zkevm.effective-gas-price-contract-invocation: 1
+zkevm.effective-gas-price-contract-deployment: 1
+
+# Set the minimum (default) gas price
+# If this value is too low or below the L1 fee, transactions can get stuck in the basefee queue
+# Default: 10000000
+zkevm.default-gas-price: 1000000000
+
+# Reject the sequencer to proceed transactions with low gas price
+# If this is `false` transactions below the default gas price will
+# still be accepted. If you want to reject transactions that are
+# priced at 0 gwei, you'll need to set this as `true
+# Default: false
+# {{if .enable_normalcy}}
+zkevm.reject-low-gas-price-transactions: false
+# {{else}}
+zkevm.reject-low-gas-price-transactions: true
+# {{end}}
+
+# Apply a factor to convert L1 gas prices into L2 gas prices.
+# A value of 1 means no adjustment; values greater than 1 increase L2 costs proportionally.
+# Default: 1
+zkevm.gas-price-factor: 0.015
+
+## Synchronization and Execution
+# Limits the number of blocks that can be synchronized.
+# Setting this to 0 allows unlimited synchronization, while a positive value restricts it.
+# Default: 0
+zkevm.sync-limit: 0
+
+## Smart Contract Management
+# When enabled, this setting prevents the deployment of new smart contracts on the network.
+# Useful for maintaining security or stability during critical updates or issues.
+# Default: false
+zkevm.reject-smart-contract-deployments: false
+
+## Virtual Counters
+# Disables virtual counters, which are used by sequencer nodes when external execution is not enabled.
+# This can impact performance and transaction processing capabilities.
+# Default: false
+# {{if .enable_normalcy}}
+zkevm.disable-virtual-counters: true
+# {{else}}
+zkevm.disable-virtual-counters: false
+# {{end}}
+
+
+# Multiplier used to reduce the depth of SMT when calculating virtual counters.
+# A value less than 1 will decrease SMT depth, potentially improving performance but may affect accuracy.
+# Default: 0.6
+zkevm.virtual-counters-smt-reduction: 0.6
+
+## External Services
+# URL for the Data Availability service.
+# This is crucial for ensuring that transaction data is accessible and verifiable.
+# Default: ""
+# TODO: Find out why we don't set it?!
+zkevm.da-url: ""
+
+# {{if not .is_sequencer}}
+# URL of the pool manager, applicable only for non-sequencer nodes.
+# If specified, all eth_sendRawTransaction calls will be redirected to this service for processing.
+# Default: ""
+zkevm.pool-manager-url: {{.pool_manager_url}}
+# {{end}}
+
+# {{if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig")}}
+# The file that contains the initial (injected) batch data for pessimistic proofs consensus.
+zkevm.initial-batch.config: /etc/cdk-erigon/first-batch-config.json
+# {{end}}
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           ____  ____   ____
+#  |__  / |/ / ____\ \   / /  \/  |         |  _ \|  _ \ / ___|
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | |_) | |_) | |
+#   / /_| . \| |___  \ V / | |  | | |_____| |  _ <|  __/| |___
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_| \_\_|    \____|
+#
+# --------------------------------------------------------------------------------------------------
+# Set the maximum number of RPC requests allowed per second.
+# This helps prevent server overload and ensures fair resource allocation among clients.
+# A value of 0 disables rate limiting, while higher values enforce stricter limits.
+# NOTE: The flag must be specified but it is not used in the code!
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1254
+# Default: 0
+zkevm.rpc-ratelimit: 250
+
+# Define the maximum number of concurrent requests allowed to the executor for getBatchWitness operations.
+# This setting helps manage system resources and prevent overloading the executor.
+# A lower value (e.g., 1) ensures sequential processing, while higher values allow more parallel operations.
+# Increasing this value may improve throughput but could also increase resource usage.
+# Default: 1
+zkevm.rpc-get-batch-witness-concurrency-limit: 1
+
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           ____    _  _____  _    ____ _____ ____  _____    _    __  __
+#  |__  / |/ / ____\ \   / /  \/  |         |  _ \  / \|_   _|/ \  / ___|_   _|  _ \| ____|  / \  |  \/  |
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | | | |/ _ \ | | / _ \ \___ \ | | | |_) |  _|   / _ \ | |\/| |
+#   / /_| . \| |___  \ V / | |  | | |_____| | |_| / ___ \| |/ ___ \ ___) || | |  _ <| |___ / ___ \| |  | |
+#  /____|_|\_\_____|  \_/  |_|  |_|         |____/_/   \_\_/_/   \_\____/ |_| |_| \_\_____/_/   \_\_|  |_|
+#
+# --------------------------------------------------------------------------------------------------
+# {{if .is_sequencer}}
+# The listening interface of the datastreamer.
+# Default: ""
+zkevm.data-stream-host: 0.0.0.0
+
+# The listening port of the datastreamer.
+# Default: 0
+zkevm.data-stream-port: {{.data_streamer_port_number}}
+# {{end}}
+
+# Specify the encoding format used for data streaming:
+# - 1: PreBigEndian (legacy format)
+# - 2: BigEndian (improved format)
+# - 3: Latest format with additional features
+# Default: 2
+# {{if eq .cdk_erigon_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
+# zkevm.datastream-version: not supported
+# fork12 or after {{else if or (eq .zkevm_rollup_fork_name "banana") (eq .zkevm_rollup_fork_name "aggchain")}}
+zkevm.datastream-version: 3
+# before fork12 {{else}}
+zkevm.datastream-version: 2
+# {{end}}
+
+# Maximum time to wait for a new block when requesting from the data streamer.
+# Shorter timeouts can improve responsiveness but may increase the risk of timeouts during network delays.
+# Default: 500ms
+zkevm.datastream-new-block-timeout: 500ms
+
+# Maximum time allowed for sending data to a data stream client.
+# Longer timeouts can help with larger data transfers but may delay error detection.
+# Default: 20s
+zkevm.data-stream-writeTimeout: 20s
+
+# Maximum allowed period of inactivity before considering a data stream connection as timed out.
+# Longer timeouts can help maintain connections over unreliable networks but may delay detection of
+# disconnected clients.
+# Default: 10m
+zkevm.data-stream-inactivity-timeout: 10m
+
+# How often to check for inactivity when communicating with a data stream server.
+# Regular checks help detect disconnected or unresponsive clients more quickly.
+# Default: 5m
+zkevm.data-stream-inactivity-check-interval: 5m
+
+# {{if .enable_normalcy}}
+# Type 1 CDK-Erigon Configs
+zkevm.honour-chainspec: true
+zkevm.initial-commitment: pmt
+# {{end}}
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           ____  _____ ___  _   _ _____ _   _  ____ _____ ____
+#  |__  / |/ / ____\ \   / /  \/  |         / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|  _ \
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  \___ \|  _|| | | | | | |  _| |  \| | |   |  _| | |_) |
+#   / /_| . \| |___  \ V / | |  | | |_____|  ___) | |__| |_| | |_| | |___| |\  | |___| |___|  _ <
+#  /____|_|\_\_____|  \_/  |_|  |_|         |____/|_____\__\_\\___/|_____|_| \_|\____|_____|_| \_\
+#
+# --------------------------------------------------------------------------------------------------
+# Determine how frequently the sequencer creates and finalizes a new block.
+# A shorter time increases block creation frequency but may lead to higher network load.
+# Consider network capacity and desired transaction confirmation speed when adjusting.
+# Default: 6s
+zkevm.sequencer-block-seal-time: 3s
+
+# The batch seal time.
+# Determine how frequently the sequencer groups blocks into a batch and seals it.
+# Longer times allow more blocks (and more txs) per batch, potentially improving efficiency,
+# but may increase overall transaction confirmation time.
+# Default: 12s
+zkevm.sequencer-batch-seal-time: 15s
+
+# Seal the batch immediately when detecting a counter overflow
+# This setting can be helpful to close batches faster while testing with a single account.
+# Default: false
+zkevm.seal-batch-immediately-on-overflow: true
+
+# Specify the maximum duration allowed for batch verification, including retry attempts.
+# This effectively limits how long the sequencer can operate without an executor.
+# Setting to 0s disables verification checks, which could lead to indefinite timeouts.
+# Very low values might cause issues during network congestion.
+# Defaults: 30m
+zkevm.sequencer-batch-verification-timeout: 30m
+
+# Define the waiting period before rechecking the transaction pool if it was previously empty.
+# Helps balance system responsiveness with resource efficiency.
+# Shorter times increase responsiveness but may lead to more frequent empty checks.
+# Default: 250ms
+zkevm.sequencer-timeout-on-empty-tx-pool: 250ms
+
+# Halt the sequencer on this batch number.
+# If set to a non-zero value, instructs the sequencer to stop processing at this batch number.
+# Useful for coordinating planned upgrades or system maintenance.
+# Set to 0 for continuous operation without a predetermined halt point.
+# Default: 0
+zkevm.sequencer-halt-on-batch-number: 0
+
+# When enabled, allows the sequencer to automatically resequence any unseen batches in the data stream.
+# Enhances system consistency but may increase processing overhead.
+# Recommended for maintaining network synchronization.
+# Default: false
+# zkevm.sequencer-resequence: false
+
+# If enabled, ensures that any rolled-back batches are resequenced exactly as they were originally.
+# Provides stronger consistency guarantees but may reduce flexibility in certain scenarios.
+# Default: true
+# zkevm.sequencer-resequence-strict: true
+
+# When enabled, reuses the Layer 1 information index during the resequencing process.
+# Can improve efficiency in resequencing but may not be suitable for all network configurations.
+# Default: true
+# zkevm.sequencer-resequence-reuse-l1-info-index: true
+
+# If set to true, permits the processing of transactions with no gas price (free transactions).
+# Can be beneficial for certain applications but may increase the risk of network spam.
+# Use cautiously and consider implementing additional spam prevention measures if enabled.
+# Default: false
+zkevm.allow-free-transactions: false
+
+# Enables the processing of pre-EIP155 transactions.
+# Useful for maintaining backward compatibility with older wallets or contracts.
+# Note: Enabling this may introduce security risks.
+# Default: false
+zkevm.allow-pre-eip155-transactions: true
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           _______  _______ ____ _   _ _____ ___  ____
+#  |__  / |/ / ____\ \   / /  \/  |         | ____\ \/ / ____/ ___| | | |_   _/ _ \|  _ \
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  |  _|  \  /|  _|| |   | | | | | || | | | |_) |
+#   / /_| . \| |___  \ V / | |  | | |_____| | |___ /  \| |__| |___| |_| | | || |_| |  _ <
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_____/_/\_\_____\____|\___/  |_| \___/|_| \_\
+#
+# --------------------------------------------------------------------------------------------------
+# When set to true, ensures that a valid executor URL is provided.
+# Set to false to bypass the restriction (not recommended).
+zkevm.executor-strict: {{.erigon_strict_mode}}
+
+# A comma separated list of gRPC addresses that host zkevm executors.
+# Multiple URLs can be provided for load balancing or redundancy.
+# Default: ""
+# {{if .erigon_strict_mode}}
+zkevm.executor-urls: zkevm-stateless-executor{{.deployment_suffix}}:{{.executor_port_number}}
+# {{end}}
+
+# Define the maximum time allowed for an executor to respond to a request.
+# Adjust based on network conditions and typical execution times.
+# Longer timeouts may improve reliability but could delay error detection.
+# Default: 60s
+zkevm.executor-request-timeout: 60s
+
+# Limit the number of simultaneous requests that can be sent to the executor.
+# Higher values may improve throughput but could overload the executor.
+# Adjust based on your executor's capacity and system resources.
+# Default: 1
+zkevm.executor-max-concurrent-requests: 1
+
+# If set, specifies a directory where serialized executor requests will be stored.
+# Useful for debugging or auditing purposes.
+# Leave empty to disable this feature.
+# Default: ""
+zkevm.executor-payload-output: ""
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __              _    ____  ____  ____  _____ ____ ____  _____ ____
+#  |__  / |/ / ____\ \   / /  \/  |            / \  |  _ \|  _ \|  _ \| ____/ ___/ ___|| ____/ ___|
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____    / _ \ | | | | | | | |_) |  _| \___ \___ \|  _| \___ \
+#   / /_| . \| |___  \ V / | |  | | |_____|  / ___ \| |_| | |_| |  _ <| |___ ___) |__) | |___ ___) |
+#  /____|_|\_\_____|  \_/  |_|  |_|         /_/   \_\____/|____/|_| \_\_____|____/____/|_____|____/
+#
+# --------------------------------------------------------------------------------------------------
+# Specify the address of the admin's Externally Owned Account (EOA).
+# This address has special privileges, such as deploying and upgrading contracts.
+# Default: ""
+zkevm.address-admin: "{{.zkevm_admin_address}}"
+
+# Specify the address of the sequencer's Externally Owned Account (EOA).
+# This address is responsible for creating and submitting batches of transactions to L1.
+# Default: ""
+zkevm.address-sequencer: "{{.l2_sequencer_address}}"
+
+# Specify the address of the PolygonRollupManager smart contract.
+# This contract manages the overall rollup process and coordinates different rollups.
+# NOTE: This flag should be renamed `zkevm.address-rollup-manager`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
+# Default: ""
+zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+
+# Specify the address of the Rollup smart contract, specific to a rollup (or validium) chain.
+# Essential for submitting batches and managing the state of the rollup.
+# NOTE: This flag should be renamed `zkevm.address-rollup`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
+# Default: ""
+zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
+
+# Specify the address of the PolygonZkEVMGlobalExitRoot contract.
+# This contract manages the global exit root (GER), which is crucial for cross-chain operations
+# and ensuring the integrity of withdrawals from the L2 chains to the main L1 network.
+# Default: ""
+zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
+
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           _     _
+#  |__  / |/ / ____\ \   / /  \/  |         | |   / |
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | |   | |
+#   / /_| . \| |___  \ V / | |  | | |_____| | |___| |
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_____|_|
+
+# --------------------------------------------------------------------------------------------------
+# Specify the L1 block number from which to start syncing L1 data.
+# Used for network recovery from L1 batch data.
+# Set to 0 to use the datastream instead.
+# Default: 0
+zkevm.l1-sync-start-block: {{.l1_sync_start_block}}
+
+# Limits the number of batches to sync from L1.
+# Useful for debugging or partial recoveries.
+# Set to 0 for unlimited syncing, or specify a batch number to stop at that point.
+# Default: 0
+zkevm.l1-sync-stop-batch: 0
+
+# The L1 chain identifier.
+# Default: 0 (Ethereum)
+zkevm.l1-chain-id: {{.l1_chain_id}}
+
+# The L1 RPC URL.
+# Default: ""
+zkevm.l1-rpc-url: {{.l1_rpc_url}}
+
+# Enables caching of L1 data to reduce RPC calls and improve performance.
+# Default: false
+zkevm.l1-cache-enabled: false
+
+# The port used for the L1 cache.
+# Default: 6969
+zkevm.l1-cache-port: 6969
+
+# The rollup identifier.
+# NOTE: This flag should be renamed `zkevm.rollup-id`.
+# https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
+# Default: 1 (zkEVM mainnet)
+zkevm.l1-rollup-id: 1 # ethereum
+
+# Define the number of blocks to scan when querying for verifications and sequences.
+# Larger ranges may be more efficient but could increase query time and resource usage.
+# Default: 20_000
+zkevm.l1-block-range: 20_000
+
+# Set the time, in milliseconds, to wait between L1 queries.
+# Helps prevent overwhelming the L1 node with requests.
+# Default: 6_000
+zkevm.l1-query-delay: 6_000
+
+# Determine which type of "latest" block to use for L1 interactions.
+# Options: "latest" (most recent), "safe" (unlikely to be re-orged), "finalized" (confirmed),
+# where "finalized" is the most conservative and secure option.
+# Default: finalized
+zkevm.l1-highest-block-type: finalized
+
+# The address of the MATIC token contract on the L1 network.
+# Default: 0x0
+zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
+
+# The L1 block number from which to start syncing historical data.
+# Usually set to the block where the agglayer contracts were deployed.
+# Default: 0
+zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
+
+# If non-zero, requires a specific L1 block to be finalized before the sequencer continues to sync.
+# Enhances security but may introduce delays in processing.
+# Default: 0
+# zkevm.l1-finalized-block-requirement: 0
+
+# When enabled, verify that contract addresses on L1 match expected values.
+# Helps prevent interactions with incorrect or malicious contracts.
+# Default: true
+zkevm.l1-contract-address-check: true
+
+
+# --------------------------------------------------------------------------------------------------
+#   ______  _________     ____  __           _     ____
+#  |__  / |/ / ____\ \   / /  \/  |         | |   |___ \
+#    / /| ' /|  _|  \ \ / /| |\/| |  _____  | |     __) |
+#   / /_| . \| |___  \ V / | |  | | |_____| | |___ / __/
+#  /____|_|\_\_____|  \_/  |_|  |_|         |_____|_____|
+#
+# --------------------------------------------------------------------------------------------------
+# The L2 chain identifier.
+# Default: 0
+zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
+
+# {{if not .is_sequencer}}
+# The upstream L2 node RPC endpoint.
+# Default: ""
+zkevm.l2-sequencer-rpc-url: {{.zkevm_sequencer_url}}
+
+# The L2 datastreamer endpoint.
+# The endpoint for receiving real-time updates about new blocks and transactions.
+# Enables efficient synchronization without constant polling of the sequencer.
+# Critical for maintaining an up-to-date state of the L2 network.
+# Default: ""
+zkevm.l2-datastreamer-url: {{.zkevm_datastreamer_url}}
+# {{end}}
+
+# Maximum time to wait for data from the datastreamer before reporting an error.
+# Balances between allowing for network delays and detecting genuine connection issues.
+# Any setting below 500ms will be adjusted to 3s.
+# Default: 0s
+zkevm.l2-datastreamer-timeout: 0s
+
+
+# --------------------------------------------------------------------------------------------------
+#   _____ _____ _   _ _   _    _    ____  _   _
+#  | ____|_   _| | | | | | |  / \  / ___|| | | |
+#  |  _|   | | | |_| | |_| | / _ \ \___ \| |_| |
+#  | |___  | | |  _  |  _  |/ ___ \ ___) |  _  |
+#  |_____| |_| |_| |_|_| |_/_/   \_\____/|_| |_|
+#
+# --------------------------------------------------------------------------------------------------
+# Use snapshots for mainnet, goerli, gnosis chain and chiado.
+# Do not use snapshots in all the other cases.
+snapshots: false
+
+# Enable an external consensus engine.
+# By default, Erigon runs its own consensus client called Caplin.
+# https://erigon.gitbook.io/erigon/advanced-usage/consensus-layer
+# Default: false
+externalcl: true
+
+
+# --------------------------------------------------------------------------------------------------
+#   _______  __  ____   ___   ___  _
+#  |_   _\ \/ / |  _ \ / _ \ / _ \| |
+#    | |  \  /  | |_) | | | | | | | |
+#    | |  /  \  |  __/| |_| | |_| | |___
+#    |_| /_/\_\ |_|    \___/ \___/|_____|
+#
+# --------------------------------------------------------------------------------------------------
+# Disable the internal transaction pool and block producer.
+# Default: false
+txpool.disable: {{not .is_sequencer}}
+
+# A comma separated accounts to treat as locals (no flush, priority inclusion).
+# Default: ""
+# txpool.locals: ""
+
+# Disables price exemptions for locally submitted transactions.
+# NOTE: The flag is not used in the code!
+# Default: false
+# txpool.nolocals: false
+
+# The minimum gas price (fee cap) limit to enforce for acceptance into the pool.
+# Default: 1
+txpool.pricelimit: 1
+
+# The price bump percentage to replace an already existing transaction.
+# Default: 10
+txpool.pricebump: 10
+
+# The minimum number of executable transaction slots guaranteed per account.
+# Default: 16
+txpool.accountslots: 16
+
+# The maximum number of executable transaction slots for all accounts.
+# Default: 10_000
+txpool.globalslots: 10_000
+
+# The maximum number of non-executable transactions where only not enough baseFee
+# Default: 30_000
+txpool.globalbasefeeslots: 30_000
+
+# The maximum number of non-executable transaction slots permitted per account.
+# NOTE: The flag is not used in the code!
+# Default: 64
+# txpool.accountqueue: 64
+
+# The maximum number of non-executable transaction slots for all accounts.
+# Default: 30_000
+txpool.globalqueue: 30_000
+
+# The maximum amount of time non-executable transaction are queued.
+# NOTE: The flag is not used in the code!
+# Default: 3h
+# txpool.lifetime: 3h
+
+# A comma separared list of addresses, whose transactions will traced in transaction pool with debug printing.
+# Default: ""
+txpool.trace.senders: ""
+
+# How often transactions should be committed to the storage.
+# NOTE: The flag is not used in the code!
+# Default: 15s
+# txpool.commit.every: 15s
+
+# The address of the transaction pool API.
+# Default: use the value of --private.api.addr
+# txpool.api.addr: localhost:9092
+
+
+# --------------------------------------------------------------------------------------------------
+#   _   _ _____ _______        _____  ____  _  __
+#  | \ | | ____|_   _\ \      / / _ \|  _ \| |/ /
+#  |  \| |  _|   | |  \ \ /\ / / | | | |_) | ' /
+#  | |\  | |___  | |   \ V  V /| |_| |  _ <| . \
+#  |_| \_|_____| |_|    \_/\_/  \___/|_| \_\_|\_\
+#
+# --------------------------------------------------------------------------------------------------
+# The maximum number of network peers
+# The network will be disabled if set to 0.
+# Default: 100
+maxpeers: 0
+
+# The listening port of the network.
+# Default: 30303
+port: 30303
+
+# The version of eth p2p protocol supported.
+# Default: [67, 68]
+p2p.protocol: [67, 68]
+
+# The allowed ports to pick for different eth p2p protocol versions.
+# As follows <port-a>,<port-b>,..,<port-i>.
+# Default: [30303, 30304, 30305, 30306, 30307]
+p2p.allowed-ports: [30303, 30304, 30305, 30306, 30307]
+
+# A comma separated sentry addresses.
+# Format: <host>:<port>,<host>:<port>
+# Default: ""
+sentry.api.addr: ""
+
+# Log detailed peer info when a peer connects or disconnects.
+# Enable to integrate with observer.
+sentry.log-peer-info: false
+
+# Drop useless peers, aka peers that return empty body or header responses.
+# Default: false
+# sentry.drop-useless-peers: false
+
+# The downloaded address.
+# Format: <host>:<port>
+# Default: ""
+downloader.api.addr: ""
+
+# A comma separated enode URLs for P2P discovery bootstrap.
+# Default: ""
+bootnodes: ""
+
+# A comma separated enode URLs to connect to.
+# Default: ""
+staticpeers: ""
+
+# A comma separated enode URLs which are always allowed to connect, even above the peer limit.
+# Default: ""
+trustedpeers: ""
+
+# The P2P node key as hex (for testing)
+# nodekey:
+
+# The NAT port mapping mechanism.
+# nat:
+
+# Disables the peer discovery mechanism (manual peer addition).
+# Default: false
+nodiscover: true
+
+# Enable the experimental RLPx V5 (Topic Discovery) mechanism.
+# Default: false
+v5disc: false
+
+# Restrict network communication to the given IP networks (CIDR masks).
+# Default: ""
+netrestrict: ""
+
+
+# ==============================================================================
+#   ____  ____  _____     ___  _____ _____
+#  |  _ \|  _ \|_ _\ \   / / \|_   _| ____|
+#  | |_) | |_) || | \ \ / / _ \ | | |  _|
+#  |  __/|  _ < | |  \ V / ___ \| | | |___
+#  |_|   |_| \_\___|  \_/_/   \_\_| |_____|
+#
+# --------------------------------------------------------------------------------------------------
+# The address of Erigon's internal GRPC API.
+# Default: 127.0.0.1:9090
+private.api.addr: localhost:9092
+
+# The amount of requests the server can handle simultaneously.
+# Requests over this limit will wait.
+# Default: 31872
+private.api.ratelimit: 31872
+
+
+# ==============================================================================
+#   _____ ___  ____  ____  _____ _   _ _____
+#  |_   _/ _ \|  _ \|  _ \| ____| \ | |_   _|
+#    | || | | | |_) | |_) |  _| |  \| | | |
+#    | || |_| |  _ <|  _ <| |___| |\  | | |
+#    |_| \___/|_| \_\_| \_\_____|_| \_| |_|
+#
+# --------------------------------------------------------------------------------------------------
+# The listening port of the BitTorrent server.
+# Default: 42069
+torrent.port: 42070
+
+# The verbosity of the torrent
+# Default: 2 where 2 means warn
+torrent.verbosity: 2
+
+# The download rate of the torrent in bytes per second.
+# Default: 16mb
+torrent.download.rate: 16mb
+
+# The upload rate of the torrent in bytes per second.
+# Default: 4mb
+torrent.upload.rate: 4mb
+
+# The amount of files to download in parallel using the torrent.
+# If the network has enough senders, 1 to 3 slots are enough.
+# Otherwise, try to increase the number of slots to 5 to 7.
+# Using a too big value will slow down everything though.
+# Default: 3
+torrent.download.slots: 3
+
+# The maximum number of peers.
+# It is said to not be used at the moment!
+# Default: 100
+torrent.maxpeers: 0
+
+# A comma separated enode URLs to connect to.
+# Default: ""
+torrent.staticpeers: ""
+
+# The number of connections per file.
+# Default: 10
+torrent.conns.perfile: 10
+
+
+# ==============================================================================
+#   ____  ____   ____
+#  |  _ \|  _ \ / ___|
+#  | |_) | |_) | |
+#  |  _ <|  __/| |___
+#  |_| \_\_|    \____|
+#
+# ==============================================================================
+# Enable the graphql endpoint.
+# Default: false
+graphql: false
+
+# Limit the amount of goroutines to process a batch request.
+# A batch still can have unlimited amount of request.
+rpc.batch.concurrency: 2
+
+# Erigon has enabled JSON streaming for some heavy endpoints (like trace_*).
+# It greatly reduces the amount of RAM (in some cases, from 30GB to 30MB) but it produces invalid
+# JSON format if an error happened in the middle of the streaming.
+# Default: false
+rpc.streaming.disable: false
+
+# The maximum number of requests in a batch.
+# Default: 100
+rpc.batch.limit: 100
+
+# The maximum number of bytes returned from eth_call or similar invocation.
+# Default: 100_000
+rpc.returndata.limit: 100_000
+
+# Specify a granular (method-by-method) API allow list.
+# Default: ""
+rpc.accessList: ""
+
+# Sets a cap on gas that can be used in eth_call/estimateGas.
+# Set to 0 to remove the cap.
+# Default: 50_000_000
+rpc.gascap: 50_000_000
+
+
+# ==============================================================================
+#   _   _ _____ _____ ____    ____  ____   ____
+#  | | | |_   _|_   _|  _ \  |  _ \|  _ \ / ___|
+#  | |_| | | |   | | | |_) | | |_) | |_) | |
+#  |  _  | | |   | | |  __/  |  _ <|  __/| |___
+#  |_| |_| |_|   |_| |_|     |_| \_\_|    \____|
+#
+# --------------------------------------------------------------------------------------------------
+# Enable the HTTP RPC server.
+# Default: true
+http: true
+
+# The listening interface of the HTTP RPC server.
+http.addr: 0.0.0.0
+
+# The listening port of the HTTP RPC server.
+# Default: 8545
+http.port: {{.http_rpc_port_number}}
+
+# Enable compression over HTTP.
+# Default: false
+http.compression: false
+
+# A comma separated list of domains from which to accept cross origin requests (browser enforced).
+# It accepts '*' as a wildcard.
+# Default: "*"
+http.corsdomain: "*"
+
+# A comma separated list of virtual hostnames from which to accept requests (server enforced).
+# It accepts '*' as a wildcard.
+# Default: "localhost"
+http.vhosts: "*"
+
+# The APIs offered by the HTTP RPC server.
+# Default: "eth,erigon,engine"
+http.api: [eth, debug, net, trace, web3, erigon, zkevm, txpool]
+
+# Trace HTTP requests with INFO level.
+# Default: false
+http.trace: false
+
+
+# ==============================================================================
+#  __        ______    ____  ____   ____
+#  \ \      / / ___|  |  _ \|  _ \ / ___|
+#   \ \ /\ / /\___ \  | |_) | |_) | |
+#    \ V  V /  ___) | |  _ <|  __/| |___
+#     \_/\_/  |____/  |_| \_\_|    \____|
+#
+# --------------------------------------------------------------------------------------------------
+# Enable the WS RPC server.
+# Default: false
+ws: true
+
+# The listening interface of the WS RPC server.
+ws.addr: 0.0.0.0
+
+# The listening port of the WS RPC server.
+# Default: 8545
+ws.port: {{.ws_rpc_port_number}}
+
+
+# ==============================================================================
+#      _   _   _ _____ _   _   ____  ____   ____
+#     / \ | | | |_   _| | | | |  _ \|  _ \ / ___|
+#    / _ \| | | | | | | |_| | | |_) | |_) | |
+#   / ___ \ |_| | | | |  _  | |  _ <|  __/| |___
+#  /_/   \_\___/  |_| |_| |_| |_| \_\_|    \____|
+#
+# --------------------------------------------------------------------------------------------------
+# The listening interface of the engine API.
+# Default: localhost
+# authrpc.addr: 0.0.0.0
+
+# The listening port of the engine API.
+# authrpc.port: 8551
+
+# The path to the token that ensures safe connection between CL and EL.
+# Default: ""
+# authrpc.jwtsecret: ""
+
+# A comma separated list of virtual hostnames from which to accept Engine API requests (server enforced).
+# Accepts '*' wildcard.
+# authrpc.vhosts: "*"
+
+
+# ==============================================================================
+#   __  __ _____ _____ ____  ___ ____ ____
+#  |  \/  | ____|_   _|  _ \|_ _/ ___/ ___|
+#  | |\/| |  _|   | | | |_) || | |   \___ \
+#  | |  | | |___  | | |  _ < | | |___ ___) |
+#  |_|  |_|_____| |_| |_| \_\___\____|____/
+#
+# --------------------------------------------------------------------------------------------------
+# Enable the metrics HTTP server.
+# Default: false
+metrics: true
+
+# The listening interface of the metrics server.
+# Default: 127.0.0.1
+metrics.addr: 0.0.0.0
+
+# The listening address of the metrics server.
+# Default: 6060
+metrics.port: {{.metrics_port_number}}
+
+
+# ==============================================================================
+#   ____  ____  ____   ___  _____
+#  |  _ \|  _ \|  _ \ / _ \|  ___|
+#  | |_) | |_) | |_) | | | | |_
+#  |  __/|  __/|  _ <| |_| |  _|
+#  |_|   |_|   |_| \_\\___/|_|
+#
+# --------------------------------------------------------------------------------------------------
+# Enable the pprof HTTP server.
+# Default: false
+pprof: true
+
+# The listening interface of the pprof server.
+# Default: 127.0.0.1
+pprof.addr: 0.0.0.0
+
+# The listening port of the pprof server.
+# Default: 6060
+pprof.port: {{.pprof_port_number}}
+
+# Write CPU profile to the given file
+# pprof.cpuprofile: /tmp/cdk-erigon.cpuprofile
+
+
+# --------------------------------------------------------------------------------------------------
+#   ____  _____ ____  _   _  ____
+#  |  _ \| ____| __ )| | | |/ ___|
+#  | | | |  _| |  _ \| | | | |  _
+#  | |_| | |___| |_) | |_| | |_| |
+#  |____/|_____|____/ \___/ \____|
+#
+# --------------------------------------------------------------------------------------------------
+# Enable debug timers. This adds useful timings into the logs which can help narrow down performance
+# issues.
+# Default: false
+debug.timers: true
+
+# Disable syncing.
+# Default: false
+debug.no-sync: false
+
+# Limit the number of blocks to sync.
+# Default: 0
+debug.limit: 0
+
+# The number of blocks to process each run of the stage loop.
+# debug.step:
+
+# Start incrementing by debug.step after this block.
+# debug.step-after:
+
+
+# --------------------------------------------------------------------------------------------------
+#   ____  ____
+#  |  _ \| __ )
+#  | | | |  _ \
+#  | |_| | |_) |
+#  |____/|____/
+#
+# --------------------------------------------------------------------------------------------------
+# Specify the maximum allowable size for the database.
+# Default: 8TB
+db.size.limit: 8TB
+
+# Control the maximum number of concurrent read operations allowed on the database.
+# Default: matches the number of CPU cores available (GOMAXPROCS).
+# db.read.concurrency:
+
+# Define the size of each page for the MDBX database upon creation.
+# It must be a power of 2 and within the range of 256 bytes to 64KB.
+# Default: based on the operating system's page size.
+# db.pagesize
+
+
+# --------------------------------------------------------------------------------------------------
+#   _____ ___  ____   ___
+#  |_   _/ _ \|  _ \ / _ \
+#    | || | | | | | | | | |
+#    | || |_| | |_| | |_| |
+#    |_| \___/|____/ \___/
+#
+# --------------------------------------------------------------------------------------------------
+# TODO: Document these parameters...
+# - miner.x
+# - trace.x
+# - tls.x
+# - exec + preload
+# - state
+# -jspath
+# - gpo.x
+# - experimental.x
+# - clique.x
+# - snap.x
+# - healthcheck (grpc)
+# - bor.x
+# - config
+# - lightclient.x
+# - sentinel.x
+

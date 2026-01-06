@@ -1,5 +1,5 @@
 ports_package = import_module("../package_io/ports.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("../contracts/util.star")
 
 BLUTGANG_IMAGE = "makemake1337/blutgang:0.3.6"
 
@@ -30,7 +30,7 @@ def run(plan, args):
 
 def get_blutgang_config(plan, args):
     blutgang_config_template = read_file(
-        src="../../static_files/additional_services/blutgang-config/config.toml"
+        src="../../static_files/additional_services/blutgang/config.toml"
     )
 
     zkevm_sequencer_service = plan.get_service(
@@ -40,7 +40,7 @@ def get_blutgang_config(plan, args):
         zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
     )
 
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
 
     blutgang_data = {
         "blutgang_rpc_port": RPC_PORT_NUMBER,

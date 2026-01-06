@@ -1,0 +1,42 @@
+grpc-endpoint = "0.0.0.0:{{.grpc_port_number}}"
+
+[log]
+level = "{{.log_level}}"
+outputs = []
+format = "{{.log_format}}"
+
+[telemetry]
+prometheus-addr = "0.0.0.0:{{.metrics_port_number}}"
+
+[shutdown]
+runtime-timeout = "5s"
+
+[aggchain-proof-service.aggchain-proof-builder]
+network-id = {{ .network_id }}
+{{ if not .aggkit_legacy}}
+proving-timeout = "1h"
+{{ end }}
+
+[aggchain-proof-service.aggchain-proof-builder.primary-prover.{{ .primary_prover }}]
+proving-timeout = "1h"
+
+[aggchain-proof-service.aggchain-proof-builder.contracts]
+l1-rpc-endpoint = "{{.l1_rpc_url}}"
+l2-execution-layer-rpc-endpoint = "{{ .l2_el_rpc_url }}"
+l2-consensus-layer-rpc-endpoint = "{{ .l2_cl_rpc_url }}"
+polygon-rollup-manager = "{{ .rollup_manager_address }}"
+global-exit-root-manager-v2-sovereign-chain = "{{ .global_exit_root_address }}"
+evm-sketch-genesis = "/etc/aggkit-prover/evm-sketch-genesis.json" # TODO: The order of deployment is important for this json file to exist at the time of populating this config file.
+
+[aggchain-proof-service.proposer-service]
+l1-rpc-endpoint = "{{ .l1_rpc_url }}"
+mock = {{ .op_succinct_mock }}
+
+[aggchain-proof-service.proposer-service.client]
+proposer-endpoint = "{{ .proposer_url }}"
+sp1-cluster-endpoint = "{{ .sp1_cluster_endpoint }}"
+request-timeout = 600
+proving-timeout = 3600
+
+[primary-prover.{{ .primary_prover }}]
+proving-timeout = "1h"

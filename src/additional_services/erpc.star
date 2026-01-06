@@ -1,5 +1,5 @@
 ports_package = import_module("../package_io/ports.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("../contracts/util.star")
 
 ERPC_IMAGE = "ghcr.io/erpc/erpc:0.0.24"
 
@@ -25,9 +25,9 @@ def run(plan, args):
 
 def get_erpc_config(plan, args):
     config_template = read_file(
-        src="../../static_files/additional_services/erpc-config/erpc.yaml"
+        src="../../static_files/additional_services/erpc/erpc.yaml"
     )
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
     return plan.render_templates(
         name=SERVICE_NAME + "-config",
         config={

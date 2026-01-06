@@ -1,17 +1,17 @@
 ports_package = import_module("../package_io/ports.star")
-service_package = import_module("../../lib/service.star")
+contracts_util = import_module("../contracts/util.star")
 
 
 def run(plan, args):
-    l2_rpc_url = service_package.get_l2_rpc_url(plan, args).http
-    sequencer_rpc_url = service_package.get_sequencer_rpc_url(plan, args)
+    l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args).http
+    sequencer_rpc_url = contracts_util.get_sequencer_rpc_url(plan, args)
 
     status_checker_config_artifact = plan.render_templates(
         name="status-checker-config",
         config={
             "config.yml": struct(
                 template=read_file(
-                    src="../../static_files/additional_services/status-checker-config/config.yml",
+                    src="../../static_files/additional_services/status-checker/config.yml",
                 ),
                 data={},
             ),
@@ -19,7 +19,7 @@ def run(plan, args):
     )
 
     status_checker_checks_artifact = plan.upload_files(
-        src="../../static_files/additional_services/status-checker-config/checks",
+        src="../../static_files/additional_services/status-checker/checks",
         name="status-checker-checks",
     )
 

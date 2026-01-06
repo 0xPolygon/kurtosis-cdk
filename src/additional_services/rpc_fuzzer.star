@@ -1,4 +1,4 @@
-constants = import_module("../../src/package_io/constants.star")
+constants = import_module("../package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
 RPC_FUZZER_FOLDER_NAME = "../../static_files/additional_services/rpc-fuzzer"
