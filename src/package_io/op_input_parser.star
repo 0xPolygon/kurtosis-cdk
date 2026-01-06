@@ -65,7 +65,7 @@ def _default_chain(log_format=constants.LOG_FORMAT.json):
             "network_params": _sort_dict_by_values(
                 {
                     # The rollup chain ID
-                    "network_id": 2151908,
+                    "l2_network_id": 2151908,
                     # The rollup block time
                     "seconds_per_slot": 1,
                     # Hard fork activation times

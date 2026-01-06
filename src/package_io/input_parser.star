@@ -238,7 +238,7 @@ DEFAULT_ROLLUP_ARGS = {
     "l2_chain_id": 2151908,
     # The unique identifier for the rollup within the RollupManager contract.
     # This setting sets the rollup as the first rollup.
-    "network_id": 1,
+    "l2_network_id": 1,
     # By default a mock verifier is deployed.
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!

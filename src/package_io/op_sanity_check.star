@@ -19,9 +19,9 @@ def check_first_chain_id(args, op_args):
     chain1 = chains[chain1_name]
     if not "network_params" in chain1:
         fail("The first OP chain must define network_params")
-    if not "network_id" in chain1["network_params"]:
-        fail("The first OP chain's network_params must define network_id")
-    chain1_id = chain1["network_params"]["network_id"]
+    if not "l2_network_id" in chain1["network_params"]:
+        fail("The first OP chain's network_params must define l2_network_id")
+    chain1_id = chain1["network_params"]["l2_network_id"]
 
     l2_chain_id = args.get("l2_chain_id")
     if str(chain1_id) != str(l2_chain_id):
