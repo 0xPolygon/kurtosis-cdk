@@ -240,7 +240,7 @@ zkevm.data-stream-port: {{.data_streamer_port_number}}
 # Default: 2
 # {{if eq .cdk_erigon_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
 # zkevm.datastream-version: not supported
-# fork12 or after {{else if or (eq .zkevm_rollup_fork_name "banana") (eq .zkevm_rollup_fork_name "aggchain")}}
+# fork12 or after {{else if or (eq .zkevm_fork_name "banana") (eq .zkevm_fork_name "aggchain")}}
 zkevm.datastream-version: 3
 # before fork12 {{else}}
 zkevm.datastream-version: 2

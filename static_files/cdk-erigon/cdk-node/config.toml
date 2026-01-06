@@ -9,7 +9,7 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 ForkId = {{.zkevm_fork_id}}
 IsValidiumMode = {{.is_validium_mode}}
 NetworkID = {{.network_id}}
-ContractVersions = "{{.zkevm_rollup_fork_name}}"
+ContractVersions = "{{.zkevm_fork_name}}"
 
 L2Coinbase =  "{{.l2_sequencer_address}}"
 SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/cdk/sequencer.keystore"}}"
