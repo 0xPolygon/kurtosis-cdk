@@ -19,8 +19,14 @@ METRICS_PORT_ID = "prometheus"
 METRICS_PORT_NUMBER = 9091
 
 
-def run_sequencer(plan, args, contract_setup_addresses):
-    return _run(plan, args, contract_setup_addresses, CDK_ERIGON_TYPE.sequencer)
+def run_sequencer(plan, args, contract_setup_addresses, stateless_executor_url=None):
+    return _run(
+        plan,
+        args,
+        contract_setup_addresses,
+        CDK_ERIGON_TYPE.sequencer,
+        stateless_executor_url,
+    )
 
 
 def run_rpc(
@@ -36,6 +42,7 @@ def run_rpc(
         args,
         contract_setup_addresses,
         CDK_ERIGON_TYPE.rpc,
+        None,
         sequencer_url,
         datastreamer_url,
         pool_manager_url,
@@ -47,6 +54,7 @@ def _run(
     args,
     contract_setup_addresses,
     type,
+    stateless_executor_url=None,
     sequencer_url=None,
     datastreamer_url=None,
     pool_manager_url=None,
@@ -81,11 +89,18 @@ def _run(
                 | (
                     {
                         # rpc-specific configuration
-                        "zkevm_sequencer_url": sequencer_url,
-                        "zkevm_datastreamer_url": datastreamer_url,
+                        "sequencer_url": sequencer_url,
+                        "datastreamer_url": datastreamer_url,
                         "pool_manager_url": pool_manager_url,
                     }
                     if type == CDK_ERIGON_TYPE.rpc
+                    else {}
+                )
+                | (
+                    {
+                        "stateless_executor_url": stateless_executor_url,
+                    }
+                    if args.get("erigon_strict_mode")
                     else {}
                 ),
             ),

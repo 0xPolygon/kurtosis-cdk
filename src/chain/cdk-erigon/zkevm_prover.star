@@ -63,7 +63,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
     )
     cpu_arch = cpu_arch_result.output
 
-    return plan.add_service(
+    result = plan.add_service(
         name="zkevm-{}{}".format(type, args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("zkevm_prover_image"),
@@ -86,4 +86,8 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
                 ),
             ],
         ),
+    )
+    executor_url = result.ports[EXECUTOR_PORT_ID].url
+    return struct(
+        executor_url=executor_url,
     )

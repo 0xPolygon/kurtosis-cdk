@@ -23,7 +23,7 @@ def launch(
 ):
     # cdk-erigon sequencer and its components
     if args.get("erigon_strict_mode"):
-        zkevm_prover.run_stateless_executor(plan, args)
+        stateless_executor_context = zkevm_prover.run_stateless_executor(plan, args)
 
     # cdk-erigon sequencer
     sequencer_context = cdk_erigon.run_sequencer(
@@ -35,6 +35,9 @@ def launch(
             )
         },
         contract_setup_addresses,
+        stateless_executor_context.executor_url
+        if args.get("erigon_strict_mode")
+        else None,
     )
 
     # zkevm-pool-manager
