@@ -749,7 +749,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
             if (
                 args["consensus_contract_type"] != "fep"
-                and args["consensus_contract_type"] != "ecdsa_multisig"
+                and args["consensus_contract_type"] != "ecdsa-multisig"
             ):
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(

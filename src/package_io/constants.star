@@ -31,7 +31,7 @@ CONSENSUS_TYPE = struct(
     rollup="rollup",
     cdk_validium="cdk_validium",
     pessimistic="pessimistic",
-    ecdsa_multisig="ecdsa_multisig",
+    ecdsa_multisig="ecdsa-multisig",
     fep="fep",
 )
 
