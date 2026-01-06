@@ -75,7 +75,7 @@ chainId = "{{.l1_chain_id}}"
 # ------------------------------------------------------------------------------
 # Address of the zkevm global exit root contract on L1
 # ------------------------------------------------------------------------------
-polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+polygonZkEVMGlobalExitRootAddress = "{{.l1_ger_address}}"
 
 # ------------------------------------------------------------------------------
 # Address of the rollup manager contract on L1
@@ -113,7 +113,7 @@ BridgeAddr = "{{.zkevm_bridge_address}}"
 # Address of the sovereign global exit root proxy contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootAddr = "{{.l2_ger_address}}"
 BridgeAddr = "{{.zkevm_bridge_l2_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
@@ -382,7 +382,7 @@ EnableAggOracleCommittee = false
 # Address of the sovereign global exit root proxy contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
@@ -687,7 +687,7 @@ SovereignRollupAddr = ""
 # this address is needed for the AggchainProof mode of the AggSender
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}

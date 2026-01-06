@@ -110,7 +110,7 @@
     {
       "Type": "PolygonZkEVMGlobalExitRoot",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Address": "{{.l1_ger_address}}",
       "Fields": [
         "DepositCount",
         "GlobalExitRoot",
@@ -122,7 +122,7 @@
     {
       "Type": "PolygonZkEVMGlobalExitRootEvent",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Address": "{{.l1_ger_address}}",
       "Fields": [
         "UpdateL1InfoTree",
         "UpdateL1InfoTreeV2"
@@ -132,7 +132,7 @@
       "_comment": "In the case of zkevm the L2 GER contract doesn't emit events. We read the value directly from an RPC",
       "Type": "L2GlobalExitRootZkEVM",
       "EndPoints": "ZkEVMs",
-      "Address": "{{.zkevm_global_exit_root_l2_address}}"
+      "Address": "{{.l2_ger_address}}"
     },
     {
       "Type": "AgglayerCertificateHeaderProbe",

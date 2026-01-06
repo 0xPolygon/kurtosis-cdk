@@ -158,7 +158,7 @@ def run(plan, args={}):
     if (
         "rollup_manager_address" in args
         and "rollup_manager_block_number" in args
-        and "zkevm_global_exit_root_l2_address" in args
+        and "l2_ger_address" in args
         and "polygon_data_committee_address" in args
     ):
         plan.print("Deploying helper service to retrieve rollup data")

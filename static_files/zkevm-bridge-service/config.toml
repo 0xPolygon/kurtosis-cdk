@@ -110,7 +110,7 @@ L2GenBlockNumbers = [0]
 # Address of the Polygon bridge smc
 PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 # Address of the Global exit root smc
-PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+PolygonZkEVMGlobalExitRootAddress = "{{.l1_ger_address}}"
 # Address of the rollup manager smc
 PolygonRollupManagerAddress = "{{.rollup_manager_address}}"
 {{- if eq .sequencer_type "cdk-erigon" }}
@@ -121,7 +121,7 @@ L2PolygonBridgeAddresses = ["{{.zkevm_bridge_l2_address}}"]
 # Flag indicating whether to require sovereign chain smcs or not. It must have the same length as L2PolygonBridgeAddresses
 RequireSovereignChainSmcs = [{{.require_sovereign_chain_contract}}]
 # List of global exit root addresses for Layer 2. Same length as L2PolygonBridgeAddresses
-L2PolygonZkEVMGlobalExitRootAddresses = ["{{.zkevm_global_exit_root_l2_address}}"]
+L2PolygonZkEVMGlobalExitRootAddresses = ["{{.l2_ger_address}}"]
 {{- else if eq .sequencer_type "op-geth" }}
 # Address of the zkEVM smc
 PolygonZkEVMAddress = "{{.sovereign_rollup_addr}}"

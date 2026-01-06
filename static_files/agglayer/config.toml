@@ -73,7 +73,7 @@ chain-id = {{.l1_chain_id}}
 node-url = "{{.l1_rpc_url}}"
 ws-node-url = "{{.l1_ws_url}}"
 rollup-manager-contract = "{{.rollup_manager_address}}"
-polygon-zkevm-global-exit-root-v2-contract = "{{.zkevm_global_exit_root_address}}"
+polygon-zkevm-global-exit-root-v2-contract = "{{.l1_ger_address}}"
 rpc-timeout = 45
 
 [l2]

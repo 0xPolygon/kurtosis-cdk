@@ -42,12 +42,8 @@ def run(
                     "zkevm_bridge_address": contract_setup_addresses.get(
                         "zkevm_bridge_address"
                     ),
-                    "zkevm_global_exit_root_address": contract_setup_addresses.get(
-                        "zkevm_global_exit_root_address"
-                    ),
-                    "zkevm_global_exit_root_l2_address": contract_setup_addresses.get(
-                        "zkevm_global_exit_root_l2_address"
-                    ),
+                    "l1_ger_address": contract_setup_addresses.get("l1_ger_address"),
+                    "l2_ger_address": contract_setup_addresses.get("l2_ger_address"),
                     "sovereign_ger_proxy_addr": sovereign_contract_setup_addresses.get(
                         "sovereign_ger_proxy_addr"
                     ),

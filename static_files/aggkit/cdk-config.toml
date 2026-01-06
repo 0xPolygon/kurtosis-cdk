@@ -20,13 +20,13 @@ genesisBlockNumber = "{{.rollup_manager_block_number}}"
 [L1Config]
 	URL = "{{.l1_rpc_url}}"
 	chainId = "{{.l1_chain_id}}"
-	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+	polygonZkEVMGlobalExitRootAddress = "{{.l1_ger_address}}"
 	polygonRollupManagerAddress = "{{.rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.rollup_address}}"
 
 [L2Config]
-	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
+	GlobalExitRootAddr = "{{.l2_ger_address}}"
 
 [Log]
 Level = "{{.log_level}}"

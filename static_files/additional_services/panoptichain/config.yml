@@ -32,7 +32,7 @@ providers:
       url: "{{.l2_rpc_url}}"
       label: "L2"
       contracts:
-        global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
+        global_exit_root_l2_address: "{{.l2_ger_address}}"
         zkevm_bridge_address: "{{.zkevm_bridge_l2_address}}"
       time_to_mine:
         sender: "{{.l2_sender_address}}"

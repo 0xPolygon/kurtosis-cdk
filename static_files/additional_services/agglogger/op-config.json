@@ -100,7 +100,7 @@
     {
       "Type": "PolygonZkEVMGlobalExitRoot",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Address": "{{.l1_ger_address}}",
       "Fields": [
         "DepositCount",
         "GlobalExitRoot",
@@ -112,7 +112,7 @@
     {
       "Type": "PolygonZkEVMGlobalExitRootEvent",
       "EndPoints": "Ethereum",
-      "Address": "{{.zkevm_global_exit_root_address}}",
+      "Address": "{{.l1_ger_address}}",
       "Fields": [
         "UpdateL1InfoTree",
         "UpdateL1InfoTreeV2"

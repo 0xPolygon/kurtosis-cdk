@@ -420,7 +420,7 @@ zkevm.address-zkevm: "{{.rollup_address}}"
 # This contract manages the global exit root (GER), which is crucial for cross-chain operations
 # and ensuring the integrity of withdrawals from the L2 chains to the main L1 network.
 # Default: ""
-zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
+zkevm.address-ger-manager: "{{.l1_ger_address}}"
 
 
 # --------------------------------------------------------------------------------------------------

@@ -559,15 +559,15 @@ create_agglayer_rollup() {
     jq '.polygonZkEVML2BridgeAddress = .AgglayerBridge' combined.json > c.json; mv c.json combined.json
 
     # Add the L2 GER Proxy address in combined.json
-    zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
-    if [[ -z "$zkevm_global_exit_root_l2_address" ]]; then
-        zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "LegacyAgglayerGERL2 proxy") | .address' "$output_dir"/genesis.json)
+    l2_ger_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
+    if [[ -z "$l2_ger_address" ]]; then
+        l2_ger_address=$(jq -r '.genesis[] | select(.contractName == "LegacyAgglayerGERL2 proxy") | .address' "$output_dir"/genesis.json)
     fi
-    if [[ -z "$zkevm_global_exit_root_l2_address" ]]; then
+    if [[ -z "$l2_ger_address" ]]; then
         _echo_ts "Error: No L2 GER Proxy address found in genesis.json"
         exit 1
     fi
-    jq --arg a "$zkevm_global_exit_root_l2_address" '.LegacyAgglayerGERL2 = $a' combined.json > c.json; mv c.json combined.json
+    jq --arg a "$l2_ger_address" '.LegacyAgglayerGERL2 = $a' combined.json > c.json; mv c.json combined.json
 
     {{ if .gas_token_enabled }}
     jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
