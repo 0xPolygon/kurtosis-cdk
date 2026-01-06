@@ -88,8 +88,8 @@ def _get_l2_bridge_address(
     if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         return sovereign_contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
-    if "zkevm_bridge_l2_address" in contract_setup_addresses:
-        return contract_setup_addresses.get("zkevm_bridge_l2_address")
+    if "l2_bridge_address" in contract_setup_addresses:
+        return contract_setup_addresses.get("l2_bridge_address")
     return contract_setup_addresses.get("l1_bridge_address")
 
 

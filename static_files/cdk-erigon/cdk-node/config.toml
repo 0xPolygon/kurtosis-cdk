@@ -66,7 +66,7 @@ CheckSettledInterval = "5s"
 DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 Enabled = "{{.enable_aggkit_claim_sponsor}}"
 SenderAddr = "{{.l2_claimsponsor_address}}"
-BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+BridgeAddrL2 = "{{.l2_bridge_address}}"
 
 [ClaimSponsor.EthTxManager]
 PrivateKeys = [

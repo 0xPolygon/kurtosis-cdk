@@ -4,7 +4,7 @@ constants = import_module("../package_io/constants.star")
 def get_contract_setup_addresses(plan, args, deployment_stages):
     extract = {
         "l1_bridge_address": "fromjson | .AgglayerBridge",
-        "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
         "rollup_address": "fromjson | .rollupAddress",
         "rollup_manager_address": "fromjson | .AgglayerManager",
         "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",

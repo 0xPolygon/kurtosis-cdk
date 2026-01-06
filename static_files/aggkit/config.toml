@@ -114,7 +114,7 @@ BridgeAddr = "{{.l1_bridge_address}}"
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootAddr = "{{.l2_ger_address}}"
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+BridgeAddr = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
@@ -527,7 +527,7 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # BridgeAddr is the address of the sovereign bridge contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+BridgeAddr = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
@@ -623,7 +623,7 @@ SenderAddr = "{{.l2_claimsponsor_address}}"
 # BridgeAddrL2 is the address of the bridge smart contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+BridgeAddrL2 = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}

@@ -117,7 +117,7 @@ PolygonRollupManagerAddress = "{{.rollup_manager_address}}"
 # Address of the zkEVM smc
 PolygonZkEVMAddress = "{{.rollup_address}}"
 # List of Layer 2 Polygon bridge addresses. It must have the same length as L2URLs. e.g. If 5 networks need to be synced, the urls must be in this array.
-L2PolygonBridgeAddresses = ["{{.zkevm_bridge_l2_address}}"]
+L2PolygonBridgeAddresses = ["{{.l2_bridge_address}}"]
 # Flag indicating whether to require sovereign chain smcs or not. It must have the same length as L2PolygonBridgeAddresses
 RequireSovereignChainSmcs = [{{.require_sovereign_chain_contract}}]
 # List of global exit root addresses for Layer 2. Same length as L2PolygonBridgeAddresses
