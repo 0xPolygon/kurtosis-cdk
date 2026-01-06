@@ -11,7 +11,7 @@ def run(plan, args):
         "rpc_url": l2_rpc_url.http,
         "trace_url": l2_rpc_url.http,
         "ws_url": l2_rpc_url.ws,
-        "chain_id": str(args["zkevm_rollup_chain_id"]),
+        "chain_id": str(args["l2_chain_id"]),
         "deployment_suffix": args["deployment_suffix"],
     } | args.get("blockscout_params", {})
 

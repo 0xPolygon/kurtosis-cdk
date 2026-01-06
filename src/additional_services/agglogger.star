@@ -31,7 +31,7 @@ def run(
                     "l1_chain_id": args.get("l1_chain_id"),
                     # l2
                     "l2_rpc_url": l2_rpc_url,
-                    "l2_chain_id": args.get("zkevm_rollup_chain_id"),
+                    "l2_chain_id": args.get("l2_chain_id"),
                     "l2_network_id": args.get("network_id"),
                     # agglayer
                     "agglayer_rpc_url": args.get("agglayer_readrpc_url"),

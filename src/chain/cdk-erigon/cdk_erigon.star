@@ -100,7 +100,7 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
                     src="../../../static_files/cdk-erigon/cdk-erigon/chainspec.json"
                 ),
                 data={
-                    "chain_id": args.get("zkevm_rollup_chain_id"),
+                    "chain_id": args.get("l2_chain_id"),
                     "enable_normalcy": args.get("enable_normalcy"),
                     "chain_name": args.get("chain_name"),
                 },

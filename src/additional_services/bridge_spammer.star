@@ -50,7 +50,7 @@ def run(plan, args, contract_setup_addresses):
                 "L1_CHAIN_ID": str(args.get("l1_chain_id")),
                 "L1_RPC_URL": l1_rpc_url,
                 # l2
-                "L2_CHAIN_ID": str(args.get("zkevm_rollup_chain_id")),
+                "L2_CHAIN_ID": str(args.get("l2_chain_id")),
                 "L2_RPC_URL": l2_rpc_url,
                 # addresses
                 "L1_BRIDGE_ADDRESS": contract_setup_addresses.get("l1_bridge_address"),

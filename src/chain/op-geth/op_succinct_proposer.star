@@ -118,7 +118,7 @@ def create_evm_sketch_genesis(plan, args):
     op_geth_genesis = plan.store_service_files(
         service_name="op-el-1-op-geth-op-node" + args["deployment_suffix"],
         name="op_geth_genesis.json",
-        src="/network-configs/genesis-" + str(args["zkevm_rollup_chain_id"]) + ".json",
+        src="/network-configs/genesis-" + str(args["l2_chain_id"]) + ".json",
         description="Storing OP Geth genesis.json for evm-sketch-genesis field in aggkit-prover.",
     )
 

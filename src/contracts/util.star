@@ -100,7 +100,7 @@ def get_sovereign_contract_setup_addresses(plan, args):
         "sovereign_ger_proxy_addr": "fromjson | .ger_proxy_addr",
         "sovereign_bridge_proxy_addr": "fromjson | .bridge_proxy_addr",
         "sovereign_rollup_addr": "fromjson | .sovereignRollupContract",
-        "zkevm_rollup_chain_id": "fromjson | .rollupChainID",
+        "l2_chain_id": "fromjson | .rollupChainID",
     }
 
     exec_recipe = ExecRecipe(
@@ -166,22 +166,22 @@ def get_op_succinct_env_vars(plan, args):
 
 def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     proposer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "proposer", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "proposer", args["l2_chain_id"]
     )
     batcher_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "batcher", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "batcher", args["l2_chain_id"]
     )
     sequencer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "sequencer", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "sequencer", args["l2_chain_id"]
     )
     challenger_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "challenger", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "challenger", args["l2_chain_id"]
     )
     proxy_admin_address = _read_l1_op_contract_address(
         plan,
         op_deployer_configs_artifact,
         "l1ProxyAdmin",
-        args["zkevm_rollup_chain_id"],
+        args["l2_chain_id"],
     )
     return {
         "op_proposer_address": proposer_address,

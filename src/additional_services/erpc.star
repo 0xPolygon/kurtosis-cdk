@@ -36,7 +36,7 @@ def get_erpc_config(plan, args):
                 data={
                     "erpc_rpc_port": RPC_PORT,
                     "erpc_metrics_port": PROMETHEUS_PORT,
-                    "l2_chain_id": args["zkevm_rollup_chain_id"],
+                    "l2_chain_id": args["l2_chain_id"],
                     "l2_rpc_name": args["l2_rpc_name"],
                     "l2_rpc_url": l2_rpc_url.http,
                 },

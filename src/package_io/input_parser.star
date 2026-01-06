@@ -235,7 +235,7 @@ DEFAULT_ROLLUP_ARGS = {
     # The keystore password.
     "l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
     # The rollup network identifier.
-    "zkevm_rollup_chain_id": 2151908,
+    "l2_chain_id": 2151908,
     # The unique identifier for the rollup within the RollupManager contract.
     # This setting sets the rollup as the first rollup.
     "network_id": 1,
