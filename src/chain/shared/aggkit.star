@@ -14,7 +14,9 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
     )
 
     # Create config artifact
-    config_template = read_file(src="../../../static_files/chain/shared/aggkit/cdk-config.toml")
+    config_template = read_file(
+        src="../../../static_files/chain/shared/aggkit/cdk-config.toml"
+    )
     l2_rpc_url = "http://{}{}:{}".format(
         args.get("l2_rpc_name"),
         args.get("deployment_suffix"),
@@ -180,7 +182,9 @@ def _deploy_core_aggkit_services(plan, args, deployment_context):
 def _deploy_main_aggkit_service(plan, args, deployment_context):
     """Deploy the main aggkit service with inline config creation."""
     # Create config artifact
-    config_template = read_file(src="../../../static_files/chain/shared/aggkit/config.toml")
+    config_template = read_file(
+        src="../../../static_files/chain/shared/aggkit/config.toml"
+    )
     config_artifact = plan.render_templates(
         name="aggkit-config{}".format(args.get("deployment_suffix")),
         config={
@@ -234,7 +238,9 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
 def _deploy_bridge_service(plan, args, deployment_context):
     """Deploy the bridge service with inline config creation."""
     # Create config artifact
-    config_template = read_file(src="../../../static_files/chain/shared/aggkit/config.toml")
+    config_template = read_file(
+        src="../../../static_files/chain/shared/aggkit/config.toml"
+    )
     config_artifact = plan.render_templates(
         name="aggkit-bridge-config{}".format(args.get("deployment_suffix")),
         config={
@@ -300,7 +306,9 @@ def _deploy_committee_members_if_needed(plan, args, deployment_context):
 def _deploy_committee_member(plan, args, deployment_context, member_index):
     """Deploy a single committee member with inline config creation."""
     # Create config artifact
-    config_template = read_file(src="../../../static_files/chain/shared/aggkit/config.toml")
+    config_template = read_file(
+        src="../../../static_files/chain/shared/aggkit/config.toml"
+    )
     config_data = _build_config_data(
         args, deployment_context, {"agg_oracle_committee_member_index": member_index}
     )
@@ -377,7 +385,9 @@ def _deploy_validator_services_if_needed(plan, args, deployment_context):
 def _deploy_validator_service(plan, args, deployment_context, validator_index):
     """Deploy a single validator service with inline config creation."""
     # Create config artifact
-    config_template = read_file(src="../../../static_files/chain/shared/aggkit/config.toml")
+    config_template = read_file(
+        src="../../../static_files/chain/shared/aggkit/config.toml"
+    )
     config_data = _build_config_data(
         args, deployment_context, {"agg_sender_validator_member_index": validator_index}
     )
