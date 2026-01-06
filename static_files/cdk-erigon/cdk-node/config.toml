@@ -8,7 +8,7 @@ AggLayerURL="{{.agglayer_readrpc_url}}"
 {{- end }}
 ForkId = {{.zkevm_fork_id}}
 IsValidiumMode = {{.is_validium_mode}}
-NetworkID = {{.network_id}}
+NetworkID = {{.l2_network_id}}
 ContractVersions = "{{.zkevm_fork_name}}"
 
 L2Coinbase =  "{{.l2_sequencer_address}}"

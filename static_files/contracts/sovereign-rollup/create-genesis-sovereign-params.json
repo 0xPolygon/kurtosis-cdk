@@ -1,6 +1,6 @@
 {
     "rollupManagerAddress": "{{ .rollup_manager_address }}",
-    "rollupID": {{ .network_id }},
+    "rollupID": {{ .l2_network_id }},
     "chainID": {{.l2_chain_id}},
     "gasTokenAddress": "{{ .gas_token_address }}",
     "bridgeManager": "{{ .l2_sovereignadmin_address }}",

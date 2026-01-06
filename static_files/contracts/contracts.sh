@@ -507,7 +507,7 @@ create_agglayer_rollup() {
     {{ end }}
 
     # Comment out aggLayerGateway.addDefaultAggchainVKey for additional rollups with same AggchainVKeySelector and OwnedAggchainVKey
-    if [[ "{{ .network_id }}" != "1" ]]; then
+    if [[ "{{ .l2_network_id }}" != "1" ]]; then
     sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
 
@@ -579,7 +579,7 @@ create_agglayer_rollup() {
     polycli ulxly bridge asset \
         --bridge-address "$agglayer_bridge" \
         --destination-address "0x0000000000000000000000000000000000000000" \
-        --destination-network "{{.network_id}}" \
+        --destination-network "{{.l2_network_id}}" \
         --private-key "{{.l2_admin_private_key}}" \
         --rpc-url "{{.l1_rpc_url}}" \
         --value 10000000000000000000000 \
@@ -799,7 +799,7 @@ initialize_rollup() {
 
     # Save Rollup Information to a file.
     agglayer_manager=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
@@ -1339,7 +1339,7 @@ create_sovereign_rollup_predeployed() {
         cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json "${output_dir}/create_rollup_output.json"
     else
         # shellcheck disable=SC2050
-        if [[ "{{ .network_id }}" != "1" ]]; then
+        if [[ "{{ .l2_network_id }}" != "1" ]]; then
             sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
         fi
         # In the case for PP deployments without OP-Succinct, use the 4_createRollup.ts script instead of the createNewRollup.ts tool.
@@ -1348,7 +1348,7 @@ create_sovereign_rollup_predeployed() {
     fi
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
 }
 
@@ -1398,7 +1398,7 @@ create_sovereign_rollup() {
     # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
     # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
     # The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
-    rollupTypeID="{{ .network_id }}"
+    rollupTypeID="{{ .l2_network_id }}"
     if [[ "$rollupTypeID" -eq 1 ]]; then
         echo "rollupID is 1. Running 4_createRollup.ts script"
     fi
@@ -1408,7 +1408,7 @@ create_sovereign_rollup() {
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
     sovereign_admin_addr="{{.l2_sovereignadmin_address}}"
@@ -1451,7 +1451,7 @@ create_sovereign_rollup() {
     calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $sovereign_admin_addr)
     forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $sovereign_admin_addr "$calldata"
 
-    initNetworkID="{{.network_id}}"
+    initNetworkID="{{.l2_network_id}}"
     initGasTokenAddress="{{.gas_token_address}}"
     initGasTokenNetwork="{{.gas_token_network}}"
     initGlobalExitRootManager=$ger_proxy_addr
