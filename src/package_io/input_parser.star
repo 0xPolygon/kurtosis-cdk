@@ -238,7 +238,7 @@ DEFAULT_ROLLUP_ARGS = {
     "zkevm_rollup_chain_id": 2151908,
     # The unique identifier for the rollup within the RollupManager contract.
     # This setting sets the rollup as the first rollup.
-    "zkevm_rollup_id": 1,
+    "network_id": 1,
     # By default a mock verifier is deployed.
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!

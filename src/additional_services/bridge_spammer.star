@@ -55,7 +55,7 @@ def run(plan, args, contract_setup_addresses):
                 # addresses
                 "L1_BRIDGE_ADDRESS": contract_setup_addresses.get("l1_bridge_address"),
                 "L2_BRIDGE_ADDRESS": contract_setup_addresses.get("l2_bridge_address"),
-                "L2_NETWORK_ID": str(args.get("zkevm_rollup_id")),
+                "L2_NETWORK_ID": str(args.get("network_id")),
             },
             entrypoint=["bash", "-c"],
             cmd=["chmod +x {0}/{1} && {0}/{1}".format(SCRIPT_FOLDER_PATH, SCRIPT_NAME)],

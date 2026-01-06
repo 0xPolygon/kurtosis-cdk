@@ -4,7 +4,7 @@
   "aggLayerURL": "{{ .agglayer_rpc_url }}",
   "l2rpcs": [
     {
-      "rollupID": {{ .l2_rollup_id }},
+      "rollupID": {{ .network_id }},
       "l2rpc": "{{ .l2_rpc_url }}",
       "agchainmanager_key": "{{ .l2_sovereignadmin_private_key }}"
     }

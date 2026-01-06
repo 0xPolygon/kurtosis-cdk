@@ -3,7 +3,7 @@ L1URL="{{.l1_rpc_url}}"
 L2URL="{{.l2_rpc_url}}"
 AggLayerURL="{{.agglayer_grpc_url}}"
 
-NetworkID = {{.zkevm_rollup_id}}
+NetworkID = {{.network_id}}
 SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
