@@ -29,7 +29,7 @@ LOG_FORMAT = struct(
 
 CONSENSUS_TYPE = struct(
     rollup="rollup",
-    cdk_validium="cdk_validium",
+    cdk_validium="cdk-validium",
     pessimistic="pessimistic",
     ecdsa_multisig="ecdsa-multisig",
     fep="fep",

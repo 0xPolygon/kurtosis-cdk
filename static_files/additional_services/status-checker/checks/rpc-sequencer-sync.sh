@@ -3,7 +3,7 @@
 # shellcheck source=static_files/additional_services/status-checker/checks/lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
-check_consensus rollup cdk_validium
+check_consensus rollup cdk-validium
 
 threshold=5
 methods=("zkevm_batchNumber" "zkevm_verifiedBatchNumber" "zkevm_virtualBatchNumber")

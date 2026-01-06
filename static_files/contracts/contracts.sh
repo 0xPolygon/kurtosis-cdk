@@ -236,7 +236,7 @@ configure_contract_container_custom_genesis() {
     cast send "$agglayer_ger" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
-# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
+# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk-validium
 configure_contract_container_custom_genesis_cdk_erigon() {
     _echo_ts "Executing function configure_contract_container_custom_genesis_cdk_erigon"
 
@@ -623,7 +623,7 @@ create_agglayer_rollup() {
         "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
     {{ end }}
 
-    {{ if eq .consensus_contract_type "cdk_validium" }}
+    {{ if eq .consensus_contract_type "cdk-validium" }}
     # The DAC needs to be configured with a required number of signatures.
     # Right now the number of DAC nodes is not configurable.
     # If we add more nodes, we'll need to make sure the urls and keys are sorted.

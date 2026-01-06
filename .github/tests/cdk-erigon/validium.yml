@@ -3,5 +3,5 @@ deployment_stages:
 
 args:
   sequencer_type: cdk-erigon
-  consensus_contract_type: cdk_validium
+  consensus_contract_type: cdk-validium
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12
