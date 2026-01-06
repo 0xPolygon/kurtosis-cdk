@@ -22,7 +22,7 @@ def test_sanity_check_success(plan):
                     },
                 },
                 "network_params": {
-                    "l2_network_id": 1001,
+                    "network_id": 1001,
                     "seconds_per_slot": 2,
                 },
             },
@@ -55,7 +55,7 @@ def test_sanity_check_failure(plan):
                     },
                 },
                 "network_params": {
-                    "l2_network_id": 1001,
+                    "network_id": 1001,
                     "seconds_per_slot": 2,
                 },
             },
@@ -77,7 +77,7 @@ def test_no_chain001_defined(plan):
         "chains": {
             "002": {
                 "network_params": {
-                    "l2_network_id": 1001,
+                    "network_id": 1001,
                     "seconds_per_slot": 2,
                 },
             },
@@ -97,7 +97,7 @@ def test_check_first_chain_id_success(plan):
         "chains": {
             "001": {
                 "network_params": {
-                    "l2_network_id": 1001,
+                    "network_id": 1001,
                 }
             }
         },
@@ -114,7 +114,7 @@ def test_check_first_chain_id_failure(plan):
         "chains": {
             "001": {
                 "network_params": {
-                    "l2_network_id": 2002,
+                    "network_id": 2002,
                 }
             }
         },
