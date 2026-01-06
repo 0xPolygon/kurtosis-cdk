@@ -100,14 +100,29 @@ for step in $(seq 1 "${num_steps}"); do
       fi
       ;;
     "pessimistic"|"ecdsa-multisig"|"fep")
-      LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
-      SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
-      FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
-      log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
-      if [[ "${LATEST_BLOCK}" -ge "${target}" && "${SAFE_BLOCK}" -ge "${target}" && "${FINALIZED_BLOCK}" -ge "${target}" ]]; then
-        log_info "Target blocks reached for all block types (latest, safe and finalized)"
-        exit 0
-      fi
+      case "${sequencer_type}" in
+        "cdk-erigon")
+          LATEST_BATCH=$(cast to-dec "$(cast rpc zkevm_batchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
+          if [[ "${LATEST_BATCH}" -ge "${target}" ]]; then
+            log_info "Target batches reached for latest batch type"
+            exit 0
+          fi
+          ;;
+        "op-geth")
+          LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
+          SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
+          FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
+          log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
+          if [[ "${LATEST_BLOCK}" -ge "${target}" && "${SAFE_BLOCK}" -ge "${target}" && "${FINALIZED_BLOCK}" -ge "${target}" ]]; then
+            log_info "Target blocks reached for all block types (latest, safe and finalized)"
+            exit 0
+          fi
+          ;;
+        *)
+          log_error "Unsupported sequencer type: ${sequencer_type}"
+          exit 1
+          ;;
+      esac
       ;;
     *)
       log_error "Unsupported consensus contract type: ${consensus_contract_type}"
@@ -143,7 +158,18 @@ case "${consensus_contract_type}" in
     log_error "Target batches have not been reached for all batch types (latest, virtual and verified)"
     ;;
   "pessimistic"|"ecdsa-multisig"|"fep")
-    log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"
+    case "${sequencer_type}" in
+      "cdk-erigon")
+        log_error "Target batches have not been reached for latest batch type"
+        ;;
+      "op-geth")
+        log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"
+        ;;
+      *)
+        log_error "Unsupported sequencer type: ${sequencer_type}"
+        exit 1
+        ;;
+    esac
     ;;
   *)
     log_error "Unsupported consensus contract type: ${consensus_contract_type}"
