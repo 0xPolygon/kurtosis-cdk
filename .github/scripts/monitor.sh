@@ -151,29 +151,3 @@ case "${consensus_contract_type}" in
     ;;
 esac
 exit 1
-
-send_tx() {
-  rpc_url="$1"
-
-  # Determine gas price
-  gas_price=$(cast gas-price --rpc-url "$rpc_url")
-  gas_price_factor=1
-  gas_price=$(bc -l <<< "$gas_price * $gas_price_factor" | sed 's/\..*//')
-
-  # Send a transaction to increase the block or batch number
-  log_info "Sending a test transaction"
-  cast send \
-    --legacy \
-    --timeout 30 \
-    --gas-price "${gas_price}" \
-    --rpc-url "${rpc_url}" \
-    --private-key "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625" \
-    --gas-limit 100000 \
-    --create 0x6001617000526160006110005ff05b6109c45a111560245761600061100080833c600e565b50
-  result=$?
-  if [[ "${result}" -eq 0 ]]; then
-    gas_price_factor=1
-  else
-    gas_price_factor=$(bc -l <<< "$gas_price_factor * 1.5")
-  fi
-}
