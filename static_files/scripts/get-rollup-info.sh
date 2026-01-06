@@ -14,7 +14,7 @@ echo '{' \
   \"AgglayerBridge\":\""$zkevm_bridge_address"\", \
   \"rollupAddress\":\""$rollup_address"\", \
   \"AgglayerManager\":\""$zkevm_rollup_manager_address"\", \
-  \"deploymentRollupManagerBlockNumber\":\""{{.zkevm_rollup_manager_block_number}}"\", \
+  \"deploymentRollupManagerBlockNumber\":\""{{.rollup_manager_block_number}}"\", \
   \"AgglayerGER\":\""$zkevm_global_exit_root_address"\", \
   \"LegacyAgglayerGERL2\":\""{{.zkevm_global_exit_root_l2_address}}"\", \
   \"polygonDataCommitteeAddress\":\""{{.polygon_data_committee_address}}"\", \

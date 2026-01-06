@@ -94,7 +94,7 @@ send-tx = "unlimited"
 
 [epoch.block-clock]
 epoch-duration = 15
-genesis-block = {{.zkevm_rollup_manager_block_number}}
+genesis-block = {{.rollup_manager_block_number}}
 
 [shutdown]
 runtime-timeout = 5

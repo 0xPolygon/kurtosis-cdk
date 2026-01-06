@@ -14,9 +14,9 @@ polygonBridgeAddr = "{{.zkevm_bridge_address}}"
 RPCURL = "{{.l2_rpc_url}}"
 
 # This values can be override directly from genesis.json
-rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupCreationBlockNumber = "{{.rollup_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.rollup_manager_block_number}}"
+genesisBlockNumber = "{{.rollup_manager_block_number}}"
 [L1Config]
 	URL = "{{.l1_rpc_url}}"
 	chainId = "{{.l1_chain_id}}"

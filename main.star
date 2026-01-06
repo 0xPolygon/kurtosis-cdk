@@ -157,7 +157,7 @@ def run(plan, args={}):
     # Deploy helper service to retrieve rollup data from rollup manager contract.
     if (
         "zkevm_rollup_manager_address" in args
-        and "zkevm_rollup_manager_block_number" in args
+        and "rollup_manager_block_number" in args
         and "zkevm_global_exit_root_l2_address" in args
         and "polygon_data_committee_address" in args
     ):

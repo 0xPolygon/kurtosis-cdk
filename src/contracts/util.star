@@ -7,7 +7,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
         "rollup_address": "fromjson | .rollupAddress",
         "zkevm_rollup_manager_address": "fromjson | .AgglayerManager",
-        "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+        "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         "zkevm_global_exit_root_address": "fromjson | .AgglayerGER",
         "zkevm_global_exit_root_l2_address": "fromjson | .LegacyAgglayerGERL2",
         "pol_token_address": "fromjson | .polTokenAddress",
