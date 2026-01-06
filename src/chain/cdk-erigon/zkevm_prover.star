@@ -64,6 +64,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover, aggregator_url=None):
             fail("Aggregator URL has invalid format: {}".format(aggregator_url))
         [aggregator_host, aggregator_port_number] = result
         data = data | {
+            "is_prover": True,
             "aggregator_host": aggregator_host,
             "aggregator_port_number": aggregator_port_number,
         }

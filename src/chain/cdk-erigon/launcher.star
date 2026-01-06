@@ -21,18 +21,21 @@ def launch(
     deployment_stages,
     genesis_artifact,
 ):
-    # cdk-node (if needed)
-    aggregator_url = None
     if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
     ]:
+        # cdk-node
         cdk_node_context = cdk_node.run(
             plan, args, contract_setup_addresses, genesis_artifact
         )
         aggregator_url = cdk_node_context.aggregator_url
 
-    # stateless executor (if needed)
+        # zkevm-prover
+        if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
+            zkevm_prover.run_prover(plan, args, aggregator_url)
+
+    # stateless executor
     stateless_executor_url = None
     if args.get("erigon_strict_mode"):
         stateless_executor_context = zkevm_prover.run_stateless_executor(plan, args)
@@ -74,14 +77,6 @@ def launch(
     consensus_type = args.get("consensus_contract_type")
     if consensus_type == constants.CONSENSUS_TYPE.cdk_validium:
         cdk_data_availability.run(plan, args, contract_setup_addresses)
-
-    # zkevm-prover
-    if consensus_type in [
-        constants.CONSENSUS_TYPE.rollup,
-        constants.CONSENSUS_TYPE.cdk_validium,
-    ]:
-        if not args.get("zkevm_use_real_verifier") and not args.get("enable_normalcy"):
-            zkevm_prover.run_prover(plan, args)
 
     # aggkit
     if deployment_stages.get("deploy_aggkit_node"):

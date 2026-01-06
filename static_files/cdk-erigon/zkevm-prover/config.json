@@ -138,6 +138,7 @@
      */ -}}
     "hashDBURL": "local",
 
+{{-if .is_prover }}
 {{- /*
      * aggregatorClientPort is the grpc port that this prover will
      * attempt to use while connecting to the aggregator
@@ -149,6 +150,7 @@
      * attempt to use while connecting to the aggregator
      */ -}}
     "aggregatorClientHost": "{{.aggregator_host}}",
+{{-end}}
 
 {{- /*
      * keccakScriptFile is the keccak-f state machine script file
