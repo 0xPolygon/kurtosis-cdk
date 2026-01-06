@@ -21,7 +21,7 @@ def launch(
     deployment_stages,
     genesis_artifact,
 ):
-    # cdk-node
+    # cdk-node (if needed)
     aggregator_url = None
     if consensus_type in [
         constants.CONSENSUS_TYPE.rollup,
@@ -32,7 +32,7 @@ def launch(
         )
         aggregator_url = cdk_node_context.aggregator_url
 
-    # cdk-erigon sequencer and its components
+    # stateless executor (if needed)
     stateless_executor_url = None
     if args.get("erigon_strict_mode"):
         stateless_executor_context = zkevm_prover.run_stateless_executor(plan, args)
