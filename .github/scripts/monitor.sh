@@ -58,9 +58,9 @@ for step in $(seq 1 "${num_steps}"); do
 
   case "${consensus_contract_type}" in
     "rollup"|"cdk-validium")
-      LATEST_BATCH=$(cast to-dec $(cast rpc zkevm_batchNumber --rpc-url "${rpc_url}" | sed 's/"//g'))
-      VIRTUAL_BATCH=$(cast to-dec $(cast rpc zkevm_virtualBatchNumber --rpc-url "${rpc_url}" | sed 's/"//g'))
-      VERIFIED_BATCH=$(cast to-dec $(cast rpc zkevm_verifiedBatchNumber --rpc-url "${rpc_url}" | sed 's/"//g'))
+      LATEST_BATCH=$(cast to-dec "$(cast rpc zkevm_batchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
+      VIRTUAL_BATCH=$(cast to-dec "$(cast rpc zkevm_virtualBatchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
+      VERIFIED_BATCH=$(cast to-dec "$(cast rpc zkevm_verifiedBatchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
       log_info "Got batches: latest=${LATEST_BATCH}, virtual=${VIRTUAL_BATCH}, verified=${VERIFIED_BATCH}"
       if [[ "${LATEST_BATCH}" -gt "${target}" && "${VIRTUAL_BATCH}" -gt "${target}" && "${VERIFIED_BATCH}" -gt "${target}" ]]; then
         log_info "Target batches reached for all batch types ${target} (latest, virtual and verified)"
