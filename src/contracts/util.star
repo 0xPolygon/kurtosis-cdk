@@ -11,7 +11,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "l1_ger_address": "fromjson | .AgglayerGER",
         "l2_ger_address": "fromjson | .LegacyAgglayerGERL2",
         "pol_token_address": "fromjson | .polTokenAddress",
-        "zkevm_admin_address": "fromjson | .admin",
+        "admin_address": "fromjson | .admin",
     }
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
         extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"

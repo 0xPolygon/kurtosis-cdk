@@ -395,7 +395,7 @@ zkevm.executor-payload-output: ""
 # Specify the address of the admin's Externally Owned Account (EOA).
 # This address has special privileges, such as deploying and upgrading contracts.
 # Default: ""
-zkevm.address-admin: "{{.zkevm_admin_address}}"
+zkevm.address-admin: "{{.admin_address}}"
 
 # Specify the address of the sequencer's Externally Owned Account (EOA).
 # This address is responsible for creating and submitting batches of transactions to L1.

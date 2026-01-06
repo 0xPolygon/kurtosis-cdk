@@ -18,6 +18,6 @@ echo '{' \
   \"AgglayerGER\":\""$l1_ger_address"\", \
   \"LegacyAgglayerGERL2\":\""{{.l2_ger_address}}"\", \
   \"polygonDataCommitteeAddress\":\""{{.polygon_data_committee_address}}"\", \
-  \"admin\":\""{{.zkevm_admin_address}}"\", \
+  \"admin\":\""{{.admin_address}}"\", \
   \"polTokenAddress\":\""$pol_token_address"\" \
 '}' | jq > "{{.output_dir}}"/combined.json
