@@ -70,10 +70,10 @@ log_info "Using rpc url: ${rpc_url}"
 target=""
 case "${consensus_contract_type}" in
   "rollup"|"cdk-validium")
-    target=30 # Lower target since it takes longer to produce and verify batches
+    target=30 # batches
     ;;
   "pessimistic"|"ecdsa-multisig"|"fep")
-    target=50
+    target=50 # blocks
     ;;
   *)
     log_error "Unsupported consensus contract type: ${consensus_contract_type}"
