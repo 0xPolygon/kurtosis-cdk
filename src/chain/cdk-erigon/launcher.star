@@ -26,7 +26,7 @@ def launch(
         zkevm_prover.run_stateless_executor(plan, args)
 
     # cdk-erigon sequencer
-    result = cdk_erigon.run_sequencer(
+    sequencer_context = cdk_erigon.run_sequencer(
         plan,
         args
         | {
@@ -36,28 +36,22 @@ def launch(
         },
         contract_setup_addresses,
     )
-    sequencer_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
-    datastreamer_url = result.ports[cdk_erigon.DATA_STREAMER_PORT_ID].url.removeprefix(
-        "datastream://"
-    )
 
     # zkevm-pool-manager
-    result = zkevm_pool_manager.run(plan, args, sequencer_url)
-    pool_manager_url = result.ports[zkevm_pool_manager.SERVER_PORT_ID].url
+    zkevm_pool_manager_context = zkevm_pool_manager.run(
+        plan, args, sequencer_context.http_rpc_url
+    )
 
     # cdk-erigon rpc
-    result = cdk_erigon.run_rpc(
+    rpc_context = cdk_erigon.run_rpc(
         plan,
         args
         | {"l1_rpc_url": args["mitm_rpc_url"].get("erigon-rpc", args["l1_rpc_url"])},
         contract_setup_addresses,
-        struct(
-            sequencer_url=sequencer_url,
-            datastreamer_url=datastreamer_url,
-            pool_manager_url=pool_manager_url,
-        ),
+        sequencer_context.http_rpc_url,
+        sequencer_context.datastreamer_url,
+        zkevm_pool_manager_context.pool_manager_url,
     )
-    rpc_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
 
     # TODO: understand if genesis_artifact is needed here or can be removed
     args["genesis_artifact"] = genesis_artifact
@@ -105,7 +99,7 @@ def launch(
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            rpc_url,
+            rpc_context.http_rpc_url,
         )
 
         if deployment_stages.get("deploy_cdk_bridge_ui"):
