@@ -25,7 +25,10 @@ def run(
             consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic
             and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
         )
-        or consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig
+        or (
+            consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig
+            and args["sequencer_type"] != constants.SEQUENCER_TYPE.cdk_erigon
+        )
         or consensus_contract_type == constants.CONSENSUS_TYPE.fep
     )
 
