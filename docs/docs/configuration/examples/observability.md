@@ -154,7 +154,7 @@ Alerting monitors Prometheus-ingested metrics and triggering notifications when 
 
 ### Slack Notifications
 
-By default, Slack notifications are disabled. To enable them, set the following environment variables in [`grafana.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/additional_services/grafana.star#L10-L12):
+By default, Slack notifications are disabled. To enable them, set the following environment variables in [`grafana.star`](https://github.com/0xPolygon/kurtosis-cdk/tree/main/src/additional_services/grafana.star#L10-L12):
 
 - `SLACK_WEBHOOK_URL`
 - `SLACK_CHANNEL`
