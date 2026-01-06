@@ -81,7 +81,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
         binary_name, components, " ".join(extra_flags)
     )
 
-    plan.add_service(
+    result = plan.add_service(
         name="cdk-node{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("cdk_node_image"),
@@ -128,6 +128,14 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
             entrypoint=["sh", "-c"],
             cmd=[" && ".join(["sleep 20", cmd])],
         ),
+    )
+    aggregator_url = (
+        result.ports[AGGREGATOR_PORT_ID].url
+        if AGGREGATOR_PORT_ID in result.ports
+        else None
+    )
+    return struct(
+        aggregator_url=aggregator_url,
     )
 
 
