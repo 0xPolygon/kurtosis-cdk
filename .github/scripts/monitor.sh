@@ -68,15 +68,15 @@ log_info "Using rpc url: ${rpc_url}"
 
 # Determine the target based on the consensus contract type
 target=""
-case "${consensus_contract_type}" in
-  "rollup"|"cdk-validium")
-    target=30 # batches
+case "${sequencer_type}" in
+  "cdk-erigon")
+    target=20 # batches
     ;;
-  "pessimistic"|"ecdsa-multisig"|"fep")
+  "op-geth")
     target=50 # blocks
     ;;
   *)
-    log_error "Unsupported consensus contract type: ${consensus_contract_type}"
+    log_error "Unsupported sequencer type: ${sequencer_type}"
     exit 1
     ;;
 esac
