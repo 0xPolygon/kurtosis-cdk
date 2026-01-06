@@ -99,7 +99,7 @@ for step in $(seq 1 "${num_steps}"); do
         exit 0
       fi
       ;;
-    "pessimistic"|"ecdsa-multisig"|"fep")
+    "pessimistic"|"ecdsa-multisig")
       case "${sequencer_type}" in
         "cdk-erigon")
           LATEST_BATCH=$(cast to-dec "$(cast rpc zkevm_batchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
@@ -123,6 +123,16 @@ for step in $(seq 1 "${num_steps}"); do
           exit 1
           ;;
       esac
+      ;;
+    "fep")
+      LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
+      SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
+      FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
+      log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
+      if [[ "${LATEST_BLOCK}" -ge "${target}" && "${SAFE_BLOCK}" -ge "${target}" && "${FINALIZED_BLOCK}" -ge "${target}" ]]; then
+        log_info "Target blocks reached for all block types (latest, safe and finalized)"
+        exit 0
+      fi
       ;;
     *)
       log_error "Unsupported consensus contract type: ${consensus_contract_type}"
@@ -157,7 +167,7 @@ case "${consensus_contract_type}" in
   "rollup"|"cdk-validium")
     log_error "Target batches have not been reached for all batch types (latest, virtual and verified)"
     ;;
-  "pessimistic"|"ecdsa-multisig"|"fep")
+  "pessimistic"|"ecdsa-multisig")
     case "${sequencer_type}" in
       "cdk-erigon")
         log_error "Target batches have not been reached for latest batch type"
@@ -170,6 +180,9 @@ case "${consensus_contract_type}" in
         exit 1
         ;;
     esac
+    ;;
+  "fep")
+    log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"
     ;;
   *)
     log_error "Unsupported consensus contract type: ${consensus_contract_type}"
