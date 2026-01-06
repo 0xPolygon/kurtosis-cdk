@@ -16,7 +16,7 @@ def run(plan, args, contract_setup_addresses):
         config={
             "config.toml": struct(
                 template=read_file(
-                    src="../../../static_files/cdk-erigon/cdk-data-availability/config.toml"
+                    src="../../../static_files/chain/cdk-erigon/cdk-data-availability/config.toml"
                 ),
                 data={
                     "keystore_password": args.get("l2_keystore_password"),

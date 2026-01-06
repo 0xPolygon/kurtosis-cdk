@@ -30,7 +30,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
         config={
             "config.toml": struct(
                 template=read_file(
-                    src="../../../static_files/cdk-erigon/cdk-node/config.toml"
+                    src="../../../static_files/chain/cdk-erigon/cdk-node/config.toml"
                 ),
                 data=args
                 | {
