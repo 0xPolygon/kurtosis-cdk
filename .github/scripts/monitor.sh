@@ -23,6 +23,8 @@ _format_fields() {
 log_info() { echo "$(timestamp) INFO $(_format_fields "$@")" >&2; }
 log_error() { echo "$(timestamp) ERROR $(_format_fields "$@")" >&2; }
 
+log_info "Monitoring rollup progress"
+
 # Validate input parameters
 enclave_name=${1:-"cdk"}
 if [[ -z "${enclave_name}" ]]; then
@@ -45,7 +47,7 @@ if [[ -z "${consensus_contract_type}" ]]; then
 fi
 log_info "Using consensus contract type: ${consensus_contract_type}"
 
-# Determine the RPC service to use based on the sequencer type
+# Determine the rpc service and url based on the sequencer type
 rpc_name=""
 case "${sequencer_type}" in
   "cdk-erigon")
@@ -59,16 +61,31 @@ case "${sequencer_type}" in
     exit 1
     ;;
 esac
-log_info "Using RPC name: ${rpc_name}"
+log_info "Using rpc name: ${rpc_name}"
 
 rpc_url=$(kurtosis port print "${enclave_name}" "${rpc_name}" rpc)
-log_info "Using RPC URL: ${rpc_url}"
+log_info "Using rpc url: ${rpc_url}"
+
+# Determine the target based on the consensus contract type
+target=""
+case "${consensus_contract_type}" in
+  "rollup"|"cdk-validium")
+    target=30 # Lower target since it takes longer to produce and verify batches
+    ;;
+  "pessimistic"|"ecdsa-multisig"|"fep")
+    target=50
+    ;;
+  *)
+    log_error "Unsupported consensus contract type: ${consensus_contract_type}"
+    exit 1
+    ;;
+esac
+log_info "Using target: ${target}"
 
 # Monitor the rollup progress
-target=50
 num_steps=100
 for step in $(seq 1 "${num_steps}"); do
-  log_info "Check ${step}/${num_steps}..."
+  log_info "Check ${step}/${num_steps}"
 
   case "${consensus_contract_type}" in
     "rollup"|"cdk-validium")
@@ -76,8 +93,8 @@ for step in $(seq 1 "${num_steps}"); do
       VIRTUAL_BATCH=$(cast to-dec "$(cast rpc zkevm_virtualBatchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
       VERIFIED_BATCH=$(cast to-dec "$(cast rpc zkevm_verifiedBatchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
       log_info "Got batches: latest=${LATEST_BATCH}, virtual=${VIRTUAL_BATCH}, verified=${VERIFIED_BATCH}"
-      if [[ "${LATEST_BATCH}" -gt "${target}" && "${VIRTUAL_BATCH}" -gt "${target}" && "${VERIFIED_BATCH}" -gt "${target}" ]]; then
-        log_info "Target batches reached for all batch types ${target} (latest, virtual and verified)"
+      if [[ "${LATEST_BATCH}" -ge "${target}" && "${VIRTUAL_BATCH}" -ge "${target}" && "${VERIFIED_BATCH}" -ge "${target}" ]]; then
+        log_info "Target batches reached for all batch types (latest, virtual and verified)"
         exit 0
       fi
       ;;
@@ -86,8 +103,8 @@ for step in $(seq 1 "${num_steps}"); do
       SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
       FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
       log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
-      if [[ "${LATEST_BLOCK}" -gt "${target}" && "${SAFE_BLOCK}" -gt "${target}" && "${FINALIZED_BLOCK}" -gt "${target}" ]]; then
-        log_info "Target blocks reached for all block types ${target} (latest, safe and finalized)"
+      if [[ "${LATEST_BLOCK}" -ge "${target}" && "${SAFE_BLOCK}" -ge "${target}" && "${FINALIZED_BLOCK}" -ge "${target}" ]]; then
+        log_info "Target blocks reached for all block types (latest, safe and finalized)"
         exit 0
       fi
       ;;
