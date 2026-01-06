@@ -103,14 +103,14 @@ def run(plan, args, deployment_stages, op_stack_args):
     chain1 = chains.get(chain1_name)
     op_stack_seconds_per_slot = chain1["network_params"]["seconds_per_slot"]
 
-    zkevm_rollup_consensus = constants.CONSENSUS_TYPE_TO_CONTRACT_MAPPING.get(
+    consensus_contract = constants.CONSENSUS_TYPE_TO_CONTRACT_MAPPING.get(
         args["consensus_contract_type"]
     )
 
     template_data = args | {
         "is_vanilla_client": is_vanilla_client(args, deployment_stages),
         "deploy_op_succinct": deployment_stages.get("deploy_op_succinct", False),
-        "zkevm_rollup_consensus": zkevm_rollup_consensus,
+        "consensus_contract": consensus_contract,
         "sequencer_type": args["sequencer_type"],
         "op_stack_seconds_per_slot": op_stack_seconds_per_slot,
         # vkeys and selectors
