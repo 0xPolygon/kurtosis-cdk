@@ -116,7 +116,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         working-directory: .github/scripts
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }}
 
@@ -185,7 +185,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         run: |
           sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
           consensus_contract_type=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
@@ -222,7 +222,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         working-directory: .github/scripts
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-geth fep
 
@@ -376,7 +376,7 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         working-directory: .github/scripts
         run: ./monitor.sh ${{ env.ENCLAVE_NAME }}
 
