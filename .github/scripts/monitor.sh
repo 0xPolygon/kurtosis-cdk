@@ -68,9 +68,9 @@ for step in $(seq 1 "${num_steps}"); do
       fi
       ;;
     "pessimistic"|"ecdsa-multisig"|"fep")
-      LATEST_BLOCK=$(cast bn --rpc-url $SERVICE_RPC_URL)
-      SAFE_BLOCK=$(cast bn safe --rpc-url $SERVICE_RPC_URL)
-      FINALIZED_BLOCK=$(cast bn finalized --rpc-url $SERVICE_RPC_URL)
+      LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
+      SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
+      FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
       log_info "Got blocks: latest=${LATEST_BLOCK}, safe=${SAFE_BLOCK}, finalized=${FINALIZED_BLOCK}"
       if [[ "${LATEST_BLOCK}" -gt "${target}" && "${SAFE_BLOCK}" -gt "${target}" && "${FINALIZED_BLOCK}" -gt "${target}" ]]; then
         log_info "Target blocks reached for all block types ${target} (latest, safe and finalized)"
