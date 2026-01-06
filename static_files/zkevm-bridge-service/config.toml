@@ -112,7 +112,7 @@ PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
 # Address of the Global exit root smc
 PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 # Address of the rollup manager smc
-PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+PolygonRollupManagerAddress = "{{.rollup_manager_address}}"
 {{- if eq .sequencer_type "cdk-erigon" }}
 # Address of the zkEVM smc
 PolygonZkEVMAddress = "{{.rollup_address}}"

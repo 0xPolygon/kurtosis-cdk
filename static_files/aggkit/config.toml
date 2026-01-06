@@ -80,7 +80,7 @@ polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 # ------------------------------------------------------------------------------
 # Address of the rollup manager contract on L1
 # ------------------------------------------------------------------------------
-polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+polygonRollupManagerAddress = "{{.rollup_manager_address}}"
 
 # ------------------------------------------------------------------------------
 # Address of the pol token address on L1
@@ -751,7 +751,7 @@ MaxDecodingMessageSize = 1073741824  # 1GB
 
 # Is it necessary to specify all of these values again?
 [Validator.LerQuerierConfig]
-RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
+RollupManagerAddr = "{{.rollup_manager_address}}"
 RollupCreationBlockL1 = "{{.rollup_manager_block_number}}"
 
 [Validator.AgglayerClient]

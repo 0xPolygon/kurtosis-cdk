@@ -2,7 +2,7 @@
     "type": "EOA",
     "consensusContract": "{{ .zkevm_rollup_consensus }}",
     "consensusContractAddress": "",
-    "polygonRollupManagerAddress": "{{ .zkevm_rollup_manager_address }}",
+    "polygonRollupManagerAddress": "{{ .rollup_manager_address }}",
     "verifierAddress": "0x0000000000000000000000000000000000000000",
     "description": "{{ .zkevm_rollup_consensus }} Type",
     "forkID": 0,

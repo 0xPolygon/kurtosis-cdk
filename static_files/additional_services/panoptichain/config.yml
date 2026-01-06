@@ -12,7 +12,7 @@ providers:
       url: "{{.l1_rpc_url}}"
       label: "L1"
       contracts:
-        rollup_manager_address: "{{.zkevm_rollup_manager_address}}"
+        rollup_manager_address: "{{.rollup_manager_address}}"
       time_to_mine:
         sender: "{{.l1_sender_address}}"
         sender_private_key: "{{.l1_sender_private_key}}"

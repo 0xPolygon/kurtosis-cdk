@@ -31,7 +31,7 @@ genesisBlockNumber = "{{.rollup_manager_block_number}}"
 [L1Config]
 	chainId = "{{.l1_chain_id}}"
 	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
-	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+	polygonRollupManagerAddress = "{{.rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
 	polygonZkEVMAddress = "{{.rollup_address}}"
 

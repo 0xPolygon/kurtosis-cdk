@@ -6,7 +6,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "zkevm_bridge_address": "fromjson | .AgglayerBridge",
         "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
         "rollup_address": "fromjson | .rollupAddress",
-        "zkevm_rollup_manager_address": "fromjson | .AgglayerManager",
+        "rollup_manager_address": "fromjson | .AgglayerManager",
         "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
         "zkevm_global_exit_root_address": "fromjson | .AgglayerGER",
         "zkevm_global_exit_root_l2_address": "fromjson | .LegacyAgglayerGERL2",
@@ -28,7 +28,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
     service_name = "contracts"
     if args["deploy_agglayer"]:
         plan.print("Changing querying service name to helper")
-        if "zkevm_rollup_manager_address" in args:
+        if "rollup_manager_address" in args:
             service_name = "helper"
     service_name += args["deployment_suffix"]
     result = plan.exec(
@@ -268,7 +268,7 @@ def get_aggoracle_committee_address(plan, args):
     service_name = "contracts"
     if args["deploy_agglayer"]:
         plan.print("Changing querying service name to helper")
-        if "zkevm_rollup_manager_address" in args:
+        if "rollup_manager_address" in args:
             service_name = "helper"
     service_name += args["deployment_suffix"]
     result = plan.exec(

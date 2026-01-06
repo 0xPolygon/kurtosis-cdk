@@ -2,18 +2,18 @@
 
 # This script retrieves all the rollup data using the rollup manager address and the chain id.
 rpc_url="{{.rpc_url}}"
-zkevm_rollup_manager_address="{{.zkevm_rollup_manager_address}}"
+rollup_manager_address="{{.rollup_manager_address}}"
 zkevm_rollup_chain_id="{{.zkevm_rollup_chain_id}}"
 
-rollup_id="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "chainIDToRollupID(uint64)(uint32)" "$zkevm_rollup_chain_id")"
-rollup_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" "$rollup_id" | sed -n "1p")"
-zkevm_bridge_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "bridgeAddress()(address)")"
-zkevm_global_exit_root_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "globalExitRootManager()(address)")"
-pol_token_address="$(cast call --rpc-url "$rpc_url" "$zkevm_rollup_manager_address" "pol()(address)")"
+rollup_id="$(cast call --rpc-url "$rpc_url" "$rollup_manager_address" "chainIDToRollupID(uint64)(uint32)" "$zkevm_rollup_chain_id")"
+rollup_address="$(cast call --rpc-url "$rpc_url" "$rollup_manager_address" "rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)" "$rollup_id" | sed -n "1p")"
+zkevm_bridge_address="$(cast call --rpc-url "$rpc_url" "$rollup_manager_address" "bridgeAddress()(address)")"
+zkevm_global_exit_root_address="$(cast call --rpc-url "$rpc_url" "$rollup_manager_address" "globalExitRootManager()(address)")"
+pol_token_address="$(cast call --rpc-url "$rpc_url" "$rollup_manager_address" "pol()(address)")"
 echo '{' \
   \"AgglayerBridge\":\""$zkevm_bridge_address"\", \
   \"rollupAddress\":\""$rollup_address"\", \
-  \"AgglayerManager\":\""$zkevm_rollup_manager_address"\", \
+  \"AgglayerManager\":\""$rollup_manager_address"\", \
   \"deploymentRollupManagerBlockNumber\":\""{{.rollup_manager_block_number}}"\", \
   \"AgglayerGER\":\""$zkevm_global_exit_root_address"\", \
   \"LegacyAgglayerGERL2\":\""{{.zkevm_global_exit_root_l2_address}}"\", \
