@@ -101,12 +101,12 @@ By default, Grafana dashboard changes do not persist across kurtosis runs. To sa
 
 1. **Share → Export → Save to file.** Ensure _Export for sharing externally_ is **unchecked**.
 2. Save the file to:
-   [`static_files/additional_services/grafana/dashboards`](../../../../static_files/additional_services/grafana/dashboards)
+   [`static_files/additional_services/grafana/dashboards`](https://github.com/0xPolygon/kurtosis-cdk/tree/main/static_files/additional_services/grafana/dashboards)
 3. Restart Grafana or `kurtosis-cdk`.
 
 ## Status Checks
 
-Status checks are scripts that assess network health. They reside in [`static_files/additional_services/status-checker/checks`](../../../../static_files/additional_services/status-checker/checks).
+Status checks are scripts that assess network health. They reside in [`static_files/additional_services/status-checker/checks`](https://github.com/0xPolygon/kurtosis-cdk/tree/main/static_files/additional_services/status-checker/checks).
 
 ### Writing Checks
 
@@ -154,7 +154,7 @@ Alerting monitors Prometheus-ingested metrics and triggering notifications when 
 
 ### Slack Notifications
 
-By default, Slack notifications are disabled. To enable them, set the following environment variables in [`grafana.star`](../../../..src/additional_services/grafana.star#L10-L12):
+By default, Slack notifications are disabled. To enable them, set the following environment variables in [`grafana.star`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/src/additional_services/grafana.star#L10-L12):
 
 - `SLACK_WEBHOOK_URL`
 - `SLACK_CHANNEL`
@@ -168,6 +168,6 @@ To export and persist alerting rules:
 
 1. In Grafana, go to **Alerting → Alert Rules**.
 2. Click **Export → YAML → Download**.
-3. Save the downloaded file as [`static_files/additional_services/grafana/alerting.yml.tmpl`](../../../../static_files/additional_services/grafana/alerting.yml.tmpl).
+3. Save the downloaded file as [`static_files/additional_services/grafana/alerting.yml.tmpl`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/static_files/additional_services/grafana/alerting.yml.tmpl).
 
 ![alerting-export](/img/alerting-export.png)
