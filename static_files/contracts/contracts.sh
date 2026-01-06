@@ -513,7 +513,7 @@ create_agglayer_rollup() {
 
     # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
     if [[ "{{.sequencer_type}}" != "op-geth" ]]; then
-        _echo_ts "Step 5: Creating Rollup/Validium"
+        _echo_ts "Step 5: Creating Rollup/Validium/ECDSAMultisig"
         npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
         # Support for new output file format
         if [[ $(echo deployment/v2/create_rollup_output_* | wc -w) -gt 1 ]]; then
