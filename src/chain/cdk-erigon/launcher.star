@@ -75,9 +75,6 @@ def launch(
         zkevm_pool_manager_context.pool_manager_url,
     )
 
-    # TODO: understand if genesis_artifact is needed here or can be removed
-    args["genesis_artifact"] = genesis_artifact
-
     # aggkit
     if deployment_stages.get("deploy_aggkit_node"):
         plan.print("Deploying aggkit")
