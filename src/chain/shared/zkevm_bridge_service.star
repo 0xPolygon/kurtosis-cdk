@@ -19,22 +19,18 @@ def run(
 ):
     l1_rpc_url = args["mitm_rpc_url"].get("bridge", args["l1_rpc_url"])
 
-    consensus_contract_type = args["consensus_contract_type"]
+    consensus_contract_type = args.get("consensus_contract_type")
+    sequencer_type = args.get("sequencer_type")
     require_sovereign_chain_contract = (
-        (
-            consensus_contract_type == constants.CONSENSUS_TYPE.pessimistic
-            and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
-        )
-        or (
-            consensus_contract_type == constants.CONSENSUS_TYPE.ecdsa_multisig
-            and args["sequencer_type"] != constants.SEQUENCER_TYPE.cdk_erigon
-        )
-        or consensus_contract_type == constants.CONSENSUS_TYPE.fep
-    )
+        consensus_contract_type
+        in [
+            constants.CONSENSUS_TYPE.pessimistic,
+            constants.CONSENSUS_TYPE.ecdsa_multisig,
+        ]
+        and sequencer_type == constants.SEQUENCER_TYPE.op_geth
+    ) or consensus_contract_type == constants.CONSENSUS_TYPE.fep
 
-    db_configs = databases.get_db_configs(
-        args["deployment_suffix"], args["sequencer_type"]
-    )
+    db_configs = databases.get_db_configs(args["deployment_suffix"], sequencer_type)
 
     config_artifact = plan.render_templates(
         name="bridge-config-artifact",
@@ -49,7 +45,7 @@ def run(
                     "l2_keystore_password": args["l2_keystore_password"],
                     "db": db_configs.get("bridge_db"),
                     "require_sovereign_chain_contract": require_sovereign_chain_contract,
-                    "sequencer_type": args["sequencer_type"],
+                    "sequencer_type": sequencer_type,
                     # rpc urls
                     "l1_rpc_url": l1_rpc_url,
                     "l2_rpc_url": l2_rpc_url,
