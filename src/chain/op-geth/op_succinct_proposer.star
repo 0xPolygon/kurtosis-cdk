@@ -39,7 +39,7 @@ def run(plan, args):
                 "ETHERSCAN_API_KEY": "",
                 "VERIFIER_ADDRESS": args.get("agglayer_gateway_address"),
                 "AGG_PROOF_MODE": args.get("op_succinct_agg_proof_mode"),
-                "L2OO_ADDRESS": args.get("zkevm_rollup_address"),
+                "L2OO_ADDRESS": args.get("rollup_address"),
                 "OP_SUCCINCT_MOCK": args.get("op_succinct_mock"),
                 "AGGLAYER": args.get(
                     "op_succinct_agglayer"

@@ -23,7 +23,7 @@ genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
 	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
-	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+	polygonZkEVMAddress = "{{.rollup_address}}"
 
 [L2Config]
 	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"

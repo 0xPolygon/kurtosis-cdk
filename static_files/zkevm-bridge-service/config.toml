@@ -115,7 +115,7 @@ PolygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
 PolygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
 {{- if eq .sequencer_type "cdk-erigon" }}
 # Address of the zkEVM smc
-PolygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+PolygonZkEVMAddress = "{{.rollup_address}}"
 # List of Layer 2 Polygon bridge addresses. It must have the same length as L2URLs. e.g. If 5 networks need to be synced, the urls must be in this array.
 L2PolygonBridgeAddresses = ["{{.zkevm_bridge_l2_address}}"]
 # Flag indicating whether to require sovereign chain smcs or not. It must have the same length as L2PolygonBridgeAddresses

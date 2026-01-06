@@ -414,7 +414,7 @@ zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
 # NOTE: This flag should be renamed `zkevm.address-rollup`.
 # https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
-zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
+zkevm.address-zkevm: "{{.rollup_address}}"
 
 # Specify the address of the PolygonZkEVMGlobalExitRoot contract.
 # This contract manages the global exit root (GER), which is crucial for cross-chain operations

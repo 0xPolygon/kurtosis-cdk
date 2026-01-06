@@ -91,7 +91,7 @@ polTokenAddress = "{{.pol_token_address}}"
 # Address of the sovereign rollup contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+polygonZkEVMAddress = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 {{- else }}
@@ -675,7 +675,7 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # SovereignRollupAddr is the address of the sovereign rollup contract on L1
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-SovereignRollupAddr = "{{.zkevm_rollup_address}}"
+SovereignRollupAddr = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 {{- else }}
