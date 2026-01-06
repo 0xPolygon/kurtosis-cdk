@@ -163,6 +163,7 @@ for step in $(seq 1 "${num_steps}"); do
   sleep 5
 done
 
+# If the code reaches here, the target was not met within the allowed steps
 case "${consensus_contract_type}" in
   "rollup"|"cdk-validium")
     log_error "Target batches have not been reached for all batch types (latest, virtual and verified)"
