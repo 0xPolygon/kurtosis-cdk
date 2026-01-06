@@ -789,7 +789,7 @@ initialize_rollup() {
         rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
         # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-        jq --arg rum "$agglayer_manager" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
+        jq --arg rum "$agglayer_manager" --arg rid "$rollup_id" --arg chainid "{{.l2_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
         mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
 
         cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
@@ -942,7 +942,7 @@ initialize_rollup() {
     check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
 
     # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
-    rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.zkevm_rollup_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
+    rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.l2_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
     # shellcheck disable=SC2050
     if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured

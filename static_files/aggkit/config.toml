@@ -513,7 +513,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.l2_keyst
 # ------------------------------------------------------------------------------
 # Needs to be set to be the sovereign L2 chain id
 # ------------------------------------------------------------------------------
-L1ChainID = "{{.zkevm_rollup_chain_id}}"
+L1ChainID = "{{.l2_chain_id}}"
 
 # ==============================================================================
 #  ____  ____  ___ ____   ____ _____ _     ____  ______   ___   _  ____
@@ -660,7 +660,7 @@ URL = ""
 # Needs to be set to be the sovereign L2 chain id
 # If set to 0, the chain ID will be fetched from the RPC endpoint
 # ------------------------------------------------------------------------------
-L1ChainID = "{{.zkevm_rollup_chain_id}}"
+L1ChainID = "{{.l2_chain_id}}"
 
 # ==============================================================================
 #                        _           _                              __

@@ -1,6 +1,6 @@
 {
     "adminZkEVM": "{{.l2_admin_address}}",
-    "chainID": {{.zkevm_rollup_chain_id}},
+    "chainID": {{.l2_chain_id}},
     "consensusContract": "{{.consensus_contract}}",
     "dataAvailabilityProtocol": "PolygonDataCommittee",
     "deployerPvtKey": "{{.l2_admin_private_key}}",

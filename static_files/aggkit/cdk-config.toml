@@ -54,4 +54,4 @@ StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
 URL = "{{.l2_rpc_url}}"
-L1ChainID = "{{.zkevm_rollup_chain_id}}"
+L1ChainID = "{{.l2_chain_id}}"

@@ -1,7 +1,7 @@
 {
     "rollupManagerAddress": "{{ .rollup_manager_address }}",
     "rollupID": {{ .network_id }},
-    "chainID": {{.zkevm_rollup_chain_id}},
+    "chainID": {{.l2_chain_id}},
     "gasTokenAddress": "{{ .gas_token_address }}",
     "bridgeManager": "{{ .l2_sovereignadmin_address }}",
     "sovereignWETHAddress": "{{ .gas_token_address }}",

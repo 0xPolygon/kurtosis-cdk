@@ -51,7 +51,7 @@ networks:
     chain_id: "{{.l1_chain_id}}"
 
   - name: "L2"
-    chain_id: "{{.zkevm_rollup_chain_id}}"
+    chain_id: "{{.l2_chain_id}}"
     polygon_zkevm: true
 
 logs:

@@ -511,7 +511,7 @@ zkevm.l1-contract-address-check: true
 # --------------------------------------------------------------------------------------------------
 # The L2 chain identifier.
 # Default: 0
-zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
+zkevm.l2-chain-id: {{.l2_chain_id}}
 
 # {{if not .is_sequencer}}
 # The upstream L2 node RPC endpoint.

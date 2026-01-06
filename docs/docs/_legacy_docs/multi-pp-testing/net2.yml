@@ -4,7 +4,7 @@ deployment_stages:
 
 args:
   deployment_suffix: "-002"
-  zkevm_rollup_chain_id: 20202
+  l2_chain_id: 20202
   network_id: 2
 
   # The following accounts have been generated using the following command:
