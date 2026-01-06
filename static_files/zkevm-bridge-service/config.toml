@@ -108,7 +108,7 @@ FinalizedGEREnabled = true
 L1GenBlockNumber = "{{.rollup_manager_block_number}}"
 L2GenBlockNumbers = [0]
 # Address of the Polygon bridge smc
-PolygonBridgeAddress = "{{.zkevm_bridge_address}}"
+PolygonBridgeAddress = "{{.l1_bridge_address}}"
 # Address of the Global exit root smc
 PolygonZkEVMGlobalExitRootAddress = "{{.l1_ger_address}}"
 # Address of the rollup manager smc

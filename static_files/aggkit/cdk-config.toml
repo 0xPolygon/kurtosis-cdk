@@ -8,7 +8,7 @@ SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequenc
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
 {{- if lt .aggkit_version "0.8" }}
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
 RPCURL = "{{.l2_rpc_url}}"

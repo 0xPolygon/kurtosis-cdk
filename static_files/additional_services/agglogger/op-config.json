@@ -82,7 +82,7 @@
     {
       "Type": "PolygonZkEVMBridgeV2",
       "EndPoints": "All",
-      "Address": "{{.zkevm_bridge_address}}",
+      "Address": "{{.l1_bridge_address}}",
       "Fields": [
         "DepositCount",
         "Root"
@@ -91,7 +91,7 @@
     {
       "Type": "PolygonZkEVMBridgeV2Event",
       "EndPoints": "All",
-      "Address": "{{.zkevm_bridge_address}}",
+      "Address": "{{.l1_bridge_address}}",
       "Fields": [
         "BridgeEvent",
         "ClaimEvent"

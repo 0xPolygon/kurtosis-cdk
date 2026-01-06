@@ -39,8 +39,8 @@ def run(
                     "rollup_manager_address": contract_setup_addresses.get(
                         "rollup_manager_address"
                     ),
-                    "zkevm_bridge_address": contract_setup_addresses.get(
-                        "zkevm_bridge_address"
+                    "l1_bridge_address": contract_setup_addresses.get(
+                        "l1_bridge_address"
                     ),
                     "l1_ger_address": contract_setup_addresses.get("l1_ger_address"),
                     "l2_ger_address": contract_setup_addresses.get("l2_ger_address"),

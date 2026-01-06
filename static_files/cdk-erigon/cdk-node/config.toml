@@ -19,7 +19,7 @@ AggregatorPrivateKeyPath = "{{or .l2_aggregator_keystore_file "/etc/cdk/aggregat
 AggregatorPrivateKeyPassword  = "{{.l2_keystore_password}}"
 SenderProofToL1Addr = "{{.l2_aggregator_address}}"
 # polygonBridgeAddr param is removed in Aggkit versions >= 0.8, but this config file is strictly for CDK-Node, so the changes won't apply here.
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+polygonBridgeAddr = "{{.l1_bridge_address}}"
 
 RPCURL = "{{.l2_rpc_url}}"
 WitnessURL = "{{.l2_rpc_url}}"

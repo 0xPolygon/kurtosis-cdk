@@ -40,7 +40,7 @@ SequencerPrivateKeyPassword  = ""
 {{- end}}
 
 {{- if lt .aggkit_version "0.8" }}
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
 {{- if eq .sequencer_type "op-geth" }}
@@ -98,7 +98,7 @@ polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 polygonZkEVMAddress = ""
 {{- end }}
 
-BridgeAddr = "{{.zkevm_bridge_address}}"
+BridgeAddr = "{{.l1_bridge_address}}"
 
 # ==============================================================================
 #  _     ____   ____ ___  _   _ _____ ___ ____
