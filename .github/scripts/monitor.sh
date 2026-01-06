@@ -103,6 +103,7 @@ for step in $(seq 1 "${num_steps}"); do
       case "${sequencer_type}" in
         "cdk-erigon")
           LATEST_BATCH=$(cast to-dec "$(cast rpc zkevm_batchNumber --rpc-url "${rpc_url}" | sed 's/"//g')")
+          log_info "Got batches: latest=${LATEST_BATCH}"
           if [[ "${LATEST_BATCH}" -ge "${target}" ]]; then
             log_info "Target batches reached for latest batch type"
             exit 0
