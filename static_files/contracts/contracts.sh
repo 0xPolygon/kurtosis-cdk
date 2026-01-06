@@ -327,7 +327,7 @@ deploy_agglayer_core_contracts() {
     # automations. This schema matching can be dropped once this is
     # versioned up to 8
     # DEPRECATED we will likely remove support for anything before fork 9 soon
-    fork_id="{{.zkevm_rollup_fork_id}}"
+    fork_id="{{.zkevm_fork_id}}"
     if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
         jq '.AgglayerManager = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
         jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
@@ -592,7 +592,7 @@ create_agglayer_rollup() {
     # automations. This schema matching can be dropped once this is
     # versioned up to 8
     # DEPRECATED we will likely remove support for anything before fork 9 soon
-    fork_id="{{.zkevm_rollup_fork_id}}"
+    fork_id="{{.zkevm_fork_id}}"
     if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
         jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
     fi

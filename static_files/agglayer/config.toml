@@ -1,6 +1,6 @@
 debug-mode = true
 
-{{if and (ne .zkevm_rollup_fork_id "9") (ne .zkevm_rollup_fork_id "11")}}
+{{if and (ne .zkevm_fork_id "9") (ne .zkevm_fork_id "11")}}
 # Only supported by fork 12+
 mock-verifier = {{.mock_verifier}}
 {{end}}

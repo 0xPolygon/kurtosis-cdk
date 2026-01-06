@@ -5,7 +5,7 @@
     "dataAvailabilityProtocol": "PolygonDataCommittee",
     "deployerPvtKey": "{{.l2_admin_private_key}}",
     "description": "kurtosis-devnet - {{.chain_name}}",
-    "forkID": {{.zkevm_rollup_fork_id}},
+    "forkID": {{.zkevm_fork_id}},
     "gasTokenAddress":"",
     "maxFeePerGas": "",
     "maxPriorityFeePerGas": "",

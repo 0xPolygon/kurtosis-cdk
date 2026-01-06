@@ -76,7 +76,7 @@ def create_agglayer_config_artifact(
                         "agglayer", args["l1_rpc_url"]
                     ),
                     "l1_ws_url": args["l1_ws_url"],
-                    "zkevm_rollup_fork_id": args["zkevm_rollup_fork_id"],
+                    "zkevm_fork_id": args["zkevm_fork_id"],
                     "l2_keystore_password": args["l2_keystore_password"],
                     "l2_sequencer_address": args["l2_sequencer_address"],
                     # ports
