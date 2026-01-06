@@ -37,7 +37,7 @@ def run(
         config={
             "bridge-config.toml": struct(
                 template=read_file(
-                    src="../../../static_files/zkevm-bridge-service/config.toml"
+                    src="../../../static_files/chain/shared/zkevm-bridge-service/config.toml"
                 ),
                 data={
                     "log_level": args.get("log_level"),
