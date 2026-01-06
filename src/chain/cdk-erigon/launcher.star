@@ -97,7 +97,7 @@ def launch(
         ]
     ):
         plan.print("Deploying zkevm-bridge infrastructure (legacy)")
-        zkevm_bridge_service.run(
+        zkevm_bridge_service_url = zkevm_bridge_service.run(
             plan,
             args,
             contract_setup_addresses,
@@ -106,10 +106,19 @@ def launch(
         )
 
         if deployment_stages.get("deploy_cdk_bridge_ui"):
-            zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
+            zkevm_bridge_ui_url = zkevm_bridge_ui.run(
+                plan, args, contract_setup_addresses
+            )
 
             if deployment_stages.get("deploy_l1"):
-                zkevm_bridge_proxy.run(plan, args)
+                zkevm_bridge_proxy.run(
+                    plan,
+                    args,
+                    args.get("l1_rpc_url"),
+                    rpc_context.http_rpc_url,
+                    zkevm_bridge_service_url,
+                    zkevm_bridge_ui_url,
+                )
 
     # Deploy aggkit infrastructure + dedicated bridge service
     if consensus_type in [
