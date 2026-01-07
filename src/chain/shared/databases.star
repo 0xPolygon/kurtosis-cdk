@@ -57,7 +57,9 @@ PROVER_DB = {
         "name": "prover_db",
         "user": "prover_user",
         "password": "redacted",
-        "init": read_file(src="../../../static_files/databases/prover-db-init.sql"),
+        "init": read_file(
+            src="../../../static_files/chain/shared/databases/prover-db-init.sql"
+        ),
     }
 }
 
@@ -115,7 +117,9 @@ def _service_name(suffix):
 
 
 def create_postgres_service(plan, db_configs, args, start_port_name):
-    init_script_tpl = read_file(src="../../../static_files/databases/init.sql")
+    init_script_tpl = read_file(
+        src="../../../static_files/chain/shared/databases/init.sql"
+    )
     init_script = plan.render_templates(
         name="init.sql" + args["deployment_suffix"],
         config={

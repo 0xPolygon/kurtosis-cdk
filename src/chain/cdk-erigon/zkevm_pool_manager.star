@@ -18,7 +18,7 @@ def run(plan, args, sequencer_rpc_url):
         config={
             "config.toml": struct(
                 template=read_file(
-                    src="../../../static_files/cdk-erigon/zkevm-pool-manager/config.toml"
+                    src="../../../static_files/chain/cdk-erigon/zkevm-pool-manager/config.toml"
                 ),
                 data=args
                 | {
