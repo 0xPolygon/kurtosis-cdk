@@ -21,8 +21,9 @@ def launch(
     deployment_stages,
     genesis_artifact,
 ):
-    # cdk-data-availability
     consensus_type = args.get("consensus_contract_type")
+
+    # cdk-data-availability
     if consensus_type == constants.CONSENSUS_TYPE.cdk_validium:
         cdk_data_availability.run(plan, args, contract_setup_addresses)
 
@@ -58,11 +59,11 @@ def launch(
         contract_setup_addresses,
         stateless_executor_url if stateless_executor_url else None,
     )
+    sequencer_rpc_url = sequencer_context.http_rpc_url
+    datastreamer_url = sequencer_context.datastreamer_url
 
     # zkevm-pool-manager
-    zkevm_pool_manager_context = zkevm_pool_manager.run(
-        plan, args, sequencer_context.http_rpc_url
-    )
+    pool_manager_url = zkevm_pool_manager.run(plan, args, sequencer_rpc_url)
 
     # cdk-erigon rpc
     rpc_context = cdk_erigon.run_rpc(
@@ -70,10 +71,11 @@ def launch(
         args
         | {"l1_rpc_url": args["mitm_rpc_url"].get("erigon-rpc", args["l1_rpc_url"])},
         contract_setup_addresses,
-        sequencer_context.http_rpc_url,
-        sequencer_context.datastreamer_url,
-        zkevm_pool_manager_context.pool_manager_url,
+        sequencer_rpc_url,
+        datastreamer_url,
+        pool_manager_url,
     )
+    rpc_url = rpc_context.http_rpc_url
 
     # aggkit
     if deployment_stages.get("deploy_aggkit_node"):
@@ -97,27 +99,25 @@ def launch(
         ]
     ):
         plan.print("Deploying zkevm-bridge infrastructure (legacy)")
-        zkevm_bridge_service_url = zkevm_bridge_service.run(
+        bridge_service_url = zkevm_bridge_service.run(
             plan,
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            rpc_context.http_rpc_url,
+            rpc_url,
         )
 
         if deployment_stages.get("deploy_cdk_bridge_ui"):
-            zkevm_bridge_ui_url = zkevm_bridge_ui.run(
-                plan, args, contract_setup_addresses
-            )
+            bridge_ui_url = zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
 
             if deployment_stages.get("deploy_l1"):
                 zkevm_bridge_proxy.run(
                     plan,
                     args,
                     args.get("l1_rpc_url"),
-                    rpc_context.http_rpc_url,
-                    zkevm_bridge_service_url,
-                    zkevm_bridge_ui_url,
+                    rpc_url,
+                    bridge_service_url,
+                    bridge_ui_url,
                 )
 
     # Deploy aggkit infrastructure + dedicated bridge service
