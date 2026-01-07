@@ -9,8 +9,6 @@ ports_package = import_module("../shared/ports.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
 zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
-zkevm_bridge_ui = import_module("./zkevm_bridge_ui.star")
-zkevm_bridge_proxy = import_module("./zkevm_bridge_proxy.star")
 
 
 def launch(
@@ -90,24 +88,6 @@ def launch(
         rpc_url,
     )
 
-    # zkevm-bridge-ui (legacy) and zkevm-bridge-proxy
-    if deployment_stages.get("deploy_cdk_bridge_ui") and (
-        consensus_type
-        in [
-            constants.CONSENSUS_TYPE.rollup,
-            constants.CONSENSUS_TYPE.cdk_validium,
-        ]
-    ):
-        bridge_ui_url = zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
-        zkevm_bridge_proxy.run(
-            plan,
-            args,
-            args.get("l1_rpc_url"),
-            rpc_url,
-            bridge_service_url,
-            bridge_ui_url,
-        )
-
     # aggkit
     if consensus_type in [
         constants.CONSENSUS_TYPE.pessimistic,
@@ -120,3 +100,8 @@ def launch(
             sovereign_contract_setup_addresses,
             False,
         )
+
+    return struct(
+        rpc_url=rpc_url,
+        bridge_service_url=bridge_service_url,
+    )

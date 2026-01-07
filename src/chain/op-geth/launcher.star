@@ -35,3 +35,8 @@ def launch(
         sovereign_contract_setup_addresses,
         deploy_op_succinct,
     )
+
+    return struct(
+        rpc_url=None,
+        bridge_service_url=None,
+    )

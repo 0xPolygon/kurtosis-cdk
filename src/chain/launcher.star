@@ -15,7 +15,7 @@ def launch(
     sequencer_type = args.get("sequencer_type")
     if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
         plan.print("Deploying cdk-erigon chain")
-        cdk_erigon_launcher.launch(
+        return cdk_erigon_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
@@ -26,7 +26,7 @@ def launch(
     elif sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         plan.print("Deploying op-geth chain")
         deploy_op_succinct = deployment_stages.get("deploy_op_succinct", False)
-        op_geth_launcher.launch(
+        return op_geth_launcher.launch(
             plan,
             args,
             contract_setup_addresses,

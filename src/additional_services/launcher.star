@@ -9,6 +9,7 @@ def launch(
     genesis_artifact,
     deployment_stages,
     sequencer_type,
+    l2_context,
 ):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.agglogger:
@@ -58,5 +59,21 @@ def launch(
             import_module("./agglayer_dashboard.star").run(
                 plan, args, contract_setup_addresses
             )
+        elif svc == constants.ADDITIONAL_SERVICES.zkevm_bridge_ui:
+            if consensus_type in [
+                constants.CONSENSUS_TYPE.rollup,
+                constants.CONSENSUS_TYPE.cdk_validium,
+            ]:
+                bridge_ui_url = import_module("./zkevm_bridge_ui.star").run(
+                    plan, args, contract_setup_addresses
+                )
+                import_module("./zkevm_bridge_proxy.star").run(
+                    plan,
+                    args,
+                    args.get("l1_rpc_url"),
+                    l2_context.rpc_url,
+                    l2_context.bridge_service_url,
+                    bridge_ui_url,
+                )
         else:
             fail("Invalid additional service: %s" % (svc))

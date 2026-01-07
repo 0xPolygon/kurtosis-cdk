@@ -1,4 +1,5 @@
 ADDITIONAL_SERVICES = struct(
+    agglayer_dashboard="agglayer_dashboard",
     agglogger="agglogger",
     arpeggio="arpeggio",
     assertoor="assertoor",
@@ -11,7 +12,7 @@ ADDITIONAL_SERVICES = struct(
     status_checker="status_checker",
     test_runner="test_runner",
     tx_spammer="tx_spammer",
-    agglayer_dashboard="agglayer_dashboard",
+    zkevm_bridge_ui="zkevm_bridge_ui",
 )
 
 LOG_LEVEL = struct(
