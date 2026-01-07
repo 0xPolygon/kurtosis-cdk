@@ -236,7 +236,7 @@ configure_contract_container_custom_genesis() {
     cast send "$agglayer_ger" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
-# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
+# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk-validium
 configure_contract_container_custom_genesis_cdk_erigon() {
     _echo_ts "Executing function configure_contract_container_custom_genesis_cdk_erigon"
 
@@ -416,7 +416,7 @@ create_agglayer_rollup() {
 
     cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
     # shellcheck disable=SC1054,SC1072,SC1083
-    {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
     cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     # shellcheck disable=SC1073,1009
     {{ else }}
@@ -438,7 +438,7 @@ create_agglayer_rollup() {
         # Foundry cache is corrupted/invalid at this point for some reason
         # Maybe the source image has cached older contract versions
         rm -fr out cache
-            {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
             forge create \
                 --broadcast \
                 --json \
@@ -469,7 +469,7 @@ create_agglayer_rollup() {
             {{ end }}
         {{ else }}
         _echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
-            {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
             jq \
                 --arg c "{{ .gas_token_address }}" \
                 '.gasTokenAddress = $c' \
@@ -487,7 +487,7 @@ create_agglayer_rollup() {
 
     cp "$contracts_dir"/deployment/v2/genesis.json "$output_dir"/
 
-    {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
     jq 'walk(if type == "object" then 
             with_entries(
@@ -623,7 +623,7 @@ create_agglayer_rollup() {
         "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
     {{ end }}
 
-    {{ if eq .consensus_contract_type "cdk_validium" }}
+    {{ if eq .consensus_contract_type "cdk-validium" }}
     # The DAC needs to be configured with a required number of signatures.
     # Right now the number of DAC nodes is not configurable.
     # If we add more nodes, we'll need to make sure the urls and keys are sorted.
@@ -944,7 +944,7 @@ initialize_rollup() {
     # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
     rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.l2_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
     # shellcheck disable=SC2050
-    if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
+    if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa-multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured
         cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.l2_admin_private_key}}" "$(jq -r '.AgglayerGateway' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
         true

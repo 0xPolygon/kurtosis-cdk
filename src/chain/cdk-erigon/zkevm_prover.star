@@ -74,7 +74,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover, aggregator_url=None):
         config={
             "config.json": struct(
                 template=read_file(
-                    src="../../../static_files/cdk-erigon/zkevm-prover/config.json"
+                    src="../../../static_files/chain/cdk-erigon/zkevm-prover/config.json"
                 ),
                 data=data,
             )

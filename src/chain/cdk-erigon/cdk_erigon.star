@@ -70,7 +70,7 @@ def _run(
         config={
             "config.yaml": struct(
                 template=read_file(
-                    src="../../../static_files/cdk-erigon/cdk-erigon/config.yml"
+                    src="../../../static_files/chain/cdk-erigon/cdk-erigon/config.yml"
                 ),
                 data={
                     "is_sequencer": type == CDK_ERIGON_TYPE.sequencer,
@@ -135,7 +135,7 @@ def _run(
         config={
             "dynamic-{}-chainspec.json".format(args.get("chain_name")): struct(
                 template=read_file(
-                    src="../../../static_files/cdk-erigon/cdk-erigon/chainspec.json"
+                    src="../../../static_files/chain/cdk-erigon/cdk-erigon/chainspec.json"
                 ),
                 data={
                     "chain_id": args.get("l2_chain_id"),

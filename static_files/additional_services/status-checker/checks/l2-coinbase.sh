@@ -3,7 +3,7 @@
 # shellcheck source=static_files/additional_services/status-checker/checks/lib.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
-check_consensus rollup cdk_validium
+check_consensus rollup cdk-validium
 
 # Ensure that no more than $last_n_events batches sequenced can be processed
 # within the status-checker check interval.
@@ -44,7 +44,7 @@ while IFS= read -r hex; do
         "$input_data" \
         | jq -r '.[4]'
     )
-  elif is_consensus cdk_validium; then
+  elif is_consensus cdk-validium; then
     l2_coinbase=$(
       cast cdd --json \
         "sequenceBatchesValidium((bytes32,bytes32,uint64,bytes32)[],uint32,uint64,bytes32,address,bytes)" \

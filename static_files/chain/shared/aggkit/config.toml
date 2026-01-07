@@ -31,7 +31,7 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port_number}}"
 
-{{- if or (eq .sequencer_type "op-geth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
+{{- if or (eq .sequencer_type "op-geth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
@@ -211,7 +211,7 @@ AggSenderPrivateKey = {Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l
 # ------------------------------------------------------------------------------
 # RequireCommitteeMembershipCheck = false
 
-{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"
@@ -738,7 +738,7 @@ Signer = { Method = "local", Path = "/etc/aggkit/aggsendervalidator-{{.agg_sende
 Signer = { Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}" }
 {{- end}}
 # PessimisticProof or AggchainProof
-{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa_multisig") }}
+{{- if or (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
 Mode = "PessimisticProof"
 {{- else}}
 Mode = "AggchainProof"

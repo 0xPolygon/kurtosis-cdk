@@ -8,7 +8,7 @@ The two options are:
 
 > In this mode, the components will run CDK in `zkevm` mode and the consensus contract will be `PolygonZkEVMEtrog`.
 
-- `cdk_validium`: Transaction data is stored off-chain using a dedicated CDK Data Availability (DA) layer and a Data Availability Committee (DAC). This approach reduces the load on the main chain and can offer improved scalability and lower costs.
+- `cdk-validium`: Transaction data is stored off-chain using a dedicated CDK Data Availability (DA) layer and a Data Availability Committee (DAC). This approach reduces the load on the main chain and can offer improved scalability and lower costs.
 
 > In this mode, the components will run CDK in `validium` mode, the consensus contract will be `PolygonValidiumEtrog` and the CDK DAC will be deployed and configured.
 

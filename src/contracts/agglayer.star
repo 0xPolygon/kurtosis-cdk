@@ -195,7 +195,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             config={
                 "deploy-op-succinct-contracts.sh": struct(
                     template=read_file(
-                        src="../../static_files/op-succinct-proposer/deploy-op-succinct-contracts.sh"
+                        src="../../static_files/chain/op-geth/op-succinct-proposer/deploy-op-succinct-contracts.sh"
                     ),
                     data=args,
                 ),

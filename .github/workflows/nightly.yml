@@ -133,12 +133,9 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         working-directory: .github/scripts
-        run: |
-          ./monitor-op-rollup.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }}
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -206,38 +203,11 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor pessimistic chain virtual batches (Central RPC)
+      - name: Monitor rollup progress
         run: |
-          result=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
-          if [[ "$result" == "pessimistic" ]] || [[ "$result" == "ecdsa_multisig" ]]; then
-            echo "Skipping block verification as consensus is pessimistic."
-          else
-            sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
-            rpc_name=""
-            if [[ "$sequencer_type" == "cdk-erigon" ]]; then
-              rpc_name="cdk-erigon-rpc-001"
-            elif [[ "$sequencer_type" == "null" ]]; then
-              rpc_name="cdk-erigon-rpc-001"
-            else
-              echo "Unknown sequencer type: $sequencer_type"
-              exit 1
-            fi
-            echo "RPC name: $rpc_name"
-            ./.github/scripts/monitor-pessimistic-chain.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} $rpc_name rpc)
-          fi
-
-      - name: Monitor OP rollup finalized blocks (OP CL RPC)
-        run: |
-          result=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
-          if [[ "$result" == "op-geth" ]]; then
-            ./.github/scripts/monitor-op-rollup.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
-          else
-            echo "Skipping block verification as there is no OP rollup in the environment"
-          fi
+          sequencer_type=$(yq --raw-output '.args.sequencer_type' ${{ matrix.file.path }})
+          consensus_contract_type=$(yq --raw-output '.args.consensus_contract_type' ${{ matrix.file.path }})
+          ./.github/scripts/monitor.sh ${{ env.ENCLAVE_NAME }} "$sequencer_type" "$consensus_contract_type"
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -269,12 +239,9 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         working-directory: .github/scripts
-        run: |
-          ./monitor-op-rollup.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-geth fep
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
@@ -424,12 +391,9 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor rollup
+      - name: Monitor rollup progress
         working-directory: .github/scripts
-        run: |
-          ./monitor-op-rollup.sh \
-              --enclave ${{ env.ENCLAVE_NAME }} \
-              --cl-rpc-url $(kurtosis port print ${{ env.ENCLAVE_NAME }} op-cl-1-op-node-op-geth-001 rpc)
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }}
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
@@ -493,12 +457,9 @@ jobs:
       - name: Inspect enclave
         run: kurtosis enclave inspect ${{ env.ENCLAVE_NAME }}
 
-      - name: Monitor CDK chain verified batches (CDK Erigon Permissionless RPC)
+      - name: Monitor rollup progress
         working-directory: .github/scripts
-        run: |
-          ./monitor-cdk-chain.sh \
-            --enclave ${{ env.ENCLAVE_NAME }} \
-            --rpc-url "$(kurtosis port print ${{ env.ENCLAVE_NAME }} cdk-erigon-rpc-001 rpc)"
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} cdk-erigon cdk-validium
 
       - name: Run bridge tests
         uses: ./.github/actions/bridge-tests
