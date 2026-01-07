@@ -19,8 +19,6 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_databases": True,
     # Deploy CDK central/trusted environment.
     "deploy_cdk_central_environment": True,
-    # Deploy CDK bridge UI.
-    "deploy_cdk_bridge_ui": False,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
