@@ -24,6 +24,7 @@ def launch(
     consensus_type = args.get("consensus_contract_type")
 
     # cdk-data-availability
+    # required to be up before setting the data availability committee (contracts)
     if consensus_type == constants.CONSENSUS_TYPE.cdk_validium:
         cdk_data_availability.run(plan, args, contract_setup_addresses)
 
@@ -77,7 +78,7 @@ def launch(
     )
     rpc_url = rpc_context.http_rpc_url
 
-    # aggkit
+    # aggkit: ???
     if deployment_stages.get("deploy_aggkit_node"):
         plan.print("Deploying aggkit")
         aggkit_package.run_aggkit_cdk_node(
