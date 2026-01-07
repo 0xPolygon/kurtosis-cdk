@@ -452,7 +452,6 @@ class VersionMatrixExtractor:
                 'zkevm-prover',
             ],
             "cdk-erigon-sovereign-pessimistic": [
-                'aggkit-prover',
                 'aggkit',  # different from cdk-erigon-zkrollup and cdk-erigon-validium
                 'agglayer',
                 'agglayer-contracts',
@@ -461,7 +460,6 @@ class VersionMatrixExtractor:
                 'zkevm-pool-manager',
             ],
             "cdk-erigon-sovereign-ecdsa-multisig": [
-                'aggkit-prover',
                 'aggkit',
                 'agglayer',
                 'agglayer-contracts',
@@ -472,7 +470,6 @@ class VersionMatrixExtractor:
             # cdk-opgeth
             "cdk-opgeth-sovereign-pessimistic": [
                 'aggkit',
-                'aggkit-prover',
                 'agglayer',
                 'agglayer-contracts',
                 'op-batcher',
@@ -484,7 +481,6 @@ class VersionMatrixExtractor:
             ],
             "cdk-opgeth-sovereign-ecdsa-multisig": [
                 'aggkit',
-                'aggkit-prover',
                 'agglayer',
                 'agglayer-contracts',
                 'op-batcher',
