@@ -18,6 +18,7 @@ args:
   # Enable real (non-mock) verifier on contracts
   zkevm_use_real_verifier: true
 
+  sequencer_type: op-geth
   consensus_contract_type: fep
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.
   # A mock verifier is used otherwise.
