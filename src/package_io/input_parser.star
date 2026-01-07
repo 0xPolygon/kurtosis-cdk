@@ -475,8 +475,8 @@ def parse_args(plan, user_args):
         "sequencer_name": sequencer_name,
         "zkevm_fork_id": fork_id,
         "zkevm_fork_name": fork_name,
-        "deploy_agglayer": deployment_stages.get(
-            "deploy_agglayer", False
+        "should_deploy_agglayer": deployment_stages.get(
+            "should_deploy_agglayer", False
         ),  # hacky but works fine for now.
     }
 
