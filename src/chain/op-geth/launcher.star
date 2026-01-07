@@ -1,5 +1,5 @@
 aggkit_package = import_module("../shared/aggkit.star")
-aggkit_prover = import_module("../shared/aggkit_prover.star")
+aggkit_prover = import_module("./aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
 op_succinct_proposer = import_module("./op_succinct_proposer.star")
 ports_package = import_module("../shared/ports.star")
