@@ -118,6 +118,5 @@ def launch(
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            deploy_cdk_bridge_infra,
             False,
         )

@@ -77,7 +77,6 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_cdk_bridge_infra,
     deploy_op_succinct,
 ):
     """Main orchestration function for deploying aggkit services."""
