@@ -7,17 +7,9 @@ op_input_parser = import_module("./op_input_parser.star")
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
 # an upgrade or to test a new version of a component.
 DEFAULT_DEPLOYMENT_STAGES = {
-    # Deploy a local L1 chain using the ethereum-package.
-    # Set to false to use an external L1 like Sepolia.
-    # Note that it will require a few additional parameters.
     "should_deploy_l1": True,
-    # Deploy agglayer contracts on L1 (as well as fund accounts).
-    # Set to false to use pre-deployed agglayer contracts.
-    # Note that it will require a few additional parameters.
     "should_deploy_agglayer_contracts": True,
-    # Deploy the agglayer.
     "should_deploy_agglayer": True,
-    # Deploy contracts on L2 (as well as fund accounts).
     "should_deploy_l2_contracts": False,
 }
 
