@@ -66,7 +66,7 @@ def run(plan, args={}):
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
-    if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
+    if deployment_stages.get("should_deploy_agglayer_contracts", False):
         plan.print("Deploying agglayer contracts on L1")
         import_module(agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args

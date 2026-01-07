@@ -14,7 +14,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy agglayer contracts on L1 (as well as fund accounts).
     # Set to false to use pre-deployed agglayer contracts.
     # Note that it will require a few additional parameters.
-    "deploy_agglayer_contracts_on_l1": True,
+    "should_deploy_agglayer_contracts": True,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
