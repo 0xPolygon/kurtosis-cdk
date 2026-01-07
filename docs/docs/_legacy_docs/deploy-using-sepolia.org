@@ -9,7 +9,7 @@ order to deploy to [[https://sepolia.etherscan.io/][Sepolia]].
 
 The first thing we should do is make sure that Kurtosis doesn't bother
 doing the L1 deployment. In order to achieve this, you need to set
-~deployment_stages.deploy_l1~ to ~false~. You can use the handy
+~deployment_stages.should_deploy_l1~ to ~false~. You can use the handy
 configuration file we provide, [[../.github/tests/external-l1/deploy-cdk-to-sepolia.yml]],
 with all the necessary configuration for deploying to Sepolia. Or
 you can also modify the ~input_parser.star~ file directly.

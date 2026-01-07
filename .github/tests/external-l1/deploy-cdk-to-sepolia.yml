@@ -1,6 +1,6 @@
 deployment_stages:
   # Disable local L1.
-  deploy_l1: false
+  should_deploy_l1: false
 
 args:
   ## L1 Config

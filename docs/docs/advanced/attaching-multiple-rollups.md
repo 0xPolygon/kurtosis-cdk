@@ -62,7 +62,7 @@ Repeat the steps for Rollup consensus.
 
 ```yaml title="initial-cdk-erigon-rollup.yml"
 deployment_stages:
-  deploy_l1: false
+  should_deploy_l1: false
   deploy_agglayer: false
 args:
   verbosity: debug
@@ -98,7 +98,7 @@ Repeat the steps for PP consensus.
 
 ```yaml title="initial-cdk-erigon-pp.yml"
 deployment_stages:
-  deploy_l1: false
+  should_deploy_l1: false
   deploy_agglayer: false
 args:
   deployment_suffix: '-003'

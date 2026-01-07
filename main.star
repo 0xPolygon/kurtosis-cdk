@@ -23,7 +23,7 @@ def run(plan, args={}):
     consensus_type = args.get("consensus_contract_type")
 
     # Deploy a local L1.
-    if deployment_stages.get("deploy_l1", False):
+    if deployment_stages.get("should_deploy_l1", False):
         plan.print("Deploying a local L1")
         l1_context = l1_launcher.launch(plan, args)
     else:

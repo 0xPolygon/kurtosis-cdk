@@ -1,5 +1,5 @@
 deployment_stages:
-  deploy_l1: false
+  should_deploy_l1: false
   deploy_agglayer: false
 
 args:
