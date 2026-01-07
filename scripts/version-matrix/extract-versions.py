@@ -431,7 +431,6 @@ class VersionMatrixExtractor:
         environment_components = {
             # cdk-erigon
             "cdk-erigon-zkrollup": [
-                'aggkit-prover',
                 'agglayer',
                 'agglayer-contracts',
                 'cdk-erigon',
@@ -441,7 +440,6 @@ class VersionMatrixExtractor:
                 'zkevm-prover',
             ],
             "cdk-erigon-validium": [
-                'aggkit-prover',
                 'agglayer',
                 'agglayer-contracts',
                 'cdk-erigon',
