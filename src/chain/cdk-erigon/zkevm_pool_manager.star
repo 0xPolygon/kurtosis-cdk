@@ -49,5 +49,5 @@ def run(plan, args, sequencer_rpc_url):
             ],
         ),
     )
-    pool_manager_url = result.ports[zkevm_pool_manager.SERVER_PORT_ID].url
+    pool_manager_url = result.ports[SERVER_PORT_ID].url
     return pool_manager_url
