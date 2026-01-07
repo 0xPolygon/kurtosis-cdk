@@ -1,4 +1,4 @@
-aggkit_prover = import_module("./aggkit_prover.star")
+aggkit_prover = import_module("../op-geth/aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 ports_package = import_module("./ports.star")
