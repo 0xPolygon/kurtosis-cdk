@@ -1,6 +1,6 @@
 FROM alpine:3.20 AS builder
 ARG ZKEVM_BRIDGE_UI_BRANCH="develop"
-ARG ZKEVM_BRIDGE_UI_TAG_OR_COMMIT_SHA="0006445" # 2024-03-13
+ARG ZKEVM_BRIDGE_UI_TAG_OR_COMMIT_SHA="dbd55ed" # 2024-08-29
 
 WORKDIR /opt/zkevm-bridge-ui
 # WARNING (DL3018): Pin versions in apk add.
