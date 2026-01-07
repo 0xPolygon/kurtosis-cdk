@@ -236,7 +236,7 @@ configure_contract_container_custom_genesis() {
     cast send "$agglayer_ger" "initialize()" --private-key "{{.l2_admin_private_key}}" --rpc-url "{{.l1_rpc_url}}"
 }
 
-# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk_validium
+# Called if l1_custom_genesis and consensus_contract_type is rollup or cdk-validium
 configure_contract_container_custom_genesis_cdk_erigon() {
     _echo_ts "Executing function configure_contract_container_custom_genesis_cdk_erigon"
 
@@ -327,7 +327,7 @@ deploy_agglayer_core_contracts() {
     # automations. This schema matching can be dropped once this is
     # versioned up to 8
     # DEPRECATED we will likely remove support for anything before fork 9 soon
-    fork_id="{{.zkevm_rollup_fork_id}}"
+    fork_id="{{.zkevm_fork_id}}"
     if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
         jq '.AgglayerManager = .polygonRollupManager' combined.json > c.json; mv c.json combined.json
         jq '.deploymentRollupManagerBlockNumber = .deploymentBlockNumber' combined.json > c.json; mv c.json combined.json
@@ -416,7 +416,7 @@ create_agglayer_rollup() {
 
     cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
     # shellcheck disable=SC1054,SC1072,SC1083
-    {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
     cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     # shellcheck disable=SC1073,1009
     {{ else }}
@@ -438,7 +438,7 @@ create_agglayer_rollup() {
         # Foundry cache is corrupted/invalid at this point for some reason
         # Maybe the source image has cached older contract versions
         rm -fr out cache
-            {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
             forge create \
                 --broadcast \
                 --json \
@@ -469,7 +469,7 @@ create_agglayer_rollup() {
             {{ end }}
         {{ else }}
         _echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
-            {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
             jq \
                 --arg c "{{ .gas_token_address }}" \
                 '.gasTokenAddress = $c' \
@@ -487,7 +487,7 @@ create_agglayer_rollup() {
 
     cp "$contracts_dir"/deployment/v2/genesis.json "$output_dir"/
 
-    {{ if eq .consensus_contract_type "ecdsa_multisig" }}
+    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
     jq 'walk(if type == "object" then 
             with_entries(
@@ -507,7 +507,7 @@ create_agglayer_rollup() {
     {{ end }}
 
     # Comment out aggLayerGateway.addDefaultAggchainVKey for additional rollups with same AggchainVKeySelector and OwnedAggchainVKey
-    if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
+    if [[ "{{ .l2_network_id }}" != "1" ]]; then
     sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
     fi
 
@@ -559,15 +559,15 @@ create_agglayer_rollup() {
     jq '.polygonZkEVML2BridgeAddress = .AgglayerBridge' combined.json > c.json; mv c.json combined.json
 
     # Add the L2 GER Proxy address in combined.json
-    zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
-    if [[ -z "$zkevm_global_exit_root_l2_address" ]]; then
-        zkevm_global_exit_root_l2_address=$(jq -r '.genesis[] | select(.contractName == "LegacyAgglayerGERL2 proxy") | .address' "$output_dir"/genesis.json)
+    l2_ger_address=$(jq -r '.genesis[] | select(.contractName == "PolygonZkEVMGlobalExitRootL2 proxy") | .address' "$output_dir"/genesis.json)
+    if [[ -z "$l2_ger_address" ]]; then
+        l2_ger_address=$(jq -r '.genesis[] | select(.contractName == "LegacyAgglayerGERL2 proxy") | .address' "$output_dir"/genesis.json)
     fi
-    if [[ -z "$zkevm_global_exit_root_l2_address" ]]; then
+    if [[ -z "$l2_ger_address" ]]; then
         _echo_ts "Error: No L2 GER Proxy address found in genesis.json"
         exit 1
     fi
-    jq --arg a "$zkevm_global_exit_root_l2_address" '.LegacyAgglayerGERL2 = $a' combined.json > c.json; mv c.json combined.json
+    jq --arg a "$l2_ger_address" '.LegacyAgglayerGERL2 = $a' combined.json > c.json; mv c.json combined.json
 
     {{ if .gas_token_enabled }}
     jq --slurpfile cru "$contracts_dir"/deployment/v2/create_rollup_parameters.json '.gasTokenAddress = $cru[0].gasTokenAddress' combined.json > c.json; mv c.json combined.json
@@ -579,7 +579,7 @@ create_agglayer_rollup() {
     polycli ulxly bridge asset \
         --bridge-address "$agglayer_bridge" \
         --destination-address "0x0000000000000000000000000000000000000000" \
-        --destination-network "{{.zkevm_rollup_id}}" \
+        --destination-network "{{.l2_network_id}}" \
         --private-key "{{.l2_admin_private_key}}" \
         --rpc-url "{{.l1_rpc_url}}" \
         --value 10000000000000000000000 \
@@ -592,7 +592,7 @@ create_agglayer_rollup() {
     # automations. This schema matching can be dropped once this is
     # versioned up to 8
     # DEPRECATED we will likely remove support for anything before fork 9 soon
-    fork_id="{{.zkevm_rollup_fork_id}}"
+    fork_id="{{.zkevm_fork_id}}"
     if [[ $fork_id -lt 8 && $fork_id -ne 0 ]]; then
         jq '.createRollupBlockNumber = .createRollupBlock' combined.json > c.json; mv c.json combined.json
     fi
@@ -623,7 +623,7 @@ create_agglayer_rollup() {
         "$(jq -r '.rollupAddress' combined.json)" 1000000000000000000000000000
     {{ end }}
 
-    {{ if eq .consensus_contract_type "cdk_validium" }}
+    {{ if eq .consensus_contract_type "cdk-validium" }}
     # The DAC needs to be configured with a required number of signatures.
     # Right now the number of DAC nodes is not configurable.
     # If we add more nodes, we'll need to make sure the urls and keys are sorted.
@@ -789,7 +789,7 @@ initialize_rollup() {
         rollup_id=$(jq -r '.rollupID' "$output_dir"/create_rollup_output.json)
 
         # It looks like setting up of the rollupid isn't necessary because the rollupid is determined based on the chainid
-        jq --arg rum "$agglayer_manager" --arg rid "$rollup_id" --arg chainid "{{.zkevm_rollup_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
+        jq --arg rum "$agglayer_manager" --arg rid "$rollup_id" --arg chainid "{{.l2_chain_id}}" '.rollupManagerAddress = $rum | .rollupID = $rid | .chainID = ($chainid | tonumber)' "$output_dir"/initialize_rollup.json > "$output_dir"/initialize_rollup.json.tmp
         mv "$output_dir"/initialize_rollup.json.tmp "$output_dir"/initialize_rollup.json
 
         cp "$output_dir"/initialize_rollup.json "$contracts_dir"/tools/initializeRollup/initialize_rollup.json
@@ -799,7 +799,7 @@ initialize_rollup() {
 
     # Save Rollup Information to a file.
     agglayer_manager=$(jq -r '.AgglayerManager' "$output_dir"/combined.json)
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
     rpc_url="{{.op_el_rpc_url}}"
     # This is the default prefunded account for the OP Network
@@ -942,9 +942,9 @@ initialize_rollup() {
     check_deployed_contracts "$l2_contract_addresses" "{{.op_el_rpc_url}}"
 
     # Only set the aggchainVkey for the first rollup. Adding multiple aggchainVkeys of the same value will revert with "0x22a1bdc4" or "AggchainVKeyAlreadyExists()".
-    rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.zkevm_rollup_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
+    rollupID=$(cast call "$agglayer_manager" "chainIDToRollupID(uint64)(uint32)" "{{.l2_chain_id}}" --rpc-url "{{.l1_rpc_url}}")
     # shellcheck disable=SC2050
-    if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa_multisig" ]]; then
+    if [[ $rollupID == "1" ]] && [[ "{{ .consensus_contract_type }}" != "ecdsa-multisig" ]]; then
         # FIXME - Temporary work around to make sure the default aggkey is configured
         cast send --rpc-url "{{.l1_rpc_url}}" --private-key "{{.l2_admin_private_key}}" "$(jq -r '.AgglayerGateway' ${output_dir}/combined.json)" "addDefaultAggchainVKey(bytes4,bytes32)" "{{.aggchain_vkey_selector}}" "{{.aggchain_vkey_hash}}" 
         true
@@ -1339,7 +1339,7 @@ create_sovereign_rollup_predeployed() {
         cp "$contracts_dir"/tools/createNewRollup/create_new_rollup_output_*.json "${output_dir}/create_rollup_output.json"
     else
         # shellcheck disable=SC2050
-        if [[ "{{ .zkevm_rollup_id }}" != "1" ]]; then
+        if [[ "{{ .l2_network_id }}" != "1" ]]; then
             sed -i '/await aggLayerGateway\.addDefaultAggchainVKey(/,/);/s/^/\/\/ /' "$contracts_dir"/deployment/v2/4_createRollup.ts
         fi
         # In the case for PP deployments without OP-Succinct, use the 4_createRollup.ts script instead of the createNewRollup.ts tool.
@@ -1348,7 +1348,7 @@ create_sovereign_rollup_predeployed() {
     fi
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' > "$contracts_dir"/sovereign-rollup-out.json
 
 }
 
@@ -1398,7 +1398,7 @@ create_sovereign_rollup() {
     # This will require genesis.json and create_new_rollup.json to be correctly filled. We are using a pre-defined template for these.
     # The script and example files exist under https://github.com/0xPolygonHermez/zkevm-contracts/tree/v9.0.0-rc.5-pp/tools/createNewRollup
     # The templates being used here: create_new_rollup.json and genesis.json were directly referenced from the above source.
-    rollupTypeID="{{ .zkevm_rollup_id }}"
+    rollupTypeID="{{ .l2_network_id }}"
     if [[ "$rollupTypeID" -eq 1 ]]; then
         echo "rollupID is 1. Running 4_createRollup.ts script"
     fi
@@ -1408,7 +1408,7 @@ create_sovereign_rollup() {
     npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_sovereign_rollup.out
 
     # Save Rollup Information to a file.
-    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.zkevm_rollup_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
+    cast call --json --rpc-url "{{.l1_rpc_url}}" "$agglayer_manager" 'rollupIDToRollupData(uint32)(address,uint64,address,uint64,bytes32,uint64,uint64,uint64,uint64,uint64,uint64,uint8)' "{{.l2_network_id}}" | jq '{"sovereignRollupContract": .[0], "rollupChainID": .[1], "verifier": .[2], "forkID": .[3], "lastLocalExitRoot": .[4], "lastBatchSequenced": .[5], "lastVerifiedBatch": .[6], "_legacyLastPendingState": .[7], "_legacyLastPendingStateConsolidated": .[8], "lastVerifiedBatchBeforeUpgrade": .[9], "rollupTypeID": .[10], "rollupVerifierType": .[11]}' >"$contracts_dir"/sovereign-rollup-out.json
 
     # These are some accounts that we want to fund for operations for running claims.
     sovereign_admin_addr="{{.l2_sovereignadmin_address}}"
@@ -1451,7 +1451,7 @@ create_sovereign_rollup() {
     calldata=$(cast calldata 'initialize(address _globalExitRootUpdater, address _globalExitRootRemover)' $aggoracle_addr $sovereign_admin_addr)
     forge create --legacy --broadcast --rpc-url $rpc_url --private-key $sovereign_admin_private_key TransparentUpgradeableProxy --constructor-args "$ger_impl_addr" $sovereign_admin_addr "$calldata"
 
-    initNetworkID="{{.zkevm_rollup_id}}"
+    initNetworkID="{{.l2_network_id}}"
     initGasTokenAddress="{{.gas_token_address}}"
     initGasTokenNetwork="{{.gas_token_network}}"
     initGlobalExitRootManager=$ger_proxy_addr

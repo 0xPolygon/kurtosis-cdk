@@ -12,7 +12,7 @@ providers:
       url: "{{.l1_rpc_url}}"
       label: "L1"
       contracts:
-        rollup_manager_address: "{{.zkevm_rollup_manager_address}}"
+        rollup_manager_address: "{{.rollup_manager_address}}"
       time_to_mine:
         sender: "{{.l1_sender_address}}"
         sender_private_key: "{{.l1_sender_private_key}}"
@@ -32,8 +32,8 @@ providers:
       url: "{{.l2_rpc_url}}"
       label: "L2"
       contracts:
-        global_exit_root_l2_address: "{{.zkevm_global_exit_root_l2_address}}"
-        zkevm_bridge_address: "{{.zkevm_bridge_l2_address}}"
+        global_exit_root_l2_address: "{{.l2_ger_address}}"
+        zkevm_bridge_address: "{{.l2_bridge_address}}"
       time_to_mine:
         sender: "{{.l2_sender_address}}"
         sender_private_key: "{{.l2_sender_private_key}}"
@@ -51,7 +51,7 @@ networks:
     chain_id: "{{.l1_chain_id}}"
 
   - name: "L2"
-    chain_id: "{{.zkevm_rollup_chain_id}}"
+    chain_id: "{{.l2_chain_id}}"
     polygon_zkevm: true
 
 logs:

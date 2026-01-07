@@ -75,8 +75,8 @@ args:
   sequencer_type: erigon
   agglayer_prover_sp1_key: '0xcbe64481eedcb08c0d37df9cb0121e91dbac11c0f015fbe2bedb7875c020778d' # Dummy key for mock prover.
   deployment_suffix: '-002'
-  zkevm_rollup_chain_id: 20202
-  zkevm_rollup_id: 2
+  l2_chain_id: 20202
+  network_id: 2
   l2_sequencer_address: '0x3bd49B59d0d61e83FA5C7856312b9bfEddbCbDA8'
   l2_sequencer_private_key: '0xf1b0412da5d68afa81e8301d93c56b125ee764e2fab4e919afb81ae14babc5e3'
   l2_aggregator_address: '0x3BAEE05bd44f4Ee84709C7Df6861A3528f4c8286'
@@ -104,8 +104,8 @@ deployment_stages:
   deploy_cdk_bridge_ui: false
 args:
   deployment_suffix: '-003'
-  zkevm_rollup_chain_id: 30303
-  zkevm_rollup_id: 3
+  l2_chain_id: 30303
+  network_id: 3
   verbosity: debug
   agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
   zkevm_prover_image: hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12

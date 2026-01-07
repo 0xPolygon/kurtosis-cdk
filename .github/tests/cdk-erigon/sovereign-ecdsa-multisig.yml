@@ -3,7 +3,7 @@ deployment_stages:
   deploy_cdk_bridge_infra: true
 
 args:
-  consensus_contract_type: ecdsa_multisig # new sovereign consensus
+  consensus_contract_type: ecdsa-multisig # new sovereign consensus
 
   # aggsender-validator related params
   use_agg_sender_validator: false

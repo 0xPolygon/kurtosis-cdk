@@ -3,7 +3,7 @@ PrivateKey = {Path = "/etc/cdk-data-availability/dac.keystore", Password = "{{.k
 [L1]
 WsURL = "{{.l1_ws_url}}"
 RpcURL = "{{.l1_rpc_url}}"
-PolygonValidiumAddress = "{{.zkevm_rollup_address}}"
+PolygonValidiumAddress = "{{.rollup_address}}"
 DataCommitteeAddress = "{{.polygon_data_committee_address}}"
 Timeout = "1m"
 RetryPeriod = "5s"

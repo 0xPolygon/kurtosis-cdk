@@ -235,10 +235,10 @@ DEFAULT_ROLLUP_ARGS = {
     # The keystore password.
     "l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m",
     # The rollup network identifier.
-    "zkevm_rollup_chain_id": 2151908,
+    "l2_chain_id": 2151908,
     # The unique identifier for the rollup within the RollupManager contract.
     # This setting sets the rollup as the first rollup.
-    "zkevm_rollup_id": 1,
+    "l2_network_id": 1,
     # By default a mock verifier is deployed.
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
@@ -343,10 +343,10 @@ DEFAULT_ARGS = (
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
-        # - 'cdk_validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
+        # - 'cdk-validium': Transaction data is stored off-chain using the CDK DA layer and a DAC.
         # - 'pessimistic': deploy with pessimistic consensus
         # Aggchain Consensus Options:
-        # - 'ecdsa_multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
+        # - 'ecdsa-multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
         "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
         # Additional services to run alongside the network.
@@ -494,8 +494,8 @@ def parse_args(plan, user_args):
     args = args | {
         "l2_rpc_name": l2_rpc_name,
         "sequencer_name": sequencer_name,
-        "zkevm_rollup_fork_id": fork_id,
-        "zkevm_rollup_fork_name": fork_name,
+        "zkevm_fork_id": fork_id,
+        "zkevm_fork_name": fork_name,
         "deploy_agglayer": deployment_stages.get(
             "deploy_agglayer", False
         ),  # hacky but works fine for now.
@@ -748,8 +748,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
             if (
-                args["consensus_contract_type"] != "fep"
-                and args["consensus_contract_type"] != "ecdsa_multisig"
+                args["consensus_contract_type"] != constants.CONSENSUS_TYPE.fep
+                and args["consensus_contract_type"]
+                != constants.CONSENSUS_TYPE.ecdsa_multisig
             ):
                 plan.print(
                     "Current consensus_contract_type is '{}', changing to pessimistic for OP deployments.".format(

@@ -3,15 +3,15 @@ constants = import_module("../package_io/constants.star")
 
 def get_contract_setup_addresses(plan, args, deployment_stages):
     extract = {
-        "zkevm_bridge_address": "fromjson | .AgglayerBridge",
-        "zkevm_bridge_l2_address": "fromjson | .polygonZkEVML2BridgeAddress",
-        "zkevm_rollup_address": "fromjson | .rollupAddress",
-        "zkevm_rollup_manager_address": "fromjson | .AgglayerManager",
-        "zkevm_rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
-        "zkevm_global_exit_root_address": "fromjson | .AgglayerGER",
-        "zkevm_global_exit_root_l2_address": "fromjson | .LegacyAgglayerGERL2",
+        "l1_bridge_address": "fromjson | .AgglayerBridge",
+        "l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "rollup_address": "fromjson | .rollupAddress",
+        "rollup_manager_address": "fromjson | .AgglayerManager",
+        "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+        "l1_ger_address": "fromjson | .AgglayerGER",
+        "l2_ger_address": "fromjson | .LegacyAgglayerGERL2",
         "pol_token_address": "fromjson | .polTokenAddress",
-        "zkevm_admin_address": "fromjson | .admin",
+        "admin_address": "fromjson | .admin",
     }
     if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
         extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"
@@ -28,7 +28,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
     service_name = "contracts"
     if args["deploy_agglayer"]:
         plan.print("Changing querying service name to helper")
-        if "zkevm_rollup_manager_address" in args:
+        if "rollup_manager_address" in args:
             service_name = "helper"
     service_name += args["deployment_suffix"]
     result = plan.exec(
@@ -100,7 +100,7 @@ def get_sovereign_contract_setup_addresses(plan, args):
         "sovereign_ger_proxy_addr": "fromjson | .ger_proxy_addr",
         "sovereign_bridge_proxy_addr": "fromjson | .bridge_proxy_addr",
         "sovereign_rollup_addr": "fromjson | .sovereignRollupContract",
-        "zkevm_rollup_chain_id": "fromjson | .rollupChainID",
+        "l2_chain_id": "fromjson | .rollupChainID",
     }
 
     exec_recipe = ExecRecipe(
@@ -166,22 +166,22 @@ def get_op_succinct_env_vars(plan, args):
 
 def get_l1_op_contract_addresses(plan, args, op_deployer_configs_artifact):
     proposer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "proposer", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "proposer", args["l2_chain_id"]
     )
     batcher_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "batcher", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "batcher", args["l2_chain_id"]
     )
     sequencer_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "sequencer", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "sequencer", args["l2_chain_id"]
     )
     challenger_address = _read_l1_op_contract_address(
-        plan, op_deployer_configs_artifact, "challenger", args["zkevm_rollup_chain_id"]
+        plan, op_deployer_configs_artifact, "challenger", args["l2_chain_id"]
     )
     proxy_admin_address = _read_l1_op_contract_address(
         plan,
         op_deployer_configs_artifact,
         "l1ProxyAdmin",
-        args["zkevm_rollup_chain_id"],
+        args["l2_chain_id"],
     )
     return {
         "op_proposer_address": proposer_address,
@@ -268,7 +268,7 @@ def get_aggoracle_committee_address(plan, args):
     service_name = "contracts"
     if args["deploy_agglayer"]:
         plan.print("Changing querying service name to helper")
-        if "zkevm_rollup_manager_address" in args:
+        if "rollup_manager_address" in args:
             service_name = "helper"
     service_name += args["deployment_suffix"]
     result = plan.exec(

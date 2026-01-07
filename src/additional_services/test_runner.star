@@ -45,7 +45,7 @@ def run(
                 # L1.
                 "L1_PRIVATE_KEY": wallet.private_key,
                 "L1_RPC_URL": l1_rpc_url,
-                "L1_BRIDGE_ADDR": contract_setup_addresses.get("zkevm_bridge_address"),
+                "L1_BRIDGE_ADDR": contract_setup_addresses.get("l1_bridge_address"),
                 # L2.
                 "L2_PRIVATE_KEY": wallet.private_key,
                 "L2_RPC_URL": l2_rpc_url,
@@ -88,9 +88,9 @@ def _get_l2_bridge_address(
     if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         return sovereign_contract_setup_addresses.get("sovereign_bridge_proxy_addr")
 
-    if "zkevm_bridge_l2_address" in contract_setup_addresses:
-        return contract_setup_addresses.get("zkevm_bridge_l2_address")
-    return contract_setup_addresses.get("zkevm_bridge_address")
+    if "l2_bridge_address" in contract_setup_addresses:
+        return contract_setup_addresses.get("l2_bridge_address")
+    return contract_setup_addresses.get("l1_bridge_address")
 
 
 def _generate_new_funded_l1_l2_wallet(plan, funder_private_key, l1_rpc_url, l2_rpc_url):
