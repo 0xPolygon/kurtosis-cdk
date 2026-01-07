@@ -1,7 +1,4 @@
 # This args-file deploys the OP Succinct chain.
-deployment_stages:
-  deploy_op_succinct: true
-
 args:
   # Arbitrary key for the SP1 prover. This will not work if op_succinct_mock is set to false. Replace with a valid SPN key if you want to use the network provers.
   # cast wallet private-key --mnemonic "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"

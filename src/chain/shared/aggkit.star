@@ -77,17 +77,8 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_op_succinct,
 ):
     """Main orchestration function for deploying aggkit services."""
-    # Deploy OP Succinct if needed
-    _deploy_op_succinct_if_needed(
-        plan,
-        args,
-        contract_setup_addresses,
-        sovereign_contract_setup_addresses,
-        deploy_op_succinct,
-    )
 
     # Get common dependencies
     deployment_context = _create_deployment_context(
@@ -102,23 +93,6 @@ def run(
 
     # Deploy validator services if needed
     _deploy_validator_services_if_needed(plan, args, deployment_context)
-
-
-def _deploy_op_succinct_if_needed(
-    plan,
-    args,
-    contract_setup_addresses,
-    sovereign_contract_setup_addresses,
-    deploy_op_succinct,
-):
-    """Deploy OP Succinct if conditions are met."""
-    if (
-        deploy_op_succinct
-        and args["consensus_contract_type"] == constants.CONSENSUS_TYPE.fep
-    ):
-        aggkit_prover.run(
-            plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
-        )
 
 
 def _create_deployment_context(

@@ -764,7 +764,7 @@ initialize_rollup() {
 
     ts=$(date +%s)
     # The startingBlockNumber and sp1_starting_timestamp values in create_new_rollup.json file needs to be populated with the below commands.
-    deployOPSuccinct="{{ .deploy_op_succinct }}"
+    deployOPSuccinct="{{ eq .consensus_contract_type "fep" }}"
     if [[ $deployOPSuccinct == true ]]; then
         echo "Configuring OP Succinct setup..."
         jq --slurpfile l2 "$output_dir"/opsuccinctl2ooconfig.json '
@@ -1325,7 +1325,7 @@ create_sovereign_rollup_predeployed() {
 
     cp "${output_dir}/combined.json" "$contracts_dir"/deployment/v2/deploy_output.json
 
-    deployOPSuccinct="{{ .deploy_op_succinct }}"
+    deployOPSuccinct="{{ eq .consensus_contract_type "fep" }}"
     if [[ $deployOPSuccinct == true ]]; then
         rm "$contracts_dir"/tools/addRollupType/add_rollup_type_output-*.json
         npx hardhat run tools/addRollupType/addRollupType.ts --network localhost 2>&1 | tee 06_create_rollup_type.out

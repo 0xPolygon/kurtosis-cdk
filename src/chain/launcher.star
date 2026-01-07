@@ -25,13 +25,11 @@ def launch(
         )
     elif sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         plan.print("Deploying op-geth chain")
-        deploy_op_succinct = deployment_stages.get("deploy_op_succinct", False)
         return op_geth_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            deploy_op_succinct,
         )
     else:
         fail(

@@ -30,33 +30,8 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of a local L1")
         l1_context = None  # TODO: Populate from dev args
 
-    # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
-    # TODO: Fix the logic when using anvil and op-succinct
-    if deployment_stages.get("deploy_op_succinct", False):
-        l1_genesis_artifact = plan.get_files_artifact(name="el_cl_genesis_data")
-        new_genesis_name = "{}.json".format(args.get("l1_chain_id"))
-        result = plan.run_sh(
-            name="rename-l1-genesis",
-            description="Rename L1 genesis",
-            files={"/tmp": l1_genesis_artifact},
-            run="mv /tmp/genesis.json /tmp/{}".format(new_genesis_name),
-            store=[
-                StoreSpec(
-                    src="/tmp/{}".format(new_genesis_name),
-                    name="el_cl_genesis_data_for_op_succinct",
-                )
-            ],
-        )
-        artifact_count = len(result.files_artifacts)
-        if artifact_count != 1:
-            fail(
-                "The service should have generated 1 artifact, got {}.".format(
-                    artifact_count
-                )
-            )
-
     # Extract the fetch-l2oo-config binary before starting contracts-001 service.
-    if deployment_stages.get("deploy_op_succinct", False):
+    if consensus_type == constants.CONSENSUS_TYPE.fep:
         # Extract genesis to feed into evm-sketch-genesis
         # ethereum_package.extract_genesis_json(plan)
         # Temporarily run op-succinct-proposer service and fetch-l2oo-config binary
@@ -113,7 +88,7 @@ def run(plan, args={}):
                 args["op_el_rpc_url"],
             )
 
-            if deployment_stages.get("deploy_op_succinct", False):
+            if consensus_type == constants.CONSENSUS_TYPE.fep:
                 # Extract genesis to feed into evm-sketch-genesis
                 op_succinct_package.create_evm_sketch_genesis(plan, args)
 

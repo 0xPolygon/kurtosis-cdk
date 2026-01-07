@@ -1,7 +1,4 @@
 # This args-file deploys the OP Succinct chain.
-deployment_stages:
-  deploy_op_succinct: true
-
 args:
   consensus_contract_type: fep
   # Using the network provers will use the real SP1 verifier contract which is also deployed together in the Kurtosis devnet.

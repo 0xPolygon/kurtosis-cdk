@@ -17,9 +17,6 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "should_deploy_agglayer_contracts": True,
     # Deploy the agglayer.
     "should_deploy_agglayer": True,
-    # After deploying OP Stack, upgrade it to OP Succinct.
-    # Even mock-verifier deployments require an actual SPN network key.
-    "deploy_op_succinct": False,
     # Deploy contracts on L2 (as well as fund accounts).
     "deploy_l2_contracts": False,
 }
@@ -748,15 +745,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 )
                 # TODO: should this be AggchainFEP instead?
                 args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
-
-    # If OP-Succinct is enabled, OP-Rollup must be enabled
-    if deployment_stages.get("deploy_op_succinct", False):
-        if args["sequencer_type"] != constants.SEQUENCER_TYPE.op_geth:
-            fail(
-                "OP Succinct requires OP Rollup to be enabled. Change the sequencer_type parameter to 'op-geth'."
-            )
-        if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
-            fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")
 
     # FIXME - I've removed some code here that was doing some logic to
     # update the vkeys depending on the consensus. We either need to
