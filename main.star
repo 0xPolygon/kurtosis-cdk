@@ -170,11 +170,8 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
     # Deploy databases.
-    if deployment_stages.get("deploy_databases", False):
-        plan.print("Deploying databases")
-        import_module(databases_package).run(plan, args)
-    else:
-        plan.print("Skipping the deployment of databases")
+    plan.print("Deploying databases")
+    import_module(databases_package).run(plan, args)
 
     # Get the genesis file.
     genesis_artifact = ""
