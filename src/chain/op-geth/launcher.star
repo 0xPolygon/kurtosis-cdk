@@ -1,5 +1,6 @@
 aggkit_package = import_module("../shared/aggkit.star")
 op_succinct_proposer = import_module("./op_succinct_proposer.star")
+ports_package = import_module("../shared/ports.star")
 
 
 def launch(
@@ -19,4 +20,14 @@ def launch(
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
         deployment_stages,
+    )
+
+    # TODO: Derive the rpc url from the optimism package instead
+    rpc_url = "http://{}{}:{}".format(
+        args.get("l2_rpc_name"),
+        args.get("deployment_suffix"),
+        ports_package.HTTP_RPC_PORT_NUMBER,
+    )
+    return struct(
+        rpc_url=rpc_url,
     )

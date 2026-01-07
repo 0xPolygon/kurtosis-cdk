@@ -8,9 +8,6 @@ cdk_data_availability = import_module("./cdk_data_availability.star")
 ports_package = import_module("../shared/ports.star")
 zkevm_pool_manager = import_module("./zkevm_pool_manager.star")
 zkevm_prover = import_module("./zkevm_prover.star")
-zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
-zkevm_bridge_ui = import_module("./zkevm_bridge_ui.star")
-zkevm_bridge_proxy = import_module("./zkevm_bridge_proxy.star")
 
 
 def launch(
@@ -90,30 +87,6 @@ def launch(
     # fund cdk-erigon account on L2
     agglayer_contracts_package.l2_legacy_fund_accounts(plan, args)
 
-    # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
-    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra")
-    if deploy_cdk_bridge_infra and (
-        consensus_type
-        in [
-            constants.CONSENSUS_TYPE.rollup,
-            constants.CONSENSUS_TYPE.cdk_validium,
-        ]
-    ):
-        plan.print("Deploying zkevm-bridge infrastructure (legacy)")
-        zkevm_bridge_service.run(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            rpc_url,
-        )
-
-        if deployment_stages.get("deploy_cdk_bridge_ui"):
-            zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
-
-            if deployment_stages.get("deploy_l1"):
-                zkevm_bridge_proxy.run(plan, args)
-
     # Deploy aggkit infrastructure + dedicated bridge service
     if consensus_type in [
         constants.CONSENSUS_TYPE.pessimistic,
@@ -127,3 +100,7 @@ def launch(
             sovereign_contract_setup_addresses,
             deployment_stages,
         )
+
+    return struct(
+        rpc_url=rpc_url,
+    )
