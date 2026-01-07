@@ -60,6 +60,7 @@ def launch(
                 plan, args, contract_setup_addresses
             )
         elif svc == constants.ADDITIONAL_SERVICES.zkevm_bridge_ui:
+            consensus_type = args.get("consensus_contract_type")
             if consensus_type in [
                 constants.CONSENSUS_TYPE.rollup,
                 constants.CONSENSUS_TYPE.cdk_validium,
