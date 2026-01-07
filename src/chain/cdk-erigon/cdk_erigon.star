@@ -206,9 +206,9 @@ def _run(
     http_rpc_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
     ws_rpc_url = result.ports[ports_package.WS_RPC_PORT_ID].url
     if type == CDK_ERIGON_TYPE.sequencer:
-        datastreamer_url = result.ports[
-            cdk_erigon.DATA_STREAMER_PORT_ID
-        ].url.removeprefix("datastream://")
+        datastreamer_url = result.ports[DATA_STREAMER_PORT_ID].url.removeprefix(
+            "datastream://"
+        )
         return struct(
             http_rpc_url=http_rpc_url,
             ws_rpc_url=ws_rpc_url,
