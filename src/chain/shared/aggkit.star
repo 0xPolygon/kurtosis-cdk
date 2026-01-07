@@ -80,11 +80,11 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_cdk_bridge_infra,
-    deploy_op_succinct,
+    deployment_stages,
 ):
     """Main orchestration function for deploying aggkit services."""
     # Deploy OP Succinct if needed
+    deploy_op_succinct = deployment_stages.get("deploy_op_succinct", False)
     _deploy_op_succinct_if_needed(
         plan,
         args,
@@ -108,6 +108,7 @@ def run(
     _deploy_validator_services_if_needed(plan, args, deployment_context)
 
     # Deploy bridge infrastructure if needed
+    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra", False)
     if deploy_cdk_bridge_infra:
         l2_rpc_url = "http://{}{}:{}".format(
             args.get("l2_rpc_name"),
@@ -121,6 +122,13 @@ def run(
             sovereign_contract_setup_addresses,
             l2_rpc_url,
         )
+
+        deploy_cdk_bridge_ui = deployment_stages.get("deploy_cdk_bridge_ui", False)
+        if deployment_stages.get("deploy_cdk_bridge_ui"):
+            zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
+
+            if deployment_stages.get("deploy_l1"):
+                zkevm_bridge_proxy.run(plan, args)
 
 
 def _deploy_op_succinct_if_needed(

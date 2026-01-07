@@ -28,14 +28,12 @@ def launch(
         deploy_cdk_bridge_infra = deployment_stages.get(
             "deploy_cdk_bridge_infra", False
         )
-        deploy_op_succinct = deployment_stages.get("deploy_op_succinct", False)
         op_geth_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            deploy_cdk_bridge_infra,
-            deploy_op_succinct,
+            deployment_stages,
         )
     else:
         fail(

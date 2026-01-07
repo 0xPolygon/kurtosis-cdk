@@ -7,9 +7,9 @@ def launch(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_cdk_bridge_infra,
-    deploy_op_succinct,
+    deployment_stages,
 ):
+    deploy_op_succinct = deployment_stages.get("deploy_op_succinct", False)
     if deploy_op_succinct:
         op_succinct_proposer.run(plan, args | contract_setup_addresses)
 
@@ -18,6 +18,5 @@ def launch(
         args,
         contract_setup_addresses,
         sovereign_contract_setup_addresses,
-        deploy_cdk_bridge_infra,
-        deploy_op_succinct,
+        deployment_stages,
     )
