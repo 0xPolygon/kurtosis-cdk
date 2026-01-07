@@ -78,55 +78,41 @@ def launch(
     )
     rpc_url = rpc_context.http_rpc_url
 
-    # aggkit: ???
-    if deployment_stages.get("deploy_aggkit_node"):
-        plan.print("Deploying aggkit")
-        aggkit_package.run_aggkit_cdk_node(
-            plan,
-            args,
-            contract_setup_addresses,
-        )
-
     # fund cdk-erigon account on L2
     agglayer_contracts_package.l2_legacy_fund_accounts(plan, args)
 
-    # Deploy cdk/bridge infrastructure only if using CDK Node instead of Aggkit. This can be inferred by the consensus_contract_type.
-    deploy_cdk_bridge_infra = deployment_stages.get("deploy_cdk_bridge_infra")
-    if deploy_cdk_bridge_infra and (
+    # zkevm-bridge-service (legacy)
+    bridge_service_url = zkevm_bridge_service.run(
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        rpc_url,
+    )
+
+    # zkevm-bridge-ui (legacy) and zkevm-bridge-proxy
+    if deployment_stages.get("deploy_cdk_bridge_ui") and (
         consensus_type
         in [
             constants.CONSENSUS_TYPE.rollup,
             constants.CONSENSUS_TYPE.cdk_validium,
         ]
     ):
-        plan.print("Deploying zkevm-bridge infrastructure (legacy)")
-        bridge_service_url = zkevm_bridge_service.run(
+        bridge_ui_url = zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
+        zkevm_bridge_proxy.run(
             plan,
             args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
+            args.get("l1_rpc_url"),
             rpc_url,
+            bridge_service_url,
+            bridge_ui_url,
         )
 
-        if deployment_stages.get("deploy_cdk_bridge_ui"):
-            bridge_ui_url = zkevm_bridge_ui.run(plan, args, contract_setup_addresses)
-
-            if deployment_stages.get("deploy_l1"):
-                zkevm_bridge_proxy.run(
-                    plan,
-                    args,
-                    args.get("l1_rpc_url"),
-                    rpc_url,
-                    bridge_service_url,
-                    bridge_ui_url,
-                )
-
-    # Deploy aggkit infrastructure + dedicated bridge service
+    # aggkit
     if consensus_type in [
         constants.CONSENSUS_TYPE.pessimistic,
         constants.CONSENSUS_TYPE.ecdsa_multisig,
     ]:
-        plan.print("Deploying aggkit infrastructure")
         aggkit_package.run(
             plan,
             args,
