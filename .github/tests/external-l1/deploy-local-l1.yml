@@ -2,7 +2,7 @@ deployment_stages:
   should_deploy_l1: true
   should_deploy_agglayer_contracts: false
   should_deploy_agglayer: false
-  deploy_l2_contracts: false
+  should_deploy_l2_contracts: false
 
 args:
   additional_services: []

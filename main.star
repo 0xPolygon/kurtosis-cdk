@@ -185,7 +185,7 @@ def run(plan, args={}):
     )
 
     # Deploy contracts on L2.
-    if deployment_stages.get("deploy_l2_contracts", False):
+    if deployment_stages.get("should_deploy_l2_contracts", False):
         plan.print("Deploying contracts on L2")
         import_module(agglayer_contracts_package).deploy_l2_contracts(plan, args)
 

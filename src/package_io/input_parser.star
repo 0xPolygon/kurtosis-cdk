@@ -18,7 +18,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy the agglayer.
     "should_deploy_agglayer": True,
     # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": False,
+    "should_deploy_l2_contracts": False,
 }
 
 DEFAULT_PORTS = {
