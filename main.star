@@ -191,7 +191,7 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of MITM")
 
     # Deploy the agglayer.
-    if deployment_stages.get("deploy_agglayer", False):
+    if deployment_stages.get("should_deploy_agglayer", False):
         plan.print("Deploying the agglayer")
         import_module(agglayer_package).run(
             plan, deployment_stages, args, contract_setup_addresses

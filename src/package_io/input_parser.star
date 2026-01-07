@@ -16,7 +16,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Note that it will require a few additional parameters.
     "should_deploy_agglayer_contracts": True,
     # Deploy the agglayer.
-    "deploy_agglayer": True,
+    "should_deploy_agglayer": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
     # Even mock-verifier deployments require an actual SPN network key.
     "deploy_op_succinct": False,
@@ -486,8 +486,8 @@ def parse_args(plan, user_args):
         "sequencer_name": sequencer_name,
         "zkevm_fork_id": fork_id,
         "zkevm_fork_name": fork_name,
-        "deploy_agglayer": deployment_stages.get(
-            "deploy_agglayer", False
+        "should_deploy_agglayer": deployment_stages.get(
+            "should_deploy_agglayer", False
         ),  # hacky but works fine for now.
     }
 

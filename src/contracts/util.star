@@ -26,7 +26,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         extract=extract,
     )
     service_name = "contracts"
-    if args["deploy_agglayer"]:
+    if args["should_deploy_agglayer"]:
         plan.print("Changing querying service name to helper")
         if "rollup_manager_address" in args:
             service_name = "helper"
@@ -266,7 +266,7 @@ def get_aggoracle_committee_address(plan, args):
     )
 
     service_name = "contracts"
-    if args["deploy_agglayer"]:
+    if args["should_deploy_agglayer"]:
         plan.print("Changing querying service name to helper")
         if "rollup_manager_address" in args:
             service_name = "helper"

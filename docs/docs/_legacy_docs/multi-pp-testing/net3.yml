@@ -1,6 +1,6 @@
 deployment_stages:
   should_deploy_l1: false
-  deploy_agglayer: false
+  should_deploy_agglayer: false
 
 args:
   deployment_suffix: "-003"
