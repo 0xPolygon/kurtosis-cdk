@@ -15,8 +15,6 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Set to false to use pre-deployed agglayer contracts.
     # Note that it will require a few additional parameters.
     "deploy_agglayer_contracts_on_l1": True,
-    # Deploy CDK central/trusted environment.
-    "deploy_cdk_central_environment": True,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # After deploying OP Stack, upgrade it to OP Succinct.

@@ -1,7 +1,6 @@
 deployment_stages:
   deploy_l1: true
   deploy_agglayer_contracts_on_l1: false
-  deploy_cdk_central_environment: false
   deploy_agglayer: false
   deploy_op_succinct: false
   deploy_l2_contracts: false

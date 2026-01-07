@@ -176,13 +176,12 @@ def run(plan, args={}):
     # Get the genesis file.
     genesis_artifact = ""
     if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
-        if deployment_stages.get("deploy_cdk_central_environment", False):
-            plan.print("Getting genesis file")
-            genesis_artifact = plan.store_service_files(
-                name="genesis",
-                service_name="contracts" + args["deployment_suffix"],
-                src=constants.OUTPUT_DIR + "/genesis.json",
-            )
+        plan.print("Getting genesis file")
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src=constants.OUTPUT_DIR + "/genesis.json",
+        )
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
@@ -200,17 +199,15 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of the agglayer")
 
-    # Deploy cdk central/trusted environment.
-    l2_context = None
-    if deployment_stages.get("deploy_cdk_central_environment", False):
-        l2_context = chain_launcher.launch(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            deployment_stages,
-            genesis_artifact,
-        )
+    # Deploy chain components.
+    l2_context = chain_launcher.launch(
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        deployment_stages,
+        genesis_artifact,
+    )
 
     # Deploy contracts on L2.
     if deployment_stages.get("deploy_l2_contracts", False):
