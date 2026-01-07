@@ -15,7 +15,7 @@
     "trustedSequencerURL": "http://{{.sequencer_name}}{{.deployment_suffix}}:{{.http_rpc_port_number}}",
     "trustedAggregator":"{{.l2_aggregator_address}}",
     "trustedAggregatorTimeout": 604799,
-    "forkID": {{.zkevm_rollup_fork_id}},
+    "forkID": {{.zkevm_fork_id}},
     "test": true,
     "ppVKey": "{{.pp_vkey_hash}}",
     "ppVKeySelector": "{{.pp_vkey_selector}}",

@@ -4,7 +4,7 @@ op_sanity_check = import_module("./op_sanity_check.star")
 
 def test_sanity_check_success(plan):
     args = {
-        "zkevm_rollup_chain_id": 1001,
+        "l2_chain_id": 1001,
         "deployment_suffix": "-001",
         "l1_seconds_per_slot": 12,
     }
@@ -34,7 +34,7 @@ def test_sanity_check_success(plan):
 
 def test_sanity_check_failure(plan):
     args = {
-        "zkevm_rollup_chain_id": 1001,
+        "l2_chain_id": 1001,
         "deployment_suffix": "-001",
         "l1_seconds_per_slot": 12,
     }
@@ -70,7 +70,7 @@ def test_sanity_check_failure(plan):
 
 def test_no_chain001_defined(plan):
     args = {
-        "zkevm_rollup_chain_id": 1001,
+        "l2_chain_id": 1001,
         "l1_seconds_per_slot": 2,
     }
     op_args = {
@@ -91,7 +91,7 @@ def test_no_chain001_defined(plan):
 def test_check_first_chain_id_success(plan):
     # Should pass when chain ID matches zkevm rollup chain ID
     args = {
-        "zkevm_rollup_chain_id": 1001,
+        "l2_chain_id": 1001,
     }
     op_args = {
         "chains": {
@@ -108,7 +108,7 @@ def test_check_first_chain_id_success(plan):
 def test_check_first_chain_id_failure(plan):
     # Should fail when chain ID does not match zkevm rollup chain ID
     args = {
-        "zkevm_rollup_chain_id": 1001,
+        "l2_chain_id": 1001,
     }
     op_args = {
         "chains": {

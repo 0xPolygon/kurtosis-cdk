@@ -12,7 +12,7 @@ prometheus-addr = "0.0.0.0:{{.metrics_port_number}}"
 runtime-timeout = "5s"
 
 [aggchain-proof-service.aggchain-proof-builder]
-network-id = {{ .network_id }}
+network-id = {{ .l2_network_id }}
 {{ if not .aggkit_legacy}}
 proving-timeout = "1h"
 {{ end }}

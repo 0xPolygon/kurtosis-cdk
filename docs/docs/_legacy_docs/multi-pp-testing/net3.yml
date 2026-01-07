@@ -4,8 +4,8 @@ deployment_stages:
 
 args:
   deployment_suffix: "-003"
-  zkevm_rollup_chain_id: 30303
-  zkevm_rollup_id: 3
+  l2_chain_id: 30303
+  network_id: 3
 
   # The following accounts have been generated using the following command:
   # Note that admin and agglayer accounts have been removed since we're using the default accounts.

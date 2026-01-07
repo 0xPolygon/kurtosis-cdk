@@ -28,7 +28,7 @@ def get_dashboard_config(plan, args, contract_setup_addresses):
     agglayer_dashboard_config_template = read_file(src=DASHBOARD_CONFIG_TEMPLATE)
 
     template_data = {
-        "l2_rollup_id": args["zkevm_rollup_id"],
+        "l2_network_id": args["l2_network_id"],
         "l1_rpc_url": args["l1_rpc_url"],
         "l2_rpc_url": "http://{}{}:{}".format(
             args["l2_rpc_name"],

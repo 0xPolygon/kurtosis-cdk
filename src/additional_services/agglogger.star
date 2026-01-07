@@ -31,23 +31,19 @@ def run(
                     "l1_chain_id": args.get("l1_chain_id"),
                     # l2
                     "l2_rpc_url": l2_rpc_url,
-                    "l2_chain_id": args.get("zkevm_rollup_chain_id"),
-                    "l2_network_id": args.get("zkevm_rollup_id"),
+                    "l2_chain_id": args.get("l2_chain_id"),
+                    "l2_network_id": args.get("l2_network_id"),
                     # agglayer
                     "agglayer_rpc_url": args.get("agglayer_readrpc_url"),
                     # contract addresses
-                    "zkevm_rollup_manager_address": contract_setup_addresses.get(
-                        "zkevm_rollup_manager_address"
+                    "rollup_manager_address": contract_setup_addresses.get(
+                        "rollup_manager_address"
                     ),
-                    "zkevm_bridge_address": contract_setup_addresses.get(
-                        "zkevm_bridge_address"
+                    "l1_bridge_address": contract_setup_addresses.get(
+                        "l1_bridge_address"
                     ),
-                    "zkevm_global_exit_root_address": contract_setup_addresses.get(
-                        "zkevm_global_exit_root_address"
-                    ),
-                    "zkevm_global_exit_root_l2_address": contract_setup_addresses.get(
-                        "zkevm_global_exit_root_l2_address"
-                    ),
+                    "l1_ger_address": contract_setup_addresses.get("l1_ger_address"),
+                    "l2_ger_address": contract_setup_addresses.get("l2_ger_address"),
                     "sovereign_ger_proxy_addr": sovereign_contract_setup_addresses.get(
                         "sovereign_ger_proxy_addr"
                     ),

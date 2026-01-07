@@ -240,7 +240,7 @@ zkevm.data-stream-port: {{.data_streamer_port_number}}
 # Default: 2
 # {{if eq .cdk_erigon_image "hermeznetwork/cdk-erigon:v2.63.0-pp2-beta1"}}
 # zkevm.datastream-version: not supported
-# fork12 or after {{else if or (eq .zkevm_rollup_fork_name "banana") (eq .zkevm_rollup_fork_name "aggchain")}}
+# fork12 or after {{else if or (eq .zkevm_fork_name "banana") (eq .zkevm_fork_name "aggchain")}}
 zkevm.datastream-version: 3
 # before fork12 {{else}}
 zkevm.datastream-version: 2
@@ -395,7 +395,7 @@ zkevm.executor-payload-output: ""
 # Specify the address of the admin's Externally Owned Account (EOA).
 # This address has special privileges, such as deploying and upgrading contracts.
 # Default: ""
-zkevm.address-admin: "{{.zkevm_admin_address}}"
+zkevm.address-admin: "{{.admin_address}}"
 
 # Specify the address of the sequencer's Externally Owned Account (EOA).
 # This address is responsible for creating and submitting batches of transactions to L1.
@@ -407,20 +407,20 @@ zkevm.address-sequencer: "{{.l2_sequencer_address}}"
 # NOTE: This flag should be renamed `zkevm.address-rollup-manager`.
 # https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
-zkevm.address-rollup: "{{.zkevm_rollup_manager_address}}"
+zkevm.address-rollup: "{{.rollup_manager_address}}"
 
 # Specify the address of the Rollup smart contract, specific to a rollup (or validium) chain.
 # Essential for submitting batches and managing the state of the rollup.
 # NOTE: This flag should be renamed `zkevm.address-rollup`.
 # https://github.com/0xPolygonHermez/cdk-erigon/issues/1253
 # Default: ""
-zkevm.address-zkevm: "{{.zkevm_rollup_address}}"
+zkevm.address-zkevm: "{{.rollup_address}}"
 
 # Specify the address of the PolygonZkEVMGlobalExitRoot contract.
 # This contract manages the global exit root (GER), which is crucial for cross-chain operations
 # and ensuring the integrity of withdrawals from the L2 chains to the main L1 network.
 # Default: ""
-zkevm.address-ger-manager: "{{.zkevm_global_exit_root_address}}"
+zkevm.address-ger-manager: "{{.l1_ger_address}}"
 
 
 # --------------------------------------------------------------------------------------------------
@@ -488,7 +488,7 @@ zkevm.l1-matic-contract-address: "{{.pol_token_address}}"
 # The L1 block number from which to start syncing historical data.
 # Usually set to the block where the agglayer contracts were deployed.
 # Default: 0
-zkevm.l1-first-block: {{.zkevm_rollup_manager_block_number}}
+zkevm.l1-first-block: {{.rollup_manager_block_number}}
 
 # If non-zero, requires a specific L1 block to be finalized before the sequencer continues to sync.
 # Enhances security but may introduce delays in processing.
@@ -511,7 +511,7 @@ zkevm.l1-contract-address-check: true
 # --------------------------------------------------------------------------------------------------
 # The L2 chain identifier.
 # Default: 0
-zkevm.l2-chain-id: {{.zkevm_rollup_chain_id}}
+zkevm.l2-chain-id: {{.l2_chain_id}}
 
 # {{if not .is_sequencer}}
 # The upstream L2 node RPC endpoint.

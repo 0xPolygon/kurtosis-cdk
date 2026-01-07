@@ -29,7 +29,7 @@ set -x
 cd /opt/op-succinct || { echo "Error: Failed to change to /opt/op-succinct"; exit 1; }
 
 # genesis_file="/opt/op-succinct/genesis.json"
-chain_id="{{.zkevm_rollup_chain_id}}"
+chain_id="{{.l2_chain_id}}"
 genesis_file="/opt/op-succinct/genesis-$chain_id.json"
 
 # Check if genesis.json exists

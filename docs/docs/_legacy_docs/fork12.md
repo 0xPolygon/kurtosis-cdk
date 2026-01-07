@@ -7,7 +7,7 @@ By default, the Kurtosis CDK stack deploys the [fork 9](https://github.com/0xPol
 Modify the `params.yml` file to specify the fork 12 settings.
 
 ```bash
-yq -Y --in-place '.args.zkevm_rollup_fork_id = "12"' params.yml
+yq -Y --in-place '.args.zkevm_fork_id = "12"' params.yml
 yq -Y --in-place '.args.zkevm_prover_image = "hermeznetwork/zkevm-prover:v8.0.0-RC5-fork.12"' params.yml
 yq -Y --in-place '.args.cdk_erigon_node_image = "hermeznetwork/cdk-erigon:fe54243ce2cd0563396b509ff19e178178e9d712"' params.yml
 ```

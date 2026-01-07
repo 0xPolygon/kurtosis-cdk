@@ -3,30 +3,30 @@ L1URL="{{.l1_rpc_url}}"
 L2URL="{{.l2_rpc_url}}"
 AggLayerURL="{{.agglayer_grpc_url}}"
 
-NetworkID = {{.zkevm_rollup_id}}
+NetworkID = {{.l2_network_id}}
 SequencerPrivateKeyPath = "{{or .l2_sequencer_keystore_file "/etc/aggkit/sequencer.keystore"}}"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 
 {{- if lt .aggkit_version "0.8" }}
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
 RPCURL = "{{.l2_rpc_url}}"
 
 # This values can be override directly from genesis.json
-rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupCreationBlockNumber = "{{.rollup_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.rollup_manager_block_number}}"
+genesisBlockNumber = "{{.rollup_manager_block_number}}"
 [L1Config]
 	URL = "{{.l1_rpc_url}}"
 	chainId = "{{.l1_chain_id}}"
-	polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
-	polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+	polygonZkEVMGlobalExitRootAddress = "{{.l1_ger_address}}"
+	polygonRollupManagerAddress = "{{.rollup_manager_address}}"
 	polTokenAddress = "{{.pol_token_address}}"
-	polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+	polygonZkEVMAddress = "{{.rollup_address}}"
 
 [L2Config]
-	GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
+	GlobalExitRootAddr = "{{.l2_ger_address}}"
 
 [Log]
 Level = "{{.log_level}}"
@@ -44,7 +44,7 @@ CheckSettledInterval = "5s"
 DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
 Enabled = "{{.enable_aggkit_claim_sponsor}}"
 SenderAddr = "{{.l2_claimsponsor_address}}"
-BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+BridgeAddrL2 = "{{.l2_bridge_address}}"
 
 [ClaimSponsor.EthTxManager]
 PrivateKeys = [
@@ -54,4 +54,4 @@ StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
 
 [ClaimSponsor.EthTxManager.Etherman]
 URL = "{{.l2_rpc_url}}"
-L1ChainID = "{{.zkevm_rollup_chain_id}}"
+L1ChainID = "{{.l2_chain_id}}"

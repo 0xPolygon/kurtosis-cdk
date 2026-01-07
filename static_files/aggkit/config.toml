@@ -40,7 +40,7 @@ SequencerPrivateKeyPassword  = ""
 {{- end}}
 
 {{- if lt .aggkit_version "0.8" }}
-polygonBridgeAddr = "{{.zkevm_bridge_address}}"
+polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
 {{- if eq .sequencer_type "op-geth" }}
@@ -48,9 +48,9 @@ RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
 
 # These values can be overridden directly from genesis.json
-rollupCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-rollupManagerCreationBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
-genesisBlockNumber = "{{.zkevm_rollup_manager_block_number}}"
+rollupCreationBlockNumber = "{{.rollup_manager_block_number}}"
+rollupManagerCreationBlockNumber = "{{.rollup_manager_block_number}}"
+genesisBlockNumber = "{{.rollup_manager_block_number}}"
 # ------------------------------------------------------------------------------
 
 # ==============================================================================
@@ -75,12 +75,12 @@ chainId = "{{.l1_chain_id}}"
 # ------------------------------------------------------------------------------
 # Address of the zkevm global exit root contract on L1
 # ------------------------------------------------------------------------------
-polygonZkEVMGlobalExitRootAddress = "{{.zkevm_global_exit_root_address}}"
+polygonZkEVMGlobalExitRootAddress = "{{.l1_ger_address}}"
 
 # ------------------------------------------------------------------------------
 # Address of the rollup manager contract on L1
 # ------------------------------------------------------------------------------
-polygonRollupManagerAddress = "{{.zkevm_rollup_manager_address}}"
+polygonRollupManagerAddress = "{{.rollup_manager_address}}"
 
 # ------------------------------------------------------------------------------
 # Address of the pol token address on L1
@@ -91,14 +91,14 @@ polTokenAddress = "{{.pol_token_address}}"
 # Address of the sovereign rollup contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-polygonZkEVMAddress = "{{.zkevm_rollup_address}}"
+polygonZkEVMAddress = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 {{- else }}
 polygonZkEVMAddress = ""
 {{- end }}
 
-BridgeAddr = "{{.zkevm_bridge_address}}"
+BridgeAddr = "{{.l1_bridge_address}}"
 
 # ==============================================================================
 #  _     ____   ____ ___  _   _ _____ ___ ____
@@ -113,8 +113,8 @@ BridgeAddr = "{{.zkevm_bridge_address}}"
 # Address of the sovereign global exit root proxy contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-GlobalExitRootAddr = "{{.zkevm_global_exit_root_l2_address}}"
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+GlobalExitRootAddr = "{{.l2_ger_address}}"
+BridgeAddr = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
@@ -382,7 +382,7 @@ EnableAggOracleCommittee = false
 # Address of the sovereign global exit root proxy contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
@@ -513,7 +513,7 @@ PrivateKeys = [{Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.l2_keyst
 # ------------------------------------------------------------------------------
 # Needs to be set to be the sovereign L2 chain id
 # ------------------------------------------------------------------------------
-L1ChainID = "{{.zkevm_rollup_chain_id}}"
+L1ChainID = "{{.l2_chain_id}}"
 
 # ==============================================================================
 #  ____  ____  ___ ____   ____ _____ _     ____  ______   ___   _  ____
@@ -527,7 +527,7 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # BridgeAddr is the address of the sovereign bridge contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-BridgeAddr = "{{.zkevm_bridge_l2_address}}"
+BridgeAddr = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
@@ -579,7 +579,7 @@ BridgeAddr = ""
 # The initial block number from which to start syncing.
 # Default: 0
 # ------------------------------------------------------------------------------
-InitialBlock = "{{.zkevm_rollup_manager_block_number}}"
+InitialBlock = "{{.rollup_manager_block_number}}"
 
 # ==============================================================================
 #  _     ____   ____ _____ ____  ______   ___   _  ____
@@ -623,7 +623,7 @@ SenderAddr = "{{.l2_claimsponsor_address}}"
 # BridgeAddrL2 is the address of the bridge smart contract on L2
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-BridgeAddrL2 = "{{.zkevm_bridge_l2_address}}"
+BridgeAddrL2 = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
@@ -660,7 +660,7 @@ URL = ""
 # Needs to be set to be the sovereign L2 chain id
 # If set to 0, the chain ID will be fetched from the RPC endpoint
 # ------------------------------------------------------------------------------
-L1ChainID = "{{.zkevm_rollup_chain_id}}"
+L1ChainID = "{{.l2_chain_id}}"
 
 # ==============================================================================
 #                        _           _                              __
@@ -675,7 +675,7 @@ L1ChainID = "{{.zkevm_rollup_chain_id}}"
 # SovereignRollupAddr is the address of the sovereign rollup contract on L1
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-SovereignRollupAddr = "{{.zkevm_rollup_address}}"
+SovereignRollupAddr = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 {{- else }}
@@ -687,7 +687,7 @@ SovereignRollupAddr = ""
 # this address is needed for the AggchainProof mode of the AggSender
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
-GlobalExitRootL2 = "{{.zkevm_global_exit_root_l2_address}}"
+GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else if eq .sequencer_type "op-geth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
@@ -751,8 +751,8 @@ MaxDecodingMessageSize = 1073741824  # 1GB
 
 # Is it necessary to specify all of these values again?
 [Validator.LerQuerierConfig]
-RollupManagerAddr = "{{.zkevm_rollup_manager_address}}"
-RollupCreationBlockL1 = "{{.zkevm_rollup_manager_block_number}}"
+RollupManagerAddr = "{{.rollup_manager_address}}"
+RollupCreationBlockL1 = "{{.rollup_manager_block_number}}"
 
 [Validator.AgglayerClient]
 Cached = true

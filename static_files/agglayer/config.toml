@@ -1,6 +1,6 @@
 debug-mode = true
 
-{{if and (ne .zkevm_rollup_fork_id "9") (ne .zkevm_rollup_fork_id "11")}}
+{{if and (ne .zkevm_fork_id "9") (ne .zkevm_fork_id "11")}}
 # Only supported by fork 12+
 mock-verifier = {{.mock_verifier}}
 {{end}}
@@ -72,8 +72,8 @@ private-keys = [
 chain-id = {{.l1_chain_id}}
 node-url = "{{.l1_rpc_url}}"
 ws-node-url = "{{.l1_ws_url}}"
-rollup-manager-contract = "{{.zkevm_rollup_manager_address}}"
-polygon-zkevm-global-exit-root-v2-contract = "{{.zkevm_global_exit_root_address}}"
+rollup-manager-contract = "{{.rollup_manager_address}}"
+polygon-zkevm-global-exit-root-v2-contract = "{{.l1_ger_address}}"
 rpc-timeout = 45
 
 [l2]
@@ -94,7 +94,7 @@ send-tx = "unlimited"
 
 [epoch.block-clock]
 epoch-duration = 15
-genesis-block = {{.zkevm_rollup_manager_block_number}}
+genesis-block = {{.rollup_manager_block_number}}
 
 [shutdown]
 runtime-timeout = 5

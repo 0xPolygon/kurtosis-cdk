@@ -25,7 +25,7 @@ def test_parse_args_with_empty_args(plan):
     # Should return default args when no user args are provided
     user_args = {
         "deployment_suffix": "-001",
-        "zkevm_rollup_chain_id": 2151908,
+        "l2_chain_id": 2151908,
         "l1_seconds_per_slot": 2,
     }
     result = op_input_parser.parse_args(plan, user_args, {})
@@ -66,7 +66,7 @@ def test_parse_args_with_user_overrides(plan):
     user_args = {
         "deployment_suffix": "-001",
         "log_format": "json",
-        "zkevm_rollup_chain_id": 2151908,
+        "l2_chain_id": 2151908,
         "l1_seconds_per_slot": 2,
     }
     user_op_args = {

@@ -33,11 +33,11 @@ def get_blutgang_config(plan, args):
         src="../../static_files/additional_services/blutgang/config.toml"
     )
 
-    zkevm_sequencer_service = plan.get_service(
+    sequencer_service = plan.get_service(
         name=args["sequencer_name"] + args["deployment_suffix"]
     )
-    zkevm_sequencer_http_url = "http://{}:{}".format(
-        zkevm_sequencer_service.ip_address, zkevm_sequencer_service.ports["rpc"].number
+    sequencer_url = "http://{}:{}".format(
+        sequencer_service.ip_address, sequencer_service.ports["rpc"].number
     )
 
     l2_rpc_url = contracts_util.get_l2_rpc_url(plan, args)
@@ -45,7 +45,7 @@ def get_blutgang_config(plan, args):
     blutgang_data = {
         "blutgang_rpc_port": RPC_PORT_NUMBER,
         "blutgang_admin_port": ADMIN_PORT_NUMBER,
-        "l2_sequencer_url": zkevm_sequencer_http_url,
+        "l2_sequencer_url": sequencer_url,
         "l2_rpc_url": l2_rpc_url.http,
         "l2_ws_url": l2_rpc_url.ws,
     }

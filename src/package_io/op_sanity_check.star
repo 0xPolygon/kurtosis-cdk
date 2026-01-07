@@ -23,8 +23,8 @@ def check_first_chain_id(args, op_args):
         fail("The first OP chain's network_params must define network_id")
     chain1_id = chain1["network_params"]["network_id"]
 
-    zkevm_rollup_chain_id = args.get("zkevm_rollup_chain_id")
-    if str(chain1_id) != str(zkevm_rollup_chain_id):
+    l2_chain_id = args.get("l2_chain_id")
+    if str(chain1_id) != str(l2_chain_id):
         fail(
             "The chain id of the first OP chain does not match the zkevm rollup chain id"
         )

@@ -39,7 +39,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
                     "l2_el_rpc_url": args["op_el_rpc_url"],
                     "l2_cl_rpc_url": args["op_cl_rpc_url"],
                     "rollup_manager_address": contract_setup_addresses[
-                        "zkevm_rollup_manager_address"
+                        "rollup_manager_address"
                     ],  # TODO: Check if it's the right address - is it the L1 rollup manager address ?
                     "global_exit_root_address": sovereign_contract_setup_addresses[
                         "sovereign_ger_proxy_addr"
@@ -53,7 +53,7 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
                     # "proposer_url": "http://op-proposer{}:{}".format(
                     #     args["deployment_suffix"], args["op_proposer_port"]
                     # ),
-                    "network_id": args["zkevm_rollup_id"],
+                    "l2_network_id": args["l2_network_id"],
                     "sp1_cluster_endpoint": args["sp1_cluster_endpoint"],
                     "op_succinct_mock": args["op_succinct_mock"],
                     "aggkit_legacy": aggkit_legacy,
