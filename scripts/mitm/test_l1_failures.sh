@@ -12,7 +12,6 @@ KURTOSIS_ARGS='{
         "l1_rpc_url": "http://'$L1_PROXY_NAME':'$L1_PROXY_PORT'",
         "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.1-rc4",
         "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-contracts:v9.0.0-rc.5-pp-fork.12",
-        "deploy_l2_contracts": true,
         "consensus_contract_type": "pessimistic",
         "erigon_strict_mode": false,
         "gas_token_enabled": false,

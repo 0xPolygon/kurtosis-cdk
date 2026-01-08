@@ -7,31 +7,10 @@ op_input_parser = import_module("./op_input_parser.star")
 # You can deploy the whole stack and then only deploy a subset of the components to perform an
 # an upgrade or to test a new version of a component.
 DEFAULT_DEPLOYMENT_STAGES = {
-    # Deploy a local L1 chain using the ethereum-package.
-    # Set to false to use an external L1 like Sepolia.
-    # Note that it will require a few additional parameters.
-    "deploy_l1": True,
-    # Deploy agglayer contracts on L1 (as well as fund accounts).
-    # Set to false to use pre-deployed agglayer contracts.
-    # Note that it will require a few additional parameters.
-    "deploy_agglayer_contracts_on_l1": True,
-    # Deploy databases.
-    "deploy_databases": True,
-    # Deploy CDK central/trusted environment.
-    "deploy_cdk_central_environment": True,
-    # Deploy CDK bridge infrastructure.
-    "deploy_cdk_bridge_infra": True,
-    # Deploy CDK bridge UI.
-    "deploy_cdk_bridge_ui": False,
-    # Deploy the agglayer.
-    "deploy_agglayer": True,
-    # After deploying OP Stack, upgrade it to OP Succinct.
-    # Even mock-verifier deployments require an actual SPN network key.
-    "deploy_op_succinct": False,
-    # Deploy contracts on L2 (as well as fund accounts).
-    "deploy_l2_contracts": False,
-    # Deploy aggkit node in parallel to cdk node.
-    "deploy_aggkit_node": False,
+    "should_deploy_l1": True,
+    "should_deploy_agglayer_contracts": True,
+    "should_deploy_agglayer": True,
+    "should_deploy_l2_contracts": False,
 }
 
 DEFAULT_PORTS = {
@@ -496,8 +475,8 @@ def parse_args(plan, user_args):
         "sequencer_name": sequencer_name,
         "zkevm_fork_id": fork_id,
         "zkevm_fork_name": fork_name,
-        "deploy_agglayer": deployment_stages.get(
-            "deploy_agglayer", False
+        "should_deploy_agglayer": deployment_stages.get(
+            "should_deploy_agglayer", False
         ),  # hacky but works fine for now.
     }
 
@@ -759,15 +738,6 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
                 )
                 # TODO: should this be AggchainFEP instead?
                 args["consensus_contract_type"] = constants.CONSENSUS_TYPE.pessimistic
-
-    # If OP-Succinct is enabled, OP-Rollup must be enabled
-    if deployment_stages.get("deploy_op_succinct", False):
-        if args["sequencer_type"] != constants.SEQUENCER_TYPE.op_geth:
-            fail(
-                "OP Succinct requires OP Rollup to be enabled. Change the sequencer_type parameter to 'op-geth'."
-            )
-        if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
-            fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")
 
     # FIXME - I've removed some code here that was doing some logic to
     # update the vkeys depending on the consensus. We either need to

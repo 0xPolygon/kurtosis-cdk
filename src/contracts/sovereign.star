@@ -30,7 +30,7 @@ def run(plan, args, predeployed_contracts=False):
 
 
 def init_rollup(plan, args, deployment_stages):
-    if deployment_stages.get("deploy_op_succinct", False):
+    if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.fep:
         l2oo_config = get_l2_oo_config(plan, args)
         plan.print(l2oo_config)
         plan.exec(

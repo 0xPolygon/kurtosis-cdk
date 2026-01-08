@@ -109,7 +109,6 @@ def run(plan, args, deployment_stages, op_stack_args):
 
     template_data = args | {
         "is_vanilla_client": is_vanilla_client(args, deployment_stages),
-        "deploy_op_succinct": deployment_stages.get("deploy_op_succinct", False),
         "consensus_contract": consensus_contract,
         "sequencer_type": args["sequencer_type"],
         "op_stack_seconds_per_slot": op_stack_seconds_per_slot,
@@ -186,7 +185,7 @@ def run(plan, args, deployment_stages, op_stack_args):
     succinct_artifacts = []
 
     # Create op-succinct artifacts
-    if deployment_stages.get("deploy_op_succinct", False):
+    if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.fep:
         fetch_rollup_config_artifact = plan.get_files_artifact(
             name="fetch-l2oo-config",
             description="Get fetch-l2oo-config files artifact",

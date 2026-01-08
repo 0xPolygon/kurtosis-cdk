@@ -1,6 +1,5 @@
 deployment_stages:
-  deploy_l2_contracts: true
-  deploy_cdk_bridge_infra: true
+  should_deploy_l2_contracts: true
 
 args:
   consensus_contract_type: ecdsa-multisig # new sovereign consensus

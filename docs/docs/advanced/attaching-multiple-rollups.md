@@ -62,9 +62,8 @@ Repeat the steps for Rollup consensus.
 
 ```yaml title="initial-cdk-erigon-rollup.yml"
 deployment_stages:
-  deploy_l1: false
-  deploy_agglayer: false
-  deploy_cdk_bridge_ui: false
+  should_deploy_l1: false
+  should_deploy_agglayer: false
 args:
   verbosity: debug
   agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
@@ -99,9 +98,8 @@ Repeat the steps for PP consensus.
 
 ```yaml title="initial-cdk-erigon-pp.yml"
 deployment_stages:
-  deploy_l1: false
-  deploy_agglayer: false
-  deploy_cdk_bridge_ui: false
+  should_deploy_l1: false
+  should_deploy_agglayer: false
 args:
   deployment_suffix: '-003'
   l2_chain_id: 30303

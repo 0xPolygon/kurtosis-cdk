@@ -66,7 +66,7 @@ def run(
         src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
     )
 
-    plan.add_service(
+    result = plan.add_service(
         name="zkevm-bridge-service{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("zkevm_bridge_service_image"),
@@ -88,3 +88,5 @@ def run(
             cmd=["run", "--cfg", "/etc/zkevm/bridge-config.toml"],
         ),
     )
+    rpc_url = result.ports[RPC_PORT_ID].number
+    return rpc_url

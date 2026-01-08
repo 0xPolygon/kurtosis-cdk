@@ -31,7 +31,7 @@ def run(plan, args, sequencer_rpc_url):
         },
     )
 
-    return plan.add_service(
+    result = plan.add_service(
         name="zkevm-pool-manager{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("zkevm_pool_manager_image"),
@@ -49,3 +49,5 @@ def run(plan, args, sequencer_rpc_url):
             ],
         ),
     )
+    pool_manager_url = result.ports[SERVER_PORT_ID].url
+    return pool_manager_url

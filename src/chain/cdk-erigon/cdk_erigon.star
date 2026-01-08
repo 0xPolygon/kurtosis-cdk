@@ -19,15 +19,46 @@ METRICS_PORT_ID = "prometheus"
 METRICS_PORT_NUMBER = 9091
 
 
-def run_sequencer(plan, args, contract_setup_addresses):
-    return _run(plan, args, contract_setup_addresses, CDK_ERIGON_TYPE.sequencer)
+def run_sequencer(plan, args, contract_setup_addresses, stateless_executor_url=None):
+    return _run(
+        plan,
+        args,
+        contract_setup_addresses,
+        CDK_ERIGON_TYPE.sequencer,
+        stateless_executor_url,
+    )
 
 
-def run_rpc(plan, args, contract_setup_addresses, l2_context):
-    return _run(plan, args, contract_setup_addresses, CDK_ERIGON_TYPE.rpc, l2_context)
+def run_rpc(
+    plan,
+    args,
+    contract_setup_addresses,
+    sequencer_url,
+    datastreamer_url,
+    pool_manager_url,
+):
+    return _run(
+        plan,
+        args,
+        contract_setup_addresses,
+        CDK_ERIGON_TYPE.rpc,
+        None,
+        sequencer_url,
+        datastreamer_url,
+        pool_manager_url,
+    )
 
 
-def _run(plan, args, contract_setup_addresses, type, l2_context=None):
+def _run(
+    plan,
+    args,
+    contract_setup_addresses,
+    type,
+    stateless_executor_url=None,
+    sequencer_url=None,
+    datastreamer_url=None,
+    pool_manager_url=None,
+):
     if type not in [
         CDK_ERIGON_TYPE.sequencer,
         CDK_ERIGON_TYPE.rpc,
@@ -58,11 +89,18 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
                 | (
                     {
                         # rpc-specific configuration
-                        "zkevm_sequencer_url": l2_context.sequencer_url,
-                        "zkevm_datastreamer_url": l2_context.datastreamer_url,
-                        "pool_manager_url": l2_context.pool_manager_url,
+                        "sequencer_url": sequencer_url,
+                        "datastreamer_url": datastreamer_url,
+                        "pool_manager_url": pool_manager_url,
                     }
                     if type == CDK_ERIGON_TYPE.rpc
+                    else {}
+                )
+                | (
+                    {
+                        "stateless_executor_url": stateless_executor_url,
+                    }
+                    if args.get("erigon_strict_mode")
                     else {}
                 ),
             ),
@@ -128,7 +166,7 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
         src="../../../static_files/scripts/proc-runner.sh",
     )
 
-    return plan.add_service(
+    result = plan.add_service(
         name="cdk-erigon-{}{}".format(type, args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("cdk_erigon_image"),
@@ -163,3 +201,21 @@ def _run(plan, args, contract_setup_addresses, type, l2_context=None):
             user=User(uid=0, gid=0),
         ),
     )
+
+    # Return context
+    http_rpc_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
+    ws_rpc_url = result.ports[ports_package.WS_RPC_PORT_ID].url
+    if type == CDK_ERIGON_TYPE.sequencer:
+        datastreamer_url = result.ports[DATA_STREAMER_PORT_ID].url.removeprefix(
+            "datastream://"
+        )
+        return struct(
+            http_rpc_url=http_rpc_url,
+            ws_rpc_url=ws_rpc_url,
+            datastreamer_url=datastreamer_url,
+        )
+    else:
+        return struct(
+            http_rpc_url=http_rpc_url,
+            ws_rpc_url=ws_rpc_url,
+        )

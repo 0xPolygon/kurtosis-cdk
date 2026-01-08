@@ -1,7 +1,3 @@
-# This args-file deploys the OP Succinct chain.
-deployment_stages:
-  deploy_op_succinct: false
-
 args:
   sequencer_type: op-geth
   consensus_contract_type: ecdsa-multisig # new sovereign consensus

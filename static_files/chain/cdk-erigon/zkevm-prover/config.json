@@ -78,7 +78,7 @@
      * everything to be as realistic as possible, but don't want to
      * run the full prover.
      */ -}}
-    {{if .stateless_executor}}
+    {{if .is_running_in_strict_mode}}
     "runAggregatorClientMock": false,
     {{else}}
     "runAggregatorClientMock": true,
@@ -138,6 +138,7 @@
      */ -}}
     "hashDBURL": "local",
 
+{{-if .is_prover }}
 {{- /*
      * aggregatorClientPort is the grpc port that this prover will
      * attempt to use while connecting to the aggregator
@@ -148,7 +149,8 @@
      * aggregatorClientHost is the hostname that this prover will
      * attempt to use while connecting to the aggregator
      */ -}}
-    "aggregatorClientHost": "cdk-node{{.deployment_suffix}}",
+    "aggregatorClientHost": "{{.aggregator_host}}",
+{{-end}}
 
 {{- /*
      * keccakScriptFile is the keccak-f state machine script file
@@ -166,12 +168,12 @@
      * "local" if no external database is used (data will be stored in
      * cache)
      */ -}}
-    {{if .stateless_executor}}
+    {{if .is_running_in_strict_mode}}
     "databaseURL": "local",
     "dbReadOnly": true,
     "hashDBSingleton": false,
     {{else}}
-    "databaseURL": "postgresql://{{.prover_db.user}}:{{.prover_db.password}}@{{.prover_db.hostname}}:{{.prover_db.port}}/{{.prover_db.name}}",
+    "databaseURL": "{{.database_url}}",
     {{end}}
 
 {{- /*
@@ -259,7 +261,7 @@
      * stateManager will use the State Manager to consolidate states
      * before writing to Database
      */ -}}
-    {{if .stateless_executor}}
+    {{if .is_running_in_strict_mode}}
     "stateManager": false,
     {{else}}
     "stateManager": true,

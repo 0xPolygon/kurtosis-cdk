@@ -20,7 +20,7 @@ def run(plan, args, contract_setup_addresses):
         },
     )
 
-    plan.add_service(
+    result = plan.add_service(
         name="zkevm-bridge-ui{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("zkevm_bridge_ui_image"),
@@ -41,3 +41,5 @@ def run(plan, args, contract_setup_addresses):
             # user=User(uid=0, gid=0),  # Run the container as root user.
         ),
     )
+    server_url = result.ports[SERVER_PORT_ID].number
+    return server_url

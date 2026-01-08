@@ -17,27 +17,58 @@ EXECUTOR_PORT_ID = "executor"
 EXECUTOR_PORT_NUMBER = 50071
 
 
-def run_prover(plan, args):
-    return _run(plan, args, type=ZKEVM_PROVER_TYPE.prover)
+def run_prover(plan, args, aggregator_url):
+    return _run(plan, args, ZKEVM_PROVER_TYPE.prover, aggregator_url)
 
 
 def run_stateless_executor(plan, args):
-    return _run(plan, args, type=ZKEVM_PROVER_TYPE.stateless_executor)
+    return _run(plan, args, ZKEVM_PROVER_TYPE.stateless_executor)
 
 
-def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
+def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover, aggregator_url=None):
     if type not in [
         ZKEVM_PROVER_TYPE.prover,
         ZKEVM_PROVER_TYPE.stateless_executor,
     ]:
         fail("Unknown zkevm prover type: {}".format(type))
 
+    is_running_in_strict_mode = (
+        type == ZKEVM_PROVER_TYPE.stateless_executor and args.get("erigon_strict_mode")
+    )
+
+    # Determine database url
     db_configs = databases.get_db_configs(
         args.get("deployment_suffix"), args.get("sequencer_type")
     )
-    stateless_executor = (
-        args.get("erigon_strict_mode") and type == ZKEVM_PROVER_TYPE.stateless_executor
+    prover_db = db_configs.prover_db
+    database_url = "postgresql://{}:{}@{}:{}/{}".format(
+        prover_db.user,
+        prover_db.password,
+        prover_db.hostname,
+        prover_db.port,
+        prover_db.name,
     )
+
+    data = args | {
+        "is_running_in_strict_mode": is_running_in_strict_mode,
+        # ports
+        "executor_port_number": EXECUTOR_PORT_NUMBER,
+        "hash_db_port_number": HASH_DB_PORT_NUMBER,
+        # database
+        "database_url": database_url,
+    }
+
+    if type == ZKEVM_PROVER_TYPE.prover:
+        result = aggregator_url.removesuffix("grpc://").split(":")
+        if len(result) != 2:
+            fail("Aggregator URL has invalid format: {}".format(aggregator_url))
+        [aggregator_host, aggregator_port_number] = result
+        data = data | {
+            "is_prover": True,
+            "aggregator_host": aggregator_host,
+            "aggregator_port_number": aggregator_port_number,
+        }
+
     config_artifact = plan.render_templates(
         name="zkevm-{}-config{}".format(type, args.get("deployment_suffix")),
         config={
@@ -45,14 +76,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
                 template=read_file(
                     src="../../../static_files/chain/cdk-erigon/zkevm-prover/config.json"
                 ),
-                data=args
-                | db_configs
-                | {
-                    "hash_db_port_number": HASH_DB_PORT_NUMBER,
-                    "executor_port_number": EXECUTOR_PORT_NUMBER,
-                    "stateless_executor": stateless_executor,
-                    "aggregator_port_number": cdk_node.AGGREGATOR_PORT_NUMBER,
-                },
+                data=data,
             )
         },
     )
@@ -63,7 +87,7 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
     )
     cpu_arch = cpu_arch_result.output
 
-    return plan.add_service(
+    result = plan.add_service(
         name="zkevm-{}{}".format(type, args.get("deployment_suffix")),
         config=ServiceConfig(
             image=args.get("zkevm_prover_image"),
@@ -86,4 +110,8 @@ def _run(plan, args, type=ZKEVM_PROVER_TYPE.prover):
                 ),
             ],
         ),
+    )
+    executor_url = result.ports[EXECUTOR_PORT_ID].url
+    return struct(
+        executor_url=executor_url,
     )

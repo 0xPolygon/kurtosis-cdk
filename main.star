@@ -23,40 +23,15 @@ def run(plan, args={}):
     consensus_type = args.get("consensus_contract_type")
 
     # Deploy a local L1.
-    if deployment_stages.get("deploy_l1", False):
+    if deployment_stages.get("should_deploy_l1", False):
         plan.print("Deploying a local L1")
         l1_context = l1_launcher.launch(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
         l1_context = None  # TODO: Populate from dev args
 
-    # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
-    # TODO: Fix the logic when using anvil and op-succinct
-    if deployment_stages.get("deploy_op_succinct", False):
-        l1_genesis_artifact = plan.get_files_artifact(name="el_cl_genesis_data")
-        new_genesis_name = "{}.json".format(args.get("l1_chain_id"))
-        result = plan.run_sh(
-            name="rename-l1-genesis",
-            description="Rename L1 genesis",
-            files={"/tmp": l1_genesis_artifact},
-            run="mv /tmp/genesis.json /tmp/{}".format(new_genesis_name),
-            store=[
-                StoreSpec(
-                    src="/tmp/{}".format(new_genesis_name),
-                    name="el_cl_genesis_data_for_op_succinct",
-                )
-            ],
-        )
-        artifact_count = len(result.files_artifacts)
-        if artifact_count != 1:
-            fail(
-                "The service should have generated 1 artifact, got {}.".format(
-                    artifact_count
-                )
-            )
-
     # Extract the fetch-l2oo-config binary before starting contracts-001 service.
-    if deployment_stages.get("deploy_op_succinct", False):
+    if consensus_type == constants.CONSENSUS_TYPE.fep:
         # Extract genesis to feed into evm-sketch-genesis
         # ethereum_package.extract_genesis_json(plan)
         # Temporarily run op-succinct-proposer service and fetch-l2oo-config binary
@@ -66,7 +41,7 @@ def run(plan, args={}):
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
-    if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
+    if deployment_stages.get("should_deploy_agglayer_contracts", False):
         plan.print("Deploying agglayer contracts on L1")
         import_module(agglayer_contracts_package).run(
             plan, args, deployment_stages, op_stack_args
@@ -113,7 +88,7 @@ def run(plan, args={}):
                 args["op_el_rpc_url"],
             )
 
-            if deployment_stages.get("deploy_op_succinct", False):
+            if consensus_type == constants.CONSENSUS_TYPE.fep:
                 # Extract genesis to feed into evm-sketch-genesis
                 op_succinct_package.create_evm_sketch_genesis(plan, args)
 
@@ -170,22 +145,18 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of helper service to retrieve rollup data")
 
     # Deploy databases.
-    if deployment_stages.get("deploy_databases", False):
-        plan.print("Deploying databases")
-        import_module(databases_package).run(plan, args)
-    else:
-        plan.print("Skipping the deployment of databases")
+    plan.print("Deploying databases")
+    import_module(databases_package).run(plan, args)
 
     # Get the genesis file.
     genesis_artifact = ""
     if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
-        if deployment_stages.get("deploy_cdk_central_environment", False):
-            plan.print("Getting genesis file")
-            genesis_artifact = plan.store_service_files(
-                name="genesis",
-                service_name="contracts" + args["deployment_suffix"],
-                src=constants.OUTPUT_DIR + "/genesis.json",
-            )
+        plan.print("Getting genesis file")
+        genesis_artifact = plan.store_service_files(
+            name="genesis",
+            service_name="contracts" + args["deployment_suffix"],
+            src=constants.OUTPUT_DIR + "/genesis.json",
+        )
 
     # Deploy MITM
     if any(args["mitm_proxied_components"].values()):
@@ -195,7 +166,7 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of MITM")
 
     # Deploy the agglayer.
-    if deployment_stages.get("deploy_agglayer", False):
+    if deployment_stages.get("should_deploy_agglayer", False):
         plan.print("Deploying the agglayer")
         import_module(agglayer_package).run(
             plan, deployment_stages, args, contract_setup_addresses
@@ -203,19 +174,18 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of the agglayer")
 
-    # Deploy cdk central/trusted environment.
-    if deployment_stages.get("deploy_cdk_central_environment", False):
-        chain_launcher.launch(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            deployment_stages,
-            genesis_artifact,
-        )
+    # Deploy chain components.
+    l2_context = chain_launcher.launch(
+        plan,
+        args,
+        contract_setup_addresses,
+        sovereign_contract_setup_addresses,
+        deployment_stages,
+        genesis_artifact,
+    )
 
     # Deploy contracts on L2.
-    if deployment_stages.get("deploy_l2_contracts", False):
+    if deployment_stages.get("should_deploy_l2_contracts", False):
         plan.print("Deploying contracts on L2")
         import_module(agglayer_contracts_package).deploy_l2_contracts(plan, args)
 
@@ -228,6 +198,7 @@ def run(plan, args={}):
         genesis_artifact,
         deployment_stages,
         sequencer_type,
+        l2_context,
     )
 
 
