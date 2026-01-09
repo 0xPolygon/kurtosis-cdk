@@ -23,15 +23,16 @@ def run(plan, args={}):
     consensus_type = args.get("consensus_contract_type")
 
     # Deploy a local L1.
+    l1_context = None
     if deployment_stages.get("deploy_l1", False):
         plan.print("Deploying a local L1")
         l1_context = l1_launcher.launch(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-        l1_context = {
-            "rpc_url": args.get("l1_rpc_url"),
-            "chain_id": args.get("l1_chain_id"),
-        }  # TODO: Populate from dev args
+        l1_context = struct(
+            rpc_url=args.get("l1_rpc_url"),
+            chain_id=args.get("l1_chain_id"),
+        )  # TODO: Populate from dev args
 
     # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
     # TODO: Fix the logic when using anvil and op-succinct
