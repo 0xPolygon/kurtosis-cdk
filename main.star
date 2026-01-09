@@ -30,8 +30,9 @@ def run(plan, args={}):
     else:
         plan.print("Skipping the deployment of a local L1")
         l1_context = struct(
-            rpc_url=args.get("l1_rpc_url"),
             chain_id=args.get("l1_chain_id"),
+            rpc_url=args.get("l1_rpc_url"),
+            all_participants=[],
         )  # TODO: Populate from dev args
 
     # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
