@@ -9,6 +9,7 @@ def launch(
     genesis_artifact,
     deployment_stages,
     sequencer_type,
+    l1_context,
     l2_context,
 ):
     for svc in args.get("additional_services", []):
@@ -69,7 +70,7 @@ def launch(
                     import_module("./shared/zkevm_bridge_proxy.star").run(
                         plan,
                         args,
-                        args.get("l1_rpc_url"),
+                        l1_context.rpc_url,
                         l2_context.rpc_url,
                         l2_context.zkevm_bridge_service_url,
                         zkevm_bridge_ui_url,

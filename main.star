@@ -28,7 +28,10 @@ def run(plan, args={}):
         l1_context = l1_launcher.launch(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-        l1_context = None  # TODO: Populate from dev args
+        l1_context = {
+            "rpc_url": args.get("l1_rpc_url"),
+            "chain_id": args.get("l1_chain_id"),
+        }  # TODO: Populate from dev args
 
     # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
     # TODO: Fix the logic when using anvil and op-succinct
@@ -229,6 +232,7 @@ def run(plan, args={}):
         genesis_artifact,
         deployment_stages,
         sequencer_type,
+        l1_context,
         l2_context,
     )
 
