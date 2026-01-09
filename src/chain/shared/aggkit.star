@@ -1,7 +1,6 @@
 aggkit_prover = import_module("./aggkit_prover.star")
 constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
-zkevm_bridge_service = import_module("../shared/zkevm_bridge_service.star")
 ports_package = import_module("./ports.star")
 contracts_util = import_module("../../contracts/util.star")
 op_succinct = import_module("../op-geth/op_succinct_proposer.star")
@@ -80,11 +79,11 @@ def run(
     args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
-    deploy_cdk_bridge_infra,
-    deploy_op_succinct,
+    deployment_stages,
 ):
     """Main orchestration function for deploying aggkit services."""
     # Deploy OP Succinct if needed
+    deploy_op_succinct = deployment_stages.get("deploy_op_succinct", False)
     _deploy_op_succinct_if_needed(
         plan,
         args,
@@ -106,21 +105,6 @@ def run(
 
     # Deploy validator services if needed
     _deploy_validator_services_if_needed(plan, args, deployment_context)
-
-    # Deploy bridge infrastructure if needed
-    if deploy_cdk_bridge_infra:
-        l2_rpc_url = "http://{}{}:{}".format(
-            args.get("l2_rpc_name"),
-            args.get("deployment_suffix"),
-            ports_package.HTTP_RPC_PORT_NUMBER,
-        )
-        zkevm_bridge_service.run(
-            plan,
-            args,
-            contract_setup_addresses,
-            sovereign_contract_setup_addresses,
-            l2_rpc_url,
-        )
 
 
 def _deploy_op_succinct_if_needed(

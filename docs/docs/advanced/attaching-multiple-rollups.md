@@ -64,7 +64,6 @@ Repeat the steps for Rollup consensus.
 deployment_stages:
   deploy_l1: false
   deploy_agglayer: false
-  deploy_cdk_bridge_ui: false
 args:
   verbosity: debug
   agglayer_contracts_image: leovct/zkevm-contracts:v9.0.0-rc.6-pp-fork.12
@@ -101,7 +100,6 @@ Repeat the steps for PP consensus.
 deployment_stages:
   deploy_l1: false
   deploy_agglayer: false
-  deploy_cdk_bridge_ui: false
 args:
   deployment_suffix: '-003'
   l2_chain_id: 30303

@@ -23,12 +23,17 @@ def run(plan, args={}):
     consensus_type = args.get("consensus_contract_type")
 
     # Deploy a local L1.
+    l1_context = None
     if deployment_stages.get("deploy_l1", False):
         plan.print("Deploying a local L1")
         l1_context = l1_launcher.launch(plan, args)
     else:
         plan.print("Skipping the deployment of a local L1")
-        l1_context = None  # TODO: Populate from dev args
+        l1_context = struct(
+            chain_id=args.get("l1_chain_id"),
+            rpc_url=args.get("l1_rpc_url"),
+            all_participants=[],
+        )  # TODO: Populate from dev args
 
     # Retrieve L1 genesis and rename it to <l1_chain_id>.json for op-succinct
     # TODO: Fix the logic when using anvil and op-succinct
@@ -204,8 +209,9 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of the agglayer")
 
     # Deploy cdk central/trusted environment.
+    l2_context = None
     if deployment_stages.get("deploy_cdk_central_environment", False):
-        chain_launcher.launch(
+        l2_context = chain_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
@@ -228,6 +234,8 @@ def run(plan, args={}):
         genesis_artifact,
         deployment_stages,
         sequencer_type,
+        l1_context,
+        l2_context,
     )
 
 

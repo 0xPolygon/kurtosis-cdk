@@ -21,8 +21,6 @@ DEFAULT_DEPLOYMENT_STAGES = {
     "deploy_cdk_central_environment": True,
     # Deploy CDK bridge infrastructure.
     "deploy_cdk_bridge_infra": True,
-    # Deploy CDK bridge UI.
-    "deploy_cdk_bridge_ui": False,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
@@ -363,6 +361,7 @@ DEFAULT_ARGS = (
         # - status_checker
         # - test_runner
         # - tx_spammer
+        # - zkevm_bridge_ui
         "additional_services": [
             constants.ADDITIONAL_SERVICES.agglogger,
             constants.ADDITIONAL_SERVICES.bridge_spammer,

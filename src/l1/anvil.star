@@ -59,12 +59,4 @@ def run(plan, args):
         ),
     )
     rpc_url = result.ports[RPC_PORT_ID].url
-
-    private_key = wallet.derive_private_key(plan, mnemonic)
-
-    return struct(
-        chain_id=chain_id,
-        private_key=private_key,
-        rpc_url=rpc_url,
-        all_participants=None,
-    )
+    return rpc_url

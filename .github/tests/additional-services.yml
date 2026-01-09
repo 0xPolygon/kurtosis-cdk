@@ -12,3 +12,4 @@ args:
     - status_checker
     - test_runner
     - tx_spammer
+    - zkevm_bridge_ui
