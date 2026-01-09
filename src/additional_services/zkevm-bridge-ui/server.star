@@ -9,7 +9,7 @@ def run(plan, args, contract_setup_addresses):
         config={
             ".env": struct(
                 template=read_file(
-                    "../../../static_files/chain/cdk-erigon/zkevm-bridge-ui/.env"
+                    "../../../static_files/additional_services/zkevm-bridge-ui/server/.env"
                 ),
                 data={
                     "l1_explorer_url": args["l1_explorer_url"],

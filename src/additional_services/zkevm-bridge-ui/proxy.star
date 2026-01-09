@@ -11,7 +11,7 @@ def run(
         config={
             "haproxy.cfg": struct(
                 template=read_file(
-                    src="../../../static_files/chain/cdk-erigon/zkevm-bridge-proxy/haproxy.cfg"
+                    src="../../../static_files/additional_services/zkevm-bridge-ui/proxy/haproxy.cfg"
                 ),
                 data={
                     "l1_rpc_url": l1_rpc_url,
