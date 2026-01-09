@@ -1,7 +1,7 @@
 # Image names
 AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v12.2.1
 TOOLBOX_IMAGE_NAME := toolbox:0.0.12
-ZKEVM_BRIDGE_UI_IMAGE_NAME := zkevm-bridge-ui:dbd55ed
+ZKEVM_BRIDGE_UI_IMAGE_NAME := zkevm-bridge-ui:3f1a3a0
 
 # GCR registry
 GCR_REGISTRY := europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public
