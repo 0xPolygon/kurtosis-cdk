@@ -14,10 +14,12 @@ def run(
                     src="../../../static_files/additional_services/zkevm-bridge-ui/proxy/haproxy.cfg"
                 ),
                 data={
-                    "l1_rpc_url": l1_rpc_url,
-                    "l2_rpc_url": l2_rpc_url,
-                    "zkevm_bridge_service_url": zkevm_bridge_service_url,
-                    "zkevm_bridge_ui_url": zkevm_bridge_ui_url,
+                    "l1_rpc_url": l1_rpc_url.removeprefix("http://"),
+                    "l2_rpc_url": l2_rpc_url.removeprefix("http://"),
+                    "zkevm_bridge_service_url": zkevm_bridge_service_url.removeprefix(
+                        "http://"
+                    ),
+                    "zkevm_bridge_ui_url": zkevm_bridge_ui_url.removeprefix("http://"),
                 },
             )
         },
