@@ -61,19 +61,18 @@ def launch(
                 plan, args, contract_setup_addresses
             )
         elif svc == constants.ADDITIONAL_SERVICES.zkevm_bridge_ui:
-            if deployment_stages.get("deploy_cdk_bridge_ui"):
-                zkevm_bridge_ui_url = import_module(
-                    "./shared/zkevm_bridge_ui.star"
-                ).run(plan, args, contract_setup_addresses)
+            zkevm_bridge_ui_url = import_module("./zkevm_bridge_ui/server.star").run(
+                plan, args, contract_setup_addresses
+            )
 
-                if deployment_stages.get("deploy_l1"):
-                    import_module("./shared/zkevm_bridge_proxy.star").run(
-                        plan,
-                        args,
-                        l1_context.rpc_url,
-                        l2_context.rpc_url,
-                        l2_context.zkevm_bridge_service_url,
-                        zkevm_bridge_ui_url,
-                    )
+            if deployment_stages.get("deploy_l1"):
+                import_module("./zkevm_bridge_ui/proxy.star").run(
+                    plan,
+                    args,
+                    l1_context.rpc_url,
+                    l2_context.rpc_url,
+                    l2_context.zkevm_bridge_service_url,
+                    zkevm_bridge_ui_url,
+                )
         else:
             fail("Invalid additional service: %s" % (svc))
