@@ -55,7 +55,8 @@ L2_SEQUENCER_MAPPING = {
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
-    SEQUENCER_TYPE.op_geth: "op-el-2-op-geth-op-node",
+    # SEQUENCER_TYPE.op_geth: "op-el-2-op-geth-op-node",
+    SEQUENCER_TYPE.op_geth: "op-el-1-op-geth-op-node",
 }
 
 FORK_ID_TO_NAME = {
