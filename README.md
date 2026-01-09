@@ -48,7 +48,7 @@ References, troubleshooting, and more.
 ## Contact
 
 - For technical issues, join our [Discord](https://discord.gg/0xpolygonrnd).
-- For documentation issues, raise an issue on the published live doc at [our main repo](https://github.com/0xPolygon/polygon-docs).
+- For documentation issues, raise an issue on the published live doc at [our main repo](https://docs.polygon.technology/).
 
 ## License
 

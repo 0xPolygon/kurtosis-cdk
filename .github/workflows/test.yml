@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
         with:
-          args: --root-dir "$(pwd)" --verbose --no-progress --exclude-loopback --exclude-path .kurtosis-test/ --exclude-path docs/node_modules/ --exclude file:// --exclude https://github.com/0xPolygon/kurtosis-cdk --exclude https://www.blockscout.com/ --exclude https://github.com/0xPolygon/arpeggio --exclude http://anvil-001:8545 --exclude https://unix.stackexchange.com/questions/65475/ephemeral-port-what-is-it-and-what-does-it-do './**/*.md'
+          args: --root-dir "$(pwd)" --verbose --no-progress --exclude-loopback --exclude-path .kurtosis-test/ --exclude-path docs/node_modules/ --exclude file:// --exclude https://github.com/0xPolygon/kurtosis-cdk --exclude https://www.blockscout.com/ --exclude https://github.com/0xPolygon/arpeggio --exclude http://anvil-001:8545 --exclude ws://anvil-001:8545 --exclude https://unix.stackexchange.com/questions/65475/ephemeral-port-what-is-it-and-what-does-it-do './**/*.md'
           fail: true
 
   unit:

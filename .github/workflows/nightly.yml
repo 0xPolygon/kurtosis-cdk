@@ -475,7 +475,7 @@ jobs:
 
   workflow-summary:
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ always() && github.event_name == 'schedule' }}
     needs: 
       - run-without-args
       - run-with-args
