@@ -204,8 +204,9 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of the agglayer")
 
     # Deploy cdk central/trusted environment.
+    l2_context = None
     if deployment_stages.get("deploy_cdk_central_environment", False):
-        chain_launcher.launch(
+        l2_context = chain_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
@@ -228,6 +229,7 @@ def run(plan, args={}):
         genesis_artifact,
         deployment_stages,
         sequencer_type,
+        l2_context,
     )
 
 

@@ -12,6 +12,7 @@ ADDITIONAL_SERVICES = struct(
     test_runner="test_runner",
     tx_spammer="tx_spammer",
     agglayer_dashboard="agglayer_dashboard",
+    zkevm_bridge_ui="zkevm_bridge_ui",
 )
 
 LOG_LEVEL = struct(
