@@ -61,17 +61,6 @@ image_name="status-checker-cdk:v0.2.8"
 docker build --tag "${image_name}" --file docker/status-checker-cdk.Dockerfile .
 ```
 
-### ZkEVM Bridge UI (deprecated)
-
-Web interface to bridge ETH and ERC-20 tokens from L1 to L2.
-
-Repository: <https://github.com/0xPolygon/zkevm-bridge-ui>
-
-```bash
-image_name="zkevm-bridge-ui:0006445"
-docker build --tag "${image_name}" --file zkevm-bridge-ui/zkevm-bridge-ui.Dockerfile zkevm-bridge-ui
-```
-
 ### Agglayer Dashboard
 
 Build and create image from here:
