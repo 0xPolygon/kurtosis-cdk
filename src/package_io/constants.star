@@ -12,6 +12,7 @@ ADDITIONAL_SERVICES = struct(
     test_runner="test_runner",
     tx_spammer="tx_spammer",
     agglayer_dashboard="agglayer_dashboard",
+    zkevm_bridge_ui="zkevm_bridge_ui",
 )
 
 LOG_LEVEL = struct(
@@ -112,7 +113,7 @@ DEFAULT_IMAGES = {
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
     "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC1",
-    "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:0006445",
+    "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:3f1a3a0",
     "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3",
     "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12",
 }
