@@ -139,5 +139,5 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| geth | [1.16.7](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.7) | [1.16.8](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.8) | 🚨 behind stable |
+| geth | [1.16.8](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.8) | [1.16.8](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.8) | ✅ matches stable |
 | lighthouse | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | [8.0.1](https://github.com/sigp/lighthouse/releases/tag/v8.0.1) | ✅ matches stable |
