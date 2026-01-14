@@ -41,12 +41,16 @@ def launch(
         elif svc == constants.ADDITIONAL_SERVICES.assertoor:
             import_module("./assertoor.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.blockscout:
-            import_module("./blockscout.star").run(plan, args)
+            import_module("./blockscout.star").run(plan, args, l2_context)
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
             import_module("./blutgang.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
             import_module("./bridge_spammer.star").run(
-                plan, args, contract_setup_addresses
+                plan,
+                args,
+                contract_setup_addresses,
+                l1_context,
+                l2_context,
             )
         elif svc == constants.ADDITIONAL_SERVICES.erpc:
             import_module("./erpc.star").run(plan, args)
