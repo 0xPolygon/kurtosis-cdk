@@ -233,7 +233,6 @@ def run(plan, args={}):
         sovereign_contract_setup_addresses,
         genesis_artifact,
         deployment_stages,
-        sequencer_type,
         l1_context,
         l2_context,
     )

@@ -42,7 +42,8 @@ def launch(
                 sequencer_type, input_parser.VALID_SEQUENCER_TYPES
             )
         )
-    rpc_url = context.rpc_url
+    rpc_http_url = context.rpc_http_url
+    rpc_ws_url = context.rpc_ws_url
 
     # zkevm-bridge-service, bridge-ui and bridge-proxy
     zkevm_bridge_service_url = None
@@ -52,11 +53,15 @@ def launch(
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            rpc_url,
+            rpc_http_url,
         )
 
     # Return L2 context
     return struct(
+        network_id=args.get("l2_network_id"),
+        chain_id=args.get("l2_chain_id"),
+        sequencer_type=args.get("sequencer_type"),
         zkevm_bridge_service_url=zkevm_bridge_service_url,
-        rpc_url=rpc_url,
+        rpc_http_url=rpc_http_url,
+        rpc_ws_url=rpc_ws_url,
     )

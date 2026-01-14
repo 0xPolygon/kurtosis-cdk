@@ -5,7 +5,7 @@ logging:
 providers:
   chainId: 1
   nodes:
-    - name: "{{.l2_rpc_name}}"
+    - name: l2-rpc
       rpc: "{{.l2_rpc_url}}"
       ws: "{{.l2_ws_url}}"
 
