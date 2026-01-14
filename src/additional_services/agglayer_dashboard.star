@@ -6,7 +6,7 @@ DASHBOARD_PORT_ID = "dashboard"
 DASHBOARD_PORT_NUMBER = 8000
 
 
-def run(plan, args, contract_setup_addresses, l1_context, l2_context, agglayer_context):
+def run(plan, args, l1_context, l2_context, agglayer_context, contract_setup_addresses):
     agglayer_dashboard_config_artifact = (
         plan.render_templates(
             name="agglayer-dashboard-config" + l2_context.name,

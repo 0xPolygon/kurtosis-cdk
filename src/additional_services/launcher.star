@@ -16,19 +16,19 @@ def launch(
             import_module("./agglayer_dashboard.star").run(
                 plan,
                 args,
-                contract_setup_addresses,
                 l1_context,
                 l2_context,
                 agglayer_context,
+                contract_setup_addresses,
             )
         elif svc == constants.ADDITIONAL_SERVICES.agglogger:
             import_module("./agglogger.star").run(
                 plan,
-                contract_setup_addresses,
-                sovereign_contract_setup_addresses,
                 l1_context,
                 l2_context,
                 agglayer_context,
+                contract_setup_addresses,
+                sovereign_contract_setup_addresses,
             )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
             import_module("./arpeggio.star").run(plan, l1_context, l2_context)

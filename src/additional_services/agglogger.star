@@ -10,11 +10,11 @@ ZKEVM_CONFIG_TEMPLATE = "zkevm-config.json"
 
 def run(
     plan,
-    contract_setup_addresses,
-    sovereign_contract_setup_addresses,
     l1_context,
     l2_context,
     agglayer_context,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
 ):
     # Determine config template based on sequencer type
     agglogger_config_file = ""
