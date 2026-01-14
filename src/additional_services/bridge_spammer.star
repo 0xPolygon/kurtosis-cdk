@@ -46,8 +46,8 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context):
                 "L1_CHAIN_ID": l1_context.chain_id,
                 "L1_RPC_URL": l1_context.rpc_url,
                 # l2
-                "L2_NETWORK_ID": src(l2_context.network_id),
-                "L2_CHAIN_ID": src(l2_context.chain_id),
+                "L2_NETWORK_ID": str(l2_context.network_id),
+                "L2_CHAIN_ID": str(l2_context.chain_id),
                 "L2_RPC_URL": l2_context.rpc_http_url,
                 # addresses
                 "L1_BRIDGE_ADDRESS": contract_setup_addresses.get("l1_bridge_address"),

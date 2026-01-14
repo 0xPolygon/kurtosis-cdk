@@ -19,7 +19,7 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context, agglayer_c
                         # l1
                         "l1_rpc_url": l1_context.rpc_url,
                         # l2
-                        "l2_network_id": src(l2_context.network_id),
+                        "l2_network_id": str(l2_context.network_id),
                         "l2_rpc_url": l2_context.rpc_http_url,
                         "l2_sovereignadmin_private_key": args.get(
                             "l2_sovereignadmin_private_key"

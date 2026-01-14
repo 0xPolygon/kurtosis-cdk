@@ -40,8 +40,8 @@ def run(
                     "l1_chain_id": l1_context.chain_id,
                     # l2
                     "l2_rpc_url": l2_context.rpc_http_url,
-                    "l2_chain_id": src(l2_context.chain_id),
-                    "l2_network_id": src(l2_context.network_id),
+                    "l2_chain_id": str(l2_context.chain_id),
+                    "l2_network_id": str(l2_context.network_id),
                     # agglayer
                     "agglayer_rpc_url": agglayer_context.rpc_url,
                     # contract addresses

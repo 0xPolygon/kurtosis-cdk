@@ -10,7 +10,7 @@ def run(plan, l2_context, blockscout_params):
             "rpc_url": l2_context.rpc_http_url,
             "trace_url": l2_context.rpc_http_url,
             "ws_url": l2_context.rpc_ws_url,
-            "chain_id": src(l2_context.chain_id),
+            "chain_id": str(l2_context.chain_id),
             "deployment_suffix": l2_context.name,
         }
         | blockscout_params,
