@@ -1,6 +1,6 @@
 [blutgang]
 # The address of the RPC.
-address = "0.0.0.0:{{.blutgang_rpc_port}}"
+address = "0.0.0.0:{{.rpc_port_number}}"
 # Clear the cache db on startup.
 do_clear = true
 # Enable health checks.
@@ -27,7 +27,7 @@ health_check_ttl = 400
 # NOTE: The admin namespace contains volatile functions and should not be exposed publicly.
 enabled = true
 # The address of the admin RPC.
-address = "0.0.0.0:{{.blutgang_admin_port}}"
+address = "0.0.0.0:{{.admin_port_number}}"
 # Only allow read-only methods.
 readonly = true
 # Enable the use of JWT for auth.

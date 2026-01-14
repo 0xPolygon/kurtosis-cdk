@@ -103,6 +103,7 @@ def launch(
         )
 
     return struct(
+        sequencer_url=sequencer_url,
         rpc_http_url=rpc_http_url,
         rpc_ws_url=rpc_ws_url,
     )

@@ -43,7 +43,7 @@ def launch(
         elif svc == constants.ADDITIONAL_SERVICES.blockscout:
             import_module("./blockscout.star").run(plan, args, l2_context)
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
-            import_module("./blutgang.star").run(plan, args)
+            import_module("./blutgang.star").run(plan, l2_context)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
             import_module("./bridge_spammer.star").run(
                 plan,

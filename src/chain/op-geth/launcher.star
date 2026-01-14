@@ -33,7 +33,9 @@ def launch(
         args.get("deployment_suffix"),
         ports_package.WS_RPC_PORT_NUMBER,
     )
+    sequencer_url = None  # TODO: Fix that
     return struct(
+        sequencer_url=sequencer_url,
         rpc_http_url=rpc_http_url,
         rpc_ws_url=rpc_ws_url,
     )

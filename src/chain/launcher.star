@@ -42,6 +42,7 @@ def launch(
                 sequencer_type, input_parser.VALID_SEQUENCER_TYPES
             )
         )
+    sequencer_url = context.sequencer_url
     rpc_http_url = context.rpc_http_url
     rpc_ws_url = context.rpc_ws_url
 
@@ -58,10 +59,12 @@ def launch(
 
     # Return L2 context
     return struct(
+        name=args.get("deployment_suffix"),
         network_id=args.get("l2_network_id"),
         chain_id=args.get("l2_chain_id"),
         sequencer_type=args.get("sequencer_type"),
-        zkevm_bridge_service_url=zkevm_bridge_service_url,
+        sequencer_url=sequencer_url,
         rpc_http_url=rpc_http_url,
         rpc_ws_url=rpc_ws_url,
+        zkevm_bridge_service_url=zkevm_bridge_service_url,
     )
