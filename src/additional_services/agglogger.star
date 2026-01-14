@@ -68,7 +68,7 @@ def run(
             files={
                 "/etc/agglogger": Directory(artifact_names=[agglogger_config_artifact]),
             },
-            entrypoint=["sh", "-c"],@
+            entrypoint=["sh", "-c"],
             cmd=["./agglogger run --config /etc/agglogger/config.json", "2>&1"],
         ),
     )
