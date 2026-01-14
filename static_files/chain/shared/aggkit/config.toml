@@ -535,6 +535,31 @@ BridgeAddr = ""
 {{- end }}
 
 # ------------------------------------------------------------------------------
+# BlockFinality selects which L2 block type to use when querying the bridge
+# contract for synchronization
+# Accepted values:
+#   - LatestBlock
+#   - SafeBlock
+#   - PendingBlock
+#   - FinalizedBlock
+#   - EarliestBlock
+# ------------------------------------------------------------------------------
+BlockFinality = "LatestBlock"
+
+[ReorgDetectorL2]
+# ------------------------------------------------------------------------------
+# FinalizedBlock defines which L2 block tag is used as the source of truth when
+# checking for reorgs on L2
+# Accepted values:
+#   - LatestBlock
+#   - SafeBlock
+#   - PendingBlock
+#   - FinalizedBlock
+#   - EarliestBlock
+# ------------------------------------------------------------------------------
+FinalizedBlock = "FinalizedBlock"
+
+# ------------------------------------------------------------------------------
 # DBPath path of the sqlite db
 # ------------------------------------------------------------------------------
 # DBPath = "{{.zkevm_path_rw_data}}/bridgel2sync.sqlite"
@@ -595,72 +620,6 @@ InitialBlock = "{{.rollup_manager_block_number}}"
 # Default value is "LatestBlock"
 # ------------------------------------------------------------------------------
 BlockFinality = "LatestBlock"
-
-# ==============================================================================
-#   ____ _        _    ___ __  __ ____  ____   ___  _   _ ____   ___  ____
-#  / ___| |      / \  |_ _|  \/  / ___||  _ \ / _ \| \ | / ___| / _ \|  _ \
-# | |   | |     / _ \  | || |\/| \___ \| |_) | | | |  \| \___ \| | | | |_) |
-# | |___| |___ / ___ \ | || |  | |___) |  __/| |_| | |\  |___) | |_| |  _ <
-#  \____|_____/_/   \_\___|_|  |_|____/|_|    \___/|_| \_|____/ \___/|_| \_\
-# ------------------------------------------------------------------------------
-[ClaimSponsor]
-# ------------------------------------------------------------------------------
-# Path of the DB
-# ------------------------------------------------------------------------------
-DBPath = "{{.zkevm_path_rw_data}}/claimsponsor.sqlite"
-
-# ------------------------------------------------------------------------------
-# Enabled indicates if the sponsor should be run or not
-# ------------------------------------------------------------------------------
-Enabled = "{{.enable_aggkit_claim_sponsor}}"
-
-# ------------------------------------------------------------------------------
-# SenderAddr is the address that will be used to send the claim txs
-# ------------------------------------------------------------------------------
-SenderAddr = "{{.l2_claimsponsor_address}}"
-
-# ------------------------------------------------------------------------------
-# BridgeAddrL2 is the address of the bridge smart contract on L2
-# ------------------------------------------------------------------------------
-{{- if eq .sequencer_type "cdk-erigon" }}
-BridgeAddrL2 = "{{.l2_bridge_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
-BridgeAddrL2 = "{{.sovereign_bridge_proxy_addr}}"
-{{- else }}
-BridgeAddrL2 = ""
-{{- end }}
-
-[ClaimSponsor.EthTxManager]
-# ------------------------------------------------------------------------------
-# PrivateKeys defines all the key store files that are going
-# to be read in order to provide the private keys to sign the L1 txs
-# ------------------------------------------------------------------------------
-PrivateKeys = [
-    {Path = "/etc/aggkit/claimsponsor.keystore", Password = "{{.l2_keystore_password}}"},
-]
-
-# ------------------------------------------------------------------------------
-# StoragePath is the path of the internal storage
-# ------------------------------------------------------------------------------
-StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-claimsponsor.sqlite"
-
-[ClaimSponsor.EthTxManager.Etherman]
-# ------------------------------------------------------------------------------
-# URL is the URL of the Ethereum node for L2
-# ------------------------------------------------------------------------------
-{{- if eq .sequencer_type "cdk-erigon" }}
-URL= "{{.l2_rpc_url}}"
-{{- else if eq .sequencer_type "op-geth" }}
-URL = "{{.op_el_rpc_url}}"
-{{- else }}
-URL = ""
-{{- end }}
-
-# ------------------------------------------------------------------------------
-# Needs to be set to be the sovereign L2 chain id
-# If set to 0, the chain ID will be fetched from the RPC endpoint
-# ------------------------------------------------------------------------------
-L1ChainID = "{{.l2_chain_id}}"
 
 # ==============================================================================
 #                        _           _                              __
