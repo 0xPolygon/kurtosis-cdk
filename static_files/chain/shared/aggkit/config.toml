@@ -544,6 +544,16 @@ BridgeAddr = ""
 BlockFinality = "LatestBlock"
 
 [ReorgDetectorL2]
+# ------------------------------------------------------------------------------
+# FinalizedBlock defines which L2 block tag is used as the source of truth when
+# checking for reorgs on L2.
+# Accepted values:
+#   - "LatestBlock"     : use the latest known head block
+#   - "SafeBlock"       : use the safe L2 block (if supported by the node)
+#   - "FinalizedBlock"  : use the finalized L2 block
+# The default is "FinalizedBlock", which minimizes the chance of detecting
+# reorgs on unstable blocks at the cost of additional latency.
+# ------------------------------------------------------------------------------
 FinalizedBlock = "FinalizedBlock"
 
 # ------------------------------------------------------------------------------
