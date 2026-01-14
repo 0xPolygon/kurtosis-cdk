@@ -533,6 +533,14 @@ BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
 BridgeAddr = ""
 {{- end }}
+# BlockFinality selects which L2 block type to use when querying the bridge
+# contract for synchronization.
+# Accepted values:
+#   - LatestBlock
+#   - SafeBlock
+#   - PendingBlock
+#   - FinalizedBlock
+#   - EarliestBlock
 BlockFinality = "LatestBlock"
 
 [ReorgDetectorL2]
