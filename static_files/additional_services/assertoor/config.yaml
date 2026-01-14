@@ -1,13 +1,13 @@
 
 endpoints:
-  - name: "{{.assertoor_endpoint_name}}"
-    executionUrl: "{{.execution_client_url}}"
-    consensusUrl: "{{.consensus_client_url}}"
+  - name: L1
+    executionUrl: "{{.l1_el_rpc_url}}"
+    consensusUrl: "{{.l1_cl_rpc_url}}"
 
 web:
   server:
     host: "0.0.0.0"
-    port: "{{.http_port_number}}"
+    port: "{{.server_port_number}}"
   frontend:
     enabled: true
     debug: true
