@@ -10,12 +10,8 @@ def launch(
     deployment_stages,
     l1_context,
     l2_context,
+    agglayer_context,
 ):
-    agglayer_rpc_url = args.get("agglayer_readrpc_url")
-    agglayer_context = struct(
-        rpc_url=agglayer_rpc_url
-    )  # TODO: Improve how we pass context between services
-
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.agglayer_dashboard:
             import_module("./agglayer_dashboard.star").run(

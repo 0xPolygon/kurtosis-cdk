@@ -226,6 +226,11 @@ def run(plan, args={}):
         import_module(agglayer_contracts_package).deploy_l2_contracts(plan, args)
 
     # Deploy additional services.
+    agglayer_rpc_url = args.get("agglayer_readrpc_url")
+    agglayer_context = struct(
+        rpc_url=agglayer_rpc_url
+    )  # TODO: Improve how we pass context between services
+
     additional_services_launcher.launch(
         plan,
         args,
@@ -235,6 +240,7 @@ def run(plan, args={}):
         deployment_stages,
         l1_context,
         l2_context,
+        agglayer_context,
     )
 
 
