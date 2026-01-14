@@ -16,6 +16,7 @@ def run(plan, l1_context, l2_context):
                     src="../../static_files/additional_services/arpeggio/config.yml"
                 ),
                 data={
+                    "name": "l2{}-rpc".format(l2_context.name),
                     "l2_rpc_url": l2_context.rpc_http_url,
                     "l2_ws_url": l2_context.rpc_ws_url,
                 },
