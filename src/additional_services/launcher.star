@@ -70,7 +70,9 @@ def launch(
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
                 deployment_stages,
-                sequencer_type,
+                l1_context,
+                l2_context,
+                agglayer_context,
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args)
