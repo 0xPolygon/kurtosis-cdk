@@ -16,15 +16,22 @@ def run(
     l2_context,
     agglayer_context,
 ):
+    # Determine config template based on sequencer type
+    agglogger_config_file = ""
+    if l2_context.sequencer_type == constants.SEQUENCER_TYPE.op_geth:
+        agglogger_config_file = OP_CONFIG_TEMPLATE
+    elif l2_context.sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
+        agglogger_config_file = ZKEVM_CONFIG_TEMPLATE
+    else:
+        fail("Unsupported sequencer type: {}".format(l2_context.sequencer_type))
+
     agglogger_config_artifact = plan.render_templates(
         name="agglogger-config" + l2_context.name,
         config={
             "config.json": struct(
                 template=read_file(
                     src="../../static_files/additional_services/agglogger/{}".format(
-                        OP_CONFIG_TEMPLATE
-                        if l2_context.sequencer_type == constants.SEQUENCER_TYPE.op_geth
-                        else ZKEVM_CONFIG_TEMPLATE
+                        agglogger_config_file
                     ),
                 ),
                 data={
@@ -61,7 +68,7 @@ def run(
             files={
                 "/etc/agglogger": Directory(artifact_names=[agglogger_config_artifact]),
             },
-            entrypoint=["sh", "-c"],
+            entrypoint=["sh", "-c"],@
             cmd=["./agglogger run --config /etc/agglogger/config.json", "2>&1"],
         ),
     )
