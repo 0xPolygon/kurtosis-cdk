@@ -14,7 +14,7 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context):
     # Generate new wallet for the bridge spammer.
     funder_private_key = args.get("l2_admin_private_key")
     wallet = _generate_new_funded_l1_l2_wallet(
-        plan, funder_private_key, l1_context.rpc_url, l2_context.rpc_http_url
+        plan, funder_private_key, l1_context.el_rpc_url, l2_context.rpc_http_url
     )
 
     # Fund the l2 claim tx manager address.
@@ -44,7 +44,7 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context):
                 "PRIVATE_KEY": wallet.private_key,
                 # l1
                 "L1_CHAIN_ID": l1_context.chain_id,
-                "L1_RPC_URL": l1_context.rpc_url,
+                "L1_RPC_URL": l1_context.el_rpc_url,
                 # l2
                 "L2_NETWORK_ID": str(l2_context.network_id),
                 "L2_CHAIN_ID": str(l2_context.chain_id),

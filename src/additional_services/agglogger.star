@@ -36,7 +36,7 @@ def run(
                 ),
                 data={
                     # l1
-                    "l1_rpc_url": l1_context.rpc_url,
+                    "l1_rpc_url": l1_context.el_rpc_url,
                     "l1_chain_id": l1_context.chain_id,
                     # l2
                     "l2_rpc_url": l2_context.rpc_http_url,

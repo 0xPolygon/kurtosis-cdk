@@ -17,7 +17,7 @@ def run(plan, args, l1_context, l2_context, agglayer_context, contract_setup_add
                     ),
                     data={
                         # l1
-                        "l1_rpc_url": l1_context.rpc_url,
+                        "l1_rpc_url": l1_context.el_rpc_url,
                         # l2
                         "l2_network_id": str(l2_context.network_id),
                         "l2_rpc_url": l2_context.rpc_http_url,

@@ -16,7 +16,7 @@ def run(
     # Generate new wallet for the test runner.
     funder_private_key = args.get("l2_admin_private_key")
     wallet = _generate_new_funded_l1_l2_wallet(
-        plan, funder_private_key, l1_context.rpc_url, l2_context.rpc_http_url
+        plan, funder_private_key, l1_context.el_rpc_url, l2_context.rpc_http_url
     )
 
     # Start the test runner.
@@ -39,7 +39,7 @@ def run(
                 "CLAIMTXMANAGER_ADDR": args.get("l2_claimsponsor_address"),
                 # L1.
                 "L1_PRIVATE_KEY": wallet.private_key,
-                "L1_RPC_URL": l1_context.rpc_url,
+                "L1_RPC_URL": l1_context.el_rpc_url,
                 "L1_BRIDGE_ADDR": contract_setup_addresses.get("l1_bridge_address"),
                 # L2.
                 "L2_PRIVATE_KEY": wallet.private_key,

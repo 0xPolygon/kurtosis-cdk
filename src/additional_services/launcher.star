@@ -80,7 +80,7 @@ def launch(
                 import_module("./zkevm_bridge_ui/proxy.star").run(
                     plan,
                     args,
-                    l1_context.rpc_url,
+                    l1_context.el_rpc_url,
                     l2_context.rpc_http_url,
                     l2_context.zkevm_bridge_service_url,
                     zkevm_bridge_ui_url,
