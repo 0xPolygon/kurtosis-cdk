@@ -1,12 +1,12 @@
 {
-  "rollupManagerContractAddress": "{{ .rollup_manager_address }}",
-  "rpcURL": "{{ .l1_rpc_url }}",
-  "aggLayerURL": "{{ .agglayer_rpc_url }}",
+  "rollupManagerContractAddress": "{{.rollup_manager_address}}",
+  "rpcURL": "{{.l1_rpc_url}}",
+  "aggLayerURL": "{{.agglayer_rpc_url}}",
   "l2rpcs": [
     {
-      "rollupID": {{ .l2_network_id }},
-      "l2rpc": "{{ .l2_rpc_url }}",
-      "agchainmanager_key": "{{ .l2_sovereignadmin_private_key }}"
+      "rollupID": {{.l2_network_id}},
+      "l2rpc": "{{.l2_rpc_url}}",
+      "agchainmanager_key": "{{.l2_sovereignadmin_private_key}}"
     }
   ]
 
