@@ -16,13 +16,13 @@ def run(plan, l2_context):
                     src="../../static_files/additional_services/blutgang/config.toml"
                 ),
                 data={
-                    # ports
-                    "rpc_port_number": RPC_PORT_NUMBER,
-                    "admin_port_number": ADMIN_PORT_NUMBER,
                     # urls
                     "l2_sequencer_url": l2_context.sequencer_url,
                     "l2_rpc_url": l2_context.rpc_http_url,
                     "l2_ws_url": l2_context.rpc_ws_url,
+                    # ports
+                    "rpc_port_number": RPC_PORT_NUMBER,
+                    "admin_port_number": ADMIN_PORT_NUMBER,
                 },
             )
         },
