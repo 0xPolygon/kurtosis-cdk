@@ -1,15 +1,15 @@
-ports_package = import_module("../package_io/ports.star")
-contracts_util = import_module("../contracts/util.star")
-
 ARPEGGIO_IMAGE = "christophercampbell/arpeggio:v0.0.1"
-RPC_PROXY_PORT = 8545
-WS_PROXY_PORT = 8546
-# METRICS_PORT = 9105
+
+RPC_PROXY_PORT_ID = "rpc"
+RPC_PROXY_PORT_NUMBER = 8545
+
+WS_PROXY_PORT_ID = "ws"
+WS_PROXY_PORT_NUMBER = 8546
 
 
-def run(plan, args, l1_context, l2_context):
+def run(plan, l1_context, l2_context):
     arpeggio_config_artifact = plan.render_templates(
-        name="arpeggio-config",
+        name="arpeggio-config" + l2_context.name,
         config={
             "config.yml": struct(
                 template=read_file(
@@ -24,13 +24,16 @@ def run(plan, args, l1_context, l2_context):
     )
 
     plan.add_service(
-        name="arpeggio" + args["deployment_suffix"],
+        name="arpeggio" + l2_context.name,
         config=ServiceConfig(
             image=ARPEGGIO_IMAGE,
             ports={
-                "rpc": PortSpec(RPC_PROXY_PORT, application_protocol="http"),
-                "ws": PortSpec(WS_PROXY_PORT, application_protocol="ws"),
-                # "prometheus": PortSpec(METRICS_PORT, application_protocol="http"),
+                RPC_PROXY_PORT_ID: PortSpec(
+                    RPC_PROXY_PORT_NUMBER, application_protocol="http"
+                ),
+                WS_PROXY_PORT_ID: PortSpec(
+                    WS_PROXY_PORT_NUMBER, application_protocol="ws"
+                ),
             },
             files={"/etc/arpeggio": arpeggio_config_artifact},
         ),

@@ -1,5 +1,8 @@
 constants = import_module("../package_io/constants.star")
-contracts_util = import_module("../contracts/util.star")
+
+AGGLOGGER_IMAGE = (
+    "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1"
+)
 
 OP_CONFIG_TEMPLATE = "op-config.json"
 ZKEVM_CONFIG_TEMPLATE = "zkevm-config.json"
@@ -7,7 +10,6 @@ ZKEVM_CONFIG_TEMPLATE = "zkevm-config.json"
 
 def run(
     plan,
-    args,
     contract_setup_addresses,
     sovereign_contract_setup_addresses,
     l1_context,
@@ -15,7 +17,7 @@ def run(
     agglayer_context,
 ):
     agglogger_config_artifact = plan.render_templates(
-        name="agglogger-config{}".format(args.get("deployment_suffix")),
+        name="agglogger-config" + l2_context.name,
         config={
             "config.json": struct(
                 template=read_file(
@@ -53,9 +55,9 @@ def run(
     )
 
     plan.add_service(
-        name="agglogger{}".format(args.get("deployment_suffix")),
+        name="agglogger" + l2_context.name,
         config=ServiceConfig(
-            image=args.get("agglogger_image"),
+            image=AGGLOGGER_IMAGE,
             files={
                 "/etc/agglogger": Directory(artifact_names=[agglogger_config_artifact]),
             },

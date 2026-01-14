@@ -29,10 +29,10 @@ def run(plan, args, contract_setup_addresses, l1_context, l2_context):
     # Start the bridge spammer.
     bridge_spammer_config_artifact = plan.upload_files(
         src="{}/{}".format(TEMPLATES_FOLDER_PATH, SCRIPT_NAME),
-        name="bridge-spammer-script",
+        name="bridge-spammer-script" + l2_context.name,
     )
     plan.add_service(
-        name="bridge-spammer" + args.get("deployment_suffix"),
+        name="bridge-spammer" + l2_context.name,
         config=ServiceConfig(
             image=constants.TOOLBOX_IMAGE,
             files={
