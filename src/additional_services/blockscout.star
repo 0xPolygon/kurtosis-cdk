@@ -3,12 +3,15 @@ blockscout_package = import_module(
 )
 
 
-def run(plan, args, l2_context):
-    blockscout_params = {
-        "rpc_url": l2_context.rpc_http_url,
-        "trace_url": l2_context.rpc_http_url,
-        "ws_url": l2_context.rpc_ws_url,
-        "chain_id": l2_context.chain_id,
-        "deployment_suffix": l2_context.name,
-    } | args.get("blockscout_params", {})
-    blockscout_package.run(plan, blockscout_params)
+def run(plan, l2_context, blockscout_params):
+    blockscout_package.run(
+        plan,
+        {
+            "rpc_url": l2_context.rpc_http_url,
+            "trace_url": l2_context.rpc_http_url,
+            "ws_url": l2_context.rpc_ws_url,
+            "chain_id": l2_context.chain_id,
+            "deployment_suffix": l2_context.name,
+        }
+        | blockscout_params,
+    )

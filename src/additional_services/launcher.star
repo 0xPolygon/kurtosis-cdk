@@ -40,7 +40,8 @@ def launch(
         elif svc == constants.ADDITIONAL_SERVICES.assertoor:
             import_module("./assertoor.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.blockscout:
-            import_module("./blockscout.star").run(plan, args, l2_context)
+            blockscout_params = args.get("blockscout_params", {})
+            import_module("./blockscout.star").run(plan, l2_context, blockscout_params)
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
             import_module("./blutgang.star").run(plan, l2_context)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
