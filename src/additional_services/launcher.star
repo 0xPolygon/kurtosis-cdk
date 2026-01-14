@@ -4,12 +4,12 @@ constants = import_module("../package_io/constants.star")
 def launch(
     plan,
     args,
-    contract_setup_addresses,
-    sovereign_contract_setup_addresses,
     deployment_stages,
     l1_context,
     l2_context,
     agglayer_context,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
 ):
     for svc in args.get("additional_services", []):
         if svc == constants.ADDITIONAL_SERVICES.agglayer_dashboard:
