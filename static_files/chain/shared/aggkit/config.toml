@@ -542,7 +542,6 @@ BridgeAddr = ""
 #   - SafeBlock
 #   - PendingBlock
 #   - FinalizedBlock
-#   - EarliestBlock
 # ------------------------------------------------------------------------------
 BlockFinality = "LatestBlock"
 
@@ -555,7 +554,6 @@ BlockFinality = "LatestBlock"
 #   - SafeBlock
 #   - PendingBlock
 #   - FinalizedBlock
-#   - EarliestBlock
 # ------------------------------------------------------------------------------
 FinalizedBlock = "FinalizedBlock"
 
