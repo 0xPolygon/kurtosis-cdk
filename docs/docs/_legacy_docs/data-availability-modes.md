@@ -12,4 +12,4 @@ The two options are:
 
 > In this mode, the components will run CDK in `validium` mode, the consensus contract will be `PolygonValidiumEtrog` and the CDK DAC will be deployed and configured.
 
-For more detailed information and technical specifications, refer to the [Polygon Knowledge Layer](https://docs.polygon.technology/cdk/spec/validium-vs-rollup/).
+For more detailed information and technical specifications, refer to the [Polygon Docs](https://docs.polygon.technology/).
