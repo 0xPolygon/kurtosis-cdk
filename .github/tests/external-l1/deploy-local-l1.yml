@@ -3,7 +3,7 @@ deployment_stages:
   deploy_agglayer_contracts_on_l1: false
   deploy_databases: false
   deploy_cdk_central_environment: false
-  deploy_zkevm_bridge_service: false
+  deploy_cdk_bridge_infra: false
   deploy_agglayer: false
   deploy_op_succinct: false
   deploy_l2_contracts: false

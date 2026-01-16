@@ -26,8 +26,8 @@ def launch(
         )
     elif sequencer_type == constants.SEQUENCER_TYPE.op_geth:
         plan.print("Deploying op-geth chain")
-        deploy_zkevm_bridge_service = deployment_stages.get(
-            "deploy_zkevm_bridge_service", False
+        deploy_cdk_bridge_infra = deployment_stages.get(
+            "deploy_cdk_bridge_infra", False
         )
         context = op_geth_launcher.launch(
             plan,
@@ -46,7 +46,7 @@ def launch(
 
     # zkevm-bridge-service, bridge-ui and bridge-proxy
     zkevm_bridge_service_url = None
-    if deployment_stages.get("deploy_zkevm_bridge_service", False):
+    if deployment_stages.get("deploy_cdk_bridge_infra", False):
         zkevm_bridge_service_url = zkevm_bridge_service.run(
             plan,
             args,

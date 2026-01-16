@@ -15,7 +15,7 @@ def run(
     l1_rpc_url = args.get("l1_rpc_url")
     l2_rpc_url = _get_l2_rpc_url(plan, args)
     bridge_service_url = _get_bridge_service_url(
-        plan, args, deployment_stages.get("deploy_zkevm_bridge_service")
+        plan, args, deployment_stages.get("deploy_cdk_bridge_infra")
     )
     l2_bridge_address = _get_l2_bridge_address(
         plan,
@@ -68,8 +68,8 @@ def _get_l2_rpc_url(plan, args):
     return service.ports["rpc"].url
 
 
-def _get_bridge_service_url(plan, args, deploy_zkevm_bridge_service):
-    if deploy_zkevm_bridge_service:
+def _get_bridge_service_url(plan, args, deploy_cdk_bridge_infra):
+    if deploy_cdk_bridge_infra:
         service_name = "zkevm-bridge-service" + args.get("deployment_suffix")
         service = plan.get_service(service_name)
         if "rpc" not in service.ports:

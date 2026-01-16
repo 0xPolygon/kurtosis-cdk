@@ -20,7 +20,7 @@ DEFAULT_DEPLOYMENT_STAGES = {
     # Deploy CDK central/trusted environment.
     "deploy_cdk_central_environment": True,
     # Deploy CDK bridge infrastructure.
-    "deploy_zkevm_bridge_service": True,
+    "deploy_cdk_bridge_infra": True,
     # Deploy the agglayer.
     "deploy_agglayer": True,
     # After deploying OP Stack, upgrade it to OP Succinct.
