@@ -54,7 +54,8 @@ def launch(
             pool_manager_url=pool_manager_url,
         ),
     )
-    rpc_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
+    rpc_http_url = result.ports[ports_package.HTTP_RPC_PORT_ID].url
+    rpc_ws_url = result.ports[ports_package.WS_RPC_PORT_ID].url
 
     # TODO: understand if genesis_artifact is needed here or can be removed
     args["genesis_artifact"] = genesis_artifact
@@ -102,5 +103,7 @@ def launch(
         )
 
     return struct(
-        rpc_url=rpc_url,
+        sequencer_url=sequencer_url,
+        rpc_http_url=rpc_http_url,
+        rpc_ws_url=rpc_ws_url,
     )

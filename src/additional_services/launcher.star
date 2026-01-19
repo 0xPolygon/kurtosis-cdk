@@ -4,34 +4,48 @@ constants = import_module("../package_io/constants.star")
 def launch(
     plan,
     args,
-    contract_setup_addresses,
-    sovereign_contract_setup_addresses,
-    genesis_artifact,
     deployment_stages,
-    sequencer_type,
     l1_context,
     l2_context,
+    agglayer_context,
+    contract_setup_addresses,
+    sovereign_contract_setup_addresses,
 ):
     for svc in args.get("additional_services", []):
-        if svc == constants.ADDITIONAL_SERVICES.agglogger:
-            import_module("./agglogger.star").run(
+        if svc == constants.ADDITIONAL_SERVICES.agglayer_dashboard:
+            import_module("./agglayer_dashboard.star").run(
                 plan,
                 args,
+                l1_context,
+                l2_context,
+                agglayer_context,
+                contract_setup_addresses,
+            )
+        elif svc == constants.ADDITIONAL_SERVICES.agglogger:
+            import_module("./agglogger.star").run(
+                plan,
+                l1_context,
+                l2_context,
+                agglayer_context,
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
-                sequencer_type,
             )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
-            import_module("./arpeggio.star").run(plan, args)
+            import_module("./arpeggio.star").run(plan, l1_context, l2_context)
         elif svc == constants.ADDITIONAL_SERVICES.assertoor:
             import_module("./assertoor.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.blockscout:
-            import_module("./blockscout.star").run(plan, args)
+            blockscout_params = args.get("blockscout_params", {})
+            import_module("./blockscout.star").run(plan, l2_context, blockscout_params)
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
-            import_module("./blutgang.star").run(plan, args)
+            import_module("./blutgang.star").run(plan, l2_context)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
             import_module("./bridge_spammer.star").run(
-                plan, args, contract_setup_addresses
+                plan,
+                args,
+                contract_setup_addresses,
+                l1_context,
+                l2_context,
             )
         elif svc == constants.ADDITIONAL_SERVICES.erpc:
             import_module("./erpc.star").run(plan, args)
@@ -51,15 +65,12 @@ def launch(
                 args,
                 contract_setup_addresses,
                 sovereign_contract_setup_addresses,
-                deployment_stages,
-                sequencer_type,
+                l1_context,
+                l2_context,
+                agglayer_context,
             )
         elif svc == constants.ADDITIONAL_SERVICES.tx_spammer:
             import_module("./tx_spammer.star").run(plan, args)
-        elif svc == constants.ADDITIONAL_SERVICES.agglayer_dashboard:
-            import_module("./agglayer_dashboard.star").run(
-                plan, args, contract_setup_addresses
-            )
         elif svc == constants.ADDITIONAL_SERVICES.zkevm_bridge_ui:
             zkevm_bridge_ui_url = import_module("./zkevm_bridge_ui/server.star").run(
                 plan, args, contract_setup_addresses
@@ -69,8 +80,8 @@ def launch(
                 import_module("./zkevm_bridge_ui/proxy.star").run(
                     plan,
                     args,
-                    l1_context.rpc_url,
-                    l2_context.rpc_url,
+                    l1_context.el_rpc_url,
+                    l2_context.rpc_http_url,
                     l2_context.zkevm_bridge_service_url,
                     zkevm_bridge_ui_url,
                 )

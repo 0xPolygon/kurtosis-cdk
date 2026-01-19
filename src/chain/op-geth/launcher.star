@@ -23,11 +23,19 @@ def launch(
     )
 
     # TODO: Derive the rpc url from the optimism package instead
-    rpc_url = "http://{}{}:{}".format(
+    rpc_http_url = "http://{}{}:{}".format(
         args.get("l2_rpc_name"),
         args.get("deployment_suffix"),
         ports_package.HTTP_RPC_PORT_NUMBER,
     )
+    rpc_ws_url = "ws://{}{}:{}".format(
+        args.get("l2_rpc_name"),
+        args.get("deployment_suffix"),
+        ports_package.WS_RPC_PORT_NUMBER,
+    )
+    sequencer_url = None  # TODO: Fix that
     return struct(
-        rpc_url=rpc_url,
+        sequencer_url=sequencer_url,
+        rpc_http_url=rpc_http_url,
+        rpc_ws_url=rpc_ws_url,
     )

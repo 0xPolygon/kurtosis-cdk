@@ -90,7 +90,6 @@ DEFAULT_IMAGES = {
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.9.1",
     "agglayer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer:0.4.4-remove-agglayer-prover",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.2",
-    "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
     "cdk_erigon_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24",
     # Type 1 cdk-erigon sovereign image.
@@ -109,7 +108,6 @@ DEFAULT_IMAGES = {
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.2",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.4.0-rc.1-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
-    "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
     "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm",
     "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC2",

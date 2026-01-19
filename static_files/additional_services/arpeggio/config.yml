@@ -5,9 +5,9 @@ logging:
 providers:
   chainId: 1
   nodes:
-    - name: "{{.l2_rpc_name}}"
-      rpc: "{{.l2_rpc_url}}"
-      ws: "{{.l2_ws_url}}"
+    - name: {{.name}}
+      rpc: {{.l2_rpc_url}}
+      ws: {{.l2_ws_url}}
 
 proxy:
   poolSize:

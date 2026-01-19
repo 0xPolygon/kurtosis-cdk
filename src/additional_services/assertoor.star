@@ -1,53 +1,41 @@
-HTTP_PORT_NUMBER = 8080
-
 ASSERTOOR_IMAGE = "ethpandaops/assertoor:v0.0.11"
 
-ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE = "/config"
-
-VALIDATOR_RANGES_MOUNT_DIRPATH_ON_SERVICE = "/validator-ranges"
-VALIDATOR_RANGES_ARTIFACT_NAME = "validator-ranges"
+SERVER_PORT_ID = "http"
+SERVER_PORT_NUMBER = 8080
 
 
-def run(plan, args):
-    assertoor_config_artifact = get_assertoor_config(plan, args)
+def run(plan, args, l1_context, l2_context):
+    assertoor_config_artifact = plan.render_templates(
+        name="assertoor-config" + l2_context.name,
+        config={
+            "config.yaml": struct(
+                template=read_file(
+                    src="../../static_files/additional_services/assertoor/config.yaml"
+                ),
+                data={
+                    "l1_el_rpc_url": l1_context.el_rpc_url,
+                    "l1_cl_rpc_url": l1_context.cl_rpc_url,
+                    "server_port_number": SERVER_PORT_NUMBER,
+                },
+            )
+        },
+    )
+
     plan.add_service(
-        name="assertoor" + args["deployment_suffix"],
+        name="assertoor" + l2_context.name,
         config=ServiceConfig(
             image=ASSERTOOR_IMAGE,
             ports={
-                "http": PortSpec(
-                    number=HTTP_PORT_NUMBER,
-                    transport_protocol="TCP",
+                SERVER_PORT_ID: PortSpec(
+                    number=SERVER_PORT_NUMBER,
+                    transport_protocol="tcp",
                     application_protocol="http",
                 )
             },
             files={
-                ASSERTOOR_CONFIG_MOUNT_DIRPATH_ON_SERVICE: assertoor_config_artifact,
-                VALIDATOR_RANGES_MOUNT_DIRPATH_ON_SERVICE: VALIDATOR_RANGES_ARTIFACT_NAME,
+                "/config": assertoor_config_artifact,
+                "/validator-ranges": "validator-ranges",
             },
             cmd=["--config", "/config/config.yaml"],
         ),
-    )
-
-
-def get_assertoor_config(plan, args):
-    assertoor_config_template = read_file(
-        src="../../static_files/additional_services/assertoor/config.yaml"
-    )
-
-    assertoor_data = {
-        "assertoor_endpoint_name": "assertoor_web_ui",
-        "execution_client_url": args["l1_rpc_url"],
-        "consensus_client_url": args["l1_conensus_rpc_url"],
-        "http_port_number": HTTP_PORT_NUMBER,
-    }
-
-    return plan.render_templates(
-        name="assertoor-config",
-        config={
-            "config.yaml": struct(
-                template=assertoor_config_template,
-                data=assertoor_data | args,
-            )
-        },
     )
