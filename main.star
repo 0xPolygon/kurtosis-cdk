@@ -12,6 +12,7 @@ databases_package = "./src/chain/shared/databases.star"
 agglayer_contracts_package = "./src/contracts/agglayer.star"
 sovereign_contracts_package = import_module("./src/contracts/sovereign.star")
 mitm_package = "./src/mitm.star"
+snapshot_package = import_module("./src/snapshot/snapshot.star")
 
 
 def run(plan, args={}):
@@ -21,6 +22,11 @@ def run(plan, args={}):
     plan.print("Deploying CDK stack with the following configuration: " + str(args))
     sequencer_type = args.get("sequencer_type")
     consensus_type = args.get("consensus_contract_type")
+    
+    # Check for snapshot mode.
+    snapshot_mode = args.get("snapshot_mode", False)
+    if snapshot_mode:
+        plan.print("Snapshot mode enabled - will create snapshot instead of full deployment")
 
     # Deploy a local L1.
     l1_context = None
@@ -71,6 +77,46 @@ def run(plan, args={}):
     # Deploy Contracts on L1.
     contract_setup_addresses = {}
     sovereign_contract_setup_addresses = {}
+    
+    # Snapshot mode: Handle multiple networks
+    if snapshot_mode:
+        snapshot_networks = args.get("snapshot_networks", [])
+        if len(snapshot_networks) == 0:
+            fail("snapshot_mode is enabled but snapshot_networks is empty")
+        
+        plan.print("Snapshot mode: Processing {} networks".format(len(snapshot_networks)))
+        
+        # Deploy agglayer contracts once (first network only)
+        if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
+            plan.print("Deploying agglayer contracts on L1 (first network only)")
+            import_module(agglayer_contracts_package).run(
+                plan, args, deployment_stages, op_stack_args
+            )
+            contract_setup_addresses = contracts_util.get_contract_setup_addresses(
+                plan, args, deployment_stages
+            )
+        
+        # Get genesis artifact placeholder (will be generated per network in network_registrar)
+        genesis_artifact = ""
+        
+        # Call snapshot module which will register networks via network_registrar
+        plan.print("Calling snapshot module to register networks and extract artifacts")
+        snapshot_result = snapshot_package.run(
+            plan,
+            args,
+            deployment_stages,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            l1_context,
+            genesis_artifact,
+            op_stack_args,
+        )
+        
+        # Skip normal deployment flow in snapshot mode
+        plan.print("Snapshot mode: Skipping L2/agglayer/additional services deployment")
+        return
+    
+    # Normal mode: Continue with existing flow
     if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
         plan.print("Deploying agglayer contracts on L1")
         import_module(agglayer_contracts_package).run(
@@ -200,43 +246,55 @@ def run(plan, args={}):
         plan.print("Skipping the deployment of MITM")
 
     # Deploy the agglayer.
-    if deployment_stages.get("deploy_agglayer", False):
-        plan.print("Deploying the agglayer")
-        import_module(agglayer_package).run(
-            plan, deployment_stages, args, contract_setup_addresses
-        )
+    if not snapshot_mode:
+        if deployment_stages.get("deploy_agglayer", False):
+            plan.print("Deploying the agglayer")
+            import_module(agglayer_package).run(
+                plan, deployment_stages, args, contract_setup_addresses
+            )
+        else:
+            plan.print("Skipping the deployment of the agglayer")
     else:
-        plan.print("Skipping the deployment of the agglayer")
+        plan.print("Snapshot mode: Skipping agglayer service deployment")
 
     # Deploy cdk central/trusted environment.
     l2_context = None
-    if deployment_stages.get("deploy_cdk_central_environment", False):
-        l2_context = chain_launcher.launch(
+    if not snapshot_mode:
+        if deployment_stages.get("deploy_cdk_central_environment", False):
+            l2_context = chain_launcher.launch(
+                plan,
+                args,
+                contract_setup_addresses,
+                sovereign_contract_setup_addresses,
+                deployment_stages,
+                genesis_artifact,
+            )
+    else:
+        plan.print("Snapshot mode: Skipping L2 services deployment")
+
+    # Deploy contracts on L2.
+    if not snapshot_mode:
+        if deployment_stages.get("deploy_l2_contracts", False):
+            plan.print("Deploying contracts on L2")
+            import_module(agglayer_contracts_package).deploy_l2_contracts(plan, args)
+    else:
+        plan.print("Snapshot mode: Skipping L2 contracts deployment")
+
+    # Deploy additional services.
+    if not snapshot_mode:
+        additional_services_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
             sovereign_contract_setup_addresses,
-            deployment_stages,
             genesis_artifact,
+            deployment_stages,
+            sequencer_type,
+            l1_context,
+            l2_context,
         )
-
-    # Deploy contracts on L2.
-    if deployment_stages.get("deploy_l2_contracts", False):
-        plan.print("Deploying contracts on L2")
-        import_module(agglayer_contracts_package).deploy_l2_contracts(plan, args)
-
-    # Deploy additional services.
-    additional_services_launcher.launch(
-        plan,
-        args,
-        contract_setup_addresses,
-        sovereign_contract_setup_addresses,
-        genesis_artifact,
-        deployment_stages,
-        sequencer_type,
-        l1_context,
-        l2_context,
-    )
+    else:
+        plan.print("Snapshot mode: Skipping additional services deployment")
 
 
 def deploy_helper_service(plan, args):

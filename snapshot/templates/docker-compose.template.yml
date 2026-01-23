@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  # L1 Services
+  {{L1_SERVICES}}
+
+  # Agglayer Service
+  {{AGGLAYER_SERVICE}}
+
+  # Network Services
+  {{NETWORK_SERVICES}}
+
+networks:
+  cdk-network:
+    driver: bridge
+
+volumes:
+  {{VOLUMES}}

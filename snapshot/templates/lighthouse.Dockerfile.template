@@ -1,0 +1,36 @@
+# Lighthouse Dockerfile for snapshot
+# This Dockerfile packages the extracted lighthouse datadir into a Docker image
+# Template variables:
+#   {{LIGHTHOUSE_BASE_IMAGE}} - Base lighthouse image (e.g., sigp/lighthouse:v8.0.1)
+#   {{GETH_SERVICE_NAME}} - Docker-compose service name for geth (e.g., l1-geth)
+#   {{LOG_FORMAT}} - Log format (JSON or default)
+
+FROM {{LIGHTHOUSE_BASE_IMAGE}}
+
+# Copy extracted lighthouse datadir
+COPY . /root/.lighthouse/
+
+# Create directory for JWT secret (will be mounted or copied from geth in docker-compose)
+# For now, we'll expect it to be available at /root/.ethereum/jwtsecret
+# This will be handled via volume mount in docker-compose
+RUN mkdir -p /root/.ethereum
+
+# Expose ports
+EXPOSE 4000 5054
+
+# Set entrypoint
+# Note: --checkpoint-sync-url is omitted since we're using local state
+ENTRYPOINT ["lighthouse", "bn", \
+    "--datadir", "/root/.lighthouse", \
+    "--execution-endpoint", "http://{{GETH_SERVICE_NAME}}:8551", \
+    "--execution-jwt", "/root/.ethereum/jwtsecret", \
+    "--disable-optimistic-finalized-sync", \
+    "--disable-backfill-rate-limiting", \
+    "--log-format", "{{LOG_FORMAT}}", \
+    "--http", \
+    "--http-address", "0.0.0.0", \
+    "--http-port", "4000", \
+    "--metrics", \
+    "--metrics-address", "0.0.0.0", \
+    "--metrics-port", "5054" \
+]

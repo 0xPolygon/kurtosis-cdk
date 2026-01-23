@@ -371,6 +371,16 @@ DEFAULT_ARGS = (
         # Only relevant when deploying to an external L1.
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
+        # Snapshot mode flag. When True, enables snapshot creation flow.
+        "snapshot_mode": False,
+        # Output directory for snapshot artifacts.
+        "snapshot_output_dir": "",
+        # List of network configurations for snapshot mode.
+        # Each network should contain: sequencer_type, consensus_type, deployment_suffix,
+        # l2_chain_id, network_id, and address/private_key fields.
+        "snapshot_networks": [],
+        # Number of finalized blocks to wait for before extracting L1 state (default: 1).
+        "snapshot_l1_wait_blocks": 1,
     }
     | constants.DEFAULT_IMAGES
     | DEFAULT_PORTS

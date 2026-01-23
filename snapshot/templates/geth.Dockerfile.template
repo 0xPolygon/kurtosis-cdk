@@ -1,0 +1,42 @@
+# Geth Dockerfile for snapshot
+# This Dockerfile packages the extracted geth datadir into a Docker image
+# Template variables:
+#   {{GETH_BASE_IMAGE}} - Base geth image (e.g., ethereum/client-go:v1.16.8)
+#   {{CHAIN_ID}} - Network chain ID
+#   {{LOG_FORMAT}} - Log format (json or terminal)
+
+FROM {{GETH_BASE_IMAGE}}
+
+# Copy extracted geth datadir
+COPY . /root/.ethereum/
+
+# Ensure JWT secret exists (generate if missing)
+# The JWT secret is required for the execution engine API (used by lighthouse)
+RUN if [ ! -f /root/.ethereum/jwtsecret ]; then \
+        openssl rand -hex 32 > /root/.ethereum/jwtsecret && \
+        chmod 600 /root/.ethereum/jwtsecret; \
+    fi
+
+# Expose ports
+EXPOSE 8545 8546 8551
+
+# Set entrypoint
+ENTRYPOINT ["geth", \
+    "--datadir", "/root/.ethereum", \
+    "--http", \
+    "--http.addr", "0.0.0.0", \
+    "--http.port", "8545", \
+    "--http.api", "eth,net,web3,engine", \
+    "--ws", \
+    "--ws.addr", "0.0.0.0", \
+    "--ws.port", "8546", \
+    "--ws.api", "eth,net,web3", \
+    "--authrpc.addr", "0.0.0.0", \
+    "--authrpc.port", "8551", \
+    "--authrpc.jwtsecret", "/root/.ethereum/jwtsecret", \
+    "--gcmode", "archive", \
+    "--log.format", "{{LOG_FORMAT}}", \
+    "--networkid", "{{CHAIN_ID}}", \
+    "--http.corsdomain", "*", \
+    "--http.vhosts", "*" \
+]

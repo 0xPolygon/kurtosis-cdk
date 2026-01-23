@@ -205,7 +205,7 @@ update_agglayer_full_node_rpcs() {
             local sequencer_type
             sequencer_type=$(echo "${networks_json}" | jq -r ".[${i}].sequencer_type" 2>/dev/null || echo "")
             
-            if [ -n "${network_id}" ] && [ "${network_id}" != "null" ]; then
+            if [ -n "${network_id}" ] && [ "${network_id}" != "null" ] && [ "${network_id}" != "0" ]; then
                 if [ "${sequencer_type}" = "op-geth" ]; then
                     # For OP-Geth, use op_el_rpc_url format
                     local op_el_rpc_url
@@ -285,7 +285,7 @@ update_agglayer_proof_signers() {
             local sequencer_address
             sequencer_address=$(echo "${networks_json}" | jq -r ".[${i}].l2_sequencer_address" 2>/dev/null || echo "")
             
-            if [ -n "${network_id}" ] && [ "${network_id}" != "null" ] && [ -n "${sequencer_address}" ] && [ "${sequencer_address}" != "null" ]; then
+            if [ -n "${network_id}" ] && [ "${network_id}" != "null" ] && [ "${network_id}" != "0" ] && [ -n "${sequencer_address}" ] && [ "${sequencer_address}" != "null" ]; then
                 new_section="${new_section}"$'\n'"${network_id} = \"${sequencer_address}\""
             fi
         done

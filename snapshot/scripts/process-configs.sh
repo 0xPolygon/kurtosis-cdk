@@ -13,8 +13,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UTILS_DIR="${SCRIPT_DIR}/../utils"
 
-# Source helper functions
+# Source utility functions
+source "${UTILS_DIR}/logging.sh"
+source "${UTILS_DIR}/prerequisites.sh"
+source "${UTILS_DIR}/validation.sh"
 source "${UTILS_DIR}/config-processor.sh"
+
+# Exit codes
+EXIT_CODE_GENERAL_ERROR=1
+EXIT_CODE_VALIDATION_ERROR=2
+EXIT_CODE_PREREQ_ERROR=3
 
 # Default values
 ENCLAVE_NAME=""
@@ -134,9 +142,21 @@ process_cdk_node_config() {
     # Replace L2 RPC URL
     config_content=$(echo "${config_content}" | sed "s|L2URL=\"http://[^\"]*\"|L2URL=\"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
     config_content=$(echo "${config_content}" | sed "s|l2_rpc_url = \"http://[^\"]*\"|l2_rpc_url = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
+    config_content=$(echo "${config_content}" | sed "s|RPCURL = \"http://[^\"]*\"|RPCURL = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
+    config_content=$(echo "${config_content}" | sed "s|WitnessURL = \"http://[^\"]*\"|WitnessURL = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
+    
+    # Replace L1 RPC URL to use docker-compose service name
+    config_content=$(echo "${config_content}" | sed "s|L1URL=\"http://[^\"]*\"|L1URL=\"http://l1-geth:8545\"|g")
+    config_content=$(echo "${config_content}" | sed "s|L1URL = \"http://[^\"]*\"|L1URL = \"http://l1-geth:8545\"|g")
+    config_content=$(echo "${config_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
     
     # Replace agglayer endpoint (if present)
     config_content=$(echo "${config_content}" | sed "s|agglayer_endpoint = \"http://[^\"]*\"|agglayer_endpoint = \"http://agglayer:8080\"|g")
+    config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"http://[^\"]*\"|AggLayerURL=\"http://agglayer:8080\"|g")
+    
+    # Replace database URLs (convert service names)
+    config_content=$(echo "${config_content}" | sed "s|postgresql://[^/]*/|postgresql://postgres-${network_id}:5432/|g")
+    config_content=$(echo "${config_content}" | sed "s|hostname = \"[^\"]*\"|hostname = \"postgres-${network_id}\"|g")
     
     write_toml_file "${output_file}" "${config_content}"
     
@@ -171,11 +191,21 @@ process_aggkit_config() {
     # Convert service URLs
     config_content=$(replace_urls_in_config "${config_content}" "${deployment_suffix}" "${network_id}")
     
+    # Replace L1 RPC URL to use docker-compose service name
+    config_content=$(echo "${config_content}" | sed "s|L1URL=\"http://[^\"]*\"|L1URL=\"http://l1-geth:8545\"|g")
+    config_content=$(echo "${config_content}" | sed "s|L1URL = \"http://[^\"]*\"|L1URL = \"http://l1-geth:8545\"|g")
+    config_content=$(echo "${config_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
+    
     # Replace L2 URL
     config_content=$(echo "${config_content}" | sed "s|L2URL=\"http://[^\"]*\"|L2URL=\"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
     
     # Replace agglayer URL
     config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"http://[^\"]*\"|AggLayerURL=\"http://agglayer:8080\"|g")
+    config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"grpc://[^\"]*\"|AggLayerURL=\"grpc://agglayer:50081\"|g")
+    
+    # Replace database URLs
+    config_content=$(echo "${config_content}" | sed "s|postgresql://[^/]*/|postgresql://postgres-${network_id}:5432/|g")
+    config_content=$(echo "${config_content}" | sed "s|hostname = \"[^\"]*\"|hostname = \"postgres-${network_id}\"|g")
     
     write_toml_file "${output_file}" "${config_content}"
     
@@ -210,6 +240,10 @@ process_bridge_config() {
         # Convert service URLs in JSON
         config_content=$(echo "${config_content}" | sed "s/\(http[s]*:\/\/[^:]*\)${deployment_suffix}\(:[0-9]*\)/\1-${network_id}\2/g")
         
+        # Replace L1 RPC URL to use docker-compose service name
+        config_content=$(echo "${config_content}" | sed "s|\"http://[^\"]*el-1-geth[^\"]*:8545\"|\"http://l1-geth:8545\"|g")
+        config_content=$(echo "${config_content}" | sed "s|\"l1_rpc_url\":\"http://[^\"]*\"|\"l1_rpc_url\":\"http://l1-geth:8545\"|g")
+        
         write_json_file "${output_file}" "${config_content}"
         
         # Validate
@@ -223,30 +257,89 @@ process_bridge_config() {
         local config_content
         config_content=$(read_toml_file "${input_file}")
         config_content=$(replace_urls_in_config "${config_content}" "${deployment_suffix}" "${network_id}")
+        
+        # Replace L1 RPC URL to use docker-compose service name
+        config_content=$(echo "${config_content}" | sed "s|L1URL=\"http://[^\"]*\"|L1URL=\"http://l1-geth:8545\"|g")
+        config_content=$(echo "${config_content}" | sed "s|L1URL = \"http://[^\"]*\"|L1URL = \"http://l1-geth:8545\"|g")
+        config_content=$(echo "${config_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
+        
         write_toml_file "${output_file}" "${config_content}"
     fi
 }
 
+# Cleanup function
+cleanup() {
+    local exit_code=$?
+    if [ -n "${TEMP_DIR}" ] && [ -d "${TEMP_DIR}" ]; then
+        log_debug "Cleaning up temporary directory: ${TEMP_DIR}"
+        rm -rf "${TEMP_DIR}" || true
+    fi
+    if [ ${exit_code} -ne 0 ]; then
+        log_error "Script failed with exit code ${exit_code}"
+        if [ -n "${LOG_FILE}" ]; then
+            log_error "Check log file for details: ${LOG_FILE}"
+        fi
+    fi
+}
+
+# Set trap for cleanup
+trap cleanup EXIT
+
 # Main processing function
 main() {
-    echo "=========================================="
-    echo "Config Processing for Snapshot"
-    echo "=========================================="
-    echo ""
+    log_step "1" "Config Processing for Snapshot"
     
     # Parse arguments
     parse_args "$@"
     
-    # Create output directories
-    mkdir -p "${OUTPUT_DIR}/configs"
-    mkdir -p "${OUTPUT_DIR}/keystores"
-    TEMP_DIR=$(mktemp -d)
-    trap "rm -rf ${TEMP_DIR}" EXIT
+    # Setup logging
+    setup_logging "${OUTPUT_DIR}" || {
+        echo "Error: Failed to setup logging" >&2
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    }
     
-    echo "Enclave: ${ENCLAVE_NAME}"
-    echo "Output directory: ${OUTPUT_DIR}"
-    echo "Temporary directory: ${TEMP_DIR}"
-    echo ""
+    # Check prerequisites
+    log_section "Checking prerequisites"
+    if ! check_kurtosis_cli; then
+        log_error "Prerequisites check failed"
+        exit ${EXIT_CODE_PREREQ_ERROR}
+    fi
+    
+    if ! check_jq; then
+        log_error "jq is required for config processing"
+        exit ${EXIT_CODE_PREREQ_ERROR}
+    fi
+    
+    if ! check_enclave_exists "${ENCLAVE_NAME}"; then
+        log_error "Enclave check failed"
+        exit ${EXIT_CODE_VALIDATION_ERROR}
+    fi
+    
+    if ! check_output_dir "${OUTPUT_DIR}"; then
+        log_error "Output directory check failed"
+        exit ${EXIT_CODE_VALIDATION_ERROR}
+    fi
+    
+    log_success "Prerequisites check passed"
+    
+    # Create output directories
+    log_section "Creating output directories"
+    mkdir -p "${OUTPUT_DIR}/configs" || {
+        log_error "Failed to create configs directory"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    }
+    mkdir -p "${OUTPUT_DIR}/keystores" || {
+        log_error "Failed to create keystores directory"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    }
+    TEMP_DIR=$(mktemp -d) || {
+        log_error "Failed to create temporary directory"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    }
+    
+    log_info "Enclave: ${ENCLAVE_NAME}"
+    log_info "Output directory: ${OUTPUT_DIR}"
+    log_debug "Temporary directory: ${TEMP_DIR}"
     
     # Try to get artifact list from Kurtosis if manifest not provided
     if [ -z "${ARTIFACT_MANIFEST}" ]; then
@@ -258,11 +351,25 @@ main() {
     fi
     
     # Load networks configuration
+    log_section "Loading networks configuration"
     local networks_data="[]"
     if [ -n "${NETWORKS_JSON}" ] && [ -f "${NETWORKS_JSON}" ]; then
+        # Validate networks JSON
+        if ! validate_config_file "${NETWORKS_JSON}" "json"; then
+            log_error "Invalid networks JSON file"
+            exit ${EXIT_CODE_VALIDATION_ERROR}
+        fi
+        
+        # Validate network configs
+        if ! validate_networks_config "${NETWORKS_JSON}"; then
+            log_error "Network configuration validation failed"
+            exit ${EXIT_CODE_VALIDATION_ERROR}
+        fi
+        
         networks_data=$(cat "${NETWORKS_JSON}")
+        log_success "Networks configuration loaded and validated"
     else
-        echo "Warning: Networks JSON not provided, will try to infer from artifacts"
+        log_warn "Networks JSON not provided, will try to infer from artifacts"
     fi
     
     # Extract network information from networks_data
@@ -271,13 +378,24 @@ main() {
         network_count=$(echo "${networks_data}" | jq 'length' 2>/dev/null || echo "0")
     fi
     
-    echo "Processing ${network_count} networks..."
-    echo ""
+    log_info "Processing ${network_count} network(s)..."
     
     # Process each network
     local processed_networks="[]"
     local port_mapping="{}"
     local keystore_mapping="{}"
+    
+    # Initialize port allocation
+    # Default ports per service type
+    local base_l1_geth_http=8545
+    local base_l1_geth_ws=8546
+    local base_l1_lighthouse=4000
+    local base_agglayer_readrpc=8080
+    local base_agglayer_grpc=50081
+    local base_cdk_node_rpc=5576
+    local base_cdk_node_rest=5577
+    local base_cdk_node_aggregator=50081
+    local base_cdk_erigon_rpc=8123
     
     if [ "${network_count}" -gt 0 ] && command -v jq &> /dev/null; then
         for i in $(seq 0 $((network_count - 1))); do
@@ -328,7 +446,7 @@ main() {
             fi
             
             # Download AggKit config
-            local aggkit_artifact="aggkit-cdk-config${artifact_base}"
+            local aggkit_artifact="aggkit-config${artifact_base}"
             local aggkit_dest="${TEMP_DIR}/${aggkit_artifact}"
             if download_artifact "${aggkit_artifact}" "${aggkit_dest}" 2>/dev/null; then
                 local aggkit_config_file
@@ -373,6 +491,17 @@ main() {
                         echo "✅ Copied chain-allocs.json"
                     fi
                 fi
+                
+                local chain_first_batch_artifact="cdk-erigon-chain-first-batch${artifact_base}"
+                local chain_first_batch_dest="${TEMP_DIR}/${chain_first_batch_artifact}"
+                if download_artifact "${chain_first_batch_artifact}" "${chain_first_batch_dest}" 2>/dev/null; then
+                    local chain_first_batch_file
+                    chain_first_batch_file=$(find "${chain_first_batch_dest}" -name "*.json" -type f | head -1 || echo "")
+                    if [ -n "${chain_first_batch_file}" ]; then
+                        cp "${chain_first_batch_file}" "${network_output_dir}/first-batch-config.json"
+                        echo "✅ Copied first-batch-config.json"
+                    fi
+                fi
             fi
             
             # Download keystores
@@ -407,10 +536,27 @@ main() {
                     '. + {($network_id): $keystore_dir}' 2>/dev/null || echo "${keystore_mapping}")
             fi
             
-            # Add to processed networks
+            # Allocate ports for this network
+            if command -v jq &> /dev/null; then
+                local network_port_mapping
+                network_port_mapping=$(cat <<EOF
+{
+    "l2_rpc_http": $((base_cdk_erigon_rpc + network_id - 1)),
+    "cdk_node_rpc": $((base_cdk_node_rpc + network_id - 1)),
+    "cdk_node_rest": $((base_cdk_node_rest + network_id - 1)),
+    "cdk_node_aggregator": $((base_cdk_node_aggregator + network_id - 1))
+}
+EOF
+)
+                port_mapping=$(echo "${port_mapping}" | jq --arg network_id "${network_id}" --argjson ports "${network_port_mapping}" \
+                    '. + {($network_id): $ports}' 2>/dev/null || echo "${port_mapping}")
+            fi
+            
+            # Add to processed networks with additional metadata for agglayer config
             if command -v jq &> /dev/null; then
                 local network_info
-                network_info=$(echo "${networks_data}" | jq ".[${i}]" 2>/dev/null || echo "{}")
+                network_info=$(echo "${networks_data}" | jq --arg http_rpc_port "${http_rpc_port}" \
+                    ".[${i}] + {http_rpc_port: (\$http_rpc_port | tonumber)}" 2>/dev/null || echo "{}")
                 processed_networks=$(echo "${processed_networks}" | jq --argjson network "${network_info}" '. + [$network]' 2>/dev/null || echo "${processed_networks}")
             fi
             
@@ -422,9 +568,7 @@ main() {
     fi
     
     # Process agglayer config
-    echo "----------------------------------------"
-    echo "Processing agglayer config"
-    echo "----------------------------------------"
+    log_section "Processing agglayer config"
     
     local agglayer_config_dest="${TEMP_DIR}/agglayer-config"
     if download_artifact "agglayer-config" "${agglayer_config_dest}" 2>/dev/null; then
@@ -451,10 +595,15 @@ main() {
             
             write_toml_file "${agglayer_output_dir}/config.toml" "${agglayer_content}"
             
-            if validate_toml "${agglayer_output_dir}/config.toml"; then
-                echo "✅ Agglayer config processed successfully"
+            # Validate agglayer config
+            if validate_config_file "${agglayer_output_dir}/config.toml" "toml"; then
+                if validate_toml "${agglayer_output_dir}/config.toml"; then
+                    log_success "Agglayer config processed and validated successfully"
+                else
+                    log_warn "Agglayer config validation warning (continuing anyway)"
+                fi
             else
-                echo "⚠️  Agglayer config validation warning (continuing anyway)"
+                log_warn "Agglayer config syntax validation warning (continuing anyway)"
             fi
         else
             echo "Warning: Agglayer config file not found in artifact"
@@ -495,14 +644,12 @@ EOF
     write_json_file "${manifest_file}" "${manifest_json}"
     echo "✅ Processing manifest created: ${manifest_file}"
     
-    echo ""
-    echo "=========================================="
-    echo "Config Processing Complete"
-    echo "=========================================="
-    echo "Processed configs: ${OUTPUT_DIR}/configs/"
-    echo "Keystores: ${OUTPUT_DIR}/keystores/"
-    echo "Mappings: ${OUTPUT_DIR}/*.json"
-    echo ""
+    log_section "Summary"
+    log_info "Processed configs: ${OUTPUT_DIR}/configs/"
+    log_info "Keystores: ${OUTPUT_DIR}/keystores/"
+    log_info "Mappings: ${OUTPUT_DIR}/*.json"
+    
+    log_success "Config Processing Complete"
 }
 
 # Run main function
