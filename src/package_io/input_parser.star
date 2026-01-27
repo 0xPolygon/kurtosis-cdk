@@ -372,14 +372,25 @@ DEFAULT_ARGS = (
         "polygon_zkevm_explorer": "https://explorer.private/",
         "l1_explorer_url": "https://sepolia.etherscan.io/",
         # Snapshot mode flag. When True, enables snapshot creation flow.
+        # In snapshot mode, only L1 services run in Kurtosis to generate state.
+        # L2 services, Agglayer, and AggKit do NOT run - only their config files are generated.
+        # The snapshot can then be exported to docker-compose format.
+        # See snapshot/README.md for detailed documentation and usage instructions.
         "snapshot_mode": False,
-        # Output directory for snapshot artifacts.
+        # Output directory for snapshot artifacts (used when snapshot_mode is True).
+        # This directory will contain extracted L1 state, processed configs, Docker images,
+        # and the generated docker-compose.yml file.
+        # If empty, the snapshot scripts will use a default location.
         "snapshot_output_dir": "",
-        # List of network configurations for snapshot mode.
+        # List of network configurations for snapshot mode (required when snapshot_mode is True).
         # Each network should contain: sequencer_type, consensus_type, deployment_suffix,
         # l2_chain_id, network_id, and address/private_key fields.
+        # Multiple networks can be registered in a single snapshot run.
+        # See snapshot/README.md for the complete network configuration format.
         "snapshot_networks": [],
         # Number of finalized blocks to wait for before extracting L1 state (default: 1).
+        # Higher values provide more conservative state capture but take longer.
+        # Recommended: 5-10 for development, 15-20 for production use cases.
         "snapshot_l1_wait_blocks": 1,
     }
     | constants.DEFAULT_IMAGES

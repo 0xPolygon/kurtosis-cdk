@@ -82,21 +82,22 @@ extract_datadir() {
     local service_name="$2"
     local src_path="$3"
     local dest_path="$4"
-    
+
     echo "Extracting ${src_path} from ${service_name} to ${dest_path}..."
-    
+
     # Create destination directory
     mkdir -p "${dest_path}"
-    
+
     # Extract using tar via kurtosis service exec
     # Use tar to preserve permissions and directory structure
+    # Note: kurtosis service exec doesn't use --command flag, just pass the command directly
     kurtosis service exec "${enclave_name}" "${service_name}" \
-        --command "tar czf - -C $(dirname ${src_path}) $(basename ${src_path}) 2>/dev/null || echo 'Error: Failed to create tar archive'" | \
+        tar czf - -C "$(dirname ${src_path})" "$(basename ${src_path})" 2>/dev/null | \
         tar xzf - -C "${dest_path}" 2>/dev/null || {
         echo "Error: Failed to extract datadir from ${service_name}" >&2
         return 1
     }
-    
+
     echo "✅ Successfully extracted ${src_path} to ${dest_path}"
     return 0
 }
@@ -140,15 +141,17 @@ verify_state_consistency() {
 # Returns: space-separated list of service names (geth_service lighthouse_service)
 get_l1_service_names() {
     local enclave_name="$1"
-    
-    echo "Getting L1 service names from enclave ${enclave_name}..."
-    
+
+    echo "Getting L1 service names from enclave ${enclave_name}..." >&2
+
     # List all services and filter for L1 services
-    local services=$(kurtosis service ls "${enclave_name}" --format '{{ .Name }}' 2>/dev/null || echo "")
-    
+    # Note: kurtosis service ls doesn't support --format, it outputs a table by default
+    # We need to parse the output (skip header lines and extract service names)
+    local services=$(kurtosis service ls "${enclave_name}" 2>/dev/null | awk 'NR>2 {print $2}' || echo "")
+
     local geth_service=""
     local lighthouse_service=""
-    
+
     # Look for standard service name patterns
     for service in ${services}; do
         if [[ "${service}" =~ ^el-.*-geth-.*$ ]] || [[ "${service}" =~ ^.*-geth-.*$ ]]; then
@@ -158,16 +161,16 @@ get_l1_service_names() {
             lighthouse_service="${service}"
         fi
     done
-    
+
     # Fallback to standard names if not found
     if [ -z "${geth_service}" ]; then
         geth_service="el-1-geth-lighthouse"
-        echo "Warning: Could not find geth service, using default: ${geth_service}"
+        echo "Warning: Could not find geth service, using default: ${geth_service}" >&2
     fi
-    
+
     if [ -z "${lighthouse_service}" ]; then
         lighthouse_service="cl-1-lighthouse-geth"
-        echo "Warning: Could not find lighthouse service, using default: ${lighthouse_service}"
+        echo "Warning: Could not find lighthouse service, using default: ${lighthouse_service}" >&2
     fi
     
     echo "${geth_service} ${lighthouse_service}"

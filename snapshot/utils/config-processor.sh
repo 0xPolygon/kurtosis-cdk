@@ -26,10 +26,15 @@ read_json_file() {
 write_json_file() {
     local file_path="$1"
     local json_content="$2"
-    
+
     # Create directory if it doesn't exist
     mkdir -p "$(dirname "${file_path}")"
-    
+
+    # Remove if it exists as a directory (from failed previous run)
+    if [ -d "${file_path}" ]; then
+        rm -rf "${file_path}"
+    fi
+
     # Use jq to format JSON if available, otherwise write as-is
     if command -v jq &> /dev/null; then
         echo "${json_content}" | jq '.' > "${file_path}"
@@ -56,16 +61,21 @@ read_toml_file() {
 write_toml_file() {
     local file_path="$1"
     local toml_content="$2"
-    
+
     # Create directory if it doesn't exist
     mkdir -p "$(dirname "${file_path}")"
-    
+
+    # Remove if it exists as a directory (from failed previous run)
+    if [ -d "${file_path}" ]; then
+        rm -rf "${file_path}"
+    fi
+
     echo "${toml_content}" > "${file_path}"
 }
 
 # Convert service name from Kurtosis format to docker-compose format
 # Pattern: {service}{deployment_suffix} → {service}-{network_id}
-# Example: cdk-node-002 → cdk-node-2
+# Example: aggkit-002 → aggkit-2
 # Usage: convert_service_name <kurtosis_name> <deployment_suffix> <network_id>
 convert_service_name() {
     local kurtosis_name="$1"

@@ -37,7 +37,7 @@ def run(plan, args, deployment_stages, contract_setup_addresses, sovereign_contr
         fail("args is required")
     
     snapshot_networks = args.get("snapshot_networks", [])
-    if not isinstance(snapshot_networks, list):
+    if type(snapshot_networks) != "list":
         fail("snapshot_networks must be a list")
     if len(snapshot_networks) == 0:
         fail("snapshot_networks cannot be empty")

@@ -116,58 +116,6 @@ download_artifact() {
     fi
 }
 
-# Process CDK-Node config
-# Usage: process_cdk_node_config <input_file> <output_file> <deployment_suffix> <network_id> <l2_rpc_name> <http_rpc_port>
-process_cdk_node_config() {
-    local input_file="$1"
-    local output_file="$2"
-    local deployment_suffix="$3"
-    local network_id="$4"
-    local l2_rpc_name="$5"
-    local http_rpc_port="${6:-8123}"
-    
-    if [ ! -f "${input_file}" ]; then
-        echo "Warning: CDK-Node config not found: ${input_file}"
-        return 0
-    fi
-    
-    echo "Processing CDK-Node config for network ${network_id}..."
-    
-    local config_content
-    config_content=$(read_toml_file "${input_file}")
-    
-    # Convert service URLs
-    config_content=$(replace_urls_in_config "${config_content}" "${deployment_suffix}" "${network_id}")
-    
-    # Replace L2 RPC URL
-    config_content=$(echo "${config_content}" | sed "s|L2URL=\"http://[^\"]*\"|L2URL=\"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
-    config_content=$(echo "${config_content}" | sed "s|l2_rpc_url = \"http://[^\"]*\"|l2_rpc_url = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
-    config_content=$(echo "${config_content}" | sed "s|RPCURL = \"http://[^\"]*\"|RPCURL = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
-    config_content=$(echo "${config_content}" | sed "s|WitnessURL = \"http://[^\"]*\"|WitnessURL = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
-    
-    # Replace L1 RPC URL to use docker-compose service name
-    config_content=$(echo "${config_content}" | sed "s|L1URL=\"http://[^\"]*\"|L1URL=\"http://l1-geth:8545\"|g")
-    config_content=$(echo "${config_content}" | sed "s|L1URL = \"http://[^\"]*\"|L1URL = \"http://l1-geth:8545\"|g")
-    config_content=$(echo "${config_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
-    
-    # Replace agglayer endpoint (if present)
-    config_content=$(echo "${config_content}" | sed "s|agglayer_endpoint = \"http://[^\"]*\"|agglayer_endpoint = \"http://agglayer:8080\"|g")
-    config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"http://[^\"]*\"|AggLayerURL=\"http://agglayer:8080\"|g")
-    
-    # Replace database URLs (convert service names)
-    config_content=$(echo "${config_content}" | sed "s|postgresql://[^/]*/|postgresql://postgres-${network_id}:5432/|g")
-    config_content=$(echo "${config_content}" | sed "s|hostname = \"[^\"]*\"|hostname = \"postgres-${network_id}\"|g")
-    
-    write_toml_file "${output_file}" "${config_content}"
-    
-    # Validate
-    if validate_toml "${output_file}"; then
-        echo "✅ CDK-Node config processed successfully"
-    else
-        echo "⚠️  CDK-Node config validation warning (continuing anyway)"
-    fi
-}
-
 # Process AggKit config
 # Usage: process_aggkit_config <input_file> <output_file> <deployment_suffix> <network_id> <l2_rpc_name> <http_rpc_port>
 process_aggkit_config() {
@@ -192,21 +140,31 @@ process_aggkit_config() {
     config_content=$(replace_urls_in_config "${config_content}" "${deployment_suffix}" "${network_id}")
     
     # Replace L1 RPC URL to use docker-compose service name
+    # Match various L1 URL patterns in the config
     config_content=$(echo "${config_content}" | sed "s|L1URL=\"http://[^\"]*\"|L1URL=\"http://l1-geth:8545\"|g")
     config_content=$(echo "${config_content}" | sed "s|L1URL = \"http://[^\"]*\"|L1URL = \"http://l1-geth:8545\"|g")
     config_content=$(echo "${config_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
+    # Replace L1Config.URL field (catches el-1-geth-lighthouse or similar L1 service names)
+    config_content=$(echo "${config_content}" | sed "s|URL = \"http://.*el-1-geth[^\"]*:8545\"|URL = \"http://l1-geth:8545\"|g")
+    config_content=$(echo "${config_content}" | sed "s|URL = \"http://.*lighthouse[^\"]*:8545\"|URL = \"http://l1-geth:8545\"|g")
     
     # Replace L2 URL
-    config_content=$(echo "${config_content}" | sed "s|L2URL=\"http://[^\"]*\"|L2URL=\"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
+    config_content=$(echo "${config_content}" | sed "s|L2URL[[:space:]]*=[[:space:]]*\"http://[^\"]*\"|L2URL = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
     
     # Replace agglayer URL
     config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"http://[^\"]*\"|AggLayerURL=\"http://agglayer:8080\"|g")
     config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"grpc://[^\"]*\"|AggLayerURL=\"grpc://agglayer:50081\"|g")
-    
-    # Replace database URLs
-    config_content=$(echo "${config_content}" | sed "s|postgresql://[^/]*/|postgresql://postgres-${network_id}:5432/|g")
-    config_content=$(echo "${config_content}" | sed "s|hostname = \"[^\"]*\"|hostname = \"postgres-${network_id}\"|g")
-    
+
+    # Note: No database URL replacement needed. AggKit uses SQLite for storage (not PostgreSQL).
+    # SQLite databases are stored in local file paths configured in the AggKit config.
+
+    # Ensure all Ethereum addresses have 0x prefix
+    # Match 40-char hex strings that don't already start with "0x"
+    # First pass: handle field = "ADDRESS" pattern
+    config_content=$(echo "${config_content}" | perl -pe 's/((?:Addr|Address)[[:space:]]*=[[:space:]]*)"(?!0x)([0-9a-fA-F]{40})"/\1"0x\2"/g')
+    # Second pass: catch any remaining 40-char hex without 0x prefix in quoted strings
+    config_content=$(echo "${config_content}" | perl -pe 's/="(?!0x)([0-9a-fA-F]{40})"/="0x\1"/g')
+
     write_toml_file "${output_file}" "${config_content}"
     
     # Validate
@@ -243,7 +201,11 @@ process_bridge_config() {
         # Replace L1 RPC URL to use docker-compose service name
         config_content=$(echo "${config_content}" | sed "s|\"http://[^\"]*el-1-geth[^\"]*:8545\"|\"http://l1-geth:8545\"|g")
         config_content=$(echo "${config_content}" | sed "s|\"l1_rpc_url\":\"http://[^\"]*\"|\"l1_rpc_url\":\"http://l1-geth:8545\"|g")
-        
+
+        # Ensure all Ethereum addresses have 0x prefix in JSON
+        config_content=$(echo "${config_content}" | sed -E 's/("[^"]*[Aa]ddr[^"]*":"[[:space:]]*)([0-9a-fA-F]{40})"/\10x\2"/g')
+        config_content=$(echo "${config_content}" | sed -E 's/("[^"]*[Aa]ddress[^"]*":"[[:space:]]*)([0-9a-fA-F]{40})"/\10x\2"/g')
+
         write_json_file "${output_file}" "${config_content}"
         
         # Validate
@@ -262,7 +224,11 @@ process_bridge_config() {
         config_content=$(echo "${config_content}" | sed "s|L1URL=\"http://[^\"]*\"|L1URL=\"http://l1-geth:8545\"|g")
         config_content=$(echo "${config_content}" | sed "s|L1URL = \"http://[^\"]*\"|L1URL = \"http://l1-geth:8545\"|g")
         config_content=$(echo "${config_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
-        
+
+        # Ensure all Ethereum addresses have 0x prefix in TOML
+        config_content=$(echo "${config_content}" | sed -E 's/(Addr[[:space:]]*=[[:space:]]*)"([0-9a-fA-F]{40})"/\1"0x\2"/g')
+        config_content=$(echo "${config_content}" | sed -E 's/(Address[[:space:]]*=[[:space:]]*)"([0-9a-fA-F]{40})"/\1"0x\2"/g')
+
         write_toml_file "${output_file}" "${config_content}"
     fi
 }
@@ -366,7 +332,8 @@ main() {
             exit ${EXIT_CODE_VALIDATION_ERROR}
         fi
         
-        networks_data=$(cat "${NETWORKS_JSON}")
+        # Extract networks array (handle both {"networks": [...]} and [...] formats)
+        networks_data=$(jq -c '.networks // .' "${NETWORKS_JSON}" 2>/dev/null || echo "[]")
         log_success "Networks configuration loaded and validated"
     else
         log_warn "Networks JSON not provided, will try to infer from artifacts"
@@ -392,10 +359,8 @@ main() {
     local base_l1_lighthouse=4000
     local base_agglayer_readrpc=8080
     local base_agglayer_grpc=50081
-    local base_cdk_node_rpc=5576
-    local base_cdk_node_rest=5577
-    local base_cdk_node_aggregator=50081
     local base_cdk_erigon_rpc=8123
+    local base_aggkit_aggregator=50082
     
     if [ "${network_count}" -gt 0 ] && command -v jq &> /dev/null; then
         for i in $(seq 0 $((network_count - 1))); do
@@ -406,7 +371,17 @@ main() {
             local sequencer_type
             sequencer_type=$(echo "${networks_data}" | jq -r ".[${i}].sequencer_type" 2>/dev/null || echo "")
             local l2_rpc_name
-            l2_rpc_name=$(echo "${networks_data}" | jq -r ".[${i}].l2_rpc_name // \"cdk-erigon-rpc\"" 2>/dev/null || echo "cdk-erigon-rpc")
+            l2_rpc_name=$(echo "${networks_data}" | jq -r ".[${i}].l2_rpc_name" 2>/dev/null || echo "")
+            # Set default l2_rpc_name based on sequencer type if not provided
+            if [ -z "${l2_rpc_name}" ] || [ "${l2_rpc_name}" = "null" ]; then
+                if [ "${sequencer_type}" = "cdk-erigon" ]; then
+                    l2_rpc_name="cdk-erigon-rpc"
+                elif [ "${sequencer_type}" = "op-geth" ]; then
+                    l2_rpc_name="op-el"
+                else
+                    l2_rpc_name="cdk-erigon-rpc"  # Default fallback
+                fi
+            fi
             local http_rpc_port
             http_rpc_port=$(echo "${networks_data}" | jq -r ".[${i}].http_rpc_port // 8123" 2>/dev/null || echo "8123")
             local l2_sequencer_address
@@ -432,19 +407,33 @@ main() {
             else
                 artifact_base=""
             fi
-            
-            # Download CDK-Node config
-            local cdk_node_artifact="cdk-node-config${artifact_base}"
-            local cdk_node_dest="${TEMP_DIR}/${cdk_node_artifact}"
-            if download_artifact "${cdk_node_artifact}" "${cdk_node_dest}" 2>/dev/null; then
-                # Find the actual config file
-                local cdk_node_config_file
-                cdk_node_config_file=$(find "${cdk_node_dest}" -name "config.toml" -type f | head -1 || echo "")
-                if [ -n "${cdk_node_config_file}" ]; then
-                    process_cdk_node_config "${cdk_node_config_file}" "${network_output_dir}/cdk-node-config.toml" "${deployment_suffix}" "${network_id}" "${l2_rpc_name}" "${http_rpc_port}"
+
+            # Download CDK-Erigon sequencer config
+            if [ "${sequencer_type}" = "cdk-erigon" ]; then
+                local erigon_seq_config_artifact="cdk-erigon-sequencer-config${artifact_base}"
+                local erigon_seq_config_dest="${TEMP_DIR}/${erigon_seq_config_artifact}"
+                if download_artifact "${erigon_seq_config_artifact}" "${erigon_seq_config_dest}" 2>/dev/null; then
+                    local erigon_seq_config_file
+                    erigon_seq_config_file=$(find "${erigon_seq_config_dest}" -name "config.yaml" -type f | head -1 || echo "")
+                    if [ -n "${erigon_seq_config_file}" ]; then
+                        # Remove if it exists as a directory (from failed previous run)
+                        if [ -d "${network_output_dir}/config.yaml" ]; then
+                            rm -rf "${network_output_dir}/config.yaml"
+                        fi
+                        cp "${erigon_seq_config_file}" "${network_output_dir}/config.yaml"
+                        echo "✅ Copied CDK-Erigon sequencer config.yaml"
+                    fi
+                fi
+
+                # Download CDK-Erigon RPC config (same as sequencer for now, but keep separate artifacts)
+                local erigon_rpc_config_artifact="cdk-erigon-rpc-config${artifact_base}"
+                local erigon_rpc_config_dest="${TEMP_DIR}/${erigon_rpc_config_artifact}"
+                if download_artifact "${erigon_rpc_config_artifact}" "${erigon_rpc_config_dest}" 2>/dev/null; then
+                    # RPC uses same config as sequencer in docker-compose
+                    echo "✅ Downloaded CDK-Erigon RPC config (using same config as sequencer)"
                 fi
             fi
-            
+
             # Download AggKit config
             local aggkit_artifact="aggkit-config${artifact_base}"
             local aggkit_dest="${TEMP_DIR}/${aggkit_artifact}"
@@ -463,6 +452,10 @@ main() {
                 local genesis_file
                 genesis_file=$(find "${genesis_dest}" -name "genesis.json" -type f | head -1 || echo "")
                 if [ -n "${genesis_file}" ]; then
+                    # Remove if it exists as a directory (from failed previous run)
+                    if [ -d "${network_output_dir}/genesis.json" ]; then
+                        rm -rf "${network_output_dir}/genesis.json"
+                    fi
                     cp "${genesis_file}" "${network_output_dir}/genesis.json"
                     echo "✅ Copied genesis.json"
                 fi
@@ -476,6 +469,10 @@ main() {
                     local chain_config_file
                     chain_config_file=$(find "${chain_config_dest}" -name "*.json" -type f | head -1 || echo "")
                     if [ -n "${chain_config_file}" ]; then
+                        # Remove if it exists as a directory (from failed previous run)
+                        if [ -d "${network_output_dir}/chain-config.json" ]; then
+                            rm -rf "${network_output_dir}/chain-config.json"
+                        fi
                         cp "${chain_config_file}" "${network_output_dir}/chain-config.json"
                         echo "✅ Copied chain-config.json"
                     fi
@@ -487,6 +484,10 @@ main() {
                     local chain_allocs_file
                     chain_allocs_file=$(find "${chain_allocs_dest}" -name "*.json" -type f | head -1 || echo "")
                     if [ -n "${chain_allocs_file}" ]; then
+                        # Remove if it exists as a directory (from failed previous run)
+                        if [ -d "${network_output_dir}/chain-allocs.json" ]; then
+                            rm -rf "${network_output_dir}/chain-allocs.json"
+                        fi
                         cp "${chain_allocs_file}" "${network_output_dir}/chain-allocs.json"
                         echo "✅ Copied chain-allocs.json"
                     fi
@@ -498,6 +499,10 @@ main() {
                     local chain_first_batch_file
                     chain_first_batch_file=$(find "${chain_first_batch_dest}" -name "*.json" -type f | head -1 || echo "")
                     if [ -n "${chain_first_batch_file}" ]; then
+                        # Remove if it exists as a directory (from failed previous run)
+                        if [ -d "${network_output_dir}/first-batch-config.json" ]; then
+                            rm -rf "${network_output_dir}/first-batch-config.json"
+                        fi
                         cp "${chain_first_batch_file}" "${network_output_dir}/first-batch-config.json"
                         echo "✅ Copied first-batch-config.json"
                     fi
@@ -514,6 +519,10 @@ main() {
                 local sequencer_keystore_file
                 sequencer_keystore_file=$(find "${sequencer_keystore_dest}" -name "*.keystore" -type f | head -1 || echo "")
                 if [ -n "${sequencer_keystore_file}" ]; then
+                    # Remove if it exists as a directory (from failed previous run)
+                    if [ -d "${keystore_dir}/sequencer.keystore" ]; then
+                        rm -rf "${keystore_dir}/sequencer.keystore"
+                    fi
                     cp "${sequencer_keystore_file}" "${keystore_dir}/sequencer.keystore"
                     echo "✅ Copied sequencer keystore"
                 fi
@@ -525,11 +534,30 @@ main() {
                 local aggregator_keystore_file
                 aggregator_keystore_file=$(find "${aggregator_keystore_dest}" -name "*.keystore" -type f | head -1 || echo "")
                 if [ -n "${aggregator_keystore_file}" ]; then
+                    # Remove if it exists as a directory (from failed previous run)
+                    if [ -d "${keystore_dir}/aggregator.keystore" ]; then
+                        rm -rf "${keystore_dir}/aggregator.keystore"
+                    fi
                     cp "${aggregator_keystore_file}" "${keystore_dir}/aggregator.keystore"
                     echo "✅ Copied aggregator keystore"
                 fi
             fi
-            
+
+            local claimsponsor_keystore_artifact="claimsponsor-keystore${artifact_base}"
+            local claimsponsor_keystore_dest="${TEMP_DIR}/${claimsponsor_keystore_artifact}"
+            if download_artifact "${claimsponsor_keystore_artifact}" "${claimsponsor_keystore_dest}" 2>/dev/null; then
+                local claimsponsor_keystore_file
+                claimsponsor_keystore_file=$(find "${claimsponsor_keystore_dest}" -name "*.keystore" -type f | head -1 || echo "")
+                if [ -n "${claimsponsor_keystore_file}" ]; then
+                    # Remove if it exists as a directory (from failed previous run)
+                    if [ -d "${keystore_dir}/claimsponsor.keystore" ]; then
+                        rm -rf "${keystore_dir}/claimsponsor.keystore"
+                    fi
+                    cp "${claimsponsor_keystore_file}" "${keystore_dir}/claimsponsor.keystore"
+                    echo "✅ Copied claimsponsor keystore"
+                fi
+            fi
+
             # Update keystore mapping
             if command -v jq &> /dev/null; then
                 keystore_mapping=$(echo "${keystore_mapping}" | jq --arg network_id "${network_id}" --arg keystore_dir "${keystore_dir}" \
@@ -542,9 +570,7 @@ main() {
                 network_port_mapping=$(cat <<EOF
 {
     "l2_rpc_http": $((base_cdk_erigon_rpc + network_id - 1)),
-    "cdk_node_rpc": $((base_cdk_node_rpc + network_id - 1)),
-    "cdk_node_rest": $((base_cdk_node_rest + network_id - 1)),
-    "cdk_node_aggregator": $((base_cdk_node_aggregator + network_id - 1))
+    "aggkit_aggregator": $((base_aggkit_aggregator + network_id - 1))
 }
 EOF
 )
@@ -591,8 +617,9 @@ EOF
             # Convert service URLs in agglayer config
             # Replace L1 RPC URL to use docker-compose service name
             agglayer_content=$(echo "${agglayer_content}" | sed "s|node-url = \"http://[^\"]*\"|node-url = \"http://l1-geth:8545\"|g")
+            agglayer_content=$(echo "${agglayer_content}" | sed "s|ws-node-url = \"ws://[^\"]*\"|ws-node-url = \"ws://l1-geth:8546\"|g")
             agglayer_content=$(echo "${agglayer_content}" | sed "s|l1_rpc_url = \"http://[^\"]*\"|l1_rpc_url = \"http://l1-geth:8545\"|g")
-            
+
             write_toml_file "${agglayer_output_dir}/config.toml" "${agglayer_content}"
             
             # Validate agglayer config

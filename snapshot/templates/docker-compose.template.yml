@@ -1,18 +1,60 @@
+# Docker Compose Template for Snapshot
+# =====================================
+# This template is used to generate the final docker-compose.yml file.
+# Template variables are replaced during compose generation with actual
+# service configurations.
+#
+# Template Variables (replaced during compose generation):
+#   {{L1_SERVICES}}      - L1 service configurations (geth, lighthouse)
+#   {{AGGLAYER_SERVICE}} - Agglayer service configuration
+#   {{NETWORK_SERVICES}} - All L2 network service configurations
+#   {{VOLUMES}}          - Volume definitions for all services
+#
+# Service Structure:
+#   1. L1 Services: Start first, provide blockchain state
+#   2. Agglayer Service: Depends on L1, coordinates L2 networks
+#   3. Network Services: Each network has its own set of services:
+#      - Execution client (CDK-Erigon or OP-Geth)
+#      - AggKit service (used for all consensus types)
+#      - Bridge service
+#      - Additional services (prover, pool manager, DAC, etc.)
+#
+# Volume Strategy:
+#   - L1 services: Use host-mounted paths with captured state
+#   - L2 services: Use empty named volumes (services sync from L1 on first run)
+#   - Config files: Host-mounted paths to processed configs
+#   - Keystores: Host-mounted paths to extracted keystores
+
 version: '3.8'
 
 services:
   # L1 Services
+  # These services start with captured state from the snapshot.
+  # They are immediately ready and don't require syncing.
   {{L1_SERVICES}}
 
   # Agglayer Service
+  # Agglayer coordinates all L2 networks and manages proof aggregation.
+  # It depends on L1 services and must start before L2 services.
   {{AGGLAYER_SERVICE}}
 
   # Network Services
+  # Each network has its own set of services. Services are named with
+  # network ID suffix (e.g., aggkit-1, aggkit-2).
+  # All L2 services start with empty volumes and sync from L1 on first run.
   {{NETWORK_SERVICES}}
 
+# Docker Network Configuration
+# All services communicate via this bridge network.
+# Services can reference each other by service name (e.g., http://l1-geth:8545).
 networks:
   cdk-network:
     driver: bridge
 
+# Volume Definitions
+# L1 volumes: Host-mounted paths with captured state
+# L2 volumes: Empty named volumes (services sync from L1 on first run)
+# Config volumes: Host-mounted paths to processed config files
+# Keystore volumes: Host-mounted paths to extracted keystores
 volumes:
   {{VOLUMES}}

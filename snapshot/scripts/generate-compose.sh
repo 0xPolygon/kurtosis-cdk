@@ -8,7 +8,7 @@
 #
 # IMPORTANT: Fresh-Start Design for L2 Services
 # ==============================================
-# All L2 services (CDK-Erigon, OP-Geth, CDK-Node, OP-Node, AggKit, etc.) are
+# All L2 services (CDK-Erigon, OP-Geth, OP-Node, AggKit, etc.) are
 # configured to start with EMPTY data volumes. This is intentional:
 #
 # - L1 services use captured state from the snapshot (geth and lighthouse datadirs)
@@ -40,7 +40,6 @@ EXIT_CODE_PREREQ_ERROR=3
 # Default values
 OUTPUT_DIR=""
 AGGLAYER_IMAGE="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer:0.4.4-remove-agglayer-prover"
-CDK_NODE_IMAGE="ghcr.io/0xpolygon/cdk:0.5.4"
 AGGKIT_IMAGE="ghcr.io/agglayer/aggkit:0.8.0-beta7"
 BRIDGE_IMAGE="ghcr.io/0xpolygon/zkevm-bridge-service:latest"
 CDK_ERIGON_IMAGE="ghcr.io/0xpolygon/cdk-erigon:v2.61.24"
@@ -50,7 +49,6 @@ DAC_IMAGE="ghcr.io/0xpolygon/cdk-data-availability:0.0.13"
 OP_GETH_IMAGE="us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0"
 OP_NODE_IMAGE="us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5"
 OP_PROPOSER_IMAGE="ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.4.0-rc.1-agglayer"
-POSTGRES_IMAGE="postgres:17.6"
 SP1_PROVER_KEY=""
 
 # Print usage
@@ -63,7 +61,6 @@ Generate docker-compose.yml from snapshot metadata.
 Options:
     --output-dir DIR          Output directory from previous steps (required)
     --agglayer-image IMAGE    Agglayer image (default: from constants)
-    --cdk-node-image IMAGE    CDK-Node image (default: from constants)
     --aggkit-image IMAGE      AggKit image (default: from constants)
     --bridge-image IMAGE      Bridge image (default: from constants)
     --cdk-erigon-image IMAGE  CDK-Erigon image (default: from constants)
@@ -73,7 +70,6 @@ Options:
     --op-geth-image IMAGE     OP-Geth image (default: from constants)
     --op-node-image IMAGE     OP-Node image (default: from constants)
     --op-proposer-image IMAGE OP-Proposer image (default: from constants)
-    --postgres-image IMAGE    PostgreSQL image (default: postgres:17.6)
     --sp1-prover-key KEY      SP1 prover key (optional)
     -h, --help                Show this help message
 
@@ -95,10 +91,6 @@ parse_args() {
                 ;;
             --agglayer-image)
                 AGGLAYER_IMAGE="$2"
-                shift 2
-                ;;
-            --cdk-node-image)
-                CDK_NODE_IMAGE="$2"
                 shift 2
                 ;;
             --aggkit-image)
@@ -135,10 +127,6 @@ parse_args() {
                 ;;
             --op-proposer-image)
                 OP_PROPOSER_IMAGE="$2"
-                shift 2
-                ;;
-            --postgres-image)
-                POSTGRES_IMAGE="$2"
                 shift 2
                 ;;
             --sp1-prover-key)
@@ -193,7 +181,11 @@ read_metadata() {
         # L1 metadata
         L1_GETH_IMAGE=$(jq -r '.geth.image_tag // "l1-geth:snapshot"' "${l1_manifest}" 2>/dev/null || echo "l1-geth:snapshot")
         L1_LIGHTHOUSE_IMAGE=$(jq -r '.lighthouse.image_tag // "l1-lighthouse:snapshot"' "${l1_manifest}" 2>/dev/null || echo "l1-lighthouse:snapshot")
-        L1_CHAIN_ID=$(jq -r '.chain_id // 271828' "${l1_manifest}" 2>/dev/null || echo "271828")
+        # Handle empty string for chain_id
+        L1_CHAIN_ID=$(jq -r '.chain_id // "271828"' "${l1_manifest}" 2>/dev/null || echo "271828")
+        if [ -z "${L1_CHAIN_ID}" ] || [ "${L1_CHAIN_ID}" = "null" ]; then
+            L1_CHAIN_ID="271828"
+        fi
         L1_LOG_FORMAT=$(jq -r '.log_format // "json"' "${l1_manifest}" 2>/dev/null || echo "json")
     else
         echo "Warning: jq not available, using defaults" >&2
@@ -315,12 +307,7 @@ generate_network_services() {
         # Convert to relative paths
         config_dir="./configs/${network_id}"
         keystore_dir="./keystores/${network_id}"
-        
-        # Generate PostgreSQL service
-        local db_port_mapping=$(echo "${PORT_MAPPING}" | jq -r ".[\"${network_id}\"] // {}" 2>/dev/null || echo "{}")
-        generate_postgres_service "${network_id}" "${db_port_mapping}"
-        echo ""
-        
+
         if [ "${sequencer_type}" = "cdk-erigon" ]; then
             # CDK-Erigon services
             local erigon_http_port=$(get_port "${network_id}" "l2_rpc_http" "8123")
@@ -335,27 +322,11 @@ generate_network_services() {
             
             generate_cdk_erigon_rpc_service "${network_id}" "${CDK_ERIGON_IMAGE}" "${config_dir}" "${erigon_rpc_http_port}" "${erigon_rpc_ws_port}"
             echo ""
-            
-            # CDK-Node (for rollup, validium, pessimistic)
-            if [ "${consensus_type}" = "rollup" ] || [ "${consensus_type}" = "cdk-validium" ] || [ "${consensus_type}" = "pessimistic" ]; then
-                local cdk_node_rpc_port=$(get_port "${network_id}" "cdk_node_rpc" "5576")
-                local cdk_node_rest_port=$(get_port "${network_id}" "cdk_node_rest" "5577")
-                local cdk_node_aggregator_port=$(get_port "${network_id}" "cdk_node_aggregator" "50081")
-                
-                generate_cdk_node_service "${network_id}" "${CDK_NODE_IMAGE}" \
-                    "${config_dir}/cdk-node-config.toml" \
-                    "${config_dir}/genesis.json" \
-                    "${keystore_dir}" \
-                    "${cdk_node_rpc_port}" \
-                    "${cdk_node_rest_port}" \
-                    "${cdk_node_aggregator_port}"
-                echo ""
-            fi
-            
-            # AggKit (for pessimistic, ecdsa-multisig)
-            if [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ]; then
+
+            # AggKit (for all consensus types in snapshot)
+            if [ "${consensus_type}" = "rollup" ] || [ "${consensus_type}" = "cdk-validium" ] || [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ]; then
                 local aggkit_components="aggsender,aggoracle"
-                local aggkit_depends="postgres-${network_id} cdk-node-${network_id}"
+                local aggkit_depends="cdk-erigon-rpc-${network_id}"
                 generate_aggkit_service "${network_id}" "${AGGKIT_IMAGE}" \
                     "${config_dir}/aggkit-config.toml" \
                     "${keystore_dir}" \
@@ -447,7 +418,7 @@ generate_network_services() {
             # AggKit (for OP-Geth)
             if [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ] || [ "${consensus_type}" = "fep" ]; then
                 local aggkit_components="aggsender,aggoracle"
-                local aggkit_depends="postgres-${network_id} op-node-${network_id}"
+                local aggkit_depends="op-node-${network_id}"
                 generate_aggkit_service "${network_id}" "${AGGKIT_IMAGE}" \
                     "${config_dir}/aggkit-config.toml" \
                     "${keystore_dir}" \

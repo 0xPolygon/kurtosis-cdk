@@ -83,22 +83,25 @@ def run(plan, args={}):
         snapshot_networks = args.get("snapshot_networks", [])
         if len(snapshot_networks) == 0:
             fail("snapshot_mode is enabled but snapshot_networks is empty")
-        
+
         plan.print("Snapshot mode: Processing {} networks".format(len(snapshot_networks)))
-        
+
         # Deploy agglayer contracts once (first network only)
         if deployment_stages.get("deploy_agglayer_contracts_on_l1", False):
             plan.print("Deploying agglayer contracts on L1 (first network only)")
             import_module(agglayer_contracts_package).run(
                 plan, args, deployment_stages, op_stack_args
             )
-            contract_setup_addresses = contracts_util.get_contract_setup_addresses(
-                plan, args, deployment_stages
+            # Note: In snapshot mode, rollupAddress doesn't exist yet (created per network)
+            # We'll get the basic contract addresses without rollupAddress
+            # Each network will get its own rollupAddress when sovereign contracts are deployed
+            contract_setup_addresses = contracts_util.get_basic_contract_addresses(
+                plan, args
             )
-        
+
         # Get genesis artifact placeholder (will be generated per network in network_registrar)
         genesis_artifact = ""
-        
+
         # Call snapshot module which will register networks via network_registrar
         plan.print("Calling snapshot module to register networks and extract artifacts")
         snapshot_result = snapshot_package.run(
@@ -111,7 +114,7 @@ def run(plan, args={}):
             genesis_artifact,
             op_stack_args,
         )
-        
+
         # Skip normal deployment flow in snapshot mode
         plan.print("Snapshot mode: Skipping L2/agglayer/additional services deployment")
         return

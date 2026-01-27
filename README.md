@@ -15,6 +15,17 @@ Optional features:
 - Run transaction and bridge spammers to simulate network load.
 - Deploy monitoring solutions such as [Prometheus](https://prometheus.io/), [Grafana](https://grafana.com/), [Panoptichain](https://github.com/0xPolygon/panoptichain) and [Blockscout](https://www.blockscout.com/) to observe the network.
 
+### Snapshot Feature
+
+Create a docker-compose compatible snapshot of your Kurtosis environment. The snapshot includes L1 blockchain state, multiple L2 networks, and all necessary configuration files. This allows you to run a complete multi-network environment locally without Kurtosis.
+
+See [snapshot/README.md](./snapshot/README.md) for detailed documentation.
+
+Quick start:
+```bash
+./snapshot/scripts/snapshot.sh --enclave-name snapshot --output-dir ./snapshot-output --networks ./networks.json --cleanup-enclave
+```
+
 > 🚨 This package is for development and testing only — **not for production use!**
 
 ## Sections

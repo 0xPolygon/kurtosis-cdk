@@ -35,14 +35,15 @@ extract_file() {
     local service_name="$2"
     local src_path="$3"
     local dest_path="$4"
-    
+
     echo "Extracting ${src_path} from ${service_name} to ${dest_path}..."
-    
+
     # Create destination directory if it doesn't exist
     mkdir -p "$(dirname "${dest_path}")"
-    
+
     # Use kurtosis service exec to copy file
-    kurtosis service exec "${enclave_name}" "${service_name}" --command "cat ${src_path}" > "${dest_path}" || {
+    # Note: kurtosis service exec doesn't use --command flag, just pass the command directly
+    kurtosis service exec "${enclave_name}" "${service_name}" cat "${src_path}" > "${dest_path}" || {
         echo "Error: Failed to extract file ${src_path} from ${service_name}" >&2
         return 1
     }

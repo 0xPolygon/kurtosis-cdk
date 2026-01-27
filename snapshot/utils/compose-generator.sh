@@ -3,12 +3,14 @@
 
 # Generate L1 Geth service configuration
 # Usage: generate_l1_geth_service <image_tag> <chain_id> <log_format> <datadir_path>
+# Note: datadir_path parameter is kept for backward compatibility but not used
+# The Docker image has the state baked in via the Dockerfile COPY command
 generate_l1_geth_service() {
     local image_tag="$1"
     local chain_id="$2"
     local log_format="$3"
-    local datadir_path="$4"
-    
+    local datadir_path="$4"  # Unused - kept for backward compatibility
+
     cat <<EOF
   l1-geth:
     image: ${image_tag}
@@ -19,8 +21,6 @@ generate_l1_geth_service() {
       - "8545:8545"
       - "8546:8546"
       - "30303:30303/udp"
-    volumes:
-      - ${datadir_path}:/root/.ethereum
     environment:
       - CHAIN_ID=${chain_id}
       - LOG_FORMAT=${log_format}
@@ -63,12 +63,14 @@ EOF
 
 # Generate L1 Lighthouse service configuration
 # Usage: generate_l1_lighthouse_service <image_tag> <log_format> <datadir_path> <geth_service_name>
+# Note: datadir_path parameter is kept for backward compatibility but not used
+# The Docker image has the state baked in via the Dockerfile COPY command
 generate_l1_lighthouse_service() {
     local image_tag="$1"
     local log_format="$2"
-    local datadir_path="$3"
+    local datadir_path="$3"  # Unused - kept for backward compatibility
     local geth_service_name="$4"
-    
+
     cat <<EOF
   l1-lighthouse:
     image: ${image_tag}
@@ -79,37 +81,14 @@ generate_l1_lighthouse_service() {
       - "4000:4000"
       - "9000:9000/udp"
       - "5054:5054"
-    volumes:
-      - ${datadir_path}:/root/.lighthouse
-      - ./l1-state/geth/jwtsecret:/root/.ethereum/jwtsecret:ro
     environment:
       - LOG_FORMAT=${log_format}
     depends_on:
       - l1-geth
-    command:
-      - lighthouse
-      - bn
-      - --datadir
-      - /root/.lighthouse
-      - --execution-endpoint
-      - http://${geth_service_name}:8551
-      - --execution-jwt
-      - /root/.ethereum/jwtsecret
-      - --disable-optimistic-finalized-sync
-      - --disable-backfill-rate-limiting
-      - --log-format
-      - ${log_format}
-      - --http
-      - --http-address
-      - 0.0.0.0
-      - --http-port
-      - "4000"
-      - --metrics
-      - --metrics-address
-      - 0.0.0.0
-      - --metrics-port
-      - "5054"
     restart: unless-stopped
+    # Note: The lighthouse image already has the full command configured in its ENTRYPOINT,
+    # so we don't need to override it here. The ENTRYPOINT includes all necessary flags.
+    # The JWT secret is shared between geth and lighthouse images during image build.
 EOF
 }
 
@@ -181,52 +160,9 @@ EOF
     fi
 }
 
-# Generate PostgreSQL service configuration
-# Usage: generate_postgres_service <network_id> <port_mapping>
-generate_postgres_service() {
-    local network_id="$1"
-    local port_mapping="$2"
-    
-    local db_port=""
-    if [ -n "${port_mapping}" ] && [ "${port_mapping}" != "null" ]; then
-        db_port=$(echo "${port_mapping}" | jq -r ".database // 51300" 2>/dev/null || echo "51300")
-    fi
-    
-    if [ -n "${db_port}" ]; then
-        local host_port=$((db_port + network_id - 1))
-        cat <<EOF
-  postgres-${network_id}:
-    image: postgres:17.6
-    container_name: postgres-${network_id}
-    networks:
-      - cdk-network
-    ports:
-      - "${host_port}:5432"
-    environment:
-      - POSTGRES_USER=master_user
-      - POSTGRES_PASSWORD=master_password
-      - POSTGRES_DB=master
-    volumes:
-      - postgres-data-${network_id}:/var/lib/postgresql/data
-    restart: unless-stopped
-EOF
-    else
-        cat <<EOF
-  postgres-${network_id}:
-    image: postgres:17.6
-    container_name: postgres-${network_id}
-    networks:
-      - cdk-network
-    environment:
-      - POSTGRES_USER=master_user
-      - POSTGRES_PASSWORD=master_password
-      - POSTGRES_DB=master
-    volumes:
-      - postgres-data-${network_id}:/var/lib/postgresql/data
-    restart: unless-stopped
-EOF
-    fi
-}
+# Note: PostgreSQL is not needed in the snapshot feature.
+# AggKit uses SQLite for all its storage needs (not PostgreSQL).
+# The generate_postgres_service function has been removed.
 
 # Generate CDK-Erigon sequencer service
 # Usage: generate_cdk_erigon_sequencer_service <network_id> <image> <config_dir> <http_port> <ws_port>
@@ -257,13 +193,8 @@ generate_cdk_erigon_sequencer_service() {
       - l1-geth
       - l1-lighthouse
       - agglayer
-      - postgres-${network_id}
-    entrypoint:
-      - /usr/local/share/proc-runner/proc-runner.sh
-    command:
-      - cdk-erigon
-      - --config
-      - /etc/cdk-erigon/config.yaml
+    entrypoint: ["sh", "-c"]
+    command: ["cdk-erigon --config /etc/cdk-erigon/config.yaml"]
     restart: unless-stopped
 EOF
 }
@@ -295,55 +226,8 @@ generate_cdk_erigon_rpc_service() {
       - CDK_ERIGON_SEQUENCER=0
     depends_on:
       - cdk-erigon-sequencer-${network_id}
-    entrypoint:
-      - /usr/local/share/proc-runner/proc-runner.sh
-    command:
-      - cdk-erigon
-      - --config
-      - /etc/cdk-erigon/config.yaml
-    restart: unless-stopped
-EOF
-}
-
-# Generate CDK-Node service
-# Usage: generate_cdk_node_service <network_id> <image> <config_path> <genesis_path> <keystore_dir> <rpc_port> <rest_port> <aggregator_port>
-generate_cdk_node_service() {
-    local network_id="$1"
-    local image="$2"
-    local config_path="$3"
-    local genesis_path="$4"
-    local keystore_dir="$5"
-    local rpc_port="$6"
-    local rest_port="$7"
-    local aggregator_port="$8"
-    
-    cat <<EOF
-  cdk-node-${network_id}:
-    image: ${image}
-    container_name: cdk-node-${network_id}
-    networks:
-      - cdk-network
-    ports:
-      - "${rpc_port}:5576"
-      - "${rest_port}:5577"
-      - "${aggregator_port}:50081"
-    volumes:
-      - ${config_path}:/etc/cdk/config.toml:ro
-      - ${genesis_path}:/etc/cdk/genesis.json:ro
-      - ${keystore_dir}/aggregator.keystore:/etc/cdk/aggregator.keystore:ro
-      - ${keystore_dir}/sequencer.keystore:/etc/cdk/sequencer.keystore:ro
-      - ${keystore_dir}/claimsponsor.keystore:/etc/cdk/claimsponsor.keystore:ro
-      # Empty volume - CDK-Node will sync from L1 on first run
-      - cdk-node-data-${network_id}:/data
-    depends_on:
-      - cdk-erigon-sequencer-${network_id}
-      - cdk-erigon-rpc-${network_id}
-      - postgres-${network_id}
-    entrypoint:
-      - sh
-      - -c
-    command:
-      - "sleep 20 && cdk-node --config /etc/cdk/config.toml"
+    entrypoint: ["sh", "-c"]
+    command: ["cdk-erigon --config /etc/cdk-erigon/config.yaml"]
     restart: unless-stopped
 EOF
 }
@@ -365,9 +249,6 @@ generate_aggkit_service() {
             depends_on="${depends_on}
       - ${service}"
         done
-    else
-        depends_on="    depends_on:
-      - postgres-${network_id}"
     fi
     
     cat <<EOF
@@ -421,7 +302,6 @@ generate_bridge_service() {
       - ${keystore_path}:/etc/zkevm/claimsponsor.keystore:ro
     depends_on:
       - l1-geth
-      - postgres-${network_id}
     entrypoint:
       - /app/zkevm-bridge
     command:
@@ -453,8 +333,7 @@ generate_zkevm_prover_service() {
     volumes:
       - ${config_path}:/etc/zkevm-prover/config.json:ro
     depends_on:
-      - cdk-node-${network_id}
-      - postgres-${network_id}
+      - aggkit-${network_id}
     entrypoint:
       - /bin/bash
       - -c
@@ -484,7 +363,6 @@ generate_pool_manager_service() {
       - ${config_path}:/etc/pool-manager/config.toml:ro
     depends_on:
       - cdk-erigon-sequencer-${network_id}
-      - postgres-${network_id}
     entrypoint:
       - /bin/sh
       - -c
@@ -512,8 +390,6 @@ generate_dac_service() {
       - "${port}:8080"
     volumes:
       - ${config_path}:/etc/dac/config.toml:ro
-    depends_on:
-      - postgres-${network_id}
     restart: unless-stopped
 EOF
 }
@@ -546,7 +422,6 @@ generate_op_geth_service() {
       - l1-geth
       - l1-lighthouse
       - agglayer
-      - postgres-${network_id}
     restart: unless-stopped
 EOF
 }
@@ -604,11 +479,9 @@ generate_op_proposer_service() {
       - L1_BEACON_RPC=http://l1-lighthouse:4000
       - L2_RPC=http://op-geth-${network_id}:8545
       - L2_NODE_RPC=http://op-node-${network_id}:8547
-      - DATABASE_URL=postgres://op_succinct_user:op_succinct_password@postgres-${network_id}:5432/op_succinct_db
     depends_on:
       - op-geth-${network_id}
       - op-node-${network_id}
-      - postgres-${network_id}
     restart: unless-stopped
 EOF
 }
@@ -631,10 +504,8 @@ generate_volumes() {
     echo "  # Note: These volumes start empty. L2 services will sync from L1 on first run."
     for network_id in ${network_ids}; do
         if [ -n "${network_id}" ] && [ "${network_id}" != "null" ]; then
-            echo "  postgres-data-${network_id}:"
             echo "  cdk-erigon-data-${network_id}:"
             echo "  cdk-erigon-rpc-data-${network_id}:"
-            echo "  cdk-node-data-${network_id}:"
             echo "  aggkit-data-${network_id}:"
             echo "  aggkit-tmp-${network_id}:"
             echo "  op-geth-data-${network_id}:"

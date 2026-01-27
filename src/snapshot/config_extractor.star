@@ -3,7 +3,7 @@ Config artifact extraction module for snapshot mode.
 
 This module extracts all configuration artifacts that were generated during
 network registration, including:
-- Network-specific configs (cdk-node, aggkit, bridge)
+- Network-specific configs (aggkit, bridge)
 - Keystores from contracts service
 - Genesis and chain config artifacts from output-artifact
 - Agglayer config (basic version, will be updated in post-processing)
@@ -34,7 +34,7 @@ def extract_config_artifacts(plan, args, networks_metadata, contract_setup_addre
         fail("args is required")
     if networks_metadata == None:
         fail("networks_metadata is required")
-    if not isinstance(networks_metadata, list):
+    if type(networks_metadata) != "list":
         fail("networks_metadata must be a list")
     if len(networks_metadata) == 0:
         fail("networks_metadata cannot be empty")
@@ -45,28 +45,30 @@ def extract_config_artifacts(plan, args, networks_metadata, contract_setup_addre
     
     # Extract artifacts for each network
     for network_meta in networks_metadata:
-        deployment_suffix = network_meta.get("deployment_suffix", "")
-        sequencer_type = network_meta.get("sequencer_type", "")
-        network_id = network_meta.get("network_id", 0)
-        
+        # Access struct attributes directly (no .get() method in Starlark structs)
+        deployment_suffix = network_meta.deployment_suffix
+        sequencer_type = network_meta.sequencer_type
+        network_id = network_meta.network_id
+
         plan.print("Extracting artifacts for network {} (suffix: {})".format(network_id, deployment_suffix))
-        
+
         # Extract keystores
         keystores = extract_keystores(plan, args, deployment_suffix)
-        
+
         # Extract network-specific configs (already created in network_registrar)
         network_configs = struct(
-            cdk_node_config=network_meta.config_artifacts.get("cdk_node_config", ""),
-            aggkit_config=network_meta.config_artifacts.get("aggkit_config", ""),
-            bridge_config=network_meta.config_artifacts.get("bridge_config", ""),
-            genesis_artifact=network_meta.config_artifacts.get("genesis_artifact", ""),
+            aggkit_config=network_meta.config_artifacts.aggkit_config,
+            bridge_config=network_meta.config_artifacts.bridge_config,
+            genesis_artifact=network_meta.config_artifacts.genesis_artifact,
+            cdk_erigon_sequencer_config=network_meta.config_artifacts.cdk_erigon_sequencer_config,
+            cdk_erigon_rpc_config=network_meta.config_artifacts.cdk_erigon_rpc_config,
         )
-        
+
         # Extract chain configs for CDK-Erigon networks
         chain_configs = struct()
         if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
             # Get chain_name from network metadata or use default
-            chain_name = network_meta.get("chain_name", args.get("chain_name", "kurtosis"))
+            chain_name = network_meta.chain_name
             chain_configs = extract_chain_configs(plan, args, deployment_suffix, chain_name)
         
         # Store extracted artifacts for this network
@@ -131,19 +133,14 @@ def extract_keystores(plan, args, deployment_suffix):
         service_name=contracts_service_name,
         src=constants.KEYSTORES_DIR + "/aggregator.keystore",
     )
-    
-    # Extract claimsponsor keystore (if exists)
-    claimsponsor_keystore = ""
-    try:
-        claimsponsor_keystore = plan.store_service_files(
-            name="claimsponsor-keystore{}".format(deployment_suffix),
-            service_name=contracts_service_name,
-            src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
-        )
-    except:
-        # Claimsponsor keystore may not exist for all networks
-        plan.print("Claimsponsor keystore not found for network {}".format(deployment_suffix))
-    
+
+    # Extract claimsponsor keystore
+    claimsponsor_keystore = plan.store_service_files(
+        name="claimsponsor-keystore{}".format(deployment_suffix),
+        service_name=contracts_service_name,
+        src=constants.KEYSTORES_DIR + "/claimsponsor.keystore",
+    )
+
     return struct(
         sequencer=sequencer_keystore,
         aggregator=aggregator_keystore,
@@ -172,36 +169,26 @@ def extract_chain_configs(plan, args, deployment_suffix, chain_name=None):
     
     # Extract chain configs directly from the contracts service for this network
     # Use unique artifact names with deployment suffix to avoid conflicts
-    chain_config_artifact = ""
-    chain_allocs_artifact = ""
-    chain_first_batch_artifact = ""
-    
-    try:
-        chain_config_artifact = plan.store_service_files(
-            name="cdk-erigon-chain-config{}".format(deployment_suffix),
-            service_name=contracts_service_name,
-            src=constants.OUTPUT_DIR + "/dynamic-" + chain_name + "-conf.json",
-        )
-    except:
-        plan.print("Warning: Chain config not found for network {} (chain: {})".format(deployment_suffix, chain_name))
-    
-    try:
-        chain_allocs_artifact = plan.store_service_files(
-            name="cdk-erigon-chain-allocs{}".format(deployment_suffix),
-            service_name=contracts_service_name,
-            src=constants.OUTPUT_DIR + "/dynamic-" + chain_name + "-allocs.json",
-        )
-    except:
-        plan.print("Warning: Chain allocs not found for network {} (chain: {})".format(deployment_suffix, chain_name))
-    
-    try:
-        chain_first_batch_artifact = plan.store_service_files(
-            name="cdk-erigon-chain-first-batch{}".format(deployment_suffix),
-            service_name=contracts_service_name,
-            src=constants.OUTPUT_DIR + "/first-batch-config.json",
-        )
-    except:
-        plan.print("Warning: Chain first batch config not found for network {} (chain: {})".format(deployment_suffix, chain_name))
+    # Note: Starlark doesn't support try/except, so these extractions will fail if files don't exist
+    # These files should be created during contract deployment for CDK-Erigon networks
+
+    chain_config_artifact = plan.store_service_files(
+        name="cdk-erigon-chain-config{}".format(deployment_suffix),
+        service_name=contracts_service_name,
+        src=constants.OUTPUT_DIR + "/dynamic-" + chain_name + "-conf.json",
+    )
+
+    chain_allocs_artifact = plan.store_service_files(
+        name="cdk-erigon-chain-allocs{}".format(deployment_suffix),
+        service_name=contracts_service_name,
+        src=constants.OUTPUT_DIR + "/dynamic-" + chain_name + "-allocs.json",
+    )
+
+    chain_first_batch_artifact = plan.store_service_files(
+        name="cdk-erigon-chain-first-batch{}".format(deployment_suffix),
+        service_name=contracts_service_name,
+        src=constants.OUTPUT_DIR + "/first-batch-config.json",
+    )
     
     return struct(
         chain_config=chain_config_artifact,

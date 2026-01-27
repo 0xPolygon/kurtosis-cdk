@@ -70,6 +70,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         )
 
     # Retrieve vkeys and vkey selectors from the binaries.
+    # Note: These are runtime values (futures) but Kurtosis handles them correctly
     agglayer_image = args.get("agglayer_image")
     pp_vkey_hash = agglayer_vkey.get_hash(plan, agglayer_image)
     plan.print(

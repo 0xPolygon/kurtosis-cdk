@@ -213,18 +213,9 @@ validate_config_files() {
         if [ -d "${network_dir}" ]; then
             local network_id=$(basename "${network_dir}")
             log_debug "Validating configs for network ${network_id}"
-            
-            # Validate CDK-Node config
-            local cdk_node_config="${network_dir}/cdk-node-config.toml"
-            if [ -f "${cdk_node_config}" ]; then
-                if validate_config_file "${cdk_node_config}" "toml"; then
-                    log_debug "CDK-Node config validated for network ${network_id}"
-                else
-                    log_error "CDK-Node config validation failed for network ${network_id}"
-                    errors=$((errors + 1))
-                fi
-            fi
-            
+
+            # Note: CDK-Node is not used in snapshot mode; only AggKit is used
+
             # Validate AggKit config
             local aggkit_config="${network_dir}/aggkit-config.toml"
             if [ -f "${aggkit_config}" ]; then

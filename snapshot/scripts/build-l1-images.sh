@@ -209,12 +209,26 @@ process_templates() {
 # Handle JWT secret
 handle_jwt_secret() {
     echo "Handling JWT secret..."
-    
+
     # Ensure JWT secret exists in geth datadir
     ensure_jwt_secret "${GETH_DATADIR}"
-    
-    # Note: In docker-compose, we'll mount the JWT secret from geth to lighthouse
-    # For now, we just ensure it exists in geth datadir
+
+    # Copy JWT secret to lighthouse datadir so it's baked into the lighthouse image
+    # This allows lighthouse to access the JWT without volume mounts
+    echo "Copying JWT secret to lighthouse datadir..."
+    local jwt_source="${GETH_DATADIR}/jwtsecret"
+    local jwt_dest_dir="${LIGHTHOUSE_DATADIR}/ethereum"
+    local jwt_dest="${jwt_dest_dir}/jwtsecret"
+
+    if [ ! -f "${jwt_source}" ]; then
+        echo "Error: JWT secret not found at ${jwt_source}" >&2
+        exit 1
+    fi
+
+    mkdir -p "${jwt_dest_dir}"
+    cp "${jwt_source}" "${jwt_dest}"
+    chmod 600 "${jwt_dest}"
+    echo "✅ JWT secret copied to lighthouse datadir"
     echo ""
 }
 

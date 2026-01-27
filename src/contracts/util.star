@@ -41,6 +41,39 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
     return get_exec_recipe_result(result)
 
 
+def get_basic_contract_addresses(plan, args):
+    """
+    Get basic agglayer contract addresses (without rollupAddress).
+    Used in snapshot mode where rollup is created per-network.
+    """
+    extract = {
+        "l1_bridge_address": "fromjson | .AgglayerBridge",
+        "l2_bridge_address": "fromjson | .polygonZkEVML2BridgeAddress",
+        "rollup_manager_address": "fromjson | .AgglayerManager",
+        "rollup_manager_block_number": "fromjson | .deploymentRollupManagerBlockNumber",
+        "l1_ger_address": "fromjson | .AgglayerGER",
+        "l2_ger_address": "fromjson | .LegacyAgglayerGERL2",
+        "pol_token_address": "fromjson | .polTokenAddress",
+        "admin_address": "fromjson | .admin",
+    }
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
+        extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"
+
+    exec_recipe = ExecRecipe(
+        command=["/bin/sh", "-c", "cat {}/combined.json".format(constants.OUTPUT_DIR)],
+        extract=extract,
+    )
+    service_name = "contracts" + args["deployment_suffix"]
+    result = plan.exec(
+        description="Getting basic contract addresses from {} service".format(
+            service_name
+        ),
+        service_name=service_name,
+        recipe=exec_recipe,
+    )
+    return get_exec_recipe_result(result)
+
+
 # Get result from an exec recipe and remove the extract prefix added to the keys.
 def get_exec_recipe_result(result):
     key_prefix = "extract."

@@ -15,6 +15,7 @@ GETH_SERVICE=""
 LIGHTHOUSE_SERVICE=""
 GETH_DATADIR="/root/.ethereum"
 LIGHTHOUSE_DATADIR="/root/.lighthouse"
+# Note: These are the target paths in the Docker image, not the Kurtosis extraction paths
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -196,72 +197,175 @@ main() {
     log_info "  Geth: ${GETH_SERVICE}"
     log_info "  Lighthouse: ${LIGHTHOUSE_SERVICE}"
     
-    # Extract geth datadir
-    log_section "Extracting geth datadir"
-    if extract_datadir "${ENCLAVE_NAME}" "${GETH_SERVICE}" "${GETH_DATADIR}" "${GETH_OUTPUT_DIR}"; then
-        log_success "Geth datadir extracted successfully"
+    # Extract geth datadir from Kurtosis artifacts
+    # Note: Datadirs were extracted to artifacts in Starlark before stopping services
+    log_section "Extracting geth datadir from artifacts"
+
+    # Clean up any existing artifact directories from previous runs
+    rm -rf "${OUTPUT_DIR}/l1-state/geth-artifact"
+
+    log_info "Downloading l1-geth-datadir artifact..."
+    if kurtosis files download "${ENCLAVE_NAME}" l1-geth-datadir "${OUTPUT_DIR}/l1-state/geth-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
+        # Move the extracted geth datadir to the expected location
+        # The artifact now contains the actual geth datadir contents (chaindata, nodes, etc.)
+        # directly at the root, not nested under a geth subdirectory
+        if [ -d "${OUTPUT_DIR}/l1-state/geth-artifact/chaindata" ]; then
+            # Move all contents from artifact to geth output directory
+            mv "${OUTPUT_DIR}/l1-state/geth-artifact"/* "${GETH_OUTPUT_DIR}/" 2>/dev/null || true
+            rm -rf "${OUTPUT_DIR}/l1-state/geth-artifact"
+            log_success "Geth datadir extracted successfully"
+        else
+            log_error "Geth chaindata not found in artifact"
+            log_error "Contents: $(ls -la ${OUTPUT_DIR}/l1-state/geth-artifact/ 2>/dev/null || echo 'Directory not found')"
+            exit ${EXIT_CODE_GENERAL_ERROR}
+        fi
     else
-        log_error "Failed to extract geth datadir"
-        log_error "Service: ${GETH_SERVICE}, Path: ${GETH_DATADIR}"
+        log_error "Failed to download geth datadir artifact"
         exit ${EXIT_CODE_GENERAL_ERROR}
     fi
-    
+
+    # Fix permissions on extracted geth state
+    # Files extracted from containers are often owned by root and have restrictive permissions
+    # We need to make them readable for Docker build context
+    log_section "Fixing permissions on extracted geth state"
+    if command -v docker &>/dev/null; then
+        # Use a temporary container to fix permissions
+        docker run --rm -v "${GETH_OUTPUT_DIR}:/data" -w /data alpine:latest sh -c "chmod -R a+rX /data" 2>&1 | tee -a "${LOG_FILE}" || {
+            log_warn "Failed to fix permissions using Docker, trying with current user"
+            chmod -R a+rX "${GETH_OUTPUT_DIR}" 2>/dev/null || log_warn "Could not fix all permissions"
+        }
+        log_success "Geth state permissions fixed"
+    else
+        log_warn "Docker not available, skipping permission fix (may cause issues during image build)"
+    fi
+
     # Validate extracted geth state
     if ! validate_l1_state "${OUTPUT_DIR}/l1-state"; then
         log_warn "Geth state validation warnings (continuing)"
     fi
-    
-    # Extract lighthouse datadir
-    log_section "Extracting lighthouse datadir"
-    if extract_datadir "${ENCLAVE_NAME}" "${LIGHTHOUSE_SERVICE}" "${LIGHTHOUSE_DATADIR}" "${LIGHTHOUSE_OUTPUT_DIR}"; then
-        log_success "Lighthouse datadir extracted successfully"
+
+    # Extract lighthouse datadir from Kurtosis artifacts
+    log_section "Extracting lighthouse datadir from artifacts"
+
+    # Clean up any existing artifact directories from previous runs
+    rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-artifact"
+
+    log_info "Downloading l1-lighthouse-datadir artifact..."
+    if kurtosis files download "${ENCLAVE_NAME}" l1-lighthouse-datadir "${OUTPUT_DIR}/l1-state/lighthouse-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
+        # Move the extracted lighthouse directory to the expected location
+        # The artifact contains the contents of /data (which includes lighthouse subdirectories)
+        # Check for common lighthouse subdirectories
+        local found_lighthouse=false
+        for subdir in lighthouse beacon-node validators; do
+            if [ -d "${OUTPUT_DIR}/l1-state/lighthouse-artifact/${subdir}" ]; then
+                mv "${OUTPUT_DIR}/l1-state/lighthouse-artifact/${subdir}" "${LIGHTHOUSE_OUTPUT_DIR}/${subdir}" 2>/dev/null || true
+                found_lighthouse=true
+            fi
+        done
+        # Move any other files from the artifact root
+        find "${OUTPUT_DIR}/l1-state/lighthouse-artifact" -maxdepth 1 -mindepth 1 ! -name lighthouse ! -name beacon-node ! -name validators -exec mv {} "${LIGHTHOUSE_OUTPUT_DIR}/" \; 2>/dev/null || true
+        rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-artifact"
+        if [ "$found_lighthouse" = true ]; then
+            log_success "Lighthouse datadir extracted successfully"
+        else
+            log_warn "No lighthouse subdirectories found, but extraction completed"
+        fi
     else
-        log_error "Failed to extract lighthouse datadir"
-        log_error "Service: ${LIGHTHOUSE_SERVICE}, Path: ${LIGHTHOUSE_DATADIR}"
+        log_error "Failed to download lighthouse datadir artifact"
         exit ${EXIT_CODE_GENERAL_ERROR}
     fi
-    
-    # Verify state consistency if RPC URLs are provided
-    log_section "Verifying state consistency"
-    if [ -n "${L1_RPC_URL}" ]; then
-        log_info "Verifying state consistency..."
-        
-        # Get finalized block from geth state (if possible)
-        # Note: This is approximate - we'll use the RPC if available
-        local geth_block=0
-        local lighthouse_slot=0
-        
-        if command -v cast &> /dev/null && [ -n "${L1_RPC_URL}" ]; then
+
+    # Fix permissions on extracted lighthouse state
+    log_section "Fixing permissions on extracted lighthouse state"
+    if command -v docker &>/dev/null; then
+        # Use a temporary container to fix permissions
+        docker run --rm -v "${LIGHTHOUSE_OUTPUT_DIR}:/data" -w /data alpine:latest sh -c "chmod -R a+rX /data" 2>&1 | tee -a "${LOG_FILE}" || {
+            log_warn "Failed to fix permissions using Docker, trying with current user"
+            chmod -R a+rX "${LIGHTHOUSE_OUTPUT_DIR}" 2>/dev/null || log_warn "Could not fix all permissions"
+        }
+        log_success "Lighthouse state permissions fixed"
+    else
+        log_warn "Docker not available, skipping permission fix (may cause issues during image build)"
+    fi
+
+    # Get finalized block/slot information
+    log_section "Getting finalized block information"
+    local geth_block=0
+    local lighthouse_slot=0
+
+    # Try to extract finalized state metadata from Kurtosis artifact
+    log_info "Attempting to read finalized state from Kurtosis artifact..."
+    local metadata_artifact_dir="${OUTPUT_DIR}/l1-state/finalized-metadata-artifact"
+    rm -rf "${metadata_artifact_dir}"
+
+    if kurtosis files download "${ENCLAVE_NAME}" l1-finalized-metadata "${metadata_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
+        local metadata_file="${metadata_artifact_dir}/finalized-state.json"
+        if [ -f "${metadata_file}" ]; then
+            log_success "Found finalized state metadata artifact"
+            geth_block=$(jq -r '.finalized_block // 0' "${metadata_file}" 2>/dev/null || echo "0")
+            lighthouse_slot=$(jq -r '.finalized_slot // 0' "${metadata_file}" 2>/dev/null || echo "0")
+
+            # Also extract RPC URLs if they weren't provided
+            if [ -z "${L1_RPC_URL}" ]; then
+                L1_RPC_URL=$(jq -r '.l1_rpc_url // ""' "${metadata_file}" 2>/dev/null || echo "")
+            fi
+            if [ -z "${L1_BEACON_URL}" ]; then
+                L1_BEACON_URL=$(jq -r '.l1_beacon_url // ""' "${metadata_file}" 2>/dev/null || echo "")
+            fi
+
+            log_info "Finalized block: ${geth_block}"
+            log_info "Finalized slot: ${lighthouse_slot}"
+            rm -rf "${metadata_artifact_dir}"
+        else
+            log_warn "Finalized state metadata file not found in artifact"
+        fi
+    else
+        log_warn "Could not download finalized state metadata artifact (may not exist)"
+    fi
+
+    # Fallback: Query RPC if we still don't have finalized block and RPC URLs are available
+    if [ "${geth_block}" = "0" ] && [ -n "${L1_RPC_URL}" ]; then
+        log_info "Querying RPC for finalized block..."
+        if command -v cast &> /dev/null; then
             geth_block=$(cast block-number --rpc-url "${L1_RPC_URL}" finalized 2>/dev/null || echo "0")
-            log_debug "Finalized block: ${geth_block}"
+            log_info "Finalized block from RPC: ${geth_block}"
+        else
+            log_warn "cast command not available, cannot query finalized block"
         fi
-        
-        if [ -n "${L1_BEACON_URL}" ]; then
-            local response
-            response=$(curl --silent "${L1_BEACON_URL}/eth/v1/beacon/headers/finalized" 2>/dev/null || echo '{}')
-            lighthouse_slot=$(echo "${response}" | jq --raw-output '.data.header.message.slot // 0' 2>/dev/null || echo "0")
-            log_debug "Finalized slot: ${lighthouse_slot}"
-        fi
-        
+    fi
+
+    if [ "${lighthouse_slot}" = "0" ] && [ -n "${L1_BEACON_URL}" ]; then
+        log_info "Querying beacon API for finalized slot..."
+        local response
+        response=$(curl --silent "${L1_BEACON_URL}/eth/v1/beacon/headers/finalized" 2>/dev/null || echo '{}')
+        lighthouse_slot=$(echo "${response}" | jq --raw-output '.data.header.message.slot // 0' 2>/dev/null || echo "0")
+        log_info "Finalized slot from beacon: ${lighthouse_slot}"
+    fi
+
+    # Verify state consistency if we have the data
+    if [ "${geth_block}" != "0" ] || [ "${lighthouse_slot}" != "0" ]; then
+        log_section "Verifying state consistency"
         if verify_state_consistency "${geth_block}" "${lighthouse_slot}" "${L1_RPC_URL}" "${L1_BEACON_URL}"; then
             log_success "State consistency verified"
         else
             log_warn "State consistency check failed (continuing)"
         fi
     else
-        log_info "Skipping state consistency verification (no RPC URLs provided)"
+        log_warn "No finalized block/slot information available - snapshot may be incomplete"
     fi
     
     # Create state manifest
     log_section "Creating state manifest"
     local manifest_file="${OUTPUT_DIR}/l1-state/manifest.json"
-    local chain_id=""
-    
-    # Try to get chain ID from geth state or use default
-    if [ -f "${GETH_OUTPUT_DIR}/geth/chaindata/chaindata/CURRENT" ]; then
-        # Chain ID might be in the datadir, but it's complex to extract
-        # For now, we'll leave it empty and let the user provide it
-        chain_id=""
+    local chain_id="271828"  # Default L1 chain ID
+
+    # Try to get chain ID from Kurtosis args if available
+    if [ -f "${OUTPUT_DIR}/kurtosis-args.json" ]; then
+        local extracted_chain_id
+        extracted_chain_id=$(jq -r '.args.l1_chain_id // empty' "${OUTPUT_DIR}/kurtosis-args.json" 2>/dev/null || echo "")
+        if [ -n "${extracted_chain_id}" ]; then
+            chain_id="${extracted_chain_id}"
+        fi
     fi
     
     # Create manifest JSON

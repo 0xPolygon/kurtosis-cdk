@@ -1,26 +1,50 @@
 # Geth Dockerfile for snapshot
+# =============================
 # This Dockerfile packages the extracted geth datadir into a Docker image
-# Template variables:
+# that can be used in docker-compose. The image contains the complete L1
+# blockchain state captured during snapshot creation.
+#
+# Template Variables (replaced during image build):
 #   {{GETH_BASE_IMAGE}} - Base geth image (e.g., ethereum/client-go:v1.16.8)
-#   {{CHAIN_ID}} - Network chain ID
-#   {{LOG_FORMAT}} - Log format (json or terminal)
+#                         Must match the version used in Kurtosis deployment
+#   {{CHAIN_ID}}        - Network chain ID (e.g., 1337 for local dev)
+#   {{LOG_FORMAT}}      - Log format: "json" or "terminal"
+#
+# Build Context:
+#   This Dockerfile expects the build context to be the extracted geth datadir
+#   (typically snapshot-output/l1-state/geth/). The build context contains
+#   the actual geth datadir structure (chaindata/, nodes/, etc.) directly
+#   at the root, extracted from /data/geth/execution-data/geth in Kurtosis.
+#   The COPY command copies all files to /root/.ethereum/ in the image.
 
 FROM {{GETH_BASE_IMAGE}}
 
-# Copy extracted geth datadir
-COPY . /root/.ethereum/
+# Copy all extracted geth data
+# We'll organize it in the RUN command below
+COPY . /tmp/geth-data/
 
-# Ensure JWT secret exists (generate if missing)
-# The JWT secret is required for the execution engine API (used by lighthouse)
-RUN if [ ! -f /root/.ethereum/jwtsecret ]; then \
-        openssl rand -hex 32 > /root/.ethereum/jwtsecret && \
-        chmod 600 /root/.ethereum/jwtsecret; \
-    fi
+# Organize the datadir structure
+# Standard geth structure: <datadir>/geth/chaindata, <datadir>/geth/nodes, etc.
+# The extracted data has chaindata, nodes, etc. at the root, plus jwtsecret
+# We need to:
+# 1. Move blockchain data into /root/.ethereum/geth/
+# 2. Move JWT secret to /root/.ethereum/jwtsecret
+RUN mkdir -p /root/.ethereum/geth && \
+    cd /tmp/geth-data && \
+    mv jwtsecret /root/.ethereum/ && \
+    mv * /root/.ethereum/geth/ 2>/dev/null || true && \
+    chmod 600 /root/.ethereum/jwtsecret && \
+    rm -rf /tmp/geth-data
 
 # Expose ports
+# 8545: HTTP RPC endpoint (for L2 services and external clients)
+# 8546: WebSocket RPC endpoint (for subscriptions)
+# 8551: Engine API endpoint (for lighthouse consensus client)
 EXPOSE 8545 8546 8551
 
-# Set entrypoint
+# Set entrypoint with geth configuration
+# All flags are set to match the original Kurtosis deployment configuration
+# to ensure compatibility with the captured state.
 ENTRYPOINT ["geth", \
     "--datadir", "/root/.ethereum", \
     "--http", \
