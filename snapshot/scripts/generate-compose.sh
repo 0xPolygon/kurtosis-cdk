@@ -325,7 +325,10 @@ generate_network_services() {
 
             # AggKit (for all consensus types in snapshot)
             if [ "${consensus_type}" = "rollup" ] || [ "${consensus_type}" = "cdk-validium" ] || [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ]; then
-                local aggkit_components="aggsender,aggoracle"
+                # Note: Only run aggsender by default. Aggoracle requires L2 to be synced with deployed contracts.
+                # For fresh-start snapshots, aggoracle will fail until L2 syncs from L1.
+                # Users can manually add aggoracle to components once L2 is synced.
+                local aggkit_components="aggsender"
                 local aggkit_depends="cdk-erigon-rpc-${network_id}"
                 generate_aggkit_service "${network_id}" "${AGGKIT_IMAGE}" \
                     "${config_dir}/aggkit-config.toml" \
@@ -417,7 +420,10 @@ generate_network_services() {
             
             # AggKit (for OP-Geth)
             if [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ] || [ "${consensus_type}" = "fep" ]; then
-                local aggkit_components="aggsender,aggoracle"
+                # Note: Only run aggsender by default. Aggoracle requires L2 to be synced with deployed contracts.
+                # For fresh-start snapshots, aggoracle will fail until L2 syncs from L1.
+                # Users can manually add aggoracle to components once L2 is synced.
+                local aggkit_components="aggsender"
                 local aggkit_depends="op-node-${network_id}"
                 generate_aggkit_service "${network_id}" "${AGGKIT_IMAGE}" \
                     "${config_dir}/aggkit-config.toml" \
@@ -581,8 +587,6 @@ main() {
     
     # Write docker-compose.yml directly
     {
-        echo "version: '3.8'"
-        echo ""
         echo "services:"
         echo "${L1_SERVICES}"
         echo ""

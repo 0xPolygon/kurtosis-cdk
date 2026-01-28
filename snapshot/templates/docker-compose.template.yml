@@ -25,8 +25,6 @@
 #   - Config files: Host-mounted paths to processed configs
 #   - Keystores: Host-mounted paths to extracted keystores
 
-version: '3.8'
-
 services:
   # L1 Services
   # These services start with captured state from the snapshot.

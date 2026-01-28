@@ -47,6 +47,8 @@ generate_l1_geth_service() {
       - '8551'
       - --authrpc.jwtsecret
       - /root/.ethereum/jwtsecret
+      - --authrpc.vhosts
+      - '*'
       - --gcmode
       - archive
       - --log.format
@@ -172,11 +174,12 @@ generate_cdk_erigon_sequencer_service() {
     local config_dir="$3"
     local http_port="$4"
     local ws_port="$5"
-    
+
     cat <<EOF
   cdk-erigon-sequencer-${network_id}:
     image: ${image}
     container_name: cdk-erigon-sequencer-${network_id}
+    user: "0:0"
     networks:
       - cdk-network
     ports:
@@ -195,6 +198,12 @@ generate_cdk_erigon_sequencer_service() {
       - agglayer
     entrypoint: ["sh", "-c"]
     command: ["cdk-erigon --config /etc/cdk-erigon/config.yaml"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- --timeout=2 http://localhost:8545 > /dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 EOF
 }
@@ -207,11 +216,12 @@ generate_cdk_erigon_rpc_service() {
     local config_dir="$3"
     local http_port="$4"
     local ws_port="$5"
-    
+
     cat <<EOF
   cdk-erigon-rpc-${network_id}:
     image: ${image}
     container_name: cdk-erigon-rpc-${network_id}
+    user: "0:0"
     networks:
       - cdk-network
     ports:
@@ -225,9 +235,16 @@ generate_cdk_erigon_rpc_service() {
     environment:
       - CDK_ERIGON_SEQUENCER=0
     depends_on:
-      - cdk-erigon-sequencer-${network_id}
+      cdk-erigon-sequencer-${network_id}:
+        condition: service_healthy
     entrypoint: ["sh", "-c"]
     command: ["cdk-erigon --config /etc/cdk-erigon/config.yaml"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- --timeout=2 http://localhost:8545 > /dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 EOF
 }
@@ -241,16 +258,23 @@ generate_aggkit_service() {
     local keystore_dir="$4"
     local components="$5"
     local depends_on_services="$6"
-    
+
     local depends_on=""
     if [ -n "${depends_on_services}" ]; then
         depends_on="    depends_on:"
         for service in ${depends_on_services}; do
-            depends_on="${depends_on}
+            # Use service_healthy condition for cdk-erigon-rpc and op-node services
+            if [[ "${service}" == cdk-erigon-rpc-* ]]; then
+                depends_on="${depends_on}
+      ${service}:
+        condition: service_healthy"
+            else
+                depends_on="${depends_on}
       - ${service}"
+            fi
         done
     fi
-    
+
     cat <<EOF
   aggkit-${network_id}:
     image: ${image}
@@ -261,6 +285,7 @@ generate_aggkit_service() {
       - ${config_path}:/etc/aggkit/config.toml:ro
       - ${keystore_dir}/sequencer.keystore:/etc/aggkit/sequencer.keystore:ro
       - ${keystore_dir}/aggregator.keystore:/etc/aggkit/aggregator.keystore:ro
+      - ${keystore_dir}/aggoracle.keystore:/etc/aggkit/aggoracle.keystore:ro
       - ${keystore_dir}/claimsponsor.keystore:/etc/aggkit/claimsponsor.keystore:ro
       # Empty volumes - AggKit starts fresh
       - aggkit-data-${network_id}:/data

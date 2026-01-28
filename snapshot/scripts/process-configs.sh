@@ -148,8 +148,8 @@ process_aggkit_config() {
     config_content=$(echo "${config_content}" | sed "s|URL = \"http://.*el-1-geth[^\"]*:8545\"|URL = \"http://l1-geth:8545\"|g")
     config_content=$(echo "${config_content}" | sed "s|URL = \"http://.*lighthouse[^\"]*:8545\"|URL = \"http://l1-geth:8545\"|g")
     
-    # Replace L2 URL
-    config_content=$(echo "${config_content}" | sed "s|L2URL[[:space:]]*=[[:space:]]*\"http://[^\"]*\"|L2URL = \"http://${l2_rpc_name}-${network_id}:${http_rpc_port}\"|g")
+    # Replace L2 URL (use internal port 8545, not external port mapping)
+    config_content=$(echo "${config_content}" | sed "s|L2URL[[:space:]]*=[[:space:]]*\"http://[^\"]*\"|L2URL = \"http://${l2_rpc_name}-${network_id}:8545\"|g")
     
     # Replace agglayer URL
     config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"http://[^\"]*\"|AggLayerURL=\"http://agglayer:8080\"|g")
@@ -384,6 +384,8 @@ main() {
             fi
             local http_rpc_port
             http_rpc_port=$(echo "${networks_data}" | jq -r ".[${i}].http_rpc_port // 8123" 2>/dev/null || echo "8123")
+            local l2_chain_id
+            l2_chain_id=$(echo "${networks_data}" | jq -r ".[${i}].l2_chain_id // 20201" 2>/dev/null || echo "20201")
             local l2_sequencer_address
             l2_sequencer_address=$(echo "${networks_data}" | jq -r ".[${i}].l2_sequencer_address" 2>/dev/null || echo "")
             
@@ -421,7 +423,9 @@ main() {
                             rm -rf "${network_output_dir}/config.yaml"
                         fi
                         cp "${erigon_seq_config_file}" "${network_output_dir}/config.yaml"
-                        echo "✅ Copied CDK-Erigon sequencer config.yaml"
+                        # Post-process config.yaml to replace L1 RPC URL
+                        sed -i 's|zkevm\.l1-rpc-url: http://[^:]*:[0-9]*|zkevm.l1-rpc-url: http://l1-geth:8545|g' "${network_output_dir}/config.yaml"
+                        echo "✅ Copied and processed CDK-Erigon sequencer config.yaml"
                     fi
                 fi
 
@@ -507,8 +511,96 @@ main() {
                         echo "✅ Copied first-batch-config.json"
                     fi
                 fi
+
+                # Generate chainspec file for dynamic chain configuration
+                # CDK-Erigon expects dynamic-<chain-name>-chainspec.json when using dynamic- prefix
+                # Use flat format (not nested under "config") matching cdk-erigon expectations
+                if [ -f "${network_output_dir}/chain-config.json" ]; then
+                    local chainspec_file="${network_output_dir}/dynamic-kurtosis-chainspec.json"
+                    # Create flat chainspec matching CDK-Erigon's expected format
+                    jq -n --arg chainId "${l2_chain_id}" \
+                        '{
+                            "ChainName": "dynamic-kurtosis",
+                            "chainId": ($chainId | tonumber),
+                            "consensus": "ethash",
+                            "homesteadBlock": 0,
+                            "daoForkBlock": 0,
+                            "eip150Block": 0,
+                            "eip155Block": 0,
+                            "byzantiumBlock": 0,
+                            "constantinopleBlock": 0,
+                            "petersburgBlock": 0,
+                            "istanbulBlock": 0,
+                            "muirGlacierBlock": 0,
+                            "berlinBlock": 0,
+                            "londonBlock": 0,
+                            "arrowGlacierBlock": 9999999999999999999999999999999999999999999999999,
+                            "grayGlacierBlock": 9999999999999999999999999999999999999999999999999,
+                            "terminalTotalDifficultyPassed": false,
+                            "shanghaiTime": 0,
+                            "cancunTime": 0,
+                            "normalcyBlock": 0,
+                            "pragueTime": 0,
+                            "ethash": {}
+                        }' > "${chainspec_file}"
+                    echo "✅ Generated dynamic-kurtosis-chainspec.json"
+
+                    # Also copy chain-config.json as dynamic-kurtosis-conf.json
+                    # CDK-Erigon expects this file for timestamp and other configurations
+                    local conf_file="${network_output_dir}/dynamic-kurtosis-conf.json"
+                    cp "${network_output_dir}/chain-config.json" "${conf_file}"
+                    echo "✅ Generated dynamic-kurtosis-conf.json"
+
+                    # Copy chain-allocs.json as dynamic-kurtosis-allocs.json
+                    # CDK-Erigon expects this file for account allocations
+                    if [ -f "${network_output_dir}/chain-allocs.json" ]; then
+                        local allocs_file="${network_output_dir}/dynamic-kurtosis-allocs.json"
+                        cp "${network_output_dir}/chain-allocs.json" "${allocs_file}"
+                        echo "✅ Generated dynamic-kurtosis-allocs.json"
+                    fi
+                fi
+
+                # Post-process CDK-Erigon config.yaml with required fields
+                if [ -f "${network_output_dir}/config.yaml" ]; then
+                    echo "Post-processing CDK-Erigon config.yaml..."
+
+                    # Extract rollup address from aggkit config
+                    local rollup_address=""
+                    if [ -f "${network_output_dir}/aggkit-config.toml" ]; then
+                        rollup_address=$(grep "^SovereignRollupAddr" "${network_output_dir}/aggkit-config.toml" | sed 's/.*= *"\([^"]*\)".*/\1/' | head -1)
+                    fi
+
+                    # Set zkevm.address-zkevm with rollup address
+                    if [ -n "${rollup_address}" ]; then
+                        sed -i "s|zkevm\.address-zkevm: \"<no value>\"|zkevm.address-zkevm: \"${rollup_address}\"|g" "${network_output_dir}/config.yaml"
+                        sed -i "s|zkevm\.address-zkevm: \"\"|zkevm.address-zkevm: \"${rollup_address}\"|g" "${network_output_dir}/config.yaml"
+                        echo "✅ Set zkevm.address-zkevm to ${rollup_address}"
+                    fi
+
+                    # Add L2 sequencer RPC URL and datastreamer URL for RPC nodes
+                    # Check if these fields are missing or have placeholder values
+                    if ! grep -q "zkevm\.l2-sequencer-rpc-url: \"http://" "${network_output_dir}/config.yaml"; then
+                        # Insert after the address-zkevm line
+                        sed -i "/zkevm\.address-zkevm:/a\\
+\\
+# The upstream L2 node RPC endpoint (for RPC nodes only).\\
+# Default: \"\"\\
+zkevm.l2-sequencer-rpc-url: \"http://cdk-erigon-sequencer-${network_id}:8545\"" "${network_output_dir}/config.yaml"
+                        echo "✅ Added zkevm.l2-sequencer-rpc-url"
+                    fi
+
+                    if ! grep -q "zkevm\.l2-datastreamer-url:" "${network_output_dir}/config.yaml"; then
+                        # Insert after l2-sequencer-rpc-url
+                        sed -i "/zkevm\.l2-sequencer-rpc-url:/a\\
+\\
+# The upstream L2 datastreamer endpoint (for RPC nodes only).\\
+# Default: \"\"\\
+zkevm.l2-datastreamer-url: \"cdk-erigon-sequencer-${network_id}:6900\"" "${network_output_dir}/config.yaml"
+                        echo "✅ Added zkevm.l2-datastreamer-url"
+                    fi
+                fi
             fi
-            
+
             # Download keystores
             local keystore_dir="${OUTPUT_DIR}/keystores/${network_id}"
             mkdir -p "${keystore_dir}"
@@ -556,6 +648,13 @@ main() {
                     cp "${claimsponsor_keystore_file}" "${keystore_dir}/claimsponsor.keystore"
                     echo "✅ Copied claimsponsor keystore"
                 fi
+            fi
+
+            # Create aggoracle keystore from aggregator keystore (they use the same key)
+            # AggOracle component needs this keystore but Kurtosis doesn't create a separate one
+            if [ -f "${keystore_dir}/aggregator.keystore" ]; then
+                cp "${keystore_dir}/aggregator.keystore" "${keystore_dir}/aggoracle.keystore"
+                echo "✅ Created aggoracle keystore from aggregator keystore"
             fi
 
             # Update keystore mapping
