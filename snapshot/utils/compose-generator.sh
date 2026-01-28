@@ -131,6 +131,12 @@ generate_agglayer_service() {
       - run
       - --cfg
       - /etc/agglayer/config.toml
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/4444' || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 EOF
     else
@@ -157,6 +163,12 @@ EOF
       - run
       - --cfg
       - /etc/agglayer/config.toml
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/4444' || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 EOF
     fi
@@ -193,17 +205,18 @@ generate_cdk_erigon_sequencer_service() {
     environment:
       - CDK_ERIGON_SEQUENCER=1
     depends_on:
-      - l1-geth
-      - l1-lighthouse
-      - agglayer
+      l1-geth:
+        condition: service_started
+      l1-lighthouse:
+        condition: service_started
     entrypoint: ["sh", "-c"]
     command: ["cdk-erigon --config /etc/cdk-erigon/config.yaml"]
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O- --timeout=2 http://localhost:8545 > /dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 10
-      start_period: 30s
+      retries: 20
+      start_period: 20s
     restart: unless-stopped
 EOF
 }
@@ -243,8 +256,8 @@ generate_cdk_erigon_rpc_service() {
       test: ["CMD-SHELL", "wget -q -O- --timeout=2 http://localhost:8545 > /dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 10
-      start_period: 30s
+      retries: 20
+      start_period: 20s
     restart: unless-stopped
 EOF
 }

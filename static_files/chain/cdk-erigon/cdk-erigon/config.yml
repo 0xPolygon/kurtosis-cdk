@@ -473,7 +473,7 @@ zkevm.l1-block-range: 20_000
 # Set the time, in milliseconds, to wait between L1 queries.
 # Helps prevent overwhelming the L1 node with requests.
 # Default: 6_000
-zkevm.l1-query-delay: 6_000
+zkevm.l1-query-delay: 2_000
 
 # Determine which type of "latest" block to use for L1 interactions.
 # Options: "latest" (most recent), "safe" (unlikely to be re-orged), "finalized" (confirmed),
