@@ -66,8 +66,9 @@ def prepare_l1_snapshot(plan, args, l1_context):
     # Get service names - try from context, otherwise use standard pattern
     geth_service_name = _get_geth_service_name(l1_context)
     lighthouse_service_name = _get_lighthouse_service_name(l1_context)
-    
-    plan.print("L1 service names - Geth: {}, Lighthouse: {}".format(geth_service_name, lighthouse_service_name))
+    validator_service_name = _get_validator_service_name(l1_context)
+
+    plan.print("L1 service names - Geth: {}, Lighthouse: {}, Validator: {}".format(geth_service_name, lighthouse_service_name, validator_service_name))
     
     # Wait for finalized state
     plan.print("Waiting for L1 to reach finalized state...")
@@ -82,9 +83,13 @@ def prepare_l1_snapshot(plan, args, l1_context):
     # Note: ethereum-package uses a nested structure:
     # - Geth actual datadir: /data/geth/execution-data/geth (contains chaindata, nodes, etc.)
     # - Lighthouse datadir: /data/lighthouse/beacon-data/beacon (contains beacon chain data)
+    # - Lighthouse testnet config: /network-configs (contains genesis.ssz, config.yaml, etc.)
+    # - Validator keys: /validator-keys (ethereum-package constant VALIDATOR_KEYS_DIRPATH_ON_SERVICE_CONTAINER)
     # We extract the actual datadirs, not the parent /data directory
     geth_datadir_path = "/data/geth/execution-data/geth"
     lighthouse_datadir_path = "/data/lighthouse/beacon-data/beacon"
+    lighthouse_testnet_path = "/network-configs"
+    validator_keys_path = "/validator-keys"
 
     # Stop services gracefully BEFORE extracting datadirs
     # This is critical: stopping geth triggers a flush of in-memory state to disk
@@ -115,15 +120,39 @@ def prepare_l1_snapshot(plan, args, l1_context):
     )
     plan.print("Lighthouse datadir extracted to artifact: l1-lighthouse-datadir")
 
+    # Extract lighthouse testnet configuration (genesis.ssz, config.yaml, etc.)
+    plan.print("Extracting lighthouse testnet config from {}...".format(lighthouse_service_name))
+    lighthouse_testnet_artifact = plan.store_service_files(
+        name="l1-lighthouse-testnet",
+        service_name=lighthouse_service_name,
+        src=lighthouse_testnet_path,
+    )
+    plan.print("Lighthouse testnet config extracted to artifact: l1-lighthouse-testnet")
+
+    # Extract validator keystores from validator client
+    # These are needed for the validator to continue proposing blocks
+    plan.print("Extracting validator keystores from {}...".format(validator_service_name))
+    validator_keys_artifact = plan.store_service_files(
+        name="l1-validator-keys",
+        service_name=validator_service_name,
+        src=validator_keys_path,
+    )
+    plan.print("Validator keys extracted to artifact: l1-validator-keys")
+
     # Store metadata
     l1_metadata = struct(
         l1_deployed=True,
         geth_service_name=geth_service_name,
         lighthouse_service_name=lighthouse_service_name,
+        validator_service_name=validator_service_name,
         geth_datadir_path=geth_datadir_path,
         lighthouse_datadir_path=lighthouse_datadir_path,
+        lighthouse_testnet_path=lighthouse_testnet_path,
+        validator_keys_path=validator_keys_path,
         geth_datadir_artifact=geth_datadir_artifact,
         lighthouse_datadir_artifact=lighthouse_datadir_artifact,
+        lighthouse_testnet_artifact=lighthouse_testnet_artifact,
+        validator_keys_artifact=validator_keys_artifact,
         finalized_block=finalized_block,
         finalized_slot=finalized_slot,
         chain_id=l1_context.chain_id,
@@ -163,9 +192,21 @@ def _get_lighthouse_service_name(l1_context):
     # Use standard naming pattern from ethereum-package
     # The ethereum-package uses a predictable naming pattern for services
     return "cl-1-lighthouse-geth"
-    
+
+
+def _get_validator_service_name(l1_context):
+    """
+    Get validator service name from l1_context or use standard pattern.
+
+    Args:
+        l1_context: L1 context from l1_launcher
+
+    Returns:
+        Service name string
+    """
     # Use standard naming pattern from ethereum-package
-    return "cl-1-lighthouse-geth"
+    # Validator client follows pattern: vc-{index}-{el_type}-{cl_type}
+    return "vc-1-geth-lighthouse"
 
 
 def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):

@@ -204,12 +204,15 @@ get_port() {
     local network_id="$1"
     local port_key="$2"
     local default_port="$3"
-    
+
     if command -v jq &> /dev/null && [ -n "${PORT_MAPPING}" ] && [ "${PORT_MAPPING}" != "null" ] && [ "${PORT_MAPPING}" != "{}" ]; then
         local port=$(echo "${PORT_MAPPING}" | jq -r ".[\"${network_id}\"].${port_key} // ${default_port}" 2>/dev/null || echo "${default_port}")
         echo "${port}"
     else
-        echo "${default_port}"
+        # Apply offset to avoid L1/L2 port conflicts
+        # L1 uses 8545-8547, L2 starts from 9545+ (offset of 1000)
+        local port_with_offset=$((default_port + 1000))
+        echo "${port_with_offset}"
     fi
 }
 
@@ -235,6 +238,20 @@ generate_l1_services() {
     generate_l1_geth_service "${L1_GETH_IMAGE}" "${L1_CHAIN_ID}" "${L1_LOG_FORMAT}" "${geth_datadir}"
     echo ""
     generate_l1_lighthouse_service "${L1_LIGHTHOUSE_IMAGE}" "${L1_LOG_FORMAT}" "${lighthouse_datadir}" "l1-geth"
+    echo ""
+
+    # Add validator service if validator keys are present
+    # ethereum-package stores validator keys in keys/ directory (not validator_definitions.yml)
+    local validator_keys_dir="${OUTPUT_DIR}/l1-state/validator-keys"
+    if [ -d "${validator_keys_dir}/keys" ] && [ "$(ls -A ${validator_keys_dir}/keys 2>/dev/null)" ]; then
+        log_info "Validator keys found, adding validator service"
+        # Convert log format to uppercase for Lighthouse (expects JSON not json)
+        local lighthouse_log_format=$(echo "${L1_LOG_FORMAT}" | tr '[:lower:]' '[:upper:]')
+        generate_l1_validator_service "${L1_LIGHTHOUSE_IMAGE}" "${lighthouse_log_format}" "http://l1-lighthouse:4000"
+    else
+        log_warn "No validator keys found, validator service will not be added"
+        log_warn "L1 will not produce new blocks"
+    fi
 }
 
 # Generate Agglayer service
@@ -301,12 +318,12 @@ generate_network_services() {
             continue
         fi
         
-        local config_dir="${OUTPUT_DIR}/configs/${network_id}"
-        local keystore_dir="${OUTPUT_DIR}/keystores/${network_id}"
-        
+        local config_dir_abs="${OUTPUT_DIR}/configs/${network_id}"
+        local keystore_dir_abs="${OUTPUT_DIR}/keystores/${network_id}"
+
         # Convert to relative paths
-        config_dir="./configs/${network_id}"
-        keystore_dir="./keystores/${network_id}"
+        local config_dir="./configs/${network_id}"
+        local keystore_dir="./keystores/${network_id}"
 
         if [ "${sequencer_type}" = "cdk-erigon" ]; then
             # CDK-Erigon services
@@ -325,10 +342,12 @@ generate_network_services() {
 
             # AggKit (for all consensus types in snapshot)
             if [ "${consensus_type}" = "rollup" ] || [ "${consensus_type}" = "cdk-validium" ] || [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ]; then
-                # Note: Only run aggsender by default. Aggoracle requires L2 to be synced with deployed contracts.
-                # For fresh-start snapshots, aggoracle will fail until L2 syncs from L1.
-                # Users can manually add aggoracle to components once L2 is synced.
-                local aggkit_components="aggsender"
+                # CDK-Erigon with rollup/cdk-validium uses PolygonZkEVMGlobalExitRootL2 (supports aggoracle)
+                # CDK-Erigon with pessimistic/ecdsa-multisig uses LegacyAgglayerGERL2 (aggoracle not supported)
+                local aggkit_components="aggsender,aggoracle"
+                if [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ]; then
+                    aggkit_components="aggsender"
+                fi
                 local aggkit_depends="cdk-erigon-rpc-${network_id}"
                 generate_aggkit_service "${network_id}" "${AGGKIT_IMAGE}" \
                     "${config_dir}/aggkit-config.toml" \
@@ -393,17 +412,23 @@ generate_network_services() {
             # OP-Geth services
             local op_geth_http_port=$(get_port "${network_id}" "l2_rpc_http" "8545")
             local op_geth_ws_port=$((op_geth_http_port + 1))
-            
+            # OP-Node uses a separate port (internal 8547) - external port is +2 from op-geth http
+            local op_node_rpc_port=$((op_geth_http_port + 2))
+
+            # Extract L2 chain ID from rollup.json using absolute path
+            local l2_chain_id=$(jq -r '.l2_chain_id' "${config_dir_abs}/rollup.json")
+
             generate_op_geth_service "${network_id}" "${OP_GETH_IMAGE}" \
                 "${config_dir}" \
                 "${config_dir}/genesis.json" \
                 "${op_geth_http_port}" \
-                "${op_geth_ws_port}"
+                "${op_geth_ws_port}" \
+                "${l2_chain_id}"
             echo ""
-            
+
             generate_op_node_service "${network_id}" "${OP_NODE_IMAGE}" \
                 "${config_dir}/op-node-config.toml" \
-                "${op_geth_http_port}"
+                "${op_node_rpc_port}"
             echo ""
             
             # OP-Proposer (for OP-Succinct/FEP)
@@ -420,9 +445,9 @@ generate_network_services() {
             
             # AggKit (for OP-Geth)
             if [ "${consensus_type}" = "pessimistic" ] || [ "${consensus_type}" = "ecdsa-multisig" ] || [ "${consensus_type}" = "fep" ]; then
-                # Note: Only run aggsender by default. Aggoracle requires L2 to be synced with deployed contracts.
-                # For fresh-start snapshots, aggoracle will fail until L2 syncs from L1.
-                # Users can manually add aggoracle to components once L2 is synced.
+                # TODO: OP-Geth uses GlobalExitRootManagerL2SovereignChain which supports aggoracle,
+                # but we need to extract the correct L2 bridge address from the enclave first.
+                # For now, only use aggsender in snapshots.
                 local aggkit_components="aggsender"
                 local aggkit_depends="op-node-${network_id}"
                 generate_aggkit_service "${network_id}" "${AGGKIT_IMAGE}" \

@@ -129,30 +129,58 @@ def get_sequencer_rpc_url(plan, args):
 
 
 def get_sovereign_contract_setup_addresses(plan, args):
-    extract = {
-        "sovereign_ger_proxy_addr": "fromjson | .ger_proxy_addr",
-        "sovereign_bridge_proxy_addr": "fromjson | .bridge_proxy_addr",
-        "sovereign_rollup_addr": "fromjson | .sovereignRollupContract",
-        "l2_chain_id": "fromjson | .rollupChainID",
-    }
-
-    exec_recipe = ExecRecipe(
-        command=[
-            "/bin/sh",
-            "-c",
-            "cat {}/sovereign-rollup-out.json".format(constants.CONTRACTS_DIR),
-        ],
-        extract=extract,
-    )
     service_name = "contracts" + args["deployment_suffix"]
+
+    # Read addresses from both sovereign-rollup-out.json and create-sovereign-genesis-output.json
+    # sovereign-rollup-out.json has L1 rollup address and chain ID
+    # create-sovereign-genesis-output.json has L2 GER and Bridge proxy addresses
     result = plan.exec(
-        description="Getting contract setup addresses from {} service".format(
-            service_name
-        ),
         service_name=service_name,
-        recipe=exec_recipe,
+        description="Reading sovereign contract addresses",
+        recipe=ExecRecipe(
+            command=[
+                "/bin/sh",
+                "-c",
+                """
+                # Read L1 rollup info
+                ROLLUP_FILE={}/sovereign-rollup-out.json
+                if [ ! -f "$ROLLUP_FILE" ]; then
+                    ROLLUP_JSON='{{"sovereignRollupContract":"","rollupChainID":""}}'
+                else
+                    ROLLUP_JSON=$(cat "$ROLLUP_FILE")
+                fi
+
+                # Read L2 contract addresses (GER and Bridge)
+                GENESIS_FILE={}/create-sovereign-genesis-output.json
+                if [ ! -f "$GENESIS_FILE" ]; then
+                    GER_ADDR=""
+                    BRIDGE_ADDR=""
+                else
+                    GER_ADDR=$(cat "$GENESIS_FILE" | jq -r '.genesisSCNames."AgglayerGERL2 proxy" // ""')
+                    BRIDGE_ADDR=$(cat "$GENESIS_FILE" | jq -r '.genesisSCNames."AgglayerBridgeL2 proxy" // ""')
+                fi
+
+                # Combine into single JSON
+                echo "$ROLLUP_JSON" | jq --arg ger "$GER_ADDR" --arg bridge "$BRIDGE_ADDR" \
+                    '. + {{"ger_proxy_addr": $ger, "bridge_proxy_addr": $bridge}}'
+                """.format(constants.CONTRACTS_DIR, constants.OUTPUT_DIR),
+            ],
+            extract={
+                "ger_proxy": "fromjson | .ger_proxy_addr // \"\"",
+                "bridge_proxy": "fromjson | .bridge_proxy_addr // \"\"",
+                "rollup_addr": "fromjson | .sovereignRollupContract // \"\"",
+                "chain_id": "fromjson | .rollupChainID // \"\"",
+            },
+        ),
     )
-    return get_exec_recipe_result(result)
+
+    result_dict = get_exec_recipe_result(result)
+    return {
+        "sovereign_ger_proxy_addr": result_dict.get("ger_proxy", ""),
+        "sovereign_bridge_proxy_addr": result_dict.get("bridge_proxy", ""),
+        "sovereign_rollup_addr": result_dict.get("rollup_addr", ""),
+        "l2_chain_id": result_dict.get("chain_id", ""),
+    }
 
 
 def get_op_succinct_env_vars(plan, args):

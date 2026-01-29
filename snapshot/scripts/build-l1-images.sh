@@ -206,9 +206,9 @@ process_templates() {
     echo ""
 }
 
-# Handle JWT secret
+# Handle JWT secret and testnet config
 handle_jwt_secret() {
-    echo "Handling JWT secret..."
+    echo "Handling JWT secret and testnet configuration..."
 
     # Ensure JWT secret exists in geth datadir
     ensure_jwt_secret "${GETH_DATADIR}"
@@ -229,6 +229,93 @@ handle_jwt_secret() {
     cp "${jwt_source}" "${jwt_dest}"
     chmod 600 "${jwt_dest}"
     echo "✅ JWT secret copied to lighthouse datadir"
+
+    # Copy testnet configuration to lighthouse datadir for Docker build
+    # The Dockerfile expects the testnet directory to be in the build context
+    local testnet_source="${OUTPUT_DIR}/l1-state/lighthouse-testnet"
+    local testnet_dest="${LIGHTHOUSE_DATADIR}/testnet"
+
+    if [ -d "${testnet_source}" ] && [ "$(ls -A ${testnet_source} 2>/dev/null)" ]; then
+        echo "Copying testnet configuration to lighthouse build context..."
+        mkdir -p "${testnet_dest}"
+        cp -r "${testnet_source}"/* "${testnet_dest}/" 2>/dev/null || true
+        echo "✅ Testnet configuration copied to lighthouse datadir"
+
+        # Verify critical files
+        if [ -f "${testnet_dest}/genesis.ssz" ] && [ -f "${testnet_dest}/config.yaml" ]; then
+            echo "✅ Verified genesis.ssz and config.yaml are present"
+        else
+            echo "⚠️  Warning: genesis.ssz or config.yaml missing from testnet directory"
+            echo "   Lighthouse may use mainnet configuration"
+        fi
+    else
+        echo "⚠️  Warning: Testnet configuration directory not found or empty"
+        echo "   Location: ${testnet_source}"
+        echo "   Lighthouse will use mainnet configuration (this will cause issues)"
+        echo "   This may happen if snapshot was created with an older version"
+    fi
+
+    # Copy validator keys to lighthouse datadir for Docker build
+    # The validator service needs these keys to propose blocks
+    # Always create the validators directory (even if empty) so Docker COPY doesn't fail
+    local validator_keys_source="${OUTPUT_DIR}/l1-state/validator-keys"
+    local validator_keys_dest="${LIGHTHOUSE_DATADIR}/validators"
+
+    mkdir -p "${validator_keys_dest}"
+
+    if [ -d "${validator_keys_source}" ] && [ "$(ls -A ${validator_keys_source} 2>/dev/null)" ]; then
+        echo "Copying validator keys to lighthouse build context..."
+        cp -r "${validator_keys_source}"/* "${validator_keys_dest}/" 2>/dev/null || true
+        echo "✅ Validator keys copied to lighthouse datadir"
+
+        # Generate validator_definitions.yml if it doesn't exist (ethereum-package format)
+        if [ ! -f "${validator_keys_dest}/validator_definitions.yml" ] && [ -d "${validator_keys_dest}/keys" ]; then
+            echo "Generating validator_definitions.yml from ethereum-package keystores..."
+            {
+                echo "---"
+                for keydir in "${validator_keys_dest}/keys"/*; do
+                    if [ -d "${keydir}" ]; then
+                        local pubkey=$(basename "${keydir}")
+                        local keystore_path="/root/.lighthouse/validators/keys/${pubkey}/voting-keystore.json"
+                        local password_path="/root/.lighthouse/validators/secrets/${pubkey}"
+
+                        # Only add if both keystore and password exist
+                        if [ -f "${keydir}/voting-keystore.json" ] && [ -f "${validator_keys_dest}/secrets/${pubkey}" ]; then
+                            cat <<EOF
+- enabled: true
+  voting_public_key: "${pubkey}"
+  type: local_keystore
+  voting_keystore_path: ${keystore_path}
+  voting_keystore_password_path: ${password_path}
+EOF
+                        fi
+                    fi
+                done
+            } > "${validator_keys_dest}/validator_definitions.yml"
+            echo "✅ Generated validator_definitions.yml"
+        fi
+
+        # Verify critical files
+        if [ -f "${validator_keys_dest}/validator_definitions.yml" ]; then
+            echo "✅ Verified validator_definitions.yml is present"
+            local num_validators=$(grep -c "enabled: true" "${validator_keys_dest}/validator_definitions.yml" 2>/dev/null || echo "0")
+            echo "   Number of validators: ${num_validators}"
+        else
+            echo "⚠️  Warning: validator_definitions.yml missing"
+            echo "   Validator service will not be able to propose blocks"
+        fi
+
+        # Note: Slashing protection database will be initialized by lighthouse at first run
+        # using the --init-slashing-protection flag in docker-compose
+    else
+        echo "⚠️  Warning: Validator keys directory not found or empty"
+        echo "   Location: ${validator_keys_source}"
+        echo "   Creating empty validators directory for Docker build"
+        echo "   Validator service will not be able to propose blocks"
+        echo "   L1 will remain at current block height"
+        # Create empty .gitkeep to ensure directory is not empty for COPY
+        touch "${validator_keys_dest}/.gitkeep"
+    fi
     echo ""
 }
 

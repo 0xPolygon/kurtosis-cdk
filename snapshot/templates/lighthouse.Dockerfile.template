@@ -31,6 +31,18 @@ COPY . /root/.lighthouse/
 COPY ethereum/jwtsecret /root/.ethereum/jwtsecret
 RUN chmod 600 /root/.ethereum/jwtsecret
 
+# Copy testnet configuration (genesis.ssz, config.yaml, etc.)
+# This directory is extracted from Kurtosis and contains the network genesis configuration.
+# Without this, lighthouse will default to mainnet configuration.
+# The --testnet-dir flag below will point to this directory.
+COPY testnet /root/.lighthouse/testnet
+
+# Copy validator keystores (if present)
+# These are needed for the validator service to propose blocks.
+# The validator service will run separately using the same image with different entrypoint.
+# The build script ensures this directory exists (even if empty).
+COPY validators /root/.lighthouse/validators
+
 # Expose ports
 # 4000: HTTP API endpoint (for beacon chain queries)
 # 5054: Metrics endpoint (for Prometheus monitoring)
@@ -46,6 +58,7 @@ EXPOSE 4000 5054
 #       that start from genesis without checkpoint sync
 ENTRYPOINT ["lighthouse", "bn", \
     "--datadir", "/root/.lighthouse", \
+    "--testnet-dir", "/root/.lighthouse/testnet", \
     "--execution-endpoint", "http://{{GETH_SERVICE_NAME}}:8551", \
     "--execution-jwt", "/root/.ethereum/jwtsecret", \
     "--disable-optimistic-finalized-sync", \

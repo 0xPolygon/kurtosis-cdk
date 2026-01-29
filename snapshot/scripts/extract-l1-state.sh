@@ -288,6 +288,89 @@ main() {
         log_warn "Docker not available, skipping permission fix (may cause issues during image build)"
     fi
 
+    # Extract lighthouse testnet configuration (genesis.ssz, config.yaml, etc.)
+    log_section "Extracting lighthouse testnet configuration from artifacts"
+
+    # Create testnet directory
+    LIGHTHOUSE_TESTNET_DIR="${OUTPUT_DIR}/l1-state/lighthouse-testnet"
+    mkdir -p "${LIGHTHOUSE_TESTNET_DIR}"
+
+    # Clean up any existing artifact directories from previous runs
+    rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"
+
+    log_info "Downloading l1-lighthouse-testnet artifact..."
+    if kurtosis files download "${ENCLAVE_NAME}" l1-lighthouse-testnet "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
+        # Move the extracted testnet config to the expected location
+        if [ -d "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact" ]; then
+            # Move all testnet config files (genesis.ssz, config.yaml, etc.)
+            mv "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"/* "${LIGHTHOUSE_TESTNET_DIR}/" 2>/dev/null || true
+            rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"
+            log_success "Lighthouse testnet config extracted successfully"
+
+            # Verify critical files exist
+            if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.ssz" ] && [ -f "${LIGHTHOUSE_TESTNET_DIR}/config.yaml" ]; then
+                log_success "Found genesis.ssz and config.yaml in testnet directory"
+            else
+                log_warn "Genesis files may be missing from testnet directory (continuing anyway)"
+                log_info "Testnet directory contents: $(ls -la ${LIGHTHOUSE_TESTNET_DIR}/ 2>&1 || echo 'empty')"
+            fi
+        else
+            log_warn "Lighthouse testnet artifact directory not found (continuing anyway)"
+        fi
+    else
+        log_warn "Failed to download lighthouse testnet artifact (this is expected for older Kurtosis runs)"
+        log_warn "Lighthouse may use mainnet configuration if testnet files are missing"
+    fi
+
+    # Fix permissions on testnet directory
+    if command -v docker &>/dev/null && [ -d "${LIGHTHOUSE_TESTNET_DIR}" ]; then
+        docker run --rm -v "${LIGHTHOUSE_TESTNET_DIR}:/data" -w /data alpine:latest sh -c "chmod -R a+rX /data" 2>&1 | tee -a "${LOG_FILE}" || {
+            log_warn "Failed to fix testnet permissions"
+        }
+    fi
+
+    # Extract validator keystores
+    log_section "Extracting validator keystores from artifacts"
+
+    # Create validator keys directory
+    VALIDATOR_KEYS_DIR="${OUTPUT_DIR}/l1-state/validator-keys"
+    mkdir -p "${VALIDATOR_KEYS_DIR}"
+
+    # Clean up any existing artifact directories from previous runs
+    rm -rf "${OUTPUT_DIR}/l1-state/validator-keys-artifact"
+
+    log_info "Downloading l1-validator-keys artifact..."
+    if kurtosis files download "${ENCLAVE_NAME}" l1-validator-keys "${OUTPUT_DIR}/l1-state/validator-keys-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
+        # Move the extracted validator keys to the expected location
+        if [ -d "${OUTPUT_DIR}/l1-state/validator-keys-artifact" ]; then
+            # Move all validator files (keystores, secrets, validator_definitions.yml)
+            mv "${OUTPUT_DIR}/l1-state/validator-keys-artifact"/* "${VALIDATOR_KEYS_DIR}/" 2>/dev/null || true
+            rm -rf "${OUTPUT_DIR}/l1-state/validator-keys-artifact"
+            log_success "Validator keys extracted successfully"
+
+            # Verify critical files exist
+            if [ -f "${VALIDATOR_KEYS_DIR}/validator_definitions.yml" ]; then
+                log_success "Found validator_definitions.yml"
+                local num_validators=$(grep -c "enabled: true" "${VALIDATOR_KEYS_DIR}/validator_definitions.yml" 2>/dev/null || echo "0")
+                log_info "Number of validators: ${num_validators}"
+            else
+                log_warn "validator_definitions.yml not found (continuing anyway)"
+            fi
+        else
+            log_warn "Validator keys artifact directory not found (continuing anyway)"
+        fi
+    else
+        log_warn "Failed to download validator keys artifact"
+        log_warn "Validator service will not be able to propose blocks without keys"
+    fi
+
+    # Fix permissions on validator keys directory
+    if command -v docker &>/dev/null && [ -d "${VALIDATOR_KEYS_DIR}" ]; then
+        docker run --rm -v "${VALIDATOR_KEYS_DIR}:/data" -w /data alpine:latest sh -c "chmod -R a+rX /data" 2>&1 | tee -a "${LOG_FILE}" || {
+            log_warn "Failed to fix validator keys permissions"
+        }
+    fi
+
     # Get finalized block/slot information
     log_section "Getting finalized block information"
     local geth_block=0

@@ -23,7 +23,7 @@ See [snapshot/README.md](./snapshot/README.md) for detailed documentation.
 
 Quick start:
 ```bash
-./snapshot/scripts/snapshot.sh --enclave-name snapshot --output-dir ./snapshot-output --networks ./networks.json --cleanup-enclave
+./snapshot/scripts/snapshot.sh --enclave-name snapshot --output-dir ./snapshot-output --networks ./snapshot/test-networks-op-pessimistic.json --cleanup-enclave
 ```
 
 > 🚨 This package is for development and testing only — **not for production use!**

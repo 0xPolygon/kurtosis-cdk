@@ -58,11 +58,11 @@ _write_log() {
     local log_entry="[${timestamp}] [${level}] ${message}"
     local console_entry="${color}[${level}]${NC} ${message}"
     
-    # Write to console (with color if terminal)
+    # Write to console (with color if terminal), always to stderr to avoid polluting stdout
     if [ -t 1 ]; then
-        echo -e "${console_entry}"
+        echo -e "${console_entry}" >&2
     else
-        echo "${log_entry}"
+        echo "${log_entry}" >&2
     fi
     
     # Write to log file (without color)

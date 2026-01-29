@@ -150,7 +150,13 @@ process_aggkit_config() {
     
     # Replace L2 URL (use internal port 8545, not external port mapping)
     config_content=$(echo "${config_content}" | sed "s|L2URL[[:space:]]*=[[:space:]]*\"http://[^\"]*\"|L2URL = \"http://${l2_rpc_name}-${network_id}:8545\"|g")
-    
+
+    # Replace OP-Geth specific URLs (from Kurtosis service names to docker-compose service names)
+    # Replace op-el-* patterns with op-geth-* for OP-Geth networks
+    config_content=$(echo "${config_content}" | sed "s|http://op-el-[0-9]*-op-geth-op-node-[0-9]*:8545|http://op-geth-${network_id}:8545|g")
+    config_content=$(echo "${config_content}" | sed "s|http://op-el-[0-9]*:8545|http://op-geth-${network_id}:8545|g")
+    config_content=$(echo "${config_content}" | sed "s|http://op-cl-[0-9]*-op-node-op-geth-[0-9]*:8547|http://op-node-${network_id}:8547|g")
+
     # Replace agglayer URL
     config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"http://[^\"]*\"|AggLayerURL=\"http://agglayer:8080\"|g")
     config_content=$(echo "${config_content}" | sed "s|AggLayerURL=\"grpc://[^\"]*\"|AggLayerURL=\"grpc://agglayer:50081\"|g")
@@ -166,6 +172,89 @@ process_aggkit_config() {
     config_content=$(echo "${config_content}" | perl -pe 's/="(?!0x)([0-9a-fA-F]{40})"/="0x\1"/g')
 
     write_toml_file "${output_file}" "${config_content}"
+
+    # For OP-Geth networks: Inject L2 contract addresses from extracted data
+    if [ "${l2_rpc_name}" = "op-geth" ] && [ -f "${output_file}" ]; then
+        # Check if L2 contracts were extracted
+        local l2_contracts_file="${OUTPUT_DIR}/configs/${network_id}/l2-contracts.json"
+
+        if [ -f "${l2_contracts_file}" ]; then
+            # Extract L2 contract addresses
+            local l2_bridge_addr=$(jq -r '.l2_bridge_address // ""' "${l2_contracts_file}")
+            local l2_ger_addr=$(jq -r '.l2_ger_address // ""' "${l2_contracts_file}")
+
+            if [ -n "${l2_bridge_addr}" ] && [ -n "${l2_ger_addr}" ]; then
+                echo "Injecting L2 contract addresses into aggkit config..."
+                echo "  L2 GER: ${l2_ger_addr}"
+                echo "  L2 Bridge: ${l2_bridge_addr}"
+
+                # Create a temp file
+                local temp_file="${output_file}.tmp"
+
+                # Replace the bridge addresses in L2Config and BridgeL2Sync sections
+                awk -v l2_bridge="${l2_bridge_addr}" -v l2_ger="${l2_ger_addr}" '
+                    /^\[L2Config\]/ { in_l2_config=1; }
+                    /^\[BridgeL2Sync\]/ { in_l2_config=0; in_bridge_sync=1; }
+                    /^\[/ && !/^\[(L2Config|BridgeL2Sync)\]/ { in_l2_config=0; in_bridge_sync=0; }
+
+                    in_l2_config && /^# BridgeAddr removed/ {
+                        print "BridgeAddr = \"" l2_bridge "\"";
+                        next;
+                    }
+                    in_l2_config && /^BridgeAddr/ {
+                        print "BridgeAddr = \"" l2_bridge "\"";
+                        next;
+                    }
+                    in_l2_config && /^GlobalExitRootAddr/ {
+                        print "GlobalExitRootAddr = \"" l2_ger "\"";
+                        next;
+                    }
+
+                    in_bridge_sync && /^# \[BridgeL2Sync\] section removed/ {
+                        print "[BridgeL2Sync]";
+                        next;
+                    }
+                    in_bridge_sync && /^# BridgeAddr = "" # L2 bridge/ {
+                        print "BridgeAddr = \"" l2_bridge "\"";
+                        next;
+                    }
+                    in_bridge_sync && /^BridgeAddr/ {
+                        print "BridgeAddr = \"" l2_bridge "\"";
+                        next;
+                    }
+
+                    { print; }
+                ' "${output_file}" > "${temp_file}" && mv "${temp_file}" "${output_file}"
+
+                echo "✅ Injected L2 contract addresses"
+            else
+                echo "⚠️  Warning: L2 contracts file exists but addresses are missing"
+            fi
+        else
+            echo "⚠️  Warning: L2 contracts file not found, bridge sync may fail"
+
+            # Fallback: Remove BridgeL2Sync section as before
+            local temp_file="${output_file}.tmp"
+            awk '
+                /^\[BridgeL2Sync\]/ {
+                    in_bridge_sync=1;
+                    print "# [BridgeL2Sync] section removed - L2 bridge not available in snapshot";
+                    next;
+                }
+                /^\[/ && in_bridge_sync { in_bridge_sync=0; }
+                in_bridge_sync { next; }
+
+                /^\[L2Config\]/ { in_l2_config=1; }
+                /^\[/ && !/^\[L2Config\]/ { in_l2_config=0; }
+                in_l2_config && /^BridgeAddr/ {
+                    print "# BridgeAddr removed - L2 bridge not available in snapshot";
+                    next;
+                }
+
+                { print; }
+            ' "${output_file}" > "${temp_file}" && mv "${temp_file}" "${output_file}"
+        fi
+    fi
     
     # Validate
     if validate_toml "${output_file}"; then
@@ -302,10 +391,39 @@ main() {
         log_error "Failed to create temporary directory"
         exit ${EXIT_CODE_GENERAL_ERROR}
     }
-    
+
+    # Create L1 config directory for genesis.json (needed by op-node)
+    mkdir -p "${OUTPUT_DIR}/l1-config" || {
+        log_error "Failed to create l1-config directory"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    }
+
     log_info "Enclave: ${ENCLAVE_NAME}"
     log_info "Output directory: ${OUTPUT_DIR}"
     log_debug "Temporary directory: ${TEMP_DIR}"
+
+    # Download L1 genesis.json for op-node
+    log_section "Downloading L1 genesis configuration"
+    local l1_genesis_artifact="el_cl_genesis_data"
+    local l1_genesis_dest="${TEMP_DIR}/${l1_genesis_artifact}"
+    if download_artifact "${l1_genesis_artifact}" "${l1_genesis_dest}" 2>/dev/null; then
+        local l1_genesis_file
+        l1_genesis_file=$(find "${l1_genesis_dest}" -name "genesis.json" -type f | head -1 || echo "")
+        if [ -n "${l1_genesis_file}" ]; then
+            # Remove if it exists as a directory (from failed previous run)
+            if [ -d "${OUTPUT_DIR}/l1-config/genesis.json" ]; then
+                rm -rf "${OUTPUT_DIR}/l1-config/genesis.json"
+            fi
+            # Clean up the genesis.json by removing fields that op-node doesn't recognize
+            # terminalTotalDifficultyPassed is added by ethereum-genesis-generator but not part of standard config
+            jq 'del(.config.terminalTotalDifficultyPassed)' "${l1_genesis_file}" > "${OUTPUT_DIR}/l1-config/genesis.json"
+            log_success "L1 genesis.json downloaded and cleaned"
+        else
+            log_warn "L1 genesis.json not found in artifact"
+        fi
+    else
+        log_warn "Failed to download L1 genesis artifact (el_cl_genesis_data)"
+    fi
     
     # Try to get artifact list from Kurtosis if manifest not provided
     if [ -z "${ARTIFACT_MANIFEST}" ]; then
@@ -377,7 +495,8 @@ main() {
                 if [ "${sequencer_type}" = "cdk-erigon" ]; then
                     l2_rpc_name="cdk-erigon-rpc"
                 elif [ "${sequencer_type}" = "op-geth" ]; then
-                    l2_rpc_name="op-el"
+                    # For snapshot docker-compose, use op-geth as the service name prefix
+                    l2_rpc_name="op-geth"
                 else
                     l2_rpc_name="cdk-erigon-rpc"  # Default fallback
                 fi
@@ -445,10 +564,23 @@ main() {
                 local aggkit_config_file
                 aggkit_config_file=$(find "${aggkit_dest}" -name "config.toml" -type f | head -1 || echo "")
                 if [ -n "${aggkit_config_file}" ]; then
+                    # Remove if it exists as a directory
+                    if [ -d "${network_output_dir}/aggkit-config.toml" ]; then
+                        rm -rf "${network_output_dir}/aggkit-config.toml"
+                    fi
                     process_aggkit_config "${aggkit_config_file}" "${network_output_dir}/aggkit-config.toml" "${deployment_suffix}" "${network_id}" "${l2_rpc_name}" "${http_rpc_port}"
                 fi
             fi
-            
+
+            # For OP-Geth networks, create JWT secret first
+            if [ "${sequencer_type}" = "op-geth" ]; then
+                # Create JWT secret for OP-Node/OP-Geth engine API authentication
+                local jwt_file="${network_output_dir}/jwt.txt"
+                # Generate a random hex string (64 chars = 32 bytes)
+                openssl rand -hex 32 > "${jwt_file}" 2>/dev/null || echo "688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6" > "${jwt_file}"
+                echo "✅ Generated jwt.txt for OP-Node/OP-Geth"
+            fi
+
             # Download genesis
             local genesis_artifact="genesis${artifact_base}"
             local genesis_dest="${TEMP_DIR}/${genesis_artifact}"
@@ -462,9 +594,132 @@ main() {
                     fi
                     cp "${genesis_file}" "${network_output_dir}/genesis.json"
                     echo "✅ Copied genesis.json"
+
+                    # For OP-Geth networks, transform genesis format from Polygon CDK to standard Geth format
+                    if [ "${sequencer_type}" = "op-geth" ]; then
+                        local transformed_genesis="${network_output_dir}/genesis.json.tmp"
+
+                        # Check if genesis has Polygon CDK format (.genesis array)
+                        if jq -e '.genesis | type == "array"' "${network_output_dir}/genesis.json" >/dev/null 2>&1; then
+                            echo "Transforming genesis from Polygon CDK format to Geth format..."
+
+                            # Transform .genesis[] array to .alloc object
+                            # Create OP-Geth compatible genesis with proper Ethereum and OP-Stack config
+                            # NOTE: OP-Stack fork times must be at top level of config AND in optimism object
+                            jq --arg chainId "${l2_chain_id}" '{
+                                config: {
+                                    chainId: ($chainId | tonumber),
+                                    homesteadBlock: 0,
+                                    eip150Block: 0,
+                                    eip155Block: 0,
+                                    eip158Block: 0,
+                                    byzantiumBlock: 0,
+                                    constantinopleBlock: 0,
+                                    petersburgBlock: 0,
+                                    istanbulBlock: 0,
+                                    muirGlacierBlock: 0,
+                                    berlinBlock: 0,
+                                    londonBlock: 0,
+                                    arrowGlacierBlock: 0,
+                                    grayGlacierBlock: 0,
+                                    mergeNetsplitBlock: 0,
+                                    shanghaiTime: 0,
+                                    cancunTime: 0,
+                                    terminalTotalDifficulty: 0,
+                                    terminalTotalDifficultyPassed: true,
+                                    bedrockBlock: 0,
+                                    regolithTime: 0,
+                                    canyonTime: 0,
+                                    ecotoneTime: 0,
+                                    fjordTime: 0,
+                                    graniteTime: 0,
+                                    holoceneTime: 0,
+                                    optimism: {
+                                        eip1559Elasticity: 6,
+                                        eip1559Denominator: 50,
+                                        eip1559DenominatorCanyon: 250,
+                                        eip1559ElasticityCanyon: 10
+                                    }
+                                },
+                                alloc: (
+                                    .genesis // [] |
+                                    map({
+                                        key: .address,
+                                        value: {
+                                            balance: .balance,
+                                            nonce: (.nonce | tostring),
+                                            code: .bytecode,
+                                            storage: (.storage // {})
+                                        }
+                                    }) |
+                                    from_entries
+                                ),
+                                coinbase: "0x0000000000000000000000000000000000000000",
+                                difficulty: "0x0",
+                                extraData: "0x",
+                                gasLimit: "0x1c9c380",
+                                nonce: "0x0",
+                                timestamp: "0x0",
+                                mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                parentHash: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                            }' "${network_output_dir}/genesis.json" > "${transformed_genesis}"
+
+                            if [ -f "${transformed_genesis}" ]; then
+                                mv "${transformed_genesis}" "${network_output_dir}/genesis.json"
+                                echo "✅ Transformed genesis to Geth format"
+                            else
+                                echo "⚠️  Warning: Genesis transformation failed, using original"
+                            fi
+                        fi
+                    fi
+
+                    # For OP-Geth networks, download rollup.json from op-deployer-configs artifact
+                    if [ "${sequencer_type}" = "op-geth" ]; then
+                        local op_deployer_configs_artifact="op-deployer-configs"
+                        local op_deployer_dest="${TEMP_DIR}/${op_deployer_configs_artifact}"
+                        if download_artifact "${op_deployer_configs_artifact}" "${op_deployer_dest}" 2>/dev/null; then
+                            local rollup_file
+                            # Find rollup-{l2_chain_id}.json file
+                            rollup_file=$(find "${op_deployer_dest}" -name "rollup-*.json" -type f | head -1 || echo "")
+                            if [ -n "${rollup_file}" ]; then
+                                cp "${rollup_file}" "${network_output_dir}/rollup.json"
+                                echo "✅ Copied rollup.json for OP-Node"
+                            else
+                                echo "⚠️  Warning: rollup.json not found in op-deployer-configs, creating minimal version"
+                                # Create minimal rollup.json as fallback
+                                cat > "${network_output_dir}/rollup.json" <<EOF
+{
+  "genesis": {
+    "l1": {"hash": "0x0000000000000000000000000000000000000000000000000000000000000000", "number": 0},
+    "l2": {"hash": "0x0000000000000000000000000000000000000000000000000000000000000000", "number": 0},
+    "l2_time": 0,
+    "system_config": {"batcherAddr": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", "overhead": "0x0000000000000000000000000000000000000000000000000000000000000000", "scalar": "0x00000000000000000000000000000000000000000000000000000000000f4240", "gasLimit": 30000000}
+  },
+  "block_time": 2,
+  "max_sequencer_drift": 600,
+  "seq_window_size": 3600,
+  "channel_timeout": 300,
+  "l1_chain_id": 271828,
+  "l2_chain_id": ${l2_chain_id},
+  "regolith_time": 0,
+  "canyon_time": 0,
+  "delta_time": 0,
+  "ecotone_time": 0,
+  "fjord_time": 0,
+  "granite_time": 0,
+  "batch_inbox_address": "0xff00000000000000000000000000000000000000",
+  "deposit_contract_address": "0x0000000000000000000000000000000000000000",
+  "l1_system_config_address": "0x0000000000000000000000000000000000000000"
+}
+EOF
+                            fi
+                        else
+                            echo "⚠️  Warning: op-deployer-configs artifact not found, creating minimal rollup.json"
+                        fi
+                    fi
                 fi
             fi
-            
+
             # Download chain configs (CDK-Erigon only)
             if [ "${sequencer_type}" = "cdk-erigon" ]; then
                 local chain_config_artifact="cdk-erigon-chain-config${artifact_base}"

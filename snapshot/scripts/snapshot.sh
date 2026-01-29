@@ -297,9 +297,17 @@ run_post_processing() {
         log_error "L1 state extraction failed"
         return 1
     fi
-    
-    # Step 2: Process configs
-    log_step "2" "Processing Configs"
+
+    # Step 2: Extract L2 contract addresses
+    log_step "2" "Extracting L2 Contract Addresses"
+    if ! "${SCRIPT_DIR}/extract-l2-contracts.sh" \
+        "${enclave_name}" \
+        "${output_dir}"; then
+        log_warn "L2 contract extraction failed (continuing anyway)"
+    fi
+
+    # Step 3: Process configs
+    log_step "3" "Processing Configs"
     if [ -n "${networks_file}" ] && [ -f "${networks_file}" ]; then
         if ! "${SCRIPT_DIR}/process-configs.sh" \
             --enclave-name "${enclave_name}" \
@@ -317,16 +325,16 @@ run_post_processing() {
         fi
     fi
     
-    # Step 3: Build L1 images
-    log_step "3" "Building L1 Docker Images"
+    # Step 4: Build L1 images
+    log_step "4" "Building L1 Docker Images"
     if ! "${SCRIPT_DIR}/build-l1-images.sh" \
         --output-dir "${output_dir}"; then
         log_error "L1 image building failed"
         return 1
     fi
     
-    # Step 4: Generate docker-compose
-    log_step "4" "Generating Docker Compose"
+    # Step 5: Generate docker-compose
+    log_step "5" "Generating Docker Compose"
     if ! "${SCRIPT_DIR}/generate-compose.sh" \
         --output-dir "${output_dir}"; then
         log_error "Docker compose generation failed"

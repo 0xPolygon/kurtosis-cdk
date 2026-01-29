@@ -94,6 +94,42 @@ generate_l1_lighthouse_service() {
 EOF
 }
 
+# Generate L1 Lighthouse Validator service configuration
+# Usage: generate_l1_validator_service <image_tag> <log_format> <beacon_node_url>
+generate_l1_validator_service() {
+    local image_tag="$1"
+    local log_format="$2"
+    local beacon_node_url="$3"
+
+    cat <<EOF
+  l1-validator:
+    image: ${image_tag}
+    container_name: l1-validator
+    networks:
+      - cdk-network
+    environment:
+      - LOG_FORMAT=${log_format}
+      - BEACON_NODE_URL=${beacon_node_url}
+    depends_on:
+      - l1-lighthouse
+    restart: unless-stopped
+    # Note: The validator image has keys baked in and uses the same base image as lighthouse
+    # Lighthouse will automatically create the slashing protection DB on first run
+    entrypoint: ["lighthouse", "vc"]
+    command:
+      - --datadir
+      - /root/.lighthouse
+      - --testnet-dir
+      - /root/.lighthouse/testnet
+      - --beacon-nodes
+      - ${beacon_node_url}
+      - --suggested-fee-recipient
+      - "0x0000000000000000000000000000000000000000"
+      - --log-format
+      - ${log_format}
+EOF
+}
+
 # Generate Agglayer service configuration
 # Usage: generate_agglayer_service <image> <config_path> <keystore_path> <sp1_prover_key>
 generate_agglayer_service() {
@@ -433,7 +469,7 @@ EOF
 }
 
 # Generate OP-Geth service
-# Usage: generate_op_geth_service <network_id> <image> <config_dir> <genesis_path> <http_port> <ws_port>
+# Usage: generate_op_geth_service <network_id> <image> <config_dir> <genesis_path> <http_port> <ws_port> <l2_chain_id>
 generate_op_geth_service() {
     local network_id="$1"
     local image="$2"
@@ -441,7 +477,8 @@ generate_op_geth_service() {
     local genesis_path="$4"
     local http_port="$5"
     local ws_port="$6"
-    
+    local l2_chain_id="${7:-1}"  # Default to 1 if not provided
+
     cat <<EOF
   op-geth-${network_id}:
     image: ${image}
@@ -452,10 +489,42 @@ generate_op_geth_service() {
       - "${http_port}:8545"
       - "${ws_port}:8546"
     volumes:
-      - ${config_dir}:/etc/op-geth:ro
-      - ${genesis_path}:/etc/op-geth/genesis.json:ro
+      - ${config_dir}/genesis.json:/genesis.json:ro
+      - ${config_dir}/jwt.txt:/jwt.txt:ro
       # Empty volume - OP-Geth will sync from L1 on first run
       - op-geth-data-${network_id}:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ ! -d "/data/geth" ]; then
+          echo "Initializing genesis..."
+          geth init --datadir=/data /genesis.json
+        fi
+        echo "Starting geth..."
+        exec geth \
+          --datadir=/data \
+          --http \
+          --http.addr=0.0.0.0 \
+          --http.port=8545 \
+          --http.api=eth,net,web3,debug,txpool \
+          --http.corsdomain=* \
+          --http.vhosts=* \
+          --ws \
+          --ws.addr=0.0.0.0 \
+          --ws.port=8546 \
+          --ws.api=eth,net,web3,debug,txpool \
+          --ws.origins=* \
+          --authrpc.addr=0.0.0.0 \
+          --authrpc.port=8551 \
+          --authrpc.vhosts=* \
+          --authrpc.jwtsecret=/jwt.txt \
+          --networkid=${l2_chain_id} \
+          --syncmode=full \
+          --gcmode=archive \
+          --nodiscover \
+          --maxpeers=0 \
+          --rollup.disabletxpoolgossip=true \
+          --rollup.sequencerhttp=http://op-node-${network_id}:8547
     depends_on:
       - l1-geth
       - l1-lighthouse
@@ -471,7 +540,10 @@ generate_op_node_service() {
     local image="$2"
     local config_path="$3"
     local http_port="$4"
-    
+
+    # config_path points to config dir (e.g. ./configs/1)
+    local config_dir=$(dirname "${config_path}")
+
     cat <<EOF
   op-node-${network_id}:
     image: ${image}
@@ -481,9 +553,28 @@ generate_op_node_service() {
     ports:
       - "${http_port}:8547"
     volumes:
-      - ${config_path}:/etc/op-node/config.toml:ro
+      - ${config_dir}/rollup.json:/rollup.json:ro
+      - ${config_dir}/jwt.txt:/jwt.txt:ro
+      - ./l1-config/genesis.json:/l1-genesis.json:ro
       # Empty volume - OP-Node will sync from L1 on first run
       - op-node-data-${network_id}:/data
+    command:
+      - op-node
+      - --l1=http://l1-geth:8545
+      - --l1.beacon=http://l1-lighthouse:4000
+      - --rollup.l1-chain-config=/l1-genesis.json
+      - --l2=http://op-geth-${network_id}:8545
+      - --l2.jwt-secret=/jwt.txt
+      - --sequencer.enabled=true
+      - --sequencer.l1-confs=4
+      - --verifier.l1-confs=4
+      - --rollup.config=/rollup.json
+      - --rpc.addr=0.0.0.0
+      - --rpc.port=8547
+      - --p2p.disable
+      - --rpc.enable-admin
+      - --p2p.sequencer.key=0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
+      - --log.level=info
     depends_on:
       - op-geth-${network_id}
     restart: unless-stopped

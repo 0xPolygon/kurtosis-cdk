@@ -56,13 +56,16 @@ def extract_config_artifacts(plan, args, networks_metadata, contract_setup_addre
         keystores = extract_keystores(plan, args, deployment_suffix)
 
         # Extract network-specific configs (already created in network_registrar)
-        network_configs = struct(
-            aggkit_config=network_meta.config_artifacts.aggkit_config,
-            bridge_config=network_meta.config_artifacts.bridge_config,
-            genesis_artifact=network_meta.config_artifacts.genesis_artifact,
-            cdk_erigon_sequencer_config=network_meta.config_artifacts.cdk_erigon_sequencer_config,
-            cdk_erigon_rpc_config=network_meta.config_artifacts.cdk_erigon_rpc_config,
-        )
+        # For CDK-Erigon, include sequencer/rpc configs; for OP-Geth, these don't exist
+        network_configs_dict = {
+            "aggkit_config": network_meta.config_artifacts.aggkit_config,
+            "bridge_config": network_meta.config_artifacts.bridge_config,
+            "genesis_artifact": network_meta.config_artifacts.genesis_artifact,
+        }
+        if sequencer_type == constants.SEQUENCER_TYPE.cdk_erigon:
+            network_configs_dict["cdk_erigon_sequencer_config"] = network_meta.config_artifacts.cdk_erigon_sequencer_config
+            network_configs_dict["cdk_erigon_rpc_config"] = network_meta.config_artifacts.cdk_erigon_rpc_config
+        network_configs = struct(**network_configs_dict)
 
         # Extract chain configs for CDK-Erigon networks
         chain_configs = struct()
