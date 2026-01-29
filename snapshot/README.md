@@ -3,7 +3,7 @@
 ## Overview
 
 The snapshot feature creates a simplified snapshot of a Kurtosis environment that can run on docker-compose. The snapshot includes:
-- L1 blockchain state (geth + beacon node) embedded in Docker images
+- L1 blockchain state exported to genesis file (all contracts and balances pre-loaded)
 - Multiple L2 networks (one of each sequencer type × consensus type combination)
 - Configuration files for L2 components using AggKit only (no cdk-node) and Agglayer
 - A docker-compose file to orchestrate everything
@@ -24,15 +24,15 @@ The snapshot creation process works in several stages:
 
 ### Stage 2: Post-Processing (After Kurtosis Completes)
 
-1. **L1 State Extraction**: Extracts geth and lighthouse datadirs from stopped containers
+1. **L1 State Extraction**: Exports L1 state to genesis file using `debug.dumpBlock`, includes lighthouse testnet config and validator keys
 2. **Config Processing**: Converts dynamic Kurtosis configs to static docker-compose format
-3. **Image Building**: Builds Docker images containing L1 state
+3. **Image Building**: Builds Docker images that initialize from genesis (geth) and start fresh from genesis (lighthouse)
 4. **Compose Generation**: Creates docker-compose.yml with all services configured
 
 ### Stage 3: Docker Compose Deployment
 
 When you start the docker-compose environment:
-- **L1 services** start with captured state (immediately ready)
+- **L1 services** start fresh from genesis (block 0) with all contracts pre-deployed, validators immediately begin producing blocks
 - **L2 services** start fresh and sync from L1 (one-time initial sync)
 - **Agglayer** starts with all networks configured
 - **AggKit** uses SQLite for storage (no PostgreSQL needed)
@@ -46,6 +46,39 @@ The snapshot feature does NOT require PostgreSQL. All services use lightweight, 
 - **L2 services**: Start with empty volumes and sync from L1
 
 This design keeps the snapshot lightweight and eliminates the need for a separate database server.
+
+### L1 State Management: Genesis-Based Approach
+
+The snapshot uses a **genesis-based approach** for L1 state management. Instead of copying blockchain datadirs, the L1 state is exported to a genesis file and both execution and consensus clients start fresh from block 0.
+
+**How it works:**
+
+1. **State Export**: Uses geth's `debug.dumpBlock` to export the complete L1 state at the finalized block
+   - Captures all accounts, balances, contract bytecode, and storage
+   - Merges with original genesis configuration (chain ID, gas limits, etc.)
+   - Results in a genesis.json file (~100-200MB) with all state pre-loaded
+
+2. **Image Building**:
+   - **Geth**: Runs `geth init` with the genesis file to create initial blockchain database
+   - **Lighthouse**: Copies testnet configuration (genesis.ssz, config.yaml) and validator keys, but no beacon history
+
+3. **Block Production**: Both clients start from genesis (block 0 = slot 0) with validators immediately able to propose blocks
+
+**Why genesis-based?**
+
+This approach was chosen over datadir snapshotting because:
+- ✅ **No state restoration issues**: Both clients start with consistent, pristine state
+- ✅ **Immediate block production**: Validators can propose blocks from slot 0 onwards
+- ✅ **Smaller artifacts**: Genesis file is ~100MB vs 4GB+ for full datadirs
+- ✅ **Standard approach**: Uses well-documented geth init and lighthouse genesis sync
+- ✅ **Avoids "stuck head" problem**: No beacon chain state desync issues
+
+**Validator Support:**
+
+The snapshot includes validator keystores and secrets from the source environment:
+- Validators are automatically configured in the lighthouse image
+- Block production begins immediately when services start
+- This ensures the L1 continues to produce blocks in the snapshot environment
 
 ## Usage
 

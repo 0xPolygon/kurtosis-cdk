@@ -91,34 +91,15 @@ def prepare_l1_snapshot(plan, args, l1_context):
     lighthouse_testnet_path = "/network-configs"
     validator_keys_path = "/validator-keys"
 
-    # Stop services gracefully BEFORE extracting datadirs
-    # This is critical: stopping geth triggers a flush of in-memory state to disk
-    # Without this, we'll only capture genesis block even though we waited for finalized blocks
-    plan.print("Stopping L1 services gracefully to flush state to disk...")
-    _stop_geth_gracefully(plan, geth_service_name)
-    _stop_lighthouse_gracefully(plan, lighthouse_service_name)
+    # Keep services running for post-processing genesis export
+    # The post-processing script will export genesis state from running geth
+    # and then can stop the services if needed
+    plan.print("Keeping L1 services running for post-processing genesis export...")
+    plan.print("Post-processing scripts will handle genesis export and service shutdown")
 
-    # Extract datadirs AFTER stopping services
-    # Kurtosis can extract files from stopped containers (they're stopped, not removed)
-    plan.print("Extracting L1 state from stopped containers (this may take a while)...")
-
-    # Extract geth datadir
-    plan.print("Extracting geth datadir from {}...".format(geth_service_name))
-    geth_datadir_artifact = plan.store_service_files(
-        name="l1-geth-datadir",
-        service_name=geth_service_name,
-        src=geth_datadir_path,
-    )
-    plan.print("Geth datadir extracted to artifact: l1-geth-datadir")
-
-    # Extract lighthouse datadir
-    plan.print("Extracting lighthouse datadir from {}...".format(lighthouse_service_name))
-    lighthouse_datadir_artifact = plan.store_service_files(
-        name="l1-lighthouse-datadir",
-        service_name=lighthouse_service_name,
-        src=lighthouse_datadir_path,
-    )
-    plan.print("Lighthouse datadir extracted to artifact: l1-lighthouse-datadir")
+    # No need to extract datadirs - both will start fresh from genesis (block 0, slot 0)
+    # We still need to extract testnet config and validator keys
+    plan.print("Extracting L1 configuration files (no datadirs needed)...")
 
     # Extract lighthouse testnet configuration (genesis.ssz, config.yaml, etc.)
     plan.print("Extracting lighthouse testnet config from {}...".format(lighthouse_service_name))
@@ -145,12 +126,8 @@ def prepare_l1_snapshot(plan, args, l1_context):
         geth_service_name=geth_service_name,
         lighthouse_service_name=lighthouse_service_name,
         validator_service_name=validator_service_name,
-        geth_datadir_path=geth_datadir_path,
-        lighthouse_datadir_path=lighthouse_datadir_path,
         lighthouse_testnet_path=lighthouse_testnet_path,
         validator_keys_path=validator_keys_path,
-        geth_datadir_artifact=geth_datadir_artifact,
-        lighthouse_datadir_artifact=lighthouse_datadir_artifact,
         lighthouse_testnet_artifact=lighthouse_testnet_artifact,
         validator_keys_artifact=validator_keys_artifact,
         finalized_block=finalized_block,

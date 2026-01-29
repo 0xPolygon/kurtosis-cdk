@@ -122,38 +122,41 @@ parse_args() {
 # Read L1 state manifest
 read_l1_manifest() {
     local manifest_file="${OUTPUT_DIR}/l1-state/manifest.json"
-    
+
     if [ ! -f "${manifest_file}" ]; then
         echo "Error: L1 state manifest not found: ${manifest_file}" >&2
         echo "Hint: Run extract-l1-state.sh first" >&2
         exit 1
     fi
-    
+
     # Extract values using jq
     if ! command -v jq &> /dev/null; then
         echo "Error: jq is required but not installed" >&2
         exit 1
     fi
-    
-    GETH_DATADIR="${OUTPUT_DIR}/l1-state/geth"
-    LIGHTHOUSE_DATADIR="${OUTPUT_DIR}/l1-state/lighthouse"
+
+    GENESIS_FILE="${OUTPUT_DIR}/l1-state/genesis.json"
+    LIGHTHOUSE_TESTNET_DIR="${OUTPUT_DIR}/l1-state/lighthouse-testnet"
+    VALIDATOR_KEYS_DIR="${OUTPUT_DIR}/l1-state/validator-keys"
     CHAIN_ID=$(jq --raw-output '.chain_id // 271828' "${manifest_file}" 2>/dev/null || echo "271828")
-    
-    # Validate datadirs exist
-    if [ ! -d "${GETH_DATADIR}" ]; then
-        echo "Error: Geth datadir not found: ${GETH_DATADIR}" >&2
+
+    # Validate genesis file exists
+    if [ ! -f "${GENESIS_FILE}" ]; then
+        echo "Error: Genesis file not found: ${GENESIS_FILE}" >&2
         exit 1
     fi
-    
-    if [ ! -d "${LIGHTHOUSE_DATADIR}" ]; then
-        echo "Error: Lighthouse datadir not found: ${LIGHTHOUSE_DATADIR}" >&2
+
+    # Lighthouse testnet dir is required
+    if [ ! -d "${LIGHTHOUSE_TESTNET_DIR}" ]; then
+        echo "Error: Lighthouse testnet config not found: ${LIGHTHOUSE_TESTNET_DIR}" >&2
         exit 1
     fi
-    
+
     echo "L1 Manifest loaded:"
     echo "  Chain ID: ${CHAIN_ID}"
-    echo "  Geth datadir: ${GETH_DATADIR}"
-    echo "  Lighthouse datadir: ${LIGHTHOUSE_DATADIR}"
+    echo "  Genesis file: ${GENESIS_FILE}"
+    echo "  Lighthouse testnet: ${LIGHTHOUSE_TESTNET_DIR}"
+    echo "  Validator keys: ${VALIDATOR_KEYS_DIR}"
     echo ""
 }
 

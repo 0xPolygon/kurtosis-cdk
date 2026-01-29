@@ -197,96 +197,173 @@ main() {
     log_info "  Geth: ${GETH_SERVICE}"
     log_info "  Lighthouse: ${LIGHTHOUSE_SERVICE}"
     
-    # Extract geth datadir from Kurtosis artifacts
-    # Note: Datadirs were extracted to artifacts in Starlark before stopping services
-    log_section "Extracting geth datadir from artifacts"
+    # Export L1 state to genesis file from running geth
+    # This approach creates a fresh genesis with pre-loaded state (contracts, balances, storage)
+    # allowing L1 to start from block 0 without state restoration issues
+    log_section "Exporting L1 state to genesis file"
 
-    # Clean up any existing artifact directories from previous runs
-    rm -rf "${OUTPUT_DIR}/l1-state/geth-artifact"
+    log_info "Exporting state from finalized block..."
 
-    log_info "Downloading l1-geth-datadir artifact..."
-    if kurtosis files download "${ENCLAVE_NAME}" l1-geth-datadir "${OUTPUT_DIR}/l1-state/geth-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
-        # Move the extracted geth datadir to the expected location
-        # The artifact now contains the actual geth datadir contents (chaindata, nodes, etc.)
-        # directly at the root, not nested under a geth subdirectory
-        if [ -d "${OUTPUT_DIR}/l1-state/geth-artifact/chaindata" ]; then
-            # Move all contents from artifact to geth output directory
-            mv "${OUTPUT_DIR}/l1-state/geth-artifact"/* "${GETH_OUTPUT_DIR}/" 2>/dev/null || true
-            rm -rf "${OUTPUT_DIR}/l1-state/geth-artifact"
-            log_success "Geth datadir extracted successfully"
-        else
-            log_error "Geth chaindata not found in artifact"
-            log_error "Contents: $(ls -la ${OUTPUT_DIR}/l1-state/geth-artifact/ 2>/dev/null || echo 'Directory not found')"
-            exit ${EXIT_CODE_GENERAL_ERROR}
+    # Get finalized block number
+    local finalized_block=0
+    local metadata_artifact_dir="${OUTPUT_DIR}/l1-state/finalized-metadata-artifact-temp"
+    rm -rf "${metadata_artifact_dir}"
+
+    if kurtosis files download "${ENCLAVE_NAME}" l1-finalized-metadata "${metadata_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
+        local metadata_file="${metadata_artifact_dir}/finalized-state.json"
+        if [ -f "${metadata_file}" ]; then
+            finalized_block=$(jq -r '.finalized_block // 0' "${metadata_file}" 2>/dev/null || echo "0")
+            log_info "Finalized block from metadata: ${finalized_block}"
         fi
+        rm -rf "${metadata_artifact_dir}"
+    fi
+
+    # Fallback: query geth directly if metadata not available
+    if [ "${finalized_block}" = "0" ]; then
+        log_info "Querying geth for finalized block..."
+        finalized_block=$(kurtosis service exec "${ENCLAVE_NAME}" "${GETH_SERVICE}" \
+            "geth attach --exec 'eth.getBlock(\"finalized\").number' /data/geth/execution-data/geth.ipc" 2>/dev/null | grep -o '[0-9]*' | head -1 || echo "0")
+        log_info "Finalized block from geth: ${finalized_block}"
+    fi
+
+    # Export state using debug.dumpBlock
+    log_info "Exporting state from block ${finalized_block}..."
+    local state_dump="${OUTPUT_DIR}/l1-state/state-dump.json"
+
+    kurtosis service exec "${ENCLAVE_NAME}" "${GETH_SERVICE}" \
+        "geth attach --exec 'JSON.stringify(debug.dumpBlock(${finalized_block}))' /data/geth/execution-data/geth.ipc" \
+        > "${state_dump}" 2>&1
+
+    if [ -f "${state_dump}" ] && [ -s "${state_dump}" ]; then
+        log_success "State exported successfully"
+        local size=$(du -h "${state_dump}" | cut -f1)
+        log_info "State dump size: ${size}"
     else
-        log_error "Failed to download geth datadir artifact"
+        log_error "Failed to export state from geth"
+        cat "${state_dump}" 2>&1 | tee -a "${LOG_FILE}" || true
         exit ${EXIT_CODE_GENERAL_ERROR}
     fi
 
-    # Fix permissions on extracted geth state
-    # Files extracted from containers are often owned by root and have restrictive permissions
-    # We need to make them readable for Docker build context
-    log_section "Fixing permissions on extracted geth state"
-    if command -v docker &>/dev/null; then
-        # Use a temporary container to fix permissions
-        docker run --rm -v "${GETH_OUTPUT_DIR}:/data" -w /data alpine:latest sh -c "chmod -R a+rX /data" 2>&1 | tee -a "${LOG_FILE}" || {
-            log_warn "Failed to fix permissions using Docker, trying with current user"
-            chmod -R a+rX "${GETH_OUTPUT_DIR}" 2>/dev/null || log_warn "Could not fix all permissions"
-        }
-        log_success "Geth state permissions fixed"
-    else
-        log_warn "Docker not available, skipping permission fix (may cause issues during image build)"
-    fi
+    # Download original genesis
+    log_info "Downloading original genesis configuration..."
+    local genesis_artifact_dir="${OUTPUT_DIR}/l1-genesis-original"
+    rm -rf "${genesis_artifact_dir}"
+    mkdir -p "${genesis_artifact_dir}"
 
-    # Validate extracted geth state
-    if ! validate_l1_state "${OUTPUT_DIR}/l1-state"; then
-        log_warn "Geth state validation warnings (continuing)"
-    fi
-
-    # Extract lighthouse datadir from Kurtosis artifacts
-    log_section "Extracting lighthouse datadir from artifacts"
-
-    # Clean up any existing artifact directories from previous runs
-    rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-artifact"
-
-    log_info "Downloading l1-lighthouse-datadir artifact..."
-    if kurtosis files download "${ENCLAVE_NAME}" l1-lighthouse-datadir "${OUTPUT_DIR}/l1-state/lighthouse-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
-        # Move the extracted lighthouse directory to the expected location
-        # The artifact contains the contents of /data (which includes lighthouse subdirectories)
-        # Check for common lighthouse subdirectories
-        local found_lighthouse=false
-        for subdir in lighthouse beacon-node validators; do
-            if [ -d "${OUTPUT_DIR}/l1-state/lighthouse-artifact/${subdir}" ]; then
-                mv "${OUTPUT_DIR}/l1-state/lighthouse-artifact/${subdir}" "${LIGHTHOUSE_OUTPUT_DIR}/${subdir}" 2>/dev/null || true
-                found_lighthouse=true
-            fi
-        done
-        # Move any other files from the artifact root
-        find "${OUTPUT_DIR}/l1-state/lighthouse-artifact" -maxdepth 1 -mindepth 1 ! -name lighthouse ! -name beacon-node ! -name validators -exec mv {} "${LIGHTHOUSE_OUTPUT_DIR}/" \; 2>/dev/null || true
-        rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-artifact"
-        if [ "$found_lighthouse" = true ]; then
-            log_success "Lighthouse datadir extracted successfully"
-        else
-            log_warn "No lighthouse subdirectories found, but extraction completed"
-        fi
-    else
-        log_error "Failed to download lighthouse datadir artifact"
+    if ! kurtosis files download "${ENCLAVE_NAME}" el_cl_genesis_data "${genesis_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
+        log_error "Failed to download original genesis"
         exit ${EXIT_CODE_GENERAL_ERROR}
     fi
 
-    # Fix permissions on extracted lighthouse state
-    log_section "Fixing permissions on extracted lighthouse state"
-    if command -v docker &>/dev/null; then
-        # Use a temporary container to fix permissions
-        docker run --rm -v "${LIGHTHOUSE_OUTPUT_DIR}:/data" -w /data alpine:latest sh -c "chmod -R a+rX /data" 2>&1 | tee -a "${LOG_FILE}" || {
-            log_warn "Failed to fix permissions using Docker, trying with current user"
-            chmod -R a+rX "${LIGHTHOUSE_OUTPUT_DIR}" 2>/dev/null || log_warn "Could not fix all permissions"
-        }
-        log_success "Lighthouse state permissions fixed"
-    else
-        log_warn "Docker not available, skipping permission fix (may cause issues during image build)"
+    local original_genesis=$(find "${genesis_artifact_dir}" -name "genesis.json" -type f | head -1)
+    if [ -z "${original_genesis}" ] || [ ! -f "${original_genesis}" ]; then
+        log_error "Genesis file not found in artifact"
+        exit ${EXIT_CODE_GENERAL_ERROR}
     fi
+    log_info "Original genesis: ${original_genesis}"
+
+    # Merge state with genesis using Python
+    log_info "Merging exported state with genesis..."
+    local output_genesis="${OUTPUT_DIR}/l1-state/genesis.json"
+
+    python3 - "${original_genesis}" "${state_dump}" "${output_genesis}" <<'PYTHON_EOF'
+import json
+import sys
+
+def convert_state_to_alloc(state_dump):
+    """Convert geth debug.dumpBlock output to genesis alloc format"""
+    alloc = {}
+    accounts = state_dump.get('accounts', {})
+
+    for address, account_data in accounts.items():
+        # Normalize address format
+        addr = address.lower() if not address.startswith('0x') else address[2:].lower()
+        addr = '0x' + addr
+
+        alloc[addr] = {}
+
+        # Add balance
+        if 'balance' in account_data and account_data['balance']:
+            alloc[addr]['balance'] = account_data['balance']
+
+        # Add nonce if non-zero
+        if 'nonce' in account_data and account_data['nonce'] != 0:
+            alloc[addr]['nonce'] = hex(account_data['nonce'])
+
+        # Add code for contracts
+        if 'code' in account_data and account_data['code']:
+            alloc[addr]['code'] = account_data['code']
+
+        # Add storage for contracts
+        if 'storage' in account_data and account_data['storage']:
+            alloc[addr]['storage'] = account_data['storage']
+
+    return alloc
+
+try:
+    # Read files
+    with open(sys.argv[1], 'r') as f:
+        genesis = json.load(f)
+
+    with open(sys.argv[2], 'r') as f:
+        lines = f.readlines()
+        # Skip Kurtosis wrapper lines and find the JSON line
+        state_data = None
+        for line in lines:
+            stripped = line.strip()
+            if stripped and not stripped.startswith('The command') and not stripped.startswith('Error:'):
+                state_data = stripped
+                break
+
+        if not state_data:
+            print("❌ Error: No valid JSON found in state dump", file=sys.stderr)
+            sys.exit(1)
+
+        # Handle JSON string wrapping (geth returns JSON.stringify output)
+        if state_data.startswith('"') and state_data.endswith('"'):
+            # Remove outer quotes and unescape
+            state_data = json.loads(state_data)
+
+        state_dump = json.loads(state_data) if isinstance(state_data, str) else state_data
+
+    # Convert and merge
+    new_alloc = convert_state_to_alloc(state_dump)
+
+    if 'alloc' not in genesis:
+        genesis['alloc'] = {}
+
+    genesis['alloc'].update(new_alloc)
+
+    # Write output
+    with open(sys.argv[3], 'w') as f:
+        json.dump(genesis, f, indent=2)
+
+    print(f"✅ Genesis created with {len(genesis['alloc'])} accounts", file=sys.stderr)
+    sys.exit(0)
+
+except Exception as e:
+    print(f"❌ Error: {e}", file=sys.stderr)
+    import traceback
+    traceback.print_exc(file=sys.stderr)
+    sys.exit(1)
+PYTHON_EOF
+
+    if [ $? -eq 0 ] && [ -f "${output_genesis}" ]; then
+        log_success "Genesis file created with pre-loaded state"
+        local genesis_size=$(du -h "${output_genesis}" | cut -f1)
+        log_info "Genesis file size: ${genesis_size}"
+
+        # Clean up temporary files
+        rm -f "${state_dump}"
+        rm -rf "${genesis_artifact_dir}"
+    else
+        log_error "Failed to create genesis file"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    fi
+
+    # Note: No need to extract geth or lighthouse datadirs
+    # Both will start fresh from genesis (block 0, slot 0)
+    log_info "Geth and Lighthouse will start fresh from genesis (no datadir extraction needed)"
 
     # Extract lighthouse testnet configuration (genesis.ssz, config.yaml, etc.)
     log_section "Extracting lighthouse testnet configuration from artifacts"
@@ -296,30 +373,49 @@ main() {
     mkdir -p "${LIGHTHOUSE_TESTNET_DIR}"
 
     # Clean up any existing artifact directories from previous runs
-    rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"
+    rm -rf "${OUTPUT_DIR}/l1-state/el-cl-genesis-artifact"
 
-    log_info "Downloading l1-lighthouse-testnet artifact..."
-    if kurtosis files download "${ENCLAVE_NAME}" l1-lighthouse-testnet "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
-        # Move the extracted testnet config to the expected location
-        if [ -d "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact" ]; then
-            # Move all testnet config files (genesis.ssz, config.yaml, etc.)
-            mv "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"/* "${LIGHTHOUSE_TESTNET_DIR}/" 2>/dev/null || true
-            rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"
-            log_success "Lighthouse testnet config extracted successfully"
+    # Download the el_cl_genesis_data artifact which contains the INITIAL genesis files
+    # This is preferred over l1-lighthouse-testnet because it has the genesis from slot 0
+    log_info "Downloading el_cl_genesis_data artifact (initial genesis files)..."
+    if kurtosis files download "${ENCLAVE_NAME}" el_cl_genesis_data "${OUTPUT_DIR}/l1-state/el-cl-genesis-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
+        if [ -d "${OUTPUT_DIR}/l1-state/el-cl-genesis-artifact" ]; then
+            # Move all genesis files to testnet directory
+            mv "${OUTPUT_DIR}/l1-state/el-cl-genesis-artifact"/* "${LIGHTHOUSE_TESTNET_DIR}/" 2>/dev/null || true
+            rm -rf "${OUTPUT_DIR}/l1-state/el-cl-genesis-artifact"
+            log_success "Genesis files extracted from el_cl_genesis_data artifact"
 
             # Verify critical files exist
             if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.ssz" ] && [ -f "${LIGHTHOUSE_TESTNET_DIR}/config.yaml" ]; then
                 log_success "Found genesis.ssz and config.yaml in testnet directory"
+
+                # Also update the execution genesis.json with the one from el_cl_genesis_data
+                # This ensures geth and lighthouse have matching genesis
+                if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.json" ]; then
+                    log_info "Updating execution genesis.json from el_cl_genesis_data artifact"
+                    cp "${LIGHTHOUSE_TESTNET_DIR}/genesis.json" "${OUTPUT_DIR}/l1-state/genesis.json"
+                    log_success "Execution and consensus genesis files are now matched"
+                fi
             else
-                log_warn "Genesis files may be missing from testnet directory (continuing anyway)"
+                log_warn "Genesis files may be missing from el_cl_genesis_data artifact"
                 log_info "Testnet directory contents: $(ls -la ${LIGHTHOUSE_TESTNET_DIR}/ 2>&1 || echo 'empty')"
             fi
         else
-            log_warn "Lighthouse testnet artifact directory not found (continuing anyway)"
+            log_warn "el_cl_genesis_data artifact directory not found"
         fi
     else
-        log_warn "Failed to download lighthouse testnet artifact (this is expected for older Kurtosis runs)"
-        log_warn "Lighthouse may use mainnet configuration if testnet files are missing"
+        log_warn "Failed to download el_cl_genesis_data artifact"
+        log_warn "Trying fallback to l1-lighthouse-testnet artifact..."
+
+        # Fallback to l1-lighthouse-testnet if el_cl_genesis_data is not available
+        rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"
+        if kurtosis files download "${ENCLAVE_NAME}" l1-lighthouse-testnet "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact" 2>&1 | tee -a "${LOG_FILE}"; then
+            if [ -d "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact" ]; then
+                mv "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"/* "${LIGHTHOUSE_TESTNET_DIR}/" 2>/dev/null || true
+                rm -rf "${OUTPUT_DIR}/l1-state/lighthouse-testnet-artifact"
+                log_warn "Using l1-lighthouse-testnet artifact (may not match execution genesis)"
+            fi
+        fi
     fi
 
     # Fix permissions on testnet directory

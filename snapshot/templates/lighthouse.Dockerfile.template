@@ -1,61 +1,79 @@
-# Lighthouse Dockerfile for snapshot
-# ====================================
-# This Dockerfile packages the extracted lighthouse datadir into a Docker image
-# that can be used in docker-compose. The image contains the complete beacon
-# chain state captured during snapshot creation.
+# Lighthouse Dockerfile for snapshot (Genesis-based approach)
+# ===========================================================
+# This Dockerfile creates a fresh lighthouse image with testnet configuration
+# and validator keys, but NO beacon chain history. Lighthouse will start from
+# genesis (slot 0) which matches geth's fresh start (block 0).
+#
+# This approach ensures consistent state between execution and consensus layers,
+# avoiding the "stuck head" problem that occurs with state restoration.
 #
 # Template Variables (replaced during image build):
 #   {{LIGHTHOUSE_BASE_IMAGE}} - Base lighthouse image (e.g., sigp/lighthouse:v8.0.1)
-#                               Must match the version used in Kurtosis deployment
-#   {{GETH_SERVICE_NAME}}     - Docker-compose service name for geth (e.g., l1-geth)
-#                               Used to connect to geth's execution engine API
+#   {{GETH_SERVICE_NAME}}     - Docker-compose service name for geth
 #   {{LOG_FORMAT}}            - Log format: "JSON" or "default"
 #
 # Build Context:
-#   This Dockerfile expects the build context to be the extracted lighthouse datadir
-#   (typically snapshot-output/l1-state/lighthouse/). The build context contains
-#   the actual lighthouse beacon data extracted from /data/lighthouse/beacon-data/beacon
-#   in Kurtosis. The COPY command copies all files to /root/.lighthouse/ in the image.
+#   Expected files in build context:
+#   - testnet/: Testnet configuration (genesis.ssz, config.yaml, etc.)
+#   - validators/: Validator keystores and validator_definitions.yml
+#   - ethereum/jwtsecret: JWT secret for geth authentication
 
 FROM {{LIGHTHOUSE_BASE_IMAGE}}
 
-# Copy extracted lighthouse datadir
-# This includes the complete beacon chain state (beacon data, validator data, etc.)
-# The datadir is extracted from the Kurtosis lighthouse service after it's stopped
-COPY . /root/.lighthouse/
+# Copy testnet configuration (genesis.ssz, config.yaml)
+# This defines the genesis state and network parameters
+COPY testnet /root/.lighthouse/testnet
 
-# Copy JWT secret from the build context to the expected location
-# The JWT secret is copied from geth's datadir during image build, so lighthouse
-# can authenticate with geth's execution engine API without needing volume mounts.
-# The build process copies the JWT secret to lighthouse/ethereum/jwtsecret before building.
+# Copy JWT secret for engine API authentication with geth
 COPY ethereum/jwtsecret /root/.ethereum/jwtsecret
 RUN chmod 600 /root/.ethereum/jwtsecret
 
-# Copy testnet configuration (genesis.ssz, config.yaml, etc.)
-# This directory is extracted from Kurtosis and contains the network genesis configuration.
-# Without this, lighthouse will default to mainnet configuration.
-# The --testnet-dir flag below will point to this directory.
-COPY testnet /root/.lighthouse/testnet
-
 # Copy validator keystores (if present)
-# These are needed for the validator service to propose blocks.
-# The validator service will run separately using the same image with different entrypoint.
-# The build script ensures this directory exists (even if empty).
+# These are needed for the validator service to propose blocks
 COPY validators /root/.lighthouse/validators
 
+# Initialize slashing protection database
+# Lighthouse requires this SQLite database to prevent slashing.
+# We create an empty but properly initialized database.
+RUN apt-get update && apt-get install -y sqlite3 && \
+    sqlite3 /root/.lighthouse/validators/slashing_protection.sqlite <<'EOF'
+CREATE TABLE IF NOT EXISTS validators (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_key BLOB NOT NULL UNIQUE,
+    enabled BOOLEAN NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS signed_blocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    validator_id INTEGER NOT NULL,
+    slot INTEGER NOT NULL,
+    signing_root BLOB NOT NULL,
+    FOREIGN KEY(validator_id) REFERENCES validators(id) ON DELETE CASCADE,
+    UNIQUE(validator_id, slot)
+);
+CREATE TABLE IF NOT EXISTS signed_attestations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    validator_id INTEGER NOT NULL,
+    source_epoch INTEGER NOT NULL,
+    target_epoch INTEGER NOT NULL,
+    signing_root BLOB NOT NULL,
+    FOREIGN KEY(validator_id) REFERENCES validators(id) ON DELETE CASCADE,
+    UNIQUE(validator_id, target_epoch)
+);
+CREATE INDEX IF NOT EXISTS idx_signed_blocks_validator_slot ON signed_blocks(validator_id, slot);
+CREATE INDEX IF NOT EXISTS idx_signed_attestations_validator_target ON signed_attestations(validator_id, target_epoch);
+CREATE INDEX IF NOT EXISTS idx_signed_attestations_source_target ON signed_attestations(source_epoch, target_epoch);
+EOF
+RUN chmod 644 /root/.lighthouse/validators/slashing_protection.sqlite && \
+    apt-get remove -y sqlite3 && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+
 # Expose ports
-# 4000: HTTP API endpoint (for beacon chain queries)
-# 5054: Metrics endpoint (for Prometheus monitoring)
+# 4000: HTTP API endpoint (for validator client and queries)
+# 5054: Metrics endpoint (for monitoring)
 EXPOSE 4000 5054
 
-# Set entrypoint with lighthouse beacon node configuration
-# All flags are set to match the original Kurtosis deployment configuration
-# to ensure compatibility with the captured state.
-#
-# Note: --checkpoint-sync-url is omitted since we're using local state
-#       (no need to sync from external checkpoint)
-# Note: --allow-insecure-genesis-sync is required for development snapshots
-#       that start from genesis without checkpoint sync
+# Set entrypoint for beacon node
+# Lighthouse will start fresh from genesis using the testnet configuration
+# No --checkpoint-sync-url needed since we're starting from genesis
 ENTRYPOINT ["lighthouse", "bn", \
     "--datadir", "/root/.lighthouse", \
     "--testnet-dir", "/root/.lighthouse/testnet", \
@@ -63,7 +81,6 @@ ENTRYPOINT ["lighthouse", "bn", \
     "--execution-jwt", "/root/.ethereum/jwtsecret", \
     "--disable-optimistic-finalized-sync", \
     "--disable-backfill-rate-limiting", \
-    "--allow-insecure-genesis-sync", \
     "--log-format", "{{LOG_FORMAT}}", \
     "--http", \
     "--http-address", "0.0.0.0", \

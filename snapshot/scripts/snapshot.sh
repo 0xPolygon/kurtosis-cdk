@@ -5,9 +5,9 @@
 # 1. Generates args file with snapshot_mode enabled
 # 2. Runs kurtosis run with snapshot mode
 # 3. Calls post-processing scripts in sequence:
-#    - extract-l1-state.sh
+#    - extract-l1-state.sh (exports L1 state to genesis file)
 #    - process-configs.sh
-#    - build-l1-images.sh
+#    - build-l1-images-genesis.sh (builds images from genesis)
 #    - generate-compose.sh
 # 4. Validates output and creates summary report
 
@@ -327,7 +327,7 @@ run_post_processing() {
     
     # Step 4: Build L1 images
     log_step "4" "Building L1 Docker Images"
-    if ! "${SCRIPT_DIR}/build-l1-images.sh" \
+    if ! "${SCRIPT_DIR}/build-l1-images-genesis.sh" \
         --output-dir "${output_dir}"; then
         log_error "L1 image building failed"
         return 1

@@ -125,6 +125,7 @@ generate_l1_validator_service() {
       - ${beacon_node_url}
       - --suggested-fee-recipient
       - "0x0000000000000000000000000000000000000000"
+      - --init-slashing-protection
       - --log-format
       - ${log_format}
 EOF
