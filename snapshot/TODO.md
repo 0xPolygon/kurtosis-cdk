@@ -1,0 +1,7 @@
+- Test: bridge L2 -> L1. L2 should send cert, L1 GER updated by agglayer, aggoracle injects new GER 
+- Add CLI option to push generated images + edit docker-compose to use pushed images. Sanity check: docker-compose should not use any local image, so any machie can pull the images
+- Create GHA to generate snapshots on demand (trigger)
+- Remove `snapshot.log` once snapshot is created
+- Missing roles for L1 SCs at `summary.json`
+- Wrong RPC for L2
+- Clean previous docker state capture logic

@@ -38,6 +38,72 @@ def _filter_vkey_futures(args_dict):
     return filtered
 
 
+def _customize_op_stack_args(op_stack_args, network_config):
+    """
+    Customize op_stack_args with network-specific chain ID.
+
+    Args:
+        op_stack_args: Base OP Stack arguments
+        network_config: Network configuration with l2_chain_id
+
+    Returns:
+        Customized op_stack_args with correct network_id
+    """
+    if not op_stack_args or type(op_stack_args) != "dict":
+        return op_stack_args
+
+    l2_chain_id = network_config.get("l2_chain_id", 0)
+    if l2_chain_id <= 0:
+        return op_stack_args
+
+    # Create a mutable copy of op_stack_args
+    customized_args = {}
+    for key, value in op_stack_args.items():
+        customized_args[key] = value
+
+    # Get the optimism_package section
+    optimism_package = customized_args.get("optimism_package", {})
+    if type(optimism_package) != "dict":
+        return op_stack_args
+
+    # Create a mutable copy of optimism_package
+    customized_optimism_package = {}
+    for key, value in optimism_package.items():
+        customized_optimism_package[key] = value
+
+    # Get the chains section
+    chains = customized_optimism_package.get("chains", {})
+    if type(chains) != "dict" or len(chains.keys()) == 0:
+        return op_stack_args
+
+    # Create a mutable copy of chains
+    customized_chains = {}
+    for chain_key, chain_value in chains.items():
+        # Create a mutable copy of each chain
+        customized_chain = {}
+        for key, value in chain_value.items():
+            customized_chain[key] = value
+
+        # Get network_params and customize it
+        network_params = customized_chain.get("network_params", {})
+        if type(network_params) == "dict":
+            # Create a mutable copy of network_params
+            customized_network_params = {}
+            for key, value in network_params.items():
+                customized_network_params[key] = value
+
+            # Override network_id with l2_chain_id
+            customized_network_params["network_id"] = l2_chain_id
+            customized_chain["network_params"] = customized_network_params
+
+        customized_chains[chain_key] = customized_chain
+
+    customized_optimism_package["chains"] = customized_chains
+    customized_args["optimism_package"] = customized_optimism_package
+
+    return customized_args
+
+
 def register_networks(plan, args, contract_setup_addresses, snapshot_networks, deployment_stages, op_stack_args):
     """
     Register multiple networks in a single Kurtosis run.
@@ -139,8 +205,9 @@ def register_networks(plan, args, contract_setup_addresses, snapshot_networks, d
         network_args["consensus_contract_type"] = network_consensus_type
         
         # Use op_stack_args for OP-Geth networks
-        network_op_stack_args = op_stack_args
-        
+        # Customize op_stack_args with the network-specific chain ID
+        network_op_stack_args = _customize_op_stack_args(op_stack_args, network_config)
+
         # Register network based on sequencer type
         if network_sequencer_type == constants.SEQUENCER_TYPE.op_geth:
             network_metadata = _register_op_geth_network(

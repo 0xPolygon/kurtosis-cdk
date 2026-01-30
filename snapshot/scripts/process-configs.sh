@@ -402,27 +402,55 @@ main() {
     log_info "Output directory: ${OUTPUT_DIR}"
     log_debug "Temporary directory: ${TEMP_DIR}"
 
-    # Download L1 genesis.json for op-node
-    log_section "Downloading L1 genesis configuration"
-    local l1_genesis_artifact="el_cl_genesis_data"
-    local l1_genesis_dest="${TEMP_DIR}/${l1_genesis_artifact}"
-    if download_artifact "${l1_genesis_artifact}" "${l1_genesis_dest}" 2>/dev/null; then
-        local l1_genesis_file
-        l1_genesis_file=$(find "${l1_genesis_dest}" -name "genesis.json" -type f | head -1 || echo "")
-        if [ -n "${l1_genesis_file}" ]; then
-            # Remove if it exists as a directory (from failed previous run)
-            if [ -d "${OUTPUT_DIR}/l1-config/genesis.json" ]; then
-                rm -rf "${OUTPUT_DIR}/l1-config/genesis.json"
-            fi
-            # Clean up the genesis.json by removing fields that op-node doesn't recognize
-            # terminalTotalDifficultyPassed is added by ethereum-genesis-generator but not part of standard config
-            jq 'del(.config.terminalTotalDifficultyPassed)' "${l1_genesis_file}" > "${OUTPUT_DIR}/l1-config/genesis.json"
-            log_success "L1 genesis.json downloaded and cleaned"
-        else
-            log_warn "L1 genesis.json not found in artifact"
+    # Get L1 genesis.json for op-node
+    log_section "Loading L1 genesis configuration"
+
+    # First, check if merged genesis from L1 state extraction exists (includes deployed contracts)
+    local merged_genesis="${OUTPUT_DIR}/l1-state/genesis.json"
+    log_info "Looking for merged genesis at: ${merged_genesis}"
+    if [ -f "${merged_genesis}" ]; then
+        log_info "Found merged L1 genesis with deployed contracts from state extraction"
+        local genesis_account_count=$(jq '.alloc | length' "${merged_genesis}" 2>/dev/null || echo "0")
+        log_info "Merged genesis has ${genesis_account_count} accounts"
+
+        # Remove if it exists as a directory (from failed previous run)
+        if [ -d "${OUTPUT_DIR}/l1-config/genesis.json" ]; then
+            rm -rf "${OUTPUT_DIR}/l1-config/genesis.json"
         fi
-    else
-        log_warn "Failed to download L1 genesis artifact (el_cl_genesis_data)"
+
+        # Clean up the genesis.json by removing fields that op-node doesn't recognize
+        if jq 'del(.config.terminalTotalDifficultyPassed)' "${merged_genesis}" > "${OUTPUT_DIR}/l1-config/genesis.json" 2>&1 | tee -a "${LOG_FILE}"; then
+            local final_account_count=$(jq '.alloc | length' "${OUTPUT_DIR}/l1-config/genesis.json" 2>/dev/null || echo "0")
+            log_success "L1 genesis.json loaded from merged state (${final_account_count} accounts, includes OP Stack contracts)"
+        else
+            log_error "Failed to process merged genesis, falling back to original"
+            rm -f "${OUTPUT_DIR}/l1-config/genesis.json"
+            merged_genesis=""  # Force fallback
+        fi
+    fi
+
+    if [ -z "${merged_genesis}" ] || [ ! -f "${merged_genesis}" ]; then
+        # Fallback to original genesis from artifact (won't include deployed contracts)
+        log_warn "Merged L1 genesis not found, falling back to original genesis"
+        local l1_genesis_artifact="el_cl_genesis_data"
+        local l1_genesis_dest="${TEMP_DIR}/${l1_genesis_artifact}"
+        if download_artifact "${l1_genesis_artifact}" "${l1_genesis_dest}" 2>/dev/null; then
+            local l1_genesis_file
+            l1_genesis_file=$(find "${l1_genesis_dest}" -name "genesis.json" -type f | head -1 || echo "")
+            if [ -n "${l1_genesis_file}" ]; then
+                # Remove if it exists as a directory (from failed previous run)
+                if [ -d "${OUTPUT_DIR}/l1-config/genesis.json" ]; then
+                    rm -rf "${OUTPUT_DIR}/l1-config/genesis.json"
+                fi
+                # Clean up the genesis.json by removing fields that op-node doesn't recognize
+                jq 'del(.config.terminalTotalDifficultyPassed)' "${l1_genesis_file}" > "${OUTPUT_DIR}/l1-config/genesis.json"
+                log_success "L1 genesis.json downloaded and cleaned"
+            else
+                log_warn "L1 genesis.json not found in artifact"
+            fi
+        else
+            log_warn "Failed to download L1 genesis artifact (el_cl_genesis_data)"
+        fi
     fi
     
     # Try to get artifact list from Kurtosis if manifest not provided
@@ -673,11 +701,21 @@ main() {
                         fi
                     fi
 
-                    # For OP-Geth networks, download rollup.json from op-deployer-configs artifact
+                    # For OP-Geth networks, download rollup.json and genesis.json from op-deployer-configs artifact
                     if [ "${sequencer_type}" = "op-geth" ]; then
                         local op_deployer_configs_artifact="op-deployer-configs"
                         local op_deployer_dest="${TEMP_DIR}/${op_deployer_configs_artifact}"
                         if download_artifact "${op_deployer_configs_artifact}" "${op_deployer_dest}" 2>/dev/null; then
+                            # Find and copy genesis-{l2_chain_id}.json file (this matches rollup.json genesis hash)
+                            local op_genesis_file
+                            op_genesis_file=$(find "${op_deployer_dest}" -name "genesis-${l2_chain_id}.json" -type f | head -1 || echo "")
+                            if [ -n "${op_genesis_file}" ]; then
+                                cp "${op_genesis_file}" "${network_output_dir}/genesis.json"
+                                echo "✅ Copied genesis.json from op-deployer-configs (matches rollup.json)"
+                            else
+                                echo "⚠️  Warning: genesis-${l2_chain_id}.json not found in op-deployer-configs, using transformed genesis"
+                            fi
+
                             local rollup_file
                             # Find rollup-{l2_chain_id}.json file
                             rollup_file=$(find "${op_deployer_dest}" -name "rollup-*.json" -type f | head -1 || echo "")

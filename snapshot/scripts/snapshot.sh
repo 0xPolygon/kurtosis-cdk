@@ -446,9 +446,7 @@ create_summary() {
         "count": ${networks_count}
     },
     "files": {
-        "docker_compose": "${output_dir}/docker-compose.yml",
-        "l1_manifest": "${l1_manifest}",
-        "log_file": "${output_dir}/snapshot.log"
+        "docker_compose": "${output_dir}/docker-compose.yml"
     },
     "next_steps": [
         "Review the snapshot output in: ${output_dir}",
@@ -488,17 +486,62 @@ EOF
     return 0
 }
 
+# Cleanup snapshot artifacts (temporary files and directories)
+cleanup_snapshot_artifacts() {
+    local output_dir="$1"
+
+    log_section "Cleaning Up Snapshot Artifacts"
+
+    local artifacts_to_remove=(
+        "${output_dir}/snapshot.log"
+        "${output_dir}/snapshot-summary.json"
+        "${output_dir}/port-mapping.json"
+        "${output_dir}/kurtosis-args.json"
+        "${output_dir}/keystore-mapping.json"
+        "${output_dir}/config-processing-manifest.json"
+        "${output_dir}/.temp"
+        "${output_dir}/dockerfiles"
+        "${output_dir}/l1-images"
+        "${output_dir}/l1-state"
+    )
+
+    local removed_count=0
+    local failed_count=0
+
+    for artifact in "${artifacts_to_remove[@]}"; do
+        if [ -e "${artifact}" ]; then
+            if rm -rf "${artifact}" 2>/dev/null; then
+                log_debug "Removed: ${artifact}"
+                removed_count=$((removed_count + 1))
+            else
+                log_warn "Failed to remove: ${artifact}"
+                failed_count=$((failed_count + 1))
+            fi
+        fi
+    done
+
+    if [ ${removed_count} -gt 0 ]; then
+        log_success "Cleaned up ${removed_count} temporary artifact(s)"
+    fi
+
+    if [ ${failed_count} -gt 0 ]; then
+        log_warn "Failed to remove ${failed_count} artifact(s)"
+    fi
+
+    return 0
+}
+
 # Cleanup function
 cleanup() {
     local exit_code=$?
-    
+
     if [ ${exit_code} -ne 0 ]; then
         log_error "Script failed with exit code ${exit_code}"
         if [ -n "${LOG_FILE}" ]; then
             log_error "Check log file for details: ${LOG_FILE}"
         fi
     fi
-    
+
     # Cleanup enclave if requested
     if [ "${CLEANUP_ENCLAVE}" = "true" ] && [ -n "${ENCLAVE_NAME}" ]; then
         log_info "Cleaning up enclave: ${ENCLAVE_NAME}"
@@ -582,21 +625,40 @@ main() {
     if ! create_summary "${OUTPUT_DIR}"; then
         log_warn "Failed to create summary report (continuing)"
     fi
-    
+
+    # Create network summary (comprehensive summary.json with L1/L2 info)
+    log_section "Creating Network Summary"
+    if [ -n "${NETWORKS_JSON}" ] && [ -f "${NETWORKS_JSON}" ]; then
+        if "${SCRIPT_DIR}/create-network-summary.sh" \
+            --output-dir "${OUTPUT_DIR}" \
+            --networks-json "${NETWORKS_JSON}"; then
+            log_success "Network summary created successfully"
+        else
+            log_warn "Failed to create network summary (continuing)"
+        fi
+    else
+        if "${SCRIPT_DIR}/create-network-summary.sh" \
+            --output-dir "${OUTPUT_DIR}"; then
+            log_success "Network summary created successfully"
+        else
+            log_warn "Failed to create network summary (continuing)"
+        fi
+    fi
+
     # Run verification if not skipped
     if [ "${SKIP_VERIFICATION}" != "true" ]; then
         log_section "Running Snapshot Verification"
-        
+
         local verify_args=("--output-dir" "${OUTPUT_DIR}")
-        
+
         if [ -n "${NETWORKS_JSON}" ] && [ -f "${NETWORKS_JSON}" ]; then
             verify_args+=("--networks-json" "${NETWORKS_JSON}")
         fi
-        
+
         if [ "${VERIFY_RUNTIME}" = "true" ]; then
             verify_args+=("--start-env")
         fi
-        
+
         if "${SCRIPT_DIR}/verify-snapshot.sh" "${verify_args[@]}"; then
             log_success "Snapshot verification passed"
         else
@@ -608,10 +670,12 @@ main() {
     else
         log_info "Verification skipped (--skip-verification flag set)"
     fi
-    
+
+    # Clean up temporary snapshot artifacts
+    cleanup_snapshot_artifacts "${OUTPUT_DIR}"
+
     log_success "Snapshot creation completed successfully!"
     log_info "Output directory: ${OUTPUT_DIR}"
-    log_info "Log file: ${LOG_FILE}"
 }
 
 # Run main function

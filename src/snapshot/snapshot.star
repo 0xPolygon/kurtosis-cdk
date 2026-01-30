@@ -11,6 +11,7 @@ This module coordinates the snapshot creation process:
 network_registrar = import_module("./network_registrar.star")
 config_extractor = import_module("./config_extractor.star")
 state_extractor = import_module("./state_extractor.star")
+constants = import_module("../package_io/constants.star")
 
 
 def run(plan, args, deployment_stages, contract_setup_addresses, sovereign_contract_setup_addresses, l1_context, genesis_artifact, op_stack_args):
@@ -54,7 +55,38 @@ def run(plan, args, deployment_stages, contract_setup_addresses, sovereign_contr
         deployment_stages,
         op_stack_args,
     )
-    
+
+    # Step 3.5 - Record latest L1 block after contract deployment
+    # This ensures we wait for this specific block to be finalized before exporting L1 state
+    plan.print("Recording latest L1 block after contract deployment...")
+    l1_rpc_url = l1_context.rpc_url
+    deployment_block_result = plan.run_sh(
+        name="record-deployment-block",
+        description="Record L1 block after contract deployment",
+        image=constants.TOOLBOX_IMAGE,
+        env_vars={
+            "L1_RPC_URL": l1_rpc_url,
+        },
+        run="\n".join([
+            "LATEST_BLOCK=$(cast block-number --rpc-url \"$L1_RPC_URL\" latest 2>/dev/null || echo \"0\")",
+            "echo \"Latest L1 block after deployment: $LATEST_BLOCK\"",
+            "mkdir -p /tmp/deployment-metadata",
+            "cat > /tmp/deployment-metadata/deployment-block.json <<EOF",
+            "{",
+            "  \"deployment_block\": $LATEST_BLOCK",
+            "}",
+            "EOF",
+            "cat /tmp/deployment-metadata/deployment-block.json",
+        ]),
+        store=[
+            StoreSpec(
+                src="/tmp/deployment-metadata",
+                name="deployment-block-metadata",
+            ),
+        ],
+    )
+    plan.print("Recorded deployment block metadata")
+
     # Step 4 - Extract config artifacts
     config_extraction_result = config_extractor.extract_config_artifacts(
         plan,
@@ -63,7 +95,7 @@ def run(plan, args, deployment_stages, contract_setup_addresses, sovereign_contr
         contract_setup_addresses,
         deployment_stages,
     )
-    
+
     # Step 5 - Prepare L1 for state extraction
     l1_metadata = state_extractor.prepare_l1_snapshot(
         plan,

@@ -201,7 +201,9 @@ def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):
     """
     min_finalized_blocks = args.get("snapshot_l1_wait_blocks", 1)
 
-    plan.print("Waiting for at least {} finalized blocks...".format(min_finalized_blocks))
+    # Note: Deployment block metadata is recorded by snapshot.star and will be used
+    # by post-processing scripts to verify finalized block includes deployment block
+    plan.print("Waiting for L1 finalized block to advance by {} blocks...".format(min_finalized_blocks))
 
     # Wait for finalized block and store the result to a file
     # We store it as an artifact so post-processing scripts can read the actual finalized block
@@ -215,14 +217,22 @@ def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):
             "MIN_BLOCKS": str(min_finalized_blocks),
         },
         run="\n".join([
-            "# Wait for finalized block",
+            "# Wait for finalized block to advance",
+            "# First, get the starting finalized block",
+            "STARTING_FINALIZED=$(cast block-number --rpc-url \"$L1_RPC_URL\" finalized 2>/dev/null || echo \"0\");",
+            "TARGET_FINALIZED=$((STARTING_FINALIZED + MIN_BLOCKS));",
+            "echo \"Starting finalized block: $STARTING_FINALIZED\";",
+            "echo \"Target finalized block: $TARGET_FINALIZED (need to advance by $MIN_BLOCKS blocks)\";",
+            "",
+            "# Wait for finalized block to reach target",
             "while true; do",
             "  sleep 2;",
             "  FINALIZED_BLOCK=$(cast block-number --rpc-url \"$L1_RPC_URL\" finalized 2>/dev/null || echo \"0\");",
             "  LATEST_BLOCK=$(cast block-number --rpc-url \"$L1_RPC_URL\" latest 2>/dev/null || echo \"0\");",
-            "  echo \"L1 blocks - Latest: $LATEST_BLOCK, Finalized: $FINALIZED_BLOCK\";",
-            "  if [ \"$FINALIZED_BLOCK\" -ge \"$MIN_BLOCKS\" ]; then",
-            "    echo \"✅ L1 reached finalized block: $FINALIZED_BLOCK\";",
+            "  BLOCKS_TO_GO=$((TARGET_FINALIZED - FINALIZED_BLOCK));",
+            "  echo \"L1 blocks - Latest: $LATEST_BLOCK, Finalized: $FINALIZED_BLOCK (need $BLOCKS_TO_GO more)\";",
+            "  if [ \"$FINALIZED_BLOCK\" -ge \"$TARGET_FINALIZED\" ]; then",
+            "    echo \"✅ L1 finalized block advanced by $MIN_BLOCKS: $STARTING_FINALIZED -> $FINALIZED_BLOCK\";",
             "    break;",
             "  fi;",
             "done",
