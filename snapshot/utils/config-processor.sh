@@ -70,6 +70,18 @@ write_toml_file() {
         rm -rf "${file_path}"
     fi
 
+    # Fix permissions if file/directory exists with wrong permissions
+    # This can happen when Kurtosis/Docker creates files with restrictive permissions
+    local parent_dir="$(dirname "${file_path}")"
+    if [ -d "${parent_dir}" ]; then
+        chmod -R u+w "${parent_dir}" 2>/dev/null || {
+            # If chmod fails, try using docker to fix permissions
+            if command -v docker &>/dev/null; then
+                docker run --rm -v "${parent_dir}:/data" alpine:latest sh -c "chmod -R 777 /data" 2>/dev/null || true
+            fi
+        }
+    fi
+
     echo "${toml_content}" > "${file_path}"
 }
 

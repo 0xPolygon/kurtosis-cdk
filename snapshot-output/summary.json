@@ -1,0 +1,86 @@
+{
+  "created_at": "2026-01-31T17:07:58Z",
+  "l1": {
+    "chain_id": 271828,
+    "contracts": {
+      "rollup_manager": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+      "global_exit_root": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+      "pol_token": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+      "deposit_contract": "0xdc06c7e6bbb9041734e7795a3991cf2735ab05c4",
+      "system_config": "0x786e2af0df30c07099998438e17020dba8638593",
+      "protocol_versions": "0x373e0b8b80a15cdf587c1263654c6b5edd195a43",
+      "batch_inbox": "0x000ccf0c3a64a7f7a5bd386fccf4ef18ceae7e05"
+    },
+    "accounts": {
+      "prefunded": [
+        {
+          "address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+          "private_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+          "role": "Prefunded account from default mnemonic",
+          "balance": "1000000 ETH (approximate)"
+        }
+      ]
+    },
+    "rpc": {
+      "docker_url": "http://l1-geth:8545",
+      "localhost_url": "http://localhost:8545",
+      "ws_docker_url": "ws://l1-geth:8546",
+      "ws_localhost_url": "ws://localhost:8546"
+    }
+  },
+  "l2_networks": [
+    {
+      "network_id": 1,
+      "chain_id": 20201,
+      "sequencer_type": "op-geth",
+      "consensus_type": "pessimistic",
+      "contracts": {
+        "l2_global_exit_root": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
+        "l2_bridge": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+        "l1_rollup_contract": "0x414e9E227e4b589aF92200508aF5399576530E4e"
+      },
+      "accounts": [
+        {
+          "address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed",
+          "private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181",
+          "role": "sequencer"
+        },
+        {
+          "address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+          "private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970",
+          "role": "aggregator"
+        },
+        {
+          "address": "0xE34aaF64b29273B7D567FCFc40544c5B272F08c1",
+          "private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625",
+          "role": "admin"
+        },
+        {
+          "address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6",
+          "private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b",
+          "role": "data_availability_committee"
+        },
+        {
+          "address": "0x635243A11B41072264Df6c9186e3f473402F94e9",
+          "private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb",
+          "role": "claim_sponsor"
+        },
+        {
+          "address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16",
+          "private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0",
+          "role": "sovereign_admin"
+        },
+        {
+          "address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+          "private_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+          "role": "prefunded",
+          "balance": "100 ETH (approximate)"
+        }
+      ],
+      "rpc": {
+        "docker_url": "http://op-geth-1:8545",
+        "localhost_url": "http://localhost:8545"
+      }
+    }
+  ]
+}

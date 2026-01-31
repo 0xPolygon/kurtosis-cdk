@@ -1,0 +1,4 @@
+[2026-01-31 17:08:00 UTC] [SUCCESS] Cleaned up 10 temporary artifact(s)
+[2026-01-31 17:08:00 UTC] [SUCCESS] Snapshot creation completed successfully!
+[2026-01-31 17:08:00 UTC] [INFO] Output directory: ./snapshot-output
+[2026-01-31 17:08:00 UTC] [INFO] Cleaning up enclave: snapshot

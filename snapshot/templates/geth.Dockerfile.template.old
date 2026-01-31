@@ -1,0 +1,60 @@
+# Geth Dockerfile for snapshot (Genesis-based approach)
+# ======================================================
+# This Dockerfile initializes geth from a genesis file with pre-loaded state.
+# Instead of copying an existing datadir, geth starts fresh from block 0 with
+# all contracts, balances, and storage pre-loaded in the genesis.
+#
+# This approach avoids state restoration issues and allows both execution
+# and consensus clients to start with consistent state (block 0 = slot 0).
+#
+# Template Variables (replaced during image build):
+#   {{GETH_BASE_IMAGE}} - Base geth image (e.g., ethereum/client-go:v1.16.8)
+#   {{CHAIN_ID}}        - Network chain ID
+#   {{LOG_FORMAT}}      - Log format: "json" or "terminal"
+#
+# Build Context:
+#   The build context should contain:
+#   - genesis.json: Genesis file with pre-loaded L1 state
+#   - jwtsecret: JWT secret for engine API authentication
+
+FROM {{GETH_BASE_IMAGE}}
+
+# Copy genesis and JWT secret
+COPY genesis.json /tmp/genesis.json
+COPY jwtsecret /root/.ethereum/jwtsecret
+
+# Initialize geth from genesis
+# This creates the blockchain database at block 0 with all pre-loaded state
+RUN geth init \
+    --datadir /root/.ethereum \
+    /tmp/genesis.json && \
+    rm /tmp/genesis.json && \
+    chmod 600 /root/.ethereum/jwtsecret
+
+# Expose ports
+# 8545: HTTP RPC endpoint
+# 8546: WebSocket RPC endpoint
+# 8551: Engine API endpoint (for consensus client)
+EXPOSE 8545 8546 8551
+
+# Set entrypoint
+# Geth will start from the initialized genesis (block 0) and begin producing blocks
+ENTRYPOINT ["geth", \
+    "--datadir", "/root/.ethereum", \
+    "--http", \
+    "--http.addr", "0.0.0.0", \
+    "--http.port", "8545", \
+    "--http.api", "eth,net,web3,engine", \
+    "--ws", \
+    "--ws.addr", "0.0.0.0", \
+    "--ws.port", "8546", \
+    "--ws.api", "eth,net,web3", \
+    "--authrpc.addr", "0.0.0.0", \
+    "--authrpc.port", "8551", \
+    "--authrpc.jwtsecret", "/root/.ethereum/jwtsecret", \
+    "--gcmode", "archive", \
+    "--log.format", "{{LOG_FORMAT}}", \
+    "--networkid", "{{CHAIN_ID}}", \
+    "--http.corsdomain", "*", \
+    "--http.vhosts", "*" \
+]

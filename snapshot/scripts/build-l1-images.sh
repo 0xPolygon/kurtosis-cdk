@@ -152,6 +152,15 @@ read_l1_manifest() {
         exit 1
     fi
 
+    # Set up build context directories for genesis-based approach
+    # These directories will contain the files needed for the Docker build
+    GETH_DATADIR="${OUTPUT_DIR}/l1-state/geth"
+    LIGHTHOUSE_DATADIR="${OUTPUT_DIR}/l1-state/lighthouse"
+    mkdir -p "${GETH_DATADIR}" "${LIGHTHOUSE_DATADIR}"
+
+    # Copy genesis file to geth build context
+    cp "${GENESIS_FILE}" "${GETH_DATADIR}/"
+
     echo "L1 Manifest loaded:"
     echo "  Chain ID: ${CHAIN_ID}"
     echo "  Genesis file: ${GENESIS_FILE}"

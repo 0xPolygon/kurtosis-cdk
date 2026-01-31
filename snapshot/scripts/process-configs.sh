@@ -192,17 +192,70 @@ process_aggkit_config() {
                 local temp_file="${output_file}.tmp"
 
                 # Replace the bridge addresses in L2Config and BridgeL2Sync sections
+                # This awk script handles multiple cases:
+                # 1. Replaces commented-out BridgeAddr lines
+                # 2. Updates existing BridgeAddr values
+                # 3. Ensures GlobalExitRootAddr is set correctly
+                # 4. Re-enables BridgeL2Sync section if it was commented out
                 awk -v l2_bridge="${l2_bridge_addr}" -v l2_ger="${l2_ger_addr}" '
-                    /^\[L2Config\]/ { in_l2_config=1; }
-                    /^\[BridgeL2Sync\]/ { in_l2_config=0; in_bridge_sync=1; }
-                    /^\[/ && !/^\[(L2Config|BridgeL2Sync)\]/ { in_l2_config=0; in_bridge_sync=0; }
+                    BEGIN {
+                        in_l2_config=0;
+                        in_bridge_sync=0;
+                        bridge_sync_exists=0;
+                        l2_config_has_bridge=0;
+                        bridge_sync_has_bridge=0;
+                    }
 
+                    # Track which section we are in
+                    /^\[L2Config\]/ {
+                        in_l2_config=1;
+                        in_bridge_sync=0;
+                        bridge_sync_has_bridge=0;
+                        print;
+                        next;
+                    }
+                    /^\[BridgeL2Sync\]/ {
+                        in_l2_config=0;
+                        in_bridge_sync=1;
+                        bridge_sync_has_bridge=0;
+                        bridge_sync_exists=1;
+                        print;
+                        next;
+                    }
+                    /^\[/ && !/^\[(L2Config|BridgeL2Sync)\]/ {
+                        # Exiting L2Config or BridgeL2Sync section
+                        # If we are exiting L2Config and haven'"'"'t added BridgeAddr yet, add it now
+                        if (in_l2_config && !l2_config_has_bridge) {
+                            print "BridgeAddr = \"" l2_bridge "\"";
+                            l2_config_has_bridge=1;
+                        }
+                        in_l2_config=0;
+                        in_bridge_sync=0;
+                        bridge_sync_has_bridge=0;
+                        print;
+                        next;
+                    }
+
+                    # Handle L2Config section
                     in_l2_config && /^# BridgeAddr removed/ {
-                        print "BridgeAddr = \"" l2_bridge "\"";
+                        if (!l2_config_has_bridge) {
+                            print "BridgeAddr = \"" l2_bridge "\"";
+                            l2_config_has_bridge=1;
+                        }
+                        next;
+                    }
+                    in_l2_config && /^# *BridgeAddr/ {
+                        if (!l2_config_has_bridge) {
+                            print "BridgeAddr = \"" l2_bridge "\"";
+                            l2_config_has_bridge=1;
+                        }
                         next;
                     }
                     in_l2_config && /^BridgeAddr/ {
-                        print "BridgeAddr = \"" l2_bridge "\"";
+                        if (!l2_config_has_bridge) {
+                            print "BridgeAddr = \"" l2_bridge "\"";
+                            l2_config_has_bridge=1;
+                        }
                         next;
                     }
                     in_l2_config && /^GlobalExitRootAddr/ {
@@ -210,49 +263,96 @@ process_aggkit_config() {
                         next;
                     }
 
+                    # Handle BridgeL2Sync section
                     in_bridge_sync && /^# \[BridgeL2Sync\] section removed/ {
-                        print "[BridgeL2Sync]";
+                        # Skip this comment line, we already printed [BridgeL2Sync] above
                         next;
                     }
-                    in_bridge_sync && /^# BridgeAddr = "" # L2 bridge/ {
-                        print "BridgeAddr = \"" l2_bridge "\"";
+                    in_bridge_sync && /^# BridgeAddr/ {
+                        if (!bridge_sync_has_bridge) {
+                            print "BridgeAddr = \"" l2_bridge "\"";
+                            bridge_sync_has_bridge=1;
+                        }
                         next;
                     }
                     in_bridge_sync && /^BridgeAddr/ {
-                        print "BridgeAddr = \"" l2_bridge "\"";
+                        if (!bridge_sync_has_bridge) {
+                            print "BridgeAddr = \"" l2_bridge "\"";
+                            bridge_sync_has_bridge=1;
+                        }
                         next;
                     }
 
+                    # Default: print line as-is
                     { print; }
-                ' "${output_file}" > "${temp_file}" && mv "${temp_file}" "${output_file}"
 
-                echo "✅ Injected L2 contract addresses"
+                    END {
+                        # If we never found BridgeL2Sync section, don'"'"'t worry - it might be optional
+                    }
+                ' "${output_file}" > "${temp_file}"
+
+                # Verify the temp file was created and is not empty
+                if [ -s "${temp_file}" ]; then
+                    mv "${temp_file}" "${output_file}"
+                    echo "✅ Injected L2 contract addresses"
+
+                    # Verify the addresses were actually injected
+                    if grep -q "BridgeAddr.*${l2_bridge_addr}" "${output_file}" && grep -q "GlobalExitRootAddr.*${l2_ger_addr}" "${output_file}"; then
+                        echo "✅ Verified L2 contract addresses in aggkit config"
+                    else
+                        echo "⚠️  Warning: L2 contract addresses may not have been properly injected"
+                    fi
+                else
+                    echo "⚠️  Warning: Failed to create temp file during injection"
+                    rm -f "${temp_file}"
+                fi
             else
                 echo "⚠️  Warning: L2 contracts file exists but addresses are missing"
+                echo "     L2 GER address: ${l2_ger_addr:-<empty>}"
+                echo "     L2 Bridge address: ${l2_bridge_addr:-<empty>}"
             fi
         else
             echo "⚠️  Warning: L2 contracts file not found, bridge sync may fail"
+            echo "NOTE: For OP-Geth networks, L2 bridge contracts MUST be present."
+            echo "      The aggkit config will have placeholder values that need to be updated."
 
-            # Fallback: Remove BridgeL2Sync section as before
+            # For OP-Geth networks, we should NOT remove the BridgeL2Sync section
+            # Instead, keep it with placeholder or read from genesis if possible
             local temp_file="${output_file}.tmp"
-            awk '
+
+            # Try to extract GlobalExitRootAddr from L2Config section to use as reference
+            local existing_ger=$(grep "GlobalExitRootAddr" "${output_file}" | sed 's/.*= *"\([^"]*\)".*/\1/' | head -1 || echo "")
+
+            awk -v existing_ger="${existing_ger}" '
                 /^\[BridgeL2Sync\]/ {
                     in_bridge_sync=1;
-                    print "# [BridgeL2Sync] section removed - L2 bridge not available in snapshot";
+                    print "# [BridgeL2Sync] WARNING: L2 bridge address not extracted - update this manually";
+                    print "[BridgeL2Sync]";
                     next;
                 }
                 /^\[/ && in_bridge_sync { in_bridge_sync=0; }
-                in_bridge_sync { next; }
+
+                in_bridge_sync && /^BridgeAddr/ {
+                    print "# BridgeAddr = \"\" # TODO: Update with actual L2 bridge address";
+                    next;
+                }
+                in_bridge_sync {
+                    print;
+                    next;
+                }
 
                 /^\[L2Config\]/ { in_l2_config=1; }
                 /^\[/ && !/^\[L2Config\]/ { in_l2_config=0; }
+
                 in_l2_config && /^BridgeAddr/ {
-                    print "# BridgeAddr removed - L2 bridge not available in snapshot";
+                    print "# BridgeAddr = \"\" # TODO: Update with actual L2 bridge address";
                     next;
                 }
 
                 { print; }
             ' "${output_file}" > "${temp_file}" && mv "${temp_file}" "${output_file}"
+
+            echo "⚠️  L2Config.BridgeAddr and BridgeL2Sync section need manual configuration"
         fi
     fi
     
@@ -995,6 +1095,17 @@ EOF
         
         if [ -n "${agglayer_config_file}" ]; then
             local agglayer_output_dir="${OUTPUT_DIR}/configs/agglayer"
+
+            # Fix permissions on configs directory if needed
+            if [ -d "${OUTPUT_DIR}/configs" ]; then
+                chmod -R u+w "${OUTPUT_DIR}/configs" 2>/dev/null || {
+                    # If chmod fails, try using docker to fix permissions
+                    if command -v docker &>/dev/null; then
+                        docker run --rm -v "${OUTPUT_DIR}/configs:/data" alpine:latest sh -c "chmod -R 777 /data" 2>/dev/null || true
+                    fi
+                }
+            fi
+
             mkdir -p "${agglayer_output_dir}"
             
             local agglayer_content

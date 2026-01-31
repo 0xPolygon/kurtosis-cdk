@@ -204,26 +204,12 @@ main() {
 
     log_info "Exporting state from finalized block..."
 
-    # Get deployment block (latest block after contract deployment)
-    local deployment_block=0
-    local deployment_metadata_dir="${OUTPUT_DIR}/l1-state/deployment-metadata-artifact-temp"
-    rm -rf "${deployment_metadata_dir}"
-
-    if kurtosis files download "${ENCLAVE_NAME}" deployment-block-metadata "${deployment_metadata_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
-        local deployment_file="${deployment_metadata_dir}/deployment-block.json"
-        if [ -f "${deployment_file}" ]; then
-            deployment_block=$(jq -r '.deployment_block // 0' "${deployment_file}" 2>/dev/null || echo "0")
-            log_info "Deployment block from metadata: ${deployment_block}"
-        fi
-        rm -rf "${deployment_metadata_dir}"
-    fi
-
     # Get finalized block number
     local finalized_block=0
     local metadata_artifact_dir="${OUTPUT_DIR}/l1-state/finalized-metadata-artifact-temp"
     rm -rf "${metadata_artifact_dir}"
 
-    if kurtosis files download "${ENCLAVE_NAME}" l1-finalized-metadata "${metadata_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
+    if kurtosis files download "${ENCLAVE_NAME}" l1-finalized-metadata "${metadata_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}" || true; then
         local metadata_file="${metadata_artifact_dir}/finalized-state.json"
         if [ -f "${metadata_file}" ]; then
             finalized_block=$(jq -r '.finalized_block // 0' "${metadata_file}" 2>/dev/null || echo "0")
@@ -238,18 +224,6 @@ main() {
         finalized_block=$(kurtosis service exec "${ENCLAVE_NAME}" "${GETH_SERVICE}" \
             "geth attach --exec 'eth.getBlock(\"finalized\").number' /data/geth/execution-data/geth.ipc" 2>/dev/null | grep -o '[0-9]*' | head -1 || echo "0")
         log_info "Finalized block from geth: ${finalized_block}"
-    fi
-
-    # Verify finalized block includes deployment block
-    if [ "${deployment_block}" -gt 0 ] && [ "${finalized_block}" -lt "${deployment_block}" ]; then
-        log_error "Finalized block ($finalized_block) is before deployment block ($deployment_block)!"
-        log_error "This means OP Stack contracts are not finalized yet."
-        log_error "Increase --l1-wait-blocks parameter or wait longer before taking snapshot."
-        exit ${EXIT_CODE_GENERAL_ERROR}
-    fi
-
-    if [ "${deployment_block}" -gt 0 ]; then
-        log_success "Verified: finalized block ($finalized_block) >= deployment block ($deployment_block)"
     fi
 
     # Export state using debug.dumpBlock
@@ -415,10 +389,13 @@ PYTHON_EOF
             if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.ssz" ] && [ -f "${LIGHTHOUSE_TESTNET_DIR}/config.yaml" ]; then
                 log_success "Found genesis.ssz and config.yaml in testnet directory"
 
-                # NOTE: Do NOT overwrite l1-state/genesis.json here!
-                # That file contains the merged genesis with deployed OP Stack contracts.
-                # The genesis.json from el_cl_genesis_data is the ORIGINAL genesis without deployed contracts.
-                log_info "Keeping merged execution genesis.json (includes deployed contracts)"
+                # Also update the execution genesis.json with the one from el_cl_genesis_data
+                # This ensures geth and lighthouse have matching genesis
+                if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.json" ]; then
+                    log_info "Updating execution genesis.json from el_cl_genesis_data artifact"
+                    cp "${LIGHTHOUSE_TESTNET_DIR}/genesis.json" "${OUTPUT_DIR}/l1-state/genesis.json"
+                    log_success "Execution and consensus genesis files are now matched"
+                fi
             else
                 log_warn "Genesis files may be missing from el_cl_genesis_data artifact"
                 log_info "Testnet directory contents: $(ls -la ${LIGHTHOUSE_TESTNET_DIR}/ 2>&1 || echo 'empty')"

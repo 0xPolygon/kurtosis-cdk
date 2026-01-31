@@ -12,6 +12,28 @@ fi
 # Exit codes
 EXIT_CODE_PREREQ_ERROR=3
 
+# Minimum required Kurtosis version
+MIN_KURTOSIS_VERSION="1.9.0"
+
+# Compare semantic versions (v1.v2.v3 format)
+# Returns 0 if $1 >= $2, 1 otherwise
+# Usage: version_ge "1.9.0" "1.3.0"
+version_ge() {
+    local ver1="$1"
+    local ver2="$2"
+
+    # Remove 'v' prefix if present
+    ver1="${ver1#v}"
+    ver2="${ver2#v}"
+
+    # Compare versions using sort
+    if [ "$(printf '%s\n' "$ver1" "$ver2" | sort -V | head -n1)" = "$ver2" ]; then
+        return 0  # ver1 >= ver2
+    else
+        return 1  # ver1 < ver2
+    fi
+}
+
 # Check if Kurtosis CLI is installed and accessible
 # Usage: check_kurtosis_cli
 check_kurtosis_cli() {
@@ -25,20 +47,60 @@ check_kurtosis_cli() {
         fi
         return 1
     fi
-    
-    # Check version (basic check)
-    local version
-    version=$(kurtosis version 2>/dev/null || echo "")
-    if [ -z "${version}" ]; then
+
+    # Extract version number
+    local version_output
+    version_output=$(kurtosis version 2>/dev/null || echo "")
+    local cli_version
+    cli_version=$(echo "$version_output" | grep "CLI Version" | awk '{print $3}' | tr -d ' ' || echo "")
+
+    if [ -z "${cli_version}" ]; then
         if [ -n "$(type -t log_warn)" ]; then
-            log_warn "Could not determine Kurtosis version"
+            log_warn "Could not determine Kurtosis CLI version"
         fi
-    else
+        cli_version="unknown"
+    fi
+
+    # Check version requirement
+    if [ "$cli_version" != "unknown" ] && ! version_ge "$cli_version" "$MIN_KURTOSIS_VERSION"; then
+        if [ -n "$(type -t log_error)" ]; then
+            log_error "Kurtosis version $cli_version is too old (minimum required: $MIN_KURTOSIS_VERSION)"
+            log_error ""
+            log_error "The snapshot feature requires Kurtosis 1.9.0+ for:"
+            log_error "  - plan.get_cluster_type() (required by ethereum-package)"
+            log_error "  - plan.get_tolerations() (required by optimism-package)"
+            log_error ""
+            log_error "Please upgrade Kurtosis:"
+            log_error "  - See: snapshot/KURTOSIS_UPGRADE_REQUIRED.md"
+            log_error "  - Homebrew: brew upgrade kurtosis-tech/tap/kurtosis-cli"
+            log_error "  - APT: sudo apt update && sudo apt install --only-upgrade kurtosis-cli"
+            log_error "  - Manual: https://docs.kurtosis.com/upgrade/"
+        else
+            echo "Error: Kurtosis version $cli_version is too old (minimum: $MIN_KURTOSIS_VERSION)" >&2
+            echo "See snapshot/KURTOSIS_UPGRADE_REQUIRED.md for upgrade instructions" >&2
+        fi
+        return 1
+    fi
+
+    if [ -n "$(type -t log_debug)" ]; then
+        log_debug "Kurtosis CLI version: ${cli_version}"
+    fi
+
+    # Check engine version if engine is running
+    local engine_version
+    engine_version=$(kurtosis engine status 2>/dev/null | grep "Version:" | awk '{print $2}' | tr -d ' ' || echo "")
+    if [ -n "$engine_version" ] && [ "$engine_version" != "unknown" ]; then
+        if ! version_ge "$engine_version" "$MIN_KURTOSIS_VERSION"; then
+            if [ -n "$(type -t log_warn)" ]; then
+                log_warn "Kurtosis engine version $engine_version is too old (minimum: $MIN_KURTOSIS_VERSION)"
+                log_warn "Restart the engine after upgrading: kurtosis engine restart"
+            fi
+        fi
         if [ -n "$(type -t log_debug)" ]; then
-            log_debug "Kurtosis version: ${version}"
+            log_debug "Kurtosis engine version: ${engine_version}"
         fi
     fi
-    
+
     return 0
 }
 

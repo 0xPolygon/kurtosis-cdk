@@ -70,9 +70,17 @@ def prepare_l1_snapshot(plan, args, l1_context):
 
     plan.print("L1 service names - Geth: {}, Lighthouse: {}, Validator: {}".format(geth_service_name, lighthouse_service_name, validator_service_name))
     
+    # Get deployment block to ensure we wait for contracts to be finalized
+    plan.print("Getting deployment block from metadata...")
+    deployment_block = _get_deployment_block(plan)
+    if deployment_block != "0" and deployment_block != "":
+        plan.print("Deployment block: {}".format(deployment_block))
+    else:
+        plan.print("Warning: Could not get deployment block, using current finalized block as reference")
+
     # Wait for finalized state
     plan.print("Waiting for L1 to reach finalized state...")
-    finalized_info = _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args)
+    finalized_info = _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args, deployment_block)
     # finalized_info is a struct with finalized_block and finalized_slot fields
     finalized_block = finalized_info.finalized_block
     finalized_slot = finalized_info.finalized_slot
@@ -186,7 +194,45 @@ def _get_validator_service_name(l1_context):
     return "vc-1-geth-lighthouse"
 
 
-def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):
+def _get_deployment_block(plan):
+    """
+    Get the deployment block from the deployment-block-metadata artifact.
+
+    Args:
+        plan: Kurtosis plan object
+
+    Returns:
+        Deployment block number (0 if not found)
+    """
+    # Try to download the deployment block metadata
+    # Note: This artifact is created by snapshot.star after network registration
+    result = plan.run_sh(
+        name="get-deployment-block",
+        description="Get deployment block from metadata artifact",
+        image=constants.TOOLBOX_IMAGE,
+        files={
+            "/deployment-metadata": "deployment-block-metadata",
+        },
+        run="\n".join([
+            "if [ -f /deployment-metadata/deployment-block.json ]; then",
+            "  DEPLOYMENT_BLOCK=$(cat /deployment-metadata/deployment-block.json | jq -r '.deployment_block // 0');",
+            "  echo \"$DEPLOYMENT_BLOCK\";",
+            "else",
+            "  echo \"0\";",
+            "fi",
+        ]),
+    )
+
+    # Extract the deployment block from output
+    if result.output != None and result.output != "":
+        # Parse the output - it should be a number
+        deployment_block_str = result.output.strip()
+        # Starlark doesn't have int() function, but we can return as string and handle in shell script
+        return deployment_block_str
+    return "0"
+
+
+def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args, deployment_block):
     """
     Wait for L1 to reach finalized state and store the finalized block/slot info.
 
@@ -195,15 +241,16 @@ def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):
         l1_rpc_url: L1 RPC URL
         l1_beacon_url: L1 beacon API URL
         args: Parsed arguments dictionary
+        deployment_block: Block number where contracts were deployed (string or 0)
 
     Returns:
         struct with finalized_block and finalized_slot (placeholder values - actual values in artifact)
     """
     min_finalized_blocks = args.get("snapshot_l1_wait_blocks", 1)
 
-    # Note: Deployment block metadata is recorded by snapshot.star and will be used
-    # by post-processing scripts to verify finalized block includes deployment block
-    plan.print("Waiting for L1 finalized block to advance by {} blocks...".format(min_finalized_blocks))
+    # Wait for deployment block + min_finalized_blocks to be finalized
+    # This ensures all deployed contracts are finalized before snapshot
+    plan.print("Waiting for L1 finalized block to advance {} blocks past deployment...".format(min_finalized_blocks))
 
     # Wait for finalized block and store the result to a file
     # We store it as an artifact so post-processing scripts can read the actual finalized block
@@ -215,14 +262,24 @@ def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):
             "L1_RPC_URL": l1_rpc_url,
             "L1_BEACON_URL": l1_beacon_url,
             "MIN_BLOCKS": str(min_finalized_blocks),
+            "DEPLOYMENT_BLOCK": str(deployment_block),
         },
         run="\n".join([
-            "# Wait for finalized block to advance",
-            "# First, get the starting finalized block",
-            "STARTING_FINALIZED=$(cast block-number --rpc-url \"$L1_RPC_URL\" finalized 2>/dev/null || echo \"0\");",
-            "TARGET_FINALIZED=$((STARTING_FINALIZED + MIN_BLOCKS));",
-            "echo \"Starting finalized block: $STARTING_FINALIZED\";",
-            "echo \"Target finalized block: $TARGET_FINALIZED (need to advance by $MIN_BLOCKS blocks)\";",
+            "# Wait for finalized block to include deployment block + buffer",
+            "# If DEPLOYMENT_BLOCK is set and > 0, use it as reference",
+            "# Otherwise fall back to current finalized block",
+            "if [ -n \"$DEPLOYMENT_BLOCK\" ] && [ \"$DEPLOYMENT_BLOCK\" -gt 0 ]; then",
+            "  echo \"Using deployment block as reference: $DEPLOYMENT_BLOCK\";",
+            "  TARGET_FINALIZED=$((DEPLOYMENT_BLOCK + MIN_BLOCKS));",
+            "  echo \"Target finalized block: $TARGET_FINALIZED (deployment $DEPLOYMENT_BLOCK + $MIN_BLOCKS blocks)\";",
+            "else",
+            "  # Fallback: use current finalized block as reference",
+            "  STARTING_FINALIZED=$(cast block-number --rpc-url \"$L1_RPC_URL\" finalized 2>/dev/null || echo \"0\");",
+            "  TARGET_FINALIZED=$((STARTING_FINALIZED + MIN_BLOCKS));",
+            "  echo \"Warning: No deployment block found, using current finalized as reference\";",
+            "  echo \"Starting finalized block: $STARTING_FINALIZED\";",
+            "  echo \"Target finalized block: $TARGET_FINALIZED (need to advance by $MIN_BLOCKS blocks)\";",
+            "fi",
             "",
             "# Wait for finalized block to reach target",
             "while true; do",
@@ -232,7 +289,11 @@ def _wait_for_finalized_state(plan, l1_rpc_url, l1_beacon_url, args):
             "  BLOCKS_TO_GO=$((TARGET_FINALIZED - FINALIZED_BLOCK));",
             "  echo \"L1 blocks - Latest: $LATEST_BLOCK, Finalized: $FINALIZED_BLOCK (need $BLOCKS_TO_GO more)\";",
             "  if [ \"$FINALIZED_BLOCK\" -ge \"$TARGET_FINALIZED\" ]; then",
-            "    echo \"✅ L1 finalized block advanced by $MIN_BLOCKS: $STARTING_FINALIZED -> $FINALIZED_BLOCK\";",
+            "    if [ -n \"$DEPLOYMENT_BLOCK\" ] && [ \"$DEPLOYMENT_BLOCK\" -gt 0 ]; then",
+            "      echo \"✅ L1 finalized block includes deployment: finalized=$FINALIZED_BLOCK >= target=$TARGET_FINALIZED (deployment=$DEPLOYMENT_BLOCK + $MIN_BLOCKS)\";",
+            "    else",
+            "      echo \"✅ L1 finalized block reached target: $FINALIZED_BLOCK >= $TARGET_FINALIZED\";",
+            "    fi",
             "    break;",
             "  fi;",
             "done",

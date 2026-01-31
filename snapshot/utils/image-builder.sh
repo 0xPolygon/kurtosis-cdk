@@ -37,10 +37,10 @@ ensure_jwt_secret() {
         
         # Generate 32-byte hex string
         if command -v openssl &> /dev/null; then
-            openssl rand -hex 32 > "${jwt_secret_path}"
+            openssl rand -hex 32 | tr -d '\n' > "${jwt_secret_path}"
         elif command -v shuf &> /dev/null; then
             # Fallback: generate random hex using shuf
-            cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 64 | head -n 1 > "${jwt_secret_path}"
+            cat /dev/urandom | tr -dc 'a-f0-9' | head -c 64 > "${jwt_secret_path}"
         else
             echo "Error: Cannot generate JWT secret - openssl or shuf not available" >&2
             return 1

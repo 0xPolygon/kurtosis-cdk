@@ -1,0 +1,225 @@
+services:
+  l1-geth:
+    image: l1-geth:snapshot
+    container_name: l1-geth
+    networks:
+      - cdk-network
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+      - "30303:30303/udp"
+    environment:
+      - CHAIN_ID=271828
+      - LOG_FORMAT=json
+    command:
+      - --datadir
+      - /root/.ethereum
+      - --http
+      - --http.addr
+      - 0.0.0.0
+      - --http.port
+      - '8545'
+      - --http.api
+      - eth,net,web3,engine
+      - --ws
+      - --ws.addr
+      - 0.0.0.0
+      - --ws.port
+      - '8546'
+      - --ws.api
+      - eth,net,web3
+      - --authrpc.addr
+      - 0.0.0.0
+      - --authrpc.port
+      - '8551'
+      - --authrpc.jwtsecret
+      - /root/.ethereum/jwtsecret
+      - --authrpc.vhosts
+      - '*'
+      - --gcmode
+      - archive
+      - --log.format
+      - json
+      - --networkid
+      - "271828"
+      - --http.corsdomain
+      - '*'
+      - --http.vhosts
+      - '*'
+    restart: unless-stopped
+
+  l1-lighthouse:
+    image: l1-lighthouse:snapshot
+    container_name: l1-lighthouse
+    networks:
+      - cdk-network
+    ports:
+      - "4000:4000"
+      - "9000:9000/udp"
+      - "5054:5054"
+    environment:
+      - LOG_FORMAT=json
+    depends_on:
+      - l1-geth
+    restart: unless-stopped
+    # Note: The lighthouse image already has the full command configured in its ENTRYPOINT,
+    # so we don't need to override it here. The ENTRYPOINT includes all necessary flags.
+    # The JWT secret is shared between geth and lighthouse images during image build.
+
+  l1-validator:
+    image: l1-lighthouse:snapshot
+    container_name: l1-validator
+    networks:
+      - cdk-network
+    environment:
+      - LOG_FORMAT=JSON
+      - BEACON_NODE_URL=http://l1-lighthouse:4000
+    depends_on:
+      - l1-lighthouse
+    restart: unless-stopped
+    # Note: The validator image has keys baked in and uses the same base image as lighthouse
+    # Lighthouse will automatically create the slashing protection DB on first run
+    entrypoint: ["lighthouse", "vc"]
+    command:
+      - --datadir
+      - /root/.lighthouse
+      - --testnet-dir
+      - /root/.lighthouse/testnet
+      - --beacon-nodes
+      - http://l1-lighthouse:4000
+      - --suggested-fee-recipient
+      - "0x0000000000000000000000000000000000000000"
+      - --init-slashing-protection
+      - --log-format
+      - JSON
+
+  agglayer:
+    image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer:0.4.4-remove-agglayer-prover
+    container_name: agglayer
+    networks:
+      - cdk-network
+    ports:
+      - "4443:4443"
+      - "4444:4444"
+      - "4446:4446"
+      - "9092:9092"
+    volumes:
+      - ./configs/agglayer/config.toml:/etc/agglayer/config.toml:ro
+      - ./keystores/1/aggregator.keystore:/etc/agglayer/aggregator.keystore:ro
+    depends_on:
+      - l1-geth
+      - l1-lighthouse
+    entrypoint:
+      - /usr/local/bin/agglayer
+    command:
+      - run
+      - --cfg
+      - /etc/agglayer/config.toml
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/4444' || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  op-geth-1:
+    image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+    container_name: op-geth-1
+    networks:
+      - cdk-network
+    ports:
+      - "9545:8545"
+      - "9546:8546"
+    volumes:
+      - ./configs/1/genesis.json:/genesis.json:ro
+      - ./configs/1/jwt.txt:/jwt.txt:ro
+      # Empty volume - OP-Geth will sync from L1 on first run
+      - op-geth-data-1:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ ! -d "/data/geth" ]; then
+          echo "Initializing genesis..."
+          geth init --datadir=/data /genesis.json
+        fi
+        echo "Starting geth..."
+        exec geth           --datadir=/data           --http           --http.addr=0.0.0.0           --http.port=8545           --http.api=eth,net,web3,debug,txpool           --http.corsdomain=*           --http.vhosts=*           --ws           --ws.addr=0.0.0.0           --ws.port=8546           --ws.api=eth,net,web3,debug,txpool           --ws.origins=*           --authrpc.addr=0.0.0.0           --authrpc.port=8551           --authrpc.vhosts=*           --authrpc.jwtsecret=/jwt.txt           --networkid=20201           --syncmode=full           --gcmode=archive           --nodiscover           --maxpeers=0           --rollup.disabletxpoolgossip=true           --rollup.sequencerhttp=http://op-node-1:8547
+    depends_on:
+      - l1-geth
+      - l1-lighthouse
+      - agglayer
+    restart: unless-stopped
+
+  op-node-1:
+    image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5
+    container_name: op-node-1
+    networks:
+      - cdk-network
+    ports:
+      - "9547:8547"
+    volumes:
+      - ./configs/1/rollup.json:/rollup.json:ro
+      - ./configs/1/jwt.txt:/jwt.txt:ro
+      - ./l1-config/genesis.json:/l1-genesis.json:ro
+      # Empty volume - OP-Node will sync from L1 on first run
+      - op-node-data-1:/data
+    command:
+      - op-node
+      - --l1=http://l1-geth:8545
+      - --l1.beacon=http://l1-lighthouse:4000
+      - --rollup.l1-chain-config=/l1-genesis.json
+      - --l2=http://op-geth-1:8545
+      - --l2.jwt-secret=/jwt.txt
+      - --sequencer.enabled=true
+      - --sequencer.l1-confs=4
+      - --verifier.l1-confs=4
+      - --rollup.config=/rollup.json
+      - --rpc.addr=0.0.0.0
+      - --rpc.port=8547
+      - --p2p.disable
+      - --rpc.enable-admin
+      - --p2p.sequencer.key=0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
+      - --log.level=info
+    depends_on:
+      - op-geth-1
+    restart: unless-stopped
+
+  aggkit-1:
+    image: ghcr.io/agglayer/aggkit:0.8.0-beta7
+    container_name: aggkit-1
+    networks:
+      - cdk-network
+    volumes:
+      - ./configs/1/aggkit-config.toml:/etc/aggkit/config.toml:ro
+      - ./keystores/1/sequencer.keystore:/etc/aggkit/sequencer.keystore:ro
+      - ./keystores/1/aggregator.keystore:/etc/aggkit/aggregator.keystore:ro
+      - ./keystores/1/aggoracle.keystore:/etc/aggkit/aggoracle.keystore:ro
+      - ./keystores/1/claimsponsor.keystore:/etc/aggkit/claimsponsor.keystore:ro
+      # Empty volumes - AggKit starts fresh
+      - aggkit-data-1:/data
+      - aggkit-tmp-1:/tmp
+    depends_on:
+      - op-node-1
+    entrypoint:
+      - /usr/local/bin/aggkit
+    command:
+      - run
+      - --cfg=/etc/aggkit/config.toml
+      - --components=aggsender
+    restart: unless-stopped
+
+networks:
+  cdk-network:
+    driver: bridge
+
+volumes:
+  # L2 Data Volumes
+  # Note: These volumes start empty. L2 services will sync from L1 on first run.
+  cdk-erigon-data-1:
+  cdk-erigon-rpc-data-1:
+  aggkit-data-1:
+  aggkit-tmp-1:
+  op-geth-data-1:
+  op-node-data-1:
+  op-proposer-data-1:

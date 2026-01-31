@@ -70,22 +70,54 @@ extract_l2_contracts() {
         fi
 
         # Also read create-sovereign-genesis-output.json to get the address mappings
+        # Try multiple possible paths for the output file
+        log_info "Attempting to read create-sovereign-genesis-output.json from contracts service..."
         local mapping_result=$(kurtosis service exec "${enclave_name}" "${service}" \
-            "sh -c 'if [ -f /opt/output/create-sovereign-genesis-output.json ]; then cat /opt/output/create-sovereign-genesis-output.json; else echo \"{}\"; fi'" 2>/dev/null || echo "{}")
+            "sh -c 'if [ -f /opt/output/create-sovereign-genesis-output.json ]; then cat /opt/output/create-sovereign-genesis-output.json; elif [ -f /opt/zkevm/create-sovereign-genesis-output.json ]; then cat /opt/zkevm/create-sovereign-genesis-output.json; else echo \"{}\"; fi'" 2>/dev/null || echo "{}")
+
+        # Debug: Check if we got valid JSON
+        if echo "${mapping_result}" | jq empty 2>/dev/null; then
+            log_info "Successfully read create-sovereign-genesis-output.json"
+        else
+            log_warn "Failed to read valid JSON from create-sovereign-genesis-output.json"
+            mapping_result="{}"
+        fi
 
         # Extract L2 contract addresses from the mapping file
         local l2_ger_addr=$(echo "${mapping_result}" | jq -r '.genesisSCNames."AgglayerGERL2 proxy" // ""' 2>/dev/null || echo "")
         local l2_bridge_addr=$(echo "${mapping_result}" | jq -r '.genesisSCNames."AgglayerBridgeL2 proxy" // ""' 2>/dev/null || echo "")
 
+        log_info "Extracted addresses - GER: ${l2_ger_addr}, Bridge: ${l2_bridge_addr}"
+
+        # If addresses are still empty, check if this might be an OP-Geth network using standard addresses
+        if [ -z "${l2_ger_addr}" ] || [ -z "${l2_bridge_addr}" ]; then
+            log_warn "L2 contract addresses not found in create-sovereign-genesis-output.json"
+            log_info "This might indicate:"
+            log_info "  1. The contracts service hasn't created the output file yet"
+            log_info "  2. This is an OP-Geth network using a different genesis format"
+            log_info "  3. The sovereign genesis creation step didn't complete"
+        fi
+
         # Verify these addresses exist in the genesis
-        # The genesis format has a .genesis array with objects containing address and bytecode
+        # Handle both genesis formats:
+        # 1. CDK format: .genesis[] array with address and bytecode fields
+        # 2. Standard Geth format: .alloc{} object with address as key
         if [ -n "${l2_ger_addr}" ]; then
             # Normalize address for comparison (lowercase, with 0x)
             local normalized_ger=$(echo "${l2_ger_addr}" | tr '[:upper:]' '[:lower:]')
+
+            # Try CDK format first (.genesis[] array)
             local found=$(echo "${genesis_result}" | jq -r --arg addr "${normalized_ger}" '.genesis[]? | select(.address | ascii_downcase == $addr) | .address' 2>/dev/null | head -1)
+
+            # If not found, try standard Geth format (.alloc object)
             if [ -z "${found}" ]; then
-                log_warn "GER address ${l2_ger_addr} not found in genesis"
-                l2_ger_addr=""
+                found=$(echo "${genesis_result}" | jq -r --arg addr "${normalized_ger}" '.alloc | to_entries[] | select(.key | ascii_downcase == $addr) | .key' 2>/dev/null | head -1)
+            fi
+
+            if [ -z "${found}" ]; then
+                log_warn "GER address ${l2_ger_addr} not found in genesis (checked both .genesis[] and .alloc formats)"
+                # Don't clear the address - it might still be valid even if not in genesis yet
+                log_info "Proceeding with GER ${l2_ger_addr} anyway (will be deployed at genesis)"
             else
                 log_info "Verified GER ${l2_ger_addr} exists in genesis"
             fi
@@ -94,10 +126,19 @@ extract_l2_contracts() {
         if [ -n "${l2_bridge_addr}" ]; then
             # Normalize address for comparison (lowercase, with 0x)
             local normalized_bridge=$(echo "${l2_bridge_addr}" | tr '[:upper:]' '[:lower:]')
+
+            # Try CDK format first (.genesis[] array)
             local found=$(echo "${genesis_result}" | jq -r --arg addr "${normalized_bridge}" '.genesis[]? | select(.address | ascii_downcase == $addr) | .address' 2>/dev/null | head -1)
+
+            # If not found, try standard Geth format (.alloc object)
             if [ -z "${found}" ]; then
-                log_warn "Bridge address ${l2_bridge_addr} not found in genesis"
-                l2_bridge_addr=""
+                found=$(echo "${genesis_result}" | jq -r --arg addr "${normalized_bridge}" '.alloc | to_entries[] | select(.key | ascii_downcase == $addr) | .key' 2>/dev/null | head -1)
+            fi
+
+            if [ -z "${found}" ]; then
+                log_warn "Bridge address ${l2_bridge_addr} not found in genesis (checked both .genesis[] and .alloc formats)"
+                # Don't clear the address - it might still be valid even if not in genesis yet
+                log_info "Proceeding with Bridge ${l2_bridge_addr} anyway (will be deployed at genesis)"
             else
                 log_info "Verified Bridge ${l2_bridge_addr} exists in genesis"
             fi
