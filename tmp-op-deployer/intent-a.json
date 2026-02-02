@@ -1,0 +1,44 @@
+{
+  "chains": [
+    {
+      "baseFeeVaultRecipient": "0x0000000000000000000000000000000000000000",
+      "chainFeesRecipient": "0x0000000000000000000000000000000000000000",
+      "customGasToken": {
+        "liquidityControllerOwner": "0x0000000000000000000000000000000000000000"
+      },
+      "daFootprintGasScalar": 0,
+      "eip1559Denominator": 0,
+      "eip1559DenominatorCanyon": 0,
+      "eip1559Elasticity": 0,
+      "gasLimit": 60000000,
+      "id": "0x0000000000000000000000000000000000000000000000000000000000004ee9",
+      "l1FeeVaultRecipient": "0x0000000000000000000000000000000000000000",
+      "minBaseFee": 0,
+      "operatorFeeConstant": 0,
+      "operatorFeeScalar": 0,
+      "operatorFeeVaultRecipient": "0x0000000000000000000000000000000000000000",
+      "roles": {
+        "batcher": "0x0000000000000000000000000000000000000000",
+        "challenger": "0x0000000000000000000000000000000000000000",
+        "l1ProxyAdminOwner": "0x0000000000000000000000000000000000000000",
+        "l2ProxyAdminOwner": "0x0000000000000000000000000000000000000000",
+        "proposer": "0x0000000000000000000000000000000000000000",
+        "systemConfigOwner": "0x0000000000000000000000000000000000000000",
+        "unsafeBlockSigner": "0x0000000000000000000000000000000000000000"
+      },
+      "sequencerFeeVaultRecipient": "0x0000000000000000000000000000000000000000"
+    }
+  ],
+  "configType": "custom",
+  "fundDevAccounts": false,
+  "l1ChainID": 271828,
+  "l1ContractsLocator": "embedded",
+  "l2ContractsLocator": "embedded",
+  "opDeployerVersion": "v0.0.0",
+  "superchainRoles": {
+    "Challenger": "0x0000000000000000000000000000000000000000",
+    "ProtocolVersionsOwner": "0x0000000000000000000000000000000000000000",
+    "SuperchainGuardian": "0x0000000000000000000000000000000000000000",
+    "SuperchainProxyAdminOwner": "0x0000000000000000000000000000000000000000"
+  }
+}

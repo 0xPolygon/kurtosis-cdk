@@ -1,0 +1,19 @@
+2026/02/02-10:52:22.557222 140347732645440 Delete type=3 #1
+2026/02/02-10:53:38.939383 140344744212032 Level-0 table #5: started
+2026/02/02-10:53:38.942652 140344744212032 Level-0 table #5: 193208 bytes OK
+2026/02/02-10:53:38.945859 140344744212032 Delete type=0 #3
+2026/02/02-10:53:38.945965 140344744212032 Manual compaction at level-0 from 'ste\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' @ 72057594037927935 : 1 .. 'ste\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff' @ 0 : 0; will stop at (end)
+2026/02/02-10:53:38.946005 140344744212032 Level-0 table #7: started
+2026/02/02-10:53:38.946019 140344744212032 Level-0 table #7: 0 bytes OK
+2026/02/02-10:53:38.949408 140344744212032 Delete type=0 #4
+2026/02/02-10:53:38.949444 140344744212032 Manual compaction at level-0 from 'bss\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' @ 72057594037927935 : 1 .. 'bss\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff' @ 0 : 0; will stop at (end)
+2026/02/02-10:53:38.949467 140344744212032 Manual compaction at level-1 from 'bss\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' @ 72057594037927935 : 1 .. 'bss\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff' @ 0 : 0; will stop at (end)
+2026/02/02-11:14:59.045942 140344744212032 Level-0 table #9: started
+2026/02/02-11:14:59.055186 140344744212032 Level-0 table #9: 3949060 bytes OK
+2026/02/02-11:14:59.058618 140344744212032 Delete type=0 #6
+2026/02/02-11:18:58.513236 140344744212032 Compacting 1@1 + 1@2 files
+2026/02/02-11:18:58.528330 140344744212032 Generated table #10@1: 984 keys, 1140581 bytes
+2026/02/02-11:18:58.528358 140344744212032 Compacted 1@1 + 1@2 files => 1140581 bytes
+2026/02/02-11:18:58.531932 140344744212032 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/02/02-11:18:58.532201 140344744212032 Delete type=2 #9
+2026/02/02-11:18:58.533011 140344744212032 Delete type=2 #5

@@ -1,0 +1,502 @@
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] ==========================================
+[2026-02-02 10:39:11 UTC] [INFO] Step 0: Snapshot Creation
+[2026-02-02 10:39:11 UTC] [INFO] ==========================================
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] --- Checking Prerequisites ---
+[2026-02-02 10:39:11 UTC] [INFO] Checking prerequisites...
+[2026-02-02 10:39:11 UTC] [SUCCESS] All required prerequisites are available
+[2026-02-02 10:39:11 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] --- Generating Kurtosis args file ---
+[2026-02-02 10:39:11 UTC] [INFO] Reading networks from: ./snapshot/test-config.json
+[2026-02-02 10:39:11 UTC] [INFO] Loaded 1 network(s)
+[2026-02-02 10:39:11 UTC] [SUCCESS] Args file generated: ./snapshot-output/kurtosis-args.json
+[2026-02-02 10:39:11 UTC] [INFO] Skipping kurtosis run (--skip-kurtosis flag set)
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] --- Running Post-Processing Scripts ---
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] ==========================================
+[2026-02-02 10:39:11 UTC] [INFO] Step 1: Extracting L1 State
+[2026-02-02 10:39:11 UTC] [INFO] ==========================================
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] ==========================================
+[2026-02-02 10:39:11 UTC] [INFO] Step 1: L1 State Extraction for Snapshot
+[2026-02-02 10:39:11 UTC] [INFO] ==========================================
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:39:11 UTC] [INFO] 
+[2026-02-02 10:39:11 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:39:12 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:39:12 UTC] [INFO] 
+[2026-02-02 10:39:12 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 10:39:12 UTC] [SUCCESS] Output directories created
+[2026-02-02 10:39:12 UTC] [INFO] 
+[2026-02-02 10:39:12 UTC] [INFO] --- Detecting L1 service names ---
+[2026-02-02 10:39:12 UTC] [INFO] Auto-detecting L1 service names...
+Getting L1 service names from enclave snapshot-test...
+Warning: Could not find geth service, using default: el-1-geth-lighthouse
+Warning: Could not find lighthouse service, using default: cl-1-lighthouse-geth
+[2026-02-02 10:39:12 UTC] [INFO] Using services:
+[2026-02-02 10:39:12 UTC] [INFO]   Geth: el-1-geth-lighthouse
+[2026-02-02 10:39:12 UTC] [INFO]   Lighthouse: cl-1-lighthouse-geth
+[2026-02-02 10:39:12 UTC] [INFO] 
+[2026-02-02 10:39:12 UTC] [INFO] --- Extracting L1 datadirs (geth and lighthouse) ---
+[2026-02-02 10:39:12 UTC] [INFO] Extracting geth chaindata (this may take a few minutes)...
+Extracting /data/geth/execution-data/geth from el-1-geth-lighthouse to ./snapshot-output/l1-state/geth...
+Found container: eb7065514243 (el-1-geth-lighthouse--37da78dad52946cc82dbf4d01f2540bc)
+✅ Successfully extracted /data/geth/execution-data/geth to ./snapshot-output/l1-state/geth
+[2026-02-02 10:39:12 UTC] [SUCCESS] Geth chaindata extracted successfully
+[2026-02-02 10:39:12 UTC] [INFO] Extracting lighthouse beacon data...
+Extracting /data/lighthouse/beacon-data/beacon from cl-1-lighthouse-geth to ./snapshot-output/l1-state/lighthouse...
+Found container: 4bf3b3f50b18 (cl-1-lighthouse-geth--8c256bdac3494b83b91dedd98f45fbdd)
+✅ Successfully extracted /data/lighthouse/beacon-data/beacon to ./snapshot-output/l1-state/lighthouse
+[2026-02-02 10:39:12 UTC] [SUCCESS] Lighthouse beacon data extracted successfully
+[2026-02-02 10:39:12 UTC] [INFO] Downloading original genesis for reference...
+[36mINFO[0m[2026-02-02T10:39:12Z] File package with identifier 'el_cl_genesis_data' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-genesis-original' 
+[2026-02-02 10:39:12 UTC] [SUCCESS] Original genesis copied for reference
+[2026-02-02 10:39:12 UTC] [INFO] 
+[2026-02-02 10:39:12 UTC] [INFO] --- Extracting lighthouse testnet configuration from artifacts ---
+[2026-02-02 10:39:12 UTC] [INFO] Downloading el_cl_genesis_data artifact (initial genesis files)...
+[36mINFO[0m[2026-02-02T10:39:12Z] File package with identifier 'el_cl_genesis_data' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/el-cl-genesis-artifact' 
+[2026-02-02 10:39:12 UTC] [SUCCESS] Genesis files extracted from el_cl_genesis_data artifact
+[2026-02-02 10:39:12 UTC] [SUCCESS] Found genesis.ssz and config.yaml in testnet directory
+[2026-02-02 10:39:12 UTC] [INFO] Keeping merged execution genesis.json (contains deployed contracts)
+[2026-02-02 10:39:12 UTC] [INFO] 
+[2026-02-02 10:39:12 UTC] [INFO] --- Extracting validator keystores from artifacts ---
+[2026-02-02 10:39:12 UTC] [INFO] Downloading l1-validator-keys artifact...
+[36mINFO[0m[2026-02-02T10:39:12Z] File package with identifier 'l1-validator-keys' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/validator-keys-artifact' 
+[2026-02-02 10:39:12 UTC] [SUCCESS] Validator keys extracted successfully
+[2026-02-02 10:39:12 UTC] [WARN] validator_definitions.yml not found (continuing anyway)
+[2026-02-02 10:39:13 UTC] [INFO] 
+[2026-02-02 10:39:13 UTC] [INFO] --- Getting finalized block information ---
+[2026-02-02 10:39:13 UTC] [INFO] Attempting to read finalized state from Kurtosis artifact...
+[36mINFO[0m[2026-02-02T10:39:13Z] File package with identifier 'l1-finalized-metadata' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/finalized-metadata-artifact' 
+[2026-02-02 10:39:13 UTC] [SUCCESS] Found finalized state metadata artifact
+[2026-02-02 10:39:13 UTC] [INFO] Finalized block: 160
+[2026-02-02 10:39:13 UTC] [INFO] Finalized slot: 160
+[2026-02-02 10:39:13 UTC] [INFO] 
+[2026-02-02 10:39:13 UTC] [INFO] --- Verifying state consistency ---
+Verifying state consistency...
+Geth finalized block: 160
+Lighthouse finalized slot: 160
+✅ State consistency verified: slot and block are close (difference: 0)
+[2026-02-02 10:39:13 UTC] [SUCCESS] State consistency verified
+[2026-02-02 10:39:13 UTC] [INFO] 
+[2026-02-02 10:39:13 UTC] [INFO] --- Creating state manifest ---
+[2026-02-02 10:39:13 UTC] [SUCCESS] State manifest created: ./snapshot-output/l1-state/manifest.json
+[2026-02-02 10:39:13 UTC] [INFO] 
+[2026-02-02 10:39:13 UTC] [INFO] --- Summary ---
+[2026-02-02 10:39:13 UTC] [INFO] Output directory: ./snapshot-output/l1-state
+[2026-02-02 10:39:13 UTC] [INFO]   Geth: ./snapshot-output/l1-state/geth
+[2026-02-02 10:39:13 UTC] [INFO]   Lighthouse: ./snapshot-output/l1-state/lighthouse
+[2026-02-02 10:39:13 UTC] [INFO]   Manifest: ./snapshot-output/l1-state/manifest.json
+[2026-02-02 10:39:13 UTC] [INFO] Finalized state:
+[2026-02-02 10:39:13 UTC] [INFO]   Block: 160
+[2026-02-02 10:39:13 UTC] [INFO]   Slot: 160
+[2026-02-02 10:39:13 UTC] [SUCCESS] L1 State Extraction Complete
+[2026-02-02 10:39:13 UTC] [INFO] 
+[2026-02-02 10:39:13 UTC] [INFO] ==========================================
+[2026-02-02 10:39:13 UTC] [INFO] Step 2: Extracting L2 Contract Addresses
+[2026-02-02 10:39:13 UTC] [INFO] ==========================================
+[2026-02-02 10:39:13 UTC] [INFO] 
+[2026-02-02 10:39:13 UTC] [INFO] Extracting L2 contract addresses from enclave: snapshot-test
+[2026-02-02 10:39:13 UTC] [INFO] Extracting from service: contracts-001
+[2026-02-02 10:39:13 UTC] [INFO] Processing network 1...
+[2026-02-02 10:39:13 UTC] [INFO] Downloading genesis-001 artifact...
+[2026-02-02 10:39:13 UTC] [INFO] Found genesis.json in artifact
+[2026-02-02 10:39:13 UTC] [INFO] Attempting to read create-sovereign-genesis-output.json from contracts service...
+[2026-02-02 10:39:14 UTC] [INFO] Successfully read create-sovereign-genesis-output.json
+[2026-02-02 10:39:14 UTC] [INFO] Extracted addresses - GER: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa, Bridge: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+[2026-02-02 10:39:14 UTC] [INFO] Verified GER 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa exists in genesis
+[2026-02-02 10:39:14 UTC] [INFO] Verified Bridge 0xC8cbEBf950B9Df44d987c8619f092beA980fF038 exists in genesis
+[2026-02-02 10:39:14 UTC] [SUCCESS] Extracted L2 contracts for network 1
+[2026-02-02 10:39:14 UTC] [INFO]   GER: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa
+[2026-02-02 10:39:14 UTC] [INFO]   Bridge: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+[2026-02-02 10:39:14 UTC] [SUCCESS] L2 contract extraction complete
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] ==========================================
+[2026-02-02 10:39:14 UTC] [INFO] Step 3: Processing Configs
+[2026-02-02 10:39:14 UTC] [INFO] ==========================================
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] ==========================================
+[2026-02-02 10:39:14 UTC] [INFO] Step 1: Config Processing for Snapshot
+[2026-02-02 10:39:14 UTC] [INFO] ==========================================
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:39:14 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 10:39:14 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 10:39:14 UTC] [INFO] Output directory: ./snapshot-output
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] --- Loading L1 genesis configuration ---
+[2026-02-02 10:39:14 UTC] [INFO] Looking for merged genesis at: ./snapshot-output/l1-state/genesis.json
+[2026-02-02 10:39:14 UTC] [INFO] Found merged L1 genesis with deployed contracts from state extraction
+[2026-02-02 10:39:14 UTC] [INFO] Merged genesis has 282 accounts
+[2026-02-02 10:39:14 UTC] [SUCCESS] L1 genesis.json loaded from merged state (282 accounts, includes OP Stack contracts)
+Attempting to list artifacts from Kurtosis enclave...
+[2026-02-02 10:39:14 UTC] [INFO] 
+[2026-02-02 10:39:14 UTC] [INFO] --- Loading networks configuration ---
+[2026-02-02 10:39:14 UTC] [INFO] Validating 1 network(s)...
+[2026-02-02 10:39:15 UTC] [SUCCESS] All 1 network(s) validated successfully
+[2026-02-02 10:39:15 UTC] [SUCCESS] Networks configuration loaded and validated
+[2026-02-02 10:39:15 UTC] [INFO] Processing 1 network(s)...
+----------------------------------------
+Processing network 1 (suffix: -001)
+----------------------------------------
+Downloading artifact: aggkit-config-001...
+✅ Downloaded aggkit-config-001
+Processing AggKit config for network 1...
+Injecting L2 contract addresses into aggkit config...
+  L2 GER: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa
+  L2 Bridge: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+✅ Injected L2 contract addresses
+✅ Verified L2 contract addresses in aggkit config
+✅ AggKit config processed successfully
+✅ Generated jwt.txt for OP-Node/OP-Geth
+Downloading artifact: genesis-001...
+✅ Downloaded genesis-001
+✅ Copied genesis.json
+Transforming genesis from Polygon CDK format to Geth format...
+✅ Transformed genesis to Geth format
+Downloading artifact: op-deployer-configs...
+✅ Downloaded op-deployer-configs
+✅ Copied genesis.json from op-deployer-configs (matches rollup.json)
+✅ Copied rollup.json for OP-Node
+Downloading artifact: sequencer-keystore-001...
+✅ Downloaded sequencer-keystore-001
+✅ Copied sequencer keystore
+Downloading artifact: aggregator-keystore-001...
+✅ Downloaded aggregator-keystore-001
+✅ Copied aggregator keystore
+Downloading artifact: claimsponsor-keystore-001...
+✅ Downloaded claimsponsor-keystore-001
+✅ Copied claimsponsor keystore
+✅ Created aggoracle keystore from aggregator keystore
+
+[2026-02-02 10:39:15 UTC] [INFO] 
+[2026-02-02 10:39:15 UTC] [INFO] --- Processing agglayer config ---
+Downloading artifact: agglayer-config...
+✅ Downloaded agglayer-config
+[2026-02-02 10:39:16 UTC] [SUCCESS] Agglayer config processed and validated successfully
+
+Creating port mapping...
+✅ Port mapping created: ./snapshot-output/port-mapping.json
+Creating keystore mapping...
+✅ Keystore mapping created: ./snapshot-output/keystore-mapping.json
+Creating processing manifest...
+✅ Processing manifest created: ./snapshot-output/config-processing-manifest.json
+[2026-02-02 10:39:16 UTC] [INFO] 
+[2026-02-02 10:39:16 UTC] [INFO] --- Summary ---
+[2026-02-02 10:39:16 UTC] [INFO] Processed configs: ./snapshot-output/configs/
+[2026-02-02 10:39:16 UTC] [INFO] Keystores: ./snapshot-output/keystores/
+[2026-02-02 10:39:16 UTC] [INFO] Mappings: ./snapshot-output/*.json
+[2026-02-02 10:39:16 UTC] [SUCCESS] Config Processing Complete
+[2026-02-02 10:39:16 UTC] [INFO] 
+[2026-02-02 10:39:16 UTC] [INFO] ==========================================
+[2026-02-02 10:39:16 UTC] [INFO] Step 4: Building L1 Docker Images
+[2026-02-02 10:39:16 UTC] [INFO] ==========================================
+[2026-02-02 10:39:16 UTC] [INFO] 
+=== L1 Docker Image Build (Genesis-based) ===
+
+Configuration:
+  Output directory: ./snapshot-output
+  Genesis file: ./snapshot-output/l1-state/genesis.json
+  Chain ID: 271828
+  Geth image: l1-geth:snapshot (base: ethereum/client-go:v1.16.8)
+  Lighthouse image: l1-lighthouse:snapshot (base: sigp/lighthouse:v8.0.1)
+  Log format: json
+
+Preparing geth build context...
+Copying geth datadir (this may take a while)...
+✅ Geth datadir copied
+Generating JWT secret...
+✅ Geth build context ready
+Preparing lighthouse build context...
+Copying lighthouse beacon datadir (this may take a while)...
+✅ Lighthouse beacon datadir copied
+Copying validator keys...
+Generating validator_definitions.yml...
+✅ Generated validator_definitions.yml (128 validators)
+✅ Lighthouse build context ready
+
+Processing Dockerfile templates...
+✅ Geth Dockerfile: ./snapshot-output/dockerfiles/geth.Dockerfile
+✅ Lighthouse Dockerfile: ./snapshot-output/dockerfiles/lighthouse.Dockerfile
+
+Building Docker images...
+
+Building geth image: l1-geth:snapshot...
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from geth.Dockerfile
+#1 transferring dockerfile: 1.96kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/ethereum/client-go:v1.16.8
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/ethereum/client-go:v1.16.8
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 7.35MB 0.0s done
+#5 DONE 0.1s
+
+#6 [2/5] RUN mkdir -p /root/.ethereum
+#6 DONE 0.3s
+
+#7 [3/5] COPY geth/ /root/.ethereum/geth/
+#7 DONE 0.0s
+
+#8 [4/5] COPY jwtsecret /root/.ethereum/jwtsecret
+#8 DONE 0.0s
+
+#9 [5/5] RUN chmod 600 /root/.ethereum/jwtsecret &&     chmod -R u+rwX /root/.ethereum/geth
+#9 DONE 0.5s
+
+#10 exporting to image
+#10 exporting layers 0.1s done
+#10 writing image sha256:9a00638a23e60ac2b4cec66772e52a4d662a107b49b728bebaf9c56909bd2cc7 done
+#10 naming to docker.io/library/l1-geth:snapshot done
+#10 DONE 0.1s
+✅ Geth image built successfully
+
+Building lighthouse image: l1-lighthouse:snapshot...
+#0 building with "default" instance using docker driver
+
+#1 [internal] load .dockerignore
+#1 DONE 0.0s
+
+#2 [internal] load build definition from lighthouse.Dockerfile
+#2 transferring dockerfile: 2.43kB done
+#2 DONE 0.0s
+
+#1 [internal] load .dockerignore
+#1 transferring context: 2B done
+#1 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/sigp/lighthouse:v8.0.1
+#3 DONE 0.0s
+
+#4 [1/8] FROM docker.io/sigp/lighthouse:v8.0.1
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 73.09MB 0.3s done
+#5 DONE 0.3s
+
+#6 [2/8] RUN mkdir -p /root/.lighthouse/beacon-data
+#6 DONE 0.3s
+
+#7 [3/8] COPY beacon/ /root/.lighthouse/beacon-data/beacon/
+#7 DONE 0.1s
+
+#8 [4/8] COPY testnet /root/.lighthouse/testnet
+#8 DONE 0.1s
+
+#9 [5/8] COPY ethereum/jwtsecret /root/.ethereum/jwtsecret
+#9 DONE 0.1s
+
+#10 [6/8] RUN chmod 600 /root/.ethereum/jwtsecret
+#10 DONE 0.2s
+
+#11 [7/8] COPY validators /root/.lighthouse/validators
+#11 DONE 0.1s
+
+#12 [8/8] RUN chmod -R u+rwX /root/.lighthouse/beacon-data
+#12 DONE 0.5s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 0.3s done
+#13 writing image sha256:ee50e78e01d9b3d91f035a7979e3ef6d691f74f1a627fa36da7705b8e51b9622 done
+#13 naming to docker.io/library/l1-lighthouse:snapshot done
+#13 DONE 0.3s
+✅ Lighthouse image built successfully
+
+Verifying Docker images...
+  Geth image: l1-geth:snapshot (69MB)
+  Lighthouse image: l1-lighthouse:snapshot (340MB)
+
+Creating image manifest...
+✅ Image manifest created: ./snapshot-output/l1-images/manifest.json
+
+=== Build Complete ===
+
+Images:
+  Geth: l1-geth:snapshot (69MB)
+  Lighthouse: l1-lighthouse:snapshot (340MB)
+
+Manifest: ./snapshot-output/l1-images/manifest.json
+
+Next steps:
+  1. Run: cd ./snapshot-output && docker-compose up -d
+  2. Wait ~30 seconds for services to start
+  3. Verify blocks are increasing:
+     docker exec l1-geth geth attach --exec 'eth.blockNumber' /root/.ethereum/geth.ipc
+
+[2026-02-02 10:39:19 UTC] [INFO] 
+[2026-02-02 10:39:19 UTC] [INFO] ==========================================
+[2026-02-02 10:39:19 UTC] [INFO] Step 5: Generating Docker Compose
+[2026-02-02 10:39:19 UTC] [INFO] ==========================================
+[2026-02-02 10:39:19 UTC] [INFO] 
+[2026-02-02 10:39:19 UTC] [INFO] 
+[2026-02-02 10:39:19 UTC] [INFO] ==========================================
+[2026-02-02 10:39:19 UTC] [INFO] Step 1: Docker Compose Generation
+[2026-02-02 10:39:19 UTC] [INFO] ==========================================
+[2026-02-02 10:39:19 UTC] [INFO] 
+[2026-02-02 10:39:19 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:39:19 UTC] [INFO] 
+[2026-02-02 10:39:19 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:39:19 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:39:19 UTC] [INFO] 
+[2026-02-02 10:39:19 UTC] [INFO] --- Reading metadata ---
+[2026-02-02 10:39:20 UTC] [SUCCESS] Metadata loaded
+Generating service configurations...
+Generating L1 services...
+[2026-02-02 10:39:20 UTC] [INFO] Validator keys found, adding validator service
+✅ L1 services generated
+
+Generating Agglayer service...
+✅ Agglayer service generated
+
+Generating network services...
+✅ Network services generated
+
+Generating volumes...
+✅ Volumes generated
+
+Processing docker-compose template...
+✅ docker-compose.yml generated: ./snapshot-output/docker-compose.yml
+
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] --- Validating docker-compose.yml ---
+Validating docker-compose.yml syntax...
+✅ docker-compose.yml syntax is valid
+[2026-02-02 10:39:20 UTC] [SUCCESS] Docker compose validated
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] --- Summary ---
+[2026-02-02 10:39:20 UTC] [INFO] Output: ./snapshot-output/docker-compose.yml
+[2026-02-02 10:39:20 UTC] [SUCCESS] Docker Compose Generation Complete
+[2026-02-02 10:39:20 UTC] [SUCCESS] All post-processing steps completed
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] --- Validating Snapshot Output ---
+[2026-02-02 10:39:20 UTC] [SUCCESS] Snapshot output validation passed
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] --- Creating Summary Report ---
+[2026-02-02 10:39:20 UTC] [SUCCESS] Summary report created: ./snapshot-output/snapshot-summary.json
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] ==========================================
+[2026-02-02 10:39:20 UTC] [INFO] Snapshot Creation Summary
+[2026-02-02 10:39:20 UTC] [INFO] ==========================================
+[2026-02-02 10:39:20 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 10:39:20 UTC] [INFO] Output: ./snapshot-output
+[2026-02-02 10:39:20 UTC] [INFO] L1 State: Block 160, Slot 160
+[2026-02-02 10:39:20 UTC] [INFO] Networks: 2
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] Next Steps:
+[2026-02-02 10:39:20 UTC] [INFO]   1. Review the snapshot output in: ./snapshot-output
+[2026-02-02 10:39:20 UTC] [INFO]   2. Start the environment: cd ./snapshot-output && docker-compose up -d
+[2026-02-02 10:39:20 UTC] [INFO]   3. Check service logs: cd ./snapshot-output && docker-compose logs -f
+[2026-02-02 10:39:20 UTC] [INFO]   4. Note: L2 services will perform initial sync from L1 on first run
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] --- Creating Network Summary ---
+[2026-02-02 10:39:20 UTC] [INFO] 
+[2026-02-02 10:39:20 UTC] [INFO] --- Creating Network Summary ---
+[2026-02-02 10:39:20 UTC] [INFO] Extracting L1 information...
+[2026-02-02 10:39:20 UTC] [INFO] Reading L1 contract addresses from aggkit config...
+[2026-02-02 10:39:21 UTC] [SUCCESS] L1 information extracted
+[2026-02-02 10:39:21 UTC] [INFO] Extracting L2 networks information...
+[2026-02-02 10:39:21 UTC] [INFO] Found 1 network(s)
+[2026-02-02 10:39:21 UTC] [INFO] Processing network 1...
+[2026-02-02 10:39:21 UTC] [SUCCESS] Network 1 processed
+[2026-02-02 10:39:21 UTC] [SUCCESS] L2 networks information extracted
+[2026-02-02 10:39:21 UTC] [INFO] Creating summary.json...
+[2026-02-02 10:39:21 UTC] [SUCCESS] Summary created: ./snapshot-output/summary.json
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] ==========================================
+[2026-02-02 10:39:21 UTC] [INFO] Network Summary
+[2026-02-02 10:39:21 UTC] [INFO] ==========================================
+[2026-02-02 10:39:21 UTC] [INFO] L1 Chain ID: 271828
+[2026-02-02 10:39:21 UTC] [INFO] L2 Networks: 1
+[2026-02-02 10:39:21 UTC] [INFO] Summary file: ./snapshot-output/summary.json
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [SUCCESS] Network summary created successfully
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] --- Running Snapshot Verification ---
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] ==========================================
+[2026-02-02 10:39:21 UTC] [INFO] Step 1: Snapshot Verification
+[2026-02-02 10:39:21 UTC] [INFO] ==========================================
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:39:21 UTC] [INFO] Verifying snapshot in: ./snapshot-output
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] --- Running Static Validation ---
+[2026-02-02 10:39:21 UTC] [INFO] Calling validate-snapshot.sh...
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] ==========================================
+[2026-02-02 10:39:21 UTC] [INFO] Step 1: Snapshot Validation
+[2026-02-02 10:39:21 UTC] [INFO] ==========================================
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:39:21 UTC] [INFO] Validating snapshot in: ./snapshot-output
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] 
+[2026-02-02 10:39:21 UTC] [INFO] --- Validating Prerequisites ---
+[2026-02-02 10:39:21 UTC] [INFO] Checking prerequisites...
+[2026-02-02 10:39:22 UTC] [SUCCESS] All required prerequisites are available
+[2026-02-02 10:39:22 UTC] [SUCCESS] Prerequisites validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validating Network Configurations ---
+[2026-02-02 10:39:22 UTC] [INFO] Validating 1 network(s)...
+[2026-02-02 10:39:22 UTC] [SUCCESS] All 1 network(s) validated successfully
+[2026-02-02 10:39:22 UTC] [SUCCESS] Network configurations validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validating L1 State ---
+[2026-02-02 10:39:22 UTC] [SUCCESS] L1 state validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validating Config Files ---
+[2026-02-02 10:39:22 UTC] [INFO] Agglayer config validated
+[2026-02-02 10:39:22 UTC] [SUCCESS] Config files validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validating Docker Images ---
+[2026-02-02 10:39:22 UTC] [INFO] Geth image validated: l1-geth:snapshot
+[2026-02-02 10:39:22 UTC] [INFO] Lighthouse image validated: l1-lighthouse:snapshot
+[2026-02-02 10:39:22 UTC] [SUCCESS] Docker images validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validating Docker Compose File ---
+[2026-02-02 10:39:22 UTC] [SUCCESS] Docker compose validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validating Required Files ---
+[2026-02-02 10:39:22 UTC] [SUCCESS] Required files validation passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Validation Summary ---
+[2026-02-02 10:39:22 UTC] [SUCCESS] All validations passed!
+[2026-02-02 10:39:22 UTC] [INFO] Snapshot is valid and ready to use
+[2026-02-02 10:39:22 UTC] [SUCCESS] Static validation passed
+[2026-02-02 10:39:22 UTC] [INFO] Runtime verification skipped (use --start-env to enable)
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Verification Summary ---
+[2026-02-02 10:39:22 UTC] [SUCCESS] All verifications passed!
+[2026-02-02 10:39:22 UTC] [INFO] Snapshot is valid and ready to use
+[2026-02-02 10:39:22 UTC] [SUCCESS] Snapshot verification passed
+[2026-02-02 10:39:22 UTC] [INFO] 
+[2026-02-02 10:39:22 UTC] [INFO] --- Cleaning Up Snapshot Artifacts ---
+[2026-02-02 10:39:23 UTC] [SUCCESS] Cleaned up 10 temporary artifact(s)
+[2026-02-02 10:39:23 UTC] [SUCCESS] Snapshot creation completed successfully!
+[2026-02-02 10:39:23 UTC] [INFO] Output directory: ./snapshot-output

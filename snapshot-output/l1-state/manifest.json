@@ -1,0 +1,19 @@
+{
+    "extraction_timestamp": "2026-02-02T11:30:07Z",
+    "enclave_name": "snapshot-test",
+    "geth": {
+        "service_name": "el-1-geth-lighthouse",
+        "datadir_path": "/root/.ethereum",
+        "extracted_path": "./snapshot-output/l1-state/geth",
+        "finalized_block": 168
+    },
+    "lighthouse": {
+        "service_name": "cl-1-lighthouse-geth",
+        "datadir_path": "/root/.lighthouse",
+        "extracted_path": "./snapshot-output/l1-state/lighthouse",
+        "finalized_slot": 168
+    },
+    "chain_id": "271828",
+    "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
+    "l1_beacon_url": "http://cl-1-lighthouse-geth:4000"
+}

@@ -1,11 +1,13 @@
-# Geth Dockerfile for snapshot (Genesis-based approach)
+# Geth Dockerfile for snapshot (Datadir-based approach)
 # ======================================================
-# This Dockerfile initializes geth from a genesis file with pre-loaded state.
-# Instead of copying an existing datadir, geth starts fresh from block 0 with
-# all contracts, balances, and storage pre-loaded in the genesis.
+# This Dockerfile copies a COMPLETE geth datadir including:
+# - geth/chaindata (state database)
+# - geth/ancient (immutable ancient blocks)
+# - keystore/ (account keys)
+# - jwtsecret (Engine API authentication)
+# - All other datadir contents
 #
-# This approach avoids state restoration issues and allows both execution
-# and consensus clients to start with consistent state (block 0 = slot 0).
+# This allows geth to continue from where it left off during snapshot creation.
 #
 # Template Variables (replaced during image build):
 #   {{GETH_BASE_IMAGE}} - Base geth image (e.g., ethereum/client-go:v1.16.8)
@@ -14,22 +16,21 @@
 #
 # Build Context:
 #   The build context should contain:
-#   - genesis.json: Genesis file with pre-loaded L1 state
-#   - jwtsecret: JWT secret for engine API authentication
+#   - execution-data/: Complete geth datadir extracted from running container
 
 FROM {{GETH_BASE_IMAGE}}
 
-# Copy genesis and JWT secret
-COPY genesis.json /tmp/genesis.json
-COPY jwtsecret /root/.ethereum/jwtsecret
+# Copy the ENTIRE extracted geth datadir
+# This includes: geth/, ancient/, keystore/, etc.
+COPY execution-data/ /root/.ethereum/
 
-# Initialize geth from genesis
-# This creates the blockchain database at block 0 with all pre-loaded state
-RUN geth init \
-    --datadir /root/.ethereum \
-    /tmp/genesis.json && \
-    rm /tmp/genesis.json && \
-    chmod 600 /root/.ethereum/jwtsecret
+# Copy JWT secret (CRITICAL for Engine API authentication with lighthouse)
+# Must be at /jwt/jwtsecret to match Kurtosis deployment path
+COPY jwtsecret /jwt/jwtsecret
+
+# Fix permissions (jwtsecret must be 600)
+RUN chmod 600 /jwt/jwtsecret && \
+    chmod -R u+rwX /root/.ethereum/
 
 # Expose ports
 # 8545: HTTP RPC endpoint
@@ -51,7 +52,7 @@ ENTRYPOINT ["geth", \
     "--ws.api", "eth,net,web3", \
     "--authrpc.addr", "0.0.0.0", \
     "--authrpc.port", "8551", \
-    "--authrpc.jwtsecret", "/root/.ethereum/jwtsecret", \
+    "--authrpc.jwtsecret", "/jwt/jwtsecret", \
     "--gcmode", "archive", \
     "--log.format", "{{LOG_FORMAT}}", \
     "--networkid", "{{CHAIN_ID}}", \

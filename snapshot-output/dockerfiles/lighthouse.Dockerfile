@@ -1,0 +1,67 @@
+# Lighthouse Dockerfile for snapshot (Datadir-based approach)
+# ===========================================================
+# This Dockerfile copies a COMPLETE lighthouse beacon datadir including:
+# - beacon/chain_db (beacon chain state database)
+# - beacon/freezer_db (immutable finalized states)
+# - beacon/network (P2P metadata)
+# - lighthouse.toml (config)
+# - ENR (node identity)
+# - All other datadir contents
+#
+# This allows lighthouse to continue from where it left off during snapshot creation.
+#
+# Template Variables (replaced during image build):
+#   sigp/lighthouse:v8.0.1 - Base lighthouse image (e.g., sigp/lighthouse:v8.0.1)
+#   l1-geth     - Docker-compose service name for geth
+#   JSON            - Log format: "JSON" or "default"
+#
+# Build Context:
+#   Expected files in build context:
+#   - beacon-data/: Complete lighthouse beacon datadir extracted from running container
+#   - testnet/: Testnet configuration (genesis.ssz, config.yaml, etc.)
+#   - validators/: Validator keystores and validator_definitions.yml
+#   - ethereum/jwtsecret: JWT secret for geth authentication
+
+FROM sigp/lighthouse:v8.0.1
+
+# Copy the ENTIRE extracted lighthouse datadir
+# This includes: beacon/, lighthouse.toml, ENR, network/, etc.
+COPY beacon-data/ /root/.lighthouse/beacon-data/
+
+# Copy testnet configuration (genesis.ssz, config.yaml)
+COPY testnet /root/.lighthouse/testnet
+
+# Copy JWT secret for Engine API authentication with geth
+# Must be at /jwt/jwtsecret to match Kurtosis deployment path
+COPY jwtsecret /jwt/jwtsecret
+RUN chmod 600 /jwt/jwtsecret
+
+# Copy validator keystores (if present)
+COPY validators /root/.lighthouse/validators
+
+# Fix permissions
+RUN chmod -R u+rwX /root/.lighthouse/
+
+# Expose ports
+# 4000: HTTP API endpoint (for validator client and queries)
+# 5054: Metrics endpoint (for monitoring)
+EXPOSE 4000 5054
+
+# Set entrypoint for beacon node
+# Lighthouse will start fresh from genesis using the testnet configuration
+# No --checkpoint-sync-url needed since we're starting from genesis
+ENTRYPOINT ["lighthouse", "bn", \
+    "--datadir", "/root/.lighthouse", \
+    "--testnet-dir", "/root/.lighthouse/testnet", \
+    "--execution-endpoint", "http://l1-geth:8551", \
+    "--execution-jwt", "/jwt/jwtsecret", \
+    "--disable-optimistic-finalized-sync", \
+    "--disable-backfill-rate-limiting", \
+    "--log-format", "JSON", \
+    "--http", \
+    "--http-address", "0.0.0.0", \
+    "--http-port", "4000", \
+    "--metrics", \
+    "--metrics-address", "0.0.0.0", \
+    "--metrics-port", "5054" \
+]

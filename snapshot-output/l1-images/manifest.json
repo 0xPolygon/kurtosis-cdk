@@ -1,0 +1,24 @@
+{
+    "build_timestamp": "2026-02-02T11:30:28Z",
+    "chain_id": "271828",
+    "approach": "genesis-based",
+    "geth": {
+        "image_tag": "l1-geth:snapshot",
+        "base_image": "ethereum/client-go:v1.16.8",
+        "size": "100MB",
+        "genesis_file": "./snapshot-output/l1-state/genesis.json",
+        "service_name": "l1-geth"
+    },
+    "lighthouse": {
+        "image_tag": "l1-lighthouse:snapshot",
+        "base_image": "sigp/lighthouse:v8.0.1",
+        "size": "617MB",
+        "testnet_dir": "./snapshot-output/l1-state/lighthouse-testnet",
+        "geth_service_name": "l1-geth"
+    },
+    "log_format": "json",
+    "dockerfiles": {
+        "geth": "./snapshot-output/dockerfiles/geth.Dockerfile",
+        "lighthouse": "./snapshot-output/dockerfiles/lighthouse.Dockerfile"
+    }
+}

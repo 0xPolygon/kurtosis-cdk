@@ -1,0 +1,8 @@
+{
+  "processing_timestamp": "2026-02-02T11:19:23Z",
+  "enclave_name": "snapshot-test",
+  "output_directory": "./snapshot-output",
+  "processed_networks": [],
+  "port_mapping": {},
+  "keystore_mapping": {}
+}

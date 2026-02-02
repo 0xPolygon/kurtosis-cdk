@@ -197,173 +197,77 @@ main() {
     log_info "  Geth: ${GETH_SERVICE}"
     log_info "  Lighthouse: ${LIGHTHOUSE_SERVICE}"
     
-    # Export L1 state to genesis file from running geth
-    # This approach creates a fresh genesis with pre-loaded state (contracts, balances, storage)
-    # allowing L1 to start from block 0 without state restoration issues
-    log_section "Exporting L1 state to genesis file"
+    # Extract L1 datadirs to preserve chain state
+    # This approach extracts the COMPLETE geth and lighthouse datadirs
+    # including chaindata, ancient blocks, freezer_db, jwtsecret, keystore, etc.
+    log_section "Extracting L1 datadirs (geth and lighthouse)"
 
-    log_info "Exporting state from finalized block..."
+    log_info "Extracting complete geth datadir (this may take several minutes)..."
+    log_info "This includes: chaindata, ancient blocks, jwtsecret, keystore, etc."
 
-    # Get finalized block number
-    local finalized_block=0
-    local metadata_artifact_dir="${OUTPUT_DIR}/l1-state/finalized-metadata-artifact-temp"
-    rm -rf "${metadata_artifact_dir}"
+    # Extract ENTIRE geth datadir (not just geth/ subdirectory)
+    # This captures: geth/, ancient/, keystore/, jwtsecret, etc.
+    if ! extract_datadir "${ENCLAVE_NAME}" "${GETH_SERVICE}" \
+        "/data/geth/execution-data" "${GETH_OUTPUT_DIR}"; then
+        log_error "Failed to extract geth datadir"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    fi
+    log_success "Geth datadir extracted successfully"
 
-    if kurtosis files download "${ENCLAVE_NAME}" l1-finalized-metadata "${metadata_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}" || true; then
-        local metadata_file="${metadata_artifact_dir}/finalized-state.json"
-        if [ -f "${metadata_file}" ]; then
-            finalized_block=$(jq -r '.finalized_block // 0' "${metadata_file}" 2>/dev/null || echo "0")
-            log_info "Finalized block from metadata: ${finalized_block}"
+    log_info "Extracting complete lighthouse beacon datadir..."
+    log_info "This includes: chain_db, freezer_db, network, ENR, etc."
+
+    # Extract ENTIRE lighthouse datadir (not just beacon/ subdirectory)
+    # This captures: beacon/, lighthouse.toml, ENR, etc.
+    if ! extract_datadir "${ENCLAVE_NAME}" "${LIGHTHOUSE_SERVICE}" \
+        "/data/lighthouse/beacon-data" "${LIGHTHOUSE_OUTPUT_DIR}"; then
+        log_error "Failed to extract lighthouse datadir"
+        exit ${EXIT_CODE_GENERAL_ERROR}
+    fi
+    log_success "Lighthouse beacon datadir extracted successfully"
+
+    # Extract JWT secret (CRITICAL for geth/lighthouse authentication)
+    log_section "Extracting JWT secret"
+    log_info "JWT secret is required for Engine API authentication between geth and lighthouse"
+
+    local jwt_artifact_dir="${OUTPUT_DIR}/l1-state/jwt-artifact-temp"
+    rm -rf "${jwt_artifact_dir}"
+    mkdir -p "${jwt_artifact_dir}"
+
+    if kurtosis files download "${ENCLAVE_NAME}" jwt_file "${jwt_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
+        local jwt_secret_file=$(find "${jwt_artifact_dir}" -name "jwtsecret" -type f | head -1)
+        if [ -n "${jwt_secret_file}" ] && [ -f "${jwt_secret_file}" ]; then
+            cp "${jwt_secret_file}" "${OUTPUT_DIR}/l1-state/jwtsecret"
+            chmod 600 "${OUTPUT_DIR}/l1-state/jwtsecret"
+            log_success "JWT secret extracted successfully"
+            log_info "JWT secret: $(cat ${OUTPUT_DIR}/l1-state/jwtsecret)"
+        else
+            log_error "JWT secret file not found in artifact"
+            exit ${EXIT_CODE_GENERAL_ERROR}
         fi
-        rm -rf "${metadata_artifact_dir}"
-    fi
-
-    # Fallback: query geth directly if metadata not available
-    if [ "${finalized_block}" = "0" ]; then
-        log_info "Querying geth for finalized block..."
-        finalized_block=$(kurtosis service exec "${ENCLAVE_NAME}" "${GETH_SERVICE}" \
-            "geth attach --exec 'eth.getBlock(\"finalized\").number' /data/geth/execution-data/geth.ipc" 2>/dev/null | grep -o '[0-9]*' | head -1 || echo "0")
-        log_info "Finalized block from geth: ${finalized_block}"
-    fi
-
-    # Export state using debug.dumpBlock
-    log_info "Exporting state from block ${finalized_block}..."
-    local state_dump="${OUTPUT_DIR}/l1-state/state-dump.json"
-
-    kurtosis service exec "${ENCLAVE_NAME}" "${GETH_SERVICE}" \
-        "geth attach --exec 'JSON.stringify(debug.dumpBlock(${finalized_block}))' /data/geth/execution-data/geth.ipc" \
-        > "${state_dump}" 2>&1
-
-    if [ -f "${state_dump}" ] && [ -s "${state_dump}" ]; then
-        log_success "State exported successfully"
-        local size=$(du -h "${state_dump}" | cut -f1)
-        log_info "State dump size: ${size}"
+        rm -rf "${jwt_artifact_dir}"
     else
-        log_error "Failed to export state from geth"
-        cat "${state_dump}" 2>&1 | tee -a "${LOG_FILE}" || true
+        log_error "Failed to download JWT secret artifact"
+        log_error "This is CRITICAL - geth and lighthouse won't be able to communicate"
         exit ${EXIT_CODE_GENERAL_ERROR}
     fi
 
-    # Download original genesis
-    log_info "Downloading original genesis configuration..."
+    # Also extract the original genesis for reference (used by docker images)
+    log_info "Downloading original genesis for reference..."
     local genesis_artifact_dir="${OUTPUT_DIR}/l1-genesis-original"
     rm -rf "${genesis_artifact_dir}"
     mkdir -p "${genesis_artifact_dir}"
 
-    if ! kurtosis files download "${ENCLAVE_NAME}" el_cl_genesis_data "${genesis_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
-        log_error "Failed to download original genesis"
-        exit ${EXIT_CODE_GENERAL_ERROR}
-    fi
-
-    local original_genesis=$(find "${genesis_artifact_dir}" -name "genesis.json" -type f | head -1)
-    if [ -z "${original_genesis}" ] || [ ! -f "${original_genesis}" ]; then
-        log_error "Genesis file not found in artifact"
-        exit ${EXIT_CODE_GENERAL_ERROR}
-    fi
-    log_info "Original genesis: ${original_genesis}"
-
-    # Merge state with genesis using Python
-    log_info "Merging exported state with genesis..."
-    local output_genesis="${OUTPUT_DIR}/l1-state/genesis.json"
-
-    python3 - "${original_genesis}" "${state_dump}" "${output_genesis}" <<'PYTHON_EOF'
-import json
-import sys
-
-def convert_state_to_alloc(state_dump):
-    """Convert geth debug.dumpBlock output to genesis alloc format"""
-    alloc = {}
-    accounts = state_dump.get('accounts', {})
-
-    for address, account_data in accounts.items():
-        # Normalize address format
-        addr = address.lower() if not address.startswith('0x') else address[2:].lower()
-        addr = '0x' + addr
-
-        alloc[addr] = {}
-
-        # Add balance
-        if 'balance' in account_data and account_data['balance']:
-            alloc[addr]['balance'] = account_data['balance']
-
-        # Add nonce if non-zero
-        if 'nonce' in account_data and account_data['nonce'] != 0:
-            alloc[addr]['nonce'] = hex(account_data['nonce'])
-
-        # Add code for contracts
-        if 'code' in account_data and account_data['code']:
-            alloc[addr]['code'] = account_data['code']
-
-        # Add storage for contracts
-        if 'storage' in account_data and account_data['storage']:
-            alloc[addr]['storage'] = account_data['storage']
-
-    return alloc
-
-try:
-    # Read files
-    with open(sys.argv[1], 'r') as f:
-        genesis = json.load(f)
-
-    with open(sys.argv[2], 'r') as f:
-        lines = f.readlines()
-        # Skip Kurtosis wrapper lines and find the JSON line
-        state_data = None
-        for line in lines:
-            stripped = line.strip()
-            if stripped and not stripped.startswith('The command') and not stripped.startswith('Error:'):
-                state_data = stripped
-                break
-
-        if not state_data:
-            print("❌ Error: No valid JSON found in state dump", file=sys.stderr)
-            sys.exit(1)
-
-        # Handle JSON string wrapping (geth returns JSON.stringify output)
-        if state_data.startswith('"') and state_data.endswith('"'):
-            # Remove outer quotes and unescape
-            state_data = json.loads(state_data)
-
-        state_dump = json.loads(state_data) if isinstance(state_data, str) else state_data
-
-    # Convert and merge
-    new_alloc = convert_state_to_alloc(state_dump)
-
-    if 'alloc' not in genesis:
-        genesis['alloc'] = {}
-
-    genesis['alloc'].update(new_alloc)
-
-    # Write output
-    with open(sys.argv[3], 'w') as f:
-        json.dump(genesis, f, indent=2)
-
-    print(f"✅ Genesis created with {len(genesis['alloc'])} accounts", file=sys.stderr)
-    sys.exit(0)
-
-except Exception as e:
-    print(f"❌ Error: {e}", file=sys.stderr)
-    import traceback
-    traceback.print_exc(file=sys.stderr)
-    sys.exit(1)
-PYTHON_EOF
-
-    if [ $? -eq 0 ] && [ -f "${output_genesis}" ]; then
-        log_success "Genesis file created with pre-loaded state"
-        local genesis_size=$(du -h "${output_genesis}" | cut -f1)
-        log_info "Genesis file size: ${genesis_size}"
-
-        # Clean up temporary files
-        rm -f "${state_dump}"
+    if kurtosis files download "${ENCLAVE_NAME}" el_cl_genesis_data "${genesis_artifact_dir}" 2>&1 | tee -a "${LOG_FILE}"; then
+        local original_genesis=$(find "${genesis_artifact_dir}" -name "genesis.json" -type f | head -1)
+        if [ -n "${original_genesis}" ] && [ -f "${original_genesis}" ]; then
+            cp "${original_genesis}" "${OUTPUT_DIR}/l1-state/genesis.json"
+            log_success "Original genesis copied for reference"
+        fi
         rm -rf "${genesis_artifact_dir}"
     else
-        log_error "Failed to create genesis file"
-        exit ${EXIT_CODE_GENERAL_ERROR}
+        log_warn "Could not download original genesis (continuing anyway)"
     fi
-
-    # Note: No need to extract geth or lighthouse datadirs
-    # Both will start fresh from genesis (block 0, slot 0)
-    log_info "Geth and Lighthouse will start fresh from genesis (no datadir extraction needed)"
 
     # Extract lighthouse testnet configuration (genesis.ssz, config.yaml, etc.)
     log_section "Extracting lighthouse testnet configuration from artifacts"
@@ -389,13 +293,11 @@ PYTHON_EOF
             if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.ssz" ] && [ -f "${LIGHTHOUSE_TESTNET_DIR}/config.yaml" ]; then
                 log_success "Found genesis.ssz and config.yaml in testnet directory"
 
-                # Also update the execution genesis.json with the one from el_cl_genesis_data
-                # This ensures geth and lighthouse have matching genesis
-                if [ -f "${LIGHTHOUSE_TESTNET_DIR}/genesis.json" ]; then
-                    log_info "Updating execution genesis.json from el_cl_genesis_data artifact"
-                    cp "${LIGHTHOUSE_TESTNET_DIR}/genesis.json" "${OUTPUT_DIR}/l1-state/genesis.json"
-                    log_success "Execution and consensus genesis files are now matched"
-                fi
+                # NOTE: Do NOT overwrite the execution genesis.json we created with merged state!
+                # The el_cl_genesis_data artifact contains the ORIGINAL genesis without contracts.
+                # We need to keep our merged genesis that includes all deployed contracts and storage.
+                # Only the consensus layer files (genesis.ssz, config.yaml) are needed from the artifact.
+                log_info "Keeping merged execution genesis.json (contains deployed contracts)"
             else
                 log_warn "Genesis files may be missing from el_cl_genesis_data artifact"
                 log_info "Testnet directory contents: $(ls -la ${LIGHTHOUSE_TESTNET_DIR}/ 2>&1 || echo 'empty')"

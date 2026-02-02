@@ -1,0 +1,63 @@
+[2026-02-02 11:18:35 UTC] [INFO] 
+[2026-02-02 11:18:35 UTC] [INFO] ==========================================
+[2026-02-02 11:18:35 UTC] [INFO] Step 0: Snapshot Creation
+[2026-02-02 11:18:35 UTC] [INFO] ==========================================
+[2026-02-02 11:18:35 UTC] [INFO] 
+Error: Unknown option: 
+Usage: ./snapshot/scripts/snapshot.sh [OPTIONS]
+
+Create a snapshot of a Kurtosis environment for docker-compose deployment.
+
+This script:
+1. Generates a Kurtosis args file with snapshot_mode enabled
+2. Runs kurtosis run to deploy L1, register networks, and extract configs
+3. Extracts L1 state from the enclave
+4. Processes config artifacts to static format
+5. Builds Docker images with L1 state
+6. Generates docker-compose.yml
+
+Options:
+    --enclave-name NAME       Kurtosis enclave name (required)
+    --output-dir DIR          Output directory for snapshot (required)
+    --networks FILE           JSON file with network configs (optional, see below)
+    --l1-wait-blocks N        Number of blocks to wait for L1 finalization (default: 10)
+    --args-file FILE          Pre-generated args file (optional, will generate if not provided)
+    --cleanup-enclave         Clean up enclave after snapshot (default: false)
+    --skip-kurtosis           Skip kurtosis run (for testing post-processing only)
+    --skip-verification       Skip snapshot verification (default: false)
+    --verify-runtime          Run runtime verification (starts docker-compose) (default: false)
+    -h, --help                Show this help message
+
+Network Configuration:
+    If --networks is not provided, you must provide a valid args file with snapshot_networks.
+    The networks JSON file should have the following structure:
+    
+    {
+      "networks": [
+        {
+          "sequencer_type": "cdk-erigon",
+          "consensus_type": "rollup",
+          "deployment_suffix": "-001",
+          "l2_chain_id": 20201,
+          "network_id": 1,
+          "l2_sequencer_address": "0x...",
+          "l2_sequencer_private_key": "0x...",
+          ...
+        }
+      ]
+    }
+    
+    See snapshot.md for complete network configuration format.
+
+Example:
+    ./snapshot/scripts/snapshot.sh \
+        --enclave-name snapshot \
+        --output-dir ./snapshot-output \
+        --networks ./networks.json \
+        --l1-wait-blocks 10
+
+    ./snapshot/scripts/snapshot.sh \
+        --enclave-name snapshot \
+        --output-dir ./snapshot-output \
+        --args-file ./snapshot-args.json
+[2026-02-02 11:18:35 UTC] [ERROR] Script failed with exit code 1

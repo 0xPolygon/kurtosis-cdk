@@ -1,0 +1,44 @@
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] ==========================================
+[2026-02-02 11:19:23 UTC] [INFO] Step 1: Config Processing for Snapshot
+[2026-02-02 11:19:23 UTC] [INFO] ==========================================
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 11:19:23 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 11:19:23 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 11:19:23 UTC] [INFO] Output directory: ./snapshot-output
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] --- Loading L1 genesis configuration ---
+[2026-02-02 11:19:23 UTC] [INFO] Looking for merged genesis at: ./snapshot-output/l1-state/genesis.json
+[2026-02-02 11:19:23 UTC] [INFO] Found merged L1 genesis with deployed contracts from state extraction
+[2026-02-02 11:19:23 UTC] [INFO] Merged genesis has 282 accounts
+[2026-02-02 11:19:23 UTC] [SUCCESS] L1 genesis.json loaded from merged state (282 accounts, includes OP Stack contracts)
+Attempting to list artifacts from Kurtosis enclave...
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] --- Loading networks configuration ---
+[2026-02-02 11:19:23 UTC] [WARN] Networks JSON not provided, will try to infer from artifacts
+[2026-02-02 11:19:23 UTC] [INFO] Processing 0 network(s)...
+Warning: jq not available or no networks data, skipping network processing
+You may need to manually process configs or provide networks JSON
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] --- Processing agglayer config ---
+Downloading artifact: agglayer-config...
+✅ Downloaded agglayer-config
+[2026-02-02 11:19:23 UTC] [SUCCESS] Agglayer config processed and validated successfully
+
+Creating port mapping...
+✅ Port mapping created: ./snapshot-output/port-mapping.json
+Creating keystore mapping...
+✅ Keystore mapping created: ./snapshot-output/keystore-mapping.json
+Creating processing manifest...
+✅ Processing manifest created: ./snapshot-output/config-processing-manifest.json
+[2026-02-02 11:19:23 UTC] [INFO] 
+[2026-02-02 11:19:23 UTC] [INFO] --- Summary ---
+[2026-02-02 11:19:23 UTC] [INFO] Processed configs: ./snapshot-output/configs/
+[2026-02-02 11:19:23 UTC] [INFO] Keystores: ./snapshot-output/keystores/
+[2026-02-02 11:19:23 UTC] [INFO] Mappings: ./snapshot-output/*.json
+[2026-02-02 11:19:23 UTC] [SUCCESS] Config Processing Complete

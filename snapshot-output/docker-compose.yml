@@ -33,7 +33,7 @@ services:
       - --authrpc.port
       - '8551'
       - --authrpc.jwtsecret
-      - /root/.ethereum/jwtsecret
+      - /jwt/jwtsecret
       - --authrpc.vhosts
       - '*'
       - --gcmode
@@ -134,7 +134,6 @@ services:
     volumes:
       - ./configs/1/genesis.json:/genesis.json:ro
       - ./configs/1/jwt.txt:/jwt.txt:ro
-      # Empty volume - OP-Geth will sync from L1 on first run
       - op-geth-data-1:/data
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -162,7 +161,6 @@ services:
       - ./configs/1/rollup.json:/rollup.json:ro
       - ./configs/1/jwt.txt:/jwt.txt:ro
       - ./l1-config/genesis.json:/l1-genesis.json:ro
-      # Empty volume - OP-Node will sync from L1 on first run
       - op-node-data-1:/data
     command:
       - op-node
@@ -196,7 +194,6 @@ services:
       - ./keystores/1/aggregator.keystore:/etc/aggkit/aggregator.keystore:ro
       - ./keystores/1/aggoracle.keystore:/etc/aggkit/aggoracle.keystore:ro
       - ./keystores/1/claimsponsor.keystore:/etc/aggkit/claimsponsor.keystore:ro
-      # Empty volumes - AggKit starts fresh
       - aggkit-data-1:/data
       - aggkit-tmp-1:/tmp
     depends_on:
@@ -214,12 +211,7 @@ networks:
     driver: bridge
 
 volumes:
-  # L2 Data Volumes
-  # Note: These volumes start empty. L2 services will sync from L1 on first run.
-  cdk-erigon-data-1:
-  cdk-erigon-rpc-data-1:
-  aggkit-data-1:
-  aggkit-tmp-1:
   op-geth-data-1:
   op-node-data-1:
-  op-proposer-data-1:
+  aggkit-data-1:
+  aggkit-tmp-1:

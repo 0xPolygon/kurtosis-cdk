@@ -1,0 +1,731 @@
+[2026-02-02 10:33:01 UTC] [INFO] 
+[2026-02-02 10:33:01 UTC] [INFO] ==========================================
+[2026-02-02 10:33:01 UTC] [INFO] Step 0: Snapshot Creation
+[2026-02-02 10:33:01 UTC] [INFO] ==========================================
+[2026-02-02 10:33:01 UTC] [INFO] 
+[2026-02-02 10:33:01 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:33:01 UTC] [INFO] 
+[2026-02-02 10:33:01 UTC] [INFO] --- Checking Prerequisites ---
+[2026-02-02 10:33:01 UTC] [INFO] Checking prerequisites...
+[2026-02-02 10:33:01 UTC] [SUCCESS] All required prerequisites are available
+[2026-02-02 10:33:01 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:33:01 UTC] [INFO] 
+[2026-02-02 10:33:01 UTC] [INFO] --- Generating Kurtosis args file ---
+[2026-02-02 10:33:01 UTC] [INFO] Reading networks from: ./snapshot/test-config.json
+[2026-02-02 10:33:01 UTC] [INFO] Loaded 1 network(s)
+[2026-02-02 10:33:01 UTC] [SUCCESS] Args file generated: ./snapshot-output/kurtosis-args.json
+[2026-02-02 10:33:01 UTC] [INFO] 
+[2026-02-02 10:33:01 UTC] [INFO] --- Running Kurtosis ---
+[2026-02-02 10:33:01 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 10:33:01 UTC] [INFO] Args file: ./snapshot-output/kurtosis-args.json
+[2026-02-02 10:33:01 UTC] [WARN] Enclave 'snapshot-test' already exists
+[2026-02-02 10:33:01 UTC] [INFO] You may want to clean it up first: kurtosis enclave rm snapshot-test
+[2026-02-02 10:33:01 UTC] [INFO] Starting kurtosis run (this may take several minutes)...
+[36mINFO[0m[2026-02-02T10:33:01Z] Executing Starlark package at '/home/aigent/kurtosis-cdk' as the passed argument '/home/aigent/kurtosis-cdk' looks like a directory 
+[36mINFO[0m[2026-02-02T10:33:01Z] Compressing package 'github.com/0xPolygon/kurtosis-cdk' at '/home/aigent/kurtosis-cdk' for upload 
+[36mINFO[0m[2026-02-02T10:33:02Z] Uploading and executing package 'github.com/0xPolygon/kurtosis-cdk' 
+[36mINFO[0m[2026-02-02T10:33:02Z] Kurtosis CLI is running in a non interactive terminal. Everything will work but progress information and the progress bar will not be displayed. 
+
+Deriving the private key from the mnemonic
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Fetching cluster type 'docker'
+SKIPPED - This instruction has already been run in this enclave
+
+Uploading file '/static_files/jwt/jwtsecret' to files artifact 'jwt_file'
+SKIPPED - This instruction has already been run in this enclave
+
+Uploading file '/static_files/keymanager/keymanager.txt' to files artifact 'keymanager_file'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'validator-key-generation-cl-validator-keystore' and image 'protolambda/eth2-val-tools:latest'
+SKIPPED - This instruction has already been run in this enclave
+
+Generating keystores
+SKIPPED - This instruction has already been run in this enclave
+
+Verifying whether two values meet a certain condition '=='
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'validator-key-generation-cl-validator-keystore' at path '/node-0-keystores/' to files artifact with name '1-lighthouse-geth-0-127'
+SKIPPED - This instruction has already been run in this enclave
+
+Storing prysm password in a file
+SKIPPED - This instruction has already been run in this enclave
+
+Verifying whether two values meet a certain condition '=='
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'validator-key-generation-cl-validator-keystore' at path '/tmp/prysm-password.txt' to files artifact with name 'prysm-password'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Getting final genesis timestamp
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'genesis-el-cl-env-file'
+SKIPPED - This instruction has already been run in this enclave
+
+Creating genesis
+SKIPPED - This instruction has already been run in this enclave
+
+Reading genesis validators root
+SKIPPED - This instruction has already been run in this enclave
+
+Reading osaka time from genesis
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'el-1-geth-lighthouse' and image 'ethereum/client-go:v1.16.8'
+SKIPPED - This instruction has already been run in this enclave
+
+Waiting for at most '30m0s' for service 'el-1-geth-lighthouse' to reach a certain state
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'cl-1-lighthouse-geth' and image 'sigp/lighthouse:v8.0.1'
+SKIPPED - This instruction has already been run in this enclave
+
+Running 'GET' request on service 'cl-1-lighthouse-geth'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Adding '1' services with names 'vc-1-geth-lighthouse'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'validator-ranges'
+SKIPPED - This instruction has already been run in this enclave
+
+Wait for L1 to start up - it can take up to 2 minutes
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Getting agglayer vkey hash
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Getting agglayer vkey selector
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Getting aggchain vkey hash
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'create_new_rollup.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'op-custom-genesis-addresses.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'deploy_parameters.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'cdk-erigon-custom-genesis-addresses.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'create_rollup_parameters.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'add_rollup_type.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'create-genesis-sovereign-params.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'input_args.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'contracts.sh'
+SKIPPED - This instruction has already been run in this enclave
+
+Uploading create_op_allocs.py artifact
+SKIPPED - This instruction has already been run in this enclave
+
+Uploading json2http.py artifact
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'contracts-001' and image 'europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.2'
+SKIPPED - This instruction has already been run in this enclave
+
+JSON 2 Http Server
+SKIPPED - This instruction has already been run in this enclave
+
+Setting permissions for /opt/scripts/contracts.sh
+SKIPPED - This instruction has already been run in this enclave
+
+Creating keystores for zkevm-node/cdk-validium components
+SKIPPED - This instruction has already been run in this enclave
+
+Deploying Agglayer smart contracts on L1
+SKIPPED - This instruction has already been run in this enclave
+
+Creating rollup on L1
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/output/dynamic-kurtosis-conf.json' to files artifact with name 'cdk-erigon-chain-config'
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/output/dynamic-kurtosis-allocs.json' to files artifact with name 'cdk-erigon-chain-allocs'
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/output/first-batch-config.json' to files artifact with name 'cdk-erigon-chain-first-batch'
+SKIPPED - This instruction has already been run in this enclave
+
+Updating the GER so the L1 Info Tree Index is greater than 0
+SKIPPED - This instruction has already been run in this enclave
+
+Getting basic contract addresses from contracts-001 service
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Creating rollup type and rollup on L1
+SKIPPED - This instruction has already been run in this enclave
+
+Creating sovereign predeployed Genesis for OP Stack
+SKIPPED - This instruction has already been run in this enclave
+
+Storing predeployed_allocs.json
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Wait for L1 to sync up to network - this can take up to 3days
+SKIPPED - This instruction has already been run in this enclave
+
+Initialize L2 contract deployments
+SKIPPED - This instruction has already been run in this enclave
+
+Uploading file '../../static_files/scripts' to files artifact 'op-deployer-fund-script'
+SKIPPED - This instruction has already been run in this enclave
+
+Collect keys, and fund addresses
+SKIPPED - This instruction has already been run in this enclave
+
+Write value to a file artifact
+SKIPPED - This instruction has already been run in this enclave
+
+Configure L2 contract deployments
+SKIPPED - This instruction has already been run in this enclave
+
+Fetching files artifact 'predeployed_allocs.json'
+SKIPPED - This instruction has already been run in this enclave
+
+Apply L2 contract deployments
+SKIPPED - This instruction has already been run in this enclave
+
+Generate chainspec
+SKIPPED - This instruction has already been run in this enclave
+
+Uploading file '/static_files/jwt/jwtsecret' to files artifact 'op_jwt_file'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'op-el-1-op-geth-op-node-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0'
+SKIPPED - This instruction has already been run in this enclave
+
+Waiting for at most '30m0s' for service 'op-el-1-op-geth-op-node-001' to reach a certain state
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Fetching files artifact 'el_cl_genesis_data'
+SKIPPED - This instruction has already been run in this enclave
+
+Standardize L1 genesis for op-node
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'op-cl-1-op-node-op-geth-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5'
+SKIPPED - This instruction has already been run in this enclave
+
+Running 'POST' request on service 'op-cl-1-op-node-op-geth-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'op-el-2-op-geth-op-node-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0'
+SKIPPED - This instruction has already been run in this enclave
+
+Waiting for at most '30m0s' for service 'op-el-2-op-geth-op-node-001' to reach a certain state
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Fetching files artifact 'el_cl_genesis_data'
+SKIPPED - This instruction has already been run in this enclave
+
+Standardize L1 genesis for op-node
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'op-cl-2-op-node-op-geth-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5'
+SKIPPED - This instruction has already been run in this enclave
+
+Running 'POST' request on service 'op-cl-2-op-node-op-geth-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'op-batcher-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.3'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'op-proposer-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.2'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'proxyd-config-20201'
+SKIPPED - This instruction has already been run in this enclave
+
+Adding service with name 'proxyd-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd:v4.14.5'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Read JSON value
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Fetching files artifact 'op-deployer-configs'
+SKIPPED - This instruction has already been run in this enclave
+
+Reading op-proposer contract address
+SKIPPED - This instruction has already been run in this enclave
+
+Reading op-batcher contract address
+SKIPPED - This instruction has already been run in this enclave
+
+Reading op-sequencer contract address
+SKIPPED - This instruction has already been run in this enclave
+
+Reading op-challenger contract address
+SKIPPED - This instruction has already been run in this enclave
+
+Reading op-l1ProxyAdmin contract address
+SKIPPED - This instruction has already been run in this enclave
+
+Deploying sovereign contracts on OP Stack
+SKIPPED - This instruction has already been run in this enclave
+
+Deploying sovereign contracts on OP Stack
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Reading sovereign contract addresses
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'aggkit-config-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'bridge-config-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/output/genesis.json' to files artifact with name 'genesis-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Record L1 block after contract deployment
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/keystores/sequencer.keystore' to files artifact with name 'sequencer-keystore-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/keystores/aggregator.keystore' to files artifact with name 'aggregator-keystore-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'contracts-001' at path '/opt/keystores/claimsponsor.keystore' to files artifact with name 'claimsponsor-keystore-001'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Rendering a template to a files artifact with name 'agglayer-config'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Get deployment block from metadata artifact
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Wait for L1 finalized state and store metadata
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'cl-1-lighthouse-geth' at path '/network-configs' to files artifact with name 'l1-lighthouse-testnet'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Storing files from service 'vc-1-geth-lighthouse' at path '/validator-keys' to files artifact with name 'l1-validator-keys'
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Printing a message
+SKIPPED - This instruction has already been run in this enclave
+
+Starlark code successfully run. No output was returned.
+
+⭐ us on GitHub - https://github.com/kurtosis-tech/kurtosis
+Name:            snapshot-test
+UUID:            18a9ed687694
+Status:          RUNNING
+Creation Time:   Mon, 02 Feb 2026 10:25:36 UTC
+Flags:           
+
+========================================= Files Artifacts =========================================
+UUID           Name
+b02cbda81c07   1-lighthouse-geth-0-127
+7c30c8deb6ef   add_rollup_type.json
+1c0c847d82af   aggkit-config-001
+0fac71bd361c   agglayer-config
+0166918e1462   aggregator-keystore-001
+27437614b411   barren-surf
+b3377d55b6a3   bridge-config-001
+d258468ca1e9   cdk-erigon-chain-allocs
+ce79bc4fffa0   cdk-erigon-chain-config
+508ad0f059df   cdk-erigon-chain-first-batch
+818a2c288681   cdk-erigon-custom-genesis-addresses.json
+1e2bc0d7f173   claimsponsor-keystore-001
+5e6116ebfad5   cold-mushroom
+a26e7e8afc14   contracts.sh
+5d308ee1f4e4   create-genesis-sovereign-params.json
+1fb904311d13   create_new_rollup.json
+05f8af13cbe2   create_op_allocs.py
+02118c7e53ff   create_rollup_parameters.json
+3bfe7eb14da5   deploy_parameters.json
+213d1fc1cfc0   deployment-block-metadata
+e483e8299afa   el_cl_genesis_data
+74f94a6e7a67   final-genesis-timestamp
+2b09f1140fd4   genesis-001
+8b7d469a92fa   genesis-el-cl-env-file
+13d46323cfb2   genesis_validators_root
+1ae27a894567   input_args.json
+28ba72bc4f87   intent.json
+9e2f5de24711   json2http.py
+280cc65f466c   jwt_file
+4b36813017e3   keymanager_file
+f96cc427fc0c   l1-finalized-metadata
+c675af449e0c   l1-lighthouse-testnet
+56beade13892   l1-validator-keys
+738a3e3047a9   op-custom-genesis-addresses.json
+585b35eebdaa   op-deployer-configs
+897fa6210bc5   op-deployer-fund-script
+123dd8cb95f6   op_jwt_file
+80c281477db7   predeployed_allocs.json
+a8052a11dc33   proxyd-config-20201
+2c17372a9381   prysm-password
+d8b27fb5cd80   sequencer-keystore-001
+41d6671605ea   validator-ranges
+
+========================================== User Services ==========================================
+UUID           Name                                             Ports                                                Status
+8c256bdac349   cl-1-lighthouse-geth                             http: 4000/tcp -> http://127.0.0.1:33606             RUNNING
+                                                                metrics: 5054/tcp -> http://127.0.0.1:33605          
+                                                                quic-discovery: 9001/udp                             
+                                                                tcp-discovery: 9000/tcp -> 127.0.0.1:33604           
+                                                                udp-discovery: 9000/udp                              
+97affde6e608   contracts-001                                    http: 8080/tcp -> http://127.0.0.1:33608             RUNNING
+37da78dad529   el-1-geth-lighthouse                             engine-rpc: 8551/tcp -> 127.0.0.1:33601              RUNNING
+                                                                metrics: 9001/tcp -> http://127.0.0.1:33600          
+                                                                rpc: 8545/tcp -> 127.0.0.1:33603                     
+                                                                tcp-discovery: 30303/tcp -> 127.0.0.1:33599          
+                                                                udp-discovery: 30303/udp                             
+                                                                ws: 8546/tcp -> 127.0.0.1:33602                      
+953ae5ed5291   op-batcher-001                                   http: 8548/tcp -> http://127.0.0.1:33621             RUNNING
+371307a4c758   op-cl-1-op-node-op-geth-001                      rpc: 8547/tcp -> http://127.0.0.1:33614              RUNNING
+                                                                tcp-discovery: 9003/tcp -> http://127.0.0.1:33613    
+                                                                udp-discovery: 9003/udp                              
+ed4d982925ee   op-cl-2-op-node-op-geth-001                      rpc: 8547/tcp -> http://127.0.0.1:33620              RUNNING
+                                                                tcp-discovery: 9003/tcp -> http://127.0.0.1:33619    
+                                                                udp-discovery: 9003/udp                              
+bf5734575a9f   op-el-1-op-geth-op-node-001                      engine-rpc: 8551/tcp -> http://127.0.0.1:33610       RUNNING
+                                                                rpc: 8545/tcp -> http://127.0.0.1:33612              
+                                                                tcp-discovery: 30303/tcp -> http://127.0.0.1:33609   
+                                                                udp-discovery: 30303/udp                             
+                                                                ws: 8546/tcp -> ws://127.0.0.1:33611                 
+21867034acd0   op-el-2-op-geth-op-node-001                      engine-rpc: 8551/tcp -> http://127.0.0.1:33616       RUNNING
+                                                                rpc: 8545/tcp -> http://127.0.0.1:33618              
+                                                                tcp-discovery: 30303/tcp -> http://127.0.0.1:33615   
+                                                                udp-discovery: 30303/udp                             
+                                                                ws: 8546/tcp -> ws://127.0.0.1:33617                 
+eda45af119a1   op-proposer-001                                  http: 8560/tcp -> http://127.0.0.1:33622             RUNNING
+5266fe70ba13   proxyd-001                                       http: 8080/tcp -> http://127.0.0.1:33623             RUNNING
+c5ab3c1c5aa3   validator-key-generation-cl-validator-keystore   <none>                                               RUNNING
+bbac3018dbfc   vc-1-geth-lighthouse                             metrics: 8080/tcp -> http://127.0.0.1:33607          RUNNING
+
+[2026-02-02 10:33:05 UTC] [SUCCESS] Kurtosis run completed successfully
+[2026-02-02 10:33:05 UTC] [INFO] 
+[2026-02-02 10:33:05 UTC] [INFO] --- Running Post-Processing Scripts ---
+[2026-02-02 10:33:05 UTC] [INFO] 
+[2026-02-02 10:33:05 UTC] [INFO] ==========================================
+[2026-02-02 10:33:05 UTC] [INFO] Step 1: Extracting L1 State
+[2026-02-02 10:33:05 UTC] [INFO] ==========================================
+[2026-02-02 10:33:05 UTC] [INFO] 
+[2026-02-02 10:33:05 UTC] [INFO] 
+[2026-02-02 10:33:05 UTC] [INFO] ==========================================
+[2026-02-02 10:33:05 UTC] [INFO] Step 1: L1 State Extraction for Snapshot
+[2026-02-02 10:33:05 UTC] [INFO] ==========================================
+[2026-02-02 10:33:06 UTC] [INFO] 
+[2026-02-02 10:33:06 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:33:06 UTC] [INFO] 
+[2026-02-02 10:33:06 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:33:06 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:33:06 UTC] [INFO] 
+[2026-02-02 10:33:06 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 10:33:06 UTC] [SUCCESS] Output directories created
+[2026-02-02 10:33:06 UTC] [INFO] 
+[2026-02-02 10:33:06 UTC] [INFO] --- Detecting L1 service names ---
+[2026-02-02 10:33:06 UTC] [INFO] Auto-detecting L1 service names...
+Getting L1 service names from enclave snapshot-test...
+Warning: Could not find geth service, using default: el-1-geth-lighthouse
+Warning: Could not find lighthouse service, using default: cl-1-lighthouse-geth
+[2026-02-02 10:33:06 UTC] [INFO] Using services:
+[2026-02-02 10:33:06 UTC] [INFO]   Geth: el-1-geth-lighthouse
+[2026-02-02 10:33:06 UTC] [INFO]   Lighthouse: cl-1-lighthouse-geth
+[2026-02-02 10:33:06 UTC] [INFO] 
+[2026-02-02 10:33:06 UTC] [INFO] --- Extracting L1 datadirs (geth and lighthouse) ---
+[2026-02-02 10:33:06 UTC] [INFO] Extracting geth chaindata (this may take a few minutes)...
+Extracting /data/geth/execution-data/geth from el-1-geth-lighthouse to ./snapshot-output/l1-state/geth...
+Error: Could not find container for service el-1-geth-lighthouse (tried snapshot-test-el-1-geth-lighthouse)
+Debug: Listing containers:
+CONTAINER ID   NAMES
+[2026-02-02 10:33:06 UTC] [ERROR] Failed to extract geth datadir
+[2026-02-02 10:33:06 UTC] [ERROR] Script failed with exit code 1
+[2026-02-02 10:33:06 UTC] [ERROR] Check log file for details: ./snapshot-output/snapshot.log
+[2026-02-02 10:33:06 UTC] [ERROR] L1 state extraction failed
+[2026-02-02 10:33:06 UTC] [ERROR] Post-processing failed
+[2026-02-02 10:33:06 UTC] [ERROR] Script failed with exit code 1
+[2026-02-02 10:33:06 UTC] [ERROR] Check log file for details: ./snapshot-output/snapshot.log

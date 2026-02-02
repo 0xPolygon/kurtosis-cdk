@@ -1,13 +1,13 @@
 {
-  "created_at": "2026-01-31T17:07:58Z",
+  "created_at": "2026-02-02T11:11:02Z",
   "l1": {
     "chain_id": 271828,
     "contracts": {
       "rollup_manager": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
       "global_exit_root": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
       "pol_token": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
-      "deposit_contract": "0xdc06c7e6bbb9041734e7795a3991cf2735ab05c4",
-      "system_config": "0x786e2af0df30c07099998438e17020dba8638593",
+      "deposit_contract": "0x1684d31b9a7f3081b43d0006cf2eb5fbb12d8a26",
+      "system_config": "0xed14b4618b0bf8a489d119ea8f939bd3ed57d709",
       "protocol_versions": "0x373e0b8b80a15cdf587c1263654c6b5edd195a43",
       "batch_inbox": "0x000ccf0c3a64a7f7a5bd386fccf4ef18ceae7e05"
     },

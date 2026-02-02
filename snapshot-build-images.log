@@ -1,0 +1,155 @@
+=== L1 Docker Image Build (Genesis-based) ===
+
+Configuration:
+  Output directory: ./snapshot-output
+  Genesis file: ./snapshot-output/l1-state/genesis.json
+  Chain ID: 271828
+  Geth image: l1-geth:snapshot (base: ethereum/client-go:v1.16.8)
+  Lighthouse image: l1-lighthouse:snapshot (base: sigp/lighthouse:v8.0.1)
+  Log format: json
+
+Preparing geth build context...
+Copying complete geth datadir (this may take several minutes)...
+  - geth/chaindata (state database)
+  - geth/ancient (immutable blocks)
+  - keystore (account keys)
+  - jwtsecret (Engine API auth)
+  ✅ chaindata found
+✅ Geth datadir copied
+Copying JWT secret for Engine API authentication...
+  ✅ JWT secret copied
+✅ Geth build context ready
+Preparing lighthouse build context...
+Copying complete lighthouse datadir (this may take several minutes)...
+  - beacon/chain_db (beacon state)
+  - beacon/freezer_db (finalized states)
+  - beacon/network (P2P metadata)
+  - lighthouse.toml, ENR
+  ✅ chain_db found
+  ✅ freezer_db found
+✅ Lighthouse datadir copied
+Copying JWT secret for Engine API authentication...
+  ✅ JWT secret copied
+Copying validator keys...
+Generating validator_definitions.yml...
+✅ Generated validator_definitions.yml (128 validators)
+✅ Lighthouse build context ready
+
+Processing Dockerfile templates...
+✅ Geth Dockerfile: ./snapshot-output/dockerfiles/geth.Dockerfile
+✅ Lighthouse Dockerfile: ./snapshot-output/dockerfiles/lighthouse.Dockerfile
+
+Building Docker images...
+
+Building geth image: l1-geth:snapshot...
+#0 building with "default" instance using docker driver
+
+#1 [internal] load .dockerignore
+#1 transferring context: 2B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from geth.Dockerfile
+#2 transferring dockerfile: 2.08kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/ethereum/client-go:v1.16.8
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/ethereum/client-go:v1.16.8
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.57MB 0.1s done
+#5 DONE 0.1s
+
+#4 [1/4] FROM docker.io/ethereum/client-go:v1.16.8
+#4 CACHED
+
+#6 [2/4] COPY execution-data/ /root/.ethereum/
+#6 DONE 0.2s
+
+#7 [3/4] COPY jwtsecret /jwt/jwtsecret
+#7 DONE 0.0s
+
+#8 [4/4] RUN chmod 600 /jwt/jwtsecret &&     chmod -R u+rwX /root/.ethereum/
+#8 DONE 0.6s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 0.2s done
+#9 writing image sha256:8e5c8019efda93ed2c14db70763e327d10d94b362f67bc1dc743d760f8581b51 done
+#9 naming to docker.io/library/l1-geth:snapshot 0.0s done
+#9 DONE 0.2s
+✅ Geth image built successfully
+
+Building lighthouse image: l1-lighthouse:snapshot...
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from lighthouse.Dockerfile
+#1 transferring dockerfile: 2.57kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/sigp/lighthouse:v8.0.1
+#3 DONE 0.0s
+
+#4 [1/7] FROM docker.io/sigp/lighthouse:v8.0.1
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 151.98MB 0.5s done
+#5 DONE 0.5s
+
+#4 [1/7] FROM docker.io/sigp/lighthouse:v8.0.1
+#4 CACHED
+
+#6 [2/7] COPY beacon-data/ /root/.lighthouse/beacon-data/
+#6 DONE 0.2s
+
+#7 [3/7] COPY testnet /root/.lighthouse/testnet
+#7 DONE 0.1s
+
+#8 [4/7] COPY jwtsecret /jwt/jwtsecret
+#8 DONE 0.0s
+
+#9 [5/7] RUN chmod 600 /jwt/jwtsecret
+#9 DONE 0.2s
+
+#10 [6/7] COPY validators /root/.lighthouse/validators
+#10 DONE 0.1s
+
+#11 [7/7] RUN chmod -R u+rwX /root/.lighthouse/
+#11 DONE 3.4s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.5s done
+#12 writing image sha256:ccbe5c9bbef2bd9d6245bf51c40ffcbf455164374fe34ee3a8f8715d57138266 done
+#12 naming to docker.io/library/l1-lighthouse:snapshot done
+#12 DONE 0.5s
+✅ Lighthouse image built successfully
+
+Verifying Docker images...
+  Geth image: l1-geth:snapshot (83MB)
+  Lighthouse image: l1-lighthouse:snapshot (492MB)
+
+Creating image manifest...
+✅ Image manifest created: ./snapshot-output/l1-images/manifest.json
+
+=== Build Complete ===
+
+Images:
+  Geth: l1-geth:snapshot (83MB)
+  Lighthouse: l1-lighthouse:snapshot (492MB)
+
+Manifest: ./snapshot-output/l1-images/manifest.json
+
+Next steps:
+  1. Run: cd ./snapshot-output && docker-compose up -d
+  2. Wait ~30 seconds for services to start
+  3. Verify blocks are increasing:
+     docker exec l1-geth geth attach --exec 'eth.blockNumber' /root/.ethereum/geth.ipc
+

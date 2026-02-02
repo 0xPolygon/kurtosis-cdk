@@ -1,0 +1,2406 @@
+[2026-02-02 10:07:14 UTC] [INFO] 
+[2026-02-02 10:07:14 UTC] [INFO] ==========================================
+[2026-02-02 10:07:14 UTC] [INFO] Step 0: Snapshot Creation
+[2026-02-02 10:07:14 UTC] [INFO] ==========================================
+[2026-02-02 10:07:14 UTC] [INFO] 
+[2026-02-02 10:07:14 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:07:14 UTC] [INFO] 
+[2026-02-02 10:07:14 UTC] [INFO] --- Checking Prerequisites ---
+[2026-02-02 10:07:14 UTC] [INFO] Checking prerequisites...
+[2026-02-02 10:07:14 UTC] [SUCCESS] All required prerequisites are available
+[2026-02-02 10:07:14 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:07:14 UTC] [INFO] 
+[2026-02-02 10:07:14 UTC] [INFO] --- Generating Kurtosis args file ---
+[2026-02-02 10:07:14 UTC] [INFO] Reading networks from: ./snapshot/test-config.json
+[2026-02-02 10:07:14 UTC] [INFO] Loaded 1 network(s)
+[2026-02-02 10:07:14 UTC] [SUCCESS] Args file generated: ./snapshot-output/kurtosis-args.json
+[2026-02-02 10:07:14 UTC] [INFO] 
+[2026-02-02 10:07:14 UTC] [INFO] --- Running Kurtosis ---
+[2026-02-02 10:07:14 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 10:07:14 UTC] [INFO] Args file: ./snapshot-output/kurtosis-args.json
+[2026-02-02 10:07:14 UTC] [INFO] Starting kurtosis run (this may take several minutes)...
+[36mINFO[0m[2026-02-02T10:07:15Z] Creating a new enclave for Starlark to run inside... 
+[36mINFO[0m[2026-02-02T10:07:17Z] Enclave 'snapshot-test' created successfully 
+[36mINFO[0m[2026-02-02T10:07:17Z] Executing Starlark package at '/home/aigent/kurtosis-cdk' as the passed argument '/home/aigent/kurtosis-cdk' looks like a directory 
+[36mINFO[0m[2026-02-02T10:07:17Z] Compressing package 'github.com/0xPolygon/kurtosis-cdk' at '/home/aigent/kurtosis-cdk' for upload 
+[36mINFO[0m[2026-02-02T10:07:18Z] Uploading and executing package 'github.com/0xPolygon/kurtosis-cdk' 
+[36mINFO[0m[2026-02-02T10:07:18Z] Kurtosis CLI is running in a non interactive terminal. Everything will work but progress information and the progress bar will not be displayed. 
+
+Container images used in this run:
+> badouralix/curl-jq - locally cached
+> us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.2 - locally cached
+> mslipper/deployment-utils@sha256:4506b112e4261014329152b161997129e7ca577f39c85e59cfdfdcb47ab7b5cf - locally cached
+> us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0 - locally cached
+> us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5 - locally cached
+> ethpandaops/ethereum-genesis-generator:5.2.2 - locally cached
+> us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd:v4.14.5 - locally cached
+> europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.6.0-rc.3-cdk - locally cached
+> us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.3 - locally cached
+> europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12 - locally cached
+> ethereum/client-go:v1.16.8 - locally cached
+> europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.2 - locally cached
+> europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer:0.4.4-remove-agglayer-prover - locally cached
+> sigp/lighthouse:v8.0.1 - locally cached
+> protolambda/eth2-val-tools:latest - locally cached
+> ghcr.io/agglayer/aggkit-prover:1.9.1 - locally cached
+
+Deriving the private key from the mnemonic
+Command returned with exit code '0' and the following output: 0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31
+
+Printing a message
+Deploying the following components: {"deploy_aggkit_node": False, "deploy_agglayer": False, "deploy_agglayer_contracts_on_l1": True, "deploy_cdk_bridge_infra": False, "deploy_cdk_central_environment": False, "deploy_databases": False, "deploy_l1": True, "deploy_l2_contracts": False, "deploy_op_succinct": False}
+
+Printing a message
+Deploying CDK stack with the following configuration: {"additional_services": ["agglogger", "bridge_spammer", "test_runner", "agglayer_dashboard"], "agg_oracle_committee_quorum": 0, "agg_oracle_committee_total_members": 1, "agg_sender_multisig_threshold": 1, "agg_sender_validator_total_number": 0, "aggkit_components": "aggsender,aggoracle", "aggkit_image": "ghcr.io/agglayer/aggkit:0.8.0-beta7", "aggkit_node_rest_api_port": 5577, "aggkit_pprof_port": 6060, "aggkit_prover_grpc_url_prefix": "aggkit-prover", "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.9.1", "aggkit_prover_primary_prover": "mock-prover", "agglayer_admin_port": 4446, "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.2", "agglayer_grpc_port": 4443, "agglayer_grpc_url": "http://agglayer:4443", "agglayer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer:0.4.4-remove-agglayer-prover", "agglayer_metrics_port": 9092, "agglayer_prover_metrics_port": 9093, "agglayer_prover_port": 4445, "agglayer_prover_primary_prover": "mock-prover", "agglayer_readrpc_port": 4444, "agglayer_readrpc_url": "http://agglayer:4444", "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1", "aggsender_validator_grpc_port": 5578, "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3", "anvil_port": 8545, "anvil_state_file": None, "blockscout_frontend_port": 3000, "blockscout_params": {"blockscout_public_port": 3000}, "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13", "cdk_erigon_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24", "cdk_erigon_sovereign_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1", "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4", "cdk_node_rpc_port": 5576, "chain_name": "kurtosis", "consensus_contract_type": "ecdsa-multisig", "db_image": "postgres:17.6", "deploy_agglayer": False, "deployment_suffix": "-001", "enable_aggkit_claim_sponsor": False, "enable_normalcy": False, "environment": "development", "erigon_datadir_archive": None, "erigon_strict_mode": True, "gas_token_address": "0x0000000000000000000000000000000000000000", "gas_token_enabled": False, "gas_token_network": 0, "geth_image": "ethereum/client-go:v1.16.8", "l1_additional_services": [], "l1_anvil_block_time": 1, "l1_anvil_slots_in_epoch": 1, "l1_beacon_url": "http://cl-1-lighthouse-geth:4000", "l1_chain_id": 271828, "l1_custom_genesis": False, "l1_deploy_lxly_bridge_and_call": True, "l1_engine": "geth", "l1_explorer_url": "https://sepolia.etherscan.io/", "l1_funding_amount": "1000000ether", "l1_participants_count": 1, "l1_preallocated_mnemonic": "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete", "l1_preallocated_private_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31", "l1_preset": "minimal", "l1_rpc_url": "http://el-1-geth-lighthouse:8545", "l1_seconds_per_slot": 2, "l1_ws_url": "ws://el-1-geth-lighthouse:8546", "l2_accounts_to_fund": 10, "l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970", "l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625", "l2_aggoracle_address": "0x0b68058E5b2592b1f472AdFe106305295A332A7C", "l2_aggoracle_private_key": "0x6d1d3ef5765cf34176d42276edd7a479ed5dc8dbf35182dfdb12e8aafe0a4919", "l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d", "l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970", "l2_chain_id": 2151908, "l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9", "l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb", "l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6", "l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b", "l2_deploy_deterministic_deployment_proxy": True, "l2_deploy_lxly_bridge_and_call": True, "l2_funding_amount": "100ether", "l2_keystore_password": "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m", "l2_network_id": 1, "l2_rpc_name": "op-el-2-op-geth-op-node", "l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed", "l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181", "l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16", "l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0", "lighthouse_image": "sigp/lighthouse:v8.0.1", "log_format": "pretty", "log_level": "info", "mitm_image": "mitmproxy/mitmproxy:11.1.3", "mitm_port": 8234, "mitm_proxied_components": {"agglayer": False, "aggkit": False, "bridge": False, "dac": False, "erigon-sequencer": False, "erigon-rpc": False, "cdk-node": False}, "mitm_rpc_url": {}, "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.3", "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-001:8547", "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.6.0-rc.3-cdk", "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545", "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0", "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5", "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.2", "op_proposer_port": 8560, "op_succinct_mock": False, "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.4.0-rc.1-agglayer", "polygon_zkevm_explorer": "https://explorer.private/", "prometheus_port": 9091, "sequencer_name": "op-el-1-op-geth-op-node", "sequencer_type": "op-geth", "snapshot_l1_wait_blocks": 10, "snapshot_mode": True, "snapshot_networks": [{"sequencer_type": "op-geth", "consensus_type": "pessimistic", "deployment_suffix": "-001", "l2_chain_id": 20201, "network_id": 1, "l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed", "l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181", "l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d", "l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970", "l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c5B272F08c1", "l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625", "l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6", "l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b", "l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9", "l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb", "l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16", "l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0"}], "snapshot_output_dir": "./snapshot-output", "sovereign_chain_name": "op-sovereign", "sovereign_weth_address": "0x0000000000000000000000000000000000000000", "sovereign_weth_address_not_mintable": False, "sp1_cluster_endpoint": "https://rpc.production.succinct.xyz", "sp1_prover_key": "bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31", "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8", "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee", "use_agg_oracle_committee": False, "use_agg_sender_validator": False, "use_dynamic_ports": True, "use_previously_deployed_contracts": False, "zkevm_bridge_grpc_port": 9090, "zkevm_bridge_metrics_port": 8090, "zkevm_bridge_proxy_image": "haproxy:3.2-bookworm", "zkevm_bridge_rpc_port": 8080, "zkevm_bridge_service_image": "ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.4-RC2", "zkevm_bridge_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/zkevm-bridge-ui:3f1a3a0", "zkevm_bridge_ui_port": 80, "zkevm_fork_id": 0, "zkevm_fork_name": "aggchain", "zkevm_l2_admin_address": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970", "zkevm_l2_admin_private_key": "0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625", "zkevm_l2_aggoracle_address": "0x0b68058E5b2592b1f472AdFe106305295A332A7C", "zkevm_l2_aggoracle_private_key": "0x6d1d3ef5765cf34176d42276edd7a479ed5dc8dbf35182dfdb12e8aafe0a4919", "zkevm_l2_aggregator_address": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d", "zkevm_l2_aggregator_private_key": "0x2857ca0e7748448f3a50469f7ffe55cde7299d5696aedd72cfe18a06fb856970", "zkevm_l2_claimsponsor_address": "0x635243A11B41072264Df6c9186e3f473402F94e9", "zkevm_l2_claimsponsor_private_key": "0x986b325f6f855236b0b04582a19fe0301eeecb343d0f660c61805299dbf250eb", "zkevm_l2_dac_address": "0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6", "zkevm_l2_dac_private_key": "0x85d836ee6ea6f48bae27b31535e6fc2eefe056f2276b9353aafb294277d8159b", "zkevm_l2_sequencer_address": "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed", "zkevm_l2_sequencer_private_key": "0x183c492d0ba156041a7f31a1b188958a7a22eebadca741a7fe64436092dc3181", "zkevm_l2_sovereignadmin_address": "0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16", "zkevm_l2_sovereignadmin_private_key": "0xa574853f4757bfdcbb59b03635324463750b27e16df897f3d00dc6bef2997ae0", "zkevm_path_rw_data": "/tmp", "zkevm_pool_manager_image": "ghcr.io/0xpolygon/zkevm-pool-manager:0.1.3", "zkevm_prover_image": "hermeznetwork/zkevm-prover:v8.0.0-RC16-fork.12", "zkevm_use_real_verifier": False}
+
+Printing a message
+Snapshot mode enabled - will create snapshot instead of full deployment
+
+Printing a message
+Deploying a local L1
+
+Printing a message
+Custom genesis is disabled, using the default ethereum package.
+
+Printing a message
+Sanity check passed
+
+Printing a message
+Docker cache is disabled
+
+Printing a message
+BPO 1 epoch adjusted to Fulu epoch 1
+
+Fetching cluster type 'docker'
+Fetched cluster type 'docker'
+
+Uploading file '/static_files/jwt/jwtsecret' to files artifact 'jwt_file'
+Files with artifact name 'jwt_file' uploaded with artifact UUID 'fd6cd51b6106456aae692ddc97c97115'
+
+Uploading file '/static_files/keymanager/keymanager.txt' to files artifact 'keymanager_file'
+Files with artifact name 'keymanager_file' uploaded with artifact UUID '0af026a501ef48bd98963e9e484a6787'
+
+Printing a message
+Read the prometheus, grafana templates
+
+Printing a message
+Launching participant network with 1 participants and the following network params struct(additional_mnemonics = [], additional_preloaded_contracts = "", aggregate_due_bps_gloas = 5000, altair_fork_epoch = 0, attestation_due_bps_gloas = 2500, base_fee_update_fraction_electra = 5007716, bellatrix_fork_epoch = 0, bpo_1_base_fee_update_fraction = 8346193, bpo_1_epoch = 1, bpo_1_max_blobs = 15, bpo_1_target_blobs = 10, bpo_2_base_fee_update_fraction = 11684671, bpo_2_epoch = 18446744073709551615, bpo_2_max_blobs = 21, bpo_2_target_blobs = 14, bpo_3_base_fee_update_fraction = 0, bpo_3_epoch = 18446744073709551615, bpo_3_max_blobs = 0, bpo_3_target_blobs = 0, bpo_4_base_fee_update_fraction = 0, bpo_4_epoch = 18446744073709551615, bpo_4_max_blobs = 0, bpo_4_target_blobs = 0, bpo_5_base_fee_update_fraction = 0, bpo_5_epoch = 18446744073709551615, bpo_5_max_blobs = 0, bpo_5_target_blobs = 0, capella_fork_epoch = 0, churn_limit_quotient = 32, contribution_due_bps_gloas = 5000, custody_requirement = 4, data_column_sidecar_subnet_count = 128, deneb_fork_epoch = 0, deposit_contract_address = "0x00000000219ab540356cBB839Cbe05303d7705Fa", devnet_repo = "ethpandaops", eip7441_fork_epoch = 18446744073709551615, eip7805_fork_epoch = 18446744073709551615, ejection_balance = 16000000000, electra_fork_epoch = 0, eth1_follow_distance = 2048, force_snapshot_sync = False, fulu_fork_epoch = 1, gas_limit = 0, genesis_delay = 12, genesis_gaslimit = 60000000, genesis_time = 0, gloas_fork_epoch = 18446744073709551615, inclusion_list_submission_due_bps = 6667, max_blobs_per_block_electra = 9, max_payload_size = 10485760, max_per_epoch_activation_churn_limit = 4, max_request_blob_sidecars_electra = 1152, max_request_blocks_deneb = 128, min_epochs_for_block_requests = 272, min_epochs_for_data_column_sidecars_requests = 4096, min_validator_withdrawability_delay = 256, network = "kurtosis", network_id = "271828", network_sync_base_url = "https://snapshots.ethpandaops.io/", num_validator_keys_per_node = 128, payload_attestation_due_bps = 7500, perfect_peerdas_enabled = False, prefunded_accounts = {}, preregistered_validator_count = 0, preregistered_validator_keys_mnemonic = "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete", preset = "minimal", proposer_inclusion_list_cutoff_bps = 9167, samples_per_slot = 8, seconds_per_slot = 2, shadowfork_block_height = "latest", shard_committee_period = 256, slot_duration_ms = 2000, sync_message_due_bps_gloas = 2500, target_blobs_per_block_electra = 6, validator_balance = 32, view_freeze_cutoff_bps = 7500, withdrawal_address = "0x8943545177806ED17B9F23F0a21ee5948eCaa776", withdrawal_type = "0x00")
+
+Printing a message
+Generating cl validator key stores
+
+Adding service with name 'validator-key-generation-cl-validator-keystore' and image 'protolambda/eth2-val-tools:latest'
+Service 'validator-key-generation-cl-validator-keystore' added with service UUID '3618ba26588743698d16bc5b79d75e2c'
+
+Generating keystores
+Command returned with exit code '0' with no output
+
+Verifying whether two values meet a certain condition '=='
+Verification succeeded. Value is '0'.
+
+Storing files from service 'validator-key-generation-cl-validator-keystore' at path '/node-0-keystores/' to files artifact with name '1-lighthouse-geth-0-127'
+Files with artifact name '1-lighthouse-geth-0-127' uploaded with artifact UUID '9376e9e09e4b4b54b739d020faf5d9f1'
+
+Storing prysm password in a file
+Command returned with exit code '0' with no output
+
+Verifying whether two values meet a certain condition '=='
+Verification succeeded. Value is '0'.
+
+Storing files from service 'validator-key-generation-cl-validator-keystore' at path '/tmp/prysm-password.txt' to files artifact with name 'prysm-password'
+Files with artifact name 'prysm-password' uploaded with artifact UUID '793b02a32ae2444f944ac1da77f34663'
+
+Printing a message
+{
+	"per_node_keystores": [
+		{
+			"files_artifact_uuid": "1-lighthouse-geth-0-127",
+			"nimbus_keys_relative_dirpath": "/nimbus-keys",
+			"prysm_relative_dirpath": "/prysm",
+			"raw_keys_relative_dirpath": "/keys",
+			"raw_root_dirpath": "",
+			"raw_secrets_relative_dirpath": "/secrets",
+			"teku_keys_relative_dirpath": "/teku-keys",
+			"teku_secrets_relative_dirpath": "/teku-secrets"
+		}
+	],
+	"prysm_password_artifact_uuid": "prysm-password",
+	"prysm_password_relative_filepath": "prysm-password.txt"
+}
+
+Getting final genesis timestamp
+Command returned with exit code '0' and the following output: 1770026869
+
+Printing a message
+Generating EL CL data
+
+Rendering a template to a files artifact with name 'genesis-el-cl-env-file'
+Templates artifact name 'genesis-el-cl-env-file' rendered with artifact UUID '945bfc10cd05488ab7a2c9e46b4a58bb'
+
+Creating genesis
+Command returned with exit code '0' and the following output:
+--------------------
++ '[' -f /data/metadata/genesis.json ']'
++ mkdir -p /data/metadata
++ source /apps/el-gen/generate_genesis.sh
++ generate_genesis /data/metadata
++ set +x
+Adding bellatrix genesis properties
+Adding capella genesis properties
+Adding deneb genesis properties
+Adding electra genesis properties
+Adding fulu genesis properties
+Adding blob schedule (BPOs and fork-based entries)
+Adding BPO 1 at epoch 1 (target: 10, max: 15, fraction: 8346193)
+Adding precompile allocations...
+Adding system contracts
+  genesis contract:	0x00000000219ab540356cBB839Cbe05303d7705Fa
+  adding allocation for 0x00000000219ab540356cBB839Cbe05303d7705Fa
+  EIP-4788 contract:	0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
+  adding allocation for 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02
+  EIP-2935 contract:	0x0000F90827F1C53a10cb7A02335B175320002935
+  adding allocation for 0x0000F90827F1C53a10cb7A02335B175320002935
+  EIP-7002 contract:	0x00000961Ef480Eb55e80D19ad83579A64c007002
+  adding allocation for 0x00000961Ef480Eb55e80D19ad83579A64c007002
+  EIP-7251 contract:	0x0000BBdDc7CE488642fb579F8B00f3a590007251
+  adding allocation for 0x0000BBdDc7CE488642fb579F8B00f3a590007251
+Adding premine wallets from mnemonic...
+  adding allocation for 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+  adding allocation for 0xE25583099BA105D9ec0A67f5Ae86D90e50036425
+  adding allocation for 0x614561D2d143621E126e87831AEF287678B442b8
+  adding allocation for 0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241
+  adding allocation for 0x802dCbE1B1A97554B4F50DB5119E37E8e7336417
+  adding allocation for 0xAe95d8DA9244C37CaC0a3e16BA966a8e852Bb6D6
+  adding allocation for 0x2c57d1CFC6d5f8E4182a56b4cf75421472eBAEa4
+  adding allocation for 0x741bFE4802cE1C4b5b00F9Df2F5f179A1C89171A
+  adding allocation for 0xc3913d4D8bAb4914328651C2EAE817C8b78E1f4c
+  adding allocation for 0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA
+  adding allocation for 0x3e95dFbBaF6B348396E6674C7871546dCC568e56
+  adding allocation for 0x5918b2e647464d4743601a865753e64C8059Dc4F
+  adding allocation for 0x589A698b7b7dA0Bec545177D3963A2741105C7C9
+  adding allocation for 0x4d1CB4eB7969f8806E2CaAc0cbbB71f88C8ec413
+  adding allocation for 0xF5504cE2BcC52614F121aff9b93b2001d92715CA
+  adding allocation for 0xF61E98E7D47aB884C244E39E031978E33162ff4b
+  adding allocation for 0xf1424826861ffbbD25405F5145B5E50d0F1bFc90
+  adding allocation for 0xfDCe42116f541fc8f7b0776e2B30832bD5621C85
+  adding allocation for 0xD9211042f35968820A3407ac3d80C725f8F75c14
+  adding allocation for 0xD8F3183DEF51A987222D845be228e0Bbb932C222
+  adding allocation for 0xafF0CA253b97e54440965855cec0A8a2E2399896
+Adding static premine wallets...
+Additional contracts file: /opt/additional-contracts.json
+Adding additional contracts...
+Applying allocations to genesis files...
++ '[' -f /data/metadata/genesis.ssz ']'
+++ mktemp -d -t ci-XXXXXXXXXX
++ tmp_dir=/tmp/ci-QCvnpTZh5V
++ mkdir -p /data/metadata
++ mkdir -p /data/parsed
+++ date -u -d @1770026869 '+%Y-%b-%d %I:%M:%S %p %Z'
++ HUMAN_READABLE_TIMESTAMP='2026-Feb-02 10:07:49 AM UTC'
++ COMMENT='# 2026-Feb-02 10:07:49 AM UTC'
++ export MAX_REQUEST_BLOB_SIDECARS_ELECTRA=1152
++ MAX_REQUEST_BLOB_SIDECARS_ELECTRA=1152
++ cat /config/cl/config.yaml
++ sed '/^BLOB_SCHEDULE:/,/^[a-zA-Z]/ d'
++ sed 's/#HUMAN_TIME_PLACEHOLDER/# 2026-Feb-02 10:07:49 AM UTC/'
++ envsubst
++ add_blob_schedule /data/metadata/config.yaml
++ local config_file=/data/metadata/config.yaml
++ INCLUDE_SCHEDULE=false
++ BLOB_SCHEDULE=
++ DEFAULT_BPO_EPOCH=18446744073709551615
++ for i in {1..5}
++ var_epoch=BPO_1_EPOCH
++ var_blobs=BPO_1_MAX_BLOBS
++ var_next_epoch=BPO_2_EPOCH
++ '[' -n 1 ']'
++ '[' 1 '!=' 18446744073709551615 ']'
++ '[' 18446744073709551615 == 1 ']'
++ '[' false = false ']'
++ BLOB_SCHEDULE='
+BLOB_SCHEDULE:'
++ INCLUDE_SCHEDULE=true
++ BLOB_SCHEDULE='
+BLOB_SCHEDULE:
+  - EPOCH: 1
+    MAX_BLOBS_PER_BLOCK: 15'
++ for i in {1..5}
++ var_epoch=BPO_2_EPOCH
++ var_blobs=BPO_2_MAX_BLOBS
++ var_next_epoch=BPO_3_EPOCH
++ '[' -n 18446744073709551615 ']'
++ '[' 18446744073709551615 '!=' 18446744073709551615 ']'
++ for i in {1..5}
++ var_epoch=BPO_3_EPOCH
++ var_blobs=BPO_3_MAX_BLOBS
++ var_next_epoch=BPO_4_EPOCH
++ '[' -n 18446744073709551615 ']'
++ '[' 18446744073709551615 '!=' 18446744073709551615 ']'
++ for i in {1..5}
++ var_epoch=BPO_4_EPOCH
++ var_blobs=BPO_4_MAX_BLOBS
++ var_next_epoch=BPO_5_EPOCH
++ '[' -n 18446744073709551615 ']'
++ '[' 18446744073709551615 '!=' 18446744073709551615 ']'
++ for i in {1..5}
++ var_epoch=BPO_5_EPOCH
++ var_blobs=BPO_5_MAX_BLOBS
++ var_next_epoch=BPO_6_EPOCH
++ '[' -n 18446744073709551615 ']'
++ '[' 18446744073709551615 '!=' 18446744073709551615 ']'
++ '[' true = true ']'
++ echo '
+BLOB_SCHEDULE:
+  - EPOCH: 1
+    MAX_BLOBS_PER_BLOCK: 15'
++ '[' 0x00 == 0x00 ']'
++ export WITHDRAWAL_ADDRESS=null
++ WITHDRAWAL_ADDRESS=null
++ envsubst
++ '[' -n '[]' ']'
++ '[' '[]' '!=' '[]' ']'
++ [[ minimal == \m\i\n\i\m\a\l ]]
++ gen_minimal_config
++ replacements=(['MIN_PER_EPOCH_CHURN_LIMIT']='2' ['MIN_PER_EPOCH_CHURN_LIMIT_ELECTRA']='64000000000' ['MAX_PER_EPOCH_ACTIVATION_EXIT_CHURN_LIMIT']='128000000000' ['EPOCHS_PER_SHUFFLING_PHASE']='4' ['PROPOSER_SELECTION_GAP']='1')
++ declare -A replacements
++ for key in "${!replacements[@]}"
++ sed -i 's/EPOCHS_PER_SHUFFLING_PHASE:.*/EPOCHS_PER_SHUFFLING_PHASE: 4/' /data/metadata/config.yaml
++ for key in "${!replacements[@]}"
++ sed -i 's/MAX_PER_EPOCH_ACTIVATION_EXIT_CHURN_LIMIT:.*/MAX_PER_EPOCH_ACTIVATION_EXIT_CHURN_LIMIT: 128000000000/' /data/metadata/config.yaml
++ for key in "${!replacements[@]}"
++ sed -i 's/PROPOSER_SELECTION_GAP:.*/PROPOSER_SELECTION_GAP: 1/' /data/metadata/config.yaml
++ for key in "${!replacements[@]}"
++ sed -i 's/MIN_PER_EPOCH_CHURN_LIMIT:.*/MIN_PER_EPOCH_CHURN_LIMIT: 2/' /data/metadata/config.yaml
++ for key in "${!replacements[@]}"
++ sed -i 's/MIN_PER_EPOCH_CHURN_LIMIT_ELECTRA:.*/MIN_PER_EPOCH_CHURN_LIMIT_ELECTRA: 64000000000/' /data/metadata/config.yaml
++ cp /tmp/ci-QCvnpTZh5V/mnemonics.yaml /data/metadata/mnemonics.yaml
++ grep DEPOSIT_CONTRACT_ADDRESS /data/metadata/config.yaml
++ cut -d ' ' -f2
++ echo 0
++ echo enr:-Iq4QJk4WqRkjsX5c2CXtOra6HnxN-BMXnWhmhEQO9Bn9iABTJGdjUOurM7Btj1ouKaFkvTRoju5vz2GPmVON2dffQKGAX53x8JigmlkgnY0gmlwhLKAlv6Jc2VjcDI1NmsxoQK6S-Cii_KmfFdUJL2TANL3ksaKUnNXvTCv1tLwXs0QgIN1ZHCCIyk
++ genesis_args+=(beaconchain --config /data/metadata/config.yaml --eth1-config /data/metadata/genesis.json --mnemonics $tmp_dir/mnemonics.yaml --state-output /data/metadata/genesis.ssz --json-output /data/parsed/parsedConsensusGenesis.json)
++ [[ '' != '' ]]
++ [[ '' != '' ]]
++ '[' -z '' ']'
++ /usr/local/bin/eth-genesis-state-generator beaconchain --config /data/metadata/config.yaml --eth1-config /data/metadata/genesis.json --mnemonics /tmp/ci-QCvnpTZh5V/mnemonics.yaml --state-output /data/metadata/genesis.ssz --json-output /data/parsed/parsedConsensusGenesis.json
+time="2026-02-02T10:07:29Z" level=info msg="eth-beacon-genesis version: git-6bd537d"
+time="2026-02-02T10:07:29Z" level=info msg="loaded execution genesis. chainid: 271828"
+time="2026-02-02T10:07:29Z" level=info msg="loaded consensus config. genesis fork version: 0x10000038"
+time="2026-02-02T10:07:29Z" level=info msg="processing mnemonic 0, for 128 validators"
+time="2026-02-02T10:07:29Z" level=info msg="...validator 100/128"
+time="2026-02-02T10:07:29Z" level=info msg="loaded 128 validators. total balance: 4096 ETH"
+time="2026-02-02T10:07:29Z" level=info msg="genesis version: electra"
+time="2026-02-02T10:07:29Z" level=info msg="genesis time: 1770026869"
+time="2026-02-02T10:07:29Z" level=info msg="genesis validators root: 0xd1ec305b97bf6336571c2348e4a8bf173684b0cdb7e55f7e6554d51f8478b5a3"
+time="2026-02-02T10:07:29Z" level=info msg="successfully built genesis state."
+time="2026-02-02T10:07:29Z" level=info msg="serialized genesis state to SSZ file: /data/metadata/genesis.ssz"
+serialized genesis state to JSON file: /data/parsed/parsedConsensusGenesis.json
++ echo 'Genesis args: beaconchain' --config /data/metadata/config.yaml --eth1-config /data/metadata/genesis.json --mnemonics /tmp/ci-QCvnpTZh5V/mnemonics.yaml --state-output /data/metadata/genesis.ssz --json-output /data/parsed/parsedConsensusGenesis.json
+Genesis args: beaconchain --config /data/metadata/config.yaml --eth1-config /data/metadata/genesis.json --mnemonics /tmp/ci-QCvnpTZh5V/mnemonics.yaml --state-output /data/metadata/genesis.ssz --json-output /data/parsed/parsedConsensusGenesis.json
+++ jq -r .latest_execution_payload_header.block_number /data/parsed/parsedConsensusGenesis.json
++ echo 'Genesis block number: 0'
+Genesis block number: 0
+++ jq -r .latest_execution_payload_header.block_hash /data/parsed/parsedConsensusGenesis.json
++ echo 'Genesis block hash: 0xfe4c273e0fa609ab250babf54a91dd36e64528f796a9b1058cf217e621b6ff8c'
+Genesis block hash: 0xfe4c273e0fa609ab250babf54a91dd36e64528f796a9b1058cf217e621b6ff8c
++ jq -r .eth1_data.block_hash /data/parsed/parsedConsensusGenesis.json
++ tr -d '\n'
++ jq -r .genesis_validators_root /data/parsed/parsedConsensusGenesis.json
++ tr -d '\n'
++ gen_shared_files
++ set -x
++ mkdir -p /data/metadata
++ '[' -f /data/jwt/jwtsecret ']'
++ mkdir -p /data/jwt
+++ openssl rand -hex 32
+++ tr -d '\n'
++ echo -n 0xb2fdbbab32c566712665891f65d03f9a56a642812e787f5517676f3db8f5b5ba
++ '[' -f /data/metadata/genesis.json ']'
+++ cat /data/metadata/genesis.json
+++ jq -r '.config.terminalTotalDifficulty | tostring'
++ terminalTotalDifficulty=0
++ sed -i 's/TERMINAL_TOTAL_DIFFICULTY:.*/TERMINAL_TOTAL_DIFFICULTY: 0/' /data/metadata/config.yaml
++ '[' false = true ']'
+
+--------------------
+
+Reading genesis validators root
+Command returned with exit code '0' and the following output: 0xd1ec305b97bf6336571c2348e4a8bf173684b0cdb7e55f7e6554d51f8478b5a3
+
+Reading osaka time from genesis
+Command returned with exit code '0' and the following output: 1770026885
+
+Adding service with name 'el-1-geth-lighthouse' and image 'ethereum/client-go:v1.16.8'
+Service 'el-1-geth-lighthouse' added with service UUID '329c6a65ba94439685ce396039580480'
+
+Waiting for at most '30m0s' for service 'el-1-geth-lighthouse' to reach a certain state
+Wait took 1 tries (12.106751ms in total). Assertion passed with following:
+Request had response code '200' and body "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"id\":\"59eb14477bcf6138aba6e3829225e671a377740e7b9b926f1cf30fb870068f5a\",\"name\":\"Geth/v1.16.8-stable-abeb78c6/linux-amd64/go1.24.11\",\"enode\":\"enode://af6999a606d2a5f294d8e05c55f9e27c31f8f1db6f02cf7e56d9a5752108d80a0b87737cee9c411e99ea7239b53f702f40a92b6afb234a24703cf8b58dab88fd@172.16.0.11:30303\",\"enr\":\"enr:-Ke4QH2j3Lk7TtRFA0WK8TBmQ94-d-n7KyseV8Q3PTBJesGbGwO70ldvL7muXLnBJcEXvZixv4Esgt-zJ_oPwdBA4CuGAZwd0mYlg2V0aMvKhB1JHW6EaYB3hYJpZIJ2NIJpcISsEAALiXNlY3AyNTZrMaEDr2mZpgbSpfKU2OBcVfnifDH48dtvAs9-VtmldSEI2AqEc25hcMCDdGNwgnZfg3VkcIJ2Xw\",\"ip\":\"172.16.0.11\",\"ports\":{\"discovery\":30303,\"listener\":30303},\"listenAddr\":\"[::]:30303\",\"protocols\":{\"eth\":{\"network\":271828,\"genesis\":\"0xfe4c273e0fa609ab250babf54a91dd36e64528f796a9b1058cf217e621b6ff8c\",\"config\":{\"chainId\":271828,\"homesteadBlock\":0,\"eip150Block\":0,\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"mergeNetsplitBlock\":0,\"shanghaiTime\":0,\"cancunTime\":0,\"pragueTime\":0,\"osakaTime\":1770026885,\"bpo1Time\":1770026885,\"terminalTotalDifficulty\":0,\"depositContractAddress\":\"0x00000000219ab540356cbb839cbe05303d7705fa\",\"blobSchedule\":{\"cancun\":{\"target\":3,\"max\":6,\"baseFeeUpdateFraction\":3338477},\"prague\":{\"target\":6,\"max\":9,\"baseFeeUpdateFraction\":5007716},\"osaka\":{\"target\":6,\"max\":9,\"baseFeeUpdateFraction\":5007716},\"bpo1\":{\"target\":10,\"max\":15,\"baseFeeUpdateFraction\":8346193}}},\"head\":\"0xfe4c273e0fa609ab250babf54a91dd36e64528f796a9b1058cf217e621b6ff8c\"},\"snap\":{}}}}\n", with extracted fields:
+'extract.enode': "enode://af6999a606d2a5f294d8e05c55f9e27c31f8f1db6f02cf7e56d9a5752108d80a0b87737cee9c411e99ea7239b53f702f40a92b6afb234a24703cf8b58dab88fd@172.16.0.11:30303"
+'extract.enr': "enr:-Ke4QH2j3Lk7TtRFA0WK8TBmQ94-d-n7KyseV8Q3PTBJesGbGwO70ldvL7muXLnBJcEXvZixv4Esgt-zJ_oPwdBA4CuGAZwd0mYlg2V0aMvKhB1JHW6EaYB3hYJpZIJ2NIJpcISsEAALiXNlY3AyNTZrMaEDr2mZpgbSpfKU2OBcVfnifDH48dtvAs9-VtmldSEI2AqEc25hcMCDdGNwgnZfg3VkcIJ2Xw"
+
+Printing a message
+Successfully added 1 EL participants
+
+Printing a message
+Launching CL network
+
+Adding service with name 'cl-1-lighthouse-geth' and image 'sigp/lighthouse:v8.0.1'
+Service 'cl-1-lighthouse-geth' added with service UUID 'b7f9b59d842547d9ac1096ef0ac70994'
+
+Running 'GET' request on service 'cl-1-lighthouse-geth'
+Request had response code '200' and body "{\"data\":{\"peer_id\":\"16Uiu2HAm9zTCHGSSXGRfASqJK5nszfeZwnuqCXY4fghcU2EYc6nD\",\"enr\":\"enr:-Oy4QKjpUT6f_7eRnXfIf1uBzXDLjE1ncRPI7eV868UheSypP_JR4Kpc4PyWdWfQcGwesb2ARPsd3S5WEfV7u6R_eYwDh2F0dG5ldHOIAwAAAAAAAACDY2djgYCGY2xpZW500YpMaWdodGhvdXNlhTguMC4xhGV0aDKQ0RwldnAAADgBAAAAAAAAAIJpZIJ2NIJpcISsEAAMg25mZIQ1AeVRhHF1aWOCIymJc2VjcDI1NmsxoQLYaVP1xJ-R3m-2iiBJzsK_AtOjKh9Lm0wBWQ9BMpreOohzeW5jbmV0cwCDdGNwgiMog3VkcIIjKA\",\"p2p_addresses\":[\"/ip4/172.16.0.12/tcp/9000/p2p/16Uiu2HAm9zTCHGSSXGRfASqJK5nszfeZwnuqCXY4fghcU2EYc6nD\"],\"discovery_addresses\":[\"/ip4/172.16.0.12/udp/9000/p2p/16Uiu2HAm9zTCHGSSXGRfASqJK5nszfeZwnuqCXY4fghcU2EYc6nD\"],\"metadata\":{\"seq_number\":\"2\",\"attnets\":\"0x0300000000000000\",\"syncnets\":\"0x00\",\"custody_group_count\":\"128\"}}}", with extracted fields:
+'extract.enr': "enr:-Oy4QKjpUT6f_7eRnXfIf1uBzXDLjE1ncRPI7eV868UheSypP_JR4Kpc4PyWdWfQcGwesb2ARPsd3S5WEfV7u6R_eYwDh2F0dG5ldHOIAwAAAAAAAACDY2djgYCGY2xpZW500YpMaWdodGhvdXNlhTguMC4xhGV0aDKQ0RwldnAAADgBAAAAAAAAAIJpZIJ2NIJpcISsEAAMg25mZIQ1AeVRhHF1aWOCIymJc2VjcDI1NmsxoQLYaVP1xJ-R3m-2iiBJzsK_AtOjKh9Lm0wBWQ9BMpreOohzeW5jbmV0cwCDdGNwgiMog3VkcIIjKA"
+'extract.multiaddr': "/ip4/172.16.0.12/tcp/9000/p2p/16Uiu2HAm9zTCHGSSXGRfASqJK5nszfeZwnuqCXY4fghcU2EYc6nD"
+'extract.peer_id': "16Uiu2HAm9zTCHGSSXGRfASqJK5nszfeZwnuqCXY4fghcU2EYc6nD"
+
+Printing a message
+Successfully added 1 CL participants
+
+Printing a message
+Start adding validators for participant #1
+
+Printing a message
+Using separate validator client for participant #1
+
+Adding '1' services with names 'vc-1-geth-lighthouse'
+Successfully added the following '1' services:
+  Service 'vc-1-geth-lighthouse' added with UUID '72fd39e45d8e41d79c913a86a4074933'
+
+Printing a message
+NODE JSON RPC URI: 'el-1-geth-lighthouse:8545'
+
+Rendering a template to a files artifact with name 'validator-ranges'
+Templates artifact name 'validator-ranges' rendered with artifact UUID '24a4fecbe8fd44bfbc2931b7247088d3'
+
+Wait for L1 to start up - it can take up to 2 minutes
+Command returned with exit code '0' and the following output:
+--------------------
+L1 Chain is starting up... Current slot: 0
+L1 Chain is starting up... Current slot: 0
+L1 Chain is starting up... Current slot: 3
+✅ L1 Chain has started!
+
+--------------------
+
+Printing a message
+Snapshot mode: Processing 1 networks
+
+Printing a message
+Deploying agglayer contracts on L1 (first network only)
+
+Getting agglayer vkey hash
+Command returned with exit code '0' and the following output: 0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142
+
+Printing a message
+Agglayer vkey hash: 0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142
+
+Getting agglayer vkey selector
+Command returned with exit code '0' and the following output: 0x00000009
+
+Printing a message
+Agglayer vkey selector: 0x00000009
+
+Getting aggchain vkey hash
+Command returned with exit code '0' and the following output: 0x7767a8330ce68dac35265ba15d9eec6722b943cf00dc3b733779e1ae55696f70
+
+Rendering a template to a files artifact with name 'create_new_rollup.json'
+Templates artifact name 'create_new_rollup.json' rendered with artifact UUID '5f98908ba1b74873af2c8aed63884ee5'
+
+Rendering a template to a files artifact with name 'op-custom-genesis-addresses.json'
+Templates artifact name 'op-custom-genesis-addresses.json' rendered with artifact UUID '67a2654051404c2fbefead4caeeaafd3'
+
+Rendering a template to a files artifact with name 'deploy_parameters.json'
+Templates artifact name 'deploy_parameters.json' rendered with artifact UUID '88db19e1783d481d8d304dc3753625ad'
+
+Rendering a template to a files artifact with name 'cdk-erigon-custom-genesis-addresses.json'
+Templates artifact name 'cdk-erigon-custom-genesis-addresses.json' rendered with artifact UUID '6b40fd7a6db84a5daa20ebe2d341c407'
+
+Rendering a template to a files artifact with name 'create_rollup_parameters.json'
+Templates artifact name 'create_rollup_parameters.json' rendered with artifact UUID '83eb50a2bc044eb88271ece2e15addd1'
+
+Rendering a template to a files artifact with name 'add_rollup_type.json'
+Templates artifact name 'add_rollup_type.json' rendered with artifact UUID '9503d8e94e1041cabecf42c6498f396c'
+
+Rendering a template to a files artifact with name 'create-genesis-sovereign-params.json'
+Templates artifact name 'create-genesis-sovereign-params.json' rendered with artifact UUID '8bcd79355c99463eb40c0c511e40d465'
+
+Rendering a template to a files artifact with name 'input_args.json'
+Templates artifact name 'input_args.json' rendered with artifact UUID '50db2acd20444c5185614b929b7710a1'
+
+Rendering a template to a files artifact with name 'contracts.sh'
+Templates artifact name 'contracts.sh' rendered with artifact UUID '89e3cea135f54b148571addcb6f6f60c'
+
+Uploading create_op_allocs.py artifact
+Files with artifact name 'create_op_allocs.py' uploaded with artifact UUID '229567aab81d48ebb02109b7f08a2506'
+
+Uploading json2http.py artifact
+Files with artifact name 'json2http.py' uploaded with artifact UUID 'e145cd63fb0a44d48a0b6156715fe81c'
+
+Adding service with name 'contracts-001' and image 'europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.2'
+Service 'contracts-001' added with service UUID '2fdd5552071d42c2a0ac7af67fdef9a6'
+
+JSON 2 Http Server
+Command returned with exit code '0' with no output
+
+Setting permissions for /opt/scripts/contracts.sh
+Command returned with exit code '0' with no output
+
+Creating keystores for zkevm-node/cdk-validium components
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:08:09][0m Executing function create_keystores
+`sequencer.keystore` keystore was saved successfully. Address: 0x5b06837a43bdc3dd9f114558daf4b26ed49842ed
+`aggregator.keystore` keystore was saved successfully. Address: 0xcae5b68ff783594bde1b93cde627c741722c4d4d
+`dac.keystore` keystore was saved successfully. Address: 0x5951f5b2604c9b42e478d5e2b2437f44073ef9a6
+`aggoracle.keystore` keystore was saved successfully. Address: 0x0b68058e5b2592b1f472adfe106305295a332a7c
+`sovereignadmin.keystore` keystore was saved successfully. Address: 0xc653ecd4ac5153a3700fb13442bcf00a691cca16
+`claimsponsor.keystore` keystore was saved successfully. Address: 0x635243a11b41072264df6c9186e3f473402f94e9
+
+--------------------
+
+Deploying Agglayer smart contracts on L1
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:08:09][0m Executing function deploy_agglayer_core_contracts
+[32m[2026-02-02 10:08:09][0m Waiting for the L1 RPC to be available
+[32m[2026-02-02 10:08:11][0m L1 RPC is now available
+[32m[2026-02-02 10:08:11][0m Funding important accounts on L1
+[32m[2026-02-02 10:08:11][0m Funding admin account
+
+blockHash            0xdbf6abb64e96d1ae38acdf079e3b2eb9711aa81f57c1b7e293abb36630cbfb27
+blockNumber          12
+contractAddress      
+cumulativeGasUsed    21000
+effectiveGasPrice    201437383
+from                 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+gasUsed              21000
+logs                 []
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0xd9f9c036b94bb6ce43c5c12e7ec404dce4ddcd4a3fca88a3063ca82d7a7416f5
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+[32m[2026-02-02 10:08:13][0m Funding sequencer account
+
+blockHash            0x5f347da529f17634b43d2655cf8554b010bc2c33d8d459b48be0fbd78fb167af
+blockNumber          13
+contractAddress      
+cumulativeGasUsed    21000
+effectiveGasPrice    176275337
+from                 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+gasUsed              21000
+logs                 []
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0xbc1e699c4cae16f20096ddfc4fceb89b470cd9222967be5ec7bb87ee45ea0486
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
+[32m[2026-02-02 10:08:16][0m Funding aggregator account
+
+blockHash            0xb13e1986ca77e0ec410ac5fc293439c9cf0c773bb1176e3fad5b3554ec0dd8b6
+blockNumber          15
+contractAddress      
+cumulativeGasUsed    21000
+effectiveGasPrice    134974302
+from                 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+gasUsed              21000
+logs                 []
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0x6ba789dae9fcfb817e4a52bc0e120d6f0015d3d17fef1c87b2fc085aff35689a
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d
+[32m[2026-02-02 10:08:20][0m Funding sovereignadmin account
+
+blockHash            0x57483a9a58b95277ac2c3265203fe4200501c3ce0e5b0f2121b0791112dc1763
+blockNumber          17
+contractAddress      
+cumulativeGasUsed    21000
+effectiveGasPrice    103350035
+from                 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+gasUsed              21000
+logs                 []
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0xd8d2bcfafff317c7c481e05f0df387f6dd827bf829b7cf095f1285f9545b10a7
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16
+[32m[2026-02-02 10:08:24][0m Setting up local agglayer-contracts repo for deployment
+/opt/agglayer-contracts /opt
+[32m[2026-02-02 10:08:24][0m It looks like this is the first rollup so we'll deploy the LxLy and Rollup Manager
+[32m[2026-02-02 10:08:24][0m Step 1: Preparing testnet
+#######################
+
+pol deployed to: 0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E
+npm notice
+npm notice New major version of npm available! 10.9.0 -> 11.8.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.8.0
+npm notice To update run: npm install -g npm@11.8.0
+npm notice
+[32m[2026-02-02 10:08:29][0m Step 2: Deploying PolygonZKEVMDeployer
+#######################
+
+polygonZkEVMDeployer deployed on:  0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99
+[32m[2026-02-02 10:08:35][0m Step 3: Deploying contracts
+#######################
+
+Proxy admin deployed to: 0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c
+#######################
+
+bridge impl deployed to: 0xcb12D626fBB88E7443bEf58Ad263Bf63185EAF1e
+
+#######################
+##### Deployment TimelockContract  #####
+#######################
+minDelayTimelock: 60
+timelockAdminAddress: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+Rollup Manager: 0x6c6c009cC348976dB4A908c92B24433d4F6edA43
+#######################
+
+Polygon timelockContract deployed to: 0x07783C37CAAFe0f05C4105250C032062A83F7AC2
+
+#######################
+#####  Checks TimelockContract  #####
+#######################
+polygonZkEVM (Rollup Manager): 0x6c6c009cC348976dB4A908c92B24433d4F6edA43
+#######################
+
+PolygonZkEVMBridge deployed to: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+
+#######################
+#####    Checks PolygonZkEVMBridge   #####
+#######################
+PolygonZkEVMGlobalExitRootAddress: 0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674
+networkID: 0n
+Rollup Manager: 0x6c6c009cC348976dB4A908c92B24433d4F6edA43
+Warning: Potentially unsafe deployment of contracts/AgglayerGER.sol:AgglayerGER
+
+    You are using the `unsafeAllow.constructor` flag.
+
+#######################
+
+polygonZkEVMGlobalExitRoot deployed to: 0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674
+#######################
+
+Verifier name: VerifierRollupHelperMock
+Verifier deployed to: 0x322e0cfC33f916379702396E6e41A6d2D97d0D96
+#######################
+
+Warning: Potentially unsafe deployment of contracts/AgglayerGateway.sol:AgglayerGateway
+
+    You are using the `unsafeAllow.constructor` flag.
+
+#######################
+
+aggLayerGatewayContract deployed to: 0xf22E2B040B639180557745F47aB97dFA95B1e22a
+#######################
+
+New Pessimistic VKey Route AgglayerGateway
+pessimisticVKeySelector: 0x00000009
+verifier: 0x322e0cfC33f916379702396E6e41A6d2D97d0D96
+pessimisticVKey: 0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142
+#######################
+
+
+#######################
+##### Deployment Rollup Manager #####
+#######################
+deployer: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+PolygonZkEVMGlobalExitRootAddress: 0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674
+polTokenAddress: 0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E
+polygonZkEVMBridgeContract: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+aggLayerGatewayContract: 0xf22E2B040B639180557745F47aB97dFA95B1e22a
+trustedAggregator: 0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d
+pendingStateTimeout: 604799
+trustedAggregatorTimeout: 604799
+admin: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+timelockContract: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+emergencyCouncilAddress: 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+Warning: Potentially unsafe deployment of contracts/newDeployments/AgglayerManagerNotUpgraded.sol:AgglayerManagerNotUpgraded
+
+    You are using the `unsafeAllow.constructor` flag.
+
+#######################
+
+polygonRollupManagerContract deployed to: 0x6c6c009cC348976dB4A908c92B24433d4F6edA43
+
+#######################
+#####    Checks  Rollup Manager  #####
+#######################
+PolygonZkEVMGlobalExitRootAddress: 0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674
+polTokenAddress: 0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E
+polygonZkEVMBridgeContract: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+[32m[2026-02-02 10:09:07][0m Got a deploy_output.json file
+{
+  "polygonRollupManagerAddress": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "polygonZkEVMBridgeAddress": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "aggLayerGatewayAddress": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "pessimisticVKeyRouteALGateway": {
+    "pessimisticVKeySelector": "0x00000009",
+    "verifier": "0x322e0cfC33f916379702396E6e41A6d2D97d0D96",
+    "pessimisticVKey": "0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142"
+  },
+  "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "zkEVMDeployerContract": "0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99",
+  "deployerAddress": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "timelockContractAddress": "0x07783C37CAAFe0f05C4105250C032062A83F7AC2",
+  "deploymentRollupManagerBlockNumber": 39,
+  "upgradeToULxLyBlockNumber": 39,
+  "admin": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "trustedAggregator": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+  "proxyAdminAddress": "0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "AgglayerManager": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "AgglayerBridge": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "AgglayerGER": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "AgglayerGateway": "0xf22E2B040B639180557745F47aB97dFA95B1e22a"
+}
+[32m[2026-02-02 10:09:07][0m Combining contract deploy files
+/opt
+[32m[2026-02-02 10:09:07][0m Creating combined.json
+/opt/output /opt
+{
+  "polygonRollupManagerAddress": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "polygonZkEVMBridgeAddress": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "aggLayerGatewayAddress": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "pessimisticVKeyRouteALGateway": {
+    "pessimisticVKeySelector": "0x00000009",
+    "verifier": "0x322e0cfC33f916379702396E6e41A6d2D97d0D96",
+    "pessimisticVKey": "0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142"
+  },
+  "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "zkEVMDeployerContract": "0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99",
+  "deployerAddress": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "timelockContractAddress": "0x07783C37CAAFe0f05C4105250C032062A83F7AC2",
+  "deploymentRollupManagerBlockNumber": 39,
+  "upgradeToULxLyBlockNumber": 39,
+  "admin": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "trustedAggregator": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+  "proxyAdminAddress": "0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "AgglayerManager": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "AgglayerBridge": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "AgglayerGER": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "AgglayerGateway": "0xf22E2B040B639180557745F47aB97dFA95B1e22a"
+}
+[32m[2026-02-02 10:09:07][0m Granting the aggregator role to the agglayer so that it can also verify batches
+
+blockHash            0x47c331802dfd69469bc69f0ebceb134bdd1cfbc67757768ac6b232e955570c3f
+blockNumber          40
+contractAddress      
+cumulativeGasUsed    36522
+effectiveGasPrice    5344799
+from                 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+gasUsed              36522
+logs                 []
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0xc51be7dd25ef3cd429e454214fe8d111c5f9a76a9d4b22ec40c4885031dee19f
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0x6c6c009cC348976dB4A908c92B24433d4F6edA43
+[32m[2026-02-02 10:09:09][0m Minting POL token on L1 for the sequencer
+
+blockHash            0x01dc0cec0c542289b43a1d89f0571d2716b537cf76bebbffb4e7201d7298312c
+blockNumber          41
+contractAddress      
+cumulativeGasUsed    34079
+effectiveGasPrice    5344799
+from                 0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
+gasUsed              34079
+logs                 [{"address":"0xede9cf798e0fe25d35469493f43e88fea4a5da0e","topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x0000000000000000000000005b06837a43bdc3dd9f114558daf4b26ed49842ed"],"data":"0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000","blockHash":"0x01dc0cec0c542289b43a1d89f0571d2716b537cf76bebbffb4e7201d7298312c","blockNumber":"0x29","blockTimestamp":"0x698077c7","transactionHash":"0x8537e264c0af844c9a854ea9b8c601229aedf66d49cabddabbf2a3a43ea33fc0","transactionIndex":"0x0","logIndex":"0x0","removed":false}]
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000800000000000000008000000000000000000000000000000000000000000000000000000000000000000000000008000000002000000000000000000000000000000000000000020000000000000000000800000000000000000000000010000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000000000000000000000000001000000000000000000100000000000000000
+root                 
+status               1 (success)
+transactionHash      0x8537e264c0af844c9a854ea9b8c601229aedf66d49cabddabbf2a3a43ea33fc0
+transactionIndex     0
+type                 0
+blobGasPrice         
+blobGasUsed          
+to                   0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E
+[32m[2026-02-02 10:09:11][0m Deploying deterministic deployment proxy
+
+blockHash            0xb3a2cf372dbd72b764bda251388321bae441d69e17239bbcaa18839ebd4e41eb
+blockNumber          42
+contractAddress      
+cumulativeGasUsed    21000
+effectiveGasPrice    4093489
+from                 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+gasUsed              21000
+logs                 []
+logsBloom            0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0x485babdb09c3d324def5276286d0f7d7eb01be11e50fd8009d815017c2c12598
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0x3fAB184622Dc19b6109349B94811493BF2a45362
+{"status":"0x1","cumulativeGasUsed":"0x10a29","logs":[],"logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","type":"0x0","transactionHash":"0xeddf9e61fb9d8f5111840daef55e5fde0041f5702856532cdbb5a02998033d26","transactionIndex":"0x0","blockHash":"0xa48cb9a4e49b94112afa08d8126ce34bf999c76eb4de11603efa3d3756b28518","blockNumber":"0x2b","gasUsed":"0x10a29","effectiveGasPrice":"0x174876e800","from":"0x3fab184622dc19b6109349b94811493bf2a45362","to":null,"contractAddress":"0x4e59b44847b379578588920ca78fbf26c0b4956c"}
+
+--------------------
+
+Creating rollup on L1
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:09:56][0m Executing function create_agglayer_rollup
+[32m[2026-02-02 10:09:56][0m Waiting for the L1 RPC to be available
+[32m[2026-02-02 10:10:00][0m L1 RPC is now available
+/opt/agglayer-contracts /opt
+[32m[2026-02-02 10:10:00][0m Step 4: Creating genesis
+Warning: Potentially unsafe deployment of contracts/LegacyAgglayerGERL2.sol:LegacyAgglayerGERL2
+
+    You are using the `unsafeAllow.constructor` flag.
+
+/opt
+[32m[2026-02-02 10:10:04][0m Setting up local agglayer-contracts repo for deployment
+/opt/agglayer-contracts /opt
+File /opt/agglayer-contracts/deployment/v2/create_rollup_output.json does not exist.
+/opt
+[32m[2026-02-02 10:10:04][0m Modifying combined.json
+/opt/output /opt
+File create_rollup_output.json does not exist. Trying to copy deploy_output.json to combined.json.
+[32m[2026-02-02 10:10:05][0m Final combined.json is ready:
+{
+  "polygonRollupManagerAddress": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "polygonZkEVMBridgeAddress": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "aggLayerGatewayAddress": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "pessimisticVKeyRouteALGateway": {
+    "pessimisticVKeySelector": "0x00000009",
+    "verifier": "0x322e0cfC33f916379702396E6e41A6d2D97d0D96",
+    "pessimisticVKey": "0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142"
+  },
+  "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "zkEVMDeployerContract": "0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99",
+  "deployerAddress": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "timelockContractAddress": "0x07783C37CAAFe0f05C4105250C032062A83F7AC2",
+  "deploymentRollupManagerBlockNumber": 39,
+  "upgradeToULxLyBlockNumber": 39,
+  "admin": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "trustedAggregator": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+  "proxyAdminAddress": "0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "AgglayerManager": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "AgglayerBridge": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "AgglayerGER": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "AgglayerGateway": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "polygonZkEVML2BridgeAddress": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "LegacyAgglayerGERL2": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
+  "bridgeGenBlockNumber": null
+}
+[32m[2026-02-02 10:10:05][0m Transformation complete. Output written to dynamic-kurtosis-allocs.json
+Without create_rollup_output.json, there is no batch_timestamp available
+
+--------------------
+
+Storing files from service 'contracts-001' at path '/opt/output/dynamic-kurtosis-conf.json' to files artifact with name 'cdk-erigon-chain-config'
+Files with artifact name 'cdk-erigon-chain-config' uploaded with artifact UUID '838b3e63ecb244e9be47e8405c84004d'
+
+Storing files from service 'contracts-001' at path '/opt/output/dynamic-kurtosis-allocs.json' to files artifact with name 'cdk-erigon-chain-allocs'
+Files with artifact name 'cdk-erigon-chain-allocs' uploaded with artifact UUID '4de9e435cab942b9a8f503912a26611d'
+
+Storing files from service 'contracts-001' at path '/opt/output/first-batch-config.json' to files artifact with name 'cdk-erigon-chain-first-batch'
+Files with artifact name 'cdk-erigon-chain-first-batch' uploaded with artifact UUID '7b7a59377896446cb16b95a804a08514'
+
+Updating the GER so the L1 Info Tree Index is greater than 0
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:10:45][0m Executing function update_ger
+Generating the call data for the bridge tx...
+0xcd5865790000000000000000000000000000000000000000000000000000000000000007000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000000
+Performing an eth call to make sure the bridge tx will work...
+0x
+Publishing the bridge tx...
+
+blockHash            0x8d93b501df0edae75eea57741a3227baba63c6cf8db152bfc98f4213112ae0d1
+blockNumber          89
+contractAddress      
+cumulativeGasUsed    235663
+effectiveGasPrice    7708
+from                 0xE34aaF64b29273B7D567FCFc40544c014EEe9970
+gasUsed              235663
+logs                 [{"address":"0xc8cbebf950b9df44d987c8619f092bea980ff038","topics":["0x501781209a1f8899323b96b4ef08b168df93e0a90c673d1e4cce39366cb62f9b"],"data":"0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","blockHash":"0x8d93b501df0edae75eea57741a3227baba63c6cf8db152bfc98f4213112ae0d1","blockNumber":"0x59","blockTimestamp":"0x69807827","transactionHash":"0x60da263833fa99c6c70e3d640e4c6ec50de0825347ed1c3be0a4cc91be116aca","transactionIndex":"0x0","logIndex":"0x0","removed":false},{"address":"0x1f7ad7caa53e35b4f0d138dc5cbf91ac108a2674","topics":["0xda61aa7823fcd807e37b95aabcbe17f03a6f3efd514176444dae191d27fd66b3","0x87b3e82db67d821f34d17c794ca490bbaf5a2b9cf2c602474a13c1bb0d617c5c","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x","blockHash":"0x8d93b501df0edae75eea57741a3227baba63c6cf8db152bfc98f4213112ae0d1","blockNumber":"0x59","blockTimestamp":"0x69807827","transactionHash":"0x60da263833fa99c6c70e3d640e4c6ec50de0825347ed1c3be0a4cc91be116aca","transactionIndex":"0x0","logIndex":"0x1","removed":false},{"address":"0x1f7ad7caa53e35b4f0d138dc5cbf91ac108a2674","topics":["0xaf6c6cd7790e0180a4d22eb8ed846e55846f54ed10e5946db19972b5a0813a59","0x0000000000000000000000000000000000000000000000000000000000000001"],"data":"0x1ce3b10914191f0dfb6ba2a7f6aae9f9378568989b0a86bafb392433d9de9623f07f31712cb083fbce749fad8d783dbaf177af95e1ec302a54c671c06356dc6a0000000000000000000000000000000000000000000000000000000069807827","blockHash":"0x8d93b501df0edae75eea57741a3227baba63c6cf8db152bfc98f4213112ae0d1","blockNumber":"0x59","blockTimestamp":"0x69807827","transactionHash":"0x60da263833fa99c6c70e3d640e4c6ec50de0825347ed1c3be0a4cc91be116aca","transactionIndex":"0x0","logIndex":"0x2","removed":false}]
+logsBloom            0x000000000000000000000000080000000000008020000000020000000000000000080000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000400000000000000000000000000000200000000000000000008000000000000000000000000000008000000000000010000000000000001000100000000000008000010000000000000000000000000000000000000000000000c0000000000000000000000000100000000000000000000000000000000000002000000000002000400000000000060000000000000000000000000000000000400000000000000000000000000000000
+root                 
+status               1 (success)
+transactionHash      0x60da263833fa99c6c70e3d640e4c6ec50de0825347ed1c3be0a4cc91be116aca
+transactionIndex     0
+type                 2
+blobGasPrice         
+blobGasUsed          
+to                   0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+
+--------------------
+
+Getting basic contract addresses from contracts-001 service
+Command returned with exit code '0' and the following output:
+--------------------
+{
+  "polygonRollupManagerAddress": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "polygonZkEVMBridgeAddress": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "polygonZkEVMGlobalExitRootAddress": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "aggLayerGatewayAddress": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "pessimisticVKeyRouteALGateway": {
+    "pessimisticVKeySelector": "0x00000009",
+    "verifier": "0x322e0cfC33f916379702396E6e41A6d2D97d0D96",
+    "pessimisticVKey": "0x00139b6c32b3748fae95a38c289d46c30730c3f900e3fff3ad6db2aa95aaa142"
+  },
+  "polTokenAddress": "0xEdE9cf798E0fE25D35469493f43E88FeA4a5da0E",
+  "zkEVMDeployerContract": "0x1b50e2F3bf500Ab9Da6A7DBb6644D392D9D14b99",
+  "deployerAddress": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "timelockContractAddress": "0x07783C37CAAFe0f05C4105250C032062A83F7AC2",
+  "deploymentRollupManagerBlockNumber": 39,
+  "upgradeToULxLyBlockNumber": 39,
+  "admin": "0xE34aaF64b29273B7D567FCFc40544c014EEe9970",
+  "trustedAggregator": "0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d",
+  "proxyAdminAddress": "0xd60F1BCf5566fCCD62f8AA3bE00525DdA6Ab997c",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000000001",
+  "AgglayerManager": "0x6c6c009cC348976dB4A908c92B24433d4F6edA43",
+  "AgglayerBridge": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "AgglayerGER": "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674",
+  "AgglayerGateway": "0xf22E2B040B639180557745F47aB97dFA95B1e22a",
+  "polygonZkEVML2BridgeAddress": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038",
+  "LegacyAgglayerGERL2": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
+  "bridgeGenBlockNumber": null
+}
+
+--------------------
+
+Printing a message
+Calling snapshot module to register networks and extract artifacts
+
+Printing a message
+Starting snapshot creation process...
+
+Printing a message
+Registering 1 networks for snapshot...
+
+Printing a message
+Registering network 1 of 1: -001
+
+Printing a message
+Registering OP-Geth network: -001
+
+Printing a message
+Predeployed contracts detected. Using predeployed setup script.
+
+Creating rollup type and rollup on L1
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:10:47][0m Executing function create_sovereign_rollup_predeployed
+/opt/agglayer-contracts /opt
+#######################
+
+Added new Rollup Type deployed
+#######################
+
+Created new AggchainECDSAMultisig Rollup: 0x414e9E227e4b589aF92200508aF5399576530E4e
+#######################
+
+New Default Aggchain VKey AgglayerGateway: 0xf22E2B040B639180557745F47aB97dFA95B1e22a
+consensusContract: AggchainECDSAMultisig
+defaultAggchainVKeySelector: 0x00000000
+newAggchainVKey: 0x7767a8330ce68dac35265ba15d9eec6722b943cf00dc3b733779e1ae55696f70
+#######################
+
+Using aggchainManager address: 0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16
+Using provided aggchainManagerPvtKey...
+✓ AggchainManager private key verified for address: 0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16
+
+--------------------
+
+Creating sovereign predeployed Genesis for OP Stack
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:11:06][0m Executing function create_predeployed_op_genesis
+/opt/agglayer-contracts /opt
+2026-02-02 10:11:08 [[32minfo[39m]: Start create-sovereign-genesis tool
+2026-02-02 10:11:08 [[32minfo[39m]: Check initial parameters
+2026-02-02 10:11:08 [[32minfo[39m]: Check SovereignBridge requirements for its correct initialization
+2026-02-02 10:11:08 [[32minfo[39m]: Update genesis-base to the SovereignContracts
+2026-02-02 10:11:17 [[32minfo[39m]: Add preMintAccounts
+2026-02-02 10:11:17 [[32minfo[39m]: Add timelockParameters
+2026-02-02 10:11:18 [[32minfo[39m]: Formatting genesis output to: geth
+2026-02-02 10:11:18 [[32minfo[39m]: Getting L1 information
+2026-02-02 10:11:18 [[32minfo[39m]: Writing final output files
+2026-02-02 10:11:18 [[32minfo[39m]: Output saved at:
+2026-02-02 10:11:18 [[32minfo[39m]:    output genesis: /opt/agglayer-contracts/tools/createSovereignGenesis/genesis-rollupID-1__2026-02-02T10:11:08.180Z.json
+2026-02-02 10:11:18 [[32minfo[39m]:    output info   : /opt/agglayer-contracts/tools/createSovereignGenesis/output-rollupID-1__2026-02-02T10:11:08.180Z.json
+Predeployed Genesis file saved: /opt/output/sovereign-predeployed-genesis.json
+Output saved: /opt/output/create-sovereign-genesis-output.json
+Predeployed Allocs file saved: /opt/output/predeployed_allocs.json
+
+--------------------
+
+Storing predeployed_allocs.json
+Files with artifact name 'predeployed_allocs.json' uploaded with artifact UUID 'b4e0feb86c0844f0905369263e7dc3b1'
+
+Printing a message
+Deploying OP Stack infrastructure for network: -001
+
+Printing a message
+Parsing the L1 input args
+
+Printing a message
+Sanity check for OP package passed
+
+Printing a message
+Using external L1
+
+Printing a message
+struct(cl_rpc_url = "http://cl-1-lighthouse-geth:4000", el_rpc_url = "http://el-1-geth-lighthouse:8545", el_ws_url = "ws://el-1-geth-lighthouse:8546", network_id = "271828", priv_key = "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31", rpc_kind = "standard")
+
+Printing a message
+Waiting for network to sync
+
+Wait for L1 to sync up to network - this can take up to 3days
+Command returned with exit code '0' and the following output:
+--------------------
+Node is starting up
+Your L1 is still syncing. Current CL head is 107 and CL sync distance is 0. EL current head is:  and highest block is: . Number of blocks left ~
+Node is synced!
+
+--------------------
+
+Initialize L2 contract deployments
+Command returned with exit code '0' and the following output:
+--------------------
+Successfully initialized op-deployer intent in directory: /network-data
+
+--------------------
+
+Uploading file '../../static_files/scripts' to files artifact 'op-deployer-fund-script'
+Files with artifact name 'op-deployer-fund-script' uploaded with artifact UUID 'ffb90bb062434bcf82ea77030fe1968d'
+
+Collect keys, and fund addresses
+Command returned with exit code '0' and the following output:
+--------------------
+Error: server returned an error response: error code -32000: failed with 16777216 gas: max priority fee per gas higher than max fee per gas: address 0xD8F3183DEF51A987222D845be228e0Bbb932C222, maxPriorityFeePerGas: 1000000000, maxFeePerGas: 1255
+Error: server returned an error response: error code -32000: failed with 16777216 gas: max priority fee per gas higher than max fee per gas: address 0xD8F3183DEF51A987222D845be228e0Bbb932C222, maxPriorityFeePerGas: 1000000000, maxFeePerGas: 1255
+Error: server returned an error response: error code -32000: failed with 16777216 gas: max priority fee per gas higher than max fee per gas: address 0xD8F3183DEF51A987222D845be228e0Bbb932C222, maxPriorityFeePerGas: 1000000000, maxFeePerGas: 1255
+Error: server returned an error response: error code -32000: failed with 16777216 gas: max priority fee per gas higher than max fee per gas: address 0xD8F3183DEF51A987222D845be228e0Bbb932C222, maxPriorityFeePerGas: 1000000000, maxFeePerGas: 1255
+Wallet private key and addresses
+{
+  "20201": {
+    "proposerPrivateKey": "0xe10d0689b3294619451a01adbc3cdd5b7b01a8870cdc13a961f1fbcf14cc91ff",
+    "proposerAddress": "0xd65781533B735920376aE8153c58C809F9d5C82f",
+    "batcherPrivateKey": "0xa51bc3351fffe667d7f2fd30dc040687e2d65e2f941837bad219bb1f0466dfaa",
+    "batcherAddress": "0xB169bC8e767801D625519Bff9C4dbe24Eb74FB35",
+    "sequencerPrivateKey": "0x8e3639f7daa30681c34674aa954b0d47beb4b6bf0a82985beeced3e56eacf4bd",
+    "sequencerAddress": "0x2eAEab09E4B700C437E14E0E42eF1Fe9ACab4043",
+    "challengerPrivateKey": "0x07e2d55ff63ab36ff9655a839af77f3a4866acc354e55dfb5ac0f8149c147935",
+    "challengerAddress": "0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF",
+    "l2ProxyAdminPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "l2ProxyAdminAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "l1ProxyAdminPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "l1ProxyAdminAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "baseFeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "baseFeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "l1FeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "l1FeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "sequencerFeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "sequencerFeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "operatorFeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "operatorFeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "systemConfigOwnerPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "systemConfigOwnerAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "l1FaucetPrivateKey": "0x04b9f63ecf84210c5366c66d68fa1f5da1fa4f634fad6dfc86178e4d79ff9e59",
+    "l1FaucetAddress": "0xafF0CA253b97e54440965855cec0A8a2E2399896",
+    "l2FaucetPrivateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+    "l2FaucetAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  }
+}
+
+--------------------
+
+Write value to a file artifact
+Command returned with exit code '0' with no output
+
+Configure L2 contract deployments
+Command returned with exit code '0' with no output
+
+Fetching files artifact 'predeployed_allocs.json'
+Fetched files artifact 'predeployed_allocs.json'
+
+Apply L2 contract deployments
+Command returned with exit code '0' and the following output:
+--------------------
+t=2026-02-02T10:11:30+0000 lvl=info msg="Load database journal from disk"
+t=2026-02-02T10:11:30+0000 lvl=info msg="State snapshot generator is not found"
+t=2026-02-02T10:11:30+0000 lvl=info msg="Initialized path database" readonly=true triecache="16.00 MiB" statecache="16.00 MiB" buffer="0.00 B" state-history="entire chain"
+Reading predeployed file: /network-data/allocs/predeployed_allocs.json
+t=2026-02-02T10:11:30+0000 lvl=info msg="initializing pipeline" stage=init strategy=live
+t=2026-02-02T10:11:30+0000 lvl=info msg="deploying superchain" stage=deploy-superchain
+t=2026-02-02T10:11:30+0000 lvl=warn msg=Fault addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 label=ProtocolVersionsProxy err="execution reverted" depth=3 op=253 byte4=0x38d38c97
+t=2026-02-02T10:11:30+0000 lvl=warn msg=callframe depth=1 byte4=0xff07a313 addr=0xfdAf657f7146c1AB9db4d70cEd5FDEa7dC4906c0 callsite="" label=DeploySuperchain
+t=2026-02-02T10:11:30+0000 lvl=warn msg=callframe depth=2 byte4=0x38d38c97 addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 callsite="" label=ProtocolVersionsProxy
+t=2026-02-02T10:11:30+0000 lvl=warn msg=callframe depth=3 byte4=0x38d38c97 addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 callsite="" label=ProtocolVersionsProxy
+t=2026-02-02T10:11:30+0000 lvl=warn msg=Revert addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 label=ProtocolVersionsProxy err="execution reverted" revertData=0x depth=2
+t=2026-02-02T10:11:30+0000 lvl=warn msg=Fault addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 label=ProtocolVersionsProxy err="execution reverted" depth=2 op=253 byte4=0x38d38c97
+t=2026-02-02T10:11:30+0000 lvl=warn msg=callframe depth=1 byte4=0xff07a313 addr=0xfdAf657f7146c1AB9db4d70cEd5FDEa7dC4906c0 callsite="" label=DeploySuperchain
+t=2026-02-02T10:11:30+0000 lvl=warn msg=callframe depth=2 byte4=0x38d38c97 addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 callsite="" label=ProtocolVersionsProxy
+t=2026-02-02T10:11:30+0000 lvl=warn msg=Revert addr=0x373E0B8B80A15cdf587C1263654c6B5edd195a43 label=ProtocolVersionsProxy err="execution reverted" revertData=0x depth=1
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0x92f769509aae47ef1efd8eb66da95063028f3a43e7217e737b3ee0f2db8f4398 nonce=7
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xd5c47f6e55e5f664eb4efe6695e744b4247b7520dad26e6cc46c81149b846ddb nonce=7 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1780244
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xd5c47f6e55e5f664eb4efe6695e744b4247b7520dad26e6cc46c81149b846ddb nonce=7 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1780244 tx=0xd5c47f6e55e5f664eb4efe6695e744b4247b7520dad26e6cc46c81149b846ddb
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0x680a134e9a12e15c5bdef273b9fe25f90ee2379ed922d5e329efba8591ca8d7d nonce=0
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xb95cb88a9e2269ea2d67a025837aaf18fce81b2e27456197b3f418d3c0f2de1e nonce=8 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=903003
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xb95cb88a9e2269ea2d67a025837aaf18fce81b2e27456197b3f418d3c0f2de1e nonce=8 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=903003 tx=0xb95cb88a9e2269ea2d67a025837aaf18fce81b2e27456197b3f418d3c0f2de1e
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0xbb6e71b041ef10fdd9921c31f0a6049b6fa18f1551f037b44187c10cf1eb51f4 nonce=0
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x801310592d646c8e058812cac055d6d59e4d9a75bf025b830bf0c41abc2c654b nonce=9 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=732405
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x801310592d646c8e058812cac055d6d59e4d9a75bf025b830bf0c41abc2c654b nonce=9 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=732405 tx=0x801310592d646c8e058812cac055d6d59e4d9a75bf025b830bf0c41abc2c654b
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0x457469985917dbc333e6d2c2f35f5da6c5dfe22387816bcd86646b2fe933c466 nonce=10
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x2c906d0dc1498ca16fc18da2169aff3fae538342b65015668894f6fe05061a51 nonce=10 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=629678
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x2c906d0dc1498ca16fc18da2169aff3fae538342b65015668894f6fe05061a51 nonce=10 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=629678 tx=0x2c906d0dc1498ca16fc18da2169aff3fae538342b65015668894f6fe05061a51
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0xe4fe0bd676de1dc2db864bf41dcaa151961b0949b4e92b071aea464dae00f9e9 nonce=11
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xaad27dcc65891f4335ef188970882173f743aa0a7b5ffe5c54880e26004187f5 nonce=11 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=104911
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xaad27dcc65891f4335ef188970882173f743aa0a7b5ffe5c54880e26004187f5 nonce=11 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=104911 tx=0xaad27dcc65891f4335ef188970882173f743aa0a7b5ffe5c54880e26004187f5
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0xf29eb758b26ee85a1d3357e2d83471cb72fe8bc53eef6fe7d6505c9d4034355d nonce=12
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x3c831100d42c9149a6bff2aa8bc5a6594f13d8a7b8fe86587c9ed26a75274787 nonce=12 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=629678
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x3c831100d42c9149a6bff2aa8bc5a6594f13d8a7b8fe86587c9ed26a75274787 nonce=12 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=629678 tx=0x3c831100d42c9149a6bff2aa8bc5a6594f13d8a7b8fe86587c9ed26a75274787
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0x5d5dc52c6f7a23a29594a7b5c8c1349b5abe36dd5198c5bcfbb556725c8fd991 nonce=13
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xcb7d75b3bd321572a3e90f8866aa7506698e663865ad144333e241cc494a5101 nonce=13 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=193495
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xcb7d75b3bd321572a3e90f8866aa7506698e663865ad144333e241cc494a5101 nonce=13 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=193495 tx=0xcb7d75b3bd321572a3e90f8866aa7506698e663865ad144333e241cc494a5101
+t=2026-02-02T10:11:30+0000 lvl=info msg="transaction broadcasted" id=0x63877728f72b91a75edc24b085339a04bb3c4d90a081b56ab40e25ec873f102a nonce=14
+t=2026-02-02T10:11:30+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x0afa2dd5b848882f48b08bc3977307c98b982a2b4e0a8c053d53dbd390c68be8 nonce=14 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=30914
+t=2026-02-02T10:11:30+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x0afa2dd5b848882f48b08bc3977307c98b982a2b4e0a8c053d53dbd390c68be8 nonce=14 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=30914 tx=0x0afa2dd5b848882f48b08bc3977307c98b982a2b4e0a8c053d53dbd390c68be8
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xd5c47f6e55e5f664eb4efe6695e744b4247b7520dad26e6cc46c81149b846ddb block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0x92f769509aae47ef1efd8eb66da95063028f3a43e7217e737b3ee0f2db8f4398 completed=1 total=8 hash=0xd5c47f6e55e5f664eb4efe6695e744b4247b7520dad26e6cc46c81149b846ddb nonce=7 creation=0x72ae2643518179cF01bcA3278a37ceAD408DE8b2
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xb95cb88a9e2269ea2d67a025837aaf18fce81b2e27456197b3f418d3c0f2de1e block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0x680a134e9a12e15c5bdef273b9fe25f90ee2379ed922d5e329efba8591ca8d7d completed=2 total=8 hash=0xb95cb88a9e2269ea2d67a025837aaf18fce81b2e27456197b3f418d3c0f2de1e nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x801310592d646c8e058812cac055d6d59e4d9a75bf025b830bf0c41abc2c654b block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0xbb6e71b041ef10fdd9921c31f0a6049b6fa18f1551f037b44187c10cf1eb51f4 completed=3 total=8 hash=0x801310592d646c8e058812cac055d6d59e4d9a75bf025b830bf0c41abc2c654b nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x2c906d0dc1498ca16fc18da2169aff3fae538342b65015668894f6fe05061a51 block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0x457469985917dbc333e6d2c2f35f5da6c5dfe22387816bcd86646b2fe933c466 completed=4 total=8 hash=0x2c906d0dc1498ca16fc18da2169aff3fae538342b65015668894f6fe05061a51 nonce=10 creation=0x63e6DDE6763C3466C7b45Be880f7eE5dC2ca3E25
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xaad27dcc65891f4335ef188970882173f743aa0a7b5ffe5c54880e26004187f5 block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0xe4fe0bd676de1dc2db864bf41dcaa151961b0949b4e92b071aea464dae00f9e9 completed=5 total=8 hash=0xaad27dcc65891f4335ef188970882173f743aa0a7b5ffe5c54880e26004187f5 nonce=11 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x3c831100d42c9149a6bff2aa8bc5a6594f13d8a7b8fe86587c9ed26a75274787 block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0xf29eb758b26ee85a1d3357e2d83471cb72fe8bc53eef6fe7d6505c9d4034355d completed=6 total=8 hash=0x3c831100d42c9149a6bff2aa8bc5a6594f13d8a7b8fe86587c9ed26a75274787 nonce=12 creation=0x373E0B8B80A15cdf587C1263654c6B5edd195a43
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xcb7d75b3bd321572a3e90f8866aa7506698e663865ad144333e241cc494a5101 block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0x5d5dc52c6f7a23a29594a7b5c8c1349b5abe36dd5198c5bcfbb556725c8fd991 completed=7 total=8 hash=0xcb7d75b3bd321572a3e90f8866aa7506698e663865ad144333e241cc494a5101 nonce=13 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:33+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x0afa2dd5b848882f48b08bc3977307c98b982a2b4e0a8c053d53dbd390c68be8 block=0xc13be00ff334f51ed22de277c4492fe66bc71429df799df14bdebe4a5fa0130d:112 effectiveGasPrice=1000000369
+t=2026-02-02T10:11:33+0000 lvl=info msg="transaction confirmed" id=0x63877728f72b91a75edc24b085339a04bb3c4d90a081b56ab40e25ec873f102a completed=8 total=8 hash=0x0afa2dd5b848882f48b08bc3977307c98b982a2b4e0a8c053d53dbd390c68be8 nonce=14 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:33+0000 lvl=info msg="deploying implementations" stage=deploy-implementations
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the DelayedWETH implementation at 0x33Dadc2d1aA9BB613A7AE6B28425eA00D44c6998" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the DisputeGameFactory implementation at 0xc040F392E52Cb6970CA8E110c280fE24E07C5e2c" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the L1CrossDomainMessenger implementation at 0xb686F13AfF1e427a1f993F29ab0F2E7383729FE0" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=warn msg=Fault addr=0xb686F13AfF1e427a1f993F29ab0F2E7383729FE0 label=L1CrossDomainMessengerImpl err="execution reverted" depth=2 op=253 byte4=0x3e47158c
+t=2026-02-02T10:11:34+0000 lvl=warn msg=callframe depth=1 byte4=0x329aa281 addr=0x8f0818c1e0a4cA9Bc005f61428f7f8a371464D38 callsite="" label=DeployImplementations
+t=2026-02-02T10:11:34+0000 lvl=warn msg=callframe depth=2 byte4=0x3e47158c addr=0xb686F13AfF1e427a1f993F29ab0F2E7383729FE0 callsite="" label=L1CrossDomainMessengerImpl
+t=2026-02-02T10:11:34+0000 lvl=warn msg=Revert addr=0xb686F13AfF1e427a1f993F29ab0F2E7383729FE0 label=L1CrossDomainMessengerImpl err="execution reverted" revertData=0x54e433cd depth=1
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the L1ERC721Bridge implementation at 0x74f1aC50EB0BE98853805D381C884f5f9abDEcf9" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=warn msg=Fault addr=0x74f1aC50EB0BE98853805D381C884f5f9abDEcf9 label=L1ERC721BridgeImpl err="execution reverted" depth=2 op=253 byte4=0x3e47158c
+t=2026-02-02T10:11:34+0000 lvl=warn msg=callframe depth=1 byte4=0x329aa281 addr=0x8f0818c1e0a4cA9Bc005f61428f7f8a371464D38 callsite="" label=DeployImplementations
+t=2026-02-02T10:11:34+0000 lvl=warn msg=callframe depth=2 byte4=0x3e47158c addr=0x74f1aC50EB0BE98853805D381C884f5f9abDEcf9 callsite="" label=L1ERC721BridgeImpl
+t=2026-02-02T10:11:34+0000 lvl=warn msg=Revert addr=0x74f1aC50EB0BE98853805D381C884f5f9abDEcf9 label=L1ERC721BridgeImpl err="execution reverted" revertData=0x54e433cd depth=1
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the L1StandardBridge implementation at 0x61525EaaCDdB97D9184aFc205827E6A4fd0Bf62A" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the MIPS at 0x6463dEE3828677F6270d83d45408044fc5eDB908" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the OPContractsManager at 0x03a48f51502544bbC65E451A09905815B2E55E0d" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the OptimismMintableERC20Factory implementation at 0x8ee6fB13c6c9a7e401531168E196Fbf8b05cEabB" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the OptimismPortal2 implementation at 0x97cEbbf8959e2A5476fbe9B98A21806Ec234609B" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the ETHLockbox implementation at 0x784d2F03593A42A6E4676A012762F18775ecbBe6" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="Running chain assertions on the SystemConfig impl at 0xd392c27B84b1cA776528F2704BC67B82a62132d2" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xc4030cd981a9a9b3677267fdf24e035fdd3843831736f07b9fcc150ead8c6dac nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xcbf5a44b11093e03bb95eba3ee3087e78c0d3804d7f5a0b104f14512e25504d3 nonce=15 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3344266
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xcbf5a44b11093e03bb95eba3ee3087e78c0d3804d7f5a0b104f14512e25504d3 nonce=15 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3344266 tx=0xcbf5a44b11093e03bb95eba3ee3087e78c0d3804d7f5a0b104f14512e25504d3
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x04f16848616078baef329f8c26236e5dd9eb8470f8c647ba7d620e6a4bbccca8 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x39d47a4e98d5fe6bb16792c09c83735be96a00fd97282e4a8cb0362e8198e89a nonce=16 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2569033
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x39d47a4e98d5fe6bb16792c09c83735be96a00fd97282e4a8cb0362e8198e89a nonce=16 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2569033 tx=0x39d47a4e98d5fe6bb16792c09c83735be96a00fd97282e4a8cb0362e8198e89a
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xbffdf59a1ba4f79a87e4bfe91f5b9641cbf2b69d8d1763e2b0f47dde1259d8a4 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x5e930421820a2c88231d3ed853920763a5f347ad128b33122ba919dee4277291 nonce=17 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1687740
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x5e930421820a2c88231d3ed853920763a5f347ad128b33122ba919dee4277291 nonce=17 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1687740 tx=0x5e930421820a2c88231d3ed853920763a5f347ad128b33122ba919dee4277291
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xbf21a958ed4489de88611795b55539e28270363143433c227819400aacdb69e2 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x406f0a8b68f02596a0728fa224c2fd159e3abdf5d3d92cd513f8614678a13e48 nonce=18 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3341638
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x406f0a8b68f02596a0728fa224c2fd159e3abdf5d3d92cd513f8614678a13e48 nonce=18 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3341638 tx=0x406f0a8b68f02596a0728fa224c2fd159e3abdf5d3d92cd513f8614678a13e48
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x9f80c03388ad72f55d2ae0666d866e90d19eb7b503d09f04d2ec900e1a390759 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x2128812e3dd252ac3632034ab96d12a8a1e26f374cc99e373b3ac8d5dfa87de6 nonce=19 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2888515
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x2128812e3dd252ac3632034ab96d12a8a1e26f374cc99e373b3ac8d5dfa87de6 nonce=19 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2888515 tx=0x2128812e3dd252ac3632034ab96d12a8a1e26f374cc99e373b3ac8d5dfa87de6
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x26d136b258ba1649c11a15cf969e13392e40f533f65bfc0d4d5a7d15b07cc33b nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x1706fc4f3ce53aad32ffeba45c93bc0471f67961592eba63c85852343c7aef98 nonce=20 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=5363714
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x1706fc4f3ce53aad32ffeba45c93bc0471f67961592eba63c85852343c7aef98 nonce=20 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=5363714 tx=0x1706fc4f3ce53aad32ffeba45c93bc0471f67961592eba63c85852343c7aef98
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x4f48f8f181eb06fb9f595802cce822629822a4ea87c476ab744efb7b5a1d15ab nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xa5c359e249518b9188158948d51be86177e00864a2aaebdde76e56d7ca66017e nonce=21 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6326692
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x5b24558cf71d09aa2ea0f88f328f65031fa6996e498884b4b2195ff3fc636789 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x8945a102ca3ba2174da8060c64cbc9affd8e5da6386b05e5f05c971138cf133b nonce=22 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1363174
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xa5c359e249518b9188158948d51be86177e00864a2aaebdde76e56d7ca66017e nonce=21 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6326692 tx=0xa5c359e249518b9188158948d51be86177e00864a2aaebdde76e56d7ca66017e
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x8945a102ca3ba2174da8060c64cbc9affd8e5da6386b05e5f05c971138cf133b nonce=22 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1363174 tx=0x8945a102ca3ba2174da8060c64cbc9affd8e5da6386b05e5f05c971138cf133b
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x43483259a21a54c9bd18070b3cc1a929aaf323f7da012168a9e89e8b853005f1 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x5c8917f15143daaf684ec2fabda09e30371023fca8a8b6bf581da1cfba3ff2c2 nonce=23 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1622727
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x5c8917f15143daaf684ec2fabda09e30371023fca8a8b6bf581da1cfba3ff2c2 nonce=23 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1622727 tx=0x5c8917f15143daaf684ec2fabda09e30371023fca8a8b6bf581da1cfba3ff2c2
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xfd8318c9d88597bbbd374519bba7457f2181976552431965f813b938e86471ab nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xec55ecd6a7a9e13cc03b30c9e1af7eac836b42491dd4792d64dc9a3262b4a2d1 nonce=24 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=4161296
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xec55ecd6a7a9e13cc03b30c9e1af7eac836b42491dd4792d64dc9a3262b4a2d1 nonce=24 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=4161296 tx=0xec55ecd6a7a9e13cc03b30c9e1af7eac836b42491dd4792d64dc9a3262b4a2d1
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xfe95642146aa0dddee379213300f31b4f78c0c8297153c4d1afca80927314744 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x42651be888bed8dba3c5a028573c4f189372b0d7cbcbea0ca0021585f7e0b5ac nonce=25 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=5640015
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x42651be888bed8dba3c5a028573c4f189372b0d7cbcbea0ca0021585f7e0b5ac nonce=25 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=5640015 tx=0x42651be888bed8dba3c5a028573c4f189372b0d7cbcbea0ca0021585f7e0b5ac
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xee39f3c6ebb2a96ae1fbe4013622ac2835470c85a90380e960df0427585c9aba nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x3374b0d1a0e28e9eec77300dbc1089ecc3a700f1a83027a4cf03c1e0855118de nonce=26 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2174074
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x3374b0d1a0e28e9eec77300dbc1089ecc3a700f1a83027a4cf03c1e0855118de nonce=26 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2174074 tx=0x3374b0d1a0e28e9eec77300dbc1089ecc3a700f1a83027a4cf03c1e0855118de
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x9fbcc17997b43a3c207c85d439f267ffb6305be0864071835a518d28ba90fa7a nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xf248f5caf3fa5b462e7d35589752f24c559e7af11c416aff287c31a74081c4c1 nonce=27 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1980588
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xf248f5caf3fa5b462e7d35589752f24c559e7af11c416aff287c31a74081c4c1 nonce=27 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1980588 tx=0xf248f5caf3fa5b462e7d35589752f24c559e7af11c416aff287c31a74081c4c1
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xdc14759897eca209784d1b8ec0cf6678a5c2f48c219f2c62dc7ff2a7d66249d8 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xe60fa52a72d970ecb2cd0e72a6393471d59242a040723b30e538471b6501be34 nonce=28 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6156195
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xe60fa52a72d970ecb2cd0e72a6393471d59242a040723b30e538471b6501be34 nonce=28 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6156195 tx=0xe60fa52a72d970ecb2cd0e72a6393471d59242a040723b30e538471b6501be34
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x9dc946475b1fe5d3110f901121d45ec40a8d45af73e673eb5b8c618c6b0406cd nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x60c261173415bcf3ffc040f7d22060fe511d6aa27a53c2267dec46456e6f0460 nonce=29 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6279564
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xbf0667587094dcb5f8e827e4ac934901d63c4d3d35dcdbdd995411708f5983a4 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x3d02d9414497222c3658047c9c8ba41a0179a2073757133899aabb70ddc8ed37 nonce=30 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=488300
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x3d02d9414497222c3658047c9c8ba41a0179a2073757133899aabb70ddc8ed37 nonce=30 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=488300 tx=0x3d02d9414497222c3658047c9c8ba41a0179a2073757133899aabb70ddc8ed37
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x60c261173415bcf3ffc040f7d22060fe511d6aa27a53c2267dec46456e6f0460 nonce=29 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6279564 tx=0x60c261173415bcf3ffc040f7d22060fe511d6aa27a53c2267dec46456e6f0460
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x7587f03d3baf3591152531f91fa10844363ce98caa3d2cbe208d7a69a89f932d nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x4d756971b6f157e948c2f3ea6d7a57e62985afa6c51b36e2ea60bbe0de9c3d65 nonce=31 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=667932
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x4d756971b6f157e948c2f3ea6d7a57e62985afa6c51b36e2ea60bbe0de9c3d65 nonce=31 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=667932 tx=0x4d756971b6f157e948c2f3ea6d7a57e62985afa6c51b36e2ea60bbe0de9c3d65
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x48ab683a172335b8cec352d1a061d467e7d1ea1abdfb6ba0aa4b7106acec1f00 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x906bccb02a677ecb28ea147c184de02645a3c335ef2dd04f0401e6f2b56503e0 nonce=32 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1804371
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x906bccb02a677ecb28ea147c184de02645a3c335ef2dd04f0401e6f2b56503e0 nonce=32 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1804371 tx=0x906bccb02a677ecb28ea147c184de02645a3c335ef2dd04f0401e6f2b56503e0
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xa9ae77cc529702392b4f338bad66feaae0d51ca8448c1a169c66be5687ed62cd nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x9bd34b8e2e5c3bdb37921206e99e5d7673d3fdb922315880daee11b490335a34 nonce=33 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=741973
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x9bd34b8e2e5c3bdb37921206e99e5d7673d3fdb922315880daee11b490335a34 nonce=33 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=741973 tx=0x9bd34b8e2e5c3bdb37921206e99e5d7673d3fdb922315880daee11b490335a34
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x504864e3d8ffdf7428128760279aa374154b3f4629f66ee0b535cb0307a83bbd nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x00fe6db1be8b77524226331884893cca2974bdba2bbc113930fd8c57f7435fc1 nonce=34 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=456792
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x00fe6db1be8b77524226331884893cca2974bdba2bbc113930fd8c57f7435fc1 nonce=34 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=456792 tx=0x00fe6db1be8b77524226331884893cca2974bdba2bbc113930fd8c57f7435fc1
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x1d33c52158791e81d6d9ee38131db21c045a62f334a5d813a334bf74953e57c8 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xde6a9c089c4953a4461ef78524faca3520b724e02e7c7c99654b24ca372f5bff nonce=35 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1029518
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xde6a9c089c4953a4461ef78524faca3520b724e02e7c7c99654b24ca372f5bff nonce=35 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=1029518 tx=0xde6a9c089c4953a4461ef78524faca3520b724e02e7c7c99654b24ca372f5bff
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xa0726427a92b2cad620fd455199c493d55ef14cc12b08e2b8bc1ad14fe6aa654 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xd13f8dfc00c6bd6eac9aa69a691b90924f7294f8e299dc1456cf4c5582ea9b81 nonce=36 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3615549
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xd13f8dfc00c6bd6eac9aa69a691b90924f7294f8e299dc1456cf4c5582ea9b81 nonce=36 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3615549 tx=0xd13f8dfc00c6bd6eac9aa69a691b90924f7294f8e299dc1456cf4c5582ea9b81
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x637ff63b8bb14187553a7ad2153a2a398aa6a4de61deda9a60beab1321b640e2 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x68ddeeaae922763f5297937d58e9d4f0e05e2855a5ac1d8c625250f69cf65e91 nonce=37 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3799632
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x68ddeeaae922763f5297937d58e9d4f0e05e2855a5ac1d8c625250f69cf65e91 nonce=37 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3799632 tx=0x68ddeeaae922763f5297937d58e9d4f0e05e2855a5ac1d8c625250f69cf65e91
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x9105acadaedf7d4cf0a4c40ec8f0e56b0d5158098e9ba6f7b2cefa18d2a1a8e1 nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x004001107dcd3de28607882c1a5ca54775a0b05ffe2f10de7660406a966d9729 nonce=38 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3638032
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x004001107dcd3de28607882c1a5ca54775a0b05ffe2f10de7660406a966d9729 nonce=38 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3638032 tx=0x004001107dcd3de28607882c1a5ca54775a0b05ffe2f10de7660406a966d9729
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0x490af7002e9cb210ee2680144da2e57ffe607e2da432cbabac74582ef35f899d nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xd0db084675e8988ca2d17bd1192559612d29e22d84b2115f1f6ec5eef930810b nonce=39 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3066158
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xd0db084675e8988ca2d17bd1192559612d29e22d84b2115f1f6ec5eef930810b nonce=39 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=3066158 tx=0xd0db084675e8988ca2d17bd1192559612d29e22d84b2115f1f6ec5eef930810b
+t=2026-02-02T10:11:34+0000 lvl=info msg="transaction broadcasted" id=0xe7039b8e26f356b52fa461254cf1769472ef1c68b420fc2ba5b0aa1d1b0674da nonce=0
+t=2026-02-02T10:11:34+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xbea497b65ded886bd0de7ef806ff7d2f1fb462f5b689c637b99f045168eb0663 nonce=40 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6024331
+t=2026-02-02T10:11:34+0000 lvl=warn msg="Failed to create a transaction, will retry" service=transactor err="failed to call: execution reverted, reason: 0x"
+t=2026-02-02T10:11:34+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xbea497b65ded886bd0de7ef806ff7d2f1fb462f5b689c637b99f045168eb0663 nonce=40 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=6024331 tx=0xbea497b65ded886bd0de7ef806ff7d2f1fb462f5b689c637b99f045168eb0663
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xcbf5a44b11093e03bb95eba3ee3087e78c0d3804d7f5a0b104f14512e25504d3 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x5e930421820a2c88231d3ed853920763a5f347ad128b33122ba919dee4277291 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x406f0a8b68f02596a0728fa224c2fd159e3abdf5d3d92cd513f8614678a13e48 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x3374b0d1a0e28e9eec77300dbc1089ecc3a700f1a83027a4cf03c1e0855118de block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xec55ecd6a7a9e13cc03b30c9e1af7eac836b42491dd4792d64dc9a3262b4a2d1 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x1706fc4f3ce53aad32ffeba45c93bc0471f67961592eba63c85852343c7aef98 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x39d47a4e98d5fe6bb16792c09c83735be96a00fd97282e4a8cb0362e8198e89a block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x8945a102ca3ba2174da8060c64cbc9affd8e5da6386b05e5f05c971138cf133b block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x5c8917f15143daaf684ec2fabda09e30371023fca8a8b6bf581da1cfba3ff2c2 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x2128812e3dd252ac3632034ab96d12a8a1e26f374cc99e373b3ac8d5dfa87de6 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xa5c359e249518b9188158948d51be86177e00864a2aaebdde76e56d7ca66017e block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x42651be888bed8dba3c5a028573c4f189372b0d7cbcbea0ca0021585f7e0b5ac block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xf248f5caf3fa5b462e7d35589752f24c559e7af11c416aff287c31a74081c4c1 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x4d756971b6f157e948c2f3ea6d7a57e62985afa6c51b36e2ea60bbe0de9c3d65 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x906bccb02a677ecb28ea147c184de02645a3c335ef2dd04f0401e6f2b56503e0 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xd13f8dfc00c6bd6eac9aa69a691b90924f7294f8e299dc1456cf4c5582ea9b81 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x3d02d9414497222c3658047c9c8ba41a0179a2073757133899aabb70ddc8ed37 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x00fe6db1be8b77524226331884893cca2974bdba2bbc113930fd8c57f7435fc1 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x68ddeeaae922763f5297937d58e9d4f0e05e2855a5ac1d8c625250f69cf65e91 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xe60fa52a72d970ecb2cd0e72a6393471d59242a040723b30e538471b6501be34 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x60c261173415bcf3ffc040f7d22060fe511d6aa27a53c2267dec46456e6f0460 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x9bd34b8e2e5c3bdb37921206e99e5d7673d3fdb922315880daee11b490335a34 block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:35+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xde6a9c089c4953a4461ef78524faca3520b724e02e7c7c99654b24ca372f5bff block=0x1eeacdf96dc981702ebe4a8a17eabf074cec8740dbe290e64bc457901161273d:113 effectiveGasPrice=1000000330
+t=2026-02-02T10:11:36+0000 lvl=warn msg="Failed to create a transaction, will retry" service=transactor err="failed to call: execution reverted, reason: 0x"
+t=2026-02-02T10:11:37+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xd0db084675e8988ca2d17bd1192559612d29e22d84b2115f1f6ec5eef930810b block=0x6ba040b870386897959c4553fb388925e564ec5b6136a4da51f29f95b0d9bc76:114 effectiveGasPrice=1000000366
+t=2026-02-02T10:11:37+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x004001107dcd3de28607882c1a5ca54775a0b05ffe2f10de7660406a966d9729 block=0x6ba040b870386897959c4553fb388925e564ec5b6136a4da51f29f95b0d9bc76:114 effectiveGasPrice=1000000366
+t=2026-02-02T10:11:37+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xbea497b65ded886bd0de7ef806ff7d2f1fb462f5b689c637b99f045168eb0663 block=0x6ba040b870386897959c4553fb388925e564ec5b6136a4da51f29f95b0d9bc76:114 effectiveGasPrice=1000000366
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction broadcasted" id=0x9d72c80043a246b561fbffbcd35ccb0588a7bf2ab4142460856173c84ff253e4 nonce=0
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xc4030cd981a9a9b3677267fdf24e035fdd3843831736f07b9fcc150ead8c6dac completed=1 total=27 hash=0xcbf5a44b11093e03bb95eba3ee3087e78c0d3804d7f5a0b104f14512e25504d3 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x04f16848616078baef329f8c26236e5dd9eb8470f8c647ba7d620e6a4bbccca8 completed=2 total=27 hash=0x39d47a4e98d5fe6bb16792c09c83735be96a00fd97282e4a8cb0362e8198e89a nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xbffdf59a1ba4f79a87e4bfe91f5b9641cbf2b69d8d1763e2b0f47dde1259d8a4 completed=3 total=27 hash=0x5e930421820a2c88231d3ed853920763a5f347ad128b33122ba919dee4277291 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xbf21a958ed4489de88611795b55539e28270363143433c227819400aacdb69e2 completed=4 total=27 hash=0x406f0a8b68f02596a0728fa224c2fd159e3abdf5d3d92cd513f8614678a13e48 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x9f80c03388ad72f55d2ae0666d866e90d19eb7b503d09f04d2ec900e1a390759 completed=5 total=27 hash=0x2128812e3dd252ac3632034ab96d12a8a1e26f374cc99e373b3ac8d5dfa87de6 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x26d136b258ba1649c11a15cf969e13392e40f533f65bfc0d4d5a7d15b07cc33b completed=6 total=27 hash=0x1706fc4f3ce53aad32ffeba45c93bc0471f67961592eba63c85852343c7aef98 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x4f48f8f181eb06fb9f595802cce822629822a4ea87c476ab744efb7b5a1d15ab completed=7 total=27 hash=0xa5c359e249518b9188158948d51be86177e00864a2aaebdde76e56d7ca66017e nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x5b24558cf71d09aa2ea0f88f328f65031fa6996e498884b4b2195ff3fc636789 completed=8 total=27 hash=0x8945a102ca3ba2174da8060c64cbc9affd8e5da6386b05e5f05c971138cf133b nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x43483259a21a54c9bd18070b3cc1a929aaf323f7da012168a9e89e8b853005f1 completed=9 total=27 hash=0x5c8917f15143daaf684ec2fabda09e30371023fca8a8b6bf581da1cfba3ff2c2 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xfd8318c9d88597bbbd374519bba7457f2181976552431965f813b938e86471ab completed=10 total=27 hash=0xec55ecd6a7a9e13cc03b30c9e1af7eac836b42491dd4792d64dc9a3262b4a2d1 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xfe95642146aa0dddee379213300f31b4f78c0c8297153c4d1afca80927314744 completed=11 total=27 hash=0x42651be888bed8dba3c5a028573c4f189372b0d7cbcbea0ca0021585f7e0b5ac nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xee39f3c6ebb2a96ae1fbe4013622ac2835470c85a90380e960df0427585c9aba completed=12 total=27 hash=0x3374b0d1a0e28e9eec77300dbc1089ecc3a700f1a83027a4cf03c1e0855118de nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x9fbcc17997b43a3c207c85d439f267ffb6305be0864071835a518d28ba90fa7a completed=13 total=27 hash=0xf248f5caf3fa5b462e7d35589752f24c559e7af11c416aff287c31a74081c4c1 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xdc14759897eca209784d1b8ec0cf6678a5c2f48c219f2c62dc7ff2a7d66249d8 completed=14 total=27 hash=0xe60fa52a72d970ecb2cd0e72a6393471d59242a040723b30e538471b6501be34 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x9dc946475b1fe5d3110f901121d45ec40a8d45af73e673eb5b8c618c6b0406cd completed=15 total=27 hash=0x60c261173415bcf3ffc040f7d22060fe511d6aa27a53c2267dec46456e6f0460 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xbf0667587094dcb5f8e827e4ac934901d63c4d3d35dcdbdd995411708f5983a4 completed=16 total=27 hash=0x3d02d9414497222c3658047c9c8ba41a0179a2073757133899aabb70ddc8ed37 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x7587f03d3baf3591152531f91fa10844363ce98caa3d2cbe208d7a69a89f932d completed=17 total=27 hash=0x4d756971b6f157e948c2f3ea6d7a57e62985afa6c51b36e2ea60bbe0de9c3d65 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x48ab683a172335b8cec352d1a061d467e7d1ea1abdfb6ba0aa4b7106acec1f00 completed=18 total=27 hash=0x906bccb02a677ecb28ea147c184de02645a3c335ef2dd04f0401e6f2b56503e0 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xa9ae77cc529702392b4f338bad66feaae0d51ca8448c1a169c66be5687ed62cd completed=19 total=27 hash=0x9bd34b8e2e5c3bdb37921206e99e5d7673d3fdb922315880daee11b490335a34 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x504864e3d8ffdf7428128760279aa374154b3f4629f66ee0b535cb0307a83bbd completed=20 total=27 hash=0x00fe6db1be8b77524226331884893cca2974bdba2bbc113930fd8c57f7435fc1 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x1d33c52158791e81d6d9ee38131db21c045a62f334a5d813a334bf74953e57c8 completed=21 total=27 hash=0xde6a9c089c4953a4461ef78524faca3520b724e02e7c7c99654b24ca372f5bff nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xa0726427a92b2cad620fd455199c493d55ef14cc12b08e2b8bc1ad14fe6aa654 completed=22 total=27 hash=0xd13f8dfc00c6bd6eac9aa69a691b90924f7294f8e299dc1456cf4c5582ea9b81 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x637ff63b8bb14187553a7ad2153a2a398aa6a4de61deda9a60beab1321b640e2 completed=23 total=27 hash=0x68ddeeaae922763f5297937d58e9d4f0e05e2855a5ac1d8c625250f69cf65e91 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="Publishing transaction" service=transactor tx=0x5ff116b3e1559b8abc2e203389380ed1ed1692299fcedfe4fdf497b3a1f356b2 nonce=41 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2813451
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x9105acadaedf7d4cf0a4c40ec8f0e56b0d5158098e9ba6f7b2cefa18d2a1a8e1 completed=24 total=27 hash=0x004001107dcd3de28607882c1a5ca54775a0b05ffe2f10de7660406a966d9729 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0x490af7002e9cb210ee2680144da2e57ffe607e2da432cbabac74582ef35f899d completed=25 total=27 hash=0xd0db084675e8988ca2d17bd1192559612d29e22d84b2115f1f6ec5eef930810b nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="transaction confirmed" id=0xe7039b8e26f356b52fa461254cf1769472ef1c68b420fc2ba5b0aa1d1b0674da completed=26 total=27 hash=0xbea497b65ded886bd0de7ef806ff7d2f1fb462f5b689c637b99f045168eb0663 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:38+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0x5ff116b3e1559b8abc2e203389380ed1ed1692299fcedfe4fdf497b3a1f356b2 nonce=41 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=2813451 tx=0x5ff116b3e1559b8abc2e203389380ed1ed1692299fcedfe4fdf497b3a1f356b2
+t=2026-02-02T10:11:39+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0x5ff116b3e1559b8abc2e203389380ed1ed1692299fcedfe4fdf497b3a1f356b2 block=0x1d14a0bfe6ef5f6f131d8717c231e12896976ea5f9493b27e15b14de3f563ec9:115 effectiveGasPrice=1000000337
+t=2026-02-02T10:11:39+0000 lvl=info msg="transaction confirmed" id=0x9d72c80043a246b561fbffbcd35ccb0588a7bf2ab4142460856173c84ff253e4 completed=27 total=27 hash=0x5ff116b3e1559b8abc2e203389380ed1ed1692299fcedfe4fdf497b3a1f356b2 nonce=0 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:39+0000 lvl=info msg="deploying OP chain using local allocs" stage=deploy-opchain id=0x0000000000000000000000000000000000000000000000000000000000004ee9
+t=2026-02-02T10:11:39+0000 lvl=info msg="Running chain assertions on the DisputeGameFactory proxy at 0x5dFfCa6d7f5C9ECd23C18f5bb9a187a42a4578aa" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:39+0000 lvl=info msg="Running chain assertions on the L1CrossDomainMessenger proxy at 0x948d9bCF8b6435FBb1804EB8bd97e8f297b64DA0" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:39+0000 lvl=info msg="Running chain assertions on the OptimismPortal2 proxy at 0x93CbAf8c84afE1fe7f92d0752DB1a30FF044Aa59" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:39+0000 lvl=info msg="Running chain assertions on the SystemConfig proxy at 0x71a3E9BE31211e6671d436757D3E59E662297D90" sender=0x8943545177806ED17B9F23F0a21ee5948eCaa776
+t=2026-02-02T10:11:39+0000 lvl=warn msg=Fault addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B label=optimismMintableERC20FactoryProxy err="execution reverted" depth=3 op=253 byte4=0x38d38c97
+t=2026-02-02T10:11:39+0000 lvl=warn msg=callframe depth=1 byte4=0xb0302d5d addr=0x551618101B3999B61c266b9B3f8489195d32a328 callsite="" label=DeployOPChain
+t=2026-02-02T10:11:39+0000 lvl=warn msg=callframe depth=2 byte4=0x38d38c97 addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B callsite="" label=optimismMintableERC20FactoryProxy
+t=2026-02-02T10:11:39+0000 lvl=warn msg=callframe depth=3 byte4=0x38d38c97 addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B callsite="" label=optimismMintableERC20FactoryProxy
+t=2026-02-02T10:11:39+0000 lvl=warn msg=Revert addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B label=optimismMintableERC20FactoryProxy err="execution reverted" revertData=0x depth=2
+t=2026-02-02T10:11:39+0000 lvl=warn msg=Fault addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B label=optimismMintableERC20FactoryProxy err="execution reverted" depth=2 op=253 byte4=0x38d38c97
+t=2026-02-02T10:11:39+0000 lvl=warn msg=callframe depth=1 byte4=0xb0302d5d addr=0x551618101B3999B61c266b9B3f8489195d32a328 callsite="" label=DeployOPChain
+t=2026-02-02T10:11:39+0000 lvl=warn msg=callframe depth=2 byte4=0x38d38c97 addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B callsite="" label=optimismMintableERC20FactoryProxy
+t=2026-02-02T10:11:39+0000 lvl=warn msg=Revert addr=0x39AE654cE705bfAA2A02Fa9410181CdA4E59c03B label=optimismMintableERC20FactoryProxy err="execution reverted" revertData=0x depth=1
+t=2026-02-02T10:11:39+0000 lvl=info msg="transaction broadcasted" id=0xdecbb24f43dda832b6805d8bdb3f0e4ab977a7ca0acc0ea9059ced09a857eb46 nonce=42
+t=2026-02-02T10:11:39+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xbdb26b7d9ba0a1121b85aab8f0ef594a3143c0c8292237c7a8eaa9955f630727 nonce=42 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=9930508
+t=2026-02-02T10:11:39+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xbdb26b7d9ba0a1121b85aab8f0ef594a3143c0c8292237c7a8eaa9955f630727 nonce=42 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=9930508 tx=0xbdb26b7d9ba0a1121b85aab8f0ef594a3143c0c8292237c7a8eaa9955f630727
+t=2026-02-02T10:11:41+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xbdb26b7d9ba0a1121b85aab8f0ef594a3143c0c8292237c7a8eaa9955f630727 block=0x2cf2a69f33751cddcd2ade5ad8be463e16fc05a63a458d6fc413a7ee1720e97f:116 effectiveGasPrice=1000000299
+t=2026-02-02T10:11:41+0000 lvl=info msg="transaction confirmed" id=0xdecbb24f43dda832b6805d8bdb3f0e4ab977a7ca0acc0ea9059ced09a857eb46 completed=1 total=1 hash=0xbdb26b7d9ba0a1121b85aab8f0ef594a3143c0c8292237c7a8eaa9955f630727 nonce=42 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:41+0000 lvl=info msg="alt-da deployment not needed" stage=deploy-alt-da
+t=2026-02-02T10:11:41+0000 lvl=info msg="deploying VM" gameType=0 vmType=CANNON
+t=2026-02-02T10:11:41+0000 lvl=info msg="vm deployed" gameType=0 vmAddr=0x6463dEE3828677F6270d83d45408044fc5eDB908
+t=2026-02-02T10:11:41+0000 lvl=info msg="deploying dispute game" gameType=0
+t=2026-02-02T10:11:41+0000 lvl=info msg="dispute game deployed" gameType=0 impl=0x6dDBa09bc4cCB0D6Ca9Fc5350580f74165707499
+t=2026-02-02T10:11:41+0000 lvl=info msg="setting dispute game impl on factory" gameType=0 respected=false
+t=2026-02-02T10:11:41+0000 lvl=info msg="transaction broadcasted" id=0x36456d5e26250cc2badc7d0ad735e799b5983c95caa56e227458865782f903f9 nonce=43
+t=2026-02-02T10:11:41+0000 lvl=info msg="Publishing transaction" service=transactor tx=0xe74ccce55ecc371906c14b09f4e606ba46ee389e7cc7f07f7c5cc1b9bb1c9260 nonce=43 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=203134
+t=2026-02-02T10:11:41+0000 lvl=info msg="Transaction successfully published" service=transactor tx=0xe74ccce55ecc371906c14b09f4e606ba46ee389e7cc7f07f7c5cc1b9bb1c9260 nonce=43 gasTipCap=1000000000 gasFeeCap=3000000000 gasLimit=203134 tx=0xe74ccce55ecc371906c14b09f4e606ba46ee389e7cc7f07f7c5cc1b9bb1c9260
+t=2026-02-02T10:11:43+0000 lvl=info msg="Transaction confirmed" service=transactor tx=0xe74ccce55ecc371906c14b09f4e606ba46ee389e7cc7f07f7c5cc1b9bb1c9260 block=0x09d06df74e1dfebe439234b3edacfd1bec3e8d6a05b7f61cb06e816b6053405a:117 effectiveGasPrice=1000000272
+t=2026-02-02T10:11:43+0000 lvl=info msg="transaction confirmed" id=0x36456d5e26250cc2badc7d0ad735e799b5983c95caa56e227458865782f903f9 completed=1 total=1 hash=0xe74ccce55ecc371906c14b09f4e606ba46ee389e7cc7f07f7c5cc1b9bb1c9260 nonce=43 creation=0x0000000000000000000000000000000000000000
+t=2026-02-02T10:11:43+0000 lvl=info msg="generating L2 genesis" stage=generate-l2-genesis id=0x0000000000000000000000000000000000000000000000000000000000004ee9
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting MultiCall3 preinstall code at: 0xcA11bde05977b3631167028862bE2a173976CA11" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting Create2Deployer preinstall code at: 0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting Safe_v130 preinstall code at: 0x69f4D1788e39c87893C980c06EdF4b7f686e2938" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting SafeL2_v130 preinstall code at: 0xfb1bffC9d739B8D520DaF37dF666da4C687191EA" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting MultiSendCallOnly_v130 preinstall code at: 0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting SafeSingletonFactory preinstall code at: 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting DeterministicDeploymentProxy preinstall code at: 0x4e59b44847b379578588920cA78FbF26c0B4956C" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting MultiSend_v130 preinstall code at: 0x998739BFdAAdde7C933B942a68053933098f9EDa" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting Permit2 preinstall code at: 0x000000000022D473030F116dDEE9F6B43aC78BA3" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting SenderCreator_v060 preinstall code at: 0x7fc98430eAEdbb6070B35B39D798725049088348" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting EntryPoint_v060 preinstall code at: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting SenderCreator_v070 preinstall code at: 0xEFC2c1444eBCC4Db75e7613d20C6a62fF67A167C" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting EntryPoint_v070 preinstall code at: 0x0000000071727De22E5E9d8BAf0edAc6f37da032" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting BeaconBlockRoots preinstall code at: 0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting HistoryStorage preinstall code at: 0x0000F90827F1C53a10cb7A02335B175320002935" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Setting CreateX preinstall code at: 0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed" sender=0xaE0bDc4eEAC5E950B67C6819B118761CaAF61946
+t=2026-02-02T10:11:43+0000 lvl=info msg="Trie dumping started" root=0x7994b034e83919596296c15ea0a14098b43249ab539e121ce1d02c7666a935c1
+t=2026-02-02T10:11:43+0000 lvl=info msg="Trie dumping complete" accounts=2372 elapsed=12.522ms
+t=2026-02-02T10:11:43+0000 lvl=info msg="removing script from state-dump" addr=0xfdAf657f7146c1AB9db4d70cEd5FDEa7dC4906c0 label=L2Genesis
+t=2026-02-02T10:11:43+0000 lvl=info msg="removing script from state-dump" addr=0x8f0818c1e0a4cA9Bc005f61428f7f8a371464D38 label=""
+t=2026-02-02T10:11:43+0000 lvl=info msg="setting start block" stage=set-start-block strategy=live id=0x0000000000000000000000000000000000000000000000000000000000004ee9
+t=2026-02-02T10:11:44+0000 lvl=info msg="Creating interop dependency set..." stage=generate-interop-depset
+Saving state to:  /network-data/state.json with predeployed map
+Adding predeployed address: 0xa4d0c0ffab6cef8297919677d99bdc767bac0ae7
+Adding predeployed address: 0xa6dda31a1db1cbecbcc91df9b4bb84f1d893871e
+Adding predeployed address: 0x1b50e2f3bf500ab9da6a7dbb6644d392d9d14b99
+Adding predeployed address: 0xd60f1bcf5566fccd62f8aa3be00525dda6ab997c
+Adding predeployed address: 0xc8cbebf950b9df44d987c8619f092bea980ff038
+Adding predeployed address: 0xeca9c346cb0b76340a645fc03a077c2b8ddc5b10
+Adding predeployed address: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa
+Adding predeployed address: 0x21d5360f869bf65acfe784070db4698e843b35a3
+Adding predeployed address: 0xcb12d626fbb88e7443bef58ad263bf63185eaf1e
+Adding predeployed address: 0x575c158b45ab2636bcf2b7030e91c9f43c4bd09c
+Adding predeployed address: 0xe34aaf64b29273b7d567fcfc40544c014eee9970
+
+--------------------
+
+Generate chainspec
+Command returned with exit code '0' with no output
+
+Uploading file '/static_files/jwt/jwtsecret' to files artifact 'op_jwt_file'
+Files with artifact name 'op_jwt_file' uploaded with artifact UUID '788d428d0e3d4478877c5ac0f30bf59e'
+
+Printing a message
+L2 network 001: Launching (network ID 20201)
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0xa51bc3351fffe667d7f2fd30dc040687e2d65e2f941837bad219bb1f0466dfaa
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0xe10d0689b3294619451a01adbc3cdd5b7b01a8870cdc13a961f1fbcf14cc91ff
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0x8e3639f7daa30681c34674aa954b0d47beb4b6bf0a82985beeced3e56eacf4bd
+
+Printing a message
+L2 network 001: Participant sequencer1: Launching
+
+Printing a message
+L2 network 001: Participant sequencer1: Participant is a sequencer
+
+Printing a message
+L2 network 001: Participant sequencer1: Launching EL (op-geth)
+
+Adding service with name 'op-el-1-op-geth-op-node-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0'
+Service 'op-el-1-op-geth-op-node-001' added with service UUID '3a0f940914024d6e9a8ae4acacbd9c3c'
+
+Waiting for at most '30m0s' for service 'op-el-1-op-geth-op-node-001' to reach a certain state
+Wait took 1 tries (16.513533ms in total). Assertion passed with following:
+Request had response code '200' and body "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"id\":\"9b8815a0004dfca3d2327cf8dbb741c291502d975bc00a6a177277862e5c1b10\",\"name\":\"Geth/v1.101605.0-stable-f03d103a/linux-amd64/go1.24.11\",\"enode\":\"enode://1423e1cded7397c579a479d027b9017addae4f40ea59ee06639f31e4a08f16535904f3eadca58be3a5df8a55d175cf4ef2f2c191217c7cfde1b62fa6d3abfc74@172.16.0.29:30303\",\"enr\":\"enr:-KO4QMuOxSRohQmsfhEkhKb3ZLg1UkVgFkqAeORLpRC_4RjRXqjb3BHbWhzon2G5bJE5Kg1KjXBkVWdxk8-Ym0vIsI2GAZwd1ltBg2V0aMfGhOL6RYyAgmlkgnY0gmlwhKwQAB2Jc2VjcDI1NmsxoQIUI-HN7XOXxXmkedAnuQF63a5PQOpZ7gZjnzHkoI8WU4RzbmFwwIN0Y3CCdl-DdWRwgnZf\",\"ip\":\"172.16.0.29\",\"ports\":{\"discovery\":30303,\"listener\":30303},\"listenAddr\":\"[::]:30303\",\"protocols\":{\"eth\":{\"network\":20201,\"genesis\":\"0x46ab9d94d3708be66033cd9368e05372557450c0647947a1d1b801680f2512ae\",\"config\":{\"chainId\":20201,\"homesteadBlock\":0,\"eip150Block\":0,\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"arrowGlacierBlock\":0,\"grayGlacierBlock\":0,\"mergeNetsplitBlock\":0,\"shanghaiTime\":0,\"cancunTime\":0,\"pragueTime\":0,\"bedrockBlock\":0,\"regolithTime\":0,\"canyonTime\":0,\"ecotoneTime\":0,\"fjordTime\":0,\"graniteTime\":0,\"holoceneTime\":0,\"isthmusTime\":0,\"jovianTime\":0,\"terminalTotalDifficulty\":0,\"depositContractAddress\":\"0x0000000000000000000000000000000000000000\",\"optimism\":{\"eip1559Elasticity\":6,\"eip1559Denominator\":50,\"eip1559DenominatorCanyon\":250}},\"head\":\"0x46ab9d94d3708be66033cd9368e05372557450c0647947a1d1b801680f2512ae\"},\"snap\":{}}}}\n", with extracted fields:
+'extract.enode': "enode://1423e1cded7397c579a479d027b9017addae4f40ea59ee06639f31e4a08f16535904f3eadca58be3a5df8a55d175cf4ef2f2c191217c7cfde1b62fa6d3abfc74@172.16.0.29:30303"
+'extract.enr': "enr:-KO4QMuOxSRohQmsfhEkhKb3ZLg1UkVgFkqAeORLpRC_4RjRXqjb3BHbWhzon2G5bJE5Kg1KjXBkVWdxk8-Ym0vIsI2GAZwd1ltBg2V0aMfGhOL6RYyAgmlkgnY0gmlwhKwQAB2Jc2VjcDI1NmsxoQIUI-HN7XOXxXmkedAnuQF63a5PQOpZ7gZjnzHkoI8WU4RzbmFwwIN0Y3CCdl-DdWRwgnZf"
+
+Printing a message
+L2 network 001: Participant sequencer1: Rollup boost not enabled, skipping launch
+
+Printing a message
+L2 network 001: Participant sequencer1: Launching CL (op-node)
+
+Fetching files artifact 'el_cl_genesis_data'
+Fetched files artifact 'el_cl_genesis_data'
+
+Standardize L1 genesis for op-node
+Command returned with exit code '0' with no output
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0x8e3639f7daa30681c34674aa954b0d47beb4b6bf0a82985beeced3e56eacf4bd
+
+Adding service with name 'op-cl-1-op-node-op-geth-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5'
+Service 'op-cl-1-op-node-op-geth-001' added with service UUID '0ddf209a21934e7baae271e55717b221'
+
+Running 'POST' request on service 'op-cl-1-op-node-op-geth-001'
+Request had response code '200' and body "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"peerID\":\"16Uiu2HAm5xQ4etvPMRd1eZwEph3uAGqYw5oEtWdsPBEkv3WkpkVH\",\"nodeID\":\"02cf04cdc340f92cc040cbdd5d6d354a4b5701393c838432812e096579134f02\",\"userAgent\":\"\",\"protocolVersion\":\"\",\"ENR\":\"enr:-J64QFkp8kGQfOXl66NoVbfRE9pSNZDjMTqR74Q_s0JQscWMaaRbM9wOtwSV24ly81LTUhOVtEruKEcT7Ua9AaDFtsWGAZwd1mqDgmlkgnY0gmlwhKwQACCHb3BzdGFja4TpnQEAiXNlY3AyNTZrMaECnHPgungafJLzB29lCJKbl7w-59dS-lEckdrrxu4KW5yDdGNwgiMrg3VkcIIjKw\",\"addresses\":[\"/ip4/127.0.0.1/tcp/9003/p2p/16Uiu2HAm5xQ4etvPMRd1eZwEph3uAGqYw5oEtWdsPBEkv3WkpkVH\",\"/ip4/172.16.0.32/tcp/9003/p2p/16Uiu2HAm5xQ4etvPMRd1eZwEph3uAGqYw5oEtWdsPBEkv3WkpkVH\"],\"protocols\":null,\"connectedness\":0,\"direction\":0,\"protected\":false,\"chainID\":0,\"latency\":0,\"gossipBlocks\":true,\"scores\":{\"gossip\":{\"total\":0,\"blocks\":{\"timeInMesh\":0,\"firstMessageDeliveries\":0,\"meshMessageDeliveries\":0,\"invalidMessageDeliveries\":0},\"IPColocationFactor\":0,\"behavioralPenalty\":0},\"reqResp\":{\"validResponses\":0,\"errorResponses\":0,\"rejectedPayloads\":0}}}}\n", with extracted fields:
+'extract.peer_id': "16Uiu2HAm5xQ4etvPMRd1eZwEph3uAGqYw5oEtWdsPBEkv3WkpkVH"
+'extract.enr': "enr:-J64QFkp8kGQfOXl66NoVbfRE9pSNZDjMTqR74Q_s0JQscWMaaRbM9wOtwSV24ly81LTUhOVtEruKEcT7Ua9AaDFtsWGAZwd1mqDgmlkgnY0gmlwhKwQACCHb3BzdGFja4TpnQEAiXNlY3AyNTZrMaECnHPgungafJLzB29lCJKbl7w-59dS-lEckdrrxu4KW5yDdGNwgiMrg3VkcIIjKw"
+'extract.multiaddr': "/ip4/127.0.0.1/tcp/9003/p2p/16Uiu2HAm5xQ4etvPMRd1eZwEph3uAGqYw5oEtWdsPBEkv3WkpkVH"
+
+Printing a message
+L2 network 001: Participant rpc1: Launching
+
+Printing a message
+L2 network 001: Participant rpc1: Launching EL (op-geth)
+
+Adding service with name 'op-el-2-op-geth-op-node-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0'
+Service 'op-el-2-op-geth-op-node-001' added with service UUID '0b708a9a0d9941f0a9fd4971f000aa2c'
+
+Waiting for at most '30m0s' for service 'op-el-2-op-geth-op-node-001' to reach a certain state
+Wait took 1 tries (17.567049ms in total). Assertion passed with following:
+Request had response code '200' and body "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"id\":\"8710f9db2bbb795b64683753cbe90b1f99e769e8ee124e049e82aa0a08305ca7\",\"name\":\"Geth/v1.101605.0-stable-f03d103a/linux-amd64/go1.24.11\",\"enode\":\"enode://50200164a81be9db1e5c9ab50965feb39f4bfe75e12e8638295ad3a61a9a28ccfbbcfb88859e037717518871ed6aab414b655c0e6003bfe59988326a149be1e0@172.16.0.33:30303\",\"enr\":\"enr:-KO4QAAC26RCK5K3OYPdeDf5E5oKdztHa4qTSbwIWGh4dUC0GrEewUuXLP9wvbMhNDIEDZyhOAjyeI0Oz_pCJE_ldc6GAZwd1nIPg2V0aMfGhOL6RYyAgmlkgnY0gmlwhKwQACGJc2VjcDI1NmsxoQJQIAFkqBvp2x5cmrUJZf6zn0v-deEuhjgpWtOmGpoozIRzbmFwwIN0Y3CCdl-DdWRwgnZf\",\"ip\":\"172.16.0.33\",\"ports\":{\"discovery\":30303,\"listener\":30303},\"listenAddr\":\"[::]:30303\",\"protocols\":{\"eth\":{\"network\":20201,\"genesis\":\"0x46ab9d94d3708be66033cd9368e05372557450c0647947a1d1b801680f2512ae\",\"config\":{\"chainId\":20201,\"homesteadBlock\":0,\"eip150Block\":0,\"eip155Block\":0,\"eip158Block\":0,\"byzantiumBlock\":0,\"constantinopleBlock\":0,\"petersburgBlock\":0,\"istanbulBlock\":0,\"muirGlacierBlock\":0,\"berlinBlock\":0,\"londonBlock\":0,\"arrowGlacierBlock\":0,\"grayGlacierBlock\":0,\"mergeNetsplitBlock\":0,\"shanghaiTime\":0,\"cancunTime\":0,\"pragueTime\":0,\"bedrockBlock\":0,\"regolithTime\":0,\"canyonTime\":0,\"ecotoneTime\":0,\"fjordTime\":0,\"graniteTime\":0,\"holoceneTime\":0,\"isthmusTime\":0,\"jovianTime\":0,\"terminalTotalDifficulty\":0,\"depositContractAddress\":\"0x0000000000000000000000000000000000000000\",\"optimism\":{\"eip1559Elasticity\":6,\"eip1559Denominator\":50,\"eip1559DenominatorCanyon\":250}},\"head\":\"0x46ab9d94d3708be66033cd9368e05372557450c0647947a1d1b801680f2512ae\"},\"snap\":{}}}}\n", with extracted fields:
+'extract.enode': "enode://50200164a81be9db1e5c9ab50965feb39f4bfe75e12e8638295ad3a61a9a28ccfbbcfb88859e037717518871ed6aab414b655c0e6003bfe59988326a149be1e0@172.16.0.33:30303"
+'extract.enr': "enr:-KO4QAAC26RCK5K3OYPdeDf5E5oKdztHa4qTSbwIWGh4dUC0GrEewUuXLP9wvbMhNDIEDZyhOAjyeI0Oz_pCJE_ldc6GAZwd1nIPg2V0aMfGhOL6RYyAgmlkgnY0gmlwhKwQACGJc2VjcDI1NmsxoQJQIAFkqBvp2x5cmrUJZf6zn0v-deEuhjgpWtOmGpoozIRzbmFwwIN0Y3CCdl-DdWRwgnZf"
+
+Printing a message
+L2 network 001: Participant rpc1: Rollup boost not enabled, skipping launch
+
+Printing a message
+L2 network 001: Participant rpc1: Launching CL (op-node)
+
+Fetching files artifact 'el_cl_genesis_data'
+Fetched files artifact 'el_cl_genesis_data'
+
+Standardize L1 genesis for op-node
+Command returned with exit code '0' with no output
+
+Adding service with name 'op-cl-2-op-node-op-geth-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.5'
+Service 'op-cl-2-op-node-op-geth-001' added with service UUID 'aaa27ec592df4fba9ad4a33420868e6c'
+
+Running 'POST' request on service 'op-cl-2-op-node-op-geth-001'
+Request had response code '200' and body "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"peerID\":\"16Uiu2HAm496PiqaN5XKNL3yxP31farT45E196eqC3WHTgnACG181\",\"nodeID\":\"0552b72d8577859b3da882d042d7d925e814a1206414062ffddad204a67d4278\",\"userAgent\":\"\",\"protocolVersion\":\"\",\"ENR\":\"enr:-J64QCVRM-shGGxOqOxKyln3cKc0gavoy1x0zG8bLIqjcEYFcib6RUlw_MMjmwT8Rc7xFB-aWd815uJiyqtVhNdInP2GAZwd1nvkgmlkgnY0gmlwhKwQACOHb3BzdGFja4TpnQEAiXNlY3AyNTZrMaECgXnpderKu1rLOCxzZ3dvBUbeqP77148VFrZ9v8O2_P6DdGNwgiMrg3VkcIIjKw\",\"addresses\":[\"/ip4/127.0.0.1/tcp/9003/p2p/16Uiu2HAm496PiqaN5XKNL3yxP31farT45E196eqC3WHTgnACG181\",\"/ip4/172.16.0.35/tcp/9003/p2p/16Uiu2HAm496PiqaN5XKNL3yxP31farT45E196eqC3WHTgnACG181\"],\"protocols\":null,\"connectedness\":0,\"direction\":0,\"protected\":false,\"chainID\":0,\"latency\":0,\"gossipBlocks\":true,\"scores\":{\"gossip\":{\"total\":0,\"blocks\":{\"timeInMesh\":0,\"firstMessageDeliveries\":0,\"meshMessageDeliveries\":0,\"invalidMessageDeliveries\":0},\"IPColocationFactor\":0,\"behavioralPenalty\":0},\"reqResp\":{\"validResponses\":0,\"errorResponses\":0,\"rejectedPayloads\":0}}}}\n", with extracted fields:
+'extract.enr': "enr:-J64QCVRM-shGGxOqOxKyln3cKc0gavoy1x0zG8bLIqjcEYFcib6RUlw_MMjmwT8Rc7xFB-aWd815uJiyqtVhNdInP2GAZwd1nvkgmlkgnY0gmlwhKwQACOHb3BzdGFja4TpnQEAiXNlY3AyNTZrMaECgXnpderKu1rLOCxzZ3dvBUbeqP77148VFrZ9v8O2_P6DdGNwgiMrg3VkcIIjKw"
+'extract.multiaddr': "/ip4/127.0.0.1/tcp/9003/p2p/16Uiu2HAm496PiqaN5XKNL3yxP31farT45E196eqC3WHTgnACG181"
+'extract.peer_id': "16Uiu2HAm496PiqaN5XKNL3yxP31farT45E196eqC3WHTgnACG181"
+
+Printing a message
+L2 network 001: Launching (network ID 20201)
+
+Printing a message
+L2 network 001: Participant sequencer1: Launching
+
+Printing a message
+L2 network 001: Participant rpc1: Launching
+
+Printing a message
+No conductors found for network 001, skipping op-conductor-ops launch
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0xa51bc3351fffe667d7f2fd30dc040687e2d65e2f941837bad219bb1f0466dfaa
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0xe10d0689b3294619451a01adbc3cdd5b7b01a8870cdc13a961f1fbcf14cc91ff
+
+Printing a message
+L2 network 001: Launching batcher
+
+Adding service with name 'op-batcher-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.3'
+Service 'op-batcher-001' added with service UUID '890f43e819094d26ac3aebc8bf7cda74'
+
+Printing a message
+L2 network 001: Launching proposer op-proposer-001
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0x5dffca6d7f5c9ecd23c18f5bb9a187a42a4578aa
+
+Adding service with name 'op-proposer-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.10.2'
+Service 'op-proposer-001' added with service UUID 'e404569892cf4a43b0a219af18ca7fbb'
+
+Printing a message
+L2 network 001: Successfully launched proposer op-proposer-001
+
+Printing a message
+L2 network 001: Launching proxyd
+
+Rendering a template to a files artifact with name 'proxyd-config-20201'
+Templates artifact name 'proxyd-config-20201' rendered with artifact UUID '7a32df43591149a283ba23266f2c9061'
+
+Adding service with name 'proxyd-001' and image 'us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd:v4.14.5'
+Service 'proxyd-001' added with service UUID '81f6a9a476424f5e879ab26a85dbe50d'
+
+Printing a message
+L2 network 001: Successfully launched proxyd
+
+Printing a message
+L2 network 001: No flashblocks websocket proxy to launch
+
+Printing a message
+L2 network 001: No flashblocks RPC proxy to launch
+
+Read JSON value
+Command returned with exit code '0' and the following output: 0x2fa52caa566297724a6dc2c158cc6c06ba097e76
+
+Printing a message
+L2 network 001: Complete
+
+Printing a message
+L2 network 001: Begin your L2 adventures by depositing some L1 Kurtosis ETH to: 0x2fa52caa566297724a6dc2c158cc6c06ba097e76
+
+Fetching files artifact 'op-deployer-configs'
+Fetched files artifact 'op-deployer-configs'
+
+Reading op-proposer contract address
+Command returned with exit code '0' and the following output: 0xd65781533B735920376aE8153c58C809F9d5C82f
+
+Reading op-batcher contract address
+Command returned with exit code '0' and the following output: 0xB169bC8e767801D625519Bff9C4dbe24Eb74FB35
+
+Reading op-sequencer contract address
+Command returned with exit code '0' and the following output: 0x2eAEab09E4B700C437E14E0E42eF1Fe9ACab4043
+
+Reading op-challenger contract address
+Command returned with exit code '0' and the following output: 0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF
+
+Reading op-l1ProxyAdmin contract address
+Command returned with exit code '0' and the following output: 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+
+Deploying sovereign contracts on OP Stack
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:12:16][0m Executing function fund_addresses
+Funding 0xd65781533B735920376aE8153c58C809F9d5C82f with 100ether
+Successfully funded 0xd65781533B735920376aE8153c58C809F9d5C82f
+Funding 0xB169bC8e767801D625519Bff9C4dbe24Eb74FB35 with 100ether
+Successfully funded 0xB169bC8e767801D625519Bff9C4dbe24Eb74FB35
+Funding 0x2eAEab09E4B700C437E14E0E42eF1Fe9ACab4043 with 100ether
+Successfully funded 0x2eAEab09E4B700C437E14E0E42eF1Fe9ACab4043
+Funding 0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF with 100ether
+Successfully funded 0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF
+Funding 0x8943545177806ED17B9F23F0a21ee5948eCaa776 with 100ether
+Successfully funded 0x8943545177806ED17B9F23F0a21ee5948eCaa776
+
+--------------------
+
+Deploying sovereign contracts on OP Stack
+Command returned with exit code '0' and the following output:
+--------------------
+[32m[2026-02-02 10:12:27][0m Executing function fund_addresses
+Funding 0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed with 100ether
+Successfully funded 0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed
+Funding 0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d with 100ether
+Successfully funded 0xCae5b68Ff783594bDe1b93cdE627c741722c4D4d
+Funding 0xE34aaF64b29273B7D567FCFc40544c5B272F08c1 with 100ether
+Successfully funded 0xE34aaF64b29273B7D567FCFc40544c5B272F08c1
+Funding 0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6 with 100ether
+Successfully funded 0x5951F5b2604c9B42E478d5e2B2437F44073eF9A6
+Funding 0x0b68058E5b2592b1f472AdFe106305295A332A7C with 100ether
+Successfully funded 0x0b68058E5b2592b1f472AdFe106305295A332A7C
+Funding 0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16 with 100ether
+Successfully funded 0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16
+
+--------------------
+
+Printing a message
+Snapshot mode: Skipping rollup initialization (will be done when L2 starts)
+
+Reading sovereign contract addresses
+Command returned with exit code '0' and the following output:
+--------------------
+{
+  "sovereignRollupContract": "0x414e9E227e4b589aF92200508aF5399576530E4e",
+  "rollupChainID": "2151908",
+  "verifier": "0x0000000000000000000000000000000000000000",
+  "forkID": "0",
+  "lastLocalExitRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "lastBatchSequenced": "0",
+  "lastVerifiedBatch": "0",
+  "_legacyLastPendingState": "0",
+  "_legacyLastPendingStateConsolidated": "0",
+  "lastVerifiedBatchBeforeUpgrade": "0",
+  "rollupTypeID": "1",
+  "rollupVerifierType": "2",
+  "ger_proxy_addr": "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa",
+  "bridge_proxy_addr": "0xC8cbEBf950B9Df44d987c8619f092beA980fF038"
+}
+
+--------------------
+
+Rendering a template to a files artifact with name 'aggkit-config-001'
+Templates artifact name 'aggkit-config-001' rendered with artifact UUID 'a2eccc3b798243939bae988561eeac01'
+
+Rendering a template to a files artifact with name 'bridge-config-001'
+Templates artifact name 'bridge-config-001' rendered with artifact UUID '9bd3a5e41c85421caaeb46eac6a0f742'
+
+Storing files from service 'contracts-001' at path '/opt/output/genesis.json' to files artifact with name 'genesis-001'
+Files with artifact name 'genesis-001' uploaded with artifact UUID '28530b67c8ff44368cf293f990d3110e'
+
+Printing a message
+Network registration completed: 1 networks registered
+
+Printing a message
+Recording latest L1 block after contract deployment...
+
+Record L1 block after contract deployment
+Command returned with exit code '0' and the following output:
+--------------------
+Latest L1 block after deployment: 146
+{
+  "deployment_block": 146
+}
+
+--------------------
+
+Printing a message
+Recorded deployment block metadata
+
+Printing a message
+Extracting configuration artifacts for 1 networks...
+
+Printing a message
+Extracting artifacts for network 1 (suffix: -001)
+
+Printing a message
+Extracting keystores from service: contracts-001
+
+Storing files from service 'contracts-001' at path '/opt/keystores/sequencer.keystore' to files artifact with name 'sequencer-keystore-001'
+Files with artifact name 'sequencer-keystore-001' uploaded with artifact UUID 'f0250e14c49c4d4194227d13d73d917d'
+
+Storing files from service 'contracts-001' at path '/opt/keystores/aggregator.keystore' to files artifact with name 'aggregator-keystore-001'
+Files with artifact name 'aggregator-keystore-001' uploaded with artifact UUID 'be4365a607dc4a40869a9d0a706be2aa'
+
+Storing files from service 'contracts-001' at path '/opt/keystores/claimsponsor.keystore' to files artifact with name 'claimsponsor-keystore-001'
+Files with artifact name 'claimsponsor-keystore-001' uploaded with artifact UUID '0f7dedf8906c49c58c343d07e4d6a3a2'
+
+Printing a message
+Creating agglayer config artifact...
+
+Rendering a template to a files artifact with name 'agglayer-config'
+Templates artifact name 'agglayer-config' rendered with artifact UUID '82fc3be941bd47c5997846e3f5fb7dbc'
+
+Printing a message
+Config artifact extraction completed: 1 networks processed
+
+Printing a message
+Preparing L1 for snapshot extraction...
+
+Printing a message
+L1 service names - Geth: el-1-geth-lighthouse, Lighthouse: cl-1-lighthouse-geth, Validator: vc-1-geth-lighthouse
+
+Printing a message
+Getting deployment block from metadata...
+
+Get deployment block from metadata artifact
+Command returned with exit code '0' and the following output:
+--------------------
+146
+
+--------------------
+
+Printing a message
+Deployment block: 146
+
+
+Printing a message
+Waiting for L1 to reach finalized state...
+
+Printing a message
+Waiting for L1 finalized block to advance 10 blocks past deployment...
+
+Wait for L1 finalized state and store metadata
+Command returned with exit code '0' and the following output:
+--------------------
+Using deployment block as reference: 146
+
+Target finalized block: 156 (deployment 146
+ + 10 blocks)
+L1 blocks - Latest: 148, Finalized: 128 (need 28 more)
+L1 blocks - Latest: 149, Finalized: 128 (need 28 more)
+L1 blocks - Latest: 150, Finalized: 128 (need 28 more)
+L1 blocks - Latest: 151, Finalized: 128 (need 28 more)
+L1 blocks - Latest: 152, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 153, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 154, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 155, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 156, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 157, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 158, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 159, Finalized: 136 (need 20 more)
+L1 blocks - Latest: 160, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 161, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 162, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 163, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 164, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 165, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 166, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 167, Finalized: 144 (need 12 more)
+L1 blocks - Latest: 168, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 169, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 170, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 171, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 172, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 173, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 175, Finalized: 152 (need 4 more)
+L1 blocks - Latest: 176, Finalized: 160 (need -4 more)
+✅ L1 finalized block includes deployment: finalized=160 >= target=156 (deployment=146
+ + 10)
+L1 finalized slot: 160
+✅ L1 reached finalized slot: 160
+Stored L1 metadata to /tmp/l1-metadata/finalized-state.json
+{
+  "finalized_block": 160,
+  "finalized_slot": 160,
+  "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
+  "l1_beacon_url": "http://cl-1-lighthouse-geth:4000",
+  "timestamp": "2026-02-02T10:13:43Z"
+}
+
+--------------------
+
+Printing a message
+L1 finalized state - Block: 0, Slot: 0
+
+Printing a message
+Keeping L1 services running for post-processing genesis export...
+
+Printing a message
+Post-processing scripts will handle genesis export and service shutdown
+
+Printing a message
+Extracting L1 configuration files (no datadirs needed)...
+
+Printing a message
+Extracting lighthouse testnet config from cl-1-lighthouse-geth...
+
+Storing files from service 'cl-1-lighthouse-geth' at path '/network-configs' to files artifact with name 'l1-lighthouse-testnet'
+Files with artifact name 'l1-lighthouse-testnet' uploaded with artifact UUID '13bfe9556ebc423a975f6059ff57262c'
+
+Printing a message
+Lighthouse testnet config extracted to artifact: l1-lighthouse-testnet
+
+Printing a message
+Extracting validator keystores from vc-1-geth-lighthouse...
+
+Storing files from service 'vc-1-geth-lighthouse' at path '/validator-keys' to files artifact with name 'l1-validator-keys'
+Files with artifact name 'l1-validator-keys' uploaded with artifact UUID '2727a4c4040841a6b8dbc5ea106e59df'
+
+Printing a message
+Validator keys extracted to artifact: l1-validator-keys
+
+Printing a message
+L1 snapshot preparation completed
+
+Printing a message
+Snapshot creation process completed (networks registered, configs extracted, L1 prepared)
+
+Printing a message
+Snapshot mode: Skipping L2/agglayer/additional services deployment
+
+Starlark code successfully run. No output was returned.
+
+⭐ us on GitHub - https://github.com/kurtosis-tech/kurtosis
+[36mINFO[0m[2026-02-02T10:13:43Z] ====================================================== 
+[36mINFO[0m[2026-02-02T10:13:43Z] ||          Created enclave: snapshot-test          || 
+[36mINFO[0m[2026-02-02T10:13:43Z] ====================================================== 
+Name:            snapshot-test
+UUID:            95b8dceba8a9
+Status:          RUNNING
+Creation Time:   Mon, 02 Feb 2026 10:07:15 UTC
+Flags:           
+
+========================================= Files Artifacts =========================================
+UUID           Name
+9376e9e09e4b   1-lighthouse-geth-0-127
+9503d8e94e10   add_rollup_type.json
+a2eccc3b7982   aggkit-config-001
+82fc3be941bd   agglayer-config
+be4365a607dc   aggregator-keystore-001
+9bd3a5e41c85   bridge-config-001
+4de9e435cab9   cdk-erigon-chain-allocs
+838b3e63ecb2   cdk-erigon-chain-config
+7b7a59377896   cdk-erigon-chain-first-batch
+6b40fd7a6db8   cdk-erigon-custom-genesis-addresses.json
+0f7dedf8906c   claimsponsor-keystore-001
+89e3cea135f5   contracts.sh
+8bcd79355c99   create-genesis-sovereign-params.json
+5f98908ba1b7   create_new_rollup.json
+229567aab81d   create_op_allocs.py
+83eb50a2bc04   create_rollup_parameters.json
+88db19e1783d   deploy_parameters.json
+1920b22aad07   deployment-block-metadata
+36280b7fc586   el_cl_genesis_data
+54ded99e5f19   final-genesis-timestamp
+28530b67c8ff   genesis-001
+945bfc10cd05   genesis-el-cl-env-file
+dc18f62125bd   genesis_validators_root
+50db2acd2044   input_args.json
+439341f4e576   intent.json
+e145cd63fb0a   json2http.py
+fd6cd51b6106   jwt_file
+0af026a501ef   keymanager_file
+517e9c54ed41   l1-finalized-metadata
+13bfe9556ebc   l1-lighthouse-testnet
+2727a4c40408   l1-validator-keys
+67a265405140   op-custom-genesis-addresses.json
+9a37478727e2   op-deployer-configs
+ffb90bb06243   op-deployer-fund-script
+788d428d0e3d   op_jwt_file
+b4e0feb86c08   predeployed_allocs.json
+7a32df435911   proxyd-config-20201
+793b02a32ae2   prysm-password
+aa01ac8a6d56   sacred-frog
+f0250e14c49c   sequencer-keystore-001
+24a4fecbe8fd   validator-ranges
+037885ec4201   vast-dawn
+
+========================================== User Services ==========================================
+UUID           Name                                             Ports                                                Status
+b7f9b59d8425   cl-1-lighthouse-geth                             http: 4000/tcp -> http://127.0.0.1:33552             RUNNING
+                                                                metrics: 5054/tcp -> http://127.0.0.1:33551          
+                                                                quic-discovery: 9001/udp                             
+                                                                tcp-discovery: 9000/tcp -> 127.0.0.1:33550           
+                                                                udp-discovery: 9000/udp                              
+2fdd5552071d   contracts-001                                    http: 8080/tcp -> http://127.0.0.1:33554             RUNNING
+329c6a65ba94   el-1-geth-lighthouse                             engine-rpc: 8551/tcp -> 127.0.0.1:33547              RUNNING
+                                                                metrics: 9001/tcp -> http://127.0.0.1:33546          
+                                                                rpc: 8545/tcp -> 127.0.0.1:33549                     
+                                                                tcp-discovery: 30303/tcp -> 127.0.0.1:33545          
+                                                                udp-discovery: 30303/udp                             
+                                                                ws: 8546/tcp -> 127.0.0.1:33548                      
+890f43e81909   op-batcher-001                                   http: 8548/tcp -> http://127.0.0.1:33567             RUNNING
+0ddf209a2193   op-cl-1-op-node-op-geth-001                      rpc: 8547/tcp -> http://127.0.0.1:33560              RUNNING
+                                                                tcp-discovery: 9003/tcp -> http://127.0.0.1:33559    
+                                                                udp-discovery: 9003/udp                              
+aaa27ec592df   op-cl-2-op-node-op-geth-001                      rpc: 8547/tcp -> http://127.0.0.1:33566              RUNNING
+                                                                tcp-discovery: 9003/tcp -> http://127.0.0.1:33565    
+                                                                udp-discovery: 9003/udp                              
+3a0f94091402   op-el-1-op-geth-op-node-001                      engine-rpc: 8551/tcp -> http://127.0.0.1:33556       RUNNING
+                                                                rpc: 8545/tcp -> http://127.0.0.1:33558              
+                                                                tcp-discovery: 30303/tcp -> http://127.0.0.1:33555   
+                                                                udp-discovery: 30303/udp                             
+                                                                ws: 8546/tcp -> ws://127.0.0.1:33557                 
+0b708a9a0d99   op-el-2-op-geth-op-node-001                      engine-rpc: 8551/tcp -> http://127.0.0.1:33562       RUNNING
+                                                                rpc: 8545/tcp -> http://127.0.0.1:33564              
+                                                                tcp-discovery: 30303/tcp -> http://127.0.0.1:33561   
+                                                                udp-discovery: 30303/udp                             
+                                                                ws: 8546/tcp -> ws://127.0.0.1:33563                 
+e404569892cf   op-proposer-001                                  http: 8560/tcp -> http://127.0.0.1:33568             RUNNING
+81f6a9a47642   proxyd-001                                       http: 8080/tcp -> http://127.0.0.1:33569             RUNNING
+3618ba265887   validator-key-generation-cl-validator-keystore   <none>                                               RUNNING
+72fd39e45d8e   vc-1-geth-lighthouse                             metrics: 8080/tcp -> http://127.0.0.1:33553          RUNNING
+
+[2026-02-02 10:13:43 UTC] [SUCCESS] Kurtosis run completed successfully
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] --- Running Post-Processing Scripts ---
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] ==========================================
+[2026-02-02 10:13:43 UTC] [INFO] Step 1: Extracting L1 State
+[2026-02-02 10:13:43 UTC] [INFO] ==========================================
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] ==========================================
+[2026-02-02 10:13:43 UTC] [INFO] Step 1: L1 State Extraction for Snapshot
+[2026-02-02 10:13:43 UTC] [INFO] ==========================================
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:13:43 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 10:13:43 UTC] [SUCCESS] Output directories created
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] --- Detecting L1 service names ---
+[2026-02-02 10:13:43 UTC] [INFO] Auto-detecting L1 service names...
+Getting L1 service names from enclave snapshot-test...
+Warning: Could not find geth service, using default: el-1-geth-lighthouse
+Warning: Could not find lighthouse service, using default: cl-1-lighthouse-geth
+[2026-02-02 10:13:43 UTC] [INFO] Using services:
+[2026-02-02 10:13:43 UTC] [INFO]   Geth: el-1-geth-lighthouse
+[2026-02-02 10:13:43 UTC] [INFO]   Lighthouse: cl-1-lighthouse-geth
+[2026-02-02 10:13:43 UTC] [INFO] 
+[2026-02-02 10:13:43 UTC] [INFO] --- Exporting L1 state to genesis file ---
+[2026-02-02 10:13:43 UTC] [INFO] Exporting state from finalized block...
+[36mINFO[0m[2026-02-02T10:13:44Z] File package with identifier 'l1-finalized-metadata' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/finalized-metadata-artifact-temp' 
+[2026-02-02 10:13:44 UTC] [INFO] Finalized block from metadata: 160
+[2026-02-02 10:13:44 UTC] [INFO] Exporting state from block 160...
+[2026-02-02 10:13:44 UTC] [SUCCESS] State exported successfully
+[2026-02-02 10:13:44 UTC] [INFO] State dump size: 844K
+[2026-02-02 10:13:44 UTC] [INFO] Downloading original genesis configuration...
+[36mINFO[0m[2026-02-02T10:13:44Z] File package with identifier 'el_cl_genesis_data' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-genesis-original' 
+[2026-02-02 10:13:44 UTC] [INFO] Original genesis: ./snapshot-output/l1-genesis-original/genesis.json
+[2026-02-02 10:13:44 UTC] [INFO] Merging exported state with genesis...
+✅ Genesis created with 350 accounts
+[2026-02-02 10:13:44 UTC] [SUCCESS] Genesis file created with pre-loaded state
+[2026-02-02 10:13:44 UTC] [INFO] Genesis file size: 804K
+[2026-02-02 10:13:44 UTC] [INFO] Geth and Lighthouse will start fresh from genesis (no datadir extraction needed)
+[2026-02-02 10:13:44 UTC] [INFO] 
+[2026-02-02 10:13:44 UTC] [INFO] --- Extracting lighthouse testnet configuration from artifacts ---
+[2026-02-02 10:13:44 UTC] [INFO] Downloading el_cl_genesis_data artifact (initial genesis files)...
+[36mINFO[0m[2026-02-02T10:13:44Z] File package with identifier 'el_cl_genesis_data' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/el-cl-genesis-artifact' 
+[2026-02-02 10:13:44 UTC] [SUCCESS] Genesis files extracted from el_cl_genesis_data artifact
+[2026-02-02 10:13:44 UTC] [SUCCESS] Found genesis.ssz and config.yaml in testnet directory
+[2026-02-02 10:13:44 UTC] [INFO] Keeping merged execution genesis.json (contains deployed contracts)
+[2026-02-02 10:13:45 UTC] [INFO] 
+[2026-02-02 10:13:45 UTC] [INFO] --- Extracting validator keystores from artifacts ---
+[2026-02-02 10:13:45 UTC] [INFO] Downloading l1-validator-keys artifact...
+[36mINFO[0m[2026-02-02T10:13:45Z] File package with identifier 'l1-validator-keys' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/validator-keys-artifact' 
+[2026-02-02 10:13:45 UTC] [SUCCESS] Validator keys extracted successfully
+[2026-02-02 10:13:45 UTC] [WARN] validator_definitions.yml not found (continuing anyway)
+[2026-02-02 10:13:45 UTC] [INFO] 
+[2026-02-02 10:13:45 UTC] [INFO] --- Getting finalized block information ---
+[2026-02-02 10:13:45 UTC] [INFO] Attempting to read finalized state from Kurtosis artifact...
+[36mINFO[0m[2026-02-02T10:13:45Z] File package with identifier 'l1-finalized-metadata' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/finalized-metadata-artifact' 
+[2026-02-02 10:13:45 UTC] [SUCCESS] Found finalized state metadata artifact
+[2026-02-02 10:13:46 UTC] [INFO] Finalized block: 160
+[2026-02-02 10:13:46 UTC] [INFO] Finalized slot: 160
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Verifying state consistency ---
+Verifying state consistency...
+Geth finalized block: 160
+Lighthouse finalized slot: 160
+✅ State consistency verified: slot and block are close (difference: 0)
+[2026-02-02 10:13:46 UTC] [SUCCESS] State consistency verified
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Creating state manifest ---
+[2026-02-02 10:13:46 UTC] [SUCCESS] State manifest created: ./snapshot-output/l1-state/manifest.json
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Summary ---
+[2026-02-02 10:13:46 UTC] [INFO] Output directory: ./snapshot-output/l1-state
+[2026-02-02 10:13:46 UTC] [INFO]   Geth: ./snapshot-output/l1-state/geth
+[2026-02-02 10:13:46 UTC] [INFO]   Lighthouse: ./snapshot-output/l1-state/lighthouse
+[2026-02-02 10:13:46 UTC] [INFO]   Manifest: ./snapshot-output/l1-state/manifest.json
+[2026-02-02 10:13:46 UTC] [INFO] Finalized state:
+[2026-02-02 10:13:46 UTC] [INFO]   Block: 160
+[2026-02-02 10:13:46 UTC] [INFO]   Slot: 160
+[2026-02-02 10:13:46 UTC] [SUCCESS] L1 State Extraction Complete
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] ==========================================
+[2026-02-02 10:13:46 UTC] [INFO] Step 2: Extracting L2 Contract Addresses
+[2026-02-02 10:13:46 UTC] [INFO] ==========================================
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] Extracting L2 contract addresses from enclave: snapshot-test
+[2026-02-02 10:13:46 UTC] [INFO] Extracting from service: contracts-001
+[2026-02-02 10:13:46 UTC] [INFO] Processing network 1...
+[2026-02-02 10:13:46 UTC] [INFO] Downloading genesis-001 artifact...
+[2026-02-02 10:13:46 UTC] [INFO] Found genesis.json in artifact
+[2026-02-02 10:13:46 UTC] [INFO] Attempting to read create-sovereign-genesis-output.json from contracts service...
+[2026-02-02 10:13:46 UTC] [INFO] Successfully read create-sovereign-genesis-output.json
+[2026-02-02 10:13:46 UTC] [INFO] Extracted addresses - GER: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa, Bridge: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+[2026-02-02 10:13:46 UTC] [INFO] Verified GER 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa exists in genesis
+[2026-02-02 10:13:46 UTC] [INFO] Verified Bridge 0xC8cbEBf950B9Df44d987c8619f092beA980fF038 exists in genesis
+[2026-02-02 10:13:46 UTC] [SUCCESS] Extracted L2 contracts for network 1
+[2026-02-02 10:13:46 UTC] [INFO]   GER: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa
+[2026-02-02 10:13:46 UTC] [INFO]   Bridge: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+[2026-02-02 10:13:46 UTC] [SUCCESS] L2 contract extraction complete
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] ==========================================
+[2026-02-02 10:13:46 UTC] [INFO] Step 3: Processing Configs
+[2026-02-02 10:13:46 UTC] [INFO] ==========================================
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] ==========================================
+[2026-02-02 10:13:46 UTC] [INFO] Step 1: Config Processing for Snapshot
+[2026-02-02 10:13:46 UTC] [INFO] ==========================================
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:13:46 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 10:13:46 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 10:13:46 UTC] [INFO] Output directory: ./snapshot-output
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Loading L1 genesis configuration ---
+[2026-02-02 10:13:46 UTC] [INFO] Looking for merged genesis at: ./snapshot-output/l1-state/genesis.json
+[2026-02-02 10:13:46 UTC] [INFO] Found merged L1 genesis with deployed contracts from state extraction
+[2026-02-02 10:13:46 UTC] [INFO] Merged genesis has 350 accounts
+[2026-02-02 10:13:46 UTC] [SUCCESS] L1 genesis.json loaded from merged state (350 accounts, includes OP Stack contracts)
+Attempting to list artifacts from Kurtosis enclave...
+[2026-02-02 10:13:46 UTC] [INFO] 
+[2026-02-02 10:13:46 UTC] [INFO] --- Loading networks configuration ---
+[2026-02-02 10:13:47 UTC] [INFO] Validating 1 network(s)...
+[2026-02-02 10:13:47 UTC] [SUCCESS] All 1 network(s) validated successfully
+[2026-02-02 10:13:47 UTC] [SUCCESS] Networks configuration loaded and validated
+[2026-02-02 10:13:47 UTC] [INFO] Processing 1 network(s)...
+----------------------------------------
+Processing network 1 (suffix: -001)
+----------------------------------------
+Downloading artifact: aggkit-config-001...
+✅ Downloaded aggkit-config-001
+Processing AggKit config for network 1...
+Injecting L2 contract addresses into aggkit config...
+  L2 GER: 0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa
+  L2 Bridge: 0xC8cbEBf950B9Df44d987c8619f092beA980fF038
+✅ Injected L2 contract addresses
+✅ Verified L2 contract addresses in aggkit config
+✅ AggKit config processed successfully
+✅ Generated jwt.txt for OP-Node/OP-Geth
+Downloading artifact: genesis-001...
+✅ Downloaded genesis-001
+✅ Copied genesis.json
+Transforming genesis from Polygon CDK format to Geth format...
+✅ Transformed genesis to Geth format
+Downloading artifact: op-deployer-configs...
+✅ Downloaded op-deployer-configs
+✅ Copied genesis.json from op-deployer-configs (matches rollup.json)
+✅ Copied rollup.json for OP-Node
+Downloading artifact: sequencer-keystore-001...
+✅ Downloaded sequencer-keystore-001
+✅ Copied sequencer keystore
+Downloading artifact: aggregator-keystore-001...
+✅ Downloaded aggregator-keystore-001
+✅ Copied aggregator keystore
+Downloading artifact: claimsponsor-keystore-001...
+✅ Downloaded claimsponsor-keystore-001
+✅ Copied claimsponsor keystore
+✅ Created aggoracle keystore from aggregator keystore
+
+[2026-02-02 10:13:48 UTC] [INFO] 
+[2026-02-02 10:13:48 UTC] [INFO] --- Processing agglayer config ---
+Downloading artifact: agglayer-config...
+✅ Downloaded agglayer-config
+[2026-02-02 10:13:48 UTC] [SUCCESS] Agglayer config processed and validated successfully
+
+Creating port mapping...
+✅ Port mapping created: ./snapshot-output/port-mapping.json
+Creating keystore mapping...
+✅ Keystore mapping created: ./snapshot-output/keystore-mapping.json
+Creating processing manifest...
+✅ Processing manifest created: ./snapshot-output/config-processing-manifest.json
+[2026-02-02 10:13:48 UTC] [INFO] 
+[2026-02-02 10:13:48 UTC] [INFO] --- Summary ---
+[2026-02-02 10:13:48 UTC] [INFO] Processed configs: ./snapshot-output/configs/
+[2026-02-02 10:13:48 UTC] [INFO] Keystores: ./snapshot-output/keystores/
+[2026-02-02 10:13:48 UTC] [INFO] Mappings: ./snapshot-output/*.json
+[2026-02-02 10:13:48 UTC] [SUCCESS] Config Processing Complete
+[2026-02-02 10:13:48 UTC] [INFO] 
+[2026-02-02 10:13:48 UTC] [INFO] ==========================================
+[2026-02-02 10:13:48 UTC] [INFO] Step 4: Building L1 Docker Images
+[2026-02-02 10:13:48 UTC] [INFO] ==========================================
+[2026-02-02 10:13:48 UTC] [INFO] 
+=== L1 Docker Image Build (Genesis-based) ===
+
+Configuration:
+  Output directory: ./snapshot-output
+  Genesis file: ./snapshot-output/l1-state/genesis.json
+  Chain ID: 271828
+  Geth image: l1-geth:snapshot (base: ethereum/client-go:v1.16.8)
+  Lighthouse image: l1-lighthouse:snapshot (base: sigp/lighthouse:v8.0.1)
+  Log format: json
+
+Preparing geth build context...
+Generating JWT secret...
+✅ Geth build context ready
+Preparing lighthouse build context...
+Copying validator keys...
+Generating validator_definitions.yml...
+✅ Generated validator_definitions.yml (128 validators)
+✅ Lighthouse build context ready
+
+Processing Dockerfile templates...
+✅ Geth Dockerfile: ./snapshot-output/dockerfiles/geth.Dockerfile
+✅ Lighthouse Dockerfile: ./snapshot-output/dockerfiles/lighthouse.Dockerfile
+
+Building Docker images...
+
+Building geth image: l1-geth:snapshot...
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from geth.Dockerfile
+#1 transferring dockerfile: 2.13kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/ethereum/client-go:v1.16.8
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 821.67kB 0.0s done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/ethereum/client-go:v1.16.8
+#5 CACHED
+
+#6 [2/4] COPY genesis.json /tmp/genesis.json
+#6 DONE 0.0s
+
+#7 [3/4] COPY jwtsecret /root/.ethereum/jwtsecret
+#7 DONE 0.0s
+
+#8 [4/4] RUN geth init     --datadir /root/.ethereum     /tmp/genesis.json &&     rm /tmp/genesis.json &&     chmod 600 /root/.ethereum/jwtsecret
+#8 0.234 INFO [02-02|10:13:49.420] Maximum peer count                       ETH=50 total=50
+#8 0.235 INFO [02-02|10:13:49.421] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+#8 0.237 INFO [02-02|10:13:49.424] Set global gas cap                       cap=50,000,000
+#8 0.238 INFO [02-02|10:13:49.424] Initializing the KZG library             backend=gokzg
+#8 0.239 INFO [02-02|10:13:49.425] Defaulting to pebble as the backing database
+#8 0.239 INFO [02-02|10:13:49.425] Allocated cache and file handles         database=/root/.ethereum/geth/chaindata cache=512.00MiB handles=524,288
+#8 0.300 INFO [02-02|10:13:49.487] Opened ancient database                  database=/root/.ethereum/geth/chaindata/ancient/chain readonly=false
+#8 0.300 INFO [02-02|10:13:49.487] Opened Era store                         datadir=/root/.ethereum/geth/chaindata/ancient/chain/era
+#8 0.300 INFO [02-02|10:13:49.487] State schema set to default              scheme=path
+#8 0.300 INFO [02-02|10:13:49.487] Load database journal from disk
+#8 0.300 WARN [02-02|10:13:49.487] Head block is not reachable
+#8 0.340 INFO [02-02|10:13:49.526] Opened ancient database                  database=/root/.ethereum/geth/chaindata/ancient/state readonly=false
+#8 0.340 INFO [02-02|10:13:49.526] State snapshot generator is not found
+#8 0.340 INFO [02-02|10:13:49.526] Starting snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="4.974µs"
+#8 0.340 INFO [02-02|10:13:49.526] Initialized path database                triecache=16.00MiB statecache=16.00MiB buffer=64.00MiB state-history="last 90000 blocks" journal-dir=/root/.ethereum/geth/triedb
+#8 0.340 INFO [02-02|10:13:49.526] Writing custom genesis block
+#8 0.340 INFO [02-02|10:13:49.526] Resuming snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="157.76µs"
+#8 0.340 INFO [02-02|10:13:49.526] Generated snapshot                       accounts=0 slots=0 storage=0.00B dangling=0 elapsed="261.939µs"
+#8 0.370 INFO [02-02|10:13:49.556] Successfully wrote genesis state         database=chaindata hash=320f07..e816ca
+#8 DONE 0.5s
+
+#9 exporting to image
+#9 exporting layers 0.1s done
+#9 writing image sha256:a8810b75c031d730fc26e4e42c2bcbe2c90ed37df209080c6467b0e9c02952ed done
+#9 naming to docker.io/library/l1-geth:snapshot 0.0s done
+#9 DONE 0.1s
+✅ Geth image built successfully
+
+Building lighthouse image: l1-lighthouse:snapshot...
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from lighthouse.Dockerfile
+#1 transferring dockerfile: 3.95kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/sigp/lighthouse:v8.0.1
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.20MB 0.0s done
+#4 DONE 0.1s
+
+#5 [1/7] FROM docker.io/sigp/lighthouse:v8.0.1
+#5 CACHED
+
+#6 [2/7] COPY testnet /root/.lighthouse/testnet
+#6 DONE 0.1s
+
+#7 [3/7] COPY ethereum/jwtsecret /root/.ethereum/jwtsecret
+#7 DONE 0.0s
+
+#8 [4/7] RUN chmod 600 /root/.ethereum/jwtsecret
+#8 DONE 0.3s
+
+#9 [5/7] COPY validators /root/.lighthouse/validators
+#9 DONE 0.1s
+
+#10 [6/7] RUN apt-get update && apt-get install -y sqlite3 &&     sqlite3 /root/.lighthouse/validators/slashing_protection.sqlite <<'EOF'
+#10 0.372 Get:1 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
+#10 0.377 Get:2 http://archive.ubuntu.com/ubuntu jammy InRelease [270 kB]
+#10 0.536 Get:3 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [62.6 kB]
+#10 0.541 Get:4 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+#10 0.578 Get:5 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [3640 kB]
+#10 0.580 Get:6 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
+#10 0.622 Get:7 http://archive.ubuntu.com/ubuntu jammy/restricted amd64 Packages [164 kB]
+#10 0.635 Get:8 http://archive.ubuntu.com/ubuntu jammy/main amd64 Packages [1792 kB]
+#10 0.717 Get:9 http://archive.ubuntu.com/ubuntu jammy/universe amd64 Packages [17.5 MB]
+#10 0.718 Get:10 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [6288 kB]
+#10 0.835 Get:11 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1296 kB]
+#10 0.980 Get:12 http://archive.ubuntu.com/ubuntu jammy/multiverse amd64 Packages [266 kB]
+#10 0.982 Get:13 http://archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [70.9 kB]
+#10 0.982 Get:14 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1608 kB]
+#10 0.995 Get:15 http://archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [6571 kB]
+#10 1.060 Get:16 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [3999 kB]
+#10 1.099 Get:17 http://archive.ubuntu.com/ubuntu jammy-backports/universe amd64 Packages [37.2 kB]
+#10 1.100 Get:18 http://archive.ubuntu.com/ubuntu jammy-backports/main amd64 Packages [83.9 kB]
+#10 2.253 Fetched 44.0 MB in 2s (22.6 MB/s)
+#10 2.253 Reading package lists...
+#10 3.075 Reading package lists...
+#10 3.877 Building dependency tree...
+#10 4.036 Reading state information...
+#10 4.194 The following additional packages will be installed:
+#10 4.194   libreadline8 libsqlite3-0 readline-common
+#10 4.195 Suggested packages:
+#10 4.195   readline-doc sqlite3-doc
+#10 4.223 The following NEW packages will be installed:
+#10 4.224   libreadline8 libsqlite3-0 readline-common sqlite3
+#10 4.425 0 upgraded, 4 newly installed, 0 to remove and 7 not upgraded.
+#10 4.425 Need to get 1619 kB of archives.
+#10 4.425 After this operation, 4069 kB of additional disk space will be used.
+#10 4.425 Get:1 http://archive.ubuntu.com/ubuntu jammy/main amd64 readline-common all 8.1.2-1 [53.5 kB]
+#10 4.705 Get:2 http://archive.ubuntu.com/ubuntu jammy/main amd64 libreadline8 amd64 8.1.2-1 [153 kB]
+#10 4.873 Get:3 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libsqlite3-0 amd64 3.37.2-2ubuntu0.5 [643 kB]
+#10 5.063 Get:4 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 sqlite3 amd64 3.37.2-2ubuntu0.5 [769 kB]
+#10 5.267 debconf: delaying package configuration, since apt-utils is not installed
+#10 5.292 Fetched 1619 kB in 1s (1764 kB/s)
+#10 5.315 Selecting previously unselected package readline-common.
+#10 5.315 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5019 files and directories currently installed.)
+#10 5.327 Preparing to unpack .../readline-common_8.1.2-1_all.deb ...
+#10 5.334 Unpacking readline-common (8.1.2-1) ...
+#10 5.398 Selecting previously unselected package libreadline8:amd64.
+#10 5.399 Preparing to unpack .../libreadline8_8.1.2-1_amd64.deb ...
+#10 5.411 Unpacking libreadline8:amd64 (8.1.2-1) ...
+#10 5.471 Selecting previously unselected package libsqlite3-0:amd64.
+#10 5.472 Preparing to unpack .../libsqlite3-0_3.37.2-2ubuntu0.5_amd64.deb ...
+#10 5.477 Unpacking libsqlite3-0:amd64 (3.37.2-2ubuntu0.5) ...
+#10 5.512 Selecting previously unselected package sqlite3.
+#10 5.512 Preparing to unpack .../sqlite3_3.37.2-2ubuntu0.5_amd64.deb ...
+#10 5.518 Unpacking sqlite3 (3.37.2-2ubuntu0.5) ...
+#10 5.561 Setting up libsqlite3-0:amd64 (3.37.2-2ubuntu0.5) ...
+#10 5.577 Setting up readline-common (8.1.2-1) ...
+#10 5.598 Setting up libreadline8:amd64 (8.1.2-1) ...
+#10 5.617 Setting up sqlite3 (3.37.2-2ubuntu0.5) ...
+#10 5.637 Processing triggers for libc-bin (2.35-0ubuntu3.11) ...
+#10 DONE 5.9s
+
+#11 [7/7] RUN chmod 644 /root/.lighthouse/validators/slashing_protection.sqlite &&     apt-get remove -y sqlite3 && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+#11 0.400 Reading package lists...
+#11 1.198 Building dependency tree...
+#11 1.360 Reading state information...
+#11 1.532 The following packages were automatically installed and are no longer required:
+#11 1.533   libreadline8 libsqlite3-0 readline-common
+#11 1.533 Use 'apt autoremove' to remove them.
+#11 1.545 The following packages will be REMOVED:
+#11 1.545   sqlite3
+#11 1.677 0 upgraded, 0 newly installed, 1 to remove and 7 not upgraded.
+#11 1.677 After this operation, 1874 kB disk space will be freed.
+#11 1.689 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5053 files and directories currently installed.)
+#11 1.693 Removing sqlite3 (3.37.2-2ubuntu0.5) ...
+#11 1.825 Reading package lists...
+#11 2.621 Building dependency tree...
+#11 2.781 Reading state information...
+#11 2.959 The following packages will be REMOVED:
+#11 2.959   libreadline8 libsqlite3-0 readline-common
+#11 3.074 0 upgraded, 0 newly installed, 3 to remove and 7 not upgraded.
+#11 3.074 After this operation, 2195 kB disk space will be freed.
+#11 3.082 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5047 files and directories currently installed.)
+#11 3.084 Removing libreadline8:amd64 (8.1.2-1) ...
+#11 3.153 Removing libsqlite3-0:amd64 (3.37.2-2ubuntu0.5) ...
+#11 3.221 Removing readline-common (8.1.2-1) ...
+#11 3.313 Processing triggers for libc-bin (2.35-0ubuntu3.11) ...
+#11 DONE 3.4s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.3s done
+#12 writing image sha256:e86fd93a680bb5d4654deb58d08d8a064a9c55fa167643707e0aed7d3bd3d6ec done
+#12 naming to docker.io/library/l1-lighthouse:snapshot done
+#12 DONE 0.3s
+✅ Lighthouse image built successfully
+
+Verifying Docker images...
+  Geth image: l1-geth:snapshot (57MB)
+  Lighthouse image: l1-lighthouse:snapshot (277MB)
+
+Creating image manifest...
+✅ Image manifest created: ./snapshot-output/l1-images/manifest.json
+
+=== Build Complete ===
+
+Images:
+  Geth: l1-geth:snapshot (57MB)
+  Lighthouse: l1-lighthouse:snapshot (277MB)
+
+Manifest: ./snapshot-output/l1-images/manifest.json
+
+Next steps:
+  1. Run: cd ./snapshot-output && docker-compose up -d
+  2. Wait ~30 seconds for services to start
+  3. Verify blocks are increasing:
+     docker exec l1-geth geth attach --exec 'eth.blockNumber' /root/.ethereum/geth.ipc
+
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] ==========================================
+[2026-02-02 10:14:00 UTC] [INFO] Step 5: Generating Docker Compose
+[2026-02-02 10:14:00 UTC] [INFO] ==========================================
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] ==========================================
+[2026-02-02 10:14:00 UTC] [INFO] Step 1: Docker Compose Generation
+[2026-02-02 10:14:00 UTC] [INFO] ==========================================
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 10:14:00 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] --- Reading metadata ---
+[2026-02-02 10:14:00 UTC] [SUCCESS] Metadata loaded
+Generating service configurations...
+Generating L1 services...
+[2026-02-02 10:14:00 UTC] [INFO] Validator keys found, adding validator service
+✅ L1 services generated
+
+Generating Agglayer service...
+✅ Agglayer service generated
+
+Generating network services...
+✅ Network services generated
+
+Generating volumes...
+✅ Volumes generated
+
+Processing docker-compose template...
+✅ docker-compose.yml generated: ./snapshot-output/docker-compose.yml
+
+[2026-02-02 10:14:00 UTC] [INFO] 
+[2026-02-02 10:14:00 UTC] [INFO] --- Validating docker-compose.yml ---
+Validating docker-compose.yml syntax...
+✅ docker-compose.yml syntax is valid
+[2026-02-02 10:14:01 UTC] [SUCCESS] Docker compose validated
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] --- Summary ---
+[2026-02-02 10:14:01 UTC] [INFO] Output: ./snapshot-output/docker-compose.yml
+[2026-02-02 10:14:01 UTC] [SUCCESS] Docker Compose Generation Complete
+[2026-02-02 10:14:01 UTC] [SUCCESS] All post-processing steps completed
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] --- Validating Snapshot Output ---
+[2026-02-02 10:14:01 UTC] [SUCCESS] Snapshot output validation passed
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] --- Creating Summary Report ---
+[2026-02-02 10:14:01 UTC] [SUCCESS] Summary report created: ./snapshot-output/snapshot-summary.json
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] ==========================================
+[2026-02-02 10:14:01 UTC] [INFO] Snapshot Creation Summary
+[2026-02-02 10:14:01 UTC] [INFO] ==========================================
+[2026-02-02 10:14:01 UTC] [INFO] Enclave: snapshot-test
+[2026-02-02 10:14:01 UTC] [INFO] Output: ./snapshot-output
+[2026-02-02 10:14:01 UTC] [INFO] L1 State: Block 160, Slot 160
+[2026-02-02 10:14:01 UTC] [INFO] Networks: 2
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] Next Steps:
+[2026-02-02 10:14:01 UTC] [INFO]   1. Review the snapshot output in: ./snapshot-output
+[2026-02-02 10:14:01 UTC] [INFO]   2. Start the environment: cd ./snapshot-output && docker-compose up -d
+[2026-02-02 10:14:01 UTC] [INFO]   3. Check service logs: cd ./snapshot-output && docker-compose logs -f
+[2026-02-02 10:14:01 UTC] [INFO]   4. Note: L2 services will perform initial sync from L1 on first run
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] --- Creating Network Summary ---
+[2026-02-02 10:14:01 UTC] [INFO] 
+[2026-02-02 10:14:01 UTC] [INFO] --- Creating Network Summary ---
+[2026-02-02 10:14:01 UTC] [INFO] Extracting L1 information...
+[2026-02-02 10:14:01 UTC] [INFO] Reading L1 contract addresses from aggkit config...
+[2026-02-02 10:14:01 UTC] [SUCCESS] L1 information extracted
+[2026-02-02 10:14:01 UTC] [INFO] Extracting L2 networks information...
+[2026-02-02 10:14:01 UTC] [INFO] Found 1 network(s)
+[2026-02-02 10:14:02 UTC] [INFO] Processing network 1...
+[2026-02-02 10:14:02 UTC] [SUCCESS] Network 1 processed
+[2026-02-02 10:14:02 UTC] [SUCCESS] L2 networks information extracted
+[2026-02-02 10:14:02 UTC] [INFO] Creating summary.json...
+[2026-02-02 10:14:02 UTC] [SUCCESS] Summary created: ./snapshot-output/summary.json
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] ==========================================
+[2026-02-02 10:14:02 UTC] [INFO] Network Summary
+[2026-02-02 10:14:02 UTC] [INFO] ==========================================
+[2026-02-02 10:14:02 UTC] [INFO] L1 Chain ID: 271828
+[2026-02-02 10:14:02 UTC] [INFO] L2 Networks: 1
+[2026-02-02 10:14:02 UTC] [INFO] Summary file: ./snapshot-output/summary.json
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [SUCCESS] Network summary created successfully
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] --- Running Snapshot Verification ---
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] ==========================================
+[2026-02-02 10:14:02 UTC] [INFO] Step 1: Snapshot Verification
+[2026-02-02 10:14:02 UTC] [INFO] ==========================================
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:14:02 UTC] [INFO] Verifying snapshot in: ./snapshot-output
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] --- Running Static Validation ---
+[2026-02-02 10:14:02 UTC] [INFO] Calling validate-snapshot.sh...
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] ==========================================
+[2026-02-02 10:14:02 UTC] [INFO] Step 1: Snapshot Validation
+[2026-02-02 10:14:02 UTC] [INFO] ==========================================
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 10:14:02 UTC] [INFO] Validating snapshot in: ./snapshot-output
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] --- Validating Prerequisites ---
+[2026-02-02 10:14:02 UTC] [INFO] Checking prerequisites...
+[2026-02-02 10:14:02 UTC] [SUCCESS] All required prerequisites are available
+[2026-02-02 10:14:02 UTC] [SUCCESS] Prerequisites validation passed
+[2026-02-02 10:14:02 UTC] [INFO] 
+[2026-02-02 10:14:02 UTC] [INFO] --- Validating Network Configurations ---
+[2026-02-02 10:14:02 UTC] [INFO] Validating 1 network(s)...
+[2026-02-02 10:14:03 UTC] [SUCCESS] All 1 network(s) validated successfully
+[2026-02-02 10:14:03 UTC] [SUCCESS] Network configurations validation passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Validating L1 State ---
+[2026-02-02 10:14:03 UTC] [WARN] Geth chaindata not found (may be in different location)
+[2026-02-02 10:14:03 UTC] [SUCCESS] L1 state validation passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Validating Config Files ---
+[2026-02-02 10:14:03 UTC] [INFO] Agglayer config validated
+[2026-02-02 10:14:03 UTC] [SUCCESS] Config files validation passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Validating Docker Images ---
+[2026-02-02 10:14:03 UTC] [INFO] Geth image validated: l1-geth:snapshot
+[2026-02-02 10:14:03 UTC] [INFO] Lighthouse image validated: l1-lighthouse:snapshot
+[2026-02-02 10:14:03 UTC] [SUCCESS] Docker images validation passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Validating Docker Compose File ---
+[2026-02-02 10:14:03 UTC] [SUCCESS] Docker compose validation passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Validating Required Files ---
+[2026-02-02 10:14:03 UTC] [SUCCESS] Required files validation passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Validation Summary ---
+[2026-02-02 10:14:03 UTC] [SUCCESS] All validations passed!
+[2026-02-02 10:14:03 UTC] [INFO] Snapshot is valid and ready to use
+[2026-02-02 10:14:03 UTC] [SUCCESS] Static validation passed
+[2026-02-02 10:14:03 UTC] [INFO] Runtime verification skipped (use --start-env to enable)
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Verification Summary ---
+[2026-02-02 10:14:03 UTC] [SUCCESS] All verifications passed!
+[2026-02-02 10:14:03 UTC] [INFO] Snapshot is valid and ready to use
+[2026-02-02 10:14:03 UTC] [SUCCESS] Snapshot verification passed
+[2026-02-02 10:14:03 UTC] [INFO] 
+[2026-02-02 10:14:03 UTC] [INFO] --- Cleaning Up Snapshot Artifacts ---
+[2026-02-02 10:14:03 UTC] [SUCCESS] Cleaned up 10 temporary artifact(s)
+[2026-02-02 10:14:03 UTC] [SUCCESS] Snapshot creation completed successfully!
+[2026-02-02 10:14:03 UTC] [INFO] Output directory: ./snapshot-output

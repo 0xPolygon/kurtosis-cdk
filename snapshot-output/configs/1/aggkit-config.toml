@@ -25,9 +25,9 @@ SequencerPrivateKeyPassword  = "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m"
 RPCURL = "http://op-geth-1:8545"
 
 # These values can be overridden directly from genesis.json
-rollupCreationBlockNumber = "41"
-rollupManagerCreationBlockNumber = "41"
-genesisBlockNumber = "41"
+rollupCreationBlockNumber = "40"
+rollupManagerCreationBlockNumber = "40"
+genesisBlockNumber = "40"
 # ------------------------------------------------------------------------------
 
 # ==============================================================================
@@ -524,7 +524,7 @@ FinalizedBlock = "FinalizedBlock"
 # The initial block number from which to start syncing.
 # Default: 0
 # ------------------------------------------------------------------------------
-InitialBlock = "41"
+InitialBlock = "40"
 
 # ==============================================================================
 #  _     ____   ____ _____ ____  ______   ___   _  ____
@@ -611,7 +611,7 @@ MaxDecodingMessageSize = 1073741824  # 1GB
 # Is it necessary to specify all of these values again?
 [Validator.LerQuerierConfig]
 RollupManagerAddr = "0x6c6c009cC348976dB4A908c92B24433d4F6edA43"
-RollupCreationBlockL1 = "41"
+RollupCreationBlockL1 = "40"
 
 [Validator.AgglayerClient]
 Cached = true

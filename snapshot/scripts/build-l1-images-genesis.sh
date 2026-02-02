@@ -139,17 +139,50 @@ mkdir -p "${LIGHTHOUSE_BUILD_DIR}"
 # ========================================
 echo "Preparing geth build context..."
 
-# Copy genesis file
-cp "${GENESIS_FILE}" "${GETH_BUILD_DIR}/genesis.json"
+# Copy COMPLETE geth datadir (execution-data/)
+# This includes: geth/, ancient/, keystore/, jwtsecret, etc.
+GETH_DATADIR_SOURCE="${OUTPUT_DIR}/l1-state/geth/execution-data"
+if [ -d "${GETH_DATADIR_SOURCE}" ]; then
+    echo "Copying complete geth datadir (this may take several minutes)..."
+    echo "  - geth/chaindata (state database)"
+    echo "  - geth/ancient (immutable blocks)"
+    echo "  - keystore (account keys)"
+    echo "  - jwtsecret (Engine API auth)"
+    cp -r "${GETH_DATADIR_SOURCE}" "${GETH_BUILD_DIR}/execution-data"
 
-# Generate or copy JWT secret
-JWT_SECRET_SOURCE="${OUTPUT_DIR}/l1-state/jwtsecret"
-if [ ! -f "${JWT_SECRET_SOURCE}" ]; then
-    echo "Generating JWT secret..."
-    openssl rand -hex 32 > "${JWT_SECRET_SOURCE}"
+    # Verify critical components
+    if [ -d "${GETH_BUILD_DIR}/execution-data/geth/chaindata" ]; then
+        echo "  ✅ chaindata found"
+    else
+        echo "  ⚠️  chaindata missing"
+    fi
+
+    if [ -d "${GETH_BUILD_DIR}/execution-data/geth/ancient" ]; then
+        echo "  ✅ ancient blocks found"
+    fi
+
+    if [ -f "${GETH_BUILD_DIR}/execution-data/jwtsecret" ]; then
+        echo "  ✅ jwtsecret found"
+    fi
+
+    echo "✅ Geth datadir copied"
+else
+    echo "⚠️  Warning: Geth datadir not found at ${GETH_DATADIR_SOURCE}"
+    echo "   Image build may fail"
 fi
-cp "${JWT_SECRET_SOURCE}" "${GETH_BUILD_DIR}/jwtsecret"
-chmod 600 "${GETH_BUILD_DIR}/jwtsecret"
+
+# Copy JWT secret (CRITICAL for Engine API authentication)
+JWT_SECRET_SOURCE="${OUTPUT_DIR}/l1-state/jwtsecret"
+if [ -f "${JWT_SECRET_SOURCE}" ]; then
+    echo "Copying JWT secret for Engine API authentication..."
+    cp "${JWT_SECRET_SOURCE}" "${GETH_BUILD_DIR}/jwtsecret"
+    chmod 600 "${GETH_BUILD_DIR}/jwtsecret"
+    echo "  ✅ JWT secret copied"
+else
+    echo "  ⚠️  WARNING: JWT secret not found at ${JWT_SECRET_SOURCE}"
+    echo "     This is CRITICAL - geth and lighthouse won't authenticate!"
+    echo "     Image build will likely succeed but container will fail at runtime"
+fi
 
 echo "✅ Geth build context ready"
 
@@ -157,6 +190,34 @@ echo "✅ Geth build context ready"
 # Prepare Lighthouse Build Context
 # ========================================
 echo "Preparing lighthouse build context..."
+
+# Copy COMPLETE lighthouse beacon datadir
+# This includes: beacon/, lighthouse.toml, ENR, network/, etc.
+LIGHTHOUSE_DATADIR_SOURCE="${OUTPUT_DIR}/l1-state/lighthouse/beacon-data"
+if [ -d "${LIGHTHOUSE_DATADIR_SOURCE}" ]; then
+    echo "Copying complete lighthouse datadir (this may take several minutes)..."
+    echo "  - beacon/chain_db (beacon state)"
+    echo "  - beacon/freezer_db (finalized states)"
+    echo "  - beacon/network (P2P metadata)"
+    echo "  - lighthouse.toml, ENR"
+    cp -r "${LIGHTHOUSE_DATADIR_SOURCE}" "${LIGHTHOUSE_BUILD_DIR}/beacon-data"
+
+    # Verify critical components
+    if [ -d "${LIGHTHOUSE_BUILD_DIR}/beacon-data/beacon/chain_db" ]; then
+        echo "  ✅ chain_db found"
+    else
+        echo "  ⚠️  chain_db missing"
+    fi
+
+    if [ -d "${LIGHTHOUSE_BUILD_DIR}/beacon-data/beacon/freezer_db" ]; then
+        echo "  ✅ freezer_db found"
+    fi
+
+    echo "✅ Lighthouse datadir copied"
+else
+    echo "⚠️  Warning: Lighthouse datadir not found at ${LIGHTHOUSE_DATADIR_SOURCE}"
+    echo "   Image build may fail"
+fi
 
 # Copy testnet configuration
 LIGHTHOUSE_TESTNET_BUILD="${LIGHTHOUSE_BUILD_DIR}/testnet"
@@ -168,11 +229,18 @@ if [ ! -f "${LIGHTHOUSE_TESTNET_BUILD}/genesis.ssz" ] || [ ! -f "${LIGHTHOUSE_TE
     echo "   Lighthouse may use mainnet configuration" >&2
 fi
 
-# Copy JWT secret
-LIGHTHOUSE_JWT_DIR="${LIGHTHOUSE_BUILD_DIR}/ethereum"
-mkdir -p "${LIGHTHOUSE_JWT_DIR}"
-cp "${JWT_SECRET_SOURCE}" "${LIGHTHOUSE_JWT_DIR}/jwtsecret"
-chmod 600 "${LIGHTHOUSE_JWT_DIR}/jwtsecret"
+# Copy JWT secret (MUST be same as geth's)
+JWT_SECRET_SOURCE="${OUTPUT_DIR}/l1-state/jwtsecret"
+if [ -f "${JWT_SECRET_SOURCE}" ]; then
+    echo "Copying JWT secret for Engine API authentication..."
+    cp "${JWT_SECRET_SOURCE}" "${LIGHTHOUSE_BUILD_DIR}/jwtsecret"
+    chmod 600 "${LIGHTHOUSE_BUILD_DIR}/jwtsecret"
+    echo "  ✅ JWT secret copied"
+else
+    echo "  ⚠️  WARNING: JWT secret not found at ${JWT_SECRET_SOURCE}"
+    echo "     This is CRITICAL - lighthouse won't authenticate with geth!"
+    echo "     Image build will likely succeed but container will fail at runtime"
+fi
 
 # Copy validator keys
 LIGHTHOUSE_VALIDATORS_BUILD="${LIGHTHOUSE_BUILD_DIR}/validators"

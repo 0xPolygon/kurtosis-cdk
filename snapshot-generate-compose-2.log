@@ -1,0 +1,39 @@
+[2026-02-02 11:23:11 UTC] [INFO] 
+[2026-02-02 11:23:11 UTC] [INFO] ==========================================
+[2026-02-02 11:23:11 UTC] [INFO] Step 1: Docker Compose Generation
+[2026-02-02 11:23:11 UTC] [INFO] ==========================================
+[2026-02-02 11:23:11 UTC] [INFO] 
+[2026-02-02 11:23:11 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 11:23:11 UTC] [INFO] 
+[2026-02-02 11:23:11 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 11:23:11 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 11:23:11 UTC] [INFO] 
+[2026-02-02 11:23:11 UTC] [INFO] --- Reading metadata ---
+[2026-02-02 11:23:11 UTC] [SUCCESS] Metadata loaded
+Generating service configurations...
+Generating L1 services...
+[2026-02-02 11:23:11 UTC] [INFO] Validator keys found, adding validator service
+✅ L1 services generated
+
+Generating Agglayer service...
+✅ Agglayer service generated
+
+Generating network services...
+Warning: No processed networks found
+✅ Network services generated
+
+Generating volumes...
+✅ Volumes generated
+
+Processing docker-compose template...
+✅ docker-compose.yml generated: ./snapshot-output/docker-compose.yml
+
+[2026-02-02 11:23:11 UTC] [INFO] 
+[2026-02-02 11:23:11 UTC] [INFO] --- Validating docker-compose.yml ---
+Validating docker-compose.yml syntax...
+✅ docker-compose.yml syntax is valid
+[2026-02-02 11:23:12 UTC] [SUCCESS] Docker compose validated
+[2026-02-02 11:23:12 UTC] [INFO] 
+[2026-02-02 11:23:12 UTC] [INFO] --- Summary ---
+[2026-02-02 11:23:12 UTC] [INFO] Output: ./snapshot-output/docker-compose.yml
+[2026-02-02 11:23:12 UTC] [SUCCESS] Docker Compose Generation Complete

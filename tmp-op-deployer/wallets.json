@@ -1,0 +1,30 @@
+{
+  "20201": {
+    "proposerPrivateKey": "0xe10d0689b3294619451a01adbc3cdd5b7b01a8870cdc13a961f1fbcf14cc91ff",
+    "proposerAddress": "0xd65781533B735920376aE8153c58C809F9d5C82f",
+    "batcherPrivateKey": "0xa51bc3351fffe667d7f2fd30dc040687e2d65e2f941837bad219bb1f0466dfaa",
+    "batcherAddress": "0xB169bC8e767801D625519Bff9C4dbe24Eb74FB35",
+    "sequencerPrivateKey": "0x8e3639f7daa30681c34674aa954b0d47beb4b6bf0a82985beeced3e56eacf4bd",
+    "sequencerAddress": "0x2eAEab09E4B700C437E14E0E42eF1Fe9ACab4043",
+    "challengerPrivateKey": "0x07e2d55ff63ab36ff9655a839af77f3a4866acc354e55dfb5ac0f8149c147935",
+    "challengerAddress": "0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF",
+    "l2ProxyAdminPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "l2ProxyAdminAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "l1ProxyAdminPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "l1ProxyAdminAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "baseFeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "baseFeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "l1FeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "l1FeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "sequencerFeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "sequencerFeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "operatorFeeVaultRecipientPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "operatorFeeVaultRecipientAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "systemConfigOwnerPrivateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
+    "systemConfigOwnerAddress": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "l1FaucetPrivateKey": "0x04b9f63ecf84210c5366c66d68fa1f5da1fa4f634fad6dfc86178e4d79ff9e59",
+    "l1FaucetAddress": "0xafF0CA253b97e54440965855cec0A8a2E2399896",
+    "l2FaucetPrivateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+    "l2FaucetAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  }
+}

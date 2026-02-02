@@ -88,15 +88,29 @@ extract_datadir() {
     # Create destination directory
     mkdir -p "${dest_path}"
 
-    # Extract using tar via kurtosis service exec
-    # Use tar to preserve permissions and directory structure
-    # Note: kurtosis service exec doesn't use --command flag, just pass the command directly
-    kurtosis service exec "${enclave_name}" "${service_name}" \
-        tar czf - -C "$(dirname ${src_path})" "$(basename ${src_path})" 2>/dev/null | \
-        tar xzf - -C "${dest_path}" 2>/dev/null || {
-        echo "Error: Failed to extract datadir from ${service_name}" >&2
+    # Get the container ID for the service
+    # Kurtosis containers follow pattern: <service-name>--<uuid>
+    # We need to search for containers that start with the service name
+    local container_id=$(docker ps --filter "name=${service_name}--" --format "{{.ID}}" 2>/dev/null | head -1)
+
+    if [ -z "${container_id}" ]; then
+        echo "Error: Could not find container for service ${service_name}" >&2
+        echo "Debug: Searching for containers matching ${service_name}:" >&2
+        docker ps --filter "name=${service_name}" --format "table {{.ID}}\t{{.Names}}" 2>&1 || true
+        echo "Debug: All Kurtosis containers:" >&2
+        docker ps --filter "label=com.kurtosistech.enclave_uuid" --format "table {{.ID}}\t{{.Names}}" 2>&1 || true
         return 1
-    }
+    fi
+
+    local container_name=$(docker ps --filter "id=${container_id}" --format "{{.Names}}")
+    echo "Found container: ${container_id} (${container_name})"
+
+    # Use docker cp to copy the directory
+    # docker cp preserves permissions and handles large directories well
+    if ! docker cp "${container_id}:${src_path}" "${dest_path}/" 2>&1; then
+        echo "Error: Failed to copy ${src_path} from container ${container_id}" >&2
+        return 1
+    fi
 
     echo "✅ Successfully extracted ${src_path} to ${dest_path}"
     return 0

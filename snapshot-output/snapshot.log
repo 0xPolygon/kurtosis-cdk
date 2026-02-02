@@ -1,4 +1,70 @@
-[2026-01-31 17:08:00 UTC] [SUCCESS] Cleaned up 10 temporary artifact(s)
-[2026-01-31 17:08:00 UTC] [SUCCESS] Snapshot creation completed successfully!
-[2026-01-31 17:08:00 UTC] [INFO] Output directory: ./snapshot-output
-[2026-01-31 17:08:00 UTC] [INFO] Cleaning up enclave: snapshot
+==========================================
+Snapshot Log - 2026-02-02 11:30:05 UTC
+==========================================
+
+[2026-02-02 11:30:05 UTC] [INFO] Logging initialized: ./snapshot-output/snapshot.log
+[2026-02-02 11:30:05 UTC] [INFO] 
+[2026-02-02 11:30:05 UTC] [INFO] --- Checking prerequisites ---
+[2026-02-02 11:30:05 UTC] [SUCCESS] Prerequisites check passed
+[2026-02-02 11:30:05 UTC] [INFO] 
+[2026-02-02 11:30:05 UTC] [INFO] --- Creating output directories ---
+[2026-02-02 11:30:05 UTC] [SUCCESS] Output directories created
+[2026-02-02 11:30:05 UTC] [INFO] 
+[2026-02-02 11:30:05 UTC] [INFO] --- Detecting L1 service names ---
+[2026-02-02 11:30:05 UTC] [INFO] Auto-detecting L1 service names...
+[2026-02-02 11:30:05 UTC] [INFO] Using services:
+[2026-02-02 11:30:05 UTC] [INFO]   Geth: el-1-geth-lighthouse
+[2026-02-02 11:30:05 UTC] [INFO]   Lighthouse: cl-1-lighthouse-geth
+[2026-02-02 11:30:05 UTC] [INFO] 
+[2026-02-02 11:30:05 UTC] [INFO] --- Extracting L1 datadirs (geth and lighthouse) ---
+[2026-02-02 11:30:05 UTC] [INFO] Extracting complete geth datadir (this may take several minutes)...
+[2026-02-02 11:30:05 UTC] [INFO] This includes: chaindata, ancient blocks, jwtsecret, keystore, etc.
+[2026-02-02 11:30:05 UTC] [SUCCESS] Geth datadir extracted successfully
+[2026-02-02 11:30:05 UTC] [INFO] Extracting complete lighthouse beacon datadir...
+[2026-02-02 11:30:05 UTC] [INFO] This includes: chain_db, freezer_db, network, ENR, etc.
+[2026-02-02 11:30:05 UTC] [SUCCESS] Lighthouse beacon datadir extracted successfully
+[2026-02-02 11:30:05 UTC] [INFO] 
+[2026-02-02 11:30:05 UTC] [INFO] --- Extracting JWT secret ---
+[2026-02-02 11:30:05 UTC] [INFO] JWT secret is required for Engine API authentication between geth and lighthouse
+[36mINFO[0m[2026-02-02T11:30:05Z] File package with identifier 'jwt_file' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/jwt-artifact-temp' 
+[2026-02-02 11:30:05 UTC] [SUCCESS] JWT secret extracted successfully
+[2026-02-02 11:30:05 UTC] [INFO] JWT secret: 0xdc49981516e8e72b401a63e6405495a32dafc3939b5d6d83cc319ac0388bca1b
+[2026-02-02 11:30:05 UTC] [INFO] Downloading original genesis for reference...
+[36mINFO[0m[2026-02-02T11:30:05Z] File package with identifier 'el_cl_genesis_data' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-genesis-original' 
+[2026-02-02 11:30:05 UTC] [SUCCESS] Original genesis copied for reference
+[2026-02-02 11:30:05 UTC] [INFO] 
+[2026-02-02 11:30:05 UTC] [INFO] --- Extracting lighthouse testnet configuration from artifacts ---
+[2026-02-02 11:30:05 UTC] [INFO] Downloading el_cl_genesis_data artifact (initial genesis files)...
+[36mINFO[0m[2026-02-02T11:30:05Z] File package with identifier 'el_cl_genesis_data' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/el-cl-genesis-artifact' 
+[2026-02-02 11:30:05 UTC] [SUCCESS] Genesis files extracted from el_cl_genesis_data artifact
+[2026-02-02 11:30:05 UTC] [SUCCESS] Found genesis.ssz and config.yaml in testnet directory
+[2026-02-02 11:30:05 UTC] [INFO] Keeping merged execution genesis.json (contains deployed contracts)
+[2026-02-02 11:30:06 UTC] [INFO] 
+[2026-02-02 11:30:06 UTC] [INFO] --- Extracting validator keystores from artifacts ---
+[2026-02-02 11:30:06 UTC] [INFO] Downloading l1-validator-keys artifact...
+[36mINFO[0m[2026-02-02T11:30:06Z] File package with identifier 'l1-validator-keys' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/validator-keys-artifact' 
+[2026-02-02 11:30:06 UTC] [SUCCESS] Validator keys extracted successfully
+[2026-02-02 11:30:06 UTC] [WARN] validator_definitions.yml not found (continuing anyway)
+[2026-02-02 11:30:06 UTC] [INFO] 
+[2026-02-02 11:30:06 UTC] [INFO] --- Getting finalized block information ---
+[2026-02-02 11:30:06 UTC] [INFO] Attempting to read finalized state from Kurtosis artifact...
+[36mINFO[0m[2026-02-02T11:30:07Z] File package with identifier 'l1-finalized-metadata' extracted to '/home/aigent/kurtosis-cdk/snapshot-output/l1-state/finalized-metadata-artifact' 
+[2026-02-02 11:30:07 UTC] [SUCCESS] Found finalized state metadata artifact
+[2026-02-02 11:30:07 UTC] [INFO] Finalized block: 168
+[2026-02-02 11:30:07 UTC] [INFO] Finalized slot: 168
+[2026-02-02 11:30:07 UTC] [INFO] 
+[2026-02-02 11:30:07 UTC] [INFO] --- Verifying state consistency ---
+[2026-02-02 11:30:07 UTC] [SUCCESS] State consistency verified
+[2026-02-02 11:30:07 UTC] [INFO] 
+[2026-02-02 11:30:07 UTC] [INFO] --- Creating state manifest ---
+[2026-02-02 11:30:07 UTC] [SUCCESS] State manifest created: ./snapshot-output/l1-state/manifest.json
+[2026-02-02 11:30:07 UTC] [INFO] 
+[2026-02-02 11:30:07 UTC] [INFO] --- Summary ---
+[2026-02-02 11:30:07 UTC] [INFO] Output directory: ./snapshot-output/l1-state
+[2026-02-02 11:30:07 UTC] [INFO]   Geth: ./snapshot-output/l1-state/geth
+[2026-02-02 11:30:07 UTC] [INFO]   Lighthouse: ./snapshot-output/l1-state/lighthouse
+[2026-02-02 11:30:07 UTC] [INFO]   Manifest: ./snapshot-output/l1-state/manifest.json
+[2026-02-02 11:30:07 UTC] [INFO] Finalized state:
+[2026-02-02 11:30:07 UTC] [INFO]   Block: 168
+[2026-02-02 11:30:07 UTC] [INFO]   Slot: 168
+[2026-02-02 11:30:07 UTC] [SUCCESS] L1 State Extraction Complete

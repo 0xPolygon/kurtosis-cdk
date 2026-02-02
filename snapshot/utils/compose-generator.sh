@@ -46,7 +46,7 @@ generate_l1_geth_service() {
       - --authrpc.port
       - '8551'
       - --authrpc.jwtsecret
-      - /root/.ethereum/jwtsecret
+      - /jwt/jwtsecret
       - --authrpc.vhosts
       - '*'
       - --gcmode

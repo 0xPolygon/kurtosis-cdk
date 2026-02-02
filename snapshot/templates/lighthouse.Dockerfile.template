@@ -1,11 +1,14 @@
-# Lighthouse Dockerfile for snapshot (Genesis-based approach)
+# Lighthouse Dockerfile for snapshot (Datadir-based approach)
 # ===========================================================
-# This Dockerfile creates a fresh lighthouse image with testnet configuration
-# and validator keys, but NO beacon chain history. Lighthouse will start from
-# genesis (slot 0) which matches geth's fresh start (block 0).
+# This Dockerfile copies a COMPLETE lighthouse beacon datadir including:
+# - beacon/chain_db (beacon chain state database)
+# - beacon/freezer_db (immutable finalized states)
+# - beacon/network (P2P metadata)
+# - lighthouse.toml (config)
+# - ENR (node identity)
+# - All other datadir contents
 #
-# This approach ensures consistent state between execution and consensus layers,
-# avoiding the "stuck head" problem that occurs with state restoration.
+# This allows lighthouse to continue from where it left off during snapshot creation.
 #
 # Template Variables (replaced during image build):
 #   {{LIGHTHOUSE_BASE_IMAGE}} - Base lighthouse image (e.g., sigp/lighthouse:v8.0.1)
@@ -14,57 +17,30 @@
 #
 # Build Context:
 #   Expected files in build context:
+#   - beacon-data/: Complete lighthouse beacon datadir extracted from running container
 #   - testnet/: Testnet configuration (genesis.ssz, config.yaml, etc.)
 #   - validators/: Validator keystores and validator_definitions.yml
 #   - ethereum/jwtsecret: JWT secret for geth authentication
 
 FROM {{LIGHTHOUSE_BASE_IMAGE}}
 
+# Copy the ENTIRE extracted lighthouse datadir
+# This includes: beacon/, lighthouse.toml, ENR, network/, etc.
+COPY beacon-data/ /root/.lighthouse/beacon-data/
+
 # Copy testnet configuration (genesis.ssz, config.yaml)
-# This defines the genesis state and network parameters
 COPY testnet /root/.lighthouse/testnet
 
-# Copy JWT secret for engine API authentication with geth
-COPY ethereum/jwtsecret /root/.ethereum/jwtsecret
-RUN chmod 600 /root/.ethereum/jwtsecret
+# Copy JWT secret for Engine API authentication with geth
+# Must be at /jwt/jwtsecret to match Kurtosis deployment path
+COPY jwtsecret /jwt/jwtsecret
+RUN chmod 600 /jwt/jwtsecret
 
 # Copy validator keystores (if present)
-# These are needed for the validator service to propose blocks
 COPY validators /root/.lighthouse/validators
 
-# Initialize slashing protection database
-# Lighthouse requires this SQLite database to prevent slashing.
-# We create an empty but properly initialized database.
-RUN apt-get update && apt-get install -y sqlite3 && \
-    sqlite3 /root/.lighthouse/validators/slashing_protection.sqlite <<'EOF'
-CREATE TABLE IF NOT EXISTS validators (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    public_key BLOB NOT NULL UNIQUE,
-    enabled BOOLEAN NOT NULL DEFAULT 1
-);
-CREATE TABLE IF NOT EXISTS signed_blocks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    validator_id INTEGER NOT NULL,
-    slot INTEGER NOT NULL,
-    signing_root BLOB NOT NULL,
-    FOREIGN KEY(validator_id) REFERENCES validators(id) ON DELETE CASCADE,
-    UNIQUE(validator_id, slot)
-);
-CREATE TABLE IF NOT EXISTS signed_attestations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    validator_id INTEGER NOT NULL,
-    source_epoch INTEGER NOT NULL,
-    target_epoch INTEGER NOT NULL,
-    signing_root BLOB NOT NULL,
-    FOREIGN KEY(validator_id) REFERENCES validators(id) ON DELETE CASCADE,
-    UNIQUE(validator_id, target_epoch)
-);
-CREATE INDEX IF NOT EXISTS idx_signed_blocks_validator_slot ON signed_blocks(validator_id, slot);
-CREATE INDEX IF NOT EXISTS idx_signed_attestations_validator_target ON signed_attestations(validator_id, target_epoch);
-CREATE INDEX IF NOT EXISTS idx_signed_attestations_source_target ON signed_attestations(source_epoch, target_epoch);
-EOF
-RUN chmod 644 /root/.lighthouse/validators/slashing_protection.sqlite && \
-    apt-get remove -y sqlite3 && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+# Fix permissions
+RUN chmod -R u+rwX /root/.lighthouse/
 
 # Expose ports
 # 4000: HTTP API endpoint (for validator client and queries)
@@ -78,7 +54,7 @@ ENTRYPOINT ["lighthouse", "bn", \
     "--datadir", "/root/.lighthouse", \
     "--testnet-dir", "/root/.lighthouse/testnet", \
     "--execution-endpoint", "http://{{GETH_SERVICE_NAME}}:8551", \
-    "--execution-jwt", "/root/.ethereum/jwtsecret", \
+    "--execution-jwt", "/jwt/jwtsecret", \
     "--disable-optimistic-finalized-sync", \
     "--disable-backfill-rate-limiting", \
     "--log-format", "{{LOG_FORMAT}}", \

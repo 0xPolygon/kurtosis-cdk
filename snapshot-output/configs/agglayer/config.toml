@@ -3,8 +3,12 @@ debug-mode = true
 
 # Only supported by fork 12+
 mock-verifier = true
+
+
 [full-node-rpcs]
-1 = "http://op-geth-1:8545"
+# OP Stack RPC
+1 = "http://op-el-1-op-geth-op-node-001:8545"
+
 [proof-signers]
 1 = "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
 [prover.mock-prover]
@@ -72,7 +76,7 @@ send-tx = "unlimited"
 
 [epoch.block-clock]
 epoch-duration = 15
-genesis-block = 41
+genesis-block = 40
 
 [shutdown]
 runtime-timeout = 5

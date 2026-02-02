@@ -1,0 +1,52 @@
+chains:
+  - baseFeeVaultRecipient: '`jq -r .address /network-data/baseFeeVaultRecipient-20201.json`'
+    dangerousAdditionalDisputeGames:
+      - dangerouslyAllowCustomDisputeParameters: true
+        faultGameAbsolutePrestate: 0x038512e02c4c3f7bdaec27d00edf55b7155e0905301e1a88083e4e0a6764d54c
+        faultGameClockExtension: 10800
+        faultGameMaxClockDuration: 302400
+        faultGameMaxDepth: 73
+        faultGameSplitDepth: 30
+        makeRespected: false
+        oracleChallengePeriodSeconds: 0
+        oracleMinProposalSize: 0
+        respectedGameType: 0
+        useCustomOracle: false
+        vmType: CANNON
+    dangerousAltDAConfig:
+      daBondSize: 0
+      daChallengeWindow: 100
+      daCommitmentType: KeccakCommitment
+      daResolveWindow: 100
+      useAltDA: false
+    deployOverrides:
+      fundDevAccounts: true
+      l2BlockTime: 1
+      l2GenesisFjordTimeOffset: "0x0"
+      l2GenesisGraniteTimeOffset: "0x0"
+      l2GenesisIsthmusTimeOffset: "0x0"
+    eip1559Denominator: 50
+    eip1559DenominatorCanyon: 250
+    eip1559Elasticity: 6
+    l1FeeVaultRecipient: '`jq -r .address /network-data/l1FeeVaultRecipient-20201.json`'
+    operatorFeeVaultRecipient: '`jq -r .address /network-data/operatorFeeVaultRecipient-20201.json`'
+    roles:
+      batcher: '`jq -r .address /network-data/batcher-20201.json`'
+      challenger: '`jq -r .address /network-data/challenger-20201.json`'
+      l1ProxyAdminOwner: '`jq -r .address /network-data/l1ProxyAdmin-20201.json`'
+      l2ProxyAdminOwner: '`jq -r .address /network-data/l2ProxyAdmin-20201.json`'
+      proposer: '`jq -r .address /network-data/proposer-20201.json`'
+      systemConfigOwner: '`jq -r .address /network-data/systemConfigOwner-20201.json`'
+      unsafeBlockSigner: '`jq -r .address /network-data/sequencer-20201.json`'
+    sequencerFeeVaultRecipient: '`jq -r .address /network-data/sequencerFeeVaultRecipient-20201.json`'
+globalDeployOverrides:
+  dangerouslyAllowCustomDisputeParameters: true
+  faultGameAbsolutePrestate: 0x038512e02c4c3f7bdaec27d00edf55b7155e0905301e1a88083e4e0a6764d54c
+l1ContractsLocator: embedded
+l2ContractsLocator: embedded
+superchainRoles:
+  challenger: '`jq -r .address /network-data/challenger-20201.json`'
+  protocolVersionsOwner: '`jq -r .address /network-data/l1ProxyAdmin-20201.json`'
+  superchainGuardian: '`jq -r .address /network-data/l1ProxyAdmin-20201.json`'
+  superchainProxyAdminOwner: '`jq -r .address /network-data/l1ProxyAdmin-20201.json`'
+useInterop: false

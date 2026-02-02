@@ -1,0 +1,79 @@
+{
+  "chains": [
+    {
+      "baseFeeVaultRecipient": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+      "chainFeesRecipient": "0x0000000000000000000000000000000000000000",
+      "customGasToken": {
+        "liquidityControllerOwner": "0x0000000000000000000000000000000000000000"
+      },
+      "daFootprintGasScalar": 0,
+      "eip1559Denominator": 50,
+      "eip1559DenominatorCanyon": 250,
+      "eip1559Elasticity": 6,
+      "gasLimit": 60000000,
+      "id": "0x0000000000000000000000000000000000000000000000000000000000004ee9",
+      "l1FeeVaultRecipient": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+      "minBaseFee": 0,
+      "operatorFeeConstant": 0,
+      "operatorFeeScalar": 0,
+      "operatorFeeVaultRecipient": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+      "roles": {
+        "batcher": "0xB169bC8e767801D625519Bff9C4dbe24Eb74FB35",
+        "challenger": "0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF",
+        "l1ProxyAdminOwner": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+        "l2ProxyAdminOwner": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+        "proposer": "0xd65781533B735920376aE8153c58C809F9d5C82f",
+        "systemConfigOwner": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+        "unsafeBlockSigner": "0x2eAEab09E4B700C437E14E0E42eF1Fe9ACab4043"
+      },
+      "sequencerFeeVaultRecipient": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+      "dangerousAdditionalDisputeGames": [
+        {
+          "dangerouslyAllowCustomDisputeParameters": true,
+          "faultGameAbsolutePrestate": "0x038512e02c4c3f7bdaec27d00edf55b7155e0905301e1a88083e4e0a6764d54c",
+          "faultGameClockExtension": 10800,
+          "faultGameMaxClockDuration": 302400,
+          "faultGameMaxDepth": 73,
+          "faultGameSplitDepth": 30,
+          "makeRespected": false,
+          "oracleChallengePeriodSeconds": 0,
+          "oracleMinProposalSize": 0,
+          "respectedGameType": 0,
+          "useCustomOracle": false,
+          "vmType": "CANNON"
+        }
+      ],
+      "dangerousAltDAConfig": {
+        "daBondSize": 0,
+        "daChallengeWindow": 100,
+        "daCommitmentType": "KeccakCommitment",
+        "daResolveWindow": 100,
+        "useAltDA": false
+      },
+      "deployOverrides": {
+        "fundDevAccounts": true,
+        "l2BlockTime": 1,
+        "l2GenesisFjordTimeOffset": "0x0",
+        "l2GenesisGraniteTimeOffset": "0x0",
+        "l2GenesisIsthmusTimeOffset": "0x0"
+      }
+    }
+  ],
+  "configType": "custom",
+  "fundDevAccounts": false,
+  "l1ChainID": 271828,
+  "l1ContractsLocator": "embedded",
+  "l2ContractsLocator": "embedded",
+  "opDeployerVersion": "v0.0.0",
+  "superchainRoles": {
+    "challenger": "0xB07aA69cBFCCeb0fec12206C18dA0184AdeA60dF",
+    "protocolVersionsOwner": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "superchainGuardian": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+    "superchainProxyAdminOwner": "0x8943545177806ED17B9F23F0a21ee5948eCaa776"
+  },
+  "globalDeployOverrides": {
+    "dangerouslyAllowCustomDisputeParameters": true,
+    "faultGameAbsolutePrestate": "0x038512e02c4c3f7bdaec27d00edf55b7155e0905301e1a88083e4e0a6764d54c"
+  },
+  "useInterop": false
+}
