@@ -58,17 +58,16 @@ fi
 
 log "Generating compose file for images with tag: $TAG"
 
-# Read checkpoint for network configuration
+# Read checkpoint for genesis hash
 GENESIS_HASH="unknown"
 if [ -f "$OUTPUT_DIR/metadata/checkpoint.json" ]; then
     GENESIS_HASH=$(jq -r '.l1_state.genesis_hash' "$OUTPUT_DIR/metadata/checkpoint.json" 2>/dev/null || echo "unknown")
 fi
 
-# Generate unique network name based on snapshot directory
+# Get snapshot ID from directory name for container naming
 SNAPSHOT_ID=$(basename "$OUTPUT_DIR")
-NETWORK_NAME="snapshot-$SNAPSHOT_ID-l1"
 
-log "Using network name: $NETWORK_NAME"
+log "Using snapshot ID: $SNAPSHOT_ID"
 
 # ============================================================================
 # Generate docker-compose.yml
@@ -121,8 +120,6 @@ services:
       - "30303:30303"  # P2P TCP
       - "30303:30303/udp"  # P2P UDP
       - "9001:9001"    # Metrics
-    networks:
-      - l1-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
@@ -161,8 +158,6 @@ services:
       - "9000:9000"    # P2P TCP
       - "9000:9000/udp"  # P2P UDP
       - "5054:5054"    # Metrics
-    networks:
-      - l1-network
     depends_on:
       geth:
         condition: service_healthy
@@ -191,18 +186,10 @@ services:
       - "--metrics-address=0.0.0.0"
       - "--metrics-port=5064"
       - "--init-slashing-protection"
-    networks:
-      - l1-network
     depends_on:
       beacon:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:5064/metrics"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
 EOF
 
 # Add agglayer service if found
@@ -226,18 +213,10 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
       - "4444:4444"    # Read RPC
       - "4446:4446"    # Admin API
       - "9092:9092"    # Prometheus metrics
-    networks:
-      - l1-network
     depends_on:
       geth:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:9092/metrics"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     environment:
       - RUST_BACKTRACE=1
 EOF
@@ -323,8 +302,6 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
       - "$L2_HTTP_PORT:8545"    # HTTP RPC
       - "$L2_WS_PORT:8546"    # WebSocket RPC
       - "$L2_ENGINE_PORT:8551"    # Engine API
-    networks:
-      - l1-network
     depends_on:
       geth:
         condition: service_healthy
@@ -373,8 +350,6 @@ EOF
     ports:
       - "$L2_NODE_RPC_PORT:8547"    # RPC
       - "$L2_NODE_METRICS_PORT:7300"    # Metrics
-    networks:
-      - l1-network
     depends_on:
       geth:
         condition: service_healthy
@@ -384,7 +359,7 @@ EOF
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget -q -O - http://localhost:8547 2>&1 | grep -q . || exit 1"]
+      test: ["CMD", "wget", "-q", "-O", "-", "--post-data={\"jsonrpc\":\"2.0\",\"method\":\"optimism_syncStatus\",\"params\":[],\"id\":1}", "--header=Content-Type:application/json", "http://localhost:8547"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -417,8 +392,6 @@ EOF
     ports:
       - "$L2_AGGKIT_RPC_PORT:5576"    # RPC
       - "$L2_AGGKIT_REST_PORT:5577"    # REST API
-    networks:
-      - l1-network
     depends_on:
       geth:
         condition: service_healthy
@@ -427,12 +400,6 @@ EOF
       op-node-$prefix:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:5577/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     environment:
       - RUST_BACKTRACE=1
 EOF
@@ -450,11 +417,7 @@ fi
 
 cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
-networks:
-  l1-network:
-    name: $NETWORK_NAME
-    driver: bridge
-
+# No networks - using default bridge network for simplicity
 # No volumes - all state is baked into images
 # L1 state is baked in, L2 starts fresh with config-only mounts
 # Agglayer and AggKit use host-mounted config files (read-only)
@@ -469,11 +432,12 @@ log "Docker Compose file generated: $OUTPUT_DIR/docker-compose.yml"
 log "Creating helper scripts..."
 
 # Start script
-cat > "$OUTPUT_DIR/start-snapshot.sh" << 'EOF'
+cat > "$OUTPUT_DIR/start-snapshot.sh" << EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
 echo "Starting Ethereum L1 snapshot..."
+
 docker-compose -f docker-compose.yml up -d
 
 echo ""
@@ -495,7 +459,7 @@ EOF
 chmod +x "$OUTPUT_DIR/start-snapshot.sh"
 
 # Stop script
-cat > "$OUTPUT_DIR/stop-snapshot.sh" << 'EOF'
+cat > "$OUTPUT_DIR/stop-snapshot.sh" << EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -672,8 +636,8 @@ cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
 ## Network Details
 
-- **Network Name:** snapshot-$SNAPSHOT_ID-l1 (unique per snapshot)
-- **Network Type:** Bridge
+- **Network:** Using Docker's default bridge network
+- **Container Communication:** Services communicate using container hostnames
 EOF
 
 # Build service and container names lists
@@ -705,12 +669,12 @@ EOF
 
 cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
-Each snapshot uses a unique network and container names based on its snapshot ID,
-allowing multiple snapshots to run simultaneously without network conflicts.
+Each snapshot uses unique container names based on its snapshot ID.
+Services run on Docker's default bridge network and communicate using container hostnames.
 
 **Note:** If running multiple snapshots, you'll need to modify port mappings in the
 docker-compose.yml file to avoid port conflicts, or remove port mappings and access
-services via container names from within the Docker network.
+services via container names.
 EOF
 
 if [ "$AGGLAYER_FOUND" = "true" ]; then

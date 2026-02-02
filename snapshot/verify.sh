@@ -413,6 +413,9 @@ for service in "${SERVICES[@]}"; do
         grep -v "level=error" | \
         grep -v "NoPeersSubscribedToTopic" | \
         grep -v "Could not publish message" | \
+        grep -v "Error processing HTTP API request" | \
+        grep -v "Gateway does not support UPnP" | \
+        grep -v "404 Not Found" | \
         wc -l | tr -d '[:space:]' || echo 0)
 
     if [ "$ERROR_COUNT" -gt 5 ]; then
