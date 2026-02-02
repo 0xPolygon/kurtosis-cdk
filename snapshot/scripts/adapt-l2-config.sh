@@ -85,18 +85,79 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
 
     # Backup originals
     cp "$ROLLUP_FILE" "$ROLLUP_FILE.bak"
+    if [ -f "$L2_GENESIS_FILE" ]; then
+        cp "$L2_GENESIS_FILE" "$L2_GENESIS_FILE.bak"
+    fi
 
-    # Update only the L1 genesis to current L1 block
+    # Update L1 genesis to current L1 block and update l2_time to match L1 timestamp
     # This prevents op-node from trying to sync old L2 blocks from historical L1 batches
-    # Note: We keep the original l2_time to match the actual L2 genesis file
-    jq --arg block "$CURRENT_L1_BLOCK" --arg hash "$CURRENT_L1_HASH" '
-        .genesis.l1.number = ($block | tonumber) |
-        .genesis.l1.hash = $hash
-    ' "$ROLLUP_FILE.bak" > "$ROLLUP_FILE"
-    log "    ✓ Updated L1 genesis: block $CURRENT_L1_BLOCK"
+    # and ensures L2 genesis time is not before L1 origin time
+    if [ -n "$L1_TIMESTAMP" ] && [ "$L1_TIMESTAMP" != "null" ]; then
+        # Add 1 second to L1 timestamp to ensure L2 time is after L1 time
+        L2_TIME=$((L1_TIMESTAMP + 1))
+
+        # Update rollup.json
+        jq --arg block "$CURRENT_L1_BLOCK" --arg hash "$CURRENT_L1_HASH" --arg l2time "$L2_TIME" '
+            .genesis.l1.number = ($block | tonumber) |
+            .genesis.l1.hash = $hash |
+            .genesis.l2_time = ($l2time | tonumber)
+        ' "$ROLLUP_FILE.bak" > "$ROLLUP_FILE"
+        log "    ✓ Updated L1 genesis: block $CURRENT_L1_BLOCK"
+        log "    ✓ Updated L2 genesis time: $L2_TIME (L1 time + 1s)"
+
+        # Update l2-genesis.json timestamp to match and compute new genesis hash
+        if [ -f "$L2_GENESIS_FILE" ]; then
+            L2_TIME_HEX=$(printf "0x%x" "$L2_TIME")
+            jq --arg timestamp "$L2_TIME_HEX" '.timestamp = $timestamp' "$L2_GENESIS_FILE.bak" > "$L2_GENESIS_FILE"
+            log "    ✓ Updated L2 genesis file timestamp: $L2_TIME_HEX"
+
+            # Compute new genesis hash using geth in a temporary container
+            log "    Computing new L2 genesis hash..."
+
+            # Get the op-geth image from discovery
+            OP_GETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_geth_sequencer.image // empty" "$DISCOVERY_JSON" 2>/dev/null || echo "")
+
+            if [ -z "$OP_GETH_IMAGE" ]; then
+                log "    ⚠ WARNING: Could not find op-geth image, using default"
+                OP_GETH_IMAGE="us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+            fi
+
+            # Create temp directory for genesis init
+            TEMP_DIR=$(mktemp -d)
+            cp "$L2_GENESIS_FILE" "$TEMP_DIR/genesis.json"
+
+            # Initialize genesis and extract the hash using geth console
+            NEW_L2_HASH=$(docker run --rm --entrypoint /bin/sh \
+                -v "$TEMP_DIR:/tmp/genesis-init" \
+                "$OP_GETH_IMAGE" \
+                -c "geth init --datadir=/tmp/datadir /tmp/genesis-init/genesis.json >/dev/null 2>&1 && geth --datadir=/tmp/datadir --exec 'eth.getBlock(0).hash' console 2>/dev/null | head -1" \
+                | tr -d '"' || echo "")
+
+            # Clean up temp directory
+            rm -rf "$TEMP_DIR"
+
+            if [ -n "$NEW_L2_HASH" ] && [ "$NEW_L2_HASH" != "null" ] && [[ "$NEW_L2_HASH" == 0x* ]]; then
+                log "    ✓ Computed new L2 genesis hash: $NEW_L2_HASH"
+
+                # Update rollup.json with new genesis hash
+                jq --arg hash "$NEW_L2_HASH" '.genesis.l2.hash = $hash' "$ROLLUP_FILE" > "$ROLLUP_FILE.tmp"
+                mv "$ROLLUP_FILE.tmp" "$ROLLUP_FILE"
+                log "    ✓ Updated rollup.json with new L2 genesis hash"
+            else
+                log "    ⚠ WARNING: Failed to compute L2 genesis hash - op-node may fail to start"
+                log "    ⚠ You may need to manually update genesis.l2.hash in rollup.json"
+            fi
+        fi
+    else
+        jq --arg block "$CURRENT_L1_BLOCK" --arg hash "$CURRENT_L1_HASH" '
+            .genesis.l1.number = ($block | tonumber) |
+            .genesis.l1.hash = $hash
+        ' "$ROLLUP_FILE.bak" > "$ROLLUP_FILE"
+        log "    ✓ Updated L1 genesis: block $CURRENT_L1_BLOCK"
+        log "    ⚠ WARNING: Could not update L2 genesis time (L1 timestamp not available)"
+    fi
 
     log "    ✓ Originals saved to *.bak"
-    log "    NOTE: L2 genesis file (l2-genesis.json) remains unchanged to preserve genesis hash"
 done
 
 log "L2 configuration adaptation complete"
