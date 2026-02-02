@@ -40,6 +40,13 @@ fi
 
 ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")
 
+# Check if agglayer was discovered
+AGGLAYER_FOUND=$(jq -r '.agglayer.found' "$DISCOVERY_JSON")
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    AGGLAYER_IMAGE=$(jq -r '.agglayer.image' "$DISCOVERY_JSON")
+    log "Agglayer found: $AGGLAYER_IMAGE"
+fi
+
 # Read image tag
 TAG=""
 if [ -f "$OUTPUT_DIR/images/.tag" ]; then
@@ -196,6 +203,48 @@ services:
       timeout: 5s
       retries: 3
       start_period: 60s
+EOF
+
+# Add agglayer service if found
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+  agglayer:
+    image: $AGGLAYER_IMAGE
+    container_name: ${SNAPSHOT_ID}-agglayer
+    hostname: agglayer
+    entrypoint: ["/usr/local/bin/agglayer"]
+    command:
+      - "run"
+      - "--cfg"
+      - "/etc/agglayer/config.toml"
+    volumes:
+      - ./config/agglayer/config.toml:/etc/agglayer/config.toml:ro
+      - ./config/agglayer/aggregator.keystore:/etc/agglayer/aggregator.keystore:ro
+    ports:
+      - "4443:4443"    # gRPC RPC
+      - "4444:4444"    # Read RPC
+      - "4446:4446"    # Admin API
+      - "9092:9092"    # Prometheus metrics
+    networks:
+      - l1-network
+    depends_on:
+      geth:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:9092/metrics"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    environment:
+      - RUST_BACKTRACE=1
+EOF
+    log "Agglayer service added to docker-compose.yml"
+fi
+
+cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
 networks:
   l1-network:
@@ -203,6 +252,7 @@ networks:
     driver: bridge
 
 # No volumes - all state is baked into images
+# Agglayer uses host-mounted config files (read-only)
 EOF
 
 log "Docker Compose file generated: $OUTPUT_DIR/docker-compose.yml"
@@ -362,13 +412,38 @@ docker-compose -f docker-compose.yml down
 - **Geth Metrics:** http://localhost:9001/debug/metrics/prometheus
 - **Beacon Metrics:** http://localhost:5054/metrics
 - **Validator Metrics:** http://localhost:5064/metrics
+EOF
+
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    cat >> "$OUTPUT_DIR/USAGE.md" << EOF
+- **Agglayer gRPC:** http://localhost:4443
+- **Agglayer Read RPC:** http://localhost:4444
+- **Agglayer Admin API:** http://localhost:4446
+- **Agglayer Metrics:** http://localhost:9092/metrics
+EOF
+fi
+
+cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
 ## Network Details
 
 - **Network Name:** snapshot-${SNAPSHOT_ID}-l1 (unique per snapshot)
 - **Network Type:** Bridge
+EOF
+
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    cat >> "$OUTPUT_DIR/USAGE.md" << EOF
+- **Services:** geth, beacon, validator, agglayer
+- **Container Names:** ${SNAPSHOT_ID}-geth, ${SNAPSHOT_ID}-beacon, ${SNAPSHOT_ID}-validator, ${SNAPSHOT_ID}-agglayer
+EOF
+else
+    cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 - **Services:** geth, beacon, validator
 - **Container Names:** ${SNAPSHOT_ID}-geth, ${SNAPSHOT_ID}-beacon, ${SNAPSHOT_ID}-validator
+EOF
+fi
+
+cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
 Each snapshot uses a unique network and container names based on its snapshot ID,
 allowing multiple snapshots to run simultaneously without network conflicts.
@@ -376,6 +451,32 @@ allowing multiple snapshots to run simultaneously without network conflicts.
 **Note:** If running multiple snapshots, you'll need to modify port mappings in the
 docker-compose.yml file to avoid port conflicts, or remove port mappings and access
 services via container names from within the Docker network.
+EOF
+
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    cat >> "$OUTPUT_DIR/USAGE.md" << EOF
+
+### Agglayer Notes
+
+The agglayer service is included in this snapshot with adapted configuration:
+- L1 connectivity is configured to use the snapshot's geth service
+- L2 RPC endpoints are commented out in the config (L2 stack not included)
+- Configuration files are mounted from \`./config/agglayer/\` directory
+- No state is persisted (agglayer starts fresh each time)
+
+**To use agglayer with L2:**
+1. Deploy your L2 services (e.g., cdk-erigon-rpc)
+2. Edit \`config/agglayer/config.toml\` to uncomment and update L2 RPC endpoints
+3. Restart the agglayer service
+
+**Agglayer Configuration:**
+- Config: \`./config/agglayer/config.toml\`
+- Keystore: \`./config/agglayer/aggregator.keystore\`
+- Original backup: \`./config/agglayer/config.toml.bak\`
+EOF
+fi
+
+cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
 ## Troubleshooting
 
