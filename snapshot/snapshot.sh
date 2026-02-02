@@ -201,6 +201,7 @@ log "Checking snapshot scripts..."
 SCRIPTS=(
     "$SCRIPT_DIR/scripts/discover-containers.sh"
     "$SCRIPT_DIR/scripts/extract-state.sh"
+    "$SCRIPT_DIR/scripts/adapt-l2-config.sh"
     "$SCRIPT_DIR/scripts/generate-metadata.sh"
     "$SCRIPT_DIR/scripts/build-images.sh"
     "$SCRIPT_DIR/scripts/generate-compose.sh"
@@ -255,6 +256,7 @@ log "Querying L1 state before stopping..."
 # Query current block state via RPC
 BLOCK_NUMBER="unknown"
 BLOCK_HASH="unknown"
+BLOCK_TIMESTAMP="unknown"
 GENESIS_HASH="unknown"
 
 if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
@@ -280,6 +282,12 @@ if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
 
             # Extract block hash
             BLOCK_HASH=$(echo "$BLOCK_DATA" | jq -r '.result.hash' 2>/dev/null || echo "unknown")
+
+            # Extract block timestamp (convert hex to decimal)
+            BLOCK_TIMESTAMP_HEX=$(echo "$BLOCK_DATA" | jq -r '.result.timestamp' 2>/dev/null || echo "")
+            if [ -n "$BLOCK_TIMESTAMP_HEX" ] && [ "$BLOCK_TIMESTAMP_HEX" != "null" ]; then
+                BLOCK_TIMESTAMP=$((16#${BLOCK_TIMESTAMP_HEX#0x}))
+            fi
         fi
 
         # Get genesis hash
@@ -295,6 +303,7 @@ if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
 
         log "  Current block: $BLOCK_NUMBER"
         log "  Block hash: $BLOCK_HASH"
+        log "  Block timestamp: $BLOCK_TIMESTAMP"
         log "  Genesis hash: $GENESIS_HASH"
     else
         log_warn "  Could not find RPC port, falling back to docker exec..."
@@ -317,6 +326,7 @@ cat > "$OUTPUT_DIR/pre-stop-state.json" << EOF
     "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
     "block_number": "$BLOCK_NUMBER",
     "block_hash": "$BLOCK_HASH",
+    "block_timestamp": "$BLOCK_TIMESTAMP",
     "genesis_hash": "$GENESIS_HASH"
 }
 EOF
@@ -424,6 +434,15 @@ if ! "$SCRIPT_DIR/scripts/generate-metadata.sh" "$DISCOVERY_JSON" "$OUTPUT_DIR" 
 fi
 
 log "Metadata generation complete"
+
+# Adapt L2 configurations if present
+CHECKPOINT_FILE="$OUTPUT_DIR/metadata/checkpoint.json"
+if [ -f "$CHECKPOINT_FILE" ]; then
+    log "Adapting L2 configurations..."
+    if ! "$SCRIPT_DIR/scripts/adapt-l2-config.sh" "$OUTPUT_DIR" "$DISCOVERY_JSON" "$CHECKPOINT_FILE" >> "$LOG_FILE" 2>&1; then
+        log_warn "L2 configuration adaptation failed (non-critical)"
+    fi
+fi
 
 # ============================================================================
 # Step 6: Docker Image Build

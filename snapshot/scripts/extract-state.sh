@@ -373,15 +373,8 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 
             docker cp "$AGGKIT_CONTAINER:/etc/aggkit/claimsponsor.keystore" "$OUTPUT_DIR/config/$prefix/claimsponsor.keystore" 2>/dev/null || true
 
-            # Adapt the config for docker-compose environment
-            log "  Adapting aggkit config for network $prefix..."
-            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-            if [ -x "$SCRIPT_DIR/adapt-l2-config.sh" ]; then
-                "$SCRIPT_DIR/adapt-l2-config.sh" "$OUTPUT_DIR/config/$prefix" "$prefix"
-                log "    ✓ L2 configs adapted"
-            else
-                log "    WARNING: adapt-l2-config.sh not found or not executable"
-            fi
+            # L2 config adaptation is now handled by snapshot.sh after extraction
+            log "  ✓ aggkit config extracted (will be adapted after all extraction completes)"
         fi
 
         # Verify critical files exist

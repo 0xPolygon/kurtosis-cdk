@@ -384,11 +384,11 @@ EOF
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8547"]
+      test: ["CMD", "sh", "-c", "wget -q -O - http://localhost:8547 2>&1 | grep -q . || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 120s
 EOF
 
         log "    ✓ op-node-$prefix service added"
