@@ -29,3 +29,6 @@ anvil_state.json
 
 # tests
 .kurtosis-test/
+
+# snapshots
+snapshots
