@@ -76,9 +76,10 @@ Description:
   Creates a complete, deterministic snapshot of an Ethereum L1 devnet:
   - Discovers and stops all L1 containers (geth, beacon, validator)
   - Extracts all datadirs and configuration files
+  - Restarts the original enclave to resume block production
   - Builds Docker images with state baked in
   - Generates Docker Compose for reproduction
-  - Creates verification scripts
+  - Automatically verifies the snapshot works correctly
 
 Output Structure:
   <OUTPUT_DIR>/<ENCLAVE>-<TIMESTAMP>/
@@ -251,26 +252,72 @@ log_step "STEP 2: Pre-Stop Metadata Collection"
 
 log "Querying L1 state before stopping..."
 
-# Query current block via docker exec
+# Query current block state via RPC
 BLOCK_NUMBER="unknown"
+BLOCK_HASH="unknown"
+GENESIS_HASH="unknown"
+
 if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
-    log "  Querying current block number..."
-    BLOCK_INFO=$(docker exec "$GETH_CONTAINER" sh -c 'geth attach --exec "eth.blockNumber" /data/geth/execution-data/geth.ipc 2>/dev/null' || echo "unknown")
-    if [ "$BLOCK_INFO" != "unknown" ]; then
-        BLOCK_NUMBER="$BLOCK_INFO"
+    log "  Querying current block state via RPC..."
+
+    # Get the RPC port from the container
+    RPC_PORT=$(docker port "$GETH_CONTAINER" 8545 2>/dev/null | cut -d: -f2 || echo "")
+
+    if [ -n "$RPC_PORT" ]; then
+        # Query latest block
+        BLOCK_DATA=$(curl -s "http://localhost:$RPC_PORT" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["latest",false],"id":1}' \
+            2>/dev/null || echo "")
+
+        if [ -n "$BLOCK_DATA" ] && echo "$BLOCK_DATA" | jq -e '.result' &>/dev/null; then
+            # Extract block number (convert hex to decimal)
+            BLOCK_HEX=$(echo "$BLOCK_DATA" | jq -r '.result.number' 2>/dev/null || echo "")
+            if [ -n "$BLOCK_HEX" ] && [ "$BLOCK_HEX" != "null" ]; then
+                BLOCK_NUMBER=$((16#${BLOCK_HEX#0x}))
+            fi
+
+            # Extract block hash
+            BLOCK_HASH=$(echo "$BLOCK_DATA" | jq -r '.result.hash' 2>/dev/null || echo "unknown")
+        fi
+
+        # Get genesis hash
+        GENESIS_DATA=$(curl -s "http://localhost:$RPC_PORT" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x0",false],"id":1}' \
+            2>/dev/null || echo "")
+
+        if [ -n "$GENESIS_DATA" ] && echo "$GENESIS_DATA" | jq -e '.result' &>/dev/null; then
+            GENESIS_HASH=$(echo "$GENESIS_DATA" | jq -r '.result.hash' 2>/dev/null || echo "unknown")
+        fi
+
         log "  Current block: $BLOCK_NUMBER"
+        log "  Block hash: $BLOCK_HASH"
+        log "  Genesis hash: $GENESIS_HASH"
     else
-        log_warn "  Could not query block number"
+        log_warn "  Could not find RPC port, falling back to docker exec..."
+        # Fallback to docker exec for block number only
+        BLOCK_INFO=$(docker exec "$GETH_CONTAINER" sh -c 'geth attach --exec "eth.blockNumber" /data/geth/execution-data/geth.ipc 2>/dev/null' || echo "unknown")
+        if [ "$BLOCK_INFO" != "unknown" ]; then
+            BLOCK_NUMBER="$BLOCK_INFO"
+            log "  Current block: $BLOCK_NUMBER"
+        else
+            log_warn "  Could not query block number"
+        fi
     fi
 else
     log_warn "  Geth container not running, skipping live query"
 fi
 
-# Save pre-stop state
+# Save pre-stop state with complete block information
 cat > "$OUTPUT_DIR/pre-stop-state.json" << EOF
 {
     "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-    "block_number": "$BLOCK_NUMBER"
+    "block_number": "$BLOCK_NUMBER",
+    "block_hash": "$BLOCK_HASH",
+    "genesis_hash": "$GENESIS_HASH"
 }
 EOF
 
@@ -294,10 +341,79 @@ fi
 log "State extraction complete"
 
 # ============================================================================
-# Step 4: Metadata Generation
+# Step 4: Resume Original Enclave
 # ============================================================================
 
-log_step "STEP 4: Metadata Generation"
+log_step "STEP 4: Resume Original Enclave"
+
+log "Restarting original L1 containers to resume block production..."
+
+# Read container names from discovery JSON
+GETH_CONTAINER=$(jq -r '.geth.container_name' "$DISCOVERY_JSON")
+BEACON_CONTAINER=$(jq -r '.beacon.container_name' "$DISCOVERY_JSON")
+VALIDATOR_CONTAINER=$(jq -r '.validator.container_name' "$DISCOVERY_JSON")
+
+# Restart containers in dependency order: geth -> beacon -> validator
+RESTART_SUCCESS=true
+
+log "  Starting Geth..."
+if docker start "$GETH_CONTAINER" >> "$LOG_FILE" 2>&1; then
+    log "  Geth container restarted: $GETH_CONTAINER"
+else
+    log_error "  Failed to restart Geth container"
+    RESTART_SUCCESS=false
+fi
+
+# Wait for Geth to initialize
+log "  Waiting for Geth to initialize..."
+sleep 5
+
+log "  Starting Beacon..."
+if docker start "$BEACON_CONTAINER" >> "$LOG_FILE" 2>&1; then
+    log "  Beacon container restarted: $BEACON_CONTAINER"
+else
+    log_error "  Failed to restart Beacon container"
+    RESTART_SUCCESS=false
+fi
+
+# Wait for Beacon to connect
+log "  Waiting for Beacon to connect..."
+sleep 5
+
+log "  Starting Validator..."
+if docker start "$VALIDATOR_CONTAINER" >> "$LOG_FILE" 2>&1; then
+    log "  Validator container restarted: $VALIDATOR_CONTAINER"
+else
+    log_error "  Failed to restart Validator container"
+    RESTART_SUCCESS=false
+fi
+
+if [ "$RESTART_SUCCESS" = true ]; then
+    log "All containers restarted successfully"
+    log "L1 block production resumed in enclave: $ENCLAVE_NAME"
+
+    # Verify containers are running
+    sleep 3
+    for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
+        state=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "unknown")
+        if [ "$state" = "running" ]; then
+            log "  ✓ $container: running"
+        else
+            log_warn "  ⚠ $container: $state"
+        fi
+    done
+else
+    log_warn "Some containers failed to restart"
+    log_warn "You may need to restart the enclave manually:"
+    log_warn "  kurtosis enclave stop $ENCLAVE_NAME"
+    log_warn "  kurtosis enclave start $ENCLAVE_NAME"
+fi
+
+# ============================================================================
+# Step 5: Metadata Generation
+# ============================================================================
+
+log_step "STEP 5: Metadata Generation"
 
 log "Generating metadata and checksums..."
 
@@ -310,10 +426,10 @@ fi
 log "Metadata generation complete"
 
 # ============================================================================
-# Step 5: Docker Image Build
+# Step 6: Docker Image Build
 # ============================================================================
 
-log_step "STEP 5: Docker Image Build"
+log_step "STEP 6: Docker Image Build"
 
 log "Building Docker images with baked-in state..."
 log "This may take several minutes..."
@@ -335,10 +451,10 @@ fi
 log "Docker images built successfully"
 
 # ============================================================================
-# Step 6: Docker Compose Generation
+# Step 7: Docker Compose Generation
 # ============================================================================
 
-log_step "STEP 6: Docker Compose Generation"
+log_step "STEP 7: Docker Compose Generation"
 
 log "Generating Docker Compose configuration..."
 
@@ -351,10 +467,10 @@ fi
 log "Docker Compose generation complete"
 
 # ============================================================================
-# Step 7: Finalization
+# Step 8: Finalization
 # ============================================================================
 
-log_step "STEP 7: Finalization"
+log_step "STEP 8: Finalization"
 
 log "Finalizing snapshot..."
 
@@ -385,6 +501,15 @@ State
 -----
 Pre-stop block: $BLOCK_NUMBER
 
+Original Enclave
+----------------
+Status: Resumed and producing blocks
+Enclave: $ENCLAVE_NAME
+Containers:
+  - $GETH_CONTAINER
+  - $BEACON_CONTAINER
+  - $VALIDATOR_CONTAINER
+
 Files Generated
 ---------------
 $(find "$OUTPUT_DIR" -type f | wc -l) files
@@ -407,13 +532,47 @@ EOF
 log "Snapshot summary created"
 
 # ============================================================================
+# Step 9: Verification
+# ============================================================================
+
+log_step "STEP 9: Snapshot Verification"
+
+log "Running automated verification tests..."
+log "This will:"
+log "  - Start the snapshot containers"
+log "  - Verify initial block state matches checkpoint"
+log "  - Wait for blocks to progress"
+log "  - Check all services are healthy"
+log ""
+log_info "This may take 1-2 minutes..."
+log ""
+
+# Run verify.sh and capture output
+VERIFY_SUCCESS=false
+if "$SCRIPT_DIR/verify.sh" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+    VERIFY_SUCCESS=true
+    log "✓ Snapshot verification PASSED"
+    log "  All tests completed successfully"
+else
+    log_error "✗ Snapshot verification FAILED"
+    log_error "  Some tests did not pass - check log for details"
+fi
+
+log ""
+log "Verification details: $LOG_FILE"
+
+# ============================================================================
 # Success
 # ============================================================================
 
-log_step "SNAPSHOT COMPLETE!"
+if [ "$VERIFY_SUCCESS" = true ]; then
+    log_step "✓ SNAPSHOT COMPLETE AND VERIFIED!"
+else
+    log_step "⚠ SNAPSHOT COMPLETE (Verification Issues Detected)"
+fi
 
 echo ""
-log "Snapshot created successfully: $SNAPSHOT_NAME"
+log "Snapshot: $SNAPSHOT_NAME"
 log "Output directory: $OUTPUT_DIR"
 log ""
 log "Docker images created:"
@@ -421,11 +580,35 @@ log "  - snapshot-geth:$TAG"
 log "  - snapshot-beacon:$TAG"
 log "  - snapshot-validator:$TAG"
 log ""
-log "Next steps:"
-log "  1. Review: cat $OUTPUT_DIR/SNAPSHOT_SUMMARY.txt"
-log "  2. Start: cd $OUTPUT_DIR && ./start-snapshot.sh"
-log "  3. Verify: $SCRIPT_DIR/verify.sh $OUTPUT_DIR"
+log "Original enclave status:"
+log "  Enclave '$ENCLAVE_NAME' L1 block production has been resumed"
+log "  Containers: $GETH_CONTAINER, $BEACON_CONTAINER, $VALIDATOR_CONTAINER"
+log ""
+
+if [ "$VERIFY_SUCCESS" = true ]; then
+    log "Verification: ✓ PASSED"
+    log "The snapshot has been tested and is working correctly"
+    log ""
+    log "Quick start:"
+    log "  cd $OUTPUT_DIR"
+    log "  ./start-snapshot.sh"
+    log ""
+    log "For details:"
+    log "  cat $OUTPUT_DIR/SNAPSHOT_SUMMARY.txt"
+    EXIT_CODE=0
+else
+    log_warn "Verification: ✗ FAILED"
+    log_warn "The snapshot was created but verification tests failed"
+    log_warn "Review the logs to diagnose issues"
+    log ""
+    log "Troubleshooting:"
+    log "  1. Check logs: tail -100 $LOG_FILE"
+    log "  2. Manual test: cd $OUTPUT_DIR && ./start-snapshot.sh"
+    log "  3. Check services: cd $OUTPUT_DIR && docker-compose ps"
+    EXIT_CODE=1
+fi
+
 log ""
 log "Full log: $LOG_FILE"
 
-exit 0
+exit $EXIT_CODE

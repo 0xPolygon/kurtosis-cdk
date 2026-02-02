@@ -57,15 +57,19 @@ if [ -f "$OUTPUT_DIR/metadata/checkpoint.json" ]; then
     GENESIS_HASH=$(jq -r '.l1_state.genesis_hash' "$OUTPUT_DIR/metadata/checkpoint.json" 2>/dev/null || echo "unknown")
 fi
 
+# Generate unique network name based on snapshot directory
+SNAPSHOT_ID=$(basename "$OUTPUT_DIR")
+NETWORK_NAME="snapshot-${SNAPSHOT_ID}-l1"
+
+log "Using network name: $NETWORK_NAME"
+
 # ============================================================================
 # Generate docker-compose.yml
 # ============================================================================
 
-log "Creating docker-compose.snapshot.yml..."
+log "Creating docker-compose.yml..."
 
-cat > "$OUTPUT_DIR/docker-compose.snapshot.yml" << EOF
-version: '3.8'
-
+cat > "$OUTPUT_DIR/docker-compose.yml" << EOF
 # Ethereum L1 Snapshot Environment
 # Enclave: $ENCLAVE_NAME
 # Tag: $TAG
@@ -74,7 +78,7 @@ version: '3.8'
 services:
   geth:
     image: snapshot-geth:$TAG
-    container_name: snapshot-geth
+    container_name: ${SNAPSHOT_ID}-geth
     hostname: geth
     command:
       - "--http"
@@ -122,7 +126,7 @@ services:
 
   beacon:
     image: snapshot-beacon:$TAG
-    container_name: snapshot-beacon
+    container_name: ${SNAPSHOT_ID}-beacon
     hostname: beacon
     command:
       - "lighthouse"
@@ -165,7 +169,7 @@ services:
 
   validator:
     image: snapshot-validator:$TAG
-    container_name: snapshot-validator
+    container_name: ${SNAPSHOT_ID}-validator
     hostname: validator
     command:
       - "lighthouse"
@@ -195,13 +199,13 @@ services:
 
 networks:
   l1-network:
-    name: snapshot-l1-network
+    name: $NETWORK_NAME
     driver: bridge
 
 # No volumes - all state is baked into images
 EOF
 
-log "Docker Compose file generated: $OUTPUT_DIR/docker-compose.snapshot.yml"
+log "Docker Compose file generated: $OUTPUT_DIR/docker-compose.yml"
 
 # ============================================================================
 # Generate helper scripts
@@ -215,7 +219,7 @@ cat > "$OUTPUT_DIR/start-snapshot.sh" << 'EOF'
 set -euo pipefail
 
 echo "Starting Ethereum L1 snapshot..."
-docker-compose -f docker-compose.snapshot.yml up -d
+docker-compose -f docker-compose.yml up -d
 
 echo ""
 echo "Waiting for services to be healthy..."
@@ -223,11 +227,11 @@ sleep 5
 
 echo ""
 echo "Service status:"
-docker-compose -f docker-compose.snapshot.yml ps
+docker-compose -f docker-compose.yml ps
 
 echo ""
 echo "To view logs:"
-echo "  docker-compose -f docker-compose.snapshot.yml logs -f"
+echo "  docker-compose -f docker-compose.yml logs -f"
 echo ""
 echo "To check block number:"
 echo "  curl -s http://localhost:8545 -X POST -H 'Content-Type: application/json' --data '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' | jq -r '.result' | xargs printf '%d\n'"
@@ -241,7 +245,7 @@ cat > "$OUTPUT_DIR/stop-snapshot.sh" << 'EOF'
 set -euo pipefail
 
 echo "Stopping Ethereum L1 snapshot..."
-docker-compose -f docker-compose.snapshot.yml down
+docker-compose -f docker-compose.yml down
 
 echo "Snapshot stopped."
 EOF
@@ -317,17 +321,17 @@ cat > "$OUTPUT_DIR/USAGE.md" << EOF
 
 ### Start services
 \`\`\`bash
-docker-compose -f docker-compose.snapshot.yml up -d
+docker-compose -f docker-compose.yml up -d
 \`\`\`
 
 ### View logs
 \`\`\`bash
-docker-compose -f docker-compose.snapshot.yml logs -f
+docker-compose -f docker-compose.yml logs -f
 \`\`\`
 
 ### Check service status
 \`\`\`bash
-docker-compose -f docker-compose.snapshot.yml ps
+docker-compose -f docker-compose.yml ps
 \`\`\`
 
 ### Query block number
@@ -346,7 +350,7 @@ curl -s http://localhost:4000/eth/v1/beacon/headers/head | jq
 
 ### Stop services
 \`\`\`bash
-docker-compose -f docker-compose.snapshot.yml down
+docker-compose -f docker-compose.yml down
 \`\`\`
 
 ## Endpoints
@@ -361,16 +365,24 @@ docker-compose -f docker-compose.snapshot.yml down
 
 ## Network Details
 
-- **Network Name:** snapshot-l1-network
+- **Network Name:** snapshot-${SNAPSHOT_ID}-l1 (unique per snapshot)
 - **Network Type:** Bridge
 - **Services:** geth, beacon, validator
+- **Container Names:** ${SNAPSHOT_ID}-geth, ${SNAPSHOT_ID}-beacon, ${SNAPSHOT_ID}-validator
+
+Each snapshot uses a unique network and container names based on its snapshot ID,
+allowing multiple snapshots to run simultaneously without network conflicts.
+
+**Note:** If running multiple snapshots, you'll need to modify port mappings in the
+docker-compose.yml file to avoid port conflicts, or remove port mappings and access
+services via container names from within the Docker network.
 
 ## Troubleshooting
 
 ### Services not starting
 Check logs:
 \`\`\`bash
-docker-compose -f docker-compose.snapshot.yml logs
+docker-compose -f docker-compose.yml logs
 \`\`\`
 
 ### Port conflicts

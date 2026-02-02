@@ -56,32 +56,99 @@ mkdir -p "$OUTPUT_DIR/metadata"
 
 log "Querying current L1 block state..."
 
-# Try to get block number from running container
+# Try to get block number and hash from running container
 BLOCK_NUMBER=""
 BLOCK_HASH=""
 GENESIS_HASH=""
 
-# Check if container is still running
-if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
-    log "  Querying via docker exec (container running)..."
+# First, check if pre-stop-state.json exists and use it (preferred method)
+PRE_STOP_STATE="$OUTPUT_DIR/pre-stop-state.json"
+if [ -f "$PRE_STOP_STATE" ]; then
+    log "  Using pre-stop state from: $PRE_STOP_STATE"
+    BLOCK_NUMBER=$(jq -r '.block_number' "$PRE_STOP_STATE" 2>/dev/null || echo "")
+    BLOCK_HASH=$(jq -r '.block_hash' "$PRE_STOP_STATE" 2>/dev/null || echo "")
+    GENESIS_HASH=$(jq -r '.genesis_hash' "$PRE_STOP_STATE" 2>/dev/null || echo "")
 
-    # Query via geth attach
-    BLOCK_INFO=$(docker exec "$GETH_CONTAINER" sh -c 'geth attach --exec "eth.blockNumber" /data/geth/execution-data/geth.ipc 2>/dev/null' || echo "")
-
-    if [ -n "$BLOCK_INFO" ]; then
-        BLOCK_NUMBER="$BLOCK_INFO"
-        log "  Current block number: $BLOCK_NUMBER"
-
-        # Get block hash
-        BLOCK_HASH=$(docker exec "$GETH_CONTAINER" sh -c "geth attach --exec \"eth.getBlock($BLOCK_NUMBER).hash\" /data/geth/execution-data/geth.ipc 2>/dev/null" || echo "")
-        log "  Current block hash: $BLOCK_HASH"
-
-        # Get genesis hash
-        GENESIS_HASH=$(docker exec "$GETH_CONTAINER" sh -c 'geth attach --exec "eth.getBlock(0).hash" /data/geth/execution-data/geth.ipc 2>/dev/null' || echo "")
+    if [ -n "$BLOCK_NUMBER" ] && [ "$BLOCK_NUMBER" != "null" ] && [ "$BLOCK_NUMBER" != "unknown" ]; then
+        log "  Block number: $BLOCK_NUMBER"
+    fi
+    if [ -n "$BLOCK_HASH" ] && [ "$BLOCK_HASH" != "null" ] && [ "$BLOCK_HASH" != "unknown" ]; then
+        log "  Block hash: $BLOCK_HASH"
+    fi
+    if [ -n "$GENESIS_HASH" ] && [ "$GENESIS_HASH" != "null" ] && [ "$GENESIS_HASH" != "unknown" ]; then
         log "  Genesis hash: $GENESIS_HASH"
     fi
-else
-    log "  Container stopped, skipping live query"
+fi
+
+# Fallback to querying running container if pre-stop state is incomplete
+if [ -z "$BLOCK_NUMBER" ] || [ "$BLOCK_NUMBER" = "unknown" ] || [ -z "$BLOCK_HASH" ] || [ "$BLOCK_HASH" = "unknown" ]; then
+    log "  Pre-stop state incomplete, querying running container..."
+    # Check if container is still running
+    if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
+        log "  Container is running, querying block state..."
+
+        # Get the RPC port from the container
+        RPC_PORT=$(docker port "$GETH_CONTAINER" 8545 2>/dev/null | cut -d: -f2 || echo "")
+
+        if [ -n "$RPC_PORT" ]; then
+            log "  Found RPC endpoint at localhost:$RPC_PORT"
+
+            # Query latest block using eth_getBlockByNumber (gets hash and number atomically)
+            BLOCK_DATA=$(curl -s "http://localhost:$RPC_PORT" \
+                -X POST \
+                -H "Content-Type: application/json" \
+                --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["latest",false],"id":1}' \
+                2>/dev/null || echo "")
+
+            if [ -n "$BLOCK_DATA" ] && echo "$BLOCK_DATA" | jq -e '.result' &>/dev/null; then
+                # Extract block number (convert hex to decimal)
+                BLOCK_HEX=$(echo "$BLOCK_DATA" | jq -r '.result.number' 2>/dev/null || echo "")
+                if [ -n "$BLOCK_HEX" ] && [ "$BLOCK_HEX" != "null" ]; then
+                    BLOCK_NUMBER=$((16#${BLOCK_HEX#0x}))
+                    log "  Current block number: $BLOCK_NUMBER"
+                fi
+
+                # Extract block hash
+                BLOCK_HASH=$(echo "$BLOCK_DATA" | jq -r '.result.hash' 2>/dev/null || echo "")
+                log "  Current block hash: $BLOCK_HASH"
+            fi
+
+            # Get genesis hash
+            GENESIS_DATA=$(curl -s "http://localhost:$RPC_PORT" \
+                -X POST \
+                -H "Content-Type: application/json" \
+                --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x0",false],"id":1}' \
+                2>/dev/null || echo "")
+
+            if [ -n "$GENESIS_DATA" ] && echo "$GENESIS_DATA" | jq -e '.result' &>/dev/null; then
+                GENESIS_HASH=$(echo "$GENESIS_DATA" | jq -r '.result.hash' 2>/dev/null || echo "")
+                log "  Genesis hash: $GENESIS_HASH"
+            fi
+        fi
+
+        # Fallback to docker exec if RPC query failed
+        if [ -z "$BLOCK_NUMBER" ] || [ -z "$BLOCK_HASH" ]; then
+            log "  RPC query failed, falling back to docker exec..."
+
+            # Query via geth attach
+            BLOCK_INFO=$(docker exec "$GETH_CONTAINER" sh -c 'geth attach --exec "eth.blockNumber" /data/geth/execution-data/geth.ipc 2>/dev/null' || echo "")
+
+            if [ -n "$BLOCK_INFO" ]; then
+                BLOCK_NUMBER="$BLOCK_INFO"
+                log "  Current block number: $BLOCK_NUMBER"
+
+                # Get block hash
+                BLOCK_HASH=$(docker exec "$GETH_CONTAINER" sh -c "geth attach --exec \"eth.getBlock($BLOCK_NUMBER).hash\" /data/geth/execution-data/geth.ipc 2>/dev/null" || echo "")
+                log "  Current block hash: $BLOCK_HASH"
+
+                # Get genesis hash
+                GENESIS_HASH=$(docker exec "$GETH_CONTAINER" sh -c 'geth attach --exec "eth.getBlock(0).hash" /data/geth/execution-data/geth.ipc 2>/dev/null' || echo "")
+                log "  Genesis hash: $GENESIS_HASH"
+            fi
+        fi
+    else
+        log "  Container stopped, skipping live query"
+    fi
 fi
 
 # If we couldn't get block info, set defaults
@@ -103,8 +170,9 @@ MANIFEST_FILE="$OUTPUT_DIR/metadata/manifest.sha256"
 if [ -d "$OUTPUT_DIR/datadirs" ]; then
     (
         cd "$OUTPUT_DIR/datadirs"
-        sha256sum *.tar > "$MANIFEST_FILE" 2>/dev/null || true
-    )
+        # Use absolute path or redirect properly from subshell
+        sha256sum *.tar 2>/dev/null || true
+    ) > "$MANIFEST_FILE"
 
     if [ -f "$MANIFEST_FILE" ]; then
         log "  Checksums generated:"

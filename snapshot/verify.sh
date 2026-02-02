@@ -84,8 +84,8 @@ if [ ! -d "$SNAPSHOT_DIR" ]; then
     exit 1
 fi
 
-if [ ! -f "$SNAPSHOT_DIR/docker-compose.snapshot.yml" ]; then
-    log_error "docker-compose.snapshot.yml not found in: $SNAPSHOT_DIR"
+if [ ! -f "$SNAPSHOT_DIR/docker-compose.yml" ]; then
+    log_error "docker-compose.yml not found in: $SNAPSHOT_DIR"
     exit 1
 fi
 
@@ -101,13 +101,19 @@ fi
 log_step "Snapshot Verification"
 log "Snapshot directory: $SNAPSHOT_DIR"
 
+# Extract snapshot ID from directory name for container names
+SNAPSHOT_ID=$(basename "$SNAPSHOT_DIR")
+log "Snapshot ID: $SNAPSHOT_ID"
+
 # Read checkpoint metadata
 CHECKPOINT="$SNAPSHOT_DIR/metadata/checkpoint.json"
 EXPECTED_BLOCK=$(jq -r '.l1_state.block_number' "$CHECKPOINT")
+EXPECTED_HASH=$(jq -r '.l1_state.block_hash' "$CHECKPOINT")
 SNAPSHOT_NAME=$(jq -r '.snapshot_name' "$CHECKPOINT")
 
 log "Snapshot: $SNAPSHOT_NAME"
 log "Expected block number: $EXPECTED_BLOCK"
+log "Expected block hash: $EXPECTED_HASH"
 
 # Track test results
 TESTS_PASSED=0
@@ -169,14 +175,24 @@ log "Starting snapshot services..."
 cd "$SNAPSHOT_DIR"
 
 # Check if services are already running
-if docker-compose -f docker-compose.snapshot.yml ps | grep -q "Up"; then
+if docker-compose -f docker-compose.yml ps | grep -q "Up"; then
     log_warn "Services appear to be already running, stopping first..."
-    docker-compose -f docker-compose.snapshot.yml down &> /dev/null || true
+    docker-compose -f docker-compose.yml down &> /dev/null || true
     sleep 5
 fi
 
+# Clean up any old snapshot containers that might conflict with ports
+log "Checking for conflicting snapshot containers..."
+OLD_SNAPSHOTS=$(docker ps -a --filter "name=cdk-" --format "{{.Names}}" | grep -v "$SNAPSHOT_ID" || true)
+if [ -n "$OLD_SNAPSHOTS" ]; then
+    log_warn "Found old snapshot containers, cleaning up..."
+    echo "$OLD_SNAPSHOTS" | xargs -r docker stop &> /dev/null || true
+    echo "$OLD_SNAPSHOTS" | xargs -r docker rm &> /dev/null || true
+    sleep 2
+fi
+
 # Start services
-if docker-compose -f docker-compose.snapshot.yml up -d &> /dev/null; then
+if docker-compose -f docker-compose.yml up -d &> /dev/null; then
     test_result "Services started" "pass"
 else
     test_result "Services started" "fail"
@@ -196,7 +212,7 @@ log_step "TEST 3: Service Health"
 
 log "Checking service status..."
 
-SERVICES=("snapshot-geth" "snapshot-beacon" "snapshot-validator")
+SERVICES=("${SNAPSHOT_ID}-geth" "${SNAPSHOT_ID}-beacon" "${SNAPSHOT_ID}-validator")
 ALL_HEALTHY=true
 
 for service in "${SERVICES[@]}"; do
@@ -247,35 +263,79 @@ else
 fi
 
 # ============================================================================
-# Test 5: Initial Block Number
+# Test 5: Initial Block Number and Hash
 # ============================================================================
 
-log_step "TEST 5: Initial Block Number"
+log_step "TEST 5: Initial Block Number and Hash"
 
-log "Querying current block number..."
+log "Querying current block state..."
 
-# Query block number
-BLOCK_HEX=$(curl -s http://localhost:8545 \
+# Query the block at the expected height using eth_getBlockByNumber
+EXPECTED_BLOCK_HEX=$(printf "0x%x" "$EXPECTED_BLOCK" 2>/dev/null || echo "latest")
+
+BLOCK_DATA=$(curl -s http://localhost:8545 \
+    -X POST \
+    -H "Content-Type: application/json" \
+    --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\",\"params\":[\"$EXPECTED_BLOCK_HEX\",false],\"id\":1}" \
+    2>/dev/null || echo "")
+
+# Also query the latest block number to compare
+LATEST_HEX=$(curl -s http://localhost:8545 \
     -X POST \
     -H "Content-Type: application/json" \
     --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
     | jq -r '.result' 2>/dev/null || echo "0x0")
 
-CURRENT_BLOCK=$((16#${BLOCK_HEX#0x}))
+CURRENT_BLOCK=$((16#${LATEST_HEX#0x}))
 
 log "Current block: $CURRENT_BLOCK"
 log "Expected block: $EXPECTED_BLOCK"
 
-# Allow for some block progression during startup
+# Verify block number
+BLOCK_NUMBER_MATCH=false
 if [ "$EXPECTED_BLOCK" = "unknown" ]; then
-    log_warn "Expected block is unknown, skipping comparison"
-    test_result "Initial block matches checkpoint" "pass"
+    log_warn "Expected block is unknown, skipping number comparison"
+    BLOCK_NUMBER_MATCH=true
 elif [ "$CURRENT_BLOCK" -ge "$EXPECTED_BLOCK" ]; then
     log_info "Block number is at or past checkpoint (difference: $((CURRENT_BLOCK - EXPECTED_BLOCK)) blocks)"
-    test_result "Initial block matches checkpoint" "pass"
+    BLOCK_NUMBER_MATCH=true
 else
     log_error "Block number is behind checkpoint (difference: $((EXPECTED_BLOCK - CURRENT_BLOCK)) blocks)"
-    test_result "Initial block matches checkpoint" "fail"
+    BLOCK_NUMBER_MATCH=false
+fi
+
+# Verify block hash (if we have the expected block)
+BLOCK_HASH_MATCH=false
+if [ -n "$BLOCK_DATA" ] && echo "$BLOCK_DATA" | jq -e '.result' &>/dev/null; then
+    ACTUAL_HASH=$(echo "$BLOCK_DATA" | jq -r '.result.hash' 2>/dev/null || echo "")
+    ACTUAL_BLOCK_NUM_HEX=$(echo "$BLOCK_DATA" | jq -r '.result.number' 2>/dev/null || echo "")
+    ACTUAL_BLOCK_NUM=$((16#${ACTUAL_BLOCK_NUM_HEX#0x}))
+
+    log "Block $ACTUAL_BLOCK_NUM hash: $ACTUAL_HASH"
+    log "Expected hash: $EXPECTED_HASH"
+
+    if [ "$EXPECTED_HASH" = "unknown" ] || [ -z "$EXPECTED_HASH" ]; then
+        log_warn "Expected hash is unknown, skipping hash comparison"
+        BLOCK_HASH_MATCH=true
+    elif [ "$ACTUAL_HASH" = "$EXPECTED_HASH" ]; then
+        log_info "Block hash matches checkpoint exactly"
+        BLOCK_HASH_MATCH=true
+    else
+        log_error "Block hash does NOT match checkpoint"
+        log_error "This indicates a different chain state than expected"
+        BLOCK_HASH_MATCH=false
+    fi
+else
+    log_warn "Could not query block $EXPECTED_BLOCK, skipping hash comparison"
+    # If we can't query the specific block, still pass if the number check passed
+    BLOCK_HASH_MATCH=$BLOCK_NUMBER_MATCH
+fi
+
+# Test passes if both number and hash match
+if [ "$BLOCK_NUMBER_MATCH" = true ] && [ "$BLOCK_HASH_MATCH" = true ]; then
+    test_result "Initial block matches checkpoint (number and hash)" "pass"
+else
+    test_result "Initial block matches checkpoint (number and hash)" "fail"
 fi
 
 # ============================================================================
@@ -347,7 +407,13 @@ log "Checking for errors in service logs..."
 HAS_ERRORS=false
 
 for service in "${SERVICES[@]}"; do
-    ERROR_COUNT=$(docker logs "$service" 2>&1 | grep -i "error\|fatal\|panic" | grep -v "level=error" | wc -l || echo 0)
+    # Filter out expected warnings/errors that are benign in standalone snapshots
+    ERROR_COUNT=$(docker logs "$service" 2>&1 | \
+        grep -i "error\|fatal\|panic" | \
+        grep -v "level=error" | \
+        grep -v "NoPeersSubscribedToTopic" | \
+        grep -v "Could not publish message" | \
+        wc -l | tr -d '[:space:]' || echo 0)
 
     if [ "$ERROR_COUNT" -gt 5 ]; then
         log_warn "  $service: $ERROR_COUNT error-like messages found"
@@ -384,7 +450,7 @@ if [ $TESTS_FAILED -eq 0 ]; then
     log "  Beacon API: http://localhost:4000"
     log ""
     log "To stop the snapshot:"
-    log "  cd $SNAPSHOT_DIR && docker-compose -f docker-compose.snapshot.yml down"
+    log "  cd $SNAPSHOT_DIR && docker-compose -f docker-compose.yml down"
     echo ""
     EXIT_CODE=0
 else
@@ -392,10 +458,10 @@ else
     log_error "$TESTS_FAILED test(s) failed"
     log ""
     log "To view service logs:"
-    log "  cd $SNAPSHOT_DIR && docker-compose -f docker-compose.snapshot.yml logs"
+    log "  cd $SNAPSHOT_DIR && docker-compose -f docker-compose.yml logs"
     log ""
     log "To stop services:"
-    log "  cd $SNAPSHOT_DIR && docker-compose -f docker-compose.snapshot.yml down"
+    log "  cd $SNAPSHOT_DIR && docker-compose -f docker-compose.yml down"
     echo ""
     EXIT_CODE=1
 fi

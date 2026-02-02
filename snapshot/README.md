@@ -12,13 +12,13 @@ This tool creates deterministic, repeatable snapshots of L1 state that can be:
 ## Quick Start
 
 ```bash
-# Create snapshot of enclave
+# Create and verify snapshot of enclave (verification is automatic)
 ./snapshot/snapshot.sh <ENCLAVE_NAME>
 
 # With custom output directory and tag
 ./snapshot/snapshot.sh snapshot-test --out ./my-snapshots --tag v1.0.0
 
-# Verify snapshot
+# Manual verification (optional, already done during snapshot creation)
 ./snapshot/verify.sh snapshots/snapshot-test-<TIMESTAMP>/
 ```
 
@@ -171,13 +171,17 @@ docker images | grep snapshot- | awk '{print $3}' | xargs docker rmi
 
 1. **Discovery**: Locate containers by enclave name
 2. **Pre-Stop Metadata**: Query current block number/hash
-3. **Stop**: Gracefully stop all L1 containers
-4. **Extract**: Export datadirs to tarballs
-5. **Artifacts**: Copy configuration files
-6. **Metadata**: Generate checkpoint.json and checksums
-7. **Build**: Create Docker images with baked-in state
-8. **Compose**: Generate docker-compose.yml
-9. **Log**: Record full execution trace
+3. **Stop & Extract**: Gracefully stop all L1 containers and export datadirs to tarballs
+4. **Resume Original Enclave**: Restart containers in original enclave to resume block production
+5. **Metadata**: Generate checkpoint.json and checksums
+6. **Build**: Create Docker images with baked-in state
+7. **Compose**: Generate docker-compose.yml
+8. **Finalization**: Create summary and log execution
+9. **Verification**: Automatically start snapshot and verify it works correctly
+
+**Important**:
+- The snapshot process temporarily stops the L1 containers to ensure consistent state capture, but automatically restarts them afterward. This allows the original enclave to continue producing blocks while the snapshot artifacts are being prepared.
+- Verification is performed automatically at the end, testing that the snapshot can boot and produce blocks. This adds 1-2 minutes to the snapshot process but ensures quality.
 
 ### Network Configuration
 

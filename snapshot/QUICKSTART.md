@@ -3,10 +3,11 @@
 ## TL;DR
 
 ```bash
-# Create snapshot
+# Create snapshot (verification is automatic)
 ./snapshot/snapshot.sh snapshot-test
 
-# Verify snapshot
+# Snapshot is automatically verified during creation
+# Manual re-verification (optional):
 ./snapshot/verify.sh snapshots/snapshot-test-<TIMESTAMP>/
 ```
 
@@ -17,8 +18,14 @@ Creates a **complete, reproducible snapshot** of your Ethereum L1 devnet by:
 1. Discovering Geth, Lighthouse Beacon, and Lighthouse Validator containers
 2. Stopping them cleanly to ensure consistent state
 3. Extracting all datadirs (execution, consensus, validator)
-4. Building Docker images with state baked in
-5. Generating Docker Compose for easy reproduction
+4. **Restarting the original enclave** to resume block production
+5. Building Docker images with state baked in
+6. Generating Docker Compose for easy reproduction
+7. **Automatically verifying** the snapshot works correctly
+
+**Notes**:
+- The snapshot process temporarily pauses your L1 to capture consistent state, but automatically resumes it afterward so your enclave continues producing blocks.
+- Verification is performed automatically, adding ~1-2 minutes to ensure the snapshot is working before completion.
 
 ## Prerequisites
 
@@ -47,6 +54,8 @@ This creates a timestamped directory in `snapshots/` with:
 - Helper scripts
 - Full logs
 
+**Note**: The snapshot is automatically verified during creation. You'll see a "SNAPSHOT COMPLETE AND VERIFIED!" message if all tests pass.
+
 ### 2. Start the Snapshot
 
 ```bash
@@ -56,22 +65,10 @@ cd snapshots/snapshot-test-<TIMESTAMP>/
 
 Or manually:
 ```bash
-docker-compose -f docker-compose.snapshot.yml up -d
+docker-compose -f docker-compose.yml up -d
 ```
 
-### 3. Verify It Works
-
-```bash
-./snapshot/verify.sh snapshots/snapshot-test-<TIMESTAMP>/
-```
-
-This automated verification:
-- Starts the snapshot
-- Checks initial block number
-- Waits and verifies blocks are progressing
-- Reports pass/fail
-
-### 4. Query State
+### 3. Query State
 
 ```bash
 cd snapshots/snapshot-test-<TIMESTAMP>/
