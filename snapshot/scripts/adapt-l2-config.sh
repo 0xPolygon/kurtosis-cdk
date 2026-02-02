@@ -158,6 +158,33 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
     fi
 
     log "    ✓ Originals saved to *.bak"
+
+    # ========================================================================
+    # Adapt aggkit config if present
+    # ========================================================================
+
+    AGGKIT_CONFIG="$OUTPUT_DIR/config/$prefix/aggkit-config.toml"
+
+    if [ -f "$AGGKIT_CONFIG" ]; then
+        log "  Adapting aggkit configuration for docker-compose..."
+
+        # Backup original
+        cp "$AGGKIT_CONFIG" "$AGGKIT_CONFIG.bak"
+
+        # Replace Kurtosis container names with docker-compose service names
+        # L1 geth: el-1-geth-lighthouse -> geth
+        # L2 geth: op-el-1-op-geth-op-node-<prefix> -> op-geth-<prefix>
+        # op-node: op-cl-1-op-node-op-geth-<prefix> -> op-node-<prefix>
+
+        sed -i "s|http://el-1-geth-lighthouse:8545|http://geth:8545|g" "$AGGKIT_CONFIG"
+        sed -i "s|http://op-el-1-op-geth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGKIT_CONFIG"
+        sed -i "s|http://op-cl-1-op-node-op-geth-$prefix:8547|http://op-node-$prefix:8547|g" "$AGGKIT_CONFIG"
+
+        log "    ✓ aggkit config adapted for docker-compose"
+        log "    ✓ Original saved to aggkit-config.toml.bak"
+    else
+        log "    No aggkit config found, skipping"
+    fi
 done
 
 log "L2 configuration adaptation complete"
