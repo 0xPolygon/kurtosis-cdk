@@ -205,6 +205,7 @@ SCRIPTS=(
     "$SCRIPT_DIR/scripts/generate-metadata.sh"
     "$SCRIPT_DIR/scripts/build-images.sh"
     "$SCRIPT_DIR/scripts/generate-compose.sh"
+    "$SCRIPT_DIR/scripts/verify-healthchecks.sh"
 )
 
 for script in "${SCRIPTS[@]}"; do
@@ -484,6 +485,17 @@ if ! "$SCRIPT_DIR/scripts/generate-compose.sh" "$DISCOVERY_JSON" "$OUTPUT_DIR" >
 fi
 
 log "Docker Compose generation complete"
+
+# Verify healthchecks are properly configured
+log "Verifying healthcheck configurations..."
+
+if ! "$SCRIPT_DIR/scripts/verify-healthchecks.sh" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+    log_error "Healthcheck verification failed"
+    log_error "See log file for details: $LOG_FILE"
+    exit 1
+fi
+
+log "Healthcheck verification passed"
 
 # ============================================================================
 # Step 8: Finalization
