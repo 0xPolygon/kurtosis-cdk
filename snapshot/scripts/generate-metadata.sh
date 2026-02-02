@@ -67,6 +67,7 @@ if [ -f "$PRE_STOP_STATE" ]; then
     log "  Using pre-stop state from: $PRE_STOP_STATE"
     BLOCK_NUMBER=$(jq -r '.block_number' "$PRE_STOP_STATE" 2>/dev/null || echo "")
     BLOCK_HASH=$(jq -r '.block_hash' "$PRE_STOP_STATE" 2>/dev/null || echo "")
+    BLOCK_TIMESTAMP=$(jq -r '.block_timestamp // empty' "$PRE_STOP_STATE" 2>/dev/null || echo "")
     GENESIS_HASH=$(jq -r '.genesis_hash' "$PRE_STOP_STATE" 2>/dev/null || echo "")
 
     if [ -n "$BLOCK_NUMBER" ] && [ "$BLOCK_NUMBER" != "null" ] && [ "$BLOCK_NUMBER" != "unknown" ]; then
@@ -74,6 +75,9 @@ if [ -f "$PRE_STOP_STATE" ]; then
     fi
     if [ -n "$BLOCK_HASH" ] && [ "$BLOCK_HASH" != "null" ] && [ "$BLOCK_HASH" != "unknown" ]; then
         log "  Block hash: $BLOCK_HASH"
+    fi
+    if [ -n "$BLOCK_TIMESTAMP" ] && [ "$BLOCK_TIMESTAMP" != "null" ] && [ "$BLOCK_TIMESTAMP" != "unknown" ]; then
+        log "  Block timestamp: $BLOCK_TIMESTAMP"
     fi
     if [ -n "$GENESIS_HASH" ] && [ "$GENESIS_HASH" != "null" ] && [ "$GENESIS_HASH" != "unknown" ]; then
         log "  Genesis hash: $GENESIS_HASH"
@@ -111,6 +115,13 @@ if [ -z "$BLOCK_NUMBER" ] || [ "$BLOCK_NUMBER" = "unknown" ] || [ -z "$BLOCK_HAS
                 # Extract block hash
                 BLOCK_HASH=$(echo "$BLOCK_DATA" | jq -r '.result.hash' 2>/dev/null || echo "")
                 log "  Current block hash: $BLOCK_HASH"
+
+                # Extract block timestamp (convert hex to decimal)
+                BLOCK_TIMESTAMP_HEX=$(echo "$BLOCK_DATA" | jq -r '.result.timestamp' 2>/dev/null || echo "")
+                if [ -n "$BLOCK_TIMESTAMP_HEX" ] && [ "$BLOCK_TIMESTAMP_HEX" != "null" ]; then
+                    BLOCK_TIMESTAMP=$((16#${BLOCK_TIMESTAMP_HEX#0x}))
+                    log "  Current block timestamp: $BLOCK_TIMESTAMP"
+                fi
             fi
 
             # Get genesis hash
@@ -226,6 +237,7 @@ cat > "$OUTPUT_DIR/metadata/checkpoint.json" << EOF
   "l1_state": {
     "block_number": "$BLOCK_NUMBER",
     "block_hash": "$BLOCK_HASH",
+    "block_timestamp": "$BLOCK_TIMESTAMP",
     "genesis_hash": "$GENESIS_HASH"
   },
   "components": {

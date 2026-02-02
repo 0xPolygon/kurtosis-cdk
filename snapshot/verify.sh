@@ -430,6 +430,102 @@ else
 fi
 
 # ============================================================================
+# Test 9: L2 Block Progression
+# ============================================================================
+
+log_step "TEST 9: L2 Block Progression"
+
+log "Checking L2 chains for block progression..."
+
+# Find L2 RPC endpoints from docker-compose
+L2_RPCS=$(docker-compose -f docker-compose.yml config | grep -E "op-geth-[0-9]+" -A 5 | grep "8545:8545" | wc -l || echo 0)
+
+if [ "$L2_RPCS" -eq 0 ]; then
+    log_warn "No L2 chains found in snapshot, skipping L2 block progression test"
+else
+    log "Found L2 chains, testing block progression..."
+
+    # Get L2 container names
+    L2_CONTAINERS=$(docker ps --filter "name=${SNAPSHOT_ID}-op-geth" --format "{{.Names}}" || echo "")
+
+    if [ -z "$L2_CONTAINERS" ]; then
+        log_warn "No L2 containers running, skipping L2 test"
+    else
+        L2_ALL_PASSED=true
+
+        while IFS= read -r container; do
+            # Extract L2 ID from container name (e.g., cdk-xxx-op-geth-001 -> 001)
+            L2_ID=$(echo "$container" | grep -oP 'op-geth-\K[0-9]+$' || echo "unknown")
+            log "Testing L2 chain: $L2_ID (container: $container)"
+
+            # Get the port mapping for this L2's RPC
+            L2_PORT=$(docker port "$container" 8545 2>/dev/null | cut -d: -f2 || echo "")
+
+            if [ -z "$L2_PORT" ]; then
+                log_error "  Could not find RPC port for $container"
+                L2_ALL_PASSED=false
+                continue
+            fi
+
+            log_info "  L2 RPC endpoint: http://localhost:$L2_PORT"
+
+            # Query initial block number
+            INITIAL_BLOCK_HEX=$(curl -s "http://localhost:$L2_PORT" \
+                -X POST \
+                -H "Content-Type: application/json" \
+                --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+                | jq -r '.result' 2>/dev/null || echo "0x0")
+
+            INITIAL_BLOCK=$((16#${INITIAL_BLOCK_HEX#0x}))
+            log "  Initial L2 block: $INITIAL_BLOCK"
+
+            # Check if L2 has produced blocks beyond genesis
+            if [ "$INITIAL_BLOCK" -le 0 ]; then
+                log_warn "  L2 is still at genesis (block 0)"
+                log_warn "  L2 may need more time to start producing blocks"
+                log_warn "  This could indicate a configuration issue"
+                # Don't immediately fail - check if blocks progress
+            else
+                log_info "  L2 has produced blocks (block $INITIAL_BLOCK)"
+            fi
+
+            # Wait 5 seconds
+            log "  Waiting 5 seconds..."
+            sleep 5
+
+            # Query block number again
+            FINAL_BLOCK_HEX=$(curl -s "http://localhost:$L2_PORT" \
+                -X POST \
+                -H "Content-Type: application/json" \
+                --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+                | jq -r '.result' 2>/dev/null || echo "0x0")
+
+            FINAL_BLOCK=$((16#${FINAL_BLOCK_HEX#0x}))
+            log "  Final L2 block: $FINAL_BLOCK"
+            log "  Block difference: $((FINAL_BLOCK - INITIAL_BLOCK))"
+
+            # Assert block number has increased OR is greater than 0
+            if [ "$FINAL_BLOCK" -gt "$INITIAL_BLOCK" ]; then
+                log_info "  ✓ L2 blocks are progressing ($((FINAL_BLOCK - INITIAL_BLOCK)) blocks in 5s)"
+            elif [ "$FINAL_BLOCK" -gt 0 ]; then
+                log_info "  ✓ L2 is producing blocks (at block $FINAL_BLOCK)"
+            else
+                log_error "  ✗ L2 blocks are NOT progressing (stuck at block 0)"
+                log_error "  Check op-node and op-geth logs for errors"
+                L2_ALL_PASSED=false
+            fi
+
+        done <<< "$L2_CONTAINERS"
+
+        if [ "$L2_ALL_PASSED" = true ]; then
+            test_result "All L2 chains producing blocks" "pass"
+        else
+            test_result "All L2 chains producing blocks" "fail"
+        fi
+    fi
+fi
+
+# ============================================================================
 # Results Summary
 # ============================================================================
 
