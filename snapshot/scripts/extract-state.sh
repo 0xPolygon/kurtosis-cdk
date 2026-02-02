@@ -42,15 +42,25 @@ GETH_CONTAINER=$(jq -r '.geth.container_name' "$DISCOVERY_JSON")
 BEACON_CONTAINER=$(jq -r '.beacon.container_name' "$DISCOVERY_JSON")
 VALIDATOR_CONTAINER=$(jq -r '.validator.container_name' "$DISCOVERY_JSON")
 
+# Check if agglayer was discovered
+AGGLAYER_FOUND=$(jq -r '.agglayer.found' "$DISCOVERY_JSON")
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    AGGLAYER_CONTAINER=$(jq -r '.agglayer.container_name' "$DISCOVERY_JSON")
+fi
+
 log "Containers to process:"
 log "  Geth: $GETH_CONTAINER"
 log "  Beacon: $BEACON_CONTAINER"
 log "  Validator: $VALIDATOR_CONTAINER"
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    log "  Agglayer: $AGGLAYER_CONTAINER"
+fi
 
 # Create output directories
 mkdir -p "$OUTPUT_DIR/datadirs"
 mkdir -p "$OUTPUT_DIR/artifacts"
 mkdir -p "$OUTPUT_DIR/metadata"
+mkdir -p "$OUTPUT_DIR/config/agglayer"
 
 # ============================================================================
 # STEP 1: Stop containers gracefully
@@ -211,7 +221,55 @@ else
 fi
 
 # ============================================================================
-# STEP 6: Extract configuration artifacts
+# STEP 6: Extract Agglayer configuration (optional)
+# ============================================================================
+
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    log "Extracting Agglayer configuration files..."
+
+    # Extract config.toml
+    log "  Extracting config.toml..."
+    if docker cp "$AGGLAYER_CONTAINER:/etc/agglayer/config.toml" "$OUTPUT_DIR/config/agglayer/config.toml" 2>/dev/null; then
+        log "  ✓ config.toml extracted"
+    else
+        log "  WARNING: config.toml not found"
+    fi
+
+    # Extract aggregator keystore
+    log "  Extracting aggregator.keystore..."
+    if docker cp "$AGGLAYER_CONTAINER:/etc/agglayer/aggregator.keystore" "$OUTPUT_DIR/config/agglayer/aggregator.keystore" 2>/dev/null; then
+        log "  ✓ aggregator.keystore extracted"
+    else
+        log "  WARNING: aggregator.keystore not found"
+    fi
+
+    # Verify critical files exist
+    if [ ! -f "$OUTPUT_DIR/config/agglayer/config.toml" ]; then
+        log "WARNING: Agglayer config.toml not found"
+    fi
+
+    if [ ! -f "$OUTPUT_DIR/config/agglayer/aggregator.keystore" ]; then
+        log "WARNING: Agglayer aggregator.keystore not found"
+    fi
+
+    log "Agglayer configuration extracted"
+    log "  Note: Storage and backups directories NOT extracted (stateless by design)"
+
+    # Adapt the config for docker-compose environment
+    log "Adapting agglayer config for docker-compose..."
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [ -x "$SCRIPT_DIR/adapt-agglayer-config.sh" ]; then
+        "$SCRIPT_DIR/adapt-agglayer-config.sh" "$OUTPUT_DIR/config/agglayer"
+        log "  ✓ Agglayer config adapted"
+    else
+        log "  WARNING: adapt-agglayer-config.sh not found or not executable"
+    fi
+else
+    log "Skipping Agglayer extraction (not found in enclave)"
+fi
+
+# ============================================================================
+# STEP 7: Extract configuration artifacts
 # ============================================================================
 
 log "Extracting configuration artifacts..."
@@ -247,5 +305,10 @@ ls -lh "$OUTPUT_DIR/datadirs/"*.tar | awk '{print "  " $9 " (" $5 ")"}'
 
 log "Artifacts:"
 find "$OUTPUT_DIR/artifacts" -type f | sed 's/^/  /'
+
+if [ "$AGGLAYER_FOUND" = "true" ]; then
+    log "Agglayer config:"
+    find "$OUTPUT_DIR/config/agglayer" -type f | sed 's/^/  /'
+fi
 
 exit 0

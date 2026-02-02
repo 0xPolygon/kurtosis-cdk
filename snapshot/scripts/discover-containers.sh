@@ -120,23 +120,60 @@ fi
 
 log "Found Validator: $VALIDATOR_CONTAINER"
 
+# Discover Agglayer (OPTIONAL)
+log "Discovering Agglayer..."
+
+# Try label-based discovery
+AGGLAYER_CONTAINER=$(docker ps \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^agglayer--" | head -1)
+
+if [ -z "$AGGLAYER_CONTAINER" ]; then
+    # Fallback: name pattern matching
+    AGGLAYER_CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "^agglayer--" | head -1)
+fi
+
+if [ -z "$AGGLAYER_CONTAINER" ]; then
+    log "WARNING: Agglayer not found (optional component)"
+    AGGLAYER_FOUND=false
+else
+    log "Found Agglayer: $AGGLAYER_CONTAINER"
+    AGGLAYER_FOUND=true
+fi
+
 # Get container IDs
 GETH_ID=$(docker inspect --format='{{.Id}}' "$GETH_CONTAINER")
 BEACON_ID=$(docker inspect --format='{{.Id}}' "$BEACON_CONTAINER")
 VALIDATOR_ID=$(docker inspect --format='{{.Id}}' "$VALIDATOR_CONTAINER")
+
+if [ "$AGGLAYER_FOUND" = true ]; then
+    AGGLAYER_ID=$(docker inspect --format='{{.Id}}' "$AGGLAYER_CONTAINER")
+fi
 
 # Get image versions
 GETH_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$GETH_CONTAINER")
 BEACON_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$BEACON_CONTAINER")
 VALIDATOR_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$VALIDATOR_CONTAINER")
 
+if [ "$AGGLAYER_FOUND" = true ]; then
+    AGGLAYER_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$AGGLAYER_CONTAINER")
+fi
+
 log "Container IDs retrieved"
 log "  Geth ID: ${GETH_ID:0:12}"
 log "  Beacon ID: ${BEACON_ID:0:12}"
 log "  Validator ID: ${VALIDATOR_ID:0:12}"
+if [ "$AGGLAYER_FOUND" = true ]; then
+    log "  Agglayer ID: ${AGGLAYER_ID:0:12}"
+fi
 
 # Verify containers are running
-for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
+CONTAINERS_TO_CHECK="$GETH_CONTAINER $BEACON_CONTAINER $VALIDATOR_CONTAINER"
+if [ "$AGGLAYER_FOUND" = true ]; then
+    CONTAINERS_TO_CHECK="$CONTAINERS_TO_CHECK $AGGLAYER_CONTAINER"
+fi
+
+for container in $CONTAINERS_TO_CHECK; do
     state=$(docker inspect --format='{{.State.Status}}' "$container")
     if [ "$state" != "running" ]; then
         log "WARNING: Container $container is not running (state: $state)"
@@ -144,7 +181,8 @@ for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; d
 done
 
 # Write discovery results to JSON
-cat > "$OUTPUT_FILE" << EOF
+if [ "$AGGLAYER_FOUND" = true ]; then
+    cat > "$OUTPUT_FILE" << EOF
 {
   "enclave_name": "$ENCLAVE_NAME",
   "enclave_uuid": "$ENCLAVE_UUID",
@@ -162,14 +200,51 @@ cat > "$OUTPUT_FILE" << EOF
     "container_name": "$VALIDATOR_CONTAINER",
     "container_id": "$VALIDATOR_ID",
     "image": "$VALIDATOR_IMAGE"
+  },
+  "agglayer": {
+    "container_name": "$AGGLAYER_CONTAINER",
+    "container_id": "$AGGLAYER_ID",
+    "image": "$AGGLAYER_IMAGE",
+    "found": true
   }
 }
 EOF
+else
+    cat > "$OUTPUT_FILE" << EOF
+{
+  "enclave_name": "$ENCLAVE_NAME",
+  "enclave_uuid": "$ENCLAVE_UUID",
+  "geth": {
+    "container_name": "$GETH_CONTAINER",
+    "container_id": "$GETH_ID",
+    "image": "$GETH_IMAGE"
+  },
+  "beacon": {
+    "container_name": "$BEACON_CONTAINER",
+    "container_id": "$BEACON_ID",
+    "image": "$BEACON_IMAGE"
+  },
+  "validator": {
+    "container_name": "$VALIDATOR_CONTAINER",
+    "container_id": "$VALIDATOR_ID",
+    "image": "$VALIDATOR_IMAGE"
+  },
+  "agglayer": {
+    "found": false
+  }
+}
+EOF
+fi
 
 log "Discovery complete. Results written to: $OUTPUT_FILE"
 log "Summary:"
 log "  Geth: $GETH_CONTAINER ($GETH_IMAGE)"
 log "  Beacon: $BEACON_CONTAINER ($BEACON_IMAGE)"
 log "  Validator: $VALIDATOR_CONTAINER ($VALIDATOR_IMAGE)"
+if [ "$AGGLAYER_FOUND" = true ]; then
+    log "  Agglayer: $AGGLAYER_CONTAINER ($AGGLAYER_IMAGE)"
+else
+    log "  Agglayer: Not found (optional)"
+fi
 
 exit 0
