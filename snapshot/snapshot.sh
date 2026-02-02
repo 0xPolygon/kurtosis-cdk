@@ -15,6 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_BASE_DIR="snapshots"
 TAG_SUFFIX=""
 ENCLAVE_NAME=""
+SKIP_VERIFY=false
 
 # Colors for output
 RED='\033[0;31m'
@@ -60,6 +61,7 @@ Arguments:
 Options:
   --out <DIR>         Output directory (default: snapshots)
   --tag <TAG>         Custom tag suffix for images
+  --skip-verify       Skip automated verification step
   -h, --help          Show this help message
 
 Examples:
@@ -71,6 +73,9 @@ Examples:
 
   # With custom tag
   $0 snapshot-test --tag v1.0.0
+
+  # Skip verification (faster)
+  $0 snapshot-test --skip-verify
 
 Description:
   Creates a complete, deterministic snapshot of an Ethereum L1 devnet:
@@ -117,6 +122,10 @@ while [[ $# -gt 0 ]]; do
         --tag)
             TAG_SUFFIX="$2"
             shift 2
+            ;;
+        --skip-verify)
+            SKIP_VERIFY=true
+            shift
             ;;
         -*)
             log_error "Unknown option: $1"
@@ -558,6 +567,9 @@ To verify this snapshot:
 For detailed usage:
   cat $OUTPUT_DIR/USAGE.md
 
+Note:
+  Verification was $([ "$SKIP_VERIFY" = true ] && echo "skipped" || echo "run automatically")
+
 EOF
 
 log "Snapshot summary created"
@@ -566,31 +578,41 @@ log "Snapshot summary created"
 # Step 9: Verification
 # ============================================================================
 
-log_step "STEP 9: Snapshot Verification"
-
-log "Running automated verification tests..."
-log "This will:"
-log "  - Start the snapshot containers"
-log "  - Verify initial block state matches checkpoint"
-log "  - Wait for blocks to progress"
-log "  - Check all services are healthy"
-log ""
-log_info "This may take 1-2 minutes..."
-log ""
-
-# Run verify.sh and capture output
 VERIFY_SUCCESS=false
-if "$SCRIPT_DIR/verify.sh" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
-    VERIFY_SUCCESS=true
-    log "✓ Snapshot verification PASSED"
-    log "  All tests completed successfully"
-else
-    log_error "✗ Snapshot verification FAILED"
-    log_error "  Some tests did not pass - check log for details"
-fi
 
-log ""
-log "Verification details: $LOG_FILE"
+if [ "$SKIP_VERIFY" = true ]; then
+    log_step "STEP 9: Snapshot Verification (SKIPPED)"
+    log "Verification skipped per --skip-verify flag"
+    log "You can manually verify later using:"
+    log "  $SCRIPT_DIR/verify.sh $OUTPUT_DIR"
+    log ""
+    VERIFY_SUCCESS="skipped"
+else
+    log_step "STEP 9: Snapshot Verification"
+
+    log "Running automated verification tests..."
+    log "This will:"
+    log "  - Start the snapshot containers"
+    log "  - Verify initial block state matches checkpoint"
+    log "  - Wait for blocks to progress"
+    log "  - Check all services are healthy"
+    log ""
+    log_info "This may take 1-2 minutes..."
+    log ""
+
+    # Run verify.sh and capture output
+    if "$SCRIPT_DIR/verify.sh" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+        VERIFY_SUCCESS=true
+        log "✓ Snapshot verification PASSED"
+        log "  All tests completed successfully"
+    else
+        log_error "✗ Snapshot verification FAILED"
+        log_error "  Some tests did not pass - check log for details"
+    fi
+
+    log ""
+    log "Verification details: $LOG_FILE"
+fi
 
 # ============================================================================
 # Success
@@ -598,6 +620,8 @@ log "Verification details: $LOG_FILE"
 
 if [ "$VERIFY_SUCCESS" = true ]; then
     log_step "✓ SNAPSHOT COMPLETE AND VERIFIED!"
+elif [ "$VERIFY_SUCCESS" = "skipped" ]; then
+    log_step "✓ SNAPSHOT COMPLETE (Verification Skipped)"
 else
     log_step "⚠ SNAPSHOT COMPLETE (Verification Issues Detected)"
 fi
@@ -619,6 +643,19 @@ log ""
 if [ "$VERIFY_SUCCESS" = true ]; then
     log "Verification: ✓ PASSED"
     log "The snapshot has been tested and is working correctly"
+    log ""
+    log "Quick start:"
+    log "  cd $OUTPUT_DIR"
+    log "  ./start-snapshot.sh"
+    log ""
+    log "For details:"
+    log "  cat $OUTPUT_DIR/SNAPSHOT_SUMMARY.txt"
+    EXIT_CODE=0
+elif [ "$VERIFY_SUCCESS" = "skipped" ]; then
+    log_warn "Verification: SKIPPED"
+    log "The snapshot was created but verification was skipped"
+    log "To verify manually, run:"
+    log "  $SCRIPT_DIR/verify.sh $OUTPUT_DIR"
     log ""
     log "Quick start:"
     log "  cd $OUTPUT_DIR"

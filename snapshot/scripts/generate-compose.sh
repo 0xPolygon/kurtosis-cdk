@@ -217,6 +217,12 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
       geth:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "sh", "-c", "test -f /proc/1/cmdline"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - RUST_BACKTRACE=1
 EOF
@@ -373,6 +379,21 @@ EOF
         # ====================================================================
 
         if [ -n "$AGGKIT_IMAGE" ] && [ "$AGGKIT_IMAGE" != "null" ]; then
+            # Build depends_on section dynamically
+            AGGKIT_DEPENDS="      geth:
+        condition: service_healthy
+      op-geth-$prefix:
+        condition: service_healthy
+      op-node-$prefix:
+        condition: service_healthy"
+
+            # Add agglayer dependency if present
+            if [ "$AGGLAYER_FOUND" = "true" ]; then
+                AGGKIT_DEPENDS="$AGGKIT_DEPENDS
+      agglayer:
+        condition: service_healthy"
+            fi
+
             cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
   aggkit-$prefix:
@@ -393,12 +414,7 @@ EOF
       - "$L2_AGGKIT_RPC_PORT:5576"    # RPC
       - "$L2_AGGKIT_REST_PORT:5577"    # REST API
     depends_on:
-      geth:
-        condition: service_healthy
-      op-geth-$prefix:
-        condition: service_healthy
-      op-node-$prefix:
-        condition: service_healthy
+$AGGKIT_DEPENDS
     restart: unless-stopped
     environment:
       - RUST_BACKTRACE=1
