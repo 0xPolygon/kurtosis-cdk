@@ -305,6 +305,9 @@ if [ "$AGGLAYER_FOUND" = true ]; then
     AGGLAYER_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$AGGLAYER_CONTAINER")
 fi
 
+# Get network name from geth container
+NETWORK_NAME=$(docker inspect "$GETH_CONTAINER" --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+
 log "Container IDs retrieved"
 log "  Geth ID: ${GETH_ID:0:12}"
 log "  Beacon ID: ${BEACON_ID:0:12}"
@@ -353,6 +356,7 @@ cat > "$OUTPUT_FILE" << EOF
 {
   "enclave_name": "$ENCLAVE_NAME",
   "enclave_uuid": "$ENCLAVE_UUID",
+  "network_name": "$NETWORK_NAME",
   "geth": {
     "container_name": "$GETH_CONTAINER",
     "container_id": "$GETH_ID",

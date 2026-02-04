@@ -257,6 +257,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        L2_AGGKIT_BRIDGE_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         # ====================================================================
         # op-geth service
@@ -404,7 +405,7 @@ EOF
     command:
       - "run"
       - "--cfg=/etc/aggkit/config.toml"
-      - "--components=aggsender,aggoracle"
+      - "--components=aggsender,aggoracle,bridge"
     volumes:
       - ./config/$prefix/aggkit-config.toml:/etc/aggkit/config.toml:ro
       - ./config/$prefix/sequencer.keystore:/etc/aggkit/sequencer.keystore:ro
@@ -413,6 +414,7 @@ EOF
     ports:
       - "$L2_AGGKIT_RPC_PORT:5576"    # RPC
       - "$L2_AGGKIT_REST_PORT:5577"    # REST API
+      - "$L2_AGGKIT_BRIDGE_PORT:8080"    # Bridge Service
     depends_on:
 $AGGKIT_DEPENDS
     restart: unless-stopped
@@ -431,92 +433,8 @@ else
     log "No L2 networks to add"
 fi
 
-# ============================================================================
-# Add bridge spammer service (commented out by default)
-# ============================================================================
-
-# Bridge spammer needs contract addresses which are available in aggkit config
-if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
-    log "Adding bridge-spammer service (commented out) to docker-compose.yml..."
-
-    # Get the first L2 network config to extract bridge addresses and chain IDs
-    FIRST_PREFIX=$(jq -r '.l2_chains | keys[0]' "$DISCOVERY_JSON" 2>/dev/null)
-
-    if [ -n "$FIRST_PREFIX" ] && [ "$FIRST_PREFIX" != "null" ]; then
-        # Try to read contract addresses from aggkit config if it exists
-        AGGKIT_CONFIG="$OUTPUT_DIR/config/$FIRST_PREFIX/aggkit-config.toml"
-        ROLLUP_CONFIG="$OUTPUT_DIR/config/$FIRST_PREFIX/rollup.json"
-
-        if [ -f "$AGGKIT_CONFIG" ] && [ -f "$ROLLUP_CONFIG" ]; then
-            # Extract values from configs
-            L1_BRIDGE_ADDR=$(grep -m1 "^BridgeAddr" "$AGGKIT_CONFIG" | cut -d'"' -f2 2>/dev/null || echo "0xYOUR_L1_BRIDGE_ADDRESS")
-            L2_BRIDGE_ADDR=$(grep -A5 "^\[L2Config\]" "$AGGKIT_CONFIG" | grep "^BridgeAddr" | cut -d'"' -f2 2>/dev/null || echo "0xYOUR_L2_BRIDGE_ADDRESS")
-            L1_CHAIN_ID=$(jq -r '.l1_chain_id // "271828"' "$ROLLUP_CONFIG" 2>/dev/null)
-            L2_CHAIN_ID=$(jq -r '.l2_chain_id // "2151908"' "$ROLLUP_CONFIG" 2>/dev/null)
-
-            # Calculate L2 HTTP port for the first network
-            PREFIX_NUM=$((10#$FIRST_PREFIX))
-            L2_HTTP_PORT=$((10000 + PREFIX_NUM * 1000 + 545))
-
-            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
-
-# ==============================================================================
-# Bridge Spammer Service (Optional - Commented Out)
-# ==============================================================================
-# This service simulates blockchain activity by performing L1<->L2 bridge transactions.
-# To enable: uncomment the service below and ensure you have the bridge.sh script
-#
-# Uncomment the lines below to enable the bridge spammer:
-#
-#  bridge-spammer-$FIRST_PREFIX:
-#    image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/toolbox:0.0.12
-#    container_name: $SNAPSHOT_ID-bridge-spammer-$FIRST_PREFIX
-#    hostname: bridge-spammer-$FIRST_PREFIX
-#    # Mount the bridge script from the repository
-#    volumes:
-#      - ../../static_files/additional_services/bridge-spammer/bridge.sh:/scripts/bridge.sh:ro
-#    environment:
-#      # IMPORTANT: Replace this with a funded private key (without 0x prefix)
-#      - PRIVATE_KEY=YOUR_PRIVATE_KEY_HERE
-#      # L1 Configuration
-#      - L1_CHAIN_ID=$L1_CHAIN_ID
-#      - L1_RPC_URL=http://geth:8545
-#      # L2 Configuration
-#      - L2_CHAIN_ID=$L2_CHAIN_ID
-#      - L2_RPC_URL=http://op-geth-$FIRST_PREFIX:8545
-#      - L2_NETWORK_ID=1
-#      # Bridge Contract Addresses
-#      - L1_BRIDGE_ADDRESS=$L1_BRIDGE_ADDR
-#      - L2_BRIDGE_ADDRESS=$L2_BRIDGE_ADDR
-#    entrypoint: ["/bin/bash", "-c"]
-#    command: ["chmod +x /scripts/bridge.sh && /scripts/bridge.sh"]
-#    depends_on:
-#      geth:
-#        condition: service_healthy
-#      beacon:
-#        condition: service_healthy
-#      op-geth-$FIRST_PREFIX:
-#        condition: service_healthy
-#      op-node-$FIRST_PREFIX:
-#        condition: service_healthy
-#    restart: unless-stopped
-#
-# NOTE: The bridge spammer requires:
-# 1. A funded wallet (set PRIVATE_KEY environment variable)
-# 2. The bridge.sh script (mounted from kurtosis-cdk/static_files/additional_services/bridge-spammer/)
-# 3. Both L1 and L2 services to be healthy and synced
-EOF
-
-            log "Bridge spammer service (commented out) added to docker-compose.yml"
-        else
-            log "Skipping bridge spammer - aggkit or rollup config not found"
-        fi
-    fi
-fi
-
 cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
-# No networks - using default bridge network for simplicity
 # No volumes - all state is baked into images
 # L1 state is baked in, L2 starts fresh with config-only mounts
 # Agglayer and AggKit use host-mounted config files (read-only)
@@ -534,8 +452,6 @@ log "Creating helper scripts..."
 cat > "$OUTPUT_DIR/start-snapshot.sh" << EOF
 #!/usr/bin/env bash
 set -euo pipefail
-
-echo "Starting Ethereum L1 snapshot..."
 
 docker-compose -f docker-compose.yml up -d
 
@@ -606,10 +522,10 @@ EOF
 
 chmod +x "$OUTPUT_DIR/query-state.sh"
 
-log "Helper scripts created:"
-log "  start-snapshot.sh - Start the snapshot"
-log "  stop-snapshot.sh - Stop the snapshot"
-log "  query-state.sh - Query L1 state"
+log "Helper scripts created (will be cleaned up after snapshot finalization):"
+log "  start-snapshot.sh - Temporary helper for testing"
+log "  stop-snapshot.sh - Temporary helper for testing"
+log "  query-state.sh - Temporary helper for testing"
 
 # ============================================================================
 # Create usage guide
@@ -726,6 +642,7 @@ EOF
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        L2_AGGKIT_BRIDGE_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
@@ -743,6 +660,7 @@ EOF
             cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 - **aggkit-$prefix RPC:** http://localhost:$L2_AGGKIT_RPC_PORT
 - **aggkit-$prefix REST API:** http://localhost:$L2_AGGKIT_REST_PORT
+- **aggkit-$prefix Bridge Service:** http://localhost:$L2_AGGKIT_BRIDGE_PORT
 EOF
         fi
     done
@@ -887,52 +805,6 @@ fi
 
 cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
-## Optional: Bridge Spammer Service
-
-The docker-compose.yml file includes a commented-out bridge spammer service that simulates
-blockchain activity by performing L1 to L2 and L2 to L1 bridge transactions.
-
-### Enabling the Bridge Spammer
-
-1. **Uncomment the service** in docker-compose.yml (search for "bridge-spammer")
-
-2. **Set up a funded wallet:**
-   - Generate a new wallet or use an existing one
-   - Fund it on both L1 and L2 (the script will handle some funding automatically)
-   - Set the PRIVATE_KEY environment variable (without 0x prefix)
-
-3. **Ensure the bridge script is available:**
-   The service expects the bridge.sh script to be mounted from:
-   \`../../static_files/additional_services/bridge-spammer/bridge.sh\`
-
-   If running from a different location, update the volume mount path accordingly.
-
-4. **Start the services:**
-   \`\`\`bash
-   docker-compose -f docker-compose.yml up -d
-   \`\`\`
-
-### Bridge Spammer Behavior
-
-- Continuously performs bridge transactions between L1 and L2
-- Initial deposit of 1 ETH from L1 to L2 to ensure sufficient balance
-- Alternates between L1→L2 and L2→L1 bridges with 60-second intervals
-- Uses dynamic amounts based on current timestamp
-- Automatically handles errors and continues execution
-
-### Monitoring Bridge Activity
-
-\`\`\`bash
-# View bridge spammer logs
-docker-compose -f docker-compose.yml logs -f bridge-spammer-001
-
-# Check wallet balance on L1
-cast balance YOUR_ADDRESS --rpc-url http://localhost:8545
-
-# Check wallet balance on L2
-cast balance YOUR_ADDRESS --rpc-url http://localhost:10545
-\`\`\`
-
 ## Troubleshooting
 
 ### Services not starting
@@ -968,8 +840,7 @@ This will:
 4. Report verification results
 EOF
 
-log "Usage guide created: $OUTPUT_DIR/USAGE.md"
-
 log "Docker Compose generation complete!"
+log "Note: Temporary helper files will be removed after snapshot verification"
 
 exit 0

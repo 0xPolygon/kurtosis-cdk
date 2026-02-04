@@ -524,74 +524,10 @@ log_step "STEP 8: Finalization"
 
 log "Finalizing snapshot..."
 
-# Create snapshot summary
+# Create snapshot summary (this file will be cleaned up later)
 TAG=$(cat "$OUTPUT_DIR/images/.tag" 2>/dev/null || echo "unknown")
 
-cat > "$OUTPUT_DIR/SNAPSHOT_SUMMARY.txt" << EOF
-Ethereum L1 Snapshot Summary
-============================
-
-Snapshot Name: $SNAPSHOT_NAME
-Created: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-Enclave: $ENCLAVE_NAME
-
-Components
-----------
-Geth: $GETH_CONTAINER
-Beacon: $BEACON_CONTAINER
-Validator: $VALIDATOR_CONTAINER
-
-Images
-------
-snapshot-geth:$TAG
-snapshot-beacon:$TAG
-snapshot-validator:$TAG
-
-State
------
-Pre-stop block: $BLOCK_NUMBER
-
-Original Enclave
-----------------
-Status: Resumed and producing blocks
-Enclave: $ENCLAVE_NAME
-Containers:
-  - $GETH_CONTAINER
-  - $BEACON_CONTAINER
-  - $VALIDATOR_CONTAINER
-
-Files Generated
----------------
-$(find "$OUTPUT_DIR" -type f | wc -l) files
-Total size: $(du -sh "$OUTPUT_DIR" | cut -f1)
-
-Network Summary
----------------
-A comprehensive summary.json file is included with:
-- Smart contract addresses for all networks (L1, L2s, Agglayer)
-- Service URLs (internal Docker + external localhost)
-- All relevant accounts with roles and descriptions
-
-View summary: cat $OUTPUT_DIR/summary.json | jq
-
-Quick Start
------------
-To start this snapshot:
-  cd $OUTPUT_DIR
-  ./start-snapshot.sh
-
-To verify this snapshot:
-  $SCRIPT_DIR/verify.sh $OUTPUT_DIR
-
-For detailed usage:
-  cat $OUTPUT_DIR/USAGE.md
-
-Note:
-  Verification was $([ "$SKIP_VERIFY" = true ] && echo "skipped" || echo "run automatically")
-
-EOF
-
-log "Snapshot summary created"
+log "Snapshot finalization in progress..."
 
 # ============================================================================
 # Step 9: Verification
@@ -634,6 +570,32 @@ else
 fi
 
 # ============================================================================
+# Step 10: Cleanup Unnecessary Files
+# ============================================================================
+
+log_step "STEP 10: Cleanup"
+
+log "Removing temporary and intermediate files..."
+
+# Remove directories that are no longer needed
+rm -rf "$OUTPUT_DIR/artifacts" 2>/dev/null || true
+rm -rf "$OUTPUT_DIR/datadirs" 2>/dev/null || true
+rm -rf "$OUTPUT_DIR/images" 2>/dev/null || true
+rm -rf "$OUTPUT_DIR/metadata" 2>/dev/null || true
+
+# Remove individual files that are no longer needed
+rm -f "$OUTPUT_DIR/discovery.json" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/pre-stop-state.json" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/query-state.sh" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/SNAPSHOT_INFO.txt" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/SNAPSHOT_SUMMARY.txt" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/start-snapshot.sh" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/stop-snapshot.sh" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/USAGE.md" 2>/dev/null || true
+
+log "Cleanup complete - snapshot is ready for distribution"
+
+# ============================================================================
 # Success
 # ============================================================================
 
@@ -665,10 +627,10 @@ if [ "$VERIFY_SUCCESS" = true ]; then
     log ""
     log "Quick start:"
     log "  cd $OUTPUT_DIR"
-    log "  ./start-snapshot.sh"
+    log "  docker-compose up -d"
     log ""
-    log "For details:"
-    log "  cat $OUTPUT_DIR/SNAPSHOT_SUMMARY.txt"
+    log "View network details:"
+    log "  cat $OUTPUT_DIR/summary.json | jq"
     EXIT_CODE=0
 elif [ "$VERIFY_SUCCESS" = "skipped" ]; then
     log_warn "Verification: SKIPPED"
@@ -678,10 +640,10 @@ elif [ "$VERIFY_SUCCESS" = "skipped" ]; then
     log ""
     log "Quick start:"
     log "  cd $OUTPUT_DIR"
-    log "  ./start-snapshot.sh"
+    log "  docker-compose up -d"
     log ""
-    log "For details:"
-    log "  cat $OUTPUT_DIR/SNAPSHOT_SUMMARY.txt"
+    log "View network details:"
+    log "  cat $OUTPUT_DIR/summary.json | jq"
     EXIT_CODE=0
 else
     log_warn "Verification: ✗ FAILED"
@@ -690,7 +652,7 @@ else
     log ""
     log "Troubleshooting:"
     log "  1. Check logs: tail -100 $LOG_FILE"
-    log "  2. Manual test: cd $OUTPUT_DIR && ./start-snapshot.sh"
+    log "  2. Manual test: cd $OUTPUT_DIR && docker-compose up -d"
     log "  3. Check services: cd $OUTPUT_DIR && docker-compose ps"
     EXIT_CODE=1
 fi
