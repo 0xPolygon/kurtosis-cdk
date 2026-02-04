@@ -17,6 +17,11 @@ fi
 DISCOVERY_JSON="$1"
 OUTPUT_DIR="$2"
 
+# Create temp directory for intermediate files to avoid "Argument list too long" errors
+TEMP_DIR="${OUTPUT_DIR}/.tmp_summary_$$"
+mkdir -p "$TEMP_DIR"
+trap "rm -rf '$TEMP_DIR'" EXIT
+
 # Check dependencies
 for cmd in jq curl; do
     if ! command -v "$cmd" &> /dev/null; then
@@ -70,24 +75,108 @@ L2_CHAINS_COUNT=$(jq -r '.l2_chains | length // 0' "$DISCOVERY_JSON" 2>/dev/null
 # Helper Functions
 # ============================================================================
 
-# Extract accounts from genesis file
+# Default mnemonics used for test accounts
+DEFAULT_L1_MNEMONIC="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
+DEFAULT_L2_MNEMONIC="test test test test test test test test test test test junk"
+
+# Build a map of address -> private key from mnemonic
+build_private_key_map() {
+    local mnemonic="$1"
+    local count="${2:-100}"  # Generate first 100 accounts
+
+    echo "{}" > "$TEMP_DIR/pk_map.json"
+
+    for i in $(seq 0 $((count - 1))); do
+        # Derive address and private key
+        local addr=$(cast wallet address --mnemonic "$mnemonic" --mnemonic-index $i 2>/dev/null || echo "")
+        local pk=$(cast wallet private-key --mnemonic "$mnemonic" --mnemonic-index $i 2>/dev/null || echo "")
+
+        if [ -n "$addr" ] && [ -n "$pk" ]; then
+            # Add to map (convert address to lowercase for matching)
+            jq --arg addr "${addr,,}" --arg pk "$pk" '. + {($addr): $pk}' "$TEMP_DIR/pk_map.json" > "$TEMP_DIR/pk_map_tmp.json"
+            mv "$TEMP_DIR/pk_map_tmp.json" "$TEMP_DIR/pk_map.json"
+        fi
+    done
+}
+
+# Extract accounts from genesis file (only meaningful accounts with balance > 1)
 extract_genesis_accounts() {
     local genesis_file="$1"
     local description_prefix="$2"
+    local exclude_op_contracts="${3:-false}"
+    local pk_map_file="$TEMP_DIR/pk_map.json"
 
     if [ ! -f "$genesis_file" ]; then
         echo "[]"
         return
     fi
 
-    # Extract accounts with balance
-    jq -r --arg desc "$description_prefix" '
-        .alloc // {} | to_entries | map({
-            address: .key,
-            balance: .value.balance,
-            description: ($desc + " pre-funded account")
-        })
-    ' "$genesis_file" 2>/dev/null || echo "[]"
+    # Load private key map if available
+    local pk_map="{}"
+    if [ -f "$pk_map_file" ]; then
+        pk_map=$(cat "$pk_map_file")
+    fi
+
+    # Extract accounts with meaningful balance, excluding precompiles and optionally OP contracts
+    if [ "$exclude_op_contracts" = "true" ]; then
+        jq --arg desc "$description_prefix" --argjson pk_map "$pk_map" '
+            .alloc // {} | to_entries |
+            map(select(
+                # Exclude precompile addresses (0x0000...0000 through 0x0000...00ff)
+                (.key | test("^0x000000000000000000000000000000000000") | not) and
+                # Exclude OP predeploy contracts (0x4200...)
+                (.key | test("^0x4200|^0420") | not) and
+                # Only include accounts with balance > 1
+                ((.value.balance | if type == "string" then
+                    if startswith("0x") then
+                        # Hex balance: exclude 0x0 and 0x1
+                        . != "0x0" and . != "0x1"
+                    else
+                        # Decimal balance: exclude 0 and 1
+                        (. | tonumber) > 1
+                    end
+                else false end))
+            )) |
+            map({
+                address: (if .key | startswith("0x") then .key else ("0x" + .key) end),
+                balance: .value.balance,
+                private_key: (
+                    .value.privateKey //
+                    $pk_map[(if .key | startswith("0x") then .key else ("0x" + .key) end) | ascii_downcase] //
+                    null
+                ),
+                description: ($desc + " pre-funded account")
+            })
+        ' "$genesis_file" 2>/dev/null || echo "[]"
+    else
+        jq --arg desc "$description_prefix" --argjson pk_map "$pk_map" '
+            .alloc // {} | to_entries |
+            map(select(
+                # Exclude precompile addresses (0x0000...0000 through 0x0000...00ff)
+                (.key | test("^0x000000000000000000000000000000000000") | not) and
+                # Only include accounts with balance > 1
+                ((.value.balance | if type == "string" then
+                    if startswith("0x") then
+                        # Hex balance: exclude 0x0 and 0x1
+                        . != "0x0" and . != "0x1"
+                    else
+                        # Decimal balance: exclude 0 and 1
+                        (. | tonumber) > 1
+                    end
+                else false end))
+            )) |
+            map({
+                address: (if .key | startswith("0x") then .key else ("0x" + .key) end),
+                balance: .value.balance,
+                private_key: (
+                    .value.privateKey //
+                    $pk_map[(if .key | startswith("0x") then .key else ("0x" + .key) end) | ascii_downcase] //
+                    null
+                ),
+                description: ($desc + " pre-funded account")
+            })
+        ' "$genesis_file" 2>/dev/null || echo "[]"
+    fi
 }
 
 # Extract address from keystore file
@@ -112,14 +201,73 @@ extract_keystore_privkey() {
     echo ""
 }
 
+# Extract L1 contract addresses from agglayer and aggkit configs
+extract_l1_contracts() {
+    local output_dir="$1"
+    local contracts="{}"
+
+    # Extract from agglayer config if it exists
+    local agglayer_config="$output_dir/config/agglayer/config.toml"
+    if [ -f "$agglayer_config" ]; then
+        local rollup_manager=$(grep -m1 "rollup-manager-contract" "$agglayer_config" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
+        local ger_contract=$(grep -m1 "polygon-zkevm-global-exit-root-v2-contract" "$agglayer_config" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
+
+        contracts=$(jq -n \
+            --arg rollup_manager "$rollup_manager" \
+            --arg ger "$ger_contract" \
+            '{
+                rollup_manager: (if $rollup_manager != "" then $rollup_manager else null end),
+                global_exit_root_v2: (if $ger != "" then $ger else null end)
+            }')
+    fi
+
+    # Also extract from first L2 aggkit config if available
+    local aggkit_config="$output_dir/config/001/aggkit-config.toml"
+    if [ -f "$aggkit_config" ]; then
+        local bridge_addr=$(grep "polygonBridgeAddr" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+        local pol_token=$(grep "polTokenAddress" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+        local deposit_contract=$(jq -r '.config.depositContractAddress // empty' "$output_dir/artifacts/genesis.json" 2>/dev/null || echo "")
+
+        contracts=$(echo "$contracts" | jq \
+            --arg bridge "$bridge_addr" \
+            --arg pol_token "$pol_token" \
+            --arg deposit "$deposit_contract" \
+            '. + {
+                bridge: (if $bridge != "" then $bridge else null end),
+                pol_token: (if $pol_token != "" then $pol_token else null end),
+                deposit_contract: (if $deposit != "" then $deposit else null end)
+            }')
+    fi
+
+    echo "$contracts"
+}
+
 # ============================================================================
 # Build L1 Network Info
 # ============================================================================
 
 log "Building L1 network info..."
 
-# L1 contract addresses (from genesis if available)
-L1_CONTRACTS="{}"
+# Build private key maps from mnemonics (if cast is available)
+if command -v cast &> /dev/null; then
+    log "  Deriving private keys from L1 mnemonic..."
+    build_private_key_map "$DEFAULT_L1_MNEMONIC" 50
+
+    log "  Deriving private keys from L2 mnemonic..."
+    # Append L2 private keys to the same map
+    for i in $(seq 0 49); do
+        addr=$(cast wallet address --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index $i 2>/dev/null || echo "")
+        pk=$(cast wallet private-key --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index $i 2>/dev/null || echo "")
+
+        if [ -n "$addr" ] && [ -n "$pk" ]; then
+            jq --arg addr "${addr,,}" --arg pk "$pk" '. + {($addr): $pk}' "$TEMP_DIR/pk_map.json" > "$TEMP_DIR/pk_map_tmp.json"
+            mv "$TEMP_DIR/pk_map_tmp.json" "$TEMP_DIR/pk_map.json"
+        fi
+    done
+fi
+
+# L1 contract addresses
+L1_CONTRACTS=$(extract_l1_contracts "$OUTPUT_DIR")
 
 # L1 service URLs
 L1_SERVICES=$(cat <<EOF
@@ -165,34 +313,16 @@ EOF
 # L1 accounts
 L1_ACCOUNTS=$(extract_genesis_accounts "$GENESIS_FILE" "L1")
 
-# Add validator accounts
-VALIDATOR_KEYS_DIR="$OUTPUT_DIR/artifacts/validator-keys"
-if [ -d "$VALIDATOR_KEYS_DIR" ]; then
-    log "  Found validator keys directory"
-    # List all validator public keys
-    VALIDATOR_PUBKEYS=$(ls -1 "$VALIDATOR_KEYS_DIR" 2>/dev/null | grep "^0x" || echo "")
-    if [ -n "$VALIDATOR_PUBKEYS" ]; then
-        VALIDATOR_COUNT=$(echo "$VALIDATOR_PUBKEYS" | wc -l)
-        log "  Found $VALIDATOR_COUNT validator(s)"
-
-        # Add validator accounts to L1_ACCOUNTS
-        VALIDATOR_ACCOUNTS=$(echo "$VALIDATOR_PUBKEYS" | jq -R -s -c '
-            split("\n") | map(select(length > 0)) | map({
-                address: .,
-                private_key: "",
-                description: "Validator pubkey (private key in keystore)"
-            })
-        ')
-
-        L1_ACCOUNTS=$(jq -s '.[0] + .[1]' <(echo "$L1_ACCOUNTS") <(echo "$VALIDATOR_ACCOUNTS"))
-    fi
-fi
-
 # Build L1 network object
+# Use temp files to avoid "Argument list too long" errors
+echo "$L1_CONTRACTS" > "$TEMP_DIR/l1_contracts.json"
+echo "$L1_SERVICES" > "$TEMP_DIR/l1_services.json"
+echo "$L1_ACCOUNTS" > "$TEMP_DIR/l1_accounts.json"
+
 L1_NETWORK=$(jq -n \
-    --argjson contracts "$L1_CONTRACTS" \
-    --argjson services "$L1_SERVICES" \
-    --argjson accounts "$L1_ACCOUNTS" \
+    --slurpfile contracts "$TEMP_DIR/l1_contracts.json" \
+    --slurpfile services "$TEMP_DIR/l1_services.json" \
+    --slurpfile accounts "$TEMP_DIR/l1_accounts.json" \
     --arg chain_id "$L1_CHAIN_ID" \
     --arg block "$L1_BLOCK" \
     --arg hash "$L1_HASH" \
@@ -204,9 +334,9 @@ L1_NETWORK=$(jq -n \
             hash: $hash
         },
         genesis_hash: $genesis_hash,
-        contracts: $contracts,
-        services: $services,
-        accounts: $accounts
+        contracts: $contracts[0],
+        services: $services[0],
+        accounts: $accounts[0]
     }')
 
 # ============================================================================
@@ -217,24 +347,6 @@ AGGLAYER_INFO="null"
 
 if [ "$AGGLAYER_FOUND" = "true" ]; then
     log "Building Agglayer info..."
-
-    AGGLAYER_CONFIG="$OUTPUT_DIR/config/agglayer/config.toml"
-
-    # Extract contract addresses from agglayer config
-    AGGLAYER_CONTRACTS="{}"
-    if [ -f "$AGGLAYER_CONFIG" ]; then
-        # Extract key contract addresses using grep and sed
-        ROLLUP_MANAGER=$(grep -m1 "rollup-manager-contract" "$AGGLAYER_CONFIG" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
-        GER_CONTRACT=$(grep -m1 "polygon-zkevm-global-exit-root-v2-contract" "$AGGLAYER_CONFIG" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
-
-        AGGLAYER_CONTRACTS=$(jq -n \
-            --arg rollup_manager "$ROLLUP_MANAGER" \
-            --arg ger "$GER_CONTRACT" \
-            '{
-                rollup_manager: (if $rollup_manager != "" then $rollup_manager else null end),
-                global_exit_root_v2: (if $ger != "" then $ger else null end)
-            }')
-    fi
 
     # Agglayer service URLs
     AGGLAYER_SERVICES=$(cat <<EOF
@@ -259,33 +371,13 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
 EOF
 )
 
-    # Agglayer accounts
-    AGGLAYER_ACCOUNTS="[]"
-    AGGREGATOR_KEYSTORE="$OUTPUT_DIR/config/agglayer/aggregator.keystore"
-    if [ -f "$AGGREGATOR_KEYSTORE" ]; then
-        AGGREGATOR_ADDR=$(extract_keystore_address "$AGGREGATOR_KEYSTORE")
-        if [ -n "$AGGREGATOR_ADDR" ]; then
-            # Add 0x prefix if not present
-            [[ "$AGGREGATOR_ADDR" != 0x* ]] && AGGREGATOR_ADDR="0x$AGGREGATOR_ADDR"
-
-            AGGLAYER_ACCOUNTS=$(jq -n \
-                --arg addr "$AGGREGATOR_ADDR" \
-                '[{
-                    address: $addr,
-                    private_key: "(encrypted in keystore)",
-                    description: "Agglayer aggregator account"
-                }]')
-        fi
-    fi
+    # Use temp files to avoid "Argument list too long" errors
+    echo "$AGGLAYER_SERVICES" > "$TEMP_DIR/agglayer_services.json"
 
     AGGLAYER_INFO=$(jq -n \
-        --argjson contracts "$AGGLAYER_CONTRACTS" \
-        --argjson services "$AGGLAYER_SERVICES" \
-        --argjson accounts "$AGGLAYER_ACCOUNTS" \
+        --slurpfile services "$TEMP_DIR/agglayer_services.json" \
         '{
-            contracts: $contracts,
-            services: $services,
-            accounts: $accounts
+            services: $services[0]
         }')
 fi
 
@@ -310,6 +402,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        L2_AGGKIT_BRIDGE_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         # Get L2 chain ID
         ROLLUP_FILE="$OUTPUT_DIR/config/$prefix/rollup.json"
@@ -318,33 +411,22 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             L2_CHAIN_ID=$(jq -r '.l2_chain_id // .genesis.l2.chain_id // "unknown"' "$ROLLUP_FILE")
         fi
 
-        # Extract contract addresses from rollup.json
+        # Extract contract addresses from aggkit config
         L2_CONTRACTS="{}"
-        if [ -f "$ROLLUP_FILE" ]; then
-            # System config and other addresses from rollup config
-            SYSTEM_CONFIG=$(jq -r '.genesis.system_config // empty' "$ROLLUP_FILE" 2>/dev/null || echo "")
-
-            L2_CONTRACTS=$(jq -n --arg system_config "$SYSTEM_CONFIG" '{
-                system_config: (if $system_config != "" then $system_config else null end)
-            }')
-        fi
-
-        # Extract additional contract addresses from aggkit config
         AGGKIT_CONFIG="$OUTPUT_DIR/config/$prefix/aggkit-config.toml"
         if [ -f "$AGGKIT_CONFIG" ]; then
-            # Extract bridge addresses and other contracts
-            L1_BRIDGE=$(grep -m1 "^BridgeAddr" "$AGGKIT_CONFIG" | cut -d'"' -f2 2>/dev/null || echo "")
-            L2_BRIDGE=$(grep -A10 "^\[L2Config\]" "$AGGKIT_CONFIG" | grep "^BridgeAddr" | cut -d'"' -f2 2>/dev/null || echo "")
-            ROLLUP_MANAGER=$(grep "RollupManagerAddr" "$AGGKIT_CONFIG" | cut -d'"' -f2 2>/dev/null || echo "")
-            GER_CONTRACT=$(grep "GlobalExitRootAddr" "$AGGKIT_CONFIG" | cut -d'"' -f2 2>/dev/null || echo "")
+            # Extract bridge addresses and other contracts (use head -1 to ensure single value)
+            L1_BRIDGE=$(grep "^BridgeAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+            L2_BRIDGE=$(grep -A10 "^\[L2Config\]" "$AGGKIT_CONFIG" | grep "^BridgeAddr" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+            ROLLUP_MANAGER=$(grep "RollupManagerAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+            GER_CONTRACT=$(grep "GlobalExitRootAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
 
-            # Merge with existing contracts
-            L2_CONTRACTS=$(echo "$L2_CONTRACTS" | jq \
+            L2_CONTRACTS=$(jq -n \
                 --arg l1_bridge "$L1_BRIDGE" \
                 --arg l2_bridge "$L2_BRIDGE" \
                 --arg rollup_manager "$ROLLUP_MANAGER" \
                 --arg ger "$GER_CONTRACT" \
-                '. + {
+                '{
                     l1_bridge: (if $l1_bridge != "" then $l1_bridge else null end),
                     l2_bridge: (if $l2_bridge != "" then $l2_bridge else null end),
                     rollup_manager: (if $rollup_manager != "" then $rollup_manager else null end),
@@ -395,6 +477,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                 --arg prefix "$prefix" \
                 --arg rpc_port "$L2_AGGKIT_RPC_PORT" \
                 --arg rest_port "$L2_AGGKIT_REST_PORT" \
+                --arg bridge_port "$L2_AGGKIT_BRIDGE_PORT" \
                 '. + {
                     aggkit: {
                         rpc: {
@@ -404,14 +487,18 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                         rest_api: {
                             internal: ("http://aggkit-" + $prefix + ":5577"),
                             external: ("http://localhost:" + $rest_port)
+                        },
+                        bridge_service: {
+                            internal: ("http://aggkit-" + $prefix + ":8080"),
+                            external: ("http://localhost:" + $bridge_port)
                         }
                     }
                 }')
         fi
 
-        # L2 accounts from genesis
+        # L2 accounts from genesis (exclude OP predeploy contracts)
         L2_GENESIS_FILE="$OUTPUT_DIR/config/$prefix/l2-genesis.json"
-        L2_ACCOUNTS=$(extract_genesis_accounts "$L2_GENESIS_FILE" "L2 network $prefix")
+        L2_ACCOUNTS=$(extract_genesis_accounts "$L2_GENESIS_FILE" "L2 network $prefix" "true")
 
         # Add aggkit accounts from keystores
         if [ -f "$AGGKIT_CONFIG" ]; then
@@ -487,21 +574,29 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         fi
 
         # Build L2 network object
+        # Use temp files to avoid "Argument list too long" errors with large account lists
+        echo "$L2_CONTRACTS" > "$TEMP_DIR/l2_contracts_${prefix}.json"
+        echo "$L2_SERVICES" > "$TEMP_DIR/l2_services_${prefix}.json"
+        echo "$L2_ACCOUNTS" > "$TEMP_DIR/l2_accounts_${prefix}.json"
+
         L2_NETWORK=$(jq -n \
             --arg chain_id "$L2_CHAIN_ID" \
-            --argjson contracts "$L2_CONTRACTS" \
-            --argjson services "$L2_SERVICES" \
-            --argjson accounts "$L2_ACCOUNTS" \
+            --slurpfile contracts "$TEMP_DIR/l2_contracts_${prefix}.json" \
+            --slurpfile services "$TEMP_DIR/l2_services_${prefix}.json" \
+            --slurpfile accounts "$TEMP_DIR/l2_accounts_${prefix}.json" \
             '{
                 chain_id: $chain_id,
-                contracts: $contracts,
-                services: $services,
-                accounts: $accounts
+                contracts: $contracts[0],
+                services: $services[0],
+                accounts: $accounts[0]
             }')
 
         # Add to L2_NETWORKS
-        L2_NETWORKS=$(echo "$L2_NETWORKS" | jq --arg prefix "$prefix" --argjson network "$L2_NETWORK" \
-            '. + {($prefix): $network}')
+        # Use temp files to avoid "Argument list too long" errors
+        echo "$L2_NETWORK" > "$TEMP_DIR/l2_network_current.json"
+        echo "$L2_NETWORKS" > "$TEMP_DIR/l2_networks_current.json"
+        L2_NETWORKS=$(jq --arg prefix "$prefix" --slurpfile network "$TEMP_DIR/l2_network_current.json" \
+            '. + {($prefix): $network[0]}' "$TEMP_DIR/l2_networks_current.json")
 
         log "  ✓ L2 network $prefix info collected"
     done
@@ -513,24 +608,36 @@ fi
 
 log "Building final summary.json..."
 
+# Use temp files to avoid "Argument list too long" errors with large network data
+echo "$L1_NETWORK" > "$TEMP_DIR/l1_network.json"
+echo "$AGGLAYER_INFO" > "$TEMP_DIR/agglayer_info.json"
+echo "$L2_NETWORKS" > "$TEMP_DIR/l2_networks.json"
+
 SUMMARY=$(jq -n \
     --arg snapshot_name "$SNAPSHOT_ID" \
     --arg enclave "$ENCLAVE_NAME" \
     --arg timestamp "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-    --argjson l1 "$L1_NETWORK" \
-    --argjson agglayer "$AGGLAYER_INFO" \
-    --argjson l2_networks "$L2_NETWORKS" \
+    --arg l1_mnemonic "$DEFAULT_L1_MNEMONIC" \
+    --arg l2_mnemonic "$DEFAULT_L2_MNEMONIC" \
+    --slurpfile l1 "$TEMP_DIR/l1_network.json" \
+    --slurpfile agglayer "$TEMP_DIR/agglayer_info.json" \
+    --slurpfile l2_networks "$TEMP_DIR/l2_networks.json" \
     '{
         snapshot_name: $snapshot_name,
         enclave: $enclave,
         created_at: $timestamp,
         networks: {
-            l1: $l1,
-            agglayer: $agglayer,
-            l2_networks: $l2_networks
+            l1: $l1[0],
+            agglayer: $agglayer[0],
+            l2_networks: $l2_networks[0]
+        },
+        test_accounts: {
+            l1_mnemonic: $l1_mnemonic,
+            l2_mnemonic: $l2_mnemonic,
+            note: "Pre-funded test accounts are derived from these mnemonics. Use with cast: cast wallet address --mnemonic \"<mnemonic>\" --mnemonic-index <0-N>"
         },
         notes: {
-            accounts: "Private keys in keystores are encrypted. Use keystore files with appropriate tools to decrypt.",
+            accounts: "Only accounts with meaningful balances are included. Precompile addresses (0x0000...00xx) and OP predeploy contracts (0x4200...) are excluded. Private keys for keystores are encrypted.",
             services: "Internal URLs are for use within the Docker network. External URLs are for access from the host machine.",
             contracts: "Contract addresses are extracted from configuration files. Some fields may be null if not found."
         }

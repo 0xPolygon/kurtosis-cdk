@@ -9,6 +9,25 @@ This tool creates deterministic, repeatable snapshots of L1 state that can be:
 - Packaged into Docker images with state baked in
 - Reproduced via Docker Compose to resume from exact state
 
+## Prerequisites for Snapshot Creation
+
+**IMPORTANT:** For snapshots to work correctly, the source enclave must meet these requirements:
+
+### Agglayer Settlement Constraint
+- **L2 networks must NOT have settled any transactions through the agglayer**
+- Snapshots capture the L1 state at a specific point in time, but do not capture the agglayer's internal settlement state
+- If the agglayer has processed settlements that are not yet reflected on L1, restarting from the snapshot will cause inconsistencies
+
+### Recommended Enclave Configuration
+To ensure clean snapshots:
+- ✅ **DO:** Use enclaves without activity after initial setup
+- ✅ **DO:** Snapshot immediately after deployment before running workloads
+- ❌ **AVOID:** Using the bridge spammer before taking a snapshot
+- ❌ **AVOID:** Running any cross-chain bridge transactions before snapshotting
+- ❌ **AVOID:** Any agglayer settlement activity
+
+If you need to test bridge functionality, do so **after** taking the snapshot, not before.
+
 ## Quick Start
 
 ```bash
@@ -29,25 +48,15 @@ Each snapshot creates a timestamped directory:
 ```
 snapshots/
 └── <ENCLAVE_NAME>-<TIMESTAMP>/
-    ├── datadirs/              # Exported state
-    │   ├── geth.tar
-    │   ├── lighthouse_beacon.tar
-    │   └── lighthouse_validator.tar
-    ├── artifacts/             # Configuration files
-    │   ├── genesis.json
-    │   ├── chain-spec.yaml
-    │   ├── bootnodes.txt
-    │   └── jwt.hex
-    ├── metadata/              # Snapshot metadata
-    │   ├── checkpoint.json    # Block height, hash, versions
-    │   └── manifest.sha256    # Checksums for all tarballs
-    ├── images/                # Dockerfiles
-    │   ├── geth/
-    │   ├── beacon/
-    │   └── validator/
-    ├── docker-compose.snapshot.yml
-    └── snapshot.log           # Execution log
+    ├── config/                # Configuration files for all services
+    │   ├── agglayer/         # Agglayer config (if present)
+    │   └── 001/, 002/, ...   # L2 network configs (if present)
+    ├── docker-compose.yml    # Main compose file
+    ├── summary.json          # Network summary (contracts, URLs, accounts)
+    └── snapshot.log          # Execution log
 ```
+
+**Note:** Temporary files (datadirs/, artifacts/, images/, metadata/, discovery.json, etc.) are automatically removed after snapshot generation to keep the output clean and ready for distribution.
 
 ## Requirements
 
@@ -147,6 +156,16 @@ Examples:
 - Verify image was built: `docker images | grep snapshot`
 - Ensure ports are not in use: `netstat -tuln | grep -E '8545|4000'`
 
+### Agglayer state mismatch / Bridge issues after snapshot restoration
+**Symptom:** After restoring a snapshot, bridge transactions fail or agglayer shows inconsistent state
+
+**Cause:** The source enclave had agglayer settlements or bridge activity before the snapshot was taken
+
+**Solution:**
+- Recreate the snapshot from a clean enclave without any bridge/agglayer activity
+- Ensure no bridge spammer or cross-chain transactions were run before snapshotting
+- See "Prerequisites for Snapshot Creation" section above for proper enclave preparation
+
 ## Maintenance
 
 ### Cleanup old snapshots
@@ -178,10 +197,12 @@ docker images | grep snapshot- | awk '{print $3}' | xargs docker rmi
 7. **Compose**: Generate docker-compose.yml
 8. **Finalization**: Create summary and log execution
 9. **Verification**: Automatically start snapshot and verify it works correctly
+10. **Cleanup**: Remove temporary files (datadirs, artifacts, images, metadata, helper scripts)
 
 **Important**:
 - The snapshot process temporarily stops the L1 containers to ensure consistent state capture, but automatically restarts them afterward. This allows the original enclave to continue producing blocks while the snapshot artifacts are being prepared.
 - Verification is performed automatically at the end, testing that the snapshot can boot and produce blocks. This adds 1-2 minutes to the snapshot process but ensures quality.
+- After verification, all temporary and intermediate files are automatically cleaned up, leaving only the essential files needed to run the snapshot.
 
 ### Network Configuration
 
