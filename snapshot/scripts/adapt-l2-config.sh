@@ -111,6 +111,30 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
             jq --arg timestamp "$L2_TIME_HEX" '.timestamp = $timestamp' "$L2_GENESIS_FILE.bak" > "$L2_GENESIS_FILE"
             log "    ✓ Updated L2 genesis file timestamp: $L2_TIME_HEX"
 
+            # Add account allocations for aggoracle, sovereignadmin, and claimsponsor
+            # These accounts need funds to send transactions on L2
+            log "    Adding account allocations to L2 genesis..."
+
+            # Default funding amount: 100 ether = 100000000000000000000 wei = 0x56bc75e2d63100000
+            FUNDING_AMOUNT="0x56bc75e2d63100000"
+
+            # Addresses from input_parser.star
+            AGGORACLE_ADDR="0x0b68058E5b2592b1f472AdFe106305295A332A7C"
+            SOVEREIGNADMIN_ADDR="0xc653eCD4AC5153a3700Fb13442Bcf00A691cca16"
+            CLAIMSPONSOR_ADDR="0x635243A11B41072264Df6c9186e3f473402F94e9"
+
+            # Add allocations using jq
+            jq --arg aggoracle "$AGGORACLE_ADDR" \
+               --arg sovereignadmin "$SOVEREIGNADMIN_ADDR" \
+               --arg claimsponsor "$CLAIMSPONSOR_ADDR" \
+               --arg balance "$FUNDING_AMOUNT" '
+                .alloc[$aggoracle] = {"balance": $balance} |
+                .alloc[$sovereignadmin] = {"balance": $balance} |
+                .alloc[$claimsponsor] = {"balance": $balance}
+            ' "$L2_GENESIS_FILE" > "$L2_GENESIS_FILE.tmp"
+            mv "$L2_GENESIS_FILE.tmp" "$L2_GENESIS_FILE"
+            log "    ✓ Added allocations for aggoracle, sovereignadmin, and claimsponsor"
+
             # Compute new genesis hash using geth in a temporary container
             log "    Computing new L2 genesis hash..."
 
@@ -186,6 +210,35 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         log "    No aggkit config found, skipping"
     fi
 done
+
+# ========================================================================
+# Adapt agglayer config if present
+# ========================================================================
+
+AGGLAYER_CONFIG="$OUTPUT_DIR/config/agglayer/config.toml"
+
+if [ -f "$AGGLAYER_CONFIG" ]; then
+    log "Adapting agglayer configuration for docker-compose..."
+
+    # Backup original if not already backed up
+    if [ ! -f "$AGGLAYER_CONFIG.bak" ]; then
+        cp "$AGGLAYER_CONFIG" "$AGGLAYER_CONFIG.bak"
+    fi
+
+    # Replace Kurtosis L2 RPC endpoints with docker-compose service names
+    # Pattern: op-el-1-op-geth-op-node-<prefix> -> op-geth-<prefix>
+    # Need to update all L2 networks in the [full-node-rpcs] section
+
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
+        sed -i "s|http://op-el-1-op-geth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGLAYER_CONFIG"
+        log "  ✓ Updated L2 RPC endpoint for network $prefix"
+    done
+
+    log "✓ agglayer config adapted for docker-compose"
+    log "✓ Original saved to config/agglayer/config.toml.bak"
+else
+    log "No agglayer config found, skipping"
+fi
 
 log "L2 configuration adaptation complete"
 log ""
