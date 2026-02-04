@@ -2,3 +2,9 @@ args:
   sequencer_type: op-geth
   consensus_contract_type: pessimistic # former sovereign consensus
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+
+  # Override additional_services to exclude bridge_spammer
+  additional_services:
+    - agglogger
+    - test_runner
+    - agglayer_dashboard

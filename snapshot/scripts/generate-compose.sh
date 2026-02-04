@@ -635,6 +635,23 @@ cat > "$OUTPUT_DIR/USAGE.md" << EOF
    ./stop-snapshot.sh
    \`\`\`
 
+## Network Summary
+
+This snapshot includes a \`summary.json\` file with comprehensive information about all networks, services, and accounts:
+
+- **Contract Addresses**: All deployed smart contracts for L1, Agglayer, and each L2 network
+- **Service URLs**: Both internal (Docker) and external (localhost) URLs for all services
+- **Accounts**: All relevant accounts including:
+  - Pre-funded genesis accounts
+  - Validator accounts
+  - Sequencer, AggOracle, and other operational accounts
+  - Account roles and descriptions
+
+View the summary:
+\`\`\`bash
+cat summary.json | jq
+\`\`\`
+
 ## Manual Operations
 
 ### Start services

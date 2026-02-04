@@ -93,6 +93,7 @@ Output Structure:
     ├── metadata/                      # Checkpoint and checksums
     ├── images/                        # Dockerfiles
     ├── docker-compose.snapshot.yml    # Compose file
+    ├── summary.json                   # Network summary (contracts, URLs, accounts)
     ├── start-snapshot.sh              # Helper scripts
     ├── stop-snapshot.sh
     ├── query-state.sh
@@ -212,6 +213,7 @@ SCRIPTS=(
     "$SCRIPT_DIR/scripts/extract-state.sh"
     "$SCRIPT_DIR/scripts/adapt-l2-config.sh"
     "$SCRIPT_DIR/scripts/generate-metadata.sh"
+    "$SCRIPT_DIR/scripts/generate-summary.sh"
     "$SCRIPT_DIR/scripts/build-images.sh"
     "$SCRIPT_DIR/scripts/generate-compose.sh"
     "$SCRIPT_DIR/scripts/verify-healthchecks.sh"
@@ -454,6 +456,14 @@ if [ -f "$CHECKPOINT_FILE" ]; then
     fi
 fi
 
+# Generate summary.json
+log "Generating summary.json..."
+if ! "$SCRIPT_DIR/scripts/generate-summary.sh" "$DISCOVERY_JSON" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+    log_warn "Summary generation failed (non-critical)"
+else
+    log "Summary file created: $OUTPUT_DIR/summary.json"
+fi
+
 # ============================================================================
 # Step 6: Docker Image Build
 # ============================================================================
@@ -554,6 +564,15 @@ Files Generated
 ---------------
 $(find "$OUTPUT_DIR" -type f | wc -l) files
 Total size: $(du -sh "$OUTPUT_DIR" | cut -f1)
+
+Network Summary
+---------------
+A comprehensive summary.json file is included with:
+- Smart contract addresses for all networks (L1, L2s, Agglayer)
+- Service URLs (internal Docker + external localhost)
+- All relevant accounts with roles and descriptions
+
+View summary: cat $OUTPUT_DIR/summary.json | jq
 
 Quick Start
 -----------
