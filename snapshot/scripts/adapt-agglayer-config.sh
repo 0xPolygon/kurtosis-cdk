@@ -48,7 +48,34 @@ log "  ✓ Updated L1 RPC endpoints to use 'geth' hostname"
 sed -i 's|^\(\s*\)\([0-9]\+\s*=\s*"http://cdk-erigon-rpc\)|# NOTE: L2 RPC not included in snapshot - uncomment when L2 is available\n\1# \2|g' "$CONFIG_FILE"
 log "  ✓ Commented out L2 RPC references (L2 not included in L1-only snapshot)"
 
-# 3. Add a header comment explaining the adaptation
+# 3. Add gas price configuration for settlement
+# This ensures settlement transactions have sufficient gas fees to be mined on L1
+# The L1 geth default miner.gasprice is 1000000 wei, so we need at least that
+if ! grep -q '\[outbound\.rpc\.settle\.gas-price\]' "$CONFIG_FILE"; then
+    log "Adding gas price configuration to [outbound.rpc.settle]..."
+
+    # Find the [outbound.rpc.settle] section and add gas-price config after it
+    if grep -q '\[outbound\.rpc\.settle\]' "$CONFIG_FILE"; then
+        # Add the gas-price subsection after the settle section settings
+        sed -i '/^\[outbound\.rpc\.settle\]/,/^\[/ {
+            /gas-multiplier-factor/a\
+\
+# Gas price configuration for settlement transactions\
+# Ensures fees are high enough to be accepted by L1 miners\
+[outbound.rpc.settle.gas-price]\
+floor = "1gwei"        # 1 gwei minimum (L1 default miner.gasprice is 0.001 gwei)\
+ceiling = "100gwei"    # 100 gwei maximum\
+multiplier = 1000      # 1.0x multiplier (scaled by 1000)
+        }' "$CONFIG_FILE"
+        log "  ✓ Added gas price configuration with floor=1gwei"
+    else
+        log "  WARNING: [outbound.rpc.settle] section not found, skipping gas price config"
+    fi
+else
+    log "  ✓ Gas price configuration already exists, skipping"
+fi
+
+# 4. Add a header comment explaining the adaptation
 cat > "$CONFIG_FILE.tmp" << 'EOF'
 # ============================================================================
 # Agglayer Configuration - Adapted for Docker Compose Snapshot
@@ -58,6 +85,7 @@ cat > "$CONFIG_FILE.tmp" << 'EOF'
 #
 # - L1 RPC endpoints changed to use 'geth' hostname (from el-1-geth-lighthouse)
 # - L2 RPC endpoints commented out (L2 stack not included in L1-only snapshot)
+# - Gas price floor configured (1 gwei minimum to ensure L1 miners accept txs)
 # - All contract addresses and keys preserved from original deployment
 #
 # To use with L2:
@@ -81,5 +109,11 @@ log "  L1 node URL: $(grep 'node-url.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*= 
 log "  L1 WS URL: $(grep 'ws-node-url.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*= *//')"
 log "  Rollup Manager: $(grep 'rollup-manager-contract.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*= *//')"
 log "  GER Contract: $(grep 'polygon-zkevm-global-exit-root-v2-contract.*=' "$CONFIG_FILE" | head -1 | sed 's/^.*= *//')"
+
+# Check if gas price floor was added
+GAS_FLOOR=$(grep -A5 '\[outbound\.rpc\.settle\.gas-price\]' "$CONFIG_FILE" | grep '^floor' | sed 's/^.*= *//' | sed 's/ *#.*//' | tr -d '"' || echo "not set")
+if [ "$GAS_FLOOR" != "not set" ]; then
+    log "  Gas price floor: $GAS_FLOOR"
+fi
 
 exit 0
