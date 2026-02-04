@@ -123,10 +123,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
-      interval: 10s
-      timeout: 5s
+      interval: 2s
+      timeout: 3s
       retries: 3
-      start_period: 30s
+      start_period: 10s
 
   beacon:
     image: snapshot-beacon:$TAG
@@ -164,10 +164,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-c", "curl -f -s http://localhost:4000/eth/v1/node/health || curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/eth/v1/node/health | grep -q '206'"]
-      interval: 10s
-      timeout: 5s
+      interval: 2s
+      timeout: 3s
       retries: 3
-      start_period: 60s
+      start_period: 20s
 
   validator:
     image: snapshot-validator:$TAG
@@ -219,10 +219,10 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-c", "test -f /proc/1/cmdline"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 2s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     environment:
       - RUST_BACKTRACE=1
 EOF
@@ -314,10 +314,10 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
-      interval: 10s
-      timeout: 5s
+      interval: 2s
+      timeout: 3s
       retries: 3
-      start_period: 30s
+      start_period: 10s
 EOF
 
         log "    ✓ op-geth-$prefix service added"
@@ -366,10 +366,10 @@ EOF
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "--post-data={\"jsonrpc\":\"2.0\",\"method\":\"optimism_syncStatus\",\"params\":[],\"id\":1}", "--header=Content-Type:application/json", "http://localhost:8547"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 120s
+      interval: 2s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
 EOF
 
         log "    ✓ op-node-$prefix service added"
