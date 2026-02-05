@@ -294,7 +294,7 @@ TriggerCertMode = "{{.trigger_cert_mode}}"
 # {{- if eq .trigger_cert_mode "ASAP" }}
 # [AggSender.TriggerASAP]
 # # Delay between the moment the aggsender becomes idle and when it sends a new certificate trigger
-# DelayBeetweenCertificates = "1s"
+# DelayBetweenCertificates = "1s"
 # # Minimum time that must elapse between certificate generation triggers, regardless of the trigger source
 # MinimumNewCertificateInterval = "5m"
 # # When enabled, the ASAP trigger will automatically generate certificate triggers when new bridge events are detected on L2
