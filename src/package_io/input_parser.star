@@ -317,7 +317,7 @@ DEFAULT_ROLLUP_ARGS = {
     # Maps to TriggerCertMode parameter in the aggkit configs. It is the mode used to trigger certificate sending.
     # Valid values are: "EpochBased", "NewBridge", "ASAP", "Auto"
     # EpochBased: this is the legacy mode that waits until reach a percentage of a epoch (you can configure here: AggSender.TriggerEpochBased)
-    # ASAP: this mode try to generate a new certificate after a sucessful settled certificate
+    # ASAP: this mode try to generate a new certificate after a successful settled certificate
     # NewBridge: Each time that a new bridge is done in L2 it generate a certificate (if it's possible) (experimental)
     "trigger_cert_mode": "ASAP",
 }
