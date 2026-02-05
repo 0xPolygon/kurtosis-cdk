@@ -84,7 +84,9 @@ def create_agglayer_config_artifact(
                     "agglayer_version": agglayer_version(args),
                     "agglayer_grpc_port": args["agglayer_grpc_port"],
                     "agglayer_readrpc_port": args["agglayer_readrpc_port"],
-                    "agglayer_prover_primary_prover": args.get("agglayer_prover_primary_prover"),
+                    "agglayer_prover_primary_prover": args.get(
+                        "agglayer_prover_primary_prover"
+                    ),
                     "sp1_cluster_endpoint": args.get("sp1_cluster_endpoint"),
                     "agglayer_admin_port": args["agglayer_admin_port"],
                     "prometheus_port": args["agglayer_metrics_port"],
