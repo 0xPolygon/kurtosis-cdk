@@ -100,7 +100,7 @@ DEFAULT_IMAGES = {
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "db_image": "postgres:17.6",
     "geth_image": "ethereum/client-go:v1.16.8",
-    "lighthouse_image": "sigp/lighthouse:v8.0.1",
+    "lighthouse_image": "sigp/lighthouse:v8.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.3",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.6.0-rc.3-cdk",
