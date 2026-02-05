@@ -314,6 +314,12 @@ DEFAULT_ROLLUP_ARGS = {
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
     "agg_sender_multisig_threshold": 1,
+    # Maps to TriggerCertMode parameter in the aggkit configs. It is the mode used to trigger certificate sending.
+    # Valid values are: "EpochBased", "NewBridge", "ASAP", "Auto"
+    # EpochBased: this is the legacy mode that waits until reach a percentage of a epoch (you can configure here: AggSender.TriggerEpochBased)
+    # ASAP: this mode try to generate a new certificate after a sucessful settled certificate
+    # NewBridge: Each time that a new bridge is done in L2 it generate a certificate (if it's possible) (experimental)
+    "trigger_cert_mode": "ASAP",
 }
 
 DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
@@ -403,6 +409,13 @@ VALID_SEQUENCER_TYPES = [
 VALID_L1_ENGINES = [
     constants.L1_ENGINE.geth,
     constants.L1_ENGINE.anvil,
+]
+
+VALID_AGGKIT_TRIGGER_CERT_MODES = [
+    constants.VALID_AGGKIT_TRIGGER_CERT_MODES.epoch_based,
+    constants.VALID_AGGKIT_TRIGGER_CERT_MODES.new_bridge,
+    constants.VALID_AGGKIT_TRIGGER_CERT_MODES.asap,
+    constants.VALID_AGGKIT_TRIGGER_CERT_MODES.auto,
 ]
 
 
@@ -627,6 +640,13 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         and args["use_agg_oracle_committee"] == True
     ):
         fail("AggOracle Committee unsupported for CDK-Erigon")
+
+    if args["trigger_cert_mode"] not in VALID_AGGKIT_TRIGGER_CERT_MODES:
+        fail(
+            "Unsupported Aggkit TriggerCertMode: '{}', please use one of {}".format(
+                args["trigger_cert_mode"], VALID_AGGKIT_TRIGGER_CERT_MODES
+            )
+        )
 
     # If AggOracle Committee is enabled, do sanity checks
     if args["use_agg_oracle_committee"] == True:
