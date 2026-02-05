@@ -257,7 +257,6 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
-        L2_AGGKIT_BRIDGE_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         # ====================================================================
         # op-geth service
@@ -414,7 +413,6 @@ EOF
     ports:
       - "$L2_AGGKIT_RPC_PORT:5576"    # RPC
       - "$L2_AGGKIT_REST_PORT:5577"    # REST API
-      - "$L2_AGGKIT_BRIDGE_PORT:8080"    # Bridge Service
     depends_on:
 $AGGKIT_DEPENDS
     restart: unless-stopped
@@ -642,7 +640,6 @@ EOF
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
-        L2_AGGKIT_BRIDGE_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
@@ -660,7 +657,6 @@ EOF
             cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 - **aggkit-$prefix RPC:** http://localhost:$L2_AGGKIT_RPC_PORT
 - **aggkit-$prefix REST API:** http://localhost:$L2_AGGKIT_REST_PORT
-- **aggkit-$prefix Bridge Service:** http://localhost:$L2_AGGKIT_BRIDGE_PORT
 EOF
         fi
     done

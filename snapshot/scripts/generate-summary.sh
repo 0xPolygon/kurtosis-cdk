@@ -224,7 +224,7 @@ extract_l1_contracts() {
     # Also extract from first L2 aggkit config if available
     local aggkit_config="$output_dir/config/001/aggkit-config.toml"
     if [ -f "$aggkit_config" ]; then
-        local bridge_addr=$(grep "polygonBridgeAddr" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+        local bridge_addr=$(grep "^BridgeAddr" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
         local pol_token=$(grep "polTokenAddress" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
         local deposit_contract=$(jq -r '.config.depositContractAddress // empty' "$output_dir/artifacts/genesis.json" 2>/dev/null || echo "")
 
@@ -402,7 +402,6 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
-        L2_AGGKIT_BRIDGE_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         # Get L2 chain ID
         ROLLUP_FILE="$OUTPUT_DIR/config/$prefix/rollup.json"
@@ -419,7 +418,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             L1_BRIDGE=$(grep "^BridgeAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
             L2_BRIDGE=$(grep -A10 "^\[L2Config\]" "$AGGKIT_CONFIG" | grep "^BridgeAddr" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
             ROLLUP_MANAGER=$(grep "RollupManagerAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
-            GER_CONTRACT=$(grep "GlobalExitRootAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+            GER_CONTRACT=$(grep -A10 "^\[L2Config\]" "$AGGKIT_CONFIG" | grep "^GlobalExitRootAddr" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
 
             L2_CONTRACTS=$(jq -n \
                 --arg l1_bridge "$L1_BRIDGE" \
@@ -477,7 +476,6 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                 --arg prefix "$prefix" \
                 --arg rpc_port "$L2_AGGKIT_RPC_PORT" \
                 --arg rest_port "$L2_AGGKIT_REST_PORT" \
-                --arg bridge_port "$L2_AGGKIT_BRIDGE_PORT" \
                 '. + {
                     aggkit: {
                         rpc: {
@@ -487,10 +485,6 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                         rest_api: {
                             internal: ("http://aggkit-" + $prefix + ":5577"),
                             external: ("http://localhost:" + $rest_port)
-                        },
-                        bridge_service: {
-                            internal: ("http://aggkit-" + $prefix + ":8080"),
-                            external: ("http://localhost:" + $bridge_port)
                         }
                     }
                 }')
