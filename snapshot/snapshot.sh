@@ -592,6 +592,8 @@ rm -f "$OUTPUT_DIR/SNAPSHOT_SUMMARY.txt" 2>/dev/null || true
 rm -f "$OUTPUT_DIR/start-snapshot.sh" 2>/dev/null || true
 rm -f "$OUTPUT_DIR/stop-snapshot.sh" 2>/dev/null || true
 rm -f "$OUTPUT_DIR/USAGE.md" 2>/dev/null || true
+rm -f "$OUTPUT_DIR/snapshot.log" 2>/dev/null || true
+rm -f "$OUTPUT_DIR"/*.bak 2>/dev/null || true
 
 log "Cleanup complete - snapshot is ready for distribution"
 

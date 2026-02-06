@@ -140,6 +140,15 @@ else
     touch "$BEACON_BUILD_DIR/jwt.hex"
 fi
 
+# Copy genesis.ssz if available
+if [ -f "$OUTPUT_DIR/artifacts/genesis.ssz" ]; then
+    cp "$OUTPUT_DIR/artifacts/genesis.ssz" "$BEACON_BUILD_DIR/"
+    log "  ✓ genesis.ssz included in beacon image"
+else
+    touch "$BEACON_BUILD_DIR/genesis.ssz"
+    log "  ℹ No genesis.ssz file (beacon will sync from execution layer)"
+fi
+
 # Create Dockerfile
 cat > "$BEACON_BUILD_DIR/Dockerfile" << 'EOF'
 FROM sigp/lighthouse:v8.0.1
@@ -153,6 +162,7 @@ COPY lighthouse_beacon.tar /tmp/lighthouse_beacon.tar
 # Copy artifacts (may be empty files if not available)
 COPY chain-spec.yaml /tmp/chain-spec.yaml
 COPY jwt.hex /tmp/jwt.hex
+COPY genesis.ssz /tmp/genesis.ssz
 
 # Extract datadir
 RUN mkdir -p /data/lighthouse && \
@@ -161,9 +171,13 @@ RUN mkdir -p /data/lighthouse && \
     rm /tmp/lighthouse_beacon.tar
 
 # Copy artifacts if they have content and create testnet directory
-RUN mkdir -p /network-configs /jwt && \
+RUN mkdir -p /network-configs /jwt /data/metadata && \
     if [ -s /tmp/chain-spec.yaml ]; then \
         cp /tmp/chain-spec.yaml /network-configs/config.yaml; \
+    fi && \
+    if [ -s /tmp/genesis.ssz ]; then \
+        cp /tmp/genesis.ssz /data/metadata/genesis.ssz; \
+        echo "Genesis state file included for Lighthouse v8.0.1 compatibility"; \
     fi && \
     if [ -s /tmp/jwt.hex ]; then \
         cp /tmp/jwt.hex /jwt/jwtsecret; \

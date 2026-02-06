@@ -180,6 +180,46 @@ else
 fi
 
 # ============================================================================
+# STEP 4.5: Extract genesis.ssz from Kurtosis artifact
+# ============================================================================
+
+log "Extracting genesis.ssz for Lighthouse v8.0.1 compatibility..."
+
+# Extract enclave name from discovery JSON
+ENCLAVE_NAME=$(jq -r '.enclave_name // .enclave' "$DISCOVERY_JSON" 2>/dev/null || echo "")
+
+if [ -z "$ENCLAVE_NAME" ]; then
+    log "  ⚠ Could not extract enclave name from discovery.json"
+    log "  Skipping genesis.ssz extraction"
+else
+    # Try to fetch the el_cl_genesis_data artifact created by ethereum-package
+    if kurtosis files download "$ENCLAVE_NAME" el_cl_genesis_data "$OUTPUT_DIR/artifacts/genesis_data" 2>/dev/null; then
+    log "  ✓ Genesis data artifact downloaded"
+
+    # Find and extract genesis.ssz
+    if [ -f "$OUTPUT_DIR/artifacts/genesis_data/genesis.ssz" ]; then
+        cp "$OUTPUT_DIR/artifacts/genesis_data/genesis.ssz" "$OUTPUT_DIR/artifacts/genesis.ssz"
+        log "  ✓ genesis.ssz extracted"
+    elif [ -f "$OUTPUT_DIR/artifacts/genesis_data/metadata/genesis.ssz" ]; then
+        cp "$OUTPUT_DIR/artifacts/genesis_data/metadata/genesis.ssz" "$OUTPUT_DIR/artifacts/genesis.ssz"
+        log "  ✓ genesis.ssz extracted from metadata/"
+    else
+        # Search recursively
+        genesis_file=$(find "$OUTPUT_DIR/artifacts/genesis_data" -name "genesis.ssz" -type f 2>/dev/null | head -1)
+        if [ -n "$genesis_file" ]; then
+            cp "$genesis_file" "$OUTPUT_DIR/artifacts/genesis.ssz"
+            log "  ✓ genesis.ssz found and extracted"
+        else
+            log "  ⚠ genesis.ssz not found in artifact (beacon may need to sync from geth)"
+        fi
+    fi
+        rm -rf "$OUTPUT_DIR/artifacts/genesis_data"
+    else
+        log "  ⚠ Could not download genesis data artifact (beacon may need to sync from geth)"
+    fi
+fi
+
+# ============================================================================
 # STEP 5: Extract Lighthouse Validator datadir
 # ============================================================================
 
