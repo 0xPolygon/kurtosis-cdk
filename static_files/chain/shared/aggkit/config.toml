@@ -219,6 +219,30 @@ Mode = "AggchainProof"
 CheckStatusCertificateInterval = "1s"
 
 # ------------------------------------------------------------------------------
+# TriggerCertMode is the mode used to trigger certificate sending
+# Valid values are: "EpochBased", "NewBridge", "ASAP", "Auto"
+# EpochBased: this is the legacy mode that waits until reach a percentage of a epoch (you can configure here: AggSender.TriggerEpochBased)
+# ASAP: this mode try to generate a new certificate after a successful settled certificate
+# NewBridge: Each time that a new bridge is done in L2 it generate a certificate (if it's possible) (experimental)
+# ------------------------------------------------------------------------------
+TriggerCertMode = "{{.trigger_cert_mode}}"
+
+# Encouraged to use the default values - the parameters are left commented out for reference
+{{- if eq .trigger_cert_mode "ASAP" }}
+[AggSender.TriggerASAP]
+# Delay between the moment the aggsender becomes idle and when it sends a new certificate trigger
+DelayBetweenCertificates = "1s"
+# Minimum time that must elapse between certificate generation triggers, regardless of the trigger source
+MinimumNewCertificateInterval = "5s"
+# When enabled, the ASAP trigger will automatically generate certificate triggers when new bridge events are detected on L2
+OnNewL2Bridge = false
+{{- else if eq .trigger_cert_mode "EpochBased" }}
+[AggSender.TriggerEpochBased]
+Percentage of epoch completion to trigger certificate sending
+EpochNotificationPercentage = 80
+{{- end}}
+
+# ------------------------------------------------------------------------------
 # MaxCertSize is the maximum size of the certificate
 # i.e (the emitted certificate cannot be bigger that this size)
 # 0 is infinite
