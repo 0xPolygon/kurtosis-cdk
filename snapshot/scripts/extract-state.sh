@@ -144,7 +144,7 @@ fi
 if [ -n "$ENCLAVE_UUID" ]; then
     MITM_CONTAINER=$(docker ps -a \
         --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
-        --format "{{.Names}}" | grep -E "^mitm" | head -1)
+        --format "{{.Names}}" | grep -E "^mitm" | head -1 || true)
 
     if [ -n "$MITM_CONTAINER" ]; then
         if docker cp "$MITM_CONTAINER:/data/transactions.jsonl" "$OUTPUT_DIR/artifacts/transactions.jsonl" 2>/dev/null; then
