@@ -1,5 +1,5 @@
 SRC_MITM_SCRIPT_PATH = "./scripts/mitm"
-SRC_MITM_SCRIPTS = ["empty.py", "failures.py"]
+SRC_MITM_SCRIPTS = ["empty.py", "failures.py", "tx_capture.py"]
 DEFAULT_SCRIPT = "empty.py"
 DST_MITM_SCRIPT_PATH = "/scripts"
 
@@ -14,6 +14,9 @@ def run(plan, args):
         )
         artifacts.append(mitm_script)
 
+    # Choose script based on capture_transactions flag
+    mitm_script = "tx_capture.py" if args.get("mitm_capture_transactions", False) else DEFAULT_SCRIPT
+
     plan.add_service(
         name="mitm" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -23,6 +26,7 @@ def run(plan, args):
             },
             files={
                 DST_MITM_SCRIPT_PATH: Directory(artifact_names=artifacts),
+                "/data": Directory(persistent_key="mitm-data" + args["deployment_suffix"]),
             },
             cmd=[
                 "sh",
@@ -34,7 +38,7 @@ def run(plan, args):
                 + " -s "
                 + DST_MITM_SCRIPT_PATH
                 + "/"
-                + DEFAULT_SCRIPT,
+                + mitm_script,
             ],
         ),
     )

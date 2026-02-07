@@ -1,0 +1,18 @@
+args:
+  # Enable MITM with transaction capture for snapshot testing
+  deploy_mitm: true
+  mitm_capture_transactions: true
+
+  # Enable MITM proxying for L2 components (required for MITM to deploy!)
+  mitm_proxied_components:
+    aggkit: true
+    agglayer: true
+
+  # Use op-geth with pessimistic consensus (fast for testing)
+  sequencer_type: op-geth
+  consensus_contract_type: pessimistic
+  aggkit_image: ghcr.io/agglayer/aggkit:0.8.0
+
+  # Minimal additional services for faster startup
+  additional_services:
+    - test_runner

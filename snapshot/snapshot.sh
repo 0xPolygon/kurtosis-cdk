@@ -447,6 +447,24 @@ fi
 
 log "Metadata generation complete"
 
+# ============================================================================
+# Step 5.5: Transaction Replay Script Generation
+# ============================================================================
+
+log_step "STEP 5.5: Transaction Replay Script Generation"
+
+log "Generating transaction replay script..."
+
+if ! "$SCRIPT_DIR/scripts/generate-replay-script.sh" \
+    "$OUTPUT_DIR/artifacts/transactions.jsonl" \
+    "$OUTPUT_DIR/artifacts/replay-transactions.sh" >> "$LOG_FILE" 2>&1; then
+    log_error "Replay script generation failed"
+    log_error "See log file for details: $LOG_FILE"
+    exit 1
+fi
+
+log "Replay script generated successfully"
+
 # Adapt L2 configurations if present
 CHECKPOINT_FILE="$OUTPUT_DIR/metadata/checkpoint.json"
 if [ -f "$CHECKPOINT_FILE" ]; then

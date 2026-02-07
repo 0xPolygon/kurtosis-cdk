@@ -58,15 +58,12 @@ log "Image tag: $TAG"
 mkdir -p "$OUTPUT_DIR/images"/{geth,beacon,validator}
 
 # ============================================================================
-# Build Geth Image
+# Build Geth Image (Replay-Based)
 # ============================================================================
 
 log "Building Geth execution layer image..."
 
 GETH_BUILD_DIR="$OUTPUT_DIR/images/geth"
-
-# Copy datadir tarball
-cp "$OUTPUT_DIR/datadirs/geth.tar" "$GETH_BUILD_DIR/"
 
 # Copy JWT secret if available
 if [ -f "$OUTPUT_DIR/artifacts/jwt.hex" ]; then
@@ -76,30 +73,37 @@ else
     echo "0x0000000000000000000000000000000000000000000000000000000000000000" > "$GETH_BUILD_DIR/jwtsecret"
 fi
 
+# Copy replay script
+if [ -f "$OUTPUT_DIR/artifacts/replay-transactions.sh" ]; then
+    cp "$OUTPUT_DIR/artifacts/replay-transactions.sh" "$GETH_BUILD_DIR/"
+    TX_COUNT=$(grep -c "^send_tx" "$OUTPUT_DIR/artifacts/replay-transactions.sh" || echo "0")
+    log "  ✓ Replay script included ($TX_COUNT transactions)"
+else
+    log "  WARNING: No replay script, creating empty one"
+    cat > "$GETH_BUILD_DIR/replay-transactions.sh" << 'EMPTY_REPLAY'
+#!/bin/sh
+echo "No transactions to replay"
+touch /data/geth/.replay_complete
+EMPTY_REPLAY
+    chmod +x "$GETH_BUILD_DIR/replay-transactions.sh"
+fi
+
 # Create Dockerfile
 cat > "$GETH_BUILD_DIR/Dockerfile" << 'EOF'
 FROM ethereum/client-go:v1.16.8
 
-# Copy geth datadir
-COPY geth.tar /tmp/geth.tar
-
-# Copy JWT secret
+# Copy artifacts
 COPY jwtsecret /tmp/jwtsecret
+COPY replay-transactions.sh /scripts/replay-transactions.sh
 
-# Extract datadir and setup JWT
-RUN mkdir -p /data/geth /jwt && \
-    cd /data/geth && \
-    tar -xzf /tmp/geth.tar && \
-    mv geth-data execution-data && \
-    rm /tmp/geth.tar && \
+# Setup directories
+RUN mkdir -p /data/geth /jwt /scripts && \
     mv /tmp/jwtsecret /jwt/jwtsecret && \
-    chmod 644 /jwt/jwtsecret
+    chmod 644 /jwt/jwtsecret && \
+    chmod +x /scripts/replay-transactions.sh
 
 # Set working directory
 WORKDIR /data/geth
-
-# Ensure data is accessible
-RUN chmod -R 755 /data/geth
 
 # Default command (will be overridden by docker-compose)
 CMD ["geth"]
@@ -117,15 +121,12 @@ else
 fi
 
 # ============================================================================
-# Build Lighthouse Beacon Image
+# Build Lighthouse Beacon Image (Fresh Sync with Genesis.ssz)
 # ============================================================================
 
 log "Building Lighthouse beacon node image..."
 
 BEACON_BUILD_DIR="$OUTPUT_DIR/images/beacon"
-
-# Copy datadir tarball
-cp "$OUTPUT_DIR/datadirs/lighthouse_beacon.tar" "$BEACON_BUILD_DIR/"
 
 # Copy artifacts if available (create empty files if missing to avoid Docker build errors)
 if [ -f "$OUTPUT_DIR/artifacts/chain-spec.yaml" ]; then
@@ -140,13 +141,13 @@ else
     touch "$BEACON_BUILD_DIR/jwt.hex"
 fi
 
-# Copy genesis.ssz if available
+# Copy genesis.ssz if available (CRITICAL for Lighthouse v8.0.1)
 if [ -f "$OUTPUT_DIR/artifacts/genesis.ssz" ]; then
     cp "$OUTPUT_DIR/artifacts/genesis.ssz" "$BEACON_BUILD_DIR/"
-    log "  ✓ genesis.ssz included in beacon image"
+    log "  ✓ genesis.ssz included in beacon image (required for Lighthouse v8.0.1)"
 else
     touch "$BEACON_BUILD_DIR/genesis.ssz"
-    log "  ℹ No genesis.ssz file (beacon will sync from execution layer)"
+    log "  ⚠ No genesis.ssz file (beacon may fail to start with Lighthouse v8.0.1)"
 fi
 
 # Create Dockerfile
@@ -156,22 +157,13 @@ FROM sigp/lighthouse:v8.0.1
 # Install curl for healthcheck
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Copy beacon datadir
-COPY lighthouse_beacon.tar /tmp/lighthouse_beacon.tar
-
 # Copy artifacts (may be empty files if not available)
 COPY chain-spec.yaml /tmp/chain-spec.yaml
 COPY jwt.hex /tmp/jwt.hex
 COPY genesis.ssz /tmp/genesis.ssz
 
-# Extract datadir
-RUN mkdir -p /data/lighthouse && \
-    cd /data/lighthouse && \
-    tar -xzf /tmp/lighthouse_beacon.tar && \
-    rm /tmp/lighthouse_beacon.tar
-
-# Copy artifacts if they have content and create testnet directory
-RUN mkdir -p /network-configs /jwt /data/metadata && \
+# Setup directories WITHOUT beacon database (fresh sync)
+RUN mkdir -p /data/lighthouse/beacon-data /network-configs /jwt /data/metadata && \
     if [ -s /tmp/chain-spec.yaml ]; then \
         cp /tmp/chain-spec.yaml /network-configs/config.yaml; \
     fi && \
@@ -189,9 +181,6 @@ RUN mkdir -p /network-configs /jwt /data/metadata && \
 
 # Set working directory
 WORKDIR /data/lighthouse
-
-# Ensure data is accessible
-RUN chmod -R 755 /data/lighthouse
 
 # Default command (will be overridden by docker-compose)
 CMD ["lighthouse", "beacon_node"]

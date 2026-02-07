@@ -124,63 +124,47 @@ done
 log "All containers confirmed stopped"
 
 # ============================================================================
-# STEP 3: Extract Geth datadir
+# STEP 3: Extract Transaction Replay Log (NEW: Replay-Based Snapshots)
 # ============================================================================
 
-log "Extracting Geth execution datadir..."
+log "Extracting transaction replay log from MITM proxy..."
 
-GETH_DATADIR="/data/geth/execution-data"
-GETH_TAR="$OUTPUT_DIR/datadirs/geth.tar"
+# Find MITM container
+ENCLAVE_UUID=$(jq -r '.enclave_uuid // empty' "$DISCOVERY_JSON" 2>/dev/null || echo "")
+if [ -z "$ENCLAVE_UUID" ]; then
+    # Try enclave_name as fallback
+    ENCLAVE_NAME=$(jq -r '.enclave_name // .enclave // empty' "$DISCOVERY_JSON" 2>/dev/null || echo "")
+    if [ -n "$ENCLAVE_NAME" ]; then
+        ENCLAVE_UUID=$(docker ps -a \
+            --filter "label=com.kurtosistech.enclave-name=$ENCLAVE_NAME" \
+            --format "{{.Label \"com.kurtosistech.enclave-id\"}}" | head -1)
+    fi
+fi
 
-log "  Source: $GETH_DATADIR"
-log "  Target: $GETH_TAR"
+if [ -n "$ENCLAVE_UUID" ]; then
+    MITM_CONTAINER=$(docker ps -a \
+        --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+        --format "{{.Names}}" | grep -E "^mitm" | head -1)
 
-# Create tarball from stopped container
-docker export "$GETH_CONTAINER" | tar -x --to-stdout "$GETH_DATADIR" > /dev/null 2>&1 || true
-
-# Better approach: use docker cp
-docker cp "$GETH_CONTAINER:$GETH_DATADIR" "$OUTPUT_DIR/datadirs/geth-data"
-
-# Create tarball
-tar -czf "$GETH_TAR" -C "$OUTPUT_DIR/datadirs" geth-data
-rm -rf "$OUTPUT_DIR/datadirs/geth-data"
-
-if [ -f "$GETH_TAR" ]; then
-    size=$(du -h "$GETH_TAR" | cut -f1)
-    log "  Geth datadir extracted: $size"
+    if [ -n "$MITM_CONTAINER" ]; then
+        if docker cp "$MITM_CONTAINER:/data/transactions.jsonl" "$OUTPUT_DIR/artifacts/transactions.jsonl" 2>/dev/null; then
+            TX_COUNT=$(wc -l < "$OUTPUT_DIR/artifacts/transactions.jsonl" 2>/dev/null || echo "0")
+            log "  ✓ transactions.jsonl extracted ($TX_COUNT transactions)"
+        else
+            log "  WARNING: transactions.jsonl not found, creating empty file"
+            touch "$OUTPUT_DIR/artifacts/transactions.jsonl"
+        fi
+    else
+        log "  WARNING: MITM container not found, creating empty transaction log"
+        touch "$OUTPUT_DIR/artifacts/transactions.jsonl"
+    fi
 else
-    log "ERROR: Failed to extract Geth datadir"
-    exit 1
+    log "  WARNING: Could not determine enclave UUID, creating empty transaction log"
+    touch "$OUTPUT_DIR/artifacts/transactions.jsonl"
 fi
 
 # ============================================================================
-# STEP 4: Extract Lighthouse Beacon datadir
-# ============================================================================
-
-log "Extracting Lighthouse beacon datadir..."
-
-BEACON_DATADIR="/data/lighthouse/beacon-data"
-BEACON_TAR="$OUTPUT_DIR/datadirs/lighthouse_beacon.tar"
-
-log "  Source: $BEACON_DATADIR"
-log "  Target: $BEACON_TAR"
-
-docker cp "$BEACON_CONTAINER:$BEACON_DATADIR" "$OUTPUT_DIR/datadirs/beacon-data"
-
-# Create tarball
-tar -czf "$BEACON_TAR" -C "$OUTPUT_DIR/datadirs" beacon-data
-rm -rf "$OUTPUT_DIR/datadirs/beacon-data"
-
-if [ -f "$BEACON_TAR" ]; then
-    size=$(du -h "$BEACON_TAR" | cut -f1)
-    log "  Beacon datadir extracted: $size"
-else
-    log "ERROR: Failed to extract Beacon datadir"
-    exit 1
-fi
-
-# ============================================================================
-# STEP 4.5: Extract genesis.ssz from Kurtosis artifact
+# STEP 4: Extract genesis.ssz from Kurtosis artifact (CRITICAL for Lighthouse v8.0.1)
 # ============================================================================
 
 log "Extracting genesis.ssz for Lighthouse v8.0.1 compatibility..."
@@ -320,7 +304,7 @@ else
 fi
 
 # ============================================================================
-# STEP 6.5: Extract L2 Configurations (op-geth and op-node)
+# STEP 6: Extract L2 Configurations (op-geth and op-node)
 # ============================================================================
 
 if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then

@@ -1,0 +1,23 @@
+args:
+  sequencer_type: op-geth
+  consensus_contract_type: ecdsa-multisig
+  aggkit_image: ghcr.io/agglayer/aggkit:0.8.0
+
+  # aggsender-validator related params (required for aggkit 0.8.0)
+  use_agg_sender_validator: True
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # Fast L1 configuration - use geth with minimal preset and fast slots
+  l1_engine: geth
+
+  # Keep minimal L1 participants for speed
+  l1_participants_count: 1
+
+  # Minimal preset is already fast (192s to finality vs 1536s for mainnet)
+  l1_preset: minimal
+  l1_seconds_per_slot: 1  # Fast slot time (default is 2, minimal allows down to 1)
+
+  # Same services as original v0.8
+  additional_services:
+    - agglogger

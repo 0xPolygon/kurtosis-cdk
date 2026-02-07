@@ -69,77 +69,10 @@ SNAPSHOT_ID=$(basename "$OUTPUT_DIR")
 
 log "Using snapshot ID: $SNAPSHOT_ID"
 
-# ============================================================================
-# Extract genesis timestamp and generate time-setting scripts
-# ============================================================================
-
-log "Calculating checkpoint timestamp..."
-
-# Get the snapshot block number from summary.json
-SNAPSHOT_BLOCK=""
-if [ -f "$OUTPUT_DIR/summary.json" ]; then
-    SNAPSHOT_BLOCK=$(jq -r '.networks.l1.snapshot_block.number // empty' "$OUTPUT_DIR/summary.json" 2>/dev/null)
-fi
-
-# Extract MIN_GENESIS_TIME from beacon config
-BEACON_IMAGE="snapshot-beacon:$TAG"
-GENESIS_TIME=$(docker run --rm --entrypoint sh "$BEACON_IMAGE" \
-  -c "grep '^MIN_GENESIS_TIME:' /network-configs/config.yaml 2>/dev/null | awk '{print \$2}'" || echo "")
-
-# Calculate checkpoint timestamp: genesis + (block_number * seconds_per_slot)
-CHECKPOINT_TIMESTAMP=""
-if [ -n "$GENESIS_TIME" ] && [ -n "$SNAPSHOT_BLOCK" ]; then
-    # Ethereum PoS: 2 seconds per slot (from l1_seconds_per_slot config)
-    SECONDS_PER_SLOT=2
-    ELAPSED_SECONDS=$((SNAPSHOT_BLOCK * SECONDS_PER_SLOT))
-    CHECKPOINT_TIMESTAMP=$((GENESIS_TIME + ELAPSED_SECONDS))
-
-    log "Calculated checkpoint timestamp: $CHECKPOINT_TIMESTAMP"
-    log "  Genesis: $GENESIS_TIME"
-    log "  Block: $SNAPSHOT_BLOCK"
-    log "  Elapsed: $ELAPSED_SECONDS seconds"
-fi
-
-if [ -z "$CHECKPOINT_TIMESTAMP" ]; then
-    log "WARNING: Could not calculate checkpoint timestamp"
-    GENESIS_TIMESTAMP=""
-else
-    GENESIS_TIMESTAMP="@$CHECKPOINT_TIMESTAMP"
-    GENESIS_DATE=$(date -u -d "$GENESIS_TIMESTAMP" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "")
-    log "Snapshot timestamp: $CHECKPOINT_TIMESTAMP ($GENESIS_DATE UTC)"
-fi
-
 # Create scripts directory
 mkdir -p "$OUTPUT_DIR/scripts"
 
-# Generate time-setting init script for L1 services
-if [ -n "$GENESIS_TIMESTAMP" ]; then
-    log "Generating time-setting init scripts..."
-
-    cat > "$OUTPUT_DIR/scripts/set-time.sh" << EOF
-#!/bin/sh
-# Set container system time to snapshot checkpoint
-# Requires SYS_TIME capability
-
-CHECKPOINT_TIMESTAMP="$CHECKPOINT_TIMESTAMP"
-
-# Set system time
-if date -s "$GENESIS_TIMESTAMP" >/dev/null 2>&1; then
-    echo "System time set to checkpoint: \$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-else
-    echo "WARNING: Failed to set system time (missing SYS_TIME capability?)"
-    echo "Current time: \$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-fi
-
-# Execute the original command
-exec "\$@"
-EOF
-
-    chmod +x "$OUTPUT_DIR/scripts/set-time.sh"
-    log "  ✓ Created: scripts/set-time.sh"
-fi
-
-# Generate beacon init script (sets up genesis.ssz without clearing databases)
+# Generate beacon init script (sets up genesis.ssz for fresh sync)
 cat > "$OUTPUT_DIR/scripts/beacon-init.sh" << 'BEACON_INIT_EOF'
 #!/bin/sh
 set -e
@@ -148,8 +81,7 @@ echo "=========================================="
 echo "Beacon Initialization"
 echo "=========================================="
 
-# Copy genesis.ssz to network-configs where Lighthouse expects it
-# Do NOT clear databases - we want to preserve the snapshotted state
+# Copy genesis.ssz to network-configs where Lighthouse expects it (CRITICAL for v8.0.1)
 if [ -f "/data/metadata/genesis.ssz" ]; then
     cp /data/metadata/genesis.ssz /network-configs/genesis.ssz 2>/dev/null || true
     echo "  ✓ Genesis state ready at /network-configs/genesis.ssz"
@@ -158,18 +90,80 @@ else
 fi
 
 echo "  ✓ Beacon initialization complete"
+echo "Starting Lighthouse beacon node (fresh sync from geth)..."
 echo "=========================================="
 
-# Chain to time-setting script if it exists
-if [ -f "/scripts/set-time.sh" ]; then
-    exec /scripts/set-time.sh "$@"
-else
-    exec "$@"
-fi
+# Execute lighthouse directly (no time manipulation)
+exec "$@"
 BEACON_INIT_EOF
 
 chmod +x "$OUTPUT_DIR/scripts/beacon-init.sh"
 log "  ✓ Created: scripts/beacon-init.sh"
+
+# Generate geth init+replay entrypoint
+cat > "$OUTPUT_DIR/scripts/geth-init-entrypoint.sh" << 'GETH_INIT_EOF'
+#!/bin/sh
+set -e
+
+echo "=========================================="
+echo "Geth Initialization & Transaction Replay"
+echo "=========================================="
+
+# Initialize with genesis if needed
+if [ ! -d "/data/geth/execution-data/geth" ]; then
+    echo "Initializing geth with genesis..."
+    geth init --datadir=/data/geth/execution-data /network-configs/genesis.json
+    echo "  ✓ Genesis initialized"
+fi
+
+# Start geth in background
+echo "Starting geth..."
+geth \
+    --http --http.addr=0.0.0.0 --http.port=8545 \
+    --http.vhosts='*' --http.corsdomain='*' \
+    --http.api=admin,engine,net,eth,web3,debug,txpool \
+    --ws --ws.addr=0.0.0.0 --ws.port=8546 \
+    --ws.origins='*' --ws.api=admin,engine,net,eth,web3,debug,txpool \
+    --authrpc.addr=0.0.0.0 --authrpc.port=8551 \
+    --authrpc.vhosts='*' --authrpc.jwtsecret=/jwt/jwtsecret \
+    --datadir=/data/geth/execution-data \
+    --port=30303 --discovery.port=30303 \
+    --syncmode=full --gcmode=archive \
+    --networkid=271828 \
+    --metrics --metrics.addr=0.0.0.0 --metrics.port=9001 \
+    --allow-insecure-unlock --nodiscover &
+
+GETH_PID=$!
+
+# Wait for geth RPC
+echo "Waiting for geth RPC..."
+counter=0
+until curl -sf http://localhost:8545 > /dev/null 2>&1; do
+    sleep 1
+    counter=$((counter + 1))
+    if [ $counter -gt 60 ]; then
+        echo "ERROR: Geth failed to start"
+        kill $GETH_PID 2>/dev/null || true
+        exit 1
+    fi
+done
+echo "  ✓ Geth ready"
+
+# Execute transaction replay
+echo "Executing transaction replay..."
+/scripts/replay-transactions.sh || {
+    echo "ERROR: Transaction replay failed"
+    kill $GETH_PID 2>/dev/null || true
+    exit 1
+}
+
+echo "  ✓ Replay complete"
+echo "Geth is ready and accepting requests"
+wait $GETH_PID
+GETH_INIT_EOF
+
+chmod +x "$OUTPUT_DIR/scripts/geth-init-entrypoint.sh"
+log "  ✓ Created: scripts/geth-init-entrypoint.sh"
 
 # ============================================================================
 # Generate docker-compose.yml
@@ -188,36 +182,8 @@ services:
     image: snapshot-geth:$TAG
     container_name: $SNAPSHOT_ID-geth
     hostname: geth
-    entrypoint: ["/scripts/set-time.sh", "geth"]
-    cap_add:
-      - SYS_TIME
-    command:
-      - "--http"
-      - "--http.addr=0.0.0.0"
-      - "--http.port=8545"
-      - "--http.vhosts=*"
-      - "--http.corsdomain=*"
-      - "--http.api=admin,engine,net,eth,web3,debug,txpool"
-      - "--ws"
-      - "--ws.addr=0.0.0.0"
-      - "--ws.port=8546"
-      - "--ws.origins=*"
-      - "--ws.api=admin,engine,net,eth,web3,debug,txpool"
-      - "--authrpc.addr=0.0.0.0"
-      - "--authrpc.port=8551"
-      - "--authrpc.vhosts=*"
-      - "--authrpc.jwtsecret=/jwt/jwtsecret"
-      - "--datadir=/data/geth/execution-data"
-      - "--port=30303"
-      - "--discovery.port=30303"
-      - "--syncmode=full"
-      - "--gcmode=archive"
-      - "--networkid=271828"
-      - "--metrics"
-      - "--metrics.addr=0.0.0.0"
-      - "--metrics.port=9001"
-      - "--allow-insecure-unlock"
-      - "--nodiscover"
+    entrypoint: ["/scripts/geth-init-entrypoint.sh"]
+    command: []
     ports:
       - "8545:8545"    # HTTP RPC
       - "8546:8546"    # WebSocket RPC
@@ -227,21 +193,20 @@ services:
       - "9001:9001"    # Metrics
     volumes:
       - ./scripts:/scripts:ro
+      - ./artifacts/genesis.json:/network-configs/genesis.json:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
-      interval: 2s
+      test: ["CMD", "sh", "-c", "test -f /data/geth/.replay_complete && wget -q -O - http://localhost:8545"]
+      interval: 5s
       timeout: 3s
-      retries: 3
-      start_period: 10s
+      retries: 60
+      start_period: 120s
 
   beacon:
     image: snapshot-beacon:$TAG
     container_name: $SNAPSHOT_ID-beacon
     hostname: beacon
     entrypoint: ["/scripts/beacon-init.sh"]
-    cap_add:
-      - SYS_TIME
     command:
       - "lighthouse"
       - "beacon_node"
@@ -285,9 +250,6 @@ services:
     image: snapshot-validator:$TAG
     container_name: $SNAPSHOT_ID-validator
     hostname: validator
-    entrypoint: ["/scripts/set-time.sh"]
-    cap_add:
-      - SYS_TIME
     command:
       - "lighthouse"
       - "validator_client"
@@ -317,9 +279,6 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
     image: $AGGLAYER_IMAGE
     container_name: $SNAPSHOT_ID-agglayer
     hostname: agglayer
-    entrypoint: ["/scripts/set-time.sh", "/usr/local/bin/agglayer"]
-    cap_add:
-      - SYS_TIME
     command:
       - "run"
       - "--cfg"
@@ -389,15 +348,8 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     container_name: $SNAPSHOT_ID-op-geth-$prefix
     hostname: op-geth-$prefix
     entrypoint: ["/bin/sh", "-c"]
-    cap_add:
-      - SYS_TIME
     command:
       - |
-        # Set system time first
-        if [ -f "/scripts/set-time.sh" ] && [ -x "/scripts/set-time.sh" ]; then
-          . /scripts/set-time.sh
-        fi
-
         if [ ! -d "/data/geth" ]; then
           echo "Initializing op-geth with genesis..."
           geth init --datadir=/data /genesis.json
@@ -461,15 +413,8 @@ EOF
     container_name: $SNAPSHOT_ID-op-node-$prefix
     hostname: op-node-$prefix
     entrypoint: ["/bin/sh", "-c"]
-    cap_add:
-      - SYS_TIME
     command:
       - |
-        # Set system time first
-        if [ -f "/scripts/set-time.sh" ] && [ -x "/scripts/set-time.sh" ]; then
-          . /scripts/set-time.sh
-        fi
-
         exec op-node \
           --rollup.config=/network-configs/rollup.json \
           --l1=http://geth:8545 \
