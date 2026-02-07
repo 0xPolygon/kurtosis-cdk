@@ -595,8 +595,14 @@ log_step "STEP 10: Cleanup"
 
 log "Removing temporary and intermediate files..."
 
-# Remove directories that are no longer needed
-rm -rf "$OUTPUT_DIR/artifacts" 2>/dev/null || true
+# Note: DO NOT remove artifacts directory - it contains files needed at runtime:
+#  - genesis.json (volume-mounted by docker-compose)
+#  - jwt.hex (volume-mounted by docker-compose)
+#  - genesis.ssz (baked into Docker image)
+#  - replay-transactions.sh (baked into Docker image)
+#  - validator-keys (baked into Docker image)
+
+# Remove build directories that are no longer needed
 rm -rf "$OUTPUT_DIR/datadirs" 2>/dev/null || true
 rm -rf "$OUTPUT_DIR/images" 2>/dev/null || true
 rm -rf "$OUTPUT_DIR/metadata" 2>/dev/null || true

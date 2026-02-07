@@ -74,6 +74,49 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 fi
 
 # ============================================================================
+# STEP 0.5: Extract critical files while containers are running
+# ============================================================================
+
+log "Extracting critical configuration files..."
+
+# Extract genesis.json while geth is running
+log "  Extracting genesis.json..."
+if docker cp "$GETH_CONTAINER:/network-configs/genesis.json" "$OUTPUT_DIR/artifacts/genesis.json" 2>/dev/null; then
+    if [ -f "$OUTPUT_DIR/artifacts/genesis.json" ] && [ -s "$OUTPUT_DIR/artifacts/genesis.json" ]; then
+        log "  ✓ genesis.json extracted ($(wc -c < "$OUTPUT_DIR/artifacts/genesis.json") bytes)"
+    else
+        log "  ERROR: genesis.json extraction failed - not a valid file"
+        rm -rf "$OUTPUT_DIR/artifacts/genesis.json"
+        exit 1
+    fi
+else
+    log "  ERROR: Failed to extract genesis.json from container"
+    exit 1
+fi
+
+# Extract JWT secret while geth is running
+log "  Extracting JWT secret..."
+if docker cp "$GETH_CONTAINER:/jwt/jwtsecret" "$OUTPUT_DIR/artifacts/jwt.hex" 2>/dev/null; then
+    if [ -f "$OUTPUT_DIR/artifacts/jwt.hex" ] && [ -s "$OUTPUT_DIR/artifacts/jwt.hex" ]; then
+        log "  ✓ JWT secret extracted"
+    else
+        log "  ERROR: JWT secret extraction failed - not a valid file"
+        rm -rf "$OUTPUT_DIR/artifacts/jwt.hex"
+        exit 1
+    fi
+else
+    log "  ERROR: Failed to extract JWT secret from container"
+    exit 1
+fi
+
+# Extract beacon chain spec if available
+log "  Extracting beacon chain spec..."
+docker cp "$BEACON_CONTAINER:/network-configs/config.yaml" "$OUTPUT_DIR/artifacts/chain-spec.yaml" 2>/dev/null && \
+    log "  ✓ chain-spec.yaml extracted" || log "  WARNING: chain-spec.yaml not found"
+
+log "Critical files extracted successfully"
+
+# ============================================================================
 # STEP 1: Stop containers gracefully
 # ============================================================================
 
@@ -432,22 +475,12 @@ else
 fi
 
 # ============================================================================
-# STEP 7: Extract configuration artifacts
+# STEP 7: Extract remaining configuration artifacts
 # ============================================================================
 
-log "Extracting configuration artifacts..."
+log "Extracting remaining configuration artifacts..."
 
-# Extract genesis and network configs from Geth
-log "  Extracting genesis.json..."
-docker cp "$GETH_CONTAINER:/network-configs/genesis.json" "$OUTPUT_DIR/artifacts/genesis.json" 2>/dev/null || log "  genesis.json not found in expected location"
-
-# Extract JWT secret
-log "  Extracting JWT secret..."
-docker cp "$GETH_CONTAINER:/jwt/jwtsecret" "$OUTPUT_DIR/artifacts/jwt.hex" 2>/dev/null || log "  JWT secret not found"
-
-# Extract beacon chain spec if available
-log "  Extracting beacon chain spec..."
-docker cp "$BEACON_CONTAINER:/network-configs/config.yaml" "$OUTPUT_DIR/artifacts/chain-spec.yaml" 2>/dev/null || log "  chain-spec.yaml not found"
+# Note: genesis.json, JWT secret, and chain-spec.yaml already extracted in STEP 0.5
 
 # Extract validator definitions if available
 log "  Extracting validator definitions..."
