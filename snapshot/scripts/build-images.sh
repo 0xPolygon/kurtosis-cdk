@@ -92,6 +92,9 @@ fi
 cat > "$GETH_BUILD_DIR/Dockerfile" << 'EOF'
 FROM ethereum/client-go:v1.16.8
 
+# Install curl and jq for transaction replay script
+RUN apk add --no-cache curl jq
+
 # Copy artifacts
 COPY jwtsecret /tmp/jwtsecret
 COPY replay-transactions.sh /scripts/replay-transactions.sh

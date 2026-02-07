@@ -138,11 +138,11 @@ GETH_PID=$!
 # Wait for geth RPC
 echo "Waiting for geth RPC..."
 counter=0
-until curl -sf http://localhost:8545 > /dev/null 2>&1; do
+until wget -q -O - http://localhost:8545 > /dev/null 2>&1; do
     sleep 1
     counter=$((counter + 1))
     if [ $counter -gt 60 ]; then
-        echo "ERROR: Geth failed to start"
+        echo "ERROR: Geth failed to start (RPC not responding after 60s)"
         kill $GETH_PID 2>/dev/null || true
         exit 1
     fi
@@ -164,6 +164,15 @@ GETH_INIT_EOF
 
 chmod +x "$OUTPUT_DIR/scripts/geth-init-entrypoint.sh"
 log "  ✓ Created: scripts/geth-init-entrypoint.sh"
+
+# Copy replay script to scripts directory (will be volume-mounted)
+if [ -f "$OUTPUT_DIR/artifacts/replay-transactions.sh" ]; then
+    cp "$OUTPUT_DIR/artifacts/replay-transactions.sh" "$OUTPUT_DIR/scripts/"
+    chmod +x "$OUTPUT_DIR/scripts/replay-transactions.sh"
+    log "  ✓ Copied: scripts/replay-transactions.sh"
+else
+    log "  WARNING: No replay script found in artifacts"
+fi
 
 # ============================================================================
 # Generate docker-compose.yml
