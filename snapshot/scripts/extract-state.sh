@@ -84,6 +84,14 @@ log "  Extracting genesis.json..."
 if docker cp "$GETH_CONTAINER:/network-configs/genesis.json" "$OUTPUT_DIR/artifacts/genesis.json" 2>/dev/null; then
     if [ -f "$OUTPUT_DIR/artifacts/genesis.json" ] && [ -s "$OUTPUT_DIR/artifacts/genesis.json" ]; then
         log "  ✓ genesis.json extracted ($(wc -c < "$OUTPUT_DIR/artifacts/genesis.json") bytes)"
+
+        # Clean up genesis.json: remove terminalTotalDifficultyPassed field
+        # This field is not recognized by op-node and causes config errors
+        log "  Cleaning genesis.json (removing terminalTotalDifficultyPassed)..."
+        jq 'del(.config.terminalTotalDifficultyPassed)' "$OUTPUT_DIR/artifacts/genesis.json" > "$OUTPUT_DIR/artifacts/genesis.json.tmp" && \
+            mv "$OUTPUT_DIR/artifacts/genesis.json.tmp" "$OUTPUT_DIR/artifacts/genesis.json" && \
+            log "  ✓ genesis.json cleaned" || \
+            log "  WARNING: Failed to clean genesis.json"
     else
         log "  ERROR: genesis.json extraction failed - not a valid file"
         rm -rf "$OUTPUT_DIR/artifacts/genesis.json"
@@ -405,6 +413,15 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             docker cp "$OP_NODE_SEQ:/l1/genesis.json" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" 2>/dev/null && \
                 log "    ✓ l1-genesis.json extracted from op-node" || \
                 log "    WARNING: Failed to extract L1 genesis.json from op-node"
+        fi
+
+        # Clean up l1-genesis.json: remove terminalTotalDifficultyPassed field
+        # This field is not recognized by op-node and causes config errors
+        if [ -f "$OUTPUT_DIR/config/$prefix/l1-genesis.json" ]; then
+            jq 'del(.config.terminalTotalDifficultyPassed)' "$OUTPUT_DIR/config/$prefix/l1-genesis.json" > "$OUTPUT_DIR/config/$prefix/l1-genesis.json.tmp" && \
+                mv "$OUTPUT_DIR/config/$prefix/l1-genesis.json.tmp" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" && \
+                log "    ✓ Cleaned up l1-genesis.json (removed terminalTotalDifficultyPassed)" || \
+                log "    WARNING: Failed to clean up l1-genesis.json"
         fi
 
         # Extract op-geth configuration

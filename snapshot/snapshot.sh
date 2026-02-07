@@ -162,6 +162,9 @@ OUTPUT_DIR="${OUTPUT_BASE_DIR}/${SNAPSHOT_NAME}"
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
+# Convert to absolute path (required for Docker volume mounts)
+OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
+
 # Initialize log file
 LOG_FILE="$OUTPUT_DIR/snapshot.log"
 touch "$LOG_FILE"
@@ -508,6 +511,182 @@ fi
 log "Docker images built successfully"
 
 # ============================================================================
+# Step 6.5: Update Rollup Config with Actual Replayed Block Hash
+# ============================================================================
+
+log_step "STEP 6.5: Update Rollup Config with Replayed Block Hash"
+
+# Check if there are any L2 chains (rollup.json files)
+ROLLUP_CONFIGS=$(find "$OUTPUT_DIR/config" -name "rollup.json" 2>/dev/null || true)
+
+if [ -n "$ROLLUP_CONFIGS" ]; then
+    log "Found L2 chain configuration(s), querying replayed block hashes..."
+
+    # We need to start geth temporarily to query the replayed chain
+    # Get the geth image name from discovery.json
+    GETH_IMAGE=$(jq -r '.geth.image' "$DISCOVERY_JSON" 2>/dev/null || echo "snapshot-geth:$TAG")
+    GENESIS_FILE="$OUTPUT_DIR/artifacts/genesis.json"
+
+    if [ ! -f "$GENESIS_FILE" ]; then
+        log_error "Genesis file not found: $GENESIS_FILE"
+        exit 1
+    fi
+
+    log "Starting temporary geth container to query replayed chain..."
+
+    # Create a temporary directory for geth data
+    TEMP_GETH_DIR=$(mktemp -d)
+    trap "rm -rf $TEMP_GETH_DIR" EXIT
+
+    # Copy replay script to scripts directory so it's available when mounted
+    # (volume mount shadows the /scripts directory in the image)
+    if [ -f "$OUTPUT_DIR/artifacts/replay-transactions.sh" ]; then
+        mkdir -p "$OUTPUT_DIR/scripts"
+        cp "$OUTPUT_DIR/artifacts/replay-transactions.sh" "$OUTPUT_DIR/scripts/replay-transactions.sh"
+        chmod +x "$OUTPUT_DIR/scripts/replay-transactions.sh"
+    fi
+
+    # Start geth container in background with manual init and replay
+    # We need to execute the same initialization steps as geth-init-entrypoint.sh
+    # Note: We skip authrpc setup since we only need HTTP RPC for queries
+    TEMP_CONTAINER_ID=$(docker run -d \
+        --name "snapshot-temp-geth-$$" \
+        --entrypoint "/bin/sh" \
+        -v "$GENESIS_FILE:/network-configs/genesis.json:ro" \
+        -v "$OUTPUT_DIR/scripts:/scripts:ro" \
+        -p 18545:8545 \
+        "$GETH_IMAGE" \
+        -c 'if [ ! -d "/data/geth/execution-data/geth" ]; then geth init --datadir=/data/geth/execution-data /network-configs/genesis.json; fi && geth --http --http.addr=0.0.0.0 --http.port=8545 --http.vhosts="*" --http.corsdomain="*" --http.api=admin,net,eth,web3,debug,txpool --datadir=/data/geth/execution-data --port=30303 --discovery.port=30303 --syncmode=full --gcmode=archive --networkid=271828 --allow-insecure-unlock --nodiscover & until wget -q -O - http://localhost:8545 > /dev/null 2>&1; do sleep 1; done && /scripts/replay-transactions.sh && tail -f /dev/null' 2>> "$LOG_FILE")
+
+    if [ -z "$TEMP_CONTAINER_ID" ]; then
+        log_error "Failed to start temporary geth container"
+        exit 1
+    fi
+
+    log "  Container started: $TEMP_CONTAINER_ID"
+    log "  Waiting for transaction replay to complete..."
+
+    # Wait for replay to complete (check for .replay_complete marker)
+    RETRY_COUNT=0
+    MAX_RETRIES=120  # 10 minutes timeout
+
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if docker exec "$TEMP_CONTAINER_ID" test -f /data/geth/.replay_complete 2>/dev/null; then
+            log "  ✓ Transaction replay complete"
+            break
+        fi
+
+        # Check if container is still running
+        if ! docker ps -q --filter "id=$TEMP_CONTAINER_ID" | grep -q .; then
+            log_error "Temporary geth container stopped unexpectedly"
+            docker logs "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+            docker rm -f "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+            exit 1
+        fi
+
+        sleep 5
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+
+        if [ $((RETRY_COUNT % 12)) -eq 0 ]; then
+            log "  Still waiting... (${RETRY_COUNT}/${MAX_RETRIES})"
+        fi
+    done
+
+    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        log_error "Timeout waiting for transaction replay to complete"
+        docker logs "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+        docker rm -f "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+        exit 1
+    fi
+
+    # Wait a bit more for RPC to be ready
+    log "  Waiting for geth RPC to be ready..."
+    sleep 5
+
+    # Now query the actual block hash for each rollup config
+    for ROLLUP_CONFIG in $ROLLUP_CONFIGS; do
+        log "  Processing: $ROLLUP_CONFIG"
+
+        # Extract the L1 genesis block number from rollup.json
+        L1_GENESIS_BLOCK=$(jq -r '.genesis.l1.number' "$ROLLUP_CONFIG" 2>/dev/null)
+
+        if [ -z "$L1_GENESIS_BLOCK" ] || [ "$L1_GENESIS_BLOCK" = "null" ]; then
+            log "    WARNING: Could not extract L1 genesis block number, skipping"
+            continue
+        fi
+
+        log "    L1 genesis block number: $L1_GENESIS_BLOCK"
+
+        # Query the actual block hash from the replayed chain
+        BLOCK_NUM_HEX=$(printf "0x%x" "$L1_GENESIS_BLOCK")
+        log "    Querying block hash for block $L1_GENESIS_BLOCK ($BLOCK_NUM_HEX)..."
+
+        ACTUAL_HASH=$(docker exec "$TEMP_CONTAINER_ID" wget -q -O - \
+            --post-data="{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\",\"params\":[\"$BLOCK_NUM_HEX\",false],\"id\":1}" \
+            --header='Content-Type:application/json' \
+            http://localhost:8545 2>/dev/null | \
+            jq -r '.result.hash' 2>/dev/null)
+
+        if [ -z "$ACTUAL_HASH" ] || [ "$ACTUAL_HASH" = "null" ]; then
+            log "    WARNING: Block $L1_GENESIS_BLOCK not found in replayed chain"
+            log "    Falling back to latest block..."
+
+            # Query the latest block number
+            LATEST_BLOCK_HEX=$(docker exec "$TEMP_CONTAINER_ID" wget -q -O - \
+                --post-data='{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+                --header='Content-Type:application/json' \
+                http://localhost:8545 2>/dev/null | \
+                jq -r '.result' 2>/dev/null)
+
+            LATEST_BLOCK_DEC=$(printf "%d" "$LATEST_BLOCK_HEX" 2>/dev/null || echo "0")
+            log "    Latest block in replayed chain: $LATEST_BLOCK_DEC"
+
+            # Query the hash of the latest block
+            ACTUAL_HASH=$(docker exec "$TEMP_CONTAINER_ID" wget -q -O - \
+                --post-data="{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\",\"params\":[\"$LATEST_BLOCK_HEX\",false],\"id\":1}" \
+                --header='Content-Type:application/json' \
+                http://localhost:8545 2>/dev/null | \
+                jq -r '.result.hash' 2>/dev/null)
+
+            # Update the block number in rollup.json as well
+            L1_GENESIS_BLOCK="$LATEST_BLOCK_DEC"
+            BLOCK_NUM_HEX="$LATEST_BLOCK_HEX"
+        fi
+
+        if [ -z "$ACTUAL_HASH" ] || [ "$ACTUAL_HASH" = "null" ]; then
+            log_error "Failed to query block hash from replayed chain"
+            docker logs "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+            docker rm -f "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+            exit 1
+        fi
+
+        log "    Actual replayed hash: $ACTUAL_HASH (block $L1_GENESIS_BLOCK)"
+
+        # Update the rollup.json with the actual hash and block number
+        OLD_HASH=$(jq -r '.genesis.l1.hash' "$ROLLUP_CONFIG" 2>/dev/null)
+        OLD_NUMBER=$(jq -r '.genesis.l1.number' "$ROLLUP_CONFIG" 2>/dev/null)
+        log "    Original: hash=$OLD_HASH, number=$OLD_NUMBER"
+
+        if [ "$OLD_HASH" != "$ACTUAL_HASH" ] || [ "$OLD_NUMBER" != "$L1_GENESIS_BLOCK" ]; then
+            log "    Updating rollup.json with actual replayed values..."
+            jq ".genesis.l1.hash = \"$ACTUAL_HASH\" | .genesis.l1.number = $L1_GENESIS_BLOCK" "$ROLLUP_CONFIG" > "$ROLLUP_CONFIG.tmp" && \
+                mv "$ROLLUP_CONFIG.tmp" "$ROLLUP_CONFIG" && \
+                log "    ✓ Updated rollup.json" || \
+                log "    WARNING: Failed to update rollup.json"
+        else
+            log "    ✓ Values already match (no update needed)"
+        fi
+    done
+
+    # Clean up temporary container
+    log "  Cleaning up temporary geth container..."
+    docker rm -f "$TEMP_CONTAINER_ID" >> "$LOG_FILE" 2>&1
+    log "  ✓ Cleanup complete"
+else
+    log "No L2 chain configurations found, skipping block hash update"
+fi
+
+# ============================================================================
 # Step 7: Docker Compose Generation
 # ============================================================================
 
@@ -595,17 +774,13 @@ log_step "STEP 10: Cleanup"
 
 log "Removing temporary and intermediate files..."
 
-# Note: DO NOT remove artifacts directory - it contains files needed at runtime:
-#  - genesis.json (volume-mounted by docker-compose)
-#  - jwt.hex (volume-mounted by docker-compose)
-#  - genesis.ssz (baked into Docker image)
-#  - replay-transactions.sh (baked into Docker image)
-#  - validator-keys (baked into Docker image)
+# Note: DO NOT remove these directories - they contain files needed at runtime:
+#  artifacts/ - genesis.json, jwt.hex, genesis.ssz, replay-transactions.sh, validator-keys
+#  metadata/ - checkpoint.json (needed by verify.sh)
 
 # Remove build directories that are no longer needed
 rm -rf "$OUTPUT_DIR/datadirs" 2>/dev/null || true
 rm -rf "$OUTPUT_DIR/images" 2>/dev/null || true
-rm -rf "$OUTPUT_DIR/metadata" 2>/dev/null || true
 
 # Remove individual files that are no longer needed
 rm -f "$OUTPUT_DIR/discovery.json" 2>/dev/null || true

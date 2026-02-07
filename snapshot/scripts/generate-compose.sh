@@ -288,6 +288,7 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
     image: $AGGLAYER_IMAGE
     container_name: $SNAPSHOT_ID-agglayer
     hostname: agglayer
+    entrypoint: ["/usr/local/bin/agglayer"]
     command:
       - "run"
       - "--cfg"

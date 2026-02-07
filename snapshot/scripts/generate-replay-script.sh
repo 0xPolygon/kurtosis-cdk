@@ -25,8 +25,9 @@ echo "=========================================="
 
 # Wait for geth RPC
 echo "Waiting for geth RPC..."
-until curl -sf -X POST -H "Content-Type: application/json" \
-    --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+until wget -q -O - \
+    --post-data='{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+    --header='Content-Type: application/json' \
     "$RPC_URL" > /dev/null 2>&1; do
     sleep 1
 done
@@ -39,9 +40,10 @@ send_tx() {
 
     echo "Sending tx $tx_num..."
 
-    tx_hash=$(curl -sf -X POST -H "Content-Type: application/json" \
-        --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_sendRawTransaction\",\"params\":[\"$raw_tx\"],\"id\":1}" \
-        "$RPC_URL" | jq -r '.result // empty')
+    tx_hash=$(wget -q -O - \
+        --post-data="{\"jsonrpc\":\"2.0\",\"method\":\"eth_sendRawTransaction\",\"params\":[\"$raw_tx\"],\"id\":1}" \
+        --header='Content-Type: application/json' \
+        "$RPC_URL" 2>/dev/null | jq -r '.result // empty')
 
     if [ -z "$tx_hash" ]; then
         echo "  WARNING: TX $tx_num failed to submit"
@@ -53,9 +55,10 @@ send_tx() {
     # Wait for receipt
     retries=30
     while [ $retries -gt 0 ]; do
-        receipt=$(curl -sf -X POST -H "Content-Type: application/json" \
-            --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getTransactionReceipt\",\"params\":[\"$tx_hash\"],\"id\":1}" \
-            "$RPC_URL" | jq -r '.result // empty')
+        receipt=$(wget -q -O - \
+            --post-data="{\"jsonrpc\":\"2.0\",\"method\":\"eth_getTransactionReceipt\",\"params\":[\"$tx_hash\"],\"id\":1}" \
+            --header='Content-Type: application/json' \
+            "$RPC_URL" 2>/dev/null | jq -r '.result // empty')
 
         if [ -n "$receipt" ]; then
             echo "  ✓ TX $tx_num mined"

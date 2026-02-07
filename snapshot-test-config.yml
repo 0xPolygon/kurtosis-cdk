@@ -13,6 +13,8 @@ args:
   consensus_contract_type: pessimistic
   aggkit_image: ghcr.io/agglayer/aggkit:0.8.0
 
+  l1_seconds_per_slot: 1  # Fast slot time (default is 2, minimal allows down to 1)
+  
   # Minimal additional services for faster startup
   additional_services:
     - test_runner
