@@ -394,10 +394,18 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         fi
 
         # L1 genesis (needed by op-node for --rollup.l1-chain-config)
-        # Extract from the running op-node container itself (it has the compatible version)
-        docker cp "$OP_NODE_SEQ:/l1/genesis.json" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" 2>/dev/null && \
-            log "    ✓ l1-genesis.json extracted from op-node" || \
-            log "    WARNING: Failed to extract L1 genesis.json from op-node"
+        # Use the snapshot's L1 genesis (artifacts/genesis.json) instead of the original enclave's
+        # This is critical because transaction replay creates a new genesis
+        if [ -f "$OUTPUT_DIR/artifacts/genesis.json" ]; then
+            cp "$OUTPUT_DIR/artifacts/genesis.json" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" && \
+                log "    ✓ l1-genesis.json copied from snapshot's L1 genesis" || \
+                log "    WARNING: Failed to copy L1 genesis.json"
+        else
+            log "    WARNING: artifacts/genesis.json not found, trying op-node extraction"
+            docker cp "$OP_NODE_SEQ:/l1/genesis.json" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" 2>/dev/null && \
+                log "    ✓ l1-genesis.json extracted from op-node" || \
+                log "    WARNING: Failed to extract L1 genesis.json from op-node"
+        fi
 
         # Extract op-geth configuration
         log "  Extracting op-geth configuration..."

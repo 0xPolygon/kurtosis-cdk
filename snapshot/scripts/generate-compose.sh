@@ -424,6 +424,24 @@ EOF
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        # Wait for L1 to reach the genesis block specified in rollup.json
+        echo "Waiting for L1 to reach genesis block..."
+        GENESIS_L1_BLOCK=\$\$(cat /network-configs/rollup.json | grep -A2 '"l1"' | grep '"number"' | grep -o '[0-9]*')
+        echo "  L1 genesis block: \$\$GENESIS_L1_BLOCK"
+
+        while true; do
+          CURRENT_BLOCK=\$\$(wget -q -O - --post-data='{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' --header='Content-Type:application/json' http://geth:8545 2>/dev/null | grep -o '"result":"0x[0-9a-f]*"' | cut -d'"' -f4)
+          if [ -n "\$\$CURRENT_BLOCK" ]; then
+            CURRENT_BLOCK_DEC=\$\$(printf "%d" "\$\$CURRENT_BLOCK")
+            echo "  Current L1 block: \$\$CURRENT_BLOCK_DEC (waiting for \$\$GENESIS_L1_BLOCK)"
+            if [ "\$\$CURRENT_BLOCK_DEC" -ge "\$\$GENESIS_L1_BLOCK" ]; then
+              echo "  ✓ L1 reached genesis block, starting op-node..."
+              break
+            fi
+          fi
+          sleep 2
+        done
+
         exec op-node \
           --rollup.config=/network-configs/rollup.json \
           --l1=http://geth:8545 \
