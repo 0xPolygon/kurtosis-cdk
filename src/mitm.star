@@ -1,4 +1,4 @@
-SRC_MITM_SCRIPT_PATH = "./scripts/mitm"
+SRC_MITM_SCRIPT_PATH = "../scripts/mitm"
 SRC_MITM_SCRIPTS = ["empty.py", "failures.py", "tx_capture.py"]
 DEFAULT_SCRIPT = "empty.py"
 DST_MITM_SCRIPT_PATH = "/scripts"
@@ -9,7 +9,7 @@ def run(plan, args):
     for script in SRC_MITM_SCRIPTS:
         mitm_script = plan.upload_files(
             name="mitm-script-" + script,
-            src=SRC_MITM_SCRIPT_PATH + "/" + script,
+            src="{}/{}".format(SRC_MITM_SCRIPT_PATH, script),
             description="Uploading MITM script " + script,
         )
         artifacts.append(mitm_script)
