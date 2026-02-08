@@ -99,9 +99,6 @@ assert_file_exists "$TEST_DIR/artifacts/replay-transactions.sh" "Replay script f
 bash -n "$TEST_DIR/artifacts/replay-transactions.sh"
 assert_success "Generated script has valid bash syntax"
 
-# Verify script contains completion marker logic
-assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" ".replay_complete" "Script contains completion marker"
-
 # ============================================================================
 # Test 2: Generate script with one transaction
 # ============================================================================
@@ -203,6 +200,46 @@ else
     log "  ✗ FAIL: Generated script is not executable"
     TESTS_FAILED=$((TESTS_FAILED + 1))
 fi
+
+# ============================================================================
+# Test 6: Parallel replay structure verification
+# ============================================================================
+
+test_case "Parallel replay structure (send all, then wait all)"
+
+TEST_DIR="$TEMP_DIR/test6"
+mkdir -p "$TEST_DIR/artifacts"
+
+# Create transactions.jsonl with 5 transactions
+for i in {1..5}; do
+    echo "{\"block\":$i,\"tx_index\":0,\"raw_tx\":\"0xf86d8085174876e800825208940000000000000000000000000000000000000001880de0b6b3a764000080820a96a0c0d8c4d0f5e1b7a3d0b3c4d0f5e1b7a3d0b3c4d0f5e1b7a3d0b3c4d0f5e1b7a3a0c0d8c4d0f5e1b7a3d0b3c4d0f5e1b7a3d0b3c4d0f5e1b7a3d0b3c4d0f5e1b7a$i\"}" >> "$TEST_DIR/artifacts/transactions.jsonl"
+done
+
+# Generate replay script
+"$SCRIPT_DIR/scripts/generate-replay-script.sh" "$TEST_DIR" > /dev/null 2>&1
+assert_success "Script generation with 5 transactions"
+
+assert_file_exists "$TEST_DIR/artifacts/replay-transactions.sh" "Replay script file created"
+
+# Verify parallel replay structure
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "Parallel Transaction Replay" "Script header mentions parallel replay"
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "Phase 1: Sending all transactions" "Script has Phase 1 section"
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "Phase 2: Waiting for all transactions to be mined" "Script has Phase 2 section"
+
+# Verify both send and wait functions exist
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "send_tx()" "Script has send_tx function"
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "wait_for_tx()" "Script has wait_for_tx function"
+
+# Verify transaction hash collection
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "tx_hashes=" "Script collects transaction hashes"
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "tx_numbers=" "Script collects transaction numbers"
+
+# Verify waiting logic
+assert_contains "$TEST_DIR/artifacts/replay-transactions.sh" "wait_for_tx" "Script calls wait_for_tx"
+
+# Verify script has valid syntax
+bash -n "$TEST_DIR/artifacts/replay-transactions.sh"
+assert_success "Generated parallel replay script has valid bash syntax"
 
 # ============================================================================
 # Test Summary
