@@ -74,12 +74,12 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 fi
 
 # ============================================================================
-# STEP 1: Stop containers gracefully
+# STEP 1: Stop beacon and validator (keep geth running for transaction extraction)
 # ============================================================================
 
-log "Stopping containers gracefully..."
+log "Stopping beacon and validator containers (keeping geth running)..."
 
-for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
+for container in "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
     if docker ps -q --filter "name=$container" | grep -q .; then
         log "  Stopping $container..."
         docker stop "$container" --time 30
@@ -104,86 +104,116 @@ for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; d
     fi
 done
 
-log "All containers stopped"
+log "Beacon and validator stopped (geth still running for transaction extraction)"
 
 # ============================================================================
-# STEP 2: Validate containers are stopped
+# STEP 2: Extract transactions from L1 blocks
 # ============================================================================
 
-log "Validating container states..."
+log "Extracting transactions from L1 blocks..."
 
-for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
-    state=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "gone")
-    if [ "$state" != "exited" ]; then
-        log "ERROR: Container $container is not stopped (state: $state)"
-        log "Cannot proceed with extraction"
-        exit 1
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ ! -x "$SCRIPT_DIR/extract-transactions.sh" ]; then
+    log "ERROR: extract-transactions.sh not found or not executable"
+    exit 1
+fi
+
+# Extract transactions (geth container is still running)
+if ! "$SCRIPT_DIR/extract-transactions.sh" "$GETH_CONTAINER" "$OUTPUT_DIR"; then
+    log "ERROR: Transaction extraction failed"
+    exit 1
+fi
+
+# Validate transactions.jsonl exists
+TRANSACTIONS_FILE="$OUTPUT_DIR/artifacts/transactions.jsonl"
+if [ ! -f "$TRANSACTIONS_FILE" ]; then
+    log "ERROR: Transactions file not found: $TRANSACTIONS_FILE"
+    exit 1
+fi
+
+# Count transactions
+tx_count=$(wc -l < "$TRANSACTIONS_FILE" | tr -d ' ')
+log "  Extracted $tx_count transactions"
+
+# ============================================================================
+# STEP 3: Stop geth and extract genesis artifacts
+# ============================================================================
+
+log "Extracting genesis artifacts from geth..."
+
+# Extract genesis.json (geth still running)
+log "  Extracting genesis.json..."
+docker cp "$GETH_CONTAINER:/network-configs/genesis.json" "$OUTPUT_DIR/artifacts/genesis.json" 2>/dev/null || {
+    log "ERROR: Failed to extract genesis.json"
+    exit 1
+}
+
+# Validate genesis.json is a file
+if [ ! -f "$OUTPUT_DIR/artifacts/genesis.json" ] || [ ! -s "$OUTPUT_DIR/artifacts/genesis.json" ]; then
+    log "ERROR: genesis.json is not a valid file"
+    exit 1
+fi
+
+# Extract JWT secret
+log "  Extracting JWT secret..."
+docker cp "$GETH_CONTAINER:/jwt/jwtsecret" "$OUTPUT_DIR/artifacts/jwt.hex" 2>/dev/null || {
+    log "ERROR: Failed to extract JWT secret"
+    exit 1
+}
+
+log "  ✓ Genesis artifacts extracted"
+
+# Now stop geth
+log "Stopping geth container..."
+if docker ps -q --filter "name=$GETH_CONTAINER" | grep -q .; then
+    docker stop "$GETH_CONTAINER" --time 30
+
+    timeout=30
+    while [ $timeout -gt 0 ]; do
+        state=$(docker inspect --format='{{.State.Status}}' "$GETH_CONTAINER" 2>/dev/null || echo "gone")
+        if [ "$state" = "exited" ]; then
+            log "  Geth stopped successfully"
+            break
+        fi
+        sleep 1
+        timeout=$((timeout - 1))
+    done
+
+    if [ $timeout -eq 0 ]; then
+        log "WARNING: Geth did not stop within timeout"
     fi
-done
-
-log "All containers confirmed stopped"
-
-# ============================================================================
-# STEP 3: Extract Geth datadir
-# ============================================================================
-
-log "Extracting Geth execution datadir..."
-
-GETH_DATADIR="/data/geth/execution-data"
-GETH_TAR="$OUTPUT_DIR/datadirs/geth.tar"
-
-log "  Source: $GETH_DATADIR"
-log "  Target: $GETH_TAR"
-
-# Create tarball from stopped container
-docker export "$GETH_CONTAINER" | tar -x --to-stdout "$GETH_DATADIR" > /dev/null 2>&1 || true
-
-# Better approach: use docker cp
-docker cp "$GETH_CONTAINER:$GETH_DATADIR" "$OUTPUT_DIR/datadirs/geth-data"
-
-# Create tarball
-tar -czf "$GETH_TAR" -C "$OUTPUT_DIR/datadirs" geth-data
-rm -rf "$OUTPUT_DIR/datadirs/geth-data"
-
-if [ -f "$GETH_TAR" ]; then
-    size=$(du -h "$GETH_TAR" | cut -f1)
-    log "  Geth datadir extracted: $size"
-else
-    log "ERROR: Failed to extract Geth datadir"
-    exit 1
 fi
 
 # ============================================================================
-# STEP 4: Extract Lighthouse Beacon datadir
+# STEP 4: Extract genesis.ssz from beacon
 # ============================================================================
 
-log "Extracting Lighthouse beacon datadir..."
+log "Extracting genesis.ssz from beacon..."
 
-BEACON_DATADIR="/data/lighthouse/beacon-data"
-BEACON_TAR="$OUTPUT_DIR/datadirs/lighthouse_beacon.tar"
+# Extract genesis.ssz for fresh beacon start
+docker cp "$BEACON_CONTAINER:/network-configs/genesis.ssz" "$OUTPUT_DIR/artifacts/genesis.ssz" 2>/dev/null || {
+    log "ERROR: Failed to extract genesis.ssz"
+    exit 1
+}
 
-log "  Source: $BEACON_DATADIR"
-log "  Target: $BEACON_TAR"
-
-docker cp "$BEACON_CONTAINER:$BEACON_DATADIR" "$OUTPUT_DIR/datadirs/beacon-data"
-
-# Create tarball
-tar -czf "$BEACON_TAR" -C "$OUTPUT_DIR/datadirs" beacon-data
-rm -rf "$OUTPUT_DIR/datadirs/beacon-data"
-
-if [ -f "$BEACON_TAR" ]; then
-    size=$(du -h "$BEACON_TAR" | cut -f1)
-    log "  Beacon datadir extracted: $size"
-else
-    log "ERROR: Failed to extract Beacon datadir"
+if [ ! -f "$OUTPUT_DIR/artifacts/genesis.ssz" ] || [ ! -s "$OUTPUT_DIR/artifacts/genesis.ssz" ]; then
+    log "ERROR: genesis.ssz is not a valid file"
     exit 1
 fi
 
+log "  ✓ genesis.ssz extracted"
+
+# Extract chain spec for beacon
+log "  Extracting beacon chain spec..."
+docker cp "$BEACON_CONTAINER:/network-configs/config.yaml" "$OUTPUT_DIR/artifacts/chain-spec.yaml" 2>/dev/null || log "  chain-spec.yaml not found"
+
 # ============================================================================
-# STEP 5: Extract Lighthouse Validator datadir
+# STEP 5: Extract Lighthouse Validator keys
 # ============================================================================
 
-log "Extracting Lighthouse validator datadir..."
+log "Extracting Lighthouse validator keys..."
 
 VALIDATOR_TAR="$OUTPUT_DIR/datadirs/lighthouse_validator.tar"
 mkdir -p "$OUTPUT_DIR/datadirs/validator-data"
@@ -408,25 +438,12 @@ else
 fi
 
 # ============================================================================
-# STEP 7: Extract configuration artifacts
+# STEP 7: Extract validator definitions
 # ============================================================================
 
-log "Extracting configuration artifacts..."
-
-# Extract genesis and network configs from Geth
-log "  Extracting genesis.json..."
-docker cp "$GETH_CONTAINER:/network-configs/genesis.json" "$OUTPUT_DIR/artifacts/genesis.json" 2>/dev/null || log "  genesis.json not found in expected location"
-
-# Extract JWT secret
-log "  Extracting JWT secret..."
-docker cp "$GETH_CONTAINER:/jwt/jwtsecret" "$OUTPUT_DIR/artifacts/jwt.hex" 2>/dev/null || log "  JWT secret not found"
-
-# Extract beacon chain spec if available
-log "  Extracting beacon chain spec..."
-docker cp "$BEACON_CONTAINER:/network-configs/config.yaml" "$OUTPUT_DIR/artifacts/chain-spec.yaml" 2>/dev/null || log "  chain-spec.yaml not found"
+log "Extracting validator definitions..."
 
 # Extract validator definitions if available
-log "  Extracting validator definitions..."
 docker cp "$VALIDATOR_CONTAINER:/validator-keys/keys" "$OUTPUT_DIR/artifacts/validator-keys" 2>/dev/null || log "  validator keys not found"
 
 # Create bootnodes file (will be populated later if needed)
@@ -440,7 +457,13 @@ log "Configuration artifacts extracted"
 
 log "State extraction complete!"
 log "Extracted files:"
-ls -lh "$OUTPUT_DIR/datadirs/"*.tar | awk '{print "  " $9 " (" $5 ")"}'
+
+# List validator tarball
+if ls "$OUTPUT_DIR/datadirs/"*.tar 1> /dev/null 2>&1; then
+    ls -lh "$OUTPUT_DIR/datadirs/"*.tar | awk '{print "  " $9 " (" $5 ")"}'
+fi
+
+log "Transactions: $tx_count transactions extracted"
 
 log "Artifacts:"
 find "$OUTPUT_DIR/artifacts" -type f | sed 's/^/  /'

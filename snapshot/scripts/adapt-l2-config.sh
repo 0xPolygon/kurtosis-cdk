@@ -25,49 +25,79 @@ log() {
 
 log "Adapting L2 configurations for snapshot..."
 
-# Get current L1 block info from checkpoint
-CURRENT_L1_BLOCK=$(jq -r '.l1_state.block_number' "$CHECKPOINT_JSON")
-CURRENT_L1_HASH=$(jq -r '.l1_state.block_hash' "$CHECKPOINT_JSON")
-
-if [ -z "$CURRENT_L1_BLOCK" ] || [ "$CURRENT_L1_BLOCK" = "null" ]; then
-    log "ERROR: Could not read current L1 block from checkpoint"
-    exit 1
-fi
-
-log "Current L1 state: block $CURRENT_L1_BLOCK ($CURRENT_L1_HASH)"
-
-# Get L1 block timestamp from checkpoint.json
-L1_TIMESTAMP=$(jq -r '.l1_state.block_timestamp // empty' "$CHECKPOINT_JSON" 2>/dev/null || echo "")
-
-if [ -z "$L1_TIMESTAMP" ] || [ "$L1_TIMESTAMP" = "null" ] || [ "$L1_TIMESTAMP" = "" ]; then
-    log "WARNING: L1 block timestamp not found in checkpoint, trying RPC query..."
-
-    # Fallback: Try to query from RPC
-    L1_RPC_URL="http://localhost:8545"
-    L1_TIMESTAMP_HEX=$(curl -s -X POST "$L1_RPC_URL" \
-        -H "Content-Type: application/json" \
-        -d "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\",\"params\":[\"0x$(printf '%x' "$CURRENT_L1_BLOCK")\",false],\"id\":1}" \
-        | jq -r '.result.timestamp // empty' 2>/dev/null || echo "")
-
-    if [ -n "$L1_TIMESTAMP_HEX" ] && [ "$L1_TIMESTAMP_HEX" != "null" ]; then
-        # Convert hex to decimal
-        L1_TIMESTAMP=$((16#${L1_TIMESTAMP_HEX#0x}))
-    else
-        log "WARNING: Could not fetch L1 block timestamp, L2 timestamps will not be updated"
-        L1_TIMESTAMP=""
-    fi
-fi
-
-if [ -n "$L1_TIMESTAMP" ] && [ "$L1_TIMESTAMP" != "null" ]; then
-    log "L1 block timestamp: $L1_TIMESTAMP"
-fi
-
-# Check if we have L2 chains
+# Check if we have L2 chains (do this check early)
 L2_CHAINS_COUNT=$(jq -r '.l2_chains | length // 0' "$DISCOVERY_JSON" 2>/dev/null || echo "0")
 
 if [ "$L2_CHAINS_COUNT" = "null" ] || [ "$L2_CHAINS_COUNT" -eq 0 ]; then
     log "No L2 chains found, skipping L2 config adaptation"
     exit 0
+fi
+
+# Get L1 genesis file path from first L2 chain config
+# The l1-genesis.json is copied during state extraction to each L2 config directory
+FIRST_L2_PREFIX=$(jq -r '.l2_chains | keys[0]' "$DISCOVERY_JSON" 2>/dev/null || echo "")
+L1_GENESIS_FILE="$OUTPUT_DIR/config/$FIRST_L2_PREFIX/l1-genesis.json"
+
+if [ ! -f "$L1_GENESIS_FILE" ]; then
+    log "ERROR: L1 genesis file not found at $L1_GENESIS_FILE"
+    exit 1
+fi
+
+log "Computing L1 genesis hash from $L1_GENESIS_FILE..."
+
+# Get geth image from discovery
+GETH_IMAGE=$(jq -r '.geth.image // empty' "$DISCOVERY_JSON" 2>/dev/null || echo "")
+
+if [ -z "$GETH_IMAGE" ]; then
+    log "ERROR: Could not find geth image in discovery.json"
+    exit 1
+fi
+
+# Create temp directory for genesis computation
+TEMP_DIR=$(mktemp -d)
+cp "$L1_GENESIS_FILE" "$TEMP_DIR/genesis.json"
+
+# Initialize genesis and extract the hash using geth console
+L1_GENESIS_HASH=$(docker run --rm --entrypoint /bin/sh \
+    -v "$TEMP_DIR:/tmp/genesis-init" \
+    "$GETH_IMAGE" \
+    -c "geth init --datadir=/tmp/datadir /tmp/genesis-init/genesis.json >/dev/null 2>&1 && geth --datadir=/tmp/datadir --exec 'eth.getBlock(0).hash' console 2>/dev/null | head -1" \
+    | tr -d '"' || echo "")
+
+# Clean up temp directory
+rm -rf "$TEMP_DIR"
+
+if [ -z "$L1_GENESIS_HASH" ] || [ "$L1_GENESIS_HASH" = "null" ] || [[ ! "$L1_GENESIS_HASH" == 0x* ]]; then
+    log "ERROR: Could not compute L1 genesis hash"
+    exit 1
+fi
+
+# L1 starts at block 0 for snapshot (fresh start with transaction replay)
+CURRENT_L1_BLOCK=0
+CURRENT_L1_HASH="$L1_GENESIS_HASH"
+
+log "Using L1 genesis as L2 origin: block $CURRENT_L1_BLOCK ($CURRENT_L1_HASH)"
+log "  (Snapshot L1 starts from genesis, not from checkpoint block)"
+
+# Get L1 genesis timestamp from l1-genesis.json
+L1_TIMESTAMP_STR=$(jq -r '.timestamp // empty' "$L1_GENESIS_FILE" 2>/dev/null || echo "")
+
+if [ -z "$L1_TIMESTAMP_STR" ] || [ "$L1_TIMESTAMP_STR" = "null" ] || [ "$L1_TIMESTAMP_STR" = "" ]; then
+    log "ERROR: Could not extract timestamp from L1 genesis file"
+    exit 1
+fi
+
+# Convert to decimal (handle both hex and decimal formats)
+if [[ "$L1_TIMESTAMP_STR" == 0x* ]]; then
+    # Hex format - convert to decimal
+    L1_TIMESTAMP=$((16#${L1_TIMESTAMP_STR#0x}))
+else
+    # Already in decimal format - use as is
+    L1_TIMESTAMP=$L1_TIMESTAMP_STR
+fi
+
+if [ -n "$L1_TIMESTAMP" ] && [ "$L1_TIMESTAMP" != "null" ]; then
+    log "L1 genesis timestamp: $L1_TIMESTAMP"
 fi
 
 log "Adapting $L2_CHAINS_COUNT L2 network(s)..."
@@ -204,7 +234,18 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         sed -i "s|http://op-el-1-op-geth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGKIT_CONFIG"
         sed -i "s|http://op-cl-1-op-node-op-geth-$prefix:8547|http://op-node-$prefix:8547|g" "$AGGKIT_CONFIG"
 
+        # Fix block numbers for snapshot (starts from L1 genesis, not from checkpoint blocks)
+        # Aggkit needs to search from block 1 to find all contract deployment events
+        # (Block 0 is genesis, contracts deployed during replay starting at block 1+)
+        log "    Updating block numbers to start from block 1..."
+        sed -i 's|^rollupCreationBlockNumber = "[0-9]*"|rollupCreationBlockNumber = "1"|' "$AGGKIT_CONFIG"
+        sed -i 's|^rollupManagerCreationBlockNumber = "[0-9]*"|rollupManagerCreationBlockNumber = "1"|' "$AGGKIT_CONFIG"
+        sed -i 's|^genesisBlockNumber = "[0-9]*"|genesisBlockNumber = "1"|' "$AGGKIT_CONFIG"
+        sed -i 's|^InitialBlock = "[0-9]*"|InitialBlock = "1"|' "$AGGKIT_CONFIG"
+        sed -i 's|^RollupCreationBlockL1 = "[0-9]*"|RollupCreationBlockL1 = "1"|' "$AGGKIT_CONFIG"
+
         log "    ✓ aggkit config adapted for docker-compose"
+        log "    ✓ Block numbers updated to start from block 1"
         log "    ✓ Original saved to aggkit-config.toml.bak"
     else
         log "    No aggkit config found, skipping"

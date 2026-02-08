@@ -113,6 +113,8 @@ services:
       - "--metrics.port=9001"
       - "--allow-insecure-unlock"
       - "--nodiscover"
+      - "--miner.gasprice=1"
+      - "--rpc.allow-unprotected-txs"
     ports:
       - "8545:8545"    # HTTP RPC
       - "8546:8546"    # WebSocket RPC
@@ -190,6 +192,17 @@ services:
       beacon:
         condition: service_healthy
     restart: unless-stopped
+
+  transaction-replayer:
+    image: snapshot-replayer:$TAG
+    container_name: $SNAPSHOT_ID-replayer
+    hostname: replayer
+    environment:
+      - RPC_URL=http://geth:8545
+    depends_on:
+      validator:
+        condition: service_started
+    restart: "no"
 EOF
 
 # Add agglayer service if found
@@ -216,6 +229,8 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
     depends_on:
       geth:
         condition: service_healthy
+      transaction-replayer:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-c", "test -f /proc/1/cmdline"]
@@ -311,6 +326,8 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     depends_on:
       geth:
         condition: service_healthy
+      transaction-replayer:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
@@ -363,6 +380,8 @@ EOF
         condition: service_healthy
       op-geth-$prefix:
         condition: service_healthy
+      transaction-replayer:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "--post-data={\"jsonrpc\":\"2.0\",\"method\":\"optimism_syncStatus\",\"params\":[],\"id\":1}", "--header=Content-Type:application/json", "http://localhost:8547"]
@@ -385,7 +404,9 @@ EOF
       op-geth-$prefix:
         condition: service_healthy
       op-node-$prefix:
-        condition: service_healthy"
+        condition: service_healthy
+      transaction-replayer:
+        condition: service_completed_successfully"
 
             # Add agglayer dependency if present
             if [ "$AGGLAYER_FOUND" = "true" ]; then
@@ -433,8 +454,7 @@ fi
 
 cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
-# No volumes - all state is baked into images
-# L1 state is baked in, L2 starts fresh with config-only mounts
+# L1 uses transaction replay on fresh state, L2 starts fresh with config-only mounts
 # Agglayer and AggKit use host-mounted config files (read-only)
 EOF
 

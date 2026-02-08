@@ -80,9 +80,10 @@ Examples:
 Description:
   Creates a complete, deterministic snapshot of an Ethereum L1 devnet:
   - Discovers and stops all L1 containers (geth, beacon, validator)
-  - Extracts all datadirs and configuration files
+  - Extracts all transactions from L1 blocks
   - Restarts the original enclave to resume block production
-  - Builds Docker images with state baked in
+  - Generates transaction replay script
+  - Builds Docker images with replay capability
   - Generates Docker Compose for reproduction
   - Automatically verifies the snapshot works correctly
 
@@ -465,12 +466,39 @@ else
 fi
 
 # ============================================================================
+# Step 5.5: Generate Transaction Replay Script
+# ============================================================================
+
+log_step "STEP 5.5: Generate Transaction Replay Script"
+
+log "Generating transaction replay script..."
+
+if ! "$SCRIPT_DIR/scripts/generate-replay-script.sh" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+    log_error "Replay script generation failed"
+    log_error "See log file for details: $LOG_FILE"
+    exit 1
+fi
+
+# Validate script exists and has valid syntax
+if [ ! -f "$OUTPUT_DIR/artifacts/replay-transactions.sh" ]; then
+    log_error "Replay script not found: $OUTPUT_DIR/artifacts/replay-transactions.sh"
+    exit 1
+fi
+
+if ! bash -n "$OUTPUT_DIR/artifacts/replay-transactions.sh" >> "$LOG_FILE" 2>&1; then
+    log_error "Replay script has syntax errors"
+    exit 1
+fi
+
+log "Replay script generated and validated"
+
+# ============================================================================
 # Step 6: Docker Image Build
 # ============================================================================
 
 log_step "STEP 6: Docker Image Build"
 
-log "Building Docker images with baked-in state..."
+log "Building Docker images with transaction replay..."
 log "This may take several minutes..."
 
 if [ -n "$TAG_SUFFIX" ]; then

@@ -55,51 +55,119 @@ fi
 log "Image tag: $TAG"
 
 # Create images directory
-mkdir -p "$OUTPUT_DIR/images"/{geth,beacon,validator}
+mkdir -p "$OUTPUT_DIR/images"/{replayer,geth,beacon,validator}
 
 # ============================================================================
-# Build Geth Image
+# Build Transaction Replayer Image
+# ============================================================================
+
+log "Building transaction replayer image..."
+
+REPLAYER_BUILD_DIR="$OUTPUT_DIR/images/replayer"
+
+# Copy replay script
+if [ ! -f "$OUTPUT_DIR/artifacts/replay-transactions.sh" ]; then
+    log "ERROR: Replay script not found: $OUTPUT_DIR/artifacts/replay-transactions.sh"
+    exit 1
+fi
+
+cp "$OUTPUT_DIR/artifacts/replay-transactions.sh" "$REPLAYER_BUILD_DIR/"
+
+# Create Dockerfile
+cat > "$REPLAYER_BUILD_DIR/Dockerfile" << 'EOF'
+FROM alpine:3.19
+
+# Install dependencies
+RUN apk add --no-cache bash wget
+
+# Copy replay script
+COPY replay-transactions.sh /replay-transactions.sh
+RUN chmod +x /replay-transactions.sh
+
+# Default command
+CMD ["/replay-transactions.sh"]
+EOF
+
+log "  Building snapshot-replayer:$TAG..."
+docker build -t "snapshot-replayer:$TAG" "$REPLAYER_BUILD_DIR"
+
+if docker images -q "snapshot-replayer:$TAG" &> /dev/null; then
+    log "  Replayer image built successfully"
+    docker tag "snapshot-replayer:$TAG" "snapshot-replayer:latest"
+else
+    log "ERROR: Failed to build Replayer image"
+    exit 1
+fi
+
+# ============================================================================
+# Build Geth Image (Fresh Start with Genesis)
 # ============================================================================
 
 log "Building Geth execution layer image..."
 
 GETH_BUILD_DIR="$OUTPUT_DIR/images/geth"
 
-# Copy datadir tarball
-cp "$OUTPUT_DIR/datadirs/geth.tar" "$GETH_BUILD_DIR/"
+# Copy genesis.json
+if [ ! -f "$OUTPUT_DIR/artifacts/genesis.json" ]; then
+    log "ERROR: genesis.json not found"
+    exit 1
+fi
 
-# Copy JWT secret if available
+cp "$OUTPUT_DIR/artifacts/genesis.json" "$GETH_BUILD_DIR/"
+
+# Copy JWT secret
 if [ -f "$OUTPUT_DIR/artifacts/jwt.hex" ]; then
     cp "$OUTPUT_DIR/artifacts/jwt.hex" "$GETH_BUILD_DIR/jwtsecret"
 else
-    # Create a dummy JWT if not found (for testing)
-    echo "0x0000000000000000000000000000000000000000000000000000000000000000" > "$GETH_BUILD_DIR/jwtsecret"
+    log "ERROR: JWT secret not found"
+    exit 1
 fi
+
+# Create geth init entrypoint
+cat > "$GETH_BUILD_DIR/geth-init-entrypoint.sh" << 'EOFENTRY'
+#!/bin/sh
+set -e
+
+echo "Initializing geth with genesis..."
+
+# Create data directory
+mkdir -p /data/geth/execution-data
+
+# Initialize genesis if not already done
+if [ ! -d "/data/geth/execution-data/geth" ]; then
+    echo "Running geth init..."
+    geth init --datadir /data/geth/execution-data /network-configs/genesis.json
+    echo "Genesis initialized"
+else
+    echo "Genesis already initialized, skipping init"
+fi
+
+echo "Starting geth..."
+exec geth "$@"
+EOFENTRY
+
+chmod +x "$GETH_BUILD_DIR/geth-init-entrypoint.sh"
 
 # Create Dockerfile
 cat > "$GETH_BUILD_DIR/Dockerfile" << 'EOF'
 FROM ethereum/client-go:v1.16.8
 
-# Copy geth datadir
-COPY geth.tar /tmp/geth.tar
+# Copy genesis and JWT
+COPY genesis.json /network-configs/genesis.json
+COPY jwtsecret /jwt/jwtsecret
 
-# Copy JWT secret
-COPY jwtsecret /tmp/jwtsecret
+# Copy init entrypoint
+COPY geth-init-entrypoint.sh /geth-init-entrypoint.sh
 
-# Extract datadir and setup JWT
-RUN mkdir -p /data/geth /jwt && \
-    cd /data/geth && \
-    tar -xzf /tmp/geth.tar && \
-    mv geth-data execution-data && \
-    rm /tmp/geth.tar && \
-    mv /tmp/jwtsecret /jwt/jwtsecret && \
-    chmod 644 /jwt/jwtsecret
+# Set permissions
+RUN chmod 644 /jwt/jwtsecret && \
+    chmod +x /geth-init-entrypoint.sh
 
 # Set working directory
 WORKDIR /data/geth
 
-# Ensure data is accessible
-RUN chmod -R 755 /data/geth
+# Use init entrypoint
+ENTRYPOINT ["/geth-init-entrypoint.sh"]
 
 # Default command (will be overridden by docker-compose)
 CMD ["geth"]
@@ -117,28 +185,109 @@ else
 fi
 
 # ============================================================================
-# Build Lighthouse Beacon Image
+# Regenerate Genesis with Fresh Timestamp
+# ============================================================================
+
+log "Regenerating genesis.ssz with fresh timestamp..."
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -x "$SCRIPT_DIR/generate-fresh-genesis.sh" ]; then
+    if "$SCRIPT_DIR/generate-fresh-genesis.sh" "$OUTPUT_DIR" >> "$LOG_FILE" 2>&1; then
+        log "  ✓ Fresh genesis.ssz generated successfully"
+    else
+        log "  WARNING: Genesis regeneration failed, using original genesis.ssz"
+        log "  Snapshot will have ~30 minute time window limitation"
+    fi
+else
+    log "  WARNING: generate-fresh-genesis.sh not found, using original genesis.ssz"
+fi
+
+# ============================================================================
+# Build Lighthouse Beacon Image (Fresh Start)
 # ============================================================================
 
 log "Building Lighthouse beacon node image..."
 
 BEACON_BUILD_DIR="$OUTPUT_DIR/images/beacon"
 
-# Copy datadir tarball
-cp "$OUTPUT_DIR/datadirs/lighthouse_beacon.tar" "$BEACON_BUILD_DIR/"
-
-# Copy artifacts if available (create empty files if missing to avoid Docker build errors)
-if [ -f "$OUTPUT_DIR/artifacts/chain-spec.yaml" ]; then
-    cp "$OUTPUT_DIR/artifacts/chain-spec.yaml" "$BEACON_BUILD_DIR/"
-else
-    touch "$BEACON_BUILD_DIR/chain-spec.yaml"
+# Copy genesis.ssz (either fresh or original)
+if [ ! -f "$OUTPUT_DIR/artifacts/genesis.ssz" ]; then
+    log "ERROR: genesis.ssz not found"
+    exit 1
 fi
 
+cp "$OUTPUT_DIR/artifacts/genesis.ssz" "$BEACON_BUILD_DIR/"
+
+# Copy and modify chain spec to set fresh genesis time
+if [ -f "$OUTPUT_DIR/artifacts/chain-spec.yaml" ]; then
+    # Calculate new genesis time: now + 30 seconds
+    NEW_GENESIS_TIME=$(($(date +%s) + 30))
+
+    log "  Setting genesis time to: $NEW_GENESIS_TIME ($(date -d @$NEW_GENESIS_TIME))"
+
+    # Update MIN_GENESIS_TIME in the config
+    sed "s/^MIN_GENESIS_TIME: .*/MIN_GENESIS_TIME: $NEW_GENESIS_TIME/" \
+        "$OUTPUT_DIR/artifacts/chain-spec.yaml" > "$BEACON_BUILD_DIR/chain-spec.yaml"
+
+    # Also update GENESIS_DELAY if present
+    sed -i "s/^GENESIS_DELAY: .*/GENESIS_DELAY: 30/" "$BEACON_BUILD_DIR/chain-spec.yaml"
+
+    log "  ✓ Chain spec updated with fresh genesis time"
+else
+    touch "$BEACON_BUILD_DIR/chain-spec.yaml"
+    log "  WARNING: chain-spec.yaml not found, using empty config"
+fi
+
+# Copy JWT secret
 if [ -f "$OUTPUT_DIR/artifacts/jwt.hex" ]; then
     cp "$OUTPUT_DIR/artifacts/jwt.hex" "$BEACON_BUILD_DIR/"
 else
-    touch "$BEACON_BUILD_DIR/jwt.hex"
+    log "ERROR: JWT secret not found"
+    exit 1
 fi
+
+# Create beacon init script
+cat > "$BEACON_BUILD_DIR/beacon-init.sh" << 'EOFBEACON'
+#!/bin/sh
+set -e
+
+echo "Setting up beacon node..."
+
+# Create directories
+mkdir -p /data/lighthouse/beacon-data
+mkdir -p /network-configs
+mkdir -p /jwt
+
+# Copy genesis.ssz to network-configs
+if [ -f /data/metadata/genesis.ssz ]; then
+    cp /data/metadata/genesis.ssz /network-configs/genesis.ssz
+    echo "Genesis.ssz copied to /network-configs/"
+else
+    echo "WARNING: genesis.ssz not found at /data/metadata/genesis.ssz"
+fi
+
+# Copy chain spec if available
+if [ -f /data/metadata/config.yaml ]; then
+    cp /data/metadata/config.yaml /network-configs/config.yaml
+fi
+
+# Copy JWT
+if [ -f /data/metadata/jwtsecret ]; then
+    cp /data/metadata/jwtsecret /jwt/jwtsecret
+fi
+
+# Create empty boot_enr and deployment files
+echo "[]" > /network-configs/boot_enr.yaml
+echo "0" > /network-configs/deploy_block.txt
+echo "0" > /network-configs/deposit_contract_block.txt
+
+echo "Beacon initialization complete"
+echo "Starting beacon node..."
+exec "$@"
+EOFBEACON
+
+chmod +x "$BEACON_BUILD_DIR/beacon-init.sh"
 
 # Create Dockerfile
 cat > "$BEACON_BUILD_DIR/Dockerfile" << 'EOF'
@@ -147,37 +296,23 @@ FROM sigp/lighthouse:v8.0.1
 # Install curl for healthcheck
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Copy beacon datadir
-COPY lighthouse_beacon.tar /tmp/lighthouse_beacon.tar
+# Copy genesis and config files
+COPY genesis.ssz /data/metadata/genesis.ssz
+COPY chain-spec.yaml /data/metadata/config.yaml
+COPY jwt.hex /data/metadata/jwtsecret
 
-# Copy artifacts (may be empty files if not available)
-COPY chain-spec.yaml /tmp/chain-spec.yaml
-COPY jwt.hex /tmp/jwt.hex
+# Copy init script
+COPY beacon-init.sh /beacon-init.sh
 
-# Extract datadir
-RUN mkdir -p /data/lighthouse && \
-    cd /data/lighthouse && \
-    tar -xzf /tmp/lighthouse_beacon.tar && \
-    rm /tmp/lighthouse_beacon.tar
-
-# Copy artifacts if they have content and create testnet directory
-RUN mkdir -p /network-configs /jwt && \
-    if [ -s /tmp/chain-spec.yaml ]; then \
-        cp /tmp/chain-spec.yaml /network-configs/config.yaml; \
-    fi && \
-    if [ -s /tmp/jwt.hex ]; then \
-        cp /tmp/jwt.hex /jwt/jwtsecret; \
-    fi && \
-    echo "0" > /network-configs/deploy_block.txt && \
-    echo "0" > /network-configs/deposit_contract_block.txt && \
-    echo "[]" > /network-configs/boot_enr.yaml && \
-    rm -f /tmp/chain-spec.yaml /tmp/jwt.hex
+# Set permissions
+RUN chmod 644 /data/metadata/* && \
+    chmod +x /beacon-init.sh
 
 # Set working directory
 WORKDIR /data/lighthouse
 
-# Ensure data is accessible
-RUN chmod -R 755 /data/lighthouse
+# Use init entrypoint
+ENTRYPOINT ["/beacon-init.sh"]
 
 # Default command (will be overridden by docker-compose)
 CMD ["lighthouse", "beacon_node"]
@@ -253,9 +388,11 @@ RUN mkdir -p /network-configs && \
     echo "[]" > /network-configs/boot_enr.yaml && \
     rm -f /tmp/chain-spec.yaml
 
-# Ensure slashing protection database exists
-RUN test -f /validator-keys/keys/slashing_protection.sqlite || \
-    (echo "ERROR: slashing_protection.sqlite not found" && exit 1)
+# Remove slashing protection database - will be recreated fresh on startup
+# This prevents "NewSurroundsPrev" slashing errors when restarting from genesis
+RUN rm -f /validator-keys/keys/slashing_protection.sqlite && \
+    echo "Slashing protection database removed for fresh snapshot" && \
+    echo "Lighthouse will create a fresh DB on startup with --init-slashing-protection"
 
 # Set permissions
 RUN chmod -R 755 /validator-keys
@@ -286,6 +423,11 @@ cat > "$OUTPUT_DIR/images/IMAGE_INFO.json" << EOF
   "tag": "$TAG",
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "images": {
+    "replayer": {
+      "name": "snapshot-replayer:$TAG",
+      "base_image": "alpine:3.19",
+      "size": "$(docker images --format "{{.Size}}" snapshot-replayer:$TAG)"
+    },
     "geth": {
       "name": "snapshot-geth:$TAG",
       "base_image": "$GETH_IMAGE",
@@ -314,6 +456,7 @@ log "Image metadata saved: $OUTPUT_DIR/images/IMAGE_INFO.json"
 log "Docker images built successfully!"
 log ""
 log "Images created:"
+log "  snapshot-replayer:$TAG ($(docker images --format "{{.Size}}" snapshot-replayer:$TAG))"
 log "  snapshot-geth:$TAG ($(docker images --format "{{.Size}}" snapshot-geth:$TAG))"
 log "  snapshot-beacon:$TAG ($(docker images --format "{{.Size}}" snapshot-beacon:$TAG))"
 log "  snapshot-validator:$TAG ($(docker images --format "{{.Size}}" snapshot-validator:$TAG))"
