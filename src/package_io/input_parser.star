@@ -209,6 +209,7 @@ DEFAULT_L1_ARGS = {
         "erigon-rpc": False,
         "cdk-node": False,
     },
+    "mitm_capture_transactions": False,
 }
 
 DEFAULT_L2_ARGS = {

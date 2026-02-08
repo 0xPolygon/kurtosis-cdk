@@ -1,5 +1,5 @@
 SRC_MITM_SCRIPT_PATH = "./scripts/mitm"
-SRC_MITM_SCRIPTS = ["empty.py", "failures.py"]
+SRC_MITM_SCRIPTS = ["empty.py", "failures.py", "tx_capture.py"]
 DEFAULT_SCRIPT = "empty.py"
 DST_MITM_SCRIPT_PATH = "/scripts"
 
@@ -13,6 +13,18 @@ def run(plan, args):
             description="Uploading MITM script " + script,
         )
         artifacts.append(mitm_script)
+
+    # Select script based on configuration
+    selected_script = DEFAULT_SCRIPT
+    if args.get("mitm_capture_transactions", False):
+        selected_script = "tx_capture.py"
+
+    # Store transactions to artifact if capture is enabled
+    store_files = []
+    if args.get("mitm_capture_transactions", False):
+        store_files = [
+            StoreSpec(src="/data", name="transactions"),
+        ]
 
     plan.add_service(
         name="mitm" + args["deployment_suffix"],
@@ -34,7 +46,8 @@ def run(plan, args):
                 + " -s "
                 + DST_MITM_SCRIPT_PATH
                 + "/"
-                + DEFAULT_SCRIPT,
+                + selected_script,
             ],
+            store=store_files,
         ),
     )
