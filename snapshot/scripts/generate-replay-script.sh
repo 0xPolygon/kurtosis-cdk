@@ -81,32 +81,43 @@ done
 
 echo "Starting transaction replay..."
 
-# Function to send transaction and wait for receipt
+# Function to send transaction and wait for it to be mined
 send_tx() {
     local tx_num="$1"
     local raw_tx="$2"
+    local max_wait=60  # Maximum 60 seconds to wait for mining
+
+    echo "[TX $tx_num] Sending transaction..."
 
     # Send transaction
-    response=$(wget -q -O - --timeout=5 --tries=3 \
+    response=$(wget -q -O - --timeout=10 --tries=3 \
         --header='Content-Type: application/json' \
         --post-data='{"jsonrpc":"2.0","method":"eth_sendRawTransaction","params":["'"$raw_tx"'"],"id":1}' \
         "$RPC_URL" 2>/dev/null || echo "")
 
     if [ -z "$response" ]; then
-        echo "Warning: Failed to send transaction $tx_num" >&2
+        echo "[TX $tx_num] ERROR: Failed to send transaction (no response from RPC)" >&2
+        echo "[TX $tx_num] Raw TX: $raw_tx" >&2
         return 1
     fi
 
     # Check for error in response
     if echo "$response" | grep -q '"error"'; then
+        error_code=$(echo "$response" | sed -n 's/.*"code":\([^,}]*\).*/\1/p')
         error_msg=$(echo "$response" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p')
 
-        # Ignore "already known" and "replacement transaction underpriced" errors
-        if echo "$error_msg" | grep -qi "already known\|replacement transaction underpriced"; then
-            return 0
+        echo "[TX $tx_num] ERROR: Transaction rejected by node" >&2
+        echo "[TX $tx_num]   Error code: $error_code" >&2
+        echo "[TX $tx_num]   Error message: $error_msg" >&2
+        echo "[TX $tx_num]   Raw TX: $raw_tx" >&2
+        echo "[TX $tx_num]   Full response: $response" >&2
+
+        # Check if it's a blob transaction (which we can't replay)
+        if echo "$error_msg" | grep -qi "blob"; then
+            echo "[TX $tx_num] SKIP: Blob transaction cannot be replayed (missing sidecar)" >&2
+            return 0  # Don't fail on blob transactions
         fi
 
-        echo "Warning: Transaction $tx_num failed: $error_msg" >&2
         return 1
     fi
 
@@ -114,30 +125,55 @@ send_tx() {
     tx_hash=$(echo "$response" | sed -n 's/.*"result":"\([^"]*\)".*/\1/p')
 
     if [ -z "$tx_hash" ]; then
-        echo "Warning: No transaction hash returned for transaction $tx_num" >&2
+        echo "[TX $tx_num] ERROR: No transaction hash in response" >&2
+        echo "[TX $tx_num]   Response: $response" >&2
         return 1
     fi
 
-    # Wait for receipt (15 second timeout, check every 0.5 seconds)
-    for i in $(seq 1 30); do
-        receipt=$(wget -q -O - --timeout=2 --tries=1 \
+    echo "[TX $tx_num] Transaction sent: $tx_hash"
+    echo "[TX $tx_num] Waiting for transaction to be mined (max ${max_wait}s)..."
+
+    # Wait for transaction to be mined (check every second)
+    for i in $(seq 1 $max_wait); do
+        receipt=$(wget -q -O - --timeout=5 --tries=1 \
             --header='Content-Type: application/json' \
             --post-data='{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["'"$tx_hash"'"],"id":1}' \
             "$RPC_URL" 2>/dev/null || echo "")
 
         # Check if receipt exists and is not null
         if [ -n "$receipt" ] && echo "$receipt" | grep -q '"result":{' && ! echo "$receipt" | grep -q '"result":null'; then
-            # Log progress every 10 transactions
-            if [ $((tx_num % 10)) -eq 0 ] || [ "$tx_num" -eq 1 ]; then
-                echo "Replayed transaction $tx_num (tx: $tx_hash)"
+            # Extract block number and status
+            block_num=$(echo "$receipt" | sed -n 's/.*"blockNumber":"\([^"]*\)".*/\1/p')
+            status=$(echo "$receipt" | sed -n 's/.*"status":"\([^"]*\)".*/\1/p')
+
+            if [ "$status" = "0x1" ]; then
+                echo "[TX $tx_num] ✓ MINED successfully in block $block_num (waited ${i}s)"
+                return 0
+            else
+                echo "[TX $tx_num] ERROR: Transaction REVERTED in block $block_num" >&2
+                echo "[TX $tx_num]   TX hash: $tx_hash" >&2
+                echo "[TX $tx_num]   Receipt: $receipt" >&2
+                return 1
             fi
-            return 0
         fi
 
-        sleep 0.5
+        # Show progress every 10 seconds
+        if [ $((i % 10)) -eq 0 ]; then
+            echo "[TX $tx_num] Still waiting... (${i}s elapsed)"
+        fi
+
+        sleep 1
     done
 
-    echo "Warning: Transaction $tx_num timed out waiting for receipt" >&2
+    # Timeout - check if transaction is still pending
+    pending_check=$(wget -q -O - --timeout=5 --tries=1 \
+        --header='Content-Type: application/json' \
+        --post-data='{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params":["'"$tx_hash"'"],"id":1}' \
+        "$RPC_URL" 2>/dev/null || echo "")
+
+    echo "[TX $tx_num] ERROR: Transaction timed out after ${max_wait}s" >&2
+    echo "[TX $tx_num]   TX hash: $tx_hash" >&2
+    echo "[TX $tx_num]   Pending check: $pending_check" >&2
     return 1
 }
 
@@ -146,10 +182,16 @@ EOF
 # Add transaction tracking
 cat >> "$REPLAY_SCRIPT" << 'EOF'
 
+echo "========================================"
+echo "Starting Sequential Transaction Replay"
+echo "========================================"
+echo ""
+
 # Track transaction successes and failures
 total_txs=0
 successful_txs=0
 failed_txs=0
+skipped_txs=0
 
 EOF
 
@@ -165,13 +207,21 @@ while IFS= read -r line; do
         continue
     fi
 
-    # Add transaction to script with success tracking
+    # Add transaction to script - WAIT for each to be mined before continuing
     cat >> "$REPLAY_SCRIPT" << EOFTX
 total_txs=\$((total_txs + 1))
 if send_tx $tx_num "$raw_tx"; then
-    successful_txs=\$((successful_txs + 1))
+    # Check if it was skipped (blob tx) or successful
+    if grep -q "SKIP:" /tmp/last_tx_log 2>/dev/null; then
+        skipped_txs=\$((skipped_txs + 1))
+    else
+        successful_txs=\$((successful_txs + 1))
+    fi
 else
     failed_txs=\$((failed_txs + 1))
+    echo "[REPLAY] FATAL: Transaction $tx_num failed - stopping replay" >&2
+    echo "[REPLAY] This is a critical failure. Check logs above for details." >&2
+    exit 1
 fi
 EOFTX
 
@@ -182,18 +232,20 @@ done < "$TRANSACTIONS_FILE"
 cat >> "$REPLAY_SCRIPT" << 'EOF'
 
 echo ""
-echo "Transaction replay summary:"
-echo "  Total: $total_txs"
-echo "  Successful: $successful_txs"
+echo "========================================"
+echo "Transaction Replay Complete"
+echo "========================================"
+echo "  Total transactions: $total_txs"
+echo "  Successfully mined: $successful_txs"
+echo "  Skipped (blob txs): $skipped_txs"
 echo "  Failed: $failed_txs"
+echo ""
 
-# Exit with success if at least 80% of transactions succeeded
-success_rate=$((successful_txs * 100 / total_txs))
-if [ "$success_rate" -ge 80 ]; then
-    echo "Transaction replay completed successfully (${success_rate}% success rate)"
+if [ "$failed_txs" -eq 0 ]; then
+    echo "✓ All transactions replayed successfully!"
     exit 0
 else
-    echo "Transaction replay failed (only ${success_rate}% success rate)" >&2
+    echo "✗ Transaction replay failed with $failed_txs failures" >&2
     exit 1
 fi
 EOF
