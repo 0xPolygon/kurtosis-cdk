@@ -19,13 +19,6 @@ def run(plan, args):
     if args.get("mitm_capture_transactions", False):
         selected_script = "tx_capture.py"
 
-    # Store transactions to artifact if capture is enabled
-    store_files = []
-    if args.get("mitm_capture_transactions", False):
-        store_files = [
-            StoreSpec(src="/data", name="transactions"),
-        ]
-
     plan.add_service(
         name="mitm" + args["deployment_suffix"],
         config=ServiceConfig(
@@ -48,6 +41,13 @@ def run(plan, args):
                 + "/"
                 + selected_script,
             ],
-            store=store_files,
         ),
     )
+
+    # Store transactions to artifact if capture is enabled
+    if args.get("mitm_capture_transactions", False):
+        plan.store_service_files(
+            service_name="mitm" + args["deployment_suffix"],
+            src="/data",
+            name="transactions"
+        )
