@@ -59,6 +59,33 @@ set +e
 
 echo "Starting transaction replay..."
 
+# Function to get account balance
+get_balance() {
+    local address="$1"
+
+    # Query balance via eth_getBalance
+    response=$(wget -q -O - --timeout=5 --tries=2 \
+        --header='Content-Type: application/json' \
+        --post-data='{"jsonrpc":"2.0","method":"eth_getBalance","params":["'"$address"'","latest"],"id":1}' \
+        "$RPC_URL" 2>/dev/null || echo "")
+
+    if [ -z "$response" ]; then
+        echo "0x0"
+        return 1
+    fi
+
+    # Extract balance from response
+    balance=$(echo "$response" | sed -n 's/.*"result":"\([^"]*\)".*/\1/p')
+
+    if [ -z "$balance" ]; then
+        echo "0x0"
+        return 1
+    fi
+
+    echo "$balance"
+    return 0
+}
+
 # Function to send transaction (without waiting for mining)
 send_tx_only() {
     local tx_num="$1"
@@ -177,24 +204,30 @@ EOF
 
 # Generate Phase 1: Send all transactions (with retry queue)
 cat >> "$REPLAY_SCRIPT" << 'EOF'
-echo "Phase 1: Sending all transactions (with retry for failures)..."
+echo "Phase 1: Sending all transactions (with intelligent retry for failures)..."
 echo ""
 
 MAX_RETRIES=10
-retry_delay=2  # Start with 2 second delay
+retry_delay=2  # Delay between retry attempts (balance polling happens per-transaction)
 
 EOF
 
 # Add all transactions to the script
 tx_num=1
 while IFS= read -r line; do
-    # Extract raw_tx from JSON line
+    # Extract raw_tx and from address from JSON line
     raw_tx=$(echo "$line" | sed -n 's/.*"raw_tx":"\([^"]*\)".*/\1/p')
+    from_addr=$(echo "$line" | sed -n 's/.*"from":"\([^"]*\)".*/\1/p')
 
     if [ -z "$raw_tx" ]; then
         echo "Warning: Could not extract raw_tx from line $tx_num" >&2
         tx_num=$((tx_num + 1))
         continue
+    fi
+
+    # Default to "unknown" if from address not captured
+    if [ -z "$from_addr" ]; then
+        from_addr="unknown"
     fi
 
     # Add transaction data to the script
@@ -203,6 +236,7 @@ while IFS= read -r line; do
 # Transaction $tx_num
 total_txs=\$((total_txs + 1))
 tx_${tx_num}_raw="$raw_tx"
+tx_${tx_num}_from="$from_addr"
 tx_${tx_num}_pending=1
 
 EOFTX
@@ -236,10 +270,14 @@ EOF
 tx_num=1
 while IFS= read -r line; do
     raw_tx=$(echo "$line" | sed -n 's/.*"raw_tx":"\([^"]*\)".*/\1/p')
+    from_addr=$(echo "$line" | sed -n 's/.*"from":"\([^"]*\)".*/\1/p')
+
     if [ -z "$raw_tx" ]; then
         tx_num=$((tx_num + 1))
         continue
     fi
+
+    # Note: from_addr may be empty for old captures, will be handled in retry logic
 
     cat >> "$REPLAY_SCRIPT" << EOFTX
 
@@ -276,9 +314,39 @@ while IFS= read -r line; do
                 tx_${tx_num}_pending=0
             fi
         elif [ \$result_code -eq 2 ]; then
-            # Retryable error (insufficient funds)
-            echo "[TX $tx_num] Insufficient funds - will retry"
-            retry_needed=1
+            # Retryable error (insufficient funds) - poll balance
+            sender_addr="\$tx_${tx_num}_from"
+            echo "[TX $tx_num] Insufficient funds for \$sender_addr - polling balance..."
+
+            # Skip if sender address is unknown
+            if [ "\$sender_addr" = "unknown" ]; then
+                echo "[TX $tx_num] Cannot poll balance (unknown sender) - will retry blindly"
+                retry_needed=1
+            else
+                # Poll balance until funds are available (max 60 seconds)
+                balance_available=0
+                for poll_attempt in \$(seq 1 30); do
+                    current_balance=\$(get_balance "\$sender_addr")
+
+                    # Check if balance is non-zero (0x0 or empty means zero)
+                    if [ "\$current_balance" != "0x0" ] && [ "\$current_balance" != "0x" ] && [ -n "\$current_balance" ]; then
+                        echo "[TX $tx_num] Balance detected: \$current_balance - retrying transaction"
+                        balance_available=1
+                        break
+                    fi
+
+                    # Wait 2 seconds before next poll
+                    sleep 2
+                done
+
+                if [ \$balance_available -eq 1 ]; then
+                    # Balance is now available, retry immediately
+                    retry_needed=1
+                else
+                    echo "[TX $tx_num] Timeout waiting for balance after 60s - will retry anyway"
+                    retry_needed=1
+                fi
+            fi
         else
             # Fatal error
             echo "[TX $tx_num] ERROR: \$result" >&2
