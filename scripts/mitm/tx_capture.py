@@ -10,40 +10,12 @@ import json
 import logging
 from pathlib import Path
 from mitmproxy import ctx, http
-from eth_account import Account
-from eth_utils import to_checksum_address
 
 # Output file for captured transactions
 TRANSACTIONS_FILE = Path("/data/transactions.jsonl")
 
 # Counter for transaction IDs
 tx_counter = 0
-
-
-def extract_sender_address(raw_tx_hex: str) -> str:
-    """
-    Extract the sender address from a raw transaction.
-
-    Args:
-        raw_tx_hex: Raw transaction as hex string (with or without 0x prefix)
-
-    Returns:
-        Checksummed sender address, or "unknown" if extraction fails
-    """
-    try:
-        # Remove 0x prefix if present
-        if raw_tx_hex.startswith('0x'):
-            raw_tx_hex = raw_tx_hex[2:]
-
-        # Decode the transaction to get the sender
-        raw_tx_bytes = bytes.fromhex(raw_tx_hex)
-        tx = Account.recover_transaction(raw_tx_bytes)
-
-        return to_checksum_address(tx)
-    except Exception as e:
-        ctx.log.warn(f"Failed to extract sender address: {e}")
-        return "unknown"
-
 
 def load(loader):
     """Initialize the addon."""
@@ -80,15 +52,11 @@ def request(flow: http.HTTPFlow) -> None:
                     # Increment counter
                     tx_counter += 1
 
-                    # Extract sender address
-                    sender_address = extract_sender_address(raw_tx)
-
                     # Create transaction record
                     tx_record = {
                         "id": tx_counter,
                         "method": method,
                         "raw_tx": raw_tx,
-                        "from": sender_address,
                         "timestamp": flow.request.timestamp_start,
                     }
 
@@ -96,7 +64,7 @@ def request(flow: http.HTTPFlow) -> None:
                     with open(TRANSACTIONS_FILE, 'a') as f:
                         f.write(json.dumps(tx_record) + '\n')
 
-                    ctx.log.info(f"[TX {tx_counter}] Captured eth_sendRawTransaction from {sender_address}")
+                    ctx.log.info(f"[TX {tx_counter}] Captured eth_sendRawTransaction")
 
         # Handle batch requests
         elif isinstance(request_data, list):
@@ -109,15 +77,11 @@ def request(flow: http.HTTPFlow) -> None:
                         # Increment counter
                         tx_counter += 1
 
-                        # Extract sender address
-                        sender_address = extract_sender_address(raw_tx)
-
                         # Create transaction record
                         tx_record = {
                             "id": tx_counter,
                             "method": "eth_sendRawTransaction",
                             "raw_tx": raw_tx,
-                            "from": sender_address,
                             "timestamp": flow.request.timestamp_start,
                         }
 
@@ -125,7 +89,7 @@ def request(flow: http.HTTPFlow) -> None:
                         with open(TRANSACTIONS_FILE, 'a') as f:
                             f.write(json.dumps(tx_record) + '\n')
 
-                        ctx.log.info(f"[TX {tx_counter}] Captured eth_sendRawTransaction from {sender_address} (batch)")
+                        ctx.log.info(f"[TX {tx_counter}] Captured eth_sendRawTransaction (batch)")
 
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         # Not a valid JSON-RPC request or doesn't have the expected structure
