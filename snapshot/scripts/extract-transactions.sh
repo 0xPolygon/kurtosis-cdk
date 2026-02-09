@@ -146,11 +146,18 @@ for block_num in $(seq $start_block $latest_block); do
             continue
         fi
 
-        # Extract transaction hash
+        # Extract transaction hash and from address
         tx_hash=$(echo "$tx_response" | docker exec -i "$GETH_CONTAINER" sed -n 's/.*"hash":"\([^"]*\)".*/\1/p')
+        from_addr=$(echo "$tx_response" | docker exec -i "$GETH_CONTAINER" sed -n 's/.*"from":"\([^"]*\)".*/\1/p')
+
         if [ -z "$tx_hash" ]; then
             echo "Warning: Could not extract hash for transaction $tx_index in block $block_num" >&2
             continue
+        fi
+
+        # Default to "unknown" if from address not found
+        if [ -z "$from_addr" ]; then
+            from_addr="unknown"
         fi
 
         # Get raw transaction
@@ -167,8 +174,8 @@ for block_num in $(seq $start_block $latest_block); do
             continue
         fi
 
-        # Write to JSONL file
-        echo "{\"block\":$block_num,\"tx_index\":$tx_index,\"raw_tx\":\"$raw_tx\"}" >> "$TRANSACTIONS_FILE"
+        # Write to JSONL file with sender address
+        echo "{\"block\":$block_num,\"tx_index\":$tx_index,\"raw_tx\":\"$raw_tx\",\"from\":\"$from_addr\"}" >> "$TRANSACTIONS_FILE"
         total_txs=$((total_txs + 1))
     done
 
