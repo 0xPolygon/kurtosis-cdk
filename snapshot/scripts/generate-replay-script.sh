@@ -52,33 +52,6 @@ for i in $(seq 1 60); do
     sleep 1
 done
 
-echo "Waiting for block production to start..."
-
-# Wait for blocks to be produced (block number > 0)
-for i in $(seq 1 120); do
-    block_response=$(wget -q -O - --timeout=2 --tries=1 \
-        --header='Content-Type: application/json' \
-        --post-data='{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
-        "$RPC_URL" 2>/dev/null || echo "")
-
-    if [ -n "$block_response" ]; then
-        block_num=$(echo "$block_response" | sed -n 's/.*"result":"\([^"]*\)".*/\1/p')
-        if [ -n "$block_num" ] && [ "$block_num" != "0x0" ]; then
-            echo "Block production started (block: $block_num)"
-            # Wait a few more seconds for block production to stabilize
-            sleep 3
-            break
-        fi
-    fi
-
-    if [ "$i" -eq 120 ]; then
-        echo "Error: Block production did not start within 120 seconds" >&2
-        exit 1
-    fi
-
-    sleep 1
-done
-
 echo "Starting transaction replay..."
 
 # Function to send transaction (without waiting for mining)
