@@ -191,6 +191,52 @@ cp "$SCRIPT_DIR/templates/mnemonics.yaml" "$SNAPSHOT_DIR/val/mnemonics.yaml"
 echo "✅ Mnemonics copied"
 echo ""
 
+# Extract OP stack configuration if present
+echo "Checking for OP stack services..."
+if kurtosis files inspect "$ENCLAVE_NAME" op-deployer-configs &>/dev/null; then
+    echo "✅ OP stack detected - extracting configuration"
+    mkdir -p "$SNAPSHOT_DIR/op"
+
+    # Download OP deployer configs
+    TMP_OP_CONFIGS="/tmp/kurtosis-op-configs-$$"
+    kurtosis files download "$ENCLAVE_NAME" op-deployer-configs "$TMP_OP_CONFIGS" >/dev/null 2>&1
+
+    # Find L2 chain ID from rollup config
+    L2_CHAIN_ID=$(ls "$TMP_OP_CONFIGS"/rollup-*.json 2>/dev/null | head -1 | sed 's/.*rollup-\([0-9]*\)\.json/\1/')
+
+    if [ -n "$L2_CHAIN_ID" ]; then
+        echo "  L2 Chain ID: $L2_CHAIN_ID"
+
+        # Copy essential config files
+        cp "$TMP_OP_CONFIGS/genesis-${L2_CHAIN_ID}.json" "$SNAPSHOT_DIR/op/" 2>/dev/null || echo "Warning: genesis not found"
+        cp "$TMP_OP_CONFIGS/rollup-${L2_CHAIN_ID}.json" "$SNAPSHOT_DIR/op/rollup-${L2_CHAIN_ID}.json.template" 2>/dev/null || echo "Warning: rollup config not found"
+        cp "$TMP_OP_CONFIGS/state.json" "$SNAPSHOT_DIR/op/" 2>/dev/null || echo "Warning: state.json not found"
+        cp "$TMP_OP_CONFIGS/wallets.json" "$SNAPSHOT_DIR/op/" 2>/dev/null || echo "Warning: wallets.json not found"
+        echo "  Note: rollup config will be patched with fresh L1 genesis on startup"
+
+        # Copy L1 genesis for op-node --rollup.l1-chain-config flag
+        TMP_L1_GENESIS="/tmp/kurtosis-l1-genesis-$$"
+        kurtosis files download "$ENCLAVE_NAME" el_cl_genesis_data "$TMP_L1_GENESIS" >/dev/null 2>&1
+        if [ -f "$TMP_L1_GENESIS/genesis.json" ]; then
+            # Remove terminalTotalDifficultyPassed field which is not compatible with op-node
+            cat "$TMP_L1_GENESIS/genesis.json" | jq 'del(.config.terminalTotalDifficultyPassed)' > "$SNAPSHOT_DIR/op/l1-genesis.json"
+            echo "  ✅ L1 genesis copied (cleaned for op-node compatibility)"
+        else
+            echo "  Warning: L1 genesis not found"
+        fi
+        rm -rf "$TMP_L1_GENESIS"
+
+        echo "✅ OP stack config files extracted"
+    else
+        echo "Warning: Could not determine L2 chain ID"
+    fi
+
+    rm -rf "$TMP_OP_CONFIGS"
+else
+    echo "  No OP stack services found - skipping"
+fi
+echo ""
+
 # Generate init script
 echo "Generating init script..."
 bash "$SCRIPT_DIR/scripts/create_init_script.sh" "$SNAPSHOT_DIR/tools/init.sh"

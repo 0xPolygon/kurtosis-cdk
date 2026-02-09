@@ -21,9 +21,20 @@ echo "Generating JWT secret..."
 openssl rand -hex 32 > /runtime/jwt.hex
 
 # Patch EL genesis timestamp (as INTEGER)
-echo "Patching EL genesis timestamp..."
+echo "Patching L1 EL genesis timestamp..."
 jq --arg ts "$GENESIS_TIME" '.timestamp = ($ts | tonumber)' \
   /snapshot/el/genesis.template.json > /runtime/el_genesis.json
+
+# Patch L2 genesis timestamp if OP stack is present
+if ls /snapshot/op/genesis-*.json >/dev/null 2>&1; then
+  echo "Patching L2 genesis timestamp..."
+  mkdir -p /runtime/op
+  for l2_genesis in /snapshot/op/genesis-*.json; do
+    l2_basename=$(basename "$l2_genesis")
+    jq --arg ts "$GENESIS_TIME" '.timestamp = ($ts | tonumber)' "$l2_genesis" > "/runtime/op/${l2_basename}"
+  done
+  echo "✅ L2 genesis patched"
+fi
 
 # Copy CL config and metadata (no patching - eth2-testnet-genesis uses --eth1-timestamp)
 echo "Copying CL config and metadata..."
