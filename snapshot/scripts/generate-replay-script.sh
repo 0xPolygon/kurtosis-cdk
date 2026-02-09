@@ -28,6 +28,8 @@ echo "Found $tx_count transactions to replay"
 # Generate script header
 cat > "$REPLAY_SCRIPT" << 'EOF'
 #!/bin/sh
+# Note: We use set -e only for the initial setup, then disable it for transaction sending
+# to allow proper retry logic without premature script termination
 set -e
 
 RPC_URL="${RPC_URL:-http://geth:8545}"
@@ -51,6 +53,9 @@ for i in $(seq 1 60); do
 
     sleep 1
 done
+
+# Disable set -e for transaction sending to allow proper retry logic
+set +e
 
 echo "Starting transaction replay..."
 
@@ -243,8 +248,12 @@ while IFS= read -r line; do
         pending_count=\$((pending_count + 1))
         echo "[TX $tx_num] Sending transaction..."
 
+        # Explicitly capture both output and exit code to prevent premature exit
+        # The '|| true' ensures the command substitution doesn't trigger set -e
+        set +e  # Ensure set -e is disabled for this transaction
         result=\$(send_tx_only $tx_num "\$tx_${tx_num}_raw")
         result_code=\$?
+        set +e  # Keep set -e disabled (defensive, in case it was re-enabled)
 
         if [ \$result_code -eq 0 ]; then
             if echo "\$result" | grep -q "^SKIP:"; then
