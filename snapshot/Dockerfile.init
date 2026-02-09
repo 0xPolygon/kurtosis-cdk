@@ -1,0 +1,28 @@
+# Stage 1: Extract tools from ethereum-genesis-generator
+FROM ethpandaops/ethereum-genesis-generator:5.2.4 AS genesis-tools
+
+# Stage 2: Create clean runtime image
+FROM debian:12-slim
+
+# Copy the genesis generation tools from the genesis-tools stage
+COPY --from=genesis-tools /usr/local/bin/eth-genesis-state-generator /usr/local/bin/eth-genesis-state-generator
+COPY --from=genesis-tools /usr/local/bin/eth2-val-tools /usr/local/bin/eth2-val-tools
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    jq \
+    openssl \
+    curl \
+    ca-certificates \
+    python3 \
+    python3-yaml \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify all tools are available and executable
+RUN eth-genesis-state-generator --help | head -1 && \
+    eth2-val-tools --help | head -1 && \
+    jq --version && \
+    openssl version
+
+# No ENTRYPOINT - let docker-compose command work directly

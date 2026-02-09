@@ -1,0 +1,8 @@
+{
+  "enclave": "cdk",
+  "chainId": 271828,
+  "block": 1027,
+  "timestamp": "2026-02-09T20-56-00Z",
+  "geth_rpc": "http://127.0.0.1:33193",
+  "slot_time": 2
+}

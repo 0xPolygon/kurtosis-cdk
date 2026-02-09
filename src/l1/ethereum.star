@@ -68,6 +68,7 @@ def run(plan, args):
                 "el_extra_params": [
                     "--log.format={}".format(geth_log_format),
                     "--gcmode archive",
+                    "--http.api=eth,net,web3,debug,txpool,admin",
                 ],
                 # Validator client
                 "vc_type": "lighthouse",
