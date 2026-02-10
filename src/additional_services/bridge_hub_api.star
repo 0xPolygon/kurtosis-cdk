@@ -36,12 +36,12 @@ def run(plan, args, contract_setup_addresses, l2_context):
     )
 
     # Start the API
-    api_url = run_api(plan, l2_context.aggkit_bridge_url, mongodb_url, l2_rpc_url)
+    api_url = run_api(
+        plan, args, l2_context.aggkit_bridge_url, mongodb_url, l2_context.rpc_url
+    )
 
     # Start the L2 auto-claimer
-    run_l2_autoclaimer(
-        plan, args, api_url, l2_context.rpc_url, l1_bridge_address, rpc_config
-    )
+    run_l2_autoclaimer(plan, args, api_url, l2_context.rpc_url, l1_bridge_address)
 
 
 def run_mongodb(plan, args):
@@ -93,7 +93,7 @@ def run_consumer(
     )
 
 
-def run_api(plan, aggkit_bridge_service_url, mongodb_url, l2_rpc_url):
+def run_api(plan, args, aggkit_bridge_service_url, mongodb_url, l2_rpc_url):
     # RPC URLs are nested by network name and network ID.
     rpc_config = {
         NETWORK_NAME: {
@@ -133,7 +133,7 @@ def run_api(plan, aggkit_bridge_service_url, mongodb_url, l2_rpc_url):
     return url
 
 
-def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_config):
+def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address):
     l1_chain_id = args.get("l1_chain_id")
     l2_chain_id = args.get("l2_chain_id")
 
