@@ -83,7 +83,7 @@ def run_consumer(
                 "NODE_ENV": "production",
                 "NETWORK_ID": l2_network_id,
                 "NETWORK": NETWORK_NAME,
-                "BRIDGE_SERVICE_URL": aggkit_bridge_service_url,
+                "BRIDGE_SERVICE_URL": "{}/bridge/v1".format(aggkit_bridge_service_url),
                 "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
                 "RPC_URL": l2_rpc_url,
                 # db
