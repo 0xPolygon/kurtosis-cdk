@@ -28,7 +28,12 @@ def run(plan, args, contract_setup_addresses, l2_context):
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
     rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": l2_context.rpc_url}}
     run_consumer(
-        plan, args, l1_bridge_address, l2_context.aggkit_bridge_url, mongodb_url
+        plan,
+        args,
+        l1_bridge_address,
+        l2_context.aggkit_bridge_url,
+        l2_context.rpc_url,
+        mongodb_url,
     )
 
     # Start the API
@@ -66,7 +71,9 @@ def run_mongodb(plan, args):
     return url
 
 
-def run_consumer(plan, args, l1_bridge_address, aggkit_bridge_service_url, mongodb_url):
+def run_consumer(
+    plan, args, l1_bridge_address, aggkit_bridge_service_url, l2_rpc_url, mongodb_url
+):
     l1_chain_id = str(args.get("l1_chain_id"))
     plan.add_service(
         name="bridge-hub-consumer",
@@ -78,6 +85,7 @@ def run_consumer(plan, args, l1_bridge_address, aggkit_bridge_service_url, mongo
                 "NETWORK": NETWORK_NAME,
                 "BRIDGE_SERVICE_URL": aggkit_bridge_service_url,
                 "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
+                "RPC_URL": l2_rpc_url,
                 # db
                 "MONGODB_CONNECTION_URI": mongodb_url,
                 "MONGODB_DB_NAME": MONGODB_DB_NAME,
