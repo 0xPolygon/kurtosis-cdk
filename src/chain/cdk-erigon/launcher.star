@@ -88,12 +88,13 @@ def launch(
     agglayer_contracts_package.l2_legacy_fund_accounts(plan, args)
 
     # Deploy aggkit infrastructure + dedicated bridge service
+    aggkit_bridge_url = None
     if consensus_type in [
         constants.CONSENSUS_TYPE.pessimistic,
         constants.CONSENSUS_TYPE.ecdsa_multisig,
     ]:
         plan.print("Deploying aggkit infrastructure")
-        aggkit_package.run(
+        aggkit_bridge_url = aggkit_package.run(
             plan,
             args,
             contract_setup_addresses,
@@ -103,4 +104,5 @@ def launch(
 
     return struct(
         rpc_url=rpc_url,
+        aggkit_bridge_url=aggkit_bridge_url if aggkit_bridge_url else None,
     )

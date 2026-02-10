@@ -14,7 +14,7 @@ def launch(
     if deploy_op_succinct:
         op_succinct_proposer.run(plan, args | contract_setup_addresses)
 
-    aggkit_package.run(
+    aggkit_bridge_url = aggkit_package.run(
         plan,
         args,
         contract_setup_addresses,
@@ -30,4 +30,4 @@ def launch(
     )
     return struct(
         rpc_url=rpc_url,
-    )
+        aggkit_bridge_url=aggkit_bridge_url,
