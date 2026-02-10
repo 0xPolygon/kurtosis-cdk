@@ -127,7 +127,6 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_c
     funder_private_key = args.get("l2_admin_private_key")
     wallet = _generate_new_funded_l2_wallet(plan, funder_private_key, l2_rpc_url)
 
-    l1_chain_id = args.get("l1_chain_id")
     l2_chain_id = args.get("l2_chain_id")
     l2_network_id = args.get("l2_network_id")
     plan.add_service(
@@ -137,7 +136,7 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_c
             env_vars={
                 "NODE_ENV": "production",
                 "BRIDGE_HUB_API_URL": api_url,
-                "SOURCE_NETWORKS": "[{}]".format(l1_chain_id),
+                "SOURCE_NETWORKS": "[0]",  # where 0 refers to L1 or Ethereum
                 "DESTINATION_NETWORK_CHAINID": str(l2_chain_id),
                 "DESTINATION_NETWORK": str(l2_network_id),
                 "BRIDGE_CONTRACT": l1_bridge_address,
