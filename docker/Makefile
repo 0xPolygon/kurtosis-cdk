@@ -2,6 +2,7 @@
 AGGLAYER_CONTRACTS_IMAGE_NAME := agglayer-contracts:v12.2.2
 TOOLBOX_IMAGE_NAME := toolbox:0.0.12
 ZKEVM_BRIDGE_UI_IMAGE_NAME := zkevm-bridge-ui:3f1a3a0
+AGGLAYER_DEV_UI_IMAGE_NAME := agglayer-dev-ui:844bfbc
 
 # GCR registry
 GCR_REGISTRY := europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public
@@ -24,6 +25,10 @@ build-toolbox: ## Build toolbox image
 build-zkevm-bridge-ui: ## Build zkevm-bridge-ui image
 	docker build --tag $(ZKEVM_BRIDGE_UI_IMAGE_NAME) --file zkevm-bridge-ui/Dockerfile zkevm-bridge-ui
 
+.PHONY: build-agglayer-dev-ui
+build-agglayer-dev-ui: ## Build agglayer-dev-ui image
+	docker build --tag $(AGGLAYER_DEV_UI_IMAGE_NAME) --file agglayer-dev-ui/Dockerfile agglayer-dev-ui
+
 ##@ Push
 
 auth: ## Authenticate with Google Cloud Registry
@@ -45,3 +50,8 @@ push-toolbox: ## Push toolbox image to GCR
 push-zkevm-bridge-ui: ## Push zkevm-bridge-ui image to GCR
 	docker tag $(ZKEVM_BRIDGE_UI_IMAGE_NAME) $(GCR_REGISTRY)/$(ZKEVM_BRIDGE_UI_IMAGE_NAME)
 	docker push $(GCR_REGISTRY)/$(ZKEVM_BRIDGE_UI_IMAGE_NAME)
+
+.PHONY: push-agglayer-dev-ui
+push-agglayer-dev-ui: ## Push agglayer-dev-ui image to GCR
+	docker tag $(AGGLAYER_DEV_UI_IMAGE_NAME) $(GCR_REGISTRY)/$(AGGLAYER_DEV_UI_IMAGE_NAME)
+	docker push $(GCR_REGISTRY)/$(AGGLAYER_DEV_UI_IMAGE_NAME)
