@@ -15,26 +15,24 @@ API_PORT_NUMBER = 3001
 
 
 def run(plan, args, contract_setup_addresses, l2_context):
+    if l2_context.aggkit_bridge_url == None:
+        plan.print(
+            "Skipping bridge hub api deployment since no aggkit bridge instance was found"
+        )
+        return
+
     # Start the database
     mongodb_url = run_mongodb(plan, args)
 
     # Start the consumer
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
-
-    bridge_service_url = None
-    if l2_context.aggkit_bridge_url != None:
-        bridge_service_url = l2_context.aggkit_bridge_url
-    elif l2_context.zkevm_bridge_service_url != None:
-        bridge_service_url = l2_context.zkevm_bridge_service_url
-    else:
-        fail("No bridge service url found in l2 context")
-
     rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": l2_context.rpc_url}}
-
-    run_consumer(plan, args, l1_bridge_address, bridge_service_url, mongodb_url)
+    run_consumer(
+        plan, args, l1_bridge_address, l2_context.aggkit_bridge_url, mongodb_url
+    )
 
     # Start the API
-    api_url = run_api(plan, bridge_service_url, mongodb_url, rpc_config)
+    api_url = run_api(plan, l2_context.aggkit_bridge_url, mongodb_url, rpc_config)
 
     # Start the L2 auto-claimer
     run_l2_autoclaimer(
@@ -68,7 +66,7 @@ def run_mongodb(plan, args):
     return url
 
 
-def run_consumer(plan, args, l1_bridge_address, bridge_service_url, mongodb_url):
+def run_consumer(plan, args, l1_bridge_address, aggkit_bridge_service_url, mongodb_url):
     l1_chain_id = str(args.get("l1_chain_id"))
     plan.add_service(
         name="bridge-hub-consumer",
@@ -78,7 +76,7 @@ def run_consumer(plan, args, l1_bridge_address, bridge_service_url, mongodb_url)
                 "NODE_ENV": "production",
                 "NETWORK_ID": l1_chain_id,
                 "NETWORK": NETWORK_NAME,
-                "BRIDGE_SERVICE_URL": bridge_service_url,
+                "BRIDGE_SERVICE_URL": aggkit_bridge_service_url,
                 "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
                 # db
                 "MONGODB_CONNECTION_URI": mongodb_url,
@@ -88,9 +86,11 @@ def run_consumer(plan, args, l1_bridge_address, bridge_service_url, mongodb_url)
     )
 
 
-def run_api(plan, bridge_service_url, mongodb_url, rpc_config):
+def run_api(plan, aggkit_bridge_service_url, mongodb_url, rpc_config):
     proof_config = {
-        '"{}"'.format(NETWORK_NAME): {"0": "{}/bridge/v1".format(bridge_service_url)}
+        '"{}"'.format(NETWORK_NAME): {
+            "0": "{}/bridge/v1".format(aggkit_bridge_service_url)
+        }
     }
 
     service = plan.add_service(
