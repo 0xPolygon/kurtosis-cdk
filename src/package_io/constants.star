@@ -102,6 +102,7 @@ DEFAULT_IMAGES = {
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
     "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
     "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
+    "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
     "cdk_erigon_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24",
     # Type 1 cdk-erigon sovereign image.
     # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
