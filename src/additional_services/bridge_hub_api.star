@@ -99,8 +99,8 @@ def run_api(plan, bridge_service_url, mongodb_url, rpc_config):
             image=constants.DEFAULT_IMAGES.get("bridge_hub_api_image"),
             env_vars={
                 "NODE_ENV": "production",
-                "PROOF_CONFIG": str(proof_config),
-                "RPC_CONFIG": str(rpc_config),
+                "PROOF_CONFIG": json.encode(proof_config),
+                "RPC_CONFIG": json.encode(rpc_config),
                 # db
                 "MONGODB_CONNECTION_URI": mongodb_url,
                 "MONGODB_DB_NAME": MONGODB_DB_NAME,
@@ -136,7 +136,7 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_c
                 "DESTINATION_NETWORK": str(l2_network_id),
                 "BRIDGE_CONTRACT": l1_bridge_address,
                 "PRIVATE_KEY": wallet.private_key,
-                "RPC_CONFIG": str(rpc_config),
+                "RPC_CONFIG": json.encode(rpc_config),
             },
         ),
     )
