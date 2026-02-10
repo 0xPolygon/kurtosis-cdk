@@ -31,3 +31,4 @@ def launch(
     return struct(
         rpc_url=rpc_url,
         aggkit_bridge_url=aggkit_bridge_url,
+    )
