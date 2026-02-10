@@ -134,11 +134,12 @@ def run_api(plan, aggkit_bridge_service_url, mongodb_url, l2_rpc_url):
 
 
 def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_config):
+    l1_chain_id = args.get("l1_chain_id")
     l2_chain_id = args.get("l2_chain_id")
 
     # RPC URLs are nested by chain ID.
     rpc_config = {
-        "1": args.get("l1_rpc_url"),  # L1
+        str(l1_chain_id): args.get("l1_rpc_url"),  # L1
         str(l2_chain_id): l2_rpc_url,  # L2
     }
 
