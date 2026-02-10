@@ -26,7 +26,6 @@ def run(plan, args, contract_setup_addresses, l2_context):
 
     # Start the consumer
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
-    rpc_config = {NETWORK_NAME: {"0": l2_context.rpc_url}}
     run_consumer(
         plan,
         args,
@@ -37,7 +36,7 @@ def run(plan, args, contract_setup_addresses, l2_context):
     )
 
     # Start the API
-    api_url = run_api(plan, l2_context.aggkit_bridge_url, mongodb_url, rpc_config)
+    api_url = run_api(plan, l2_context.aggkit_bridge_url, mongodb_url, l2_rpc_url)
 
     # Start the L2 auto-claimer
     run_l2_autoclaimer(
@@ -94,7 +93,16 @@ def run_consumer(
     )
 
 
-def run_api(plan, aggkit_bridge_service_url, mongodb_url, rpc_config):
+def run_api(plan, aggkit_bridge_service_url, mongodb_url, l2_rpc_url):
+    # RPC URLs are nested by network name and network ID.
+    rpc_config = {
+        NETWORK_NAME: {
+            "0": args.get("l1_rpc_url"),  # L1
+            "1": l2_rpc_url,  # L2
+        },
+    }
+
+    # Bridge URLs are nested by network name and network ID.
     proof_config = {
         NETWORK_NAME: {
             "0": "{}/bridge/v1".format(aggkit_bridge_service_url),
@@ -126,11 +134,18 @@ def run_api(plan, aggkit_bridge_service_url, mongodb_url, rpc_config):
 
 
 def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_config):
+    l2_chain_id = args.get("l2_chain_id")
+
+    # RPC URLs are nested by chain ID.
+    rpc_config = {
+        "1": args.get("l1_rpc_url"),  # L1
+        str(l2_chain_id): l2_rpc_url,  # L2
+    }
+
     # Generate new wallet for the auto-claimer.
     funder_private_key = args.get("l2_admin_private_key")
     wallet = _generate_new_funded_l2_wallet(plan, funder_private_key, l2_rpc_url)
 
-    l2_chain_id = args.get("l2_chain_id")
     l2_network_id = args.get("l2_network_id")
     plan.add_service(
         name="bridge-hub-autoclaim{}".format(args.get("deployment_suffix")),
