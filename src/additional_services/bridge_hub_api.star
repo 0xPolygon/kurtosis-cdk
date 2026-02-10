@@ -13,6 +13,9 @@ MONGODB_PORT_NUMBER = 27017
 API_PORT_ID = "api"
 API_PORT_NUMBER = 3001
 
+AGGLAYER_DEV_UI_PORT_ID = "http"
+AGGLAYER_DEV_UI_PORT_NUMBER = 80
+
 
 def run(plan, args, contract_setup_addresses, l2_context):
     if l2_context.aggkit_bridge_url == None:
@@ -53,6 +56,9 @@ def run(plan, args, contract_setup_addresses, l2_context):
 
     # Start the L2 auto-claimer
     run_l2_autoclaimer(plan, args, api_url, l2_context.rpc_url, l1_bridge_address)
+
+    # Start the agglayer-dev-ui
+    run_agglayer_dev_ui(plan, args, api_url)
 
 
 def run_mongodb(plan, args):
@@ -208,3 +214,17 @@ def _generate_new_funded_l2_wallet(plan, funder_private_key, l2_rpc_url):
         funder_private_key=funder_private_key,
     )
     return wallet
+
+
+def run_agglayer_dev_ui(plan, args, api_url):
+    plan.add_service(
+        name="agglayer-dev-ui",
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("agglayer_dev_ui_image"),
+            ports={
+                AGGLAYER_DEV_UI_PORT_ID: PortSpec(
+                    number=AGGLAYER_DEV_UI_PORT_NUMBER, application_protocol="http"
+                )
+            },
+        ),
+    )
