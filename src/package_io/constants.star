@@ -4,6 +4,7 @@ ADDITIONAL_SERVICES = struct(
     assertoor="assertoor",
     blockscout="blockscout",
     blutgang="blutgang",
+    bridge_hub_api="bridge_hub_api",
     bridge_spammer="bridge_spammer",
     erpc="erpc",
     observability="observability",
