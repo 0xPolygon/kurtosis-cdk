@@ -139,7 +139,7 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_c
             env_vars={
                 "NODE_ENV": "production",
                 "BRIDGE_HUB_API_URL": api_url,
-                "SOURCE_NETWORKS": "[0]",  # where 0 refers to L1 or Ethereum
+                "SOURCE_NETWORKS": "[0, 1]",  # Claim for both L1 (0) and L2 (1) bridges
                 "DESTINATION_NETWORK_CHAINID": str(l2_chain_id),
                 "DESTINATION_NETWORK": str(l2_network_id),
                 "BRIDGE_CONTRACT": l1_bridge_address,
