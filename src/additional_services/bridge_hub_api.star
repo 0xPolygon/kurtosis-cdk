@@ -29,36 +29,38 @@ def run(plan, args, contract_setup_addresses, l2_context):
     else:
         fail("No bridge service url found in l2 context")
 
-    rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": rpc_url}}
+    rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": l2_context.rpc_url}}
 
     run_consumer(plan, args, l1_bridge_address, bridge_service_url, mongodb_url)
 
     # Start the API
-    api_url = run_api(plan, bridge_service_url, rpc_config)
+    api_url = run_api(plan, bridge_service_url, mongodb_url, rpc_config)
 
     # Start the L2 auto-claimer
     run_l2_autoclaimer(
-        plan, args, api_url, l2_context.l2_rpc_url, l1_bridge_address, rpc_config
+        plan, args, api_url, l2_context.rpc_url, l1_bridge_address, rpc_config
     )
 
 
 def run_mongodb(plan, args):
     service = plan.add_service(
         name="bridge-hub-db",
-        image=constants.DEFAULT_IMAGES.mongodb_image,
-        environment={
-            "MONGO_INITDB_DATABASE": MONGODB_DB_NAME,
-            "MONGO_INITDB_ROOT_USERNAME": MONGODB_ROOT_USER,
-            "MONGO_INITDB_ROOT_PASSWORD": MONGODB_ROOT_PASSWORD,
-        },
-        files={
-            "/data/db": Directory(persistent_key="mongodb-data"),
-        },
-        ports={
-            MONGODB_PORT_ID: PortSpec(
-                number=MONGODB_PORT_NUMBER, application_protocol="mongodb"
-            )
-        },
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("mongodb_image"),
+            env_vars={
+                "MONGO_INITDB_DATABASE": MONGODB_DB_NAME,
+                "MONGO_INITDB_ROOT_USERNAME": MONGODB_ROOT_USER,
+                "MONGO_INITDB_ROOT_PASSWORD": MONGODB_ROOT_PASSWORD,
+            },
+            files={
+                "/data/db": Directory(persistent_key="mongodb-data"),
+            },
+            ports={
+                MONGODB_PORT_ID: PortSpec(
+                    number=MONGODB_PORT_NUMBER, application_protocol="mongodb"
+                )
+            },
+        ),
     )
     url = "mongodb://{}:{}@{}:{}".format(
         MONGODB_ROOT_USER, MONGODB_ROOT_PASSWORD, service.hostname, MONGODB_PORT_NUMBER
@@ -70,39 +72,45 @@ def run_consumer(plan, args, l1_bridge_address, bridge_service_url, mongodb_url)
     l1_chain_id = str(args.get("l1_chain_id"))
     plan.add_service(
         name="bridge-hub-consumer",
-        image=constants.DEFAULT_IMAGES.bridge_hub_consumer_image,
-        environment={
-            "NODE_ENV": "production",
-            "NETWORK_ID": l1_chain_id,
-            "NETWORK": NETWORK_NAME,
-            "BRIDGE_SERVICE_URL": bridge_service_url,
-            "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
-            # db
-            "MONGODB_CONNECTION_URI": mongodb_url,
-            "MONGODB_DB_NAME": MONGODB_DB_NAME,
-        },
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("bridge_hub_consumer_image"),
+            env_vars={
+                "NODE_ENV": "production",
+                "NETWORK_ID": l1_chain_id,
+                "NETWORK": NETWORK_NAME,
+                "BRIDGE_SERVICE_URL": bridge_service_url,
+                "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
+                # db
+                "MONGODB_CONNECTION_URI": mongodb_url,
+                "MONGODB_DB_NAME": MONGODB_DB_NAME,
+            },
+        ),
     )
 
 
-def run_api(plan, bridge_service_url, rpc_config):
+def run_api(plan, bridge_service_url, mongodb_url, rpc_config):
     proof_config = {
         '"{}"'.format(NETWORK_NAME): {"0": "{}/bridge/v1".format(bridge_service_url)}
     }
 
     service = plan.add_service(
         name="bridge-hub-api",
-        image=constants.DEFAULT_IMAGES.bridge_hub_api_image,
-        environment={
-            "NODE_ENV": "production",
-            "PROOF_CONFIG": str(proof_config),
-            "RPC_CONFIG": str(rpc_config),
-            # db
-            "MONGODB_CONNECTION_URI": mongodb_url,
-            "MONGODB_DB_NAME": MONGODB_DB_NAME,
-        },
-        ports={
-            API_PORT_ID: PortSpec(number=API_PORT_NUMBER, application_protocol="http")
-        },
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("bridge_hub_api_image"),
+            env_vars={
+                "NODE_ENV": "production",
+                "PROOF_CONFIG": str(proof_config),
+                "RPC_CONFIG": str(rpc_config),
+                # db
+                "MONGODB_CONNECTION_URI": mongodb_url,
+                "MONGODB_DB_NAME": MONGODB_DB_NAME,
+            },
+            ports={
+                API_PORT_ID: PortSpec(
+                    number=API_PORT_NUMBER, application_protocol="http"
+                )
+            },
+        ),
     )
     url = service.ports[API_PORT_ID].url
     return url
@@ -118,17 +126,19 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_c
     l2_network_id = args.get("l2_network_id")
     plan.add_service(
         name="bridge-hub-autoclaim",
-        image=constants.DEFAULT_IMAGES.bridge_hub_autoclaim_image,
-        environment={
-            "NODE_ENV": "production",
-            "BRIDGE_HUB_API_URL": api_url,
-            "SOURCE_NETWORKS": "[{}]".format(l1_chain_id),
-            "DESTINATION_NETWORK_CHAINID": l2_chain_id,
-            "DESTINATION_NETWORK": l2_network_id,
-            "BRIDGE_CONTRACT": l1_bridge_address,
-            "PRIVATE_KEY": wallet.private_key,
-            "RPC_CONFIG": str(rpc_config),
-        },
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("bridge_hub_autoclaim_image"),
+            env_vars={
+                "NODE_ENV": "production",
+                "BRIDGE_HUB_API_URL": api_url,
+                "SOURCE_NETWORKS": "[{}]".format(l1_chain_id),
+                "DESTINATION_NETWORK_CHAINID": str(l2_chain_id),
+                "DESTINATION_NETWORK": str(l2_network_id),
+                "BRIDGE_CONTRACT": l1_bridge_address,
+                "PRIVATE_KEY": wallet.private_key,
+                "RPC_CONFIG": str(rpc_config),
+            },
+        ),
     )
 
 
