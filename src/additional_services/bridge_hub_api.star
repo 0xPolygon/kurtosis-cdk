@@ -74,14 +74,14 @@ def run_mongodb(plan, args):
 def run_consumer(
     plan, args, l1_bridge_address, aggkit_bridge_service_url, l2_rpc_url, mongodb_url
 ):
-    l1_chain_id = str(args.get("l1_chain_id"))
+    l2_network_id = str(args.get("l2_network_id"))
     plan.add_service(
         name="bridge-hub-consumer{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=constants.DEFAULT_IMAGES.get("bridge_hub_consumer_image"),
             env_vars={
                 "NODE_ENV": "production",
-                "NETWORK_ID": l1_chain_id,
+                "NETWORK_ID": l2_network_id,
                 "NETWORK": NETWORK_NAME,
                 "BRIDGE_SERVICE_URL": aggkit_bridge_service_url,
                 "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
