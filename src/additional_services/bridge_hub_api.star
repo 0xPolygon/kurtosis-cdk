@@ -217,6 +217,7 @@ def _generate_new_funded_l2_wallet(plan, funder_private_key, l2_rpc_url):
 
 
 def run_agglayer_dev_ui(plan, args, api_url):
+    # The API URL is hardcoded inside the image. That's not ideal...
     plan.add_service(
         name="agglayer-dev-ui",
         config=ServiceConfig(
