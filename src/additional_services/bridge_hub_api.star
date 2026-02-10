@@ -26,7 +26,7 @@ def run(plan, args, contract_setup_addresses, l2_context):
 
     # Start the consumer
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
-    rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": l2_context.rpc_url}}
+    rpc_config = {NETWORK_NAME: {"0": l2_context.rpc_url}}
     run_consumer(
         plan,
         args,
@@ -96,9 +96,7 @@ def run_consumer(
 
 def run_api(plan, aggkit_bridge_service_url, mongodb_url, rpc_config):
     proof_config = {
-        '"{}"'.format(NETWORK_NAME): {
-            "0": "{}/bridge/v1".format(aggkit_bridge_service_url)
-        }
+        NETWORK_NAME: {"0": "{}/bridge/v1".format(aggkit_bridge_service_url)}
     }
 
     service = plan.add_service(
