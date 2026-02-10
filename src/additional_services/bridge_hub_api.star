@@ -14,16 +14,25 @@ API_PORT_NUMBER = 3001
 
 
 def run(plan, args, contract_setup_addresses, l2_context):
+    # Start the database
     mongodb_url = run_mongodb(plan, args)
 
+    # Start the consumer
     l1_chain_id = str(args.get("l1_chain_id"))
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
-    aggkit_bridge_service_url = ""  # TODO: Add aggkit_bridge_url to l2_context
-    run_consumer(
-        plan, l1_chain_id, l1_bridge_address, aggkit_bridge_service_url, mongodb_url
-    )
 
-    run_api(plan, l2_context)
+    bridge_service_url = None
+    if l2_context.aggkit_bridge_url != None:
+        bridge_service_url = l2_context.aggkit_bridge_url
+    elif l2_context.zkevm_bridge_service_url != None:
+        bridge_service_url = l2_context.zkevm_bridge_service_url
+    else:
+        fail("No bridge service url found in l2 context")
+
+    run_consumer(plan, l1_chain_id, l1_bridge_address, bridge_service_url, mongodb_url)
+
+    # Start the API
+    run_api(plan, bridge_service_url, l2_context.rpc_url)
 
 
 def run_mongodb(plan, args):
@@ -69,10 +78,11 @@ def run_consumer(
     )
 
 
-def run_api(plan, l2_context):
-    proof_endpoint = "aggkit_bridge_url/bridge/v1"
-    proof_config = {'"{}"'.format(NETWORK_NAME): {"0": proof_endpoint}}
-    rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": l2_context.rpc_url}}
+def run_api(plan, bridge_service_url, rpc_url):
+    proof_config = {
+        '"{}"'.format(NETWORK_NAME): {"0": "{}/bridge/v1".format(bridge_service_url)}
+    }
+    rpc_config = {'"{}"'.format(NETWORK_NAME): {"0": rpc_url}}
 
     plan.add_service(
         name="bridge-hub-api",
