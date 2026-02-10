@@ -26,10 +26,20 @@ def run(plan, args, contract_setup_addresses, l2_context):
 
     # Start the consumer
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
-    run_consumer(
+    run_l1_consumer(
         plan,
         args,
         l1_bridge_address,
+        l2_context.aggkit_bridge_url,
+        args.get("l1_rpc_url"),
+        mongodb_url,
+    )
+
+    l2_bridge_address = contract_setup_addresses.get("l2_bridge_address")
+    run_l2_consumer(
+        plan,
+        args,
+        l2_bridge_address,
         l2_context.aggkit_bridge_url,
         l2_context.rpc_url,
         mongodb_url,
@@ -70,8 +80,30 @@ def run_mongodb(plan, args):
     return url
 
 
-def run_consumer(
-    plan, args, l1_bridge_address, aggkit_bridge_service_url, l2_rpc_url, mongodb_url
+def run_l1_consumer(
+    plan, args, bridge_address, aggkit_bridge_service_url, rpc_url, mongodb_url
+):
+    plan.add_service(
+        name="bridge-hub-consumer-l1",
+        config=ServiceConfig(
+            image=constants.DEFAULT_IMAGES.get("bridge_hub_consumer_image"),
+            env_vars={
+                "NODE_ENV": "production",
+                "NETWORK_ID": "0",  # L1
+                "NETWORK": NETWORK_NAME,
+                "BRIDGE_SERVICE_URL": "{}/bridge/v1".format(aggkit_bridge_service_url),
+                "BRIDGE_CONTRACT_ADDRESS": bridge_address,
+                "RPC_URL": rpc_url,
+                # db
+                "MONGODB_CONNECTION_URI": mongodb_url,
+                "MONGODB_DB_NAME": MONGODB_DB_NAME,
+            },
+        ),
+    )
+
+
+def run_l2_consumer(
+    plan, args, bridge_address, aggkit_bridge_service_url, rpc_url, mongodb_url
 ):
     l2_network_id = str(args.get("l2_network_id"))
     plan.add_service(
@@ -83,8 +115,8 @@ def run_consumer(
                 "NETWORK_ID": l2_network_id,
                 "NETWORK": NETWORK_NAME,
                 "BRIDGE_SERVICE_URL": "{}/bridge/v1".format(aggkit_bridge_service_url),
-                "BRIDGE_CONTRACT_ADDRESS": l1_bridge_address,
-                "RPC_URL": l2_rpc_url,
+                "BRIDGE_CONTRACT_ADDRESS": bridge_address,
+                "RPC_URL": rpc_url,
                 # db
                 "MONGODB_CONNECTION_URI": mongodb_url,
                 "MONGODB_DB_NAME": MONGODB_DB_NAME,
