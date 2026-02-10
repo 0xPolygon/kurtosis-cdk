@@ -96,7 +96,10 @@ def run_consumer(
 
 def run_api(plan, aggkit_bridge_service_url, mongodb_url, rpc_config):
     proof_config = {
-        NETWORK_NAME: {"0": "{}/bridge/v1".format(aggkit_bridge_service_url)}
+        NETWORK_NAME: {
+            "0": "{}/bridge/v1".format(aggkit_bridge_service_url),
+            "1": "{}/bridge/v1".format(aggkit_bridge_service_url),
+        },
     }
 
     service = plan.add_service(
