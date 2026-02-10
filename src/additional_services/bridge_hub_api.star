@@ -76,7 +76,7 @@ def run_consumer(
 ):
     l1_chain_id = str(args.get("l1_chain_id"))
     plan.add_service(
-        name="bridge-hub-consumer",
+        name="bridge-hub-consumer{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=constants.DEFAULT_IMAGES.get("bridge_hub_consumer_image"),
             env_vars={
@@ -133,7 +133,7 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address, rpc_c
     l2_chain_id = args.get("l2_chain_id")
     l2_network_id = args.get("l2_network_id")
     plan.add_service(
-        name="bridge-hub-autoclaim",
+        name="bridge-hub-autoclaim{}".format(args.get("deployment_suffix")),
         config=ServiceConfig(
             image=constants.DEFAULT_IMAGES.get("bridge_hub_autoclaim_image"),
             env_vars={
