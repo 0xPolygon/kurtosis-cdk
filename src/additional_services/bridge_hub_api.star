@@ -24,7 +24,7 @@ def run(plan, args, contract_setup_addresses, l2_context):
     # Start the database
     mongodb_url = run_mongodb(plan, args)
 
-    # Start the consumer
+    # Start the L1 consumer (indexer)
     l1_bridge_address = contract_setup_addresses.get("l1_bridge_address")
     run_l1_consumer(
         plan,
@@ -35,6 +35,7 @@ def run(plan, args, contract_setup_addresses, l2_context):
         mongodb_url,
     )
 
+    # Start the L2 consumer (indexer)
     l2_bridge_address = contract_setup_addresses.get("l2_bridge_address")
     run_l2_consumer(
         plan,
