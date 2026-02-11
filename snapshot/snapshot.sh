@@ -308,7 +308,7 @@ if kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" &>/dev/null; then
     # Extract deployed contract addresses FIRST (needed for config patching)
     TMP_DEPLOYED_CONTRACTS="/tmp/kurtosis-deployed-$$"
     DEPLOYED_CONTRACTS_FOUND=false
-    for contracts_file in "/opt/combined.json" "/opt/deploy_output.json" "/opt/deployed_contracts.json"; do
+    for contracts_file in "/opt/agglayer-contracts/deployment/v2/deploy_output.json" "/opt/combined.json" "/opt/deploy_output.json" "/opt/deployed_contracts.json"; do
         if timeout 5 kurtosis service exec "$ENCLAVE_NAME" contracts-001 "cat $contracts_file" > "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null; then
             if [ -s "$TMP_DEPLOYED_CONTRACTS" ] && jq empty "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null; then
                 echo "  ✅ Found contract addresses in $contracts_file"
@@ -338,11 +338,11 @@ if kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" &>/dev/null; then
               sed 's|PathRWData = ".*"|PathRWData = "/tmp"|g' | \
               sed 's|^\([[:space:]]*\)URL = "http://el-[^"]*"|\1URL = "http://geth:8545"|g' | \
               sed 's|^\([[:space:]]*\)URL = "http://agglayer:[^"]*"|\1URL = "http://agglayer:9600"|g' | \
-              sed 's|^rollupCreationBlockNumber = ".*"|rollupCreationBlockNumber = "0"|g' | \
-              sed 's|^rollupManagerCreationBlockNumber = ".*"|rollupManagerCreationBlockNumber = "0"|g' | \
-              sed 's|^genesisBlockNumber = ".*"|genesisBlockNumber = "0"|g' | \
-              sed 's|^InitialBlock = ".*"|InitialBlock = "0"|g' | \
-              sed 's|^RollupCreationBlockL1 = ".*"|RollupCreationBlockL1 = "0"|g' \
+              sed 's|^rollupCreationBlockNumber = ".*"|rollupCreationBlockNumber = "1"|g' | \
+              sed 's|^rollupManagerCreationBlockNumber = ".*"|rollupManagerCreationBlockNumber = "1"|g' | \
+              sed 's|^genesisBlockNumber = ".*"|genesisBlockNumber = "1"|g' | \
+              sed 's|^InitialBlock = ".*"|InitialBlock = "1"|g' | \
+              sed 's|^RollupCreationBlockL1 = ".*"|RollupCreationBlockL1 = "1"|g' \
               > "$SNAPSHOT_DIR/aggkit/config.toml"
 
             # Patch contract addresses if we found them
