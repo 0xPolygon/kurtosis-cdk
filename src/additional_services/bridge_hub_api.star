@@ -220,7 +220,7 @@ def run_agglayer_dev_ui(plan, args, l2_rpc_url, api_url, l1_bridge_address):
     config_artifact = plan.render_templates(
         name="agglayer-dev-ui-config",
         config={
-            "config.json": struct(
+            "config.ts": struct(
                 template=read_file(
                     src="../../static_files/additional_services/bridge-hub/config.ts.tmpl",
                 ),
