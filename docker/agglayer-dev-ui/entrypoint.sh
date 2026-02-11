@@ -3,15 +3,20 @@
 # Docker entrypoint script for agglayer-dev-ui.
 # Builds the app at runtime (not during docker build) to allow custom chain
 # configurations via modified source files.
+AGGLAYER_DEV_UI_FOLDER_PATH="/opt/agglayer-dev-ui"
+
+# Copy the custom chain configuration.
+rm $AGGLAYER_DEV_UI_FOLDER_PATH/app/config.ts
+mv /etc/agglayer-dev-ui/config.ts $AGGLAYER_DEV_UI_FOLDER_PATH/app/config.ts
 
 # Build the application from source.
 # The source code is mounted/copied into /app during the docker build.
-cd /app
+cd $AGGLAYER_DEV_UI_FOLDER_PATH
 npm run build
 
 # Copy the build artifacts to nginx's web root.
 # This makes the built static files available for nginx to serve.
-cp -r /app/dist/. /usr/share/nginx/html
+cp -r $AGGLAYER_DEV_UI_FOLDER_PATH/app/dist/. /usr/share/nginx/html
 
 # Start nginx in the foreground.
 # The 'daemon off' directive keeps nginx running as the main process,
