@@ -125,6 +125,20 @@ services:
       - snapshot-net
 COMPOSE_HEADER
 
+# Check if aggkit config exists
+HAS_AGGKIT=false
+if [ -d "$OUTPUT_DIR/aggkit" ] && [ -f "$OUTPUT_DIR/aggkit/config.toml.template" ]; then
+    HAS_AGGKIT=true
+    echo "Detected aggkit configuration"
+fi
+
+# Check if agglayer config exists
+HAS_AGGLAYER=false
+if [ -d "$OUTPUT_DIR/agglayer" ] && [ -f "$OUTPUT_DIR/agglayer/config.toml.template" ]; then
+    HAS_AGGLAYER=true
+    echo "Detected agglayer configuration"
+fi
+
 # Add OP stack services if configuration exists
 if [ "$HAS_OP_STACK" = true ]; then
     cat >> "$OUTPUT_DIR/docker-compose.yml" <<COMPOSE_OP_STACK
@@ -380,6 +394,72 @@ if [ "$HAS_OP_STACK" = true ]; then
 COMPOSE_OP_STACK
 fi
 
+# Add agglayer service if configuration exists
+if [ "$HAS_AGGLAYER" = true ]; then
+    cat >> "$OUTPUT_DIR/docker-compose.yml" <<'COMPOSE_AGGLAYER'
+
+  agglayer:
+    image: ghcr.io/agglayer/agglayer:0.3.1
+    container_name: snapshot-agglayer
+    depends_on:
+      geth:
+        condition: service_healthy
+      lighthouse-bn:
+        condition: service_started
+    volumes:
+      - ./agglayer:/config:ro
+      - ./runtime:/runtime:ro
+    entrypoint: ["/usr/local/bin/agglayer"]
+    command:
+      - run
+      - --cfg
+      - /config/config.toml
+    ports:
+      - "9600:9600"
+      - "9601:9601"
+    networks:
+      - snapshot-net
+COMPOSE_AGGLAYER
+fi
+
+# Add aggkit services if configuration exists
+if [ "$HAS_AGGKIT" = true ]; then
+    cat >> "$OUTPUT_DIR/docker-compose.yml" <<'COMPOSE_AGGKIT'
+
+  aggkit:
+    image: aggkit:local
+    container_name: snapshot-aggkit
+    depends_on:
+      geth:
+        condition: service_healthy
+      op-geth:
+        condition: service_healthy
+COMPOSE_AGGKIT
+
+    # Add agglayer dependency if it exists
+    if [ "$HAS_AGGLAYER" = true ]; then
+        cat >> "$OUTPUT_DIR/docker-compose.yml" <<'COMPOSE_AGGKIT_AGGLAYER_DEP'
+      agglayer:
+        condition: service_started
+COMPOSE_AGGKIT_AGGLAYER_DEP
+    fi
+
+    cat >> "$OUTPUT_DIR/docker-compose.yml" <<'COMPOSE_AGGKIT_CONTINUE'
+    volumes:
+      - ./aggkit:/config:ro
+      - ./runtime:/runtime:ro
+    entrypoint: ["/usr/local/bin/aggkit"]
+    command:
+      - run
+      - --cfg=/config/config.toml
+      - --components=aggsender,aggoracle
+    ports:
+      - "8123:8123"
+    networks:
+      - snapshot-net
+COMPOSE_AGGKIT_CONTINUE
+fi
+
 # Close the compose file
 cat >> "$OUTPUT_DIR/docker-compose.yml" <<'COMPOSE_FOOTER'
 
@@ -388,8 +468,18 @@ networks:
     driver: bridge
 COMPOSE_FOOTER
 
+SERVICES_MSG="Docker compose file created: $OUTPUT_DIR/docker-compose.yml"
 if [ "$HAS_OP_STACK" = true ]; then
-    echo "Docker compose file created: $OUTPUT_DIR/docker-compose.yml (with OP stack services)"
+    SERVICES_MSG="$SERVICES_MSG (with OP stack"
+    [ "$HAS_AGGKIT" = true ] && SERVICES_MSG="$SERVICES_MSG + aggkit"
+    [ "$HAS_AGGLAYER" = true ] && SERVICES_MSG="$SERVICES_MSG + agglayer"
+    SERVICES_MSG="$SERVICES_MSG)"
+elif [ "$HAS_AGGKIT" = true ] || [ "$HAS_AGGLAYER" = true ]; then
+    SERVICES_MSG="$SERVICES_MSG (L1"
+    [ "$HAS_AGGKIT" = true ] && SERVICES_MSG="$SERVICES_MSG + aggkit"
+    [ "$HAS_AGGLAYER" = true ] && SERVICES_MSG="$SERVICES_MSG + agglayer"
+    SERVICES_MSG="$SERVICES_MSG)"
 else
-    echo "Docker compose file created: $OUTPUT_DIR/docker-compose.yml (L1 only)"
+    SERVICES_MSG="$SERVICES_MSG (L1 only)"
 fi
+echo "$SERVICES_MSG"

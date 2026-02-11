@@ -106,6 +106,67 @@ BLOCK_NUMBER=$(printf "%d" "$BLOCK_HEX")
 echo "✅ Latest block: $BLOCK_NUMBER (hex: $BLOCK_HEX)"
 echo ""
 
+# Verify critical contracts exist (if sovereign rollup is detected)
+echo "Checking for deployed contracts..."
+CONTRACTS_SVC="contracts-001"
+CONTRACT_WARNING=false
+if kurtosis service inspect "$ENCLAVE_NAME" "$CONTRACTS_SVC" &>/dev/null; then
+    # Extract deployed_contracts.json to get contract addresses
+    TMP_CONTRACTS="/tmp/kurtosis-contracts-$$"
+    timeout 10 kurtosis service exec "$ENCLAVE_NAME" "$CONTRACTS_SVC" "cat /opt/deployed_contracts.json" > "$TMP_CONTRACTS" 2>/dev/null || echo "{}" > "$TMP_CONTRACTS"
+
+    # Check GlobalExitRoot (required by aggkit)
+    GLOBAL_EXIT_ROOT_ADDR=$(jq -r '.polygonZkEVMGlobalExitRootAddress // .AgglayerGER // empty' "$TMP_CONTRACTS" 2>/dev/null || echo "")
+    if [ -n "$GLOBAL_EXIT_ROOT_ADDR" ]; then
+        echo "  Found GlobalExitRoot address in config: $GLOBAL_EXIT_ROOT_ADDR"
+        # Verify the contract has code on L1
+        CODE_CHECK=$(cast code --rpc-url "$GETH_PORT" "$GLOBAL_EXIT_ROOT_ADDR" 2>/dev/null || echo "0x")
+        if [ "$CODE_CHECK" = "0x" ] || [ -z "$CODE_CHECK" ]; then
+            echo "  ⚠️  ERROR: GlobalExitRoot contract has NO CODE at $GLOBAL_EXIT_ROOT_ADDR"
+            echo "  This will cause aggkit to fail with 'no contract code at given address'"
+            echo "  "
+            echo "  Possible causes:"
+            echo "    1. Snapshot taken too early - contracts not deployed yet"
+            echo "    2. Contracts deployment failed"
+            echo "    3. Wrong L1 RPC URL"
+            echo "  "
+            echo "  Please ensure contracts are fully deployed before taking snapshot."
+            CONTRACT_WARNING=true
+        else
+            CODE_SIZE=${#CODE_CHECK}
+            echo "  ✅ GlobalExitRoot has code ($CODE_SIZE bytes)"
+        fi
+    else
+        echo "  ⚠️  WARNING: Could not find GlobalExitRoot address in deployed_contracts.json"
+    fi
+
+    # Check RollupManager
+    ROLLUP_MANAGER_ADDR=$(jq -r '.polygonRollupManagerAddress // .AgglayerManager // empty' "$TMP_CONTRACTS" 2>/dev/null || echo "")
+    if [ -n "$ROLLUP_MANAGER_ADDR" ]; then
+        CODE_CHECK=$(cast code --rpc-url "$GETH_PORT" "$ROLLUP_MANAGER_ADDR" 2>/dev/null || echo "0x")
+        if [ "$CODE_CHECK" = "0x" ] || [ -z "$CODE_CHECK" ]; then
+            echo "  ⚠️  ERROR: RollupManager contract has NO CODE at $ROLLUP_MANAGER_ADDR"
+            CONTRACT_WARNING=true
+        else
+            echo "  ✅ RollupManager has code"
+        fi
+    fi
+
+    rm -f "$TMP_CONTRACTS"
+
+    if [ "$CONTRACT_WARNING" = true ]; then
+        echo ""
+        echo "❌ SNAPSHOT ABORTED: Critical contracts missing code"
+        echo "   Wait for contracts to be deployed before taking snapshot."
+        echo "   You can check contract deployment logs with:"
+        echo "     kurtosis service logs $ENCLAVE_NAME $CONTRACTS_SVC"
+        exit 1
+    fi
+else
+    echo "  No contracts service found - skipping contract verification"
+fi
+echo ""
+
 # Create snapshot directory
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H-%M-%SZ")
 SNAPSHOT_DIR="$OUTPUT_DIR/snapshot-$ENCLAVE_NAME-$TIMESTAMP"
@@ -234,6 +295,163 @@ if kurtosis files inspect "$ENCLAVE_NAME" op-deployer-configs &>/dev/null; then
     rm -rf "$TMP_OP_CONFIGS"
 else
     echo "  No OP stack services found - skipping"
+fi
+echo ""
+
+# Extract aggkit configuration if present
+echo "Checking for aggkit services..."
+AGGKIT_SVC="aggkit-001"
+if kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" &>/dev/null; then
+    echo "✅ Aggkit detected - extracting configuration"
+    mkdir -p "$SNAPSHOT_DIR/aggkit"
+
+    # Extract deployed contract addresses FIRST (needed for config patching)
+    TMP_DEPLOYED_CONTRACTS="/tmp/kurtosis-deployed-$$"
+    DEPLOYED_CONTRACTS_FOUND=false
+    for contracts_file in "/opt/combined.json" "/opt/deploy_output.json" "/opt/deployed_contracts.json"; do
+        if timeout 5 kurtosis service exec "$ENCLAVE_NAME" contracts-001 "cat $contracts_file" > "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null; then
+            if [ -s "$TMP_DEPLOYED_CONTRACTS" ] && jq empty "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null; then
+                echo "  ✅ Found contract addresses in $contracts_file"
+                DEPLOYED_CONTRACTS_FOUND=true
+                break
+            fi
+        fi
+    done
+
+    # Download aggkit config artifact
+    TMP_AGGKIT_CONFIG="/tmp/kurtosis-aggkit-config-$$"
+    if kurtosis files download "$ENCLAVE_NAME" aggkit-config-001 "$TMP_AGGKIT_CONFIG" >/dev/null 2>&1; then
+        # Copy original config
+        cp "$TMP_AGGKIT_CONFIG/config.toml" "$SNAPSHOT_DIR/aggkit/config.toml.template" 2>/dev/null || echo "Warning: aggkit config not found"
+
+        # Create docker-compose version with patched URLs, writable paths, AND actual contract addresses
+        if [ -f "$SNAPSHOT_DIR/aggkit/config.toml.template" ]; then
+            # Start with URL and path patches
+            cat "$SNAPSHOT_DIR/aggkit/config.toml.template" | \
+              sed 's|L1URL = ".*"|L1URL = "http://geth:8545"|g' | \
+              sed 's|L2URL = ".*"|L2URL = "http://op-geth:8545"|g' | \
+              sed 's|OpNodeURL = ".*"|OpNodeURL = "http://op-node:8547"|g' | \
+              sed 's|AggLayerURL = ".*"|AggLayerURL = "http://agglayer:9600"|g' | \
+              sed 's|RPCURL = ".*"|RPCURL = "http://geth:8545"|g' | \
+              sed 's|URLRPCL2 = ".*"|URLRPCL2 = "http://op-geth:8545"|g' | \
+              sed 's|URLRPCL1 = ".*"|URLRPCL1 = "http://geth:8545"|g' | \
+              sed 's|PathRWData = ".*"|PathRWData = "/tmp"|g' | \
+              sed 's|^\([[:space:]]*\)URL = "http://el-[^"]*"|\1URL = "http://geth:8545"|g' | \
+              sed 's|^\([[:space:]]*\)URL = "http://agglayer:[^"]*"|\1URL = "http://agglayer:9600"|g' | \
+              sed 's|^rollupCreationBlockNumber = ".*"|rollupCreationBlockNumber = "0"|g' | \
+              sed 's|^rollupManagerCreationBlockNumber = ".*"|rollupManagerCreationBlockNumber = "0"|g' | \
+              sed 's|^genesisBlockNumber = ".*"|genesisBlockNumber = "0"|g' | \
+              sed 's|^InitialBlock = ".*"|InitialBlock = "0"|g' | \
+              sed 's|^RollupCreationBlockL1 = ".*"|RollupCreationBlockL1 = "0"|g' \
+              > "$SNAPSHOT_DIR/aggkit/config.toml"
+
+            # Patch contract addresses if we found them
+            if [ "$DEPLOYED_CONTRACTS_FOUND" = true ]; then
+                echo "  Patching aggkit config with actual deployed contract addresses..."
+
+                # Extract actual addresses from deployed contracts
+                GER_ADDR=$(jq -r '.polygonZkEVMGlobalExitRootAddress // .AgglayerGER // empty' "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null)
+                ROLLUP_MANAGER_ADDR=$(jq -r '.polygonRollupManagerAddress // .AgglayerManager // empty' "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null)
+                BRIDGE_ADDR=$(jq -r '.polygonZkEVMBridgeAddress // .AgglayerBridge // empty' "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null)
+                ROLLUP_ADDR=$(jq -r '.rollupAddress // .polygonZkEVMAddress // empty' "$TMP_DEPLOYED_CONTRACTS" 2>/dev/null)
+
+                # Patch config with actual addresses
+                if [ -n "$GER_ADDR" ]; then
+                    echo "    GlobalExitRoot: $GER_ADDR"
+                    sed -i "s|polygonZkEVMGlobalExitRootAddress = \".*\"|polygonZkEVMGlobalExitRootAddress = \"$GER_ADDR\"|g" "$SNAPSHOT_DIR/aggkit/config.toml"
+                fi
+                if [ -n "$ROLLUP_MANAGER_ADDR" ]; then
+                    echo "    RollupManager: $ROLLUP_MANAGER_ADDR"
+                    sed -i "s|polygonRollupManagerAddress = \".*\"|polygonRollupManagerAddress = \"$ROLLUP_MANAGER_ADDR\"|g" "$SNAPSHOT_DIR/aggkit/config.toml"
+                fi
+                if [ -n "$BRIDGE_ADDR" ]; then
+                    echo "    Bridge: $BRIDGE_ADDR"
+                    sed -i "s|polygonZkEVMBridgeAddress = \".*\"|polygonZkEVMBridgeAddress = \"$BRIDGE_ADDR\"|g" "$SNAPSHOT_DIR/aggkit/config.toml"
+                fi
+                if [ -n "$ROLLUP_ADDR" ]; then
+                    echo "    Rollup: $ROLLUP_ADDR"
+                    sed -i "s|rollupAddress = \".*\"|rollupAddress = \"$ROLLUP_ADDR\"|g" "$SNAPSHOT_DIR/aggkit/config.toml"
+                fi
+            else
+                echo "  ⚠️  WARNING: Using template contract addresses (actual addresses not found)"
+                echo "  This may cause aggkit to fail!"
+            fi
+        fi
+        echo "  ✅ Aggkit config extracted and patched for docker-compose"
+    fi
+    rm -rf "$TMP_AGGKIT_CONFIG"
+
+    # Download aggkit keystores from contracts service
+    # Extract keystores from contracts service directly to aggkit directory
+    for keystore in sequencer aggoracle sovereignadmin aggregator; do
+        kurtosis service exec "$ENCLAVE_NAME" contracts-001 "cat /opt/keystores/${keystore}.keystore" > "$SNAPSHOT_DIR/aggkit/${keystore}.keystore" 2>/dev/null
+        if [ -s "$SNAPSHOT_DIR/aggkit/${keystore}.keystore" ]; then
+            echo "  ✅ Extracted ${keystore}.keystore"
+        else
+            echo "  Warning: Could not extract ${keystore}.keystore"
+            rm -f "$SNAPSHOT_DIR/aggkit/${keystore}.keystore"
+        fi
+    done
+
+    # Extract wallets.json for addresses (with timeout)
+    timeout 5 kurtosis service exec "$ENCLAVE_NAME" contracts-001 "cat /opt/wallets.json" > "$SNAPSHOT_DIR/aggkit/wallets.json" 2>/dev/null || true
+    if [ -s "$SNAPSHOT_DIR/aggkit/wallets.json" ]; then
+        echo "  ✅ Extracted wallets.json"
+    else
+        echo "  Warning: Could not extract wallets.json (skipping)"
+        echo "{}" > "$SNAPSHOT_DIR/aggkit/wallets.json"
+    fi
+
+    # Save deployed contracts for reference
+    if [ "$DEPLOYED_CONTRACTS_FOUND" = true ]; then
+        cp "$TMP_DEPLOYED_CONTRACTS" "$SNAPSHOT_DIR/aggkit/deployed_contracts.json"
+        echo "  ✅ Saved deployed contract addresses to deployed_contracts.json"
+    else
+        echo "  ⚠️  WARNING: Could not extract deployed contract addresses"
+        echo "  Tried: /opt/combined.json, /opt/deploy_output.json, /opt/deployed_contracts.json"
+        echo "{}" > "$SNAPSHOT_DIR/aggkit/deployed_contracts.json"
+    fi
+    rm -f "$TMP_DEPLOYED_CONTRACTS"
+
+    echo "✅ Aggkit configuration extracted"
+else
+    echo "  No aggkit services found - skipping"
+fi
+echo ""
+
+# Extract agglayer configuration if present
+echo "Checking for agglayer services..."
+AGGLAYER_SVC="agglayer"
+if kurtosis service inspect "$ENCLAVE_NAME" "$AGGLAYER_SVC" &>/dev/null; then
+    echo "✅ Agglayer detected - extracting configuration"
+    mkdir -p "$SNAPSHOT_DIR/agglayer"
+
+    # Download agglayer config artifact
+    TMP_AGGLAYER_CONFIG="/tmp/kurtosis-agglayer-config-$$"
+    if kurtosis files download "$ENCLAVE_NAME" agglayer-config "$TMP_AGGLAYER_CONFIG" >/dev/null 2>&1; then
+        # Copy original config
+        cp "$TMP_AGGLAYER_CONFIG/config.toml" "$SNAPSHOT_DIR/agglayer/config.toml.template" 2>/dev/null || echo "Warning: agglayer config not found"
+        # Create docker-compose version with patched URLs and writable paths
+        if [ -f "$SNAPSHOT_DIR/agglayer/config.toml.template" ]; then
+            cat "$SNAPSHOT_DIR/agglayer/config.toml.template" | \
+              sed 's|node-url = ".*"|node-url = "http://geth:8545"|g' | \
+              sed 's|ws-node-url = ".*"|ws-node-url = "ws://geth:8546"|g' | \
+              sed 's|db-path = ".*"|db-path = "/tmp/agglayer/storage"|g' | \
+              sed '/\[storage\.backup\]/,/^$/ s|path = ".*"|path = "/tmp/agglayer/backups"|' | \
+              sed 's|{ path = "/etc/agglayer/aggregator.keystore"|{ path = "/config/aggregator.keystore"|g' \
+              > "$SNAPSHOT_DIR/agglayer/config.toml"
+        fi
+        # Copy aggregator keystore to agglayer directory
+        if [ -f "$SNAPSHOT_DIR/aggkit/aggregator.keystore" ]; then
+            cp "$SNAPSHOT_DIR/aggkit/aggregator.keystore" "$SNAPSHOT_DIR/agglayer/"
+        fi
+        echo "  ✅ Agglayer config extracted and patched for docker-compose"
+    fi
+    rm -rf "$TMP_AGGLAYER_CONFIG"
+
+    echo "✅ Agglayer configuration extracted"
+else
+    echo "  No agglayer services found - skipping"
 fi
 echo ""
 
