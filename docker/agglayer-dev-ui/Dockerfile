@@ -13,7 +13,8 @@ RUN apk add --no-cache git nodejs npm patch \
   && git checkout ${AGGLAYER_DEV_UI_TAG_OR_COMMIT_SHA} \
   && npm ci
 
-COPY entrypoint.sh .
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+  COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY appMode.ts.diff entrypoint.sh .
+RUN patch -p1 -i appMode.ts.diff
 
 ENTRYPOINT ["/bin/sh", "/opt/agglayer-dev-ui/entrypoint.sh"]
