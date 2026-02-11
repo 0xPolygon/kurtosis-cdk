@@ -34,7 +34,7 @@ def launch(
                 plan, args, contract_setup_addresses, l2_context
             )
             import_module("./bridge_hub/ui.star").run(
-                plan, args, contract_setup_addresses, l2_context, api_url
+                plan, args, contract_setup_addresses, l1_context, l2_context, api_url
             )
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
             import_module("./bridge_spammer.star").run(
