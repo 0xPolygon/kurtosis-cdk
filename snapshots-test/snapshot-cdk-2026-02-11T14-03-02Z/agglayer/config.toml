@@ -1,0 +1,95 @@
+debug-mode = true
+
+
+# Only supported by fork 12+
+mock-verifier = true
+
+
+[full-node-rpcs]
+# OP Stack RPC
+1 = "http://op-el-1-op-geth-op-node-001:8545"
+
+[proof-signers]
+1 = "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
+[prover.mock-prover]
+proving-timeout = "5m"
+proving_request_timeout = "300s"
+
+[rpc]
+grpc-port = 4443
+readrpc-port = 4444
+admin-port = 4446
+host = "0.0.0.0"
+request-timeout = 180
+# size is define in bytes e.g. 100 * 1024 * 1024
+# same for `max_response_body_size`
+# default value is equal to 10MB
+max-request-body-size = 104857600
+
+[grpc]
+# size is define in bytes e.g. 100 * 1024 * 1024
+# same for `max-encoding-message-size`
+# default value is equal to 4MB
+max-decoding-message-size = 104857600
+
+[outbound.rpc.settle]
+max-retries = 3
+retry-interval = 7
+confirmations = 1
+settlement-timeout = 1200
+gas-multiplier-factor = 175
+
+[log]
+# level = "info"
+level = "debug" # we want debug visibility for now
+outputs = ["stderr"]
+format = "pretty"
+
+[auth.local]
+private-keys = [
+    { path = "/config/aggregator.keystore", password = "pSnv6Dh5s9ahuzGzH9RoCDrKAMddaX3m" },
+]
+
+[l1]
+chain-id = 271828
+node-url = "http://geth:8545"
+ws-node-url = "ws://geth:8546"
+rollup-manager-contract = "0x6c6c009cC348976dB4A908c92B24433d4F6edA43"
+polygon-zkevm-global-exit-root-v2-contract = "0x1f7ad7caA53e35b4f0D138dC5CBF91aC108a2674"
+rpc-timeout = 45
+
+[l2]
+rpc-timeout = 45
+
+[telemetry]
+prometheus-addr = "0.0.0.0:9092"
+
+# https://github.com/orgs/agglayer/discussions/213
+
+[rate-limiting]
+send-tx = "unlimited"
+# [rate-limiting.send-tx]
+# max-per-interval = 1
+# time-interval = "15m"
+
+[rate-limiting.network]
+
+[epoch.block-clock]
+epoch-duration = 15
+genesis-block = 40
+
+[shutdown]
+runtime-timeout = 5
+
+[certificate-orchestrator]
+input-backpressure-buffer-size = 1000
+
+[certificate-orchestrator.prover.sp1-local]
+
+[storage]
+db-path = "/tmp/agglayer/storage"
+
+[storage.backup]
+path = "/tmp/agglayer/backups"
+state-max-backup-count = 100
+pending-max-backup-count = 100
