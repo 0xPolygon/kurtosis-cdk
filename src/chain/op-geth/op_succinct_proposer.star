@@ -2,9 +2,6 @@ constants = import_module("../../package_io/constants.star")
 
 
 # Port identifiers and numbers.
-GRPC_PORT_ID = "grpc"
-GRPC_PORT_NUMBER = 50051
-
 METRICS_PORT_ID = "prometheus"
 METRICS_PORT_NUMBER = 8080
 
@@ -23,11 +20,6 @@ def run(plan, args):
                     METRICS_PORT_NUMBER,
                     wait="60s",
                 ),
-                GRPC_PORT_ID: PortSpec(
-                    GRPC_PORT_NUMBER,
-                    application_protocol="grpc",
-                    wait="60s",
-                ),
             },
             env_vars={
                 "L1_RPC": args.get("l1_rpc_url"),
@@ -41,12 +33,6 @@ def run(plan, args):
                 "AGG_PROOF_MODE": args.get("op_succinct_agg_proof_mode"),
                 "L2OO_ADDRESS": args.get("rollup_address"),
                 "OP_SUCCINCT_MOCK": args.get("op_succinct_mock"),
-                "AGGLAYER": args.get(
-                    "op_succinct_agglayer"
-                ),  # agglayer/op-succinct specific.
-                "GRPC_ADDRESS": "0.0.0.0:{}".format(
-                    GRPC_PORT_NUMBER
-                ),  # agglayer/op-succinct specific.
                 "NETWORK_PRIVATE_KEY": args.get("sp1_prover_key"),
                 "MAX_CONCURRENT_PROOF_REQUESTS": args.get(
                     "op_succinct_max_concurrent_proof_requests"
@@ -54,6 +40,7 @@ def run(plan, args):
                 "MAX_CONCURRENT_WITNESS_GEN": args.get(
                     "op_succinct_max_concurrent_witness_gen"
                 ),
+                "SUBMISSION_INTERVAL": "999999999",
                 "RANGE_PROOF_INTERVAL": args.get("op_succinct_range_proof_interval"),
                 "DATABASE_URL": "postgres://op_succinct_user:op_succinct_password@postgres"
                 + args.get("deployment_suffix")
