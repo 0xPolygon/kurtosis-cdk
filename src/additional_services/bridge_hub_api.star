@@ -58,7 +58,7 @@ def run(plan, args, contract_setup_addresses, l2_context):
     run_l2_autoclaimer(plan, args, api_url, l2_context.rpc_url, l1_bridge_address)
 
     # Start the agglayer-dev-ui
-    run_agglayer_dev_ui(plan, args, api_url)
+    run_agglayer_dev_ui(plan, args, l2_context.rpc_url, api_url, l1_bridge_address)
 
 
 def run_mongodb(plan, args):
@@ -216,12 +216,39 @@ def _generate_new_funded_l2_wallet(plan, funder_private_key, l2_rpc_url):
     return wallet
 
 
-def run_agglayer_dev_ui(plan, args, api_url):
-    # The API URL is hardcoded inside the image. That's not ideal...
+def run_agglayer_dev_ui(plan, args, l2_rpc_url, api_url, l1_bridge_address):
+    config_artifact = plan.render_templates(
+        name="agglayer-dev-ui-config",
+        config={
+            "config.json": struct(
+                template=read_file(
+                    src="../../static_files/additional_services/bridge-hub/config.ts.tmpl",
+                ),
+                data={
+                    "network_name": NETWORK_NAME,
+                    # l1
+                    "l1_chain_id": args.get("l1_chain_id"),
+                    "l1_rpc_url": args.get("l1_rpc_url"),
+                    "l1_bridge_address": l1_bridge_address,
+                    # l2
+                    "l2_chain_id": args.get("l2_chain_id"),
+                    "l2_network_id": args.get("l2_network_id"),
+                    "l2_rpc_url": l2_rpc_url,
+                },
+            ),
+        },
+    )
+
     plan.add_service(
         name="agglayer-dev-ui",
         config=ServiceConfig(
             image=constants.DEFAULT_IMAGES.get("agglayer_dev_ui_image"),
+            files={
+                "/etc/agglayer-dev-ui": Directory(artifact_names=[config_artifact]),
+            },
+            env_vars={
+                "NEXT_PUBLIC_BRIDGE_HUB_API": api_url,
+            },
             ports={
                 AGGLAYER_DEV_UI_PORT_ID: PortSpec(
                     number=AGGLAYER_DEV_UI_PORT_NUMBER, application_protocol="http"

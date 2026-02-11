@@ -1,0 +1,79 @@
+import { katana, mainnet, sepolia } from 'wagmi/chains';
+import type { Chain } from 'wagmi/chains';
+import { ICONS } from '@/app/constants/icons';
+import { createChainEntry, toNonEmptyChainArray, toProofApiUrl } from '@/app/utils/config';
+import type { AppMode, AppModeConfig } from '@/app/types/appMode';
+import type { ChainEntry } from '@/app/types/config';
+
+export const customRpcUrls = {
+  // Example:
+  // 'eip155:1234': [{ url: 'https://rpc.example.org' }],
+};
+
+// Kurtosis L1
+const kurtosisL1Wagmi: Chain = {
+  id: {{.l1_chain_id}},
+  name: 'Kurtosis L1',
+  rpcUrls: {
+    default: { http: ['{{.l1_rpc_url}}']},
+  },
+  blockExplorers: {
+    default: { name: 'Kurtosis L1 Explorer', url: '' },
+  },
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+}
+
+const kurtosisL1 = createChainEntry({
+  wagmi: kurtosisL1Wagmi,
+  icon: ICONS.ethereum,
+  networkId: 0,
+  isTestnet: false,
+  eta: 180,
+});
+
+// Kurtosis L2 CDK 1
+const kurtosisL2_CDK1Wagmi: Chain = {
+  id: {{.l2_chain_id}},
+  name: 'Kurtosis L2 CDK 1',
+  rpcUrls: {
+    default: { http: ['{{.l2_rpc_url}}']},
+  },
+  blockExplorers: {
+    default: { name: 'Kurtosis L2 CDK 1 Explorer', url: '' },
+  },
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+};
+
+const kurtosisL2CDK1 = createChainEntry({
+  wagmi: kurtosisL2_CDK1Wagmi,
+  icon: ICONS.ethereum,
+  networkId: {{.l2_network_id}},
+  isTestnet: false,
+  eta: 180,
+});
+
+const CHAIN_REGISTRY: Record<string, ChainEntry> = {
+  kurtosisL1,
+  kurtosisL2CDK1,
+};
+
+export const ALL_WAGMI_CHAINS: readonly [Chain, ...Chain[]] = toNonEmptyChainArray(
+  Object.values(CHAIN_REGISTRY).map((entry) => entry.wagmi),
+);
+
+export const DEFAULT_APP_MODE: AppMode = '{{.network_name}}';
+
+export const APP_MODE_CONFIG: Record<AppMode, AppModeConfig> = {
+  {{.network_name}}: {
+    label: '{{.network_name}}',
+    bridgeAddress: '{{.l1_bridge_address}}',
+    proofApiUrl: toProofApiUrl('{{.network_name}}'),
+    chains: [kurtosisL1.app, kurtosisL2CDK1.app],
+  },
+};
+
+export const EXTERNAL_LINKS = Object.freeze({
+  PRIVACY_POLICY: 'https://polygon.technology/privacy-policy',
+  TERMS_OF_USE: 'https://polygon.technology/terms-of-use',
+  CONTACT_SUPPORT: 'https://support.polygon.technology/support/home',
+} as const);
