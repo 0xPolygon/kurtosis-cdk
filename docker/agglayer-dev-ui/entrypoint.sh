@@ -5,6 +5,11 @@
 # configurations via modified source files.
 AGGLAYER_DEV_UI_FOLDER_PATH="/opt/agglayer-dev-ui"
 
+# Create .env
+ENV_FILE_PATH="$AGGLAYER_DEV_UI_FOLDER_PATH/.env.local"
+echo "NEXT_PUBLIC_PROJECT_ID=agglayer-dev-ui" > $ENV_FILE_PATH
+echo "NEXT_PUBLIC_BRIDGE_HUB_API=$BRIDGE_HUB_API_URL" >> $ENV_FILE_PATH
+
 # Copy the custom chain configuration.
 rm $AGGLAYER_DEV_UI_FOLDER_PATH/app/config.ts
 mv /etc/agglayer-dev-ui/config.ts $AGGLAYER_DEV_UI_FOLDER_PATH/app/config.ts

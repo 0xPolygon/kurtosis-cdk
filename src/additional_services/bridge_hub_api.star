@@ -246,7 +246,7 @@ def run_agglayer_dev_ui(plan, args, l2_rpc_url, api_url, l1_bridge_address):
                 "/etc/agglayer-dev-ui": Directory(artifact_names=[config_artifact]),
             },
             env_vars={
-                "NEXT_PUBLIC_BRIDGE_HUB_API": api_url,
+                "BRIDGE_HUB_API_URL": api_url,
             },
             ports={
                 AGGLAYER_DEV_UI_PORT_ID: PortSpec(
