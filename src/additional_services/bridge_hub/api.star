@@ -189,6 +189,7 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address):
             image=constants.DEFAULT_IMAGES.get("bridge_hub_autoclaim_image"),
             env_vars={
                 "NODE_ENV": "production",
+                "NETWORK": NETWORK_NAME,
                 "BRIDGE_HUB_API_URL": api_url,
                 "SOURCE_NETWORKS": "[0, 1]",  # Claim for both L1 (0) and L2 (1) bridges
                 "DESTINATION_NETWORK_CHAINID": str(l2_chain_id),
