@@ -80,7 +80,7 @@ const kurtosisL1Wagmi: Chain = {
   id: {{.l1_chain_id}},
   name: 'Kurtosis L1',
   rpcUrls: {
-    default: { http: ['{{.l1_rpc_url}}']},
+    default: { http: [window.location.origin + '/l1rpc']},
   },
   blockExplorers: {
     default: { name: 'Kurtosis L1 Explorer', url: '' },
@@ -101,7 +101,7 @@ const kurtosisL2_CDK1Wagmi: Chain = {
   id: {{.l2_chain_id}},
   name: 'Kurtosis L2 CDK 1',
   rpcUrls: {
-    default: { http: ['{{.l2_rpc_url}}']},
+    default: { http: [window.location.origin + '/l2rpc']},
   },
   blockExplorers: {
     default: { name: 'Kurtosis L2 CDK 1 Explorer', url: '' },

@@ -30,13 +30,11 @@ def launch(
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
             import_module("./blutgang.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.bridge_hub_api:
-            import_module("./bridge_hub/launcher.star").run(
-                plan,
-                args,
-                contract_setup_addresses,
-                l1_context,
-                l2_context,
-                deployment_stages,
+            api_url = import_module("./bridge_hub/api.star").run(
+                plan, args, contract_setup_addresses, l2_context
+            )
+            import_module("./bridge_hub/ui.star").run(
+                plan, args, contract_setup_addresses, l2_context, api_url
             )
         elif svc == constants.ADDITIONAL_SERVICES.bridge_spammer:
             import_module("./bridge_spammer.star").run(
