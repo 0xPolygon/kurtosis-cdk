@@ -434,6 +434,7 @@ if kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" &>/dev/null; then
               sed 's|URLRPCL2 = ".*"|URLRPCL2 = "http://op-geth:8545"|g' | \
               sed 's|URLRPCL1 = ".*"|URLRPCL1 = "http://geth:8545"|g' | \
               sed 's|PathRWData = ".*"|PathRWData = "/tmp"|g' | \
+              sed 's|/etc/aggkit/|/config/|g' | \
               sed 's|^\([[:space:]]*\)URL = "http://el-[^"]*"|\1URL = "http://geth:8545"|g' | \
               sed 's|^\([[:space:]]*\)URL = "http://agglayer:[^"]*"|\1URL = "http://agglayer:9600"|g' | \
               sed 's|^rollupCreationBlockNumber = ".*"|rollupCreationBlockNumber = "1"|g' | \
