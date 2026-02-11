@@ -1,5 +1,5 @@
-constants = import_module("../package_io/constants.star")
-wallet_module = import_module("../wallet/wallet.star")
+constants = import_module("../../package_io/constants.star")
+wallet_module = import_module("../../wallet/wallet.star")
 
 NETWORK_NAME = "devnet"
 

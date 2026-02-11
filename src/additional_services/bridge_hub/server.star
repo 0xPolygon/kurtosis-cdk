@@ -1,3 +1,6 @@
+constants = import_module("../../package_io/constants.star")
+
+
 # Port identifiers and numbers.
 SERVER_PORT_ID = "http"
 SERVER_PORT_NUMBER = 80
@@ -10,7 +13,7 @@ def run(plan, args, contract_setup_addresses, l2_context, api_url):
         config={
             "config.ts": struct(
                 template=read_file(
-                    src="../../static_files/additional_services/bridge-hub/config.ts.tmpl",
+                    src="../../../static_files/additional_services/bridge-hub/server/config.ts.tmpl",
                 ),
                 data={
                     # l1
