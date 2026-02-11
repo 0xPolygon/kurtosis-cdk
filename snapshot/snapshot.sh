@@ -305,6 +305,16 @@ if kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" &>/dev/null; then
     echo "✅ Aggkit detected - extracting configuration"
     mkdir -p "$SNAPSHOT_DIR/aggkit"
 
+    # Extract aggkit image name
+    AGGKIT_IMAGE=$(kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" 2>/dev/null | grep "Image:" | awk '{print $2}')
+    if [ -n "$AGGKIT_IMAGE" ]; then
+        echo "  Aggkit image: $AGGKIT_IMAGE"
+        export AGGKIT_IMAGE
+    else
+        echo "  ⚠️  WARNING: Could not detect aggkit image, using default"
+        export AGGKIT_IMAGE="ghcr.io/agglayer/aggkit:0.8.0"
+    fi
+
     # Extract deployed contract addresses FIRST (needed for config patching)
     TMP_DEPLOYED_CONTRACTS="/tmp/kurtosis-deployed-$$"
     DEPLOYED_CONTRACTS_FOUND=false
