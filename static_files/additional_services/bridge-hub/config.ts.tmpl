@@ -61,13 +61,13 @@ export const ALL_WAGMI_CHAINS: readonly [Chain, ...Chain[]] = toNonEmptyChainArr
   Object.values(CHAIN_REGISTRY).map((entry) => entry.wagmi),
 );
 
-export const DEFAULT_APP_MODE: AppMode = '{{.network_name}}';
+export const DEFAULT_APP_MODE: AppMode = 'devnet';
 
 export const APP_MODE_CONFIG: Record<AppMode, AppModeConfig> = {
-  {{.network_name}}: {
-    label: '{{.network_name}}',
+  devnet: {
+    label: 'devnet',
     bridgeAddress: '{{.l1_bridge_address}}',
-    proofApiUrl: toProofApiUrl('{{.network_name}}'),
+    proofApiUrl: toProofApiUrl('devnet'),
     chains: [kurtosisL1.app, kurtosisL2CDK1.app],
   },
 };

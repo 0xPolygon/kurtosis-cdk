@@ -225,7 +225,6 @@ def run_agglayer_dev_ui(plan, args, l2_rpc_url, api_url, l1_bridge_address):
                     src="../../static_files/additional_services/bridge-hub/config.ts.tmpl",
                 ),
                 data={
-                    "network_name": NETWORK_NAME,
                     # l1
                     "l1_chain_id": args.get("l1_chain_id"),
                     "l1_rpc_url": args.get("l1_rpc_url"),
