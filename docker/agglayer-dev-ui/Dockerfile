@@ -13,9 +13,6 @@ RUN apk add --no-cache git nodejs npm patch \
   && git checkout ${AGGLAYER_DEV_UI_TAG_OR_COMMIT_SHA} \
   && npm ci
 
-COPY config.ts.diff entrypoint.sh ./
-RUN patch -p1 -i config.ts.diff
-
 COPY entrypoint.sh .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
