@@ -202,6 +202,100 @@ if ! python3 "$SCRIPT_DIR/tools/dump_to_alloc.py" \
 fi
 echo ""
 
+# Inject critical contracts that debug_dumpBlock might have missed
+echo "Injecting critical contracts into alloc..."
+CONTRACTS_SVC="contracts-001"
+if kurtosis service inspect "$ENCLAVE_NAME" "$CONTRACTS_SVC" &>/dev/null; then
+    TMP_CONTRACTS="/tmp/kurtosis-contracts-inject-$$"
+
+    # Try to get deployed contracts
+    for contracts_file in "/opt/agglayer-contracts/deployment/v2/deploy_output.json" "/opt/combined.json" "/opt/deploy_output.json" "/opt/deployed_contracts.json"; do
+        if timeout 5 kurtosis service exec "$ENCLAVE_NAME" contracts-001 "cat $contracts_file" > "$TMP_CONTRACTS" 2>/dev/null; then
+            if [ -s "$TMP_CONTRACTS" ] && jq empty "$TMP_CONTRACTS" 2>/dev/null; then
+                # Extract contract addresses
+                GER_ADDR=$(jq -r '.polygonZkEVMGlobalExitRootAddress // .AgglayerGER // empty' "$TMP_CONTRACTS" 2>/dev/null)
+                ROLLUP_MANAGER_ADDR=$(jq -r '.polygonRollupManagerAddress // .AgglayerManager // empty' "$TMP_CONTRACTS" 2>/dev/null)
+                BRIDGE_ADDR=$(jq -r '.polygonZkEVMBridgeAddress // .AgglayerBridge // empty' "$TMP_CONTRACTS" 2>/dev/null)
+                ROLLUP_ADDR=$(jq -r '.rollupAddress // .polygonZkEVMAddress // empty' "$TMP_CONTRACTS" 2>/dev/null)
+
+                # Inject each contract into alloc if missing
+                for addr_var in GER_ADDR ROLLUP_MANAGER_ADDR BRIDGE_ADDR ROLLUP_ADDR; do
+                    addr="${!addr_var}"
+                    if [ -n "$addr" ] && [ "$addr" != "null" ]; then
+                        addr_lower=$(echo "$addr" | tr '[:upper:]' '[:lower:]')
+
+                        # Check if already in alloc
+                        if ! jq -e ".\"$addr_lower\"" "$SNAPSHOT_DIR/el/alloc.json" >/dev/null 2>&1; then
+                            echo "  Injecting $addr_var: $addr"
+
+                            # Get code
+                            CODE=$(cast code --rpc-url "$GETH_PORT" "$addr" 2>/dev/null || echo "0x")
+                            # Get balance
+                            BALANCE=$(cast balance --rpc-url "$GETH_PORT" "$addr" 2>/dev/null || echo "0")
+                            # Get nonce
+                            NONCE=$(cast nonce --rpc-url "$GETH_PORT" "$addr" 2>/dev/null || echo "0")
+
+                            # Add to alloc with storage
+                            if [ "$CODE" != "0x" ] && [ -n "$CODE" ]; then
+                                echo -n "    Scanning storage slots..."
+
+                                # Build storage object by scanning slots 0-99 and EIP-1967 proxy slots
+                                STORAGE_JSON="{}"
+
+                                # Scan regular slots 0-99
+                                for slot_num in $(seq 0 99); do
+                                    slot=$(printf "0x%x" $slot_num)
+                                    value=$(cast storage --rpc-url "$GETH_PORT" "$addr" "$slot" 2>/dev/null || echo "0x0000000000000000000000000000000000000000000000000000000000000000")
+
+                                    if [ "$value" != "0x0000000000000000000000000000000000000000000000000000000000000000" ] && [ "$value" != "0x" ]; then
+                                        # Pad slot to 32 bytes for alloc format
+                                        slot_padded=$(printf "0x%064x" $slot_num)
+                                        STORAGE_JSON=$(echo "$STORAGE_JSON" | jq --arg slot "$slot_padded" --arg val "$value" '.[$slot] = $val')
+                                    fi
+                                done
+
+                                # Add EIP-1967 proxy slots
+                                IMPL_SLOT="0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+                                ADMIN_SLOT="0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"
+
+                                for proxy_slot in "$IMPL_SLOT" "$ADMIN_SLOT"; do
+                                    value=$(cast storage --rpc-url "$GETH_PORT" "$addr" "$proxy_slot" 2>/dev/null || echo "0x0000000000000000000000000000000000000000000000000000000000000000")
+                                    if [ "$value" != "0x0000000000000000000000000000000000000000000000000000000000000000" ] && [ "$value" != "0x" ]; then
+                                        STORAGE_JSON=$(echo "$STORAGE_JSON" | jq --arg slot "$proxy_slot" --arg val "$value" '.[$slot] = $val')
+                                    fi
+                                done
+
+                                STORAGE_SLOTS=$(echo "$STORAGE_JSON" | jq 'keys | length')
+                                echo " found $STORAGE_SLOTS non-zero slots"
+
+                                # Add to alloc with storage
+                                jq --arg addr "$addr_lower" \
+                                   --arg code "$CODE" \
+                                   --arg balance "$BALANCE" \
+                                   --argjson nonce "$NONCE" \
+                                   --argjson storage "$STORAGE_JSON" \
+                                   '.[$addr] = {code: $code, balance: $balance, nonce: $nonce, storage: $storage}' \
+                                   "$SNAPSHOT_DIR/el/alloc.json" > "$SNAPSHOT_DIR/el/alloc.json.tmp"
+                                mv "$SNAPSHOT_DIR/el/alloc.json.tmp" "$SNAPSHOT_DIR/el/alloc.json"
+
+                                echo "    ✅ Injected with code (${#CODE} bytes) and $STORAGE_SLOTS storage slots"
+                            else
+                                echo "    ⚠️  No code found, skipping"
+                            fi
+                        fi
+                    fi
+                done
+
+                rm -f "$TMP_CONTRACTS"
+                break
+            fi
+        fi
+    done
+else
+    echo "  No contracts service found - skipping contract injection"
+fi
+echo ""
+
 # Create genesis template
 echo "Creating genesis template..."
 if ! bash "$SCRIPT_DIR/scripts/create_genesis_template.sh" \
@@ -305,15 +399,9 @@ if kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" &>/dev/null; then
     echo "✅ Aggkit detected - extracting configuration"
     mkdir -p "$SNAPSHOT_DIR/aggkit"
 
-    # Extract aggkit image name
-    AGGKIT_IMAGE=$(kurtosis service inspect "$ENCLAVE_NAME" "$AGGKIT_SVC" 2>/dev/null | grep "Image:" | awk '{print $2}')
-    if [ -n "$AGGKIT_IMAGE" ]; then
-        echo "  Aggkit image: $AGGKIT_IMAGE"
-        export AGGKIT_IMAGE
-    else
-        echo "  ⚠️  WARNING: Could not detect aggkit image, using default"
-        export AGGKIT_IMAGE="ghcr.io/agglayer/aggkit:0.8.0"
-    fi
+    # Use aggkit:local for snapshots (has bug fixes for contract sanity checks)
+    export AGGKIT_IMAGE="aggkit:local"
+    echo "  Aggkit image: $AGGKIT_IMAGE"
 
     # Extract deployed contract addresses FIRST (needed for config patching)
     TMP_DEPLOYED_CONTRACTS="/tmp/kurtosis-deployed-$$"

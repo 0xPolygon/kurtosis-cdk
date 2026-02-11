@@ -424,8 +424,8 @@ fi
 
 # Add aggkit services if configuration exists
 if [ "$HAS_AGGKIT" = true ]; then
-    # Use AGGKIT_IMAGE from environment or default
-    AGGKIT_IMAGE_TO_USE="${AGGKIT_IMAGE:-ghcr.io/agglayer/aggkit:0.8.0}"
+    # Use AGGKIT_IMAGE from environment or default to aggkit:local
+    AGGKIT_IMAGE_TO_USE="${AGGKIT_IMAGE:-aggkit:local}"
 
     cat >> "$OUTPUT_DIR/docker-compose.yml" <<COMPOSE_AGGKIT
 

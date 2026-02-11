@@ -373,7 +373,7 @@ services:
       - snapshot-net
 
   aggkit:
-    image: ghcr.io/agglayer/aggkit:0.9.0-rc2
+    image: aggkit:local
     container_name: snapshot-aggkit
     depends_on:
       geth:
