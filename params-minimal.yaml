@@ -1,0 +1,55 @@
+# Minimal CDK Configuration
+# This configuration minimizes L1 transactions by:
+# 1. Disabling OP Batcher (saves ~950 txs)
+# 2. Disabling OP Proposer (saves ~20 txs)
+# 3. Disabling Bridge Spammer (saves ~180 txs)
+# 4. Disabling other test services
+#
+# Expected L1 transactions: ~76 (contract deployments + admin setup only)
+
+args:
+  # Disable all additional test services
+  additional_services: []
+
+  # Pessimistic mode configuration (L2-only, no L1 submission)
+  op_args:
+    chains:
+      "001":
+        # Network configuration
+        network_params:
+          network_id: 2151908
+          seconds_per_slot: 1
+          isthmus_time_offset: 0
+
+        # Single sequencer participant
+        participants:
+          sequencer1:
+            el:
+              type: "op-geth"
+            cl:
+              type: "op-node"
+            sequencer: true
+
+        # DISABLE BATCHER - No L2 batch submissions to L1
+        # Comment this out to re-enable batcher
+        batcher_params: null
+
+        # DISABLE PROPOSER - No L2 output proposals to L1
+        # Comment this out to re-enable proposer
+        proposer_params: null
+
+    # Contract deployer configuration (required)
+    op_contract_deployer_params: {}
+
+    # Disable observability (optional)
+    observability:
+      enabled: false
+
+  # Optional: Disable AggLayer if you don't need it
+  # This will save the ~337 aggregator transactions
+  # Uncomment the following line to disable:
+  # deploy_agglayer: false
+
+  # Optional: Disable CDK bridge infrastructure if not needed
+  # Uncomment to disable:
+  # deploy_cdk_bridge_infra: false
