@@ -1,0 +1,10 @@
+diff --git a/app/utils/config.ts b/app/utils/config.ts
+index 7d43551..9a1ad5f 100644
+--- a/app/utils/config.ts
++++ b/app/utils/config.ts
+@@ -32,4 +32,4 @@ export const toNonEmptyChainArray = (chains: Chain[]): readonly [Chain, ...Chain
+   return [first, ...rest];
+ };
+ 
+-export const toProofApiUrl = (mode: AppMode): string => `${BRIDGE_HUB_API_BASE_URL}/${mode}/`;
++export const toProofApiUrl = (mode: AppMode): string => window.location.origin + `${BRIDGE_HUB_API_BASE_URL}/${mode}/`;
