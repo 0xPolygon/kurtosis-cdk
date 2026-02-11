@@ -1,7 +1,7 @@
 constants = import_module("../package_io/constants.star")
 wallet_module = import_module("../wallet/wallet.star")
 
-NETWORK_NAME = "mainnet"
+NETWORK_NAME = "devnet"
 
 MONGODB_DB_NAME = "bridge-hub"
 MONGODB_ROOT_USER = "user"
