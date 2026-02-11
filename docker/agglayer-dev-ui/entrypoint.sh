@@ -16,7 +16,7 @@ npm run build
 
 # Copy the build artifacts to nginx's web root.
 # This makes the built static files available for nginx to serve.
-cp -r $AGGLAYER_DEV_UI_FOLDER_PATH/app/dist/. /usr/share/nginx/html
+cp -r $AGGLAYER_DEV_UI_FOLDER_PATH/out/. /usr/share/nginx/html
 
 # Start nginx in the foreground.
 # The 'daemon off' directive keeps nginx running as the main process,
