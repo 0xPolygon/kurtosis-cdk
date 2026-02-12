@@ -16,7 +16,7 @@ mv /etc/agglayer-dev-ui/config.ts $AGGLAYER_DEV_UI_FOLDER_PATH/app/config.ts
 
 # Build the application from source.
 # The source code is mounted/copied into /app during the docker build.
-cd $AGGLAYER_DEV_UI_FOLDER_PATH
+cd $AGGLAYER_DEV_UI_FOLDER_PATH || exit
 npm run build
 
 # Copy the build artifacts to nginx's web root.
