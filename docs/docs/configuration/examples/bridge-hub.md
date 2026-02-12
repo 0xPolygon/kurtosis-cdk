@@ -92,11 +92,11 @@ Step 5: Verify completion
 
 If MetaMask can't fetch the chain ID, the RPC URL is likely outdated.
 
-![step-1](/img/rpc-issue/1.png)
+![step-1](/img/bridge-hub/rpc-issue/1.png)
 
 Delete the outdated RPC URLs.
 - Open MetaMask settings
 - Navigate to Networks
 - Delete the outdated "Kurtosis L1" and "Kurtosis L2" networks
 
-![step-2](/img/rpc-issue/2.png)
+![step-2](/img/bridge-hub/rpc-issue/2.png)
