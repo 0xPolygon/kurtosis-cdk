@@ -6,7 +6,7 @@ sidebar_position: 4
 
 ## Introduction
 
-This configuration deploys the default [CDK OP Geth](./cdk-opgeth.md) setup enhanced with the Bridge Hub API and its dedicated UI, providing a user-friendly browser interface for bridging assets between L1 and L2.
+This configuration deploys the default [CDK OP Geth](./cdk-opgeth.md) setup enhanced with the [bridge hub API](https://github.com/agglayer/agglayer-bridge-hub-api) and its dedicated UI, called [Agglayer dev UI](https://github.com/agglayer/agglayer-dev-ui), providing a user-friendly browser interface for bridging assets between L1 and L2.
 
 ### What's Deployed?
 
