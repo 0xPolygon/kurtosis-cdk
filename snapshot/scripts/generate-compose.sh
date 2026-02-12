@@ -180,7 +180,7 @@ services:
       - "--validators-dir=/validator-keys/keys"
       - "--secrets-dir=/validator-keys/secrets"
       - "--beacon-nodes=http://beacon:4000"
-      - "--beacon-nodes-sync-tolerances=1000,100,200"
+      - "--beacon-nodes-sync-tolerances=999999999,999999999,999999999"
       - "--suggested-fee-recipient=0x0000000000000000000000000000000000000000"
       - "--metrics"
       - "--metrics-address=0.0.0.0"
