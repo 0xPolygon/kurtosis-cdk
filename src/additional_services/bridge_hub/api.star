@@ -189,8 +189,10 @@ def run_l2_autoclaimer(plan, args, api_url, l2_rpc_url, l1_bridge_address):
             image=constants.DEFAULT_IMAGES.get("bridge_hub_autoclaim_image"),
             env_vars={
                 "NODE_ENV": "production",
-                "NETWORK": NETWORK_NAME,
-                "BRIDGE_HUB_API_URL": api_url,
+                # The collection needs to be included in the url because the autoclaimer makes call without adding any collection prefix.
+                # - https://github.com/agglayer/agglayer-bridge-hub-api/blob/623048aa24097e8b052abbb136a61e799dddf812/packages/auto-claim/src/services/transaction.ts#L31
+                # - https://github.com/agglayer/agglayer-bridge-hub-api/blob/623048aa24097e8b052abbb136a61e799dddf812/packages/auto-claim/src/services/transaction.ts#L80
+                "BRIDGE_HUB_API_URL": "{}/{}".format(api_url, NETWORK_NAME),
                 "SOURCE_NETWORKS": "[0, 1]",  # Claim for both L1 (0) and L2 (1) bridges
                 "DESTINATION_NETWORK_CHAINID": str(l2_chain_id),
                 "DESTINATION_NETWORK": str(l2_network_id),
