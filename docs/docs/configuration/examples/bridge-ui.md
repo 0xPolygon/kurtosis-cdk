@@ -2,7 +2,7 @@
 sidebar_position: 4
 ---
 
-# Bridge Hub
+# Bridge UI
 
 ## Introduction
 
@@ -29,7 +29,7 @@ This configuration deploys the default [CDK OP Geth](./cdk-opgeth.md) setup enha
 ```yaml title="params.yml"
 args:
   additional_services:
-    - bridge_hub
+    - bridge_ui
 ```
 
 To deploy this environment:
@@ -46,14 +46,12 @@ kurtosis port print pos agglayer-dev-ui-proxy-001 http
 
 Open the printed URL in your browser to access the interface and start bridging assets between L1 and L2.
 
-## Bridge UI
-
-### How to Bridge
+## How to Bridge
 
 The following example demonstrates bridging assets from L1 to L2. The process for bridging from L2 to L1 follows the same steps.
 
 :::warning  
-If you've redeployed the environment, MetaMask may have cached outdated RPC URLs. Delete the old network configurations and add the new ones before proceeding.  
+If you've redeployed the environment, MetaMask may have cached outdated RPC URLs. [Delete the old network configurations](#how-to-refresh-the-rpcs) and add the new ones before proceeding.  
 :::
 
 Step 1: Initiate the bridge
@@ -61,42 +59,42 @@ Step 1: Initiate the bridge
 - Enter the amount of ether to bridge
 - Click the "Bridge" button
 
-![step-1](/img/bridge-hub/bridge/1.png)
+![step-1](/img/bridge-ui/bridge/1.png)
 
 Step 2: Add network to MetaMask
 - When prompted, review the "Kurtosis L1" network details in MetaMask
 - Click "Confirm" to add the network
 
-![step-2](/img/bridge-hub/bridge/2.png)
+![step-2](/img/bridge-ui/bridge/2.png)
 
 Step 3: Confirm the transaction
 - Review the bridge transaction details in MetaMask
 - Verify the amount and destination
 - Click "Confirm" to execute the transaction
 
-![step-3](/img/bridge-hub/bridge/3.png)
+![step-3](/img/bridge-ui/bridge/3.png)
 
 Step 4: Transaction processing
 - Wait for the transaction confirmation
 - If the transaction fails, retry the operation
 - For persistent failures, check the bridge-hub service logs for errors
 
-![step-4](/img/bridge-hub/bridge/4.png)
+![step-4](/img/bridge-ui/bridge/4.png)
 
 Step 5: Verify completion
 - Monitor your transaction status in the interface
 
-![step-5](/img/bridge-hub/bridge/5.png)
+![step-5](/img/bridge-ui/bridge/5.png)
 
-### How to refresh the RPCs
+## How to refresh the RPCs
 
 If MetaMask can't fetch the chain ID, the RPC URL is likely outdated.
 
-![step-1](/img/bridge-hub/rpc-issue/1.png)
+![step-1](/img/bridge-ui/rpc-issue/1.png)
 
 Delete the outdated RPC URLs.
 - Open MetaMask settings
 - Navigate to Networks
 - Delete the outdated "Kurtosis L1" and "Kurtosis L2" networks
 
-![step-2](/img/bridge-hub/rpc-issue/2.png)
+![step-2](/img/bridge-ui/rpc-issue/2.png)

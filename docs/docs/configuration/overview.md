@@ -44,6 +44,6 @@ Optimized for customization and zk security, it provides native token support, c
 
 Deploy the default stack with debugging and observability tools.
 
-### [Bridge Hub](./examples/bridge-hub.md)
+### [Bridge UI](./examples/bridge-ui.md)
 
 Deploy the [bridge hub API](https://github.com/agglayer/agglayer-bridge-hub-api) and its [dedicated UI](https://github.com/agglayer/agglayer-dev-ui) to easily bridge funds from L1 to L2, and vice-versa in, the browser.

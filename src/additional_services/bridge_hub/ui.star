@@ -26,7 +26,7 @@ def run_server(plan, args, contract_setup_addresses):
         config={
             "config.ts": struct(
                 template=read_file(
-                    src="../../../static_files/additional_services/bridge-hub/config.ts.tmpl",
+                    src="../../../static_files/additional_services/bridge-ui/config.ts.tmpl",
                 ),
                 data={
                     # l1
@@ -69,7 +69,7 @@ def run_proxy(
         config={
             "haproxy.cfg": struct(
                 template=read_file(
-                    src="../../../static_files/additional_services/bridge-hub/haproxy.cfg"
+                    src="../../../static_files/additional_services/bridge-ui/haproxy.cfg"
                 ),
                 data={
                     "l1_rpc_url": l1_rpc_url.removeprefix("http://"),
