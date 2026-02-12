@@ -30,7 +30,7 @@ This is in the case you deployed a heimdall/bor devnet, otherwise you may need t
 
 ### How to send a transaction to the network?
 
-You can use [cast](https://book.getfoundry.sh/reference/cast/cast-send):
+You can use [cast](https://www.getfoundry.sh/reference/cast/send):
 
 ```bash
 export ETH_RPC_URL=$(kurtosis port print cdk op-el-1-op-geth-op-node-001 rpc)
