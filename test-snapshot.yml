@@ -1,0 +1,26 @@
+args:
+  sequencer_type: op-geth
+  consensus_contract_type: ecdsa-multisig
+  aggkit_image: ghcr.io/agglayer/aggkit:0.8.0
+
+  # aggsender-validator related params (required for aggkit 0.8.0)
+  use_agg_sender_validator: True
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # Disable Electra to avoid engine_forkchoiceUpdatedV4 (Geth 1.16.8 doesn't support it)
+  ethereum_package:
+    network_params:
+      electra_fork_epoch: 18446744073709551615
+
+  # Override additional_services to exclude bridge_spammer
+  additional_services:
+    - agglogger
+
+  optimism_package:
+    chains:
+      "001":
+        proposer_params:
+          enabled: false  # ✅ No state root proposals
+        batcher_params:
+          max_channel_duration: 999999  # ✅ Delays batching ~11 days

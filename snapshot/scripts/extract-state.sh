@@ -38,6 +38,7 @@ if [ ! -f "$DISCOVERY_JSON" ]; then
     exit 1
 fi
 
+ENCLAVE_NAME=$(jq -r '.enclave_name' "$DISCOVERY_JSON")
 GETH_CONTAINER=$(jq -r '.geth.container_name' "$DISCOVERY_JSON")
 BEACON_CONTAINER=$(jq -r '.beacon.container_name' "$DISCOVERY_JSON")
 VALIDATOR_CONTAINER=$(jq -r '.validator.container_name' "$DISCOVERY_JSON")
@@ -74,7 +75,80 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 fi
 
 # ============================================================================
-# STEP 1: Stop containers gracefully
+# STEP 1: Extract Lighthouse Checkpoint State (BEFORE stopping)
+# ============================================================================
+
+log "Extracting Lighthouse checkpoint state..."
+
+# Get beacon container's beacon API port
+BEACON_PORT=$(docker port "$BEACON_CONTAINER" 4000 | cut -d: -f2)
+
+if [ -z "$BEACON_PORT" ]; then
+    log "ERROR: Could not find beacon API port"
+    exit 1
+fi
+
+BEACON_API="http://localhost:$BEACON_PORT"
+
+# Get finalized checkpoint info
+log "  Querying finalized checkpoint..."
+FINALIZED_DATA=$(curl -s "$BEACON_API/eth/v1/beacon/states/finalized/finality_checkpoints")
+
+if [ -z "$FINALIZED_DATA" ] || echo "$FINALIZED_DATA" | grep -q "error"; then
+    log "ERROR: Failed to query finalized checkpoint"
+    exit 1
+fi
+
+FINALIZED_EPOCH=$(echo "$FINALIZED_DATA" | jq -r '.data.finalized.epoch')
+FINALIZED_ROOT=$(echo "$FINALIZED_DATA" | jq -r '.data.finalized.root')
+
+log "  Finalized epoch: $FINALIZED_EPOCH"
+log "  Finalized root: $FINALIZED_ROOT"
+
+# Get finalized state slot (needed for genesis time patching)
+log "  Querying finalized state slot..."
+FINALIZED_HEADER=$(curl -s "$BEACON_API/eth/v1/beacon/headers/finalized")
+FINALIZED_SLOT=$(echo "$FINALIZED_HEADER" | jq -r '.data.header.message.slot // .data.slot // "0"')
+
+log "  Finalized slot: $FINALIZED_SLOT"
+
+# Download finalized state SSZ
+log "  Downloading checkpoint state SSZ..."
+curl -s "$BEACON_API/eth/v2/debug/beacon/states/finalized" \
+    -H "Accept: application/octet-stream" \
+    -o "$OUTPUT_DIR/datadirs/checkpoint_state.ssz"
+
+if [ ! -f "$OUTPUT_DIR/datadirs/checkpoint_state.ssz" ]; then
+    log "ERROR: Failed to download checkpoint state"
+    exit 1
+fi
+
+# Download finalized block SSZ
+log "  Downloading checkpoint block SSZ..."
+curl -s "$BEACON_API/eth/v2/beacon/blocks/$FINALIZED_ROOT" \
+    -H "Accept: application/octet-stream" \
+    -o "$OUTPUT_DIR/datadirs/checkpoint_block.ssz"
+
+if [ ! -f "$OUTPUT_DIR/datadirs/checkpoint_block.ssz" ]; then
+    log "ERROR: Failed to download checkpoint block"
+    exit 1
+fi
+
+# Save checkpoint metadata
+cat > "$OUTPUT_DIR/datadirs/checkpoint_metadata.json" << EOF
+{
+    "finalized_epoch": "$FINALIZED_EPOCH",
+    "finalized_slot": "$FINALIZED_SLOT",
+    "finalized_root": "$FINALIZED_ROOT",
+    "snapshot_time": "$(date -u +%s)"
+}
+EOF
+
+log "  Checkpoint state extracted: $(du -h "$OUTPUT_DIR/datadirs/checkpoint_state.ssz" | cut -f1)"
+log "  Checkpoint block extracted: $(du -h "$OUTPUT_DIR/datadirs/checkpoint_block.ssz" | cut -f1)"
+
+# ============================================================================
+# STEP 2: Stop containers gracefully
 # ============================================================================
 
 log "Stopping containers gracefully..."
@@ -154,33 +228,7 @@ else
 fi
 
 # ============================================================================
-# STEP 4: Extract Lighthouse Beacon datadir
-# ============================================================================
-
-log "Extracting Lighthouse beacon datadir..."
-
-BEACON_DATADIR="/data/lighthouse/beacon-data"
-BEACON_TAR="$OUTPUT_DIR/datadirs/lighthouse_beacon.tar"
-
-log "  Source: $BEACON_DATADIR"
-log "  Target: $BEACON_TAR"
-
-docker cp "$BEACON_CONTAINER:$BEACON_DATADIR" "$OUTPUT_DIR/datadirs/beacon-data"
-
-# Create tarball
-tar -czf "$BEACON_TAR" -C "$OUTPUT_DIR/datadirs" beacon-data
-rm -rf "$OUTPUT_DIR/datadirs/beacon-data"
-
-if [ -f "$BEACON_TAR" ]; then
-    size=$(du -h "$BEACON_TAR" | cut -f1)
-    log "  Beacon datadir extracted: $size"
-else
-    log "ERROR: Failed to extract Beacon datadir"
-    exit 1
-fi
-
-# ============================================================================
-# STEP 5: Extract Lighthouse Validator datadir
+# STEP 4: Extract Lighthouse Validator datadir
 # ============================================================================
 
 log "Extracting Lighthouse validator datadir..."
@@ -424,6 +472,17 @@ docker cp "$GETH_CONTAINER:/jwt/jwtsecret" "$OUTPUT_DIR/artifacts/jwt.hex" 2>/de
 # Extract beacon chain spec if available
 log "  Extracting beacon chain spec..."
 docker cp "$BEACON_CONTAINER:/network-configs/config.yaml" "$OUTPUT_DIR/artifacts/chain-spec.yaml" 2>/dev/null || log "  chain-spec.yaml not found"
+
+# Extract genesis.ssz from Kurtosis artifact
+log "  Extracting genesis.ssz from Kurtosis artifact..."
+kurtosis files download "$ENCLAVE_NAME" el_cl_genesis_data "$OUTPUT_DIR/artifacts/genesis-artifact" 2>/dev/null || log "  WARNING: Could not download el_cl_genesis_data artifact"
+if [ -f "$OUTPUT_DIR/artifacts/genesis-artifact/genesis.ssz" ]; then
+    cp "$OUTPUT_DIR/artifacts/genesis-artifact/genesis.ssz" "$OUTPUT_DIR/artifacts/genesis.ssz"
+    rm -rf "$OUTPUT_DIR/artifacts/genesis-artifact"
+    log "  genesis.ssz extracted successfully"
+else
+    log "  WARNING: genesis.ssz not found in artifact"
+fi
 
 # Extract validator definitions if available
 log "  Extracting validator definitions..."
