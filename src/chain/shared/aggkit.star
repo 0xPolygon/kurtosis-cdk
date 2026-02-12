@@ -98,13 +98,16 @@ def run(
     )
 
     # Deploy core aggkit services
-    _deploy_core_aggkit_services(plan, args, deployment_context)
+    bridge_service = _deploy_core_aggkit_services(plan, args, deployment_context)
+    bridge_url = bridge_service.ports["rest"].url
 
     # Deploy committee members if needed
     _deploy_committee_members_if_needed(plan, args, deployment_context)
 
     # Deploy validator services if needed
     _deploy_validator_services_if_needed(plan, args, deployment_context)
+
+    return bridge_url
 
 
 def _deploy_op_succinct_if_needed(
@@ -160,7 +163,7 @@ def _deploy_core_aggkit_services(plan, args, deployment_context):
     _deploy_main_aggkit_service(plan, args, deployment_context)
 
     # Create bridge service with inline config
-    _deploy_bridge_service(plan, args, deployment_context)
+    return _deploy_bridge_service(plan, args, deployment_context)
 
 
 def _deploy_main_aggkit_service(plan, args, deployment_context):
@@ -268,7 +271,7 @@ def _deploy_bridge_service(plan, args, deployment_context):
         ],
     )
 
-    plan.add_service(name=service_name, config=service_config)
+    return plan.add_service(name=service_name, config=service_config)
 
 
 def _deploy_committee_members_if_needed(plan, args, deployment_context):

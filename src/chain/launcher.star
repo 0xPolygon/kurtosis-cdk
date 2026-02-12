@@ -43,6 +43,7 @@ def launch(
             )
         )
     rpc_url = context.rpc_url
+    aggkit_bridge_url = context.aggkit_bridge_url
 
     # zkevm-bridge-service, bridge-ui and bridge-proxy
     zkevm_bridge_service_url = None
@@ -57,6 +58,8 @@ def launch(
 
     # Return L2 context
     return struct(
-        zkevm_bridge_service_url=zkevm_bridge_service_url,
         rpc_url=rpc_url,
+        # bridge urls
+        aggkit_bridge_url=aggkit_bridge_url,
+        zkevm_bridge_service_url=zkevm_bridge_service_url,
     )

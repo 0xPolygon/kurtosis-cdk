@@ -4,6 +4,7 @@ ADDITIONAL_SERVICES = struct(
     assertoor="assertoor",
     blockscout="blockscout",
     blutgang="blutgang",
+    bridge_ui="bridge_ui",
     bridge_spammer="bridge_spammer",
     erpc="erpc",
     observability="observability",
@@ -97,8 +98,12 @@ DEFAULT_IMAGES = {
     "aggkit_prover_image": "ghcr.io/agglayer/aggkit-prover:1.9.2",
     "agglayer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer:0.4.4-remove-agglayer-prover",
     "agglayer_contracts_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-contracts:v12.2.2",
+    "agglayer_dev_ui_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglayer-dev-ui:844bfbc",
     "agglogger_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/agglogger:bf1f8c1",
     "anvil_image": "ghcr.io/foundry-rs/foundry:v1.4.3",
+    "bridge_hub_api_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-api:2a71905",
+    "bridge_hub_consumer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-consumer:2a71905",
+    "bridge_hub_autoclaim_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/bridge-hub-autoclaim:2a71905",
     "cdk_erigon_image": "ghcr.io/0xpolygon/cdk-erigon:v2.61.24",
     # Type 1 cdk-erigon sovereign image.
     # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
@@ -106,6 +111,7 @@ DEFAULT_IMAGES = {
     "cdk_erigon_sovereign_image": "ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC2",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "db_image": "postgres:17.6",
+    "mongodb_image": "mongo:7.0.29",
     "geth_image": "ethereum/client-go:v1.16.8",
     "lighthouse_image": "sigp/lighthouse:v8.1.0",
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",

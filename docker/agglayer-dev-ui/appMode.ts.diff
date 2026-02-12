@@ -1,0 +1,11 @@
+diff --git a/app/utils/appMode.ts b/app/utils/appMode.ts
+index 9e3af6c..faac17a 100644
+--- a/app/utils/appMode.ts
++++ b/app/utils/appMode.ts
+@@ -9,5 +9,5 @@ export const isEnabledModeConfig = (config: AppModeConfig): config is EnabledApp
+ export const getEnabledModes = (): AppMode[] => APP_MODES.filter((mode) => isEnabledModeConfig(APP_MODE_CONFIG[mode]));
+ 
+ export const getBridgeHubApiBaseUrl = (mode: AppMode): string => {
+-  return `${BRIDGE_HUB_API_BASE_URL}/${mode}`;
++  return (typeof window !== 'undefined' ? window.location.origin : '') + `${BRIDGE_HUB_API_BASE_URL}/${mode}`;
+ };
