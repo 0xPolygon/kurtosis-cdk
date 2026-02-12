@@ -132,27 +132,7 @@ services:
     image: snapshot-beacon:$TAG
     container_name: $SNAPSHOT_ID-beacon
     hostname: beacon
-    command:
-      - "lighthouse"
-      - "beacon_node"
-      - "--testnet-dir=/network-configs"
-      - "--datadir=/data/lighthouse/beacon-data"
-      - "--http"
-      - "--http-address=0.0.0.0"
-      - "--http-port=4000"
-      - "--execution-endpoint=http://geth:8551"
-      - "--execution-jwt=/jwt/jwtsecret"
-      - "--port=9000"
-      - "--discovery-port=9000"
-      - "--target-peers=0"
-      - "--disable-peer-scoring"
-      - "--disable-backfill-rate-limiting"
-      - "--enr-address=127.0.0.1"
-      - "--enr-udp-port=9000"
-      - "--enr-tcp-port=9000"
-      - "--metrics"
-      - "--metrics-address=0.0.0.0"
-      - "--metrics-port=5054"
+    # Note: command is handled by beacon-entrypoint.sh which patches genesis time and starts Teku
     ports:
       - "4000:4000"    # Beacon API
       - "9000:9000"    # P2P TCP
@@ -163,29 +143,25 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "sh", "-c", "curl -f -s http://localhost:4000/eth/v1/node/health || curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/eth/v1/node/health | grep -q '206'"]
-      interval: 2s
-      timeout: 3s
-      retries: 3
-      start_period: 20s
+      test: ["CMD", "curl", "-f", "http://localhost:4000/eth/v1/node/health"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   validator:
     image: snapshot-validator:$TAG
     container_name: $SNAPSHOT_ID-validator
     hostname: validator
     command:
-      - "lighthouse"
-      - "validator_client"
-      - "--testnet-dir=/network-configs"
-      - "--validators-dir=/validator-keys/keys"
-      - "--secrets-dir=/validator-keys/secrets"
-      - "--beacon-nodes=http://beacon:4000"
-      - "--beacon-nodes-sync-tolerances=999999999,999999999,999999999"
-      - "--suggested-fee-recipient=0x0000000000000000000000000000000000000000"
-      - "--metrics"
-      - "--metrics-address=0.0.0.0"
-      - "--metrics-port=5064"
-      - "--init-slashing-protection"
+      - "teku"
+      - "validator-client"
+      - "--data-path=/data/teku-vc"
+      - "--network=/network-configs/spec.yaml"
+      - "--beacon-node-api-endpoint=http://beacon:4000"
+      - "--validator-keys=/validator-keys/keys:/validator-keys/secrets"
+      - "--validators-proposer-default-fee-recipient=0x0000000000000000000000000000000000000000"
+      - "--logging=INFO"
     depends_on:
       beacon:
         condition: service_healthy
