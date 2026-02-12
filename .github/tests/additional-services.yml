@@ -5,7 +5,7 @@ args:
     # - assertoor
     # - blockscout # The service experiences Out of Memory (OOM) termination when deployed inside github runners.
     # - blutgang
-    - bridge_hub_api
+    - bridge_hub
     - bridge_spammer
     - erpc
     - observability

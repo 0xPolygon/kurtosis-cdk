@@ -29,7 +29,7 @@ def launch(
             import_module("./blockscout.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.blutgang:
             import_module("./blutgang.star").run(plan, args)
-        elif svc == constants.ADDITIONAL_SERVICES.bridge_hub_api:
+        elif svc == constants.ADDITIONAL_SERVICES.bridge_hub:
             api_url = import_module("./bridge_hub/api.star").run(
                 plan, args, contract_setup_addresses, l2_context
             )
