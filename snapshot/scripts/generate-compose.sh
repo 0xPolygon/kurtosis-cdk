@@ -233,8 +233,11 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
 
         # ====================================================================
-        # op-geth service
+        # op-geth service (with runtime L2 genesis timestamp patching)
         # ====================================================================
+
+        # Copy entrypoint script to config dir for mounting
+        cp "$(dirname "$0")/op-geth-entrypoint.sh" "$OUTPUT_DIR/config/$prefix/"
 
         cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
@@ -242,42 +245,12 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     image: $OP_GETH_IMAGE
     container_name: $SNAPSHOT_ID-op-geth-$prefix
     hostname: op-geth-$prefix
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        if [ ! -d "/data/geth" ]; then
-          echo "Initializing op-geth with genesis..."
-          geth init --datadir=/data /genesis.json
-        fi
-        exec geth \
-          --http \
-          --http.addr=0.0.0.0 \
-          --http.port=8545 \
-          --http.vhosts='*' \
-          --http.corsdomain='*' \
-          --http.api=admin,engine,net,eth,web3,debug,txpool \
-          --ws \
-          --ws.addr=0.0.0.0 \
-          --ws.port=8546 \
-          --ws.origins='*' \
-          --ws.api=admin,engine,net,eth,web3,debug,txpool \
-          --authrpc.addr=0.0.0.0 \
-          --authrpc.port=8551 \
-          --authrpc.vhosts='*' \
-          --authrpc.jwtsecret=/jwt/jwtsecret \
-          --datadir=/data \
-          --port=30303 \
-          --discovery.port=30303 \
-          --syncmode=full \
-          --gcmode=archive \
-          --metrics \
-          --metrics.addr=0.0.0.0 \
-          --metrics.port=9001 \
-          --rollup.disabletxpoolgossip \
-          --nodiscover
+    entrypoint: ["/bin/sh", "/entrypoint/op-geth-entrypoint.sh"]
     volumes:
       - ./config/$prefix/jwt.hex:/jwt/jwtsecret:ro
-      - ./config/$prefix/l2-genesis.json:/genesis.json:ro
+      - ./config/$prefix/l2-genesis.json:/genesis-ro/l2-genesis.json:ro
+      - ./config/$prefix/op-geth-entrypoint.sh:/entrypoint/op-geth-entrypoint.sh:ro
+      - l2-shared-$prefix:/shared
     ports:
       - "$L2_HTTP_PORT:8545"    # HTTP RPC
       - "$L2_WS_PORT:8546"    # WebSocket RPC
@@ -297,8 +270,11 @@ EOF
         log "    ✓ op-geth-$prefix service added"
 
         # ====================================================================
-        # op-node service
+        # op-node service (with runtime rollup.json timestamp patching)
         # ====================================================================
+
+        # Copy entrypoint script to config dir for mounting
+        cp "$(dirname "$0")/op-node-entrypoint.sh" "$OUTPUT_DIR/config/$prefix/"
 
         cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
@@ -306,27 +282,15 @@ EOF
     image: $OP_NODE_IMAGE
     container_name: $SNAPSHOT_ID-op-node-$prefix
     hostname: op-node-$prefix
-    command:
-      - "op-node"
-      - "--rollup.config=/network-configs/rollup.json"
-      - "--l1=http://geth:8545"
-      - "--l1.beacon=http://beacon:4000"
-      - "--l2=http://op-geth-$prefix:8551"
-      - "--l2.jwt-secret=/jwt/jwtsecret"
-      - "--rpc.addr=0.0.0.0"
-      - "--rpc.port=8547"
-      - "--rpc.enable-admin"
-      - "--p2p.disable"
-      - "--sequencer.enabled"
-      - "--sequencer.l1-confs=0"
-      - "--rollup.l1-chain-config=/network-configs/l1-genesis.json"
-      - "--metrics.enabled"
-      - "--metrics.addr=0.0.0.0"
-      - "--metrics.port=7300"
+    entrypoint: ["/bin/sh", "/entrypoint/op-node-entrypoint.sh"]
+    environment:
+      - OP_GETH_HOST=op-geth-$prefix
     volumes:
-      - ./config/$prefix/rollup.json:/network-configs/rollup.json:ro
+      - ./config/$prefix/rollup.json:/rollup-ro/rollup.json:ro
       - ./config/$prefix/l1-genesis.json:/network-configs/l1-genesis.json:ro
       - ./config/$prefix/jwt.hex:/jwt/jwtsecret:ro
+      - ./config/$prefix/op-node-entrypoint.sh:/entrypoint/op-node-entrypoint.sh:ro
+      - l2-shared-$prefix:/shared:ro
     ports:
       - "$L2_NODE_RPC_PORT:8547"    # RPC
       - "$L2_NODE_METRICS_PORT:7300"    # Metrics
@@ -405,9 +369,25 @@ else
     log "No L2 networks to add"
 fi
 
-cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+# Add shared volumes for L2 genesis info exchange between op-geth and op-node
+if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
+    cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+volumes:
+EOF
+    for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
+        cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+  l2-shared-$prefix:
+EOF
+    done
+else
+    cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
 # No volumes - all state is baked into images
+EOF
+fi
+
+cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 # L1 state is baked in, L2 starts fresh with config-only mounts
 # Agglayer and AggKit use host-mounted config files (read-only)
 EOF
