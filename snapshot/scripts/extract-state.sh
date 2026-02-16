@@ -134,13 +134,20 @@ if [ ! -f "$OUTPUT_DIR/datadirs/checkpoint_block.ssz" ]; then
     exit 1
 fi
 
+# Get seconds_per_slot from beacon config
+log "  Querying beacon chain config..."
+BEACON_CONFIG=$(curl -s "$BEACON_API/eth/v1/config/spec")
+SECONDS_PER_SLOT=$(echo "$BEACON_CONFIG" | jq -r '.data.SECONDS_PER_SLOT // "2"')
+log "  Seconds per slot: $SECONDS_PER_SLOT"
+
 # Save checkpoint metadata
 cat > "$OUTPUT_DIR/datadirs/checkpoint_metadata.json" << EOF
 {
     "finalized_epoch": "$FINALIZED_EPOCH",
     "finalized_slot": "$FINALIZED_SLOT",
     "finalized_root": "$FINALIZED_ROOT",
-    "snapshot_time": "$(date -u +%s)"
+    "snapshot_time": "$(date -u +%s)",
+    "seconds_per_slot": "$SECONDS_PER_SLOT"
 }
 EOF
 

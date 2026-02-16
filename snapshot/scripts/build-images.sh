@@ -355,36 +355,24 @@ if [ "$FINALIZED_SLOT" != "0" ] && [ "$FINALIZED_SLOT" != "null" ] && [ -n "$FIN
     fi
 
     if [ -n "$SECONDS_PER_SLOT" ]; then
-        # Calculate new genesis time with proper buffer for Teku's weak subjectivity check
-        # Teku requires: current_slot >= state_slot + SAFETY_EPOCHS
-        # State slot is at the next epoch boundary after finalized block slot
-        SLOTS_PER_EPOCH=32  # Standard for most beacon chains
-        STARTUP_OVERHEAD=20  # Seconds for SSZ patching + JVM startup
+        # Calculate target slot based on actual elapsed time since snapshot
+        # target_slot = checkpoint_slot + floor((now - snapshot_time) / seconds_per_slot)
+        # new_genesis_time = now - target_slot * seconds_per_slot - 120 (small buffer)
 
-        # Calculate slots from finalized block to next epoch start (where state slot will be)
-        SLOTS_TO_NEXT_EPOCH=$((SLOTS_PER_EPOCH - (FINALIZED_SLOT % SLOTS_PER_EPOCH)))
+        ELAPSED_TIME=$((NOW - SNAPSHOT_TIME))
+        ELAPSED_SLOTS=$((ELAPSED_TIME / SECONDS_PER_SLOT))
+        TARGET_SLOT=$((FINALIZED_SLOT + ELAPSED_SLOTS))
+        BUFFER_SECONDS=120  # Small fixed buffer for startup overhead
+        NEW_GENESIS_TIME=$((NOW - (TARGET_SLOT * SECONDS_PER_SLOT) - BUFFER_SECONDS))
 
-        # Balance between "too recent" error and uint64 underflow
-        # 1 epoch = too recent, 4 epochs = underflow, trying 2 epochs
-        SAFETY_EPOCHS=2
-
-        # Total buffer = (slots to state + safety epochs) * seconds per slot + startup overhead
-        TOTAL_BUFFER_SLOTS=$((SLOTS_TO_NEXT_EPOCH + (SAFETY_EPOCHS * SLOTS_PER_EPOCH)))
-        BUFFER=$((TOTAL_BUFFER_SLOTS * SECONDS_PER_SLOT + STARTUP_OVERHEAD))
-
-        NEW_GENESIS_TIME=$((NOW - (FINALIZED_SLOT * SECONDS_PER_SLOT) - BUFFER))
-
-        STATE_SLOT=$((((FINALIZED_SLOT / SLOTS_PER_EPOCH) + 1) * SLOTS_PER_EPOCH))
-        CURRENT_SLOT=$(((FINALIZED_SLOT * SECONDS_PER_SLOT + BUFFER) / SECONDS_PER_SLOT))
-
-        echo "  Checkpoint block slot: $FINALIZED_SLOT"
-        echo "  Checkpoint state slot: $STATE_SLOT (epoch $((STATE_SLOT / SLOTS_PER_EPOCH)))"
+        echo "  Snapshot time: $SNAPSHOT_TIME"
+        echo "  Current time: $NOW"
+        echo "  Elapsed time: $ELAPSED_TIME seconds"
+        echo "  Finalized slot at snapshot: $FINALIZED_SLOT"
+        echo "  Elapsed slots: $ELAPSED_SLOTS"
+        echo "  Target slot: $TARGET_SLOT"
         echo "  Seconds per slot: $SECONDS_PER_SLOT"
-        echo "  Slots per epoch: $SLOTS_PER_EPOCH"
-        echo "  Slots to next epoch: $SLOTS_TO_NEXT_EPOCH"
-        echo "  Safety buffer: $SAFETY_EPOCHS epochs"
-        echo "  Total buffer: $BUFFER seconds ($TOTAL_BUFFER_SLOTS slots)"
-        echo "  Calculated current slot: $CURRENT_SLOT (buffer from state: $((CURRENT_SLOT - STATE_SLOT)) slots)"
+        echo "  Buffer: $BUFFER_SECONDS seconds"
         echo "  Calculated new genesis_time: $NEW_GENESIS_TIME"
 
         # Patcher is pre-compiled at build time for faster and more consistent runtime
