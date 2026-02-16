@@ -154,12 +154,11 @@ services:
     container_name: $SNAPSHOT_ID-validator
     hostname: validator
     command:
-      - "teku"
       - "validator-client"
       - "--data-path=/data/teku-vc"
       - "--network=/network-configs/spec.yaml"
       - "--beacon-node-api-endpoint=http://beacon:4000"
-      - "--validator-keys=/validator-keys/keys:/validator-keys/secrets"
+      - "--validator-keys=/validator-keys/teku-keys:/validator-keys/teku-secrets"
       - "--validators-proposer-default-fee-recipient=0x0000000000000000000000000000000000000000"
       - "--logging=INFO"
     depends_on:

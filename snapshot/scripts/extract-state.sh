@@ -243,6 +243,11 @@ docker cp "$VALIDATOR_CONTAINER:/root/.lighthouse/custom" "$OUTPUT_DIR/datadirs/
 log "  Extracting validator keystore..."
 docker cp "$VALIDATOR_CONTAINER:/validator-keys" "$OUTPUT_DIR/datadirs/validator-data/validator-keys" 2>/dev/null || true
 
+# Explicitly extract Teku keys and secrets (may not be included in bulk copy due to permissions)
+log "  Extracting Teku-specific keys and secrets..."
+docker cp "$VALIDATOR_CONTAINER:/validator-keys/teku-keys" "$OUTPUT_DIR/datadirs/validator-data/validator-keys/teku-keys" 2>/dev/null || log "    WARNING: teku-keys not found"
+docker cp "$VALIDATOR_CONTAINER:/validator-keys/teku-secrets" "$OUTPUT_DIR/datadirs/validator-data/validator-keys/teku-secrets" 2>/dev/null || log "    WARNING: teku-secrets not found"
+
 # Verify critical directories and files exist
 if [ ! -d "$OUTPUT_DIR/datadirs/validator-data/validator-keys/keys" ]; then
     log "ERROR: Validator keys directory not found"

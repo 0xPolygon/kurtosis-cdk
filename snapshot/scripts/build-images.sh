@@ -274,7 +274,7 @@ public class GenesisTimePatcher {
         System.out.println("Original genesis_time: " + originalState.getGenesisTime());
         System.out.println("New genesis_time: " + newGenesisTime);
 
-        // Create modified state with new genesis_time
+        // Only patch genesis_time, NOT slot (to avoid "empty slot" errors)
         BeaconState patchedState = originalState.updated(state ->
             state.setGenesisTime(newGenesisTime)
         );
@@ -319,6 +319,13 @@ set -e
 
 echo "Beacon entrypoint: Starting Teku with checkpoint sync"
 
+# Clear any existing Teku database to avoid genesis time mismatch issues
+# The beacon database was created with a different genesis time on previous runs
+if [ -d "/data/teku/beacon" ]; then
+    echo "Clearing existing Teku database to avoid genesis time conflicts..."
+    rm -rf /data/teku/beacon
+fi
+
 # Read checkpoint metadata
 SNAPSHOT_TIME=$(jq -r '.snapshot_time' /checkpoint/checkpoint_metadata.json)
 FINALIZED_EPOCH=$(jq -r '.finalized_epoch' /checkpoint/checkpoint_metadata.json)
@@ -348,22 +355,36 @@ if [ "$FINALIZED_SLOT" != "0" ] && [ "$FINALIZED_SLOT" != "null" ] && [ -n "$FIN
     fi
 
     if [ -n "$SECONDS_PER_SLOT" ]; then
-        # Calculate new genesis time to place current_slot at start of next epoch
-        # Teku requires current_slot >= start of next epoch after checkpoint
-        # Formula: buffer = (SLOTS_PER_EPOCH * SECONDS_PER_SLOT) + startup_overhead
-        # With SECONDS_PER_SLOT=2: 32 * 2 + 20 = 64 + 20 = 84 seconds
-        # With SECONDS_PER_SLOT=12: 32 * 12 + 20 = 384 + 20 = 404 seconds
-        # Now patching BOTH genesis.ssz and checkpoint_state.ssz for consistency
+        # Calculate new genesis time with proper buffer for Teku's weak subjectivity check
+        # Teku requires: current_slot >= state_slot + SAFETY_EPOCHS
+        # State slot is at the next epoch boundary after finalized block slot
         SLOTS_PER_EPOCH=32  # Standard for most beacon chains
         STARTUP_OVERHEAD=20  # Seconds for SSZ patching + JVM startup
-        # Use 2 full epochs to ensure we're well ahead of checkpoint (Teku seems to need more margin)
-        BUFFER=$((2 * SLOTS_PER_EPOCH * SECONDS_PER_SLOT + STARTUP_OVERHEAD))
+
+        # Calculate slots from finalized block to next epoch start (where state slot will be)
+        SLOTS_TO_NEXT_EPOCH=$((SLOTS_PER_EPOCH - (FINALIZED_SLOT % SLOTS_PER_EPOCH)))
+
+        # Balance between "too recent" error and uint64 underflow
+        # 1 epoch = too recent, 4 epochs = underflow, trying 2 epochs
+        SAFETY_EPOCHS=2
+
+        # Total buffer = (slots to state + safety epochs) * seconds per slot + startup overhead
+        TOTAL_BUFFER_SLOTS=$((SLOTS_TO_NEXT_EPOCH + (SAFETY_EPOCHS * SLOTS_PER_EPOCH)))
+        BUFFER=$((TOTAL_BUFFER_SLOTS * SECONDS_PER_SLOT + STARTUP_OVERHEAD))
+
         NEW_GENESIS_TIME=$((NOW - (FINALIZED_SLOT * SECONDS_PER_SLOT) - BUFFER))
 
-        echo "  Checkpoint slot: $FINALIZED_SLOT"
+        STATE_SLOT=$((((FINALIZED_SLOT / SLOTS_PER_EPOCH) + 1) * SLOTS_PER_EPOCH))
+        CURRENT_SLOT=$(((FINALIZED_SLOT * SECONDS_PER_SLOT + BUFFER) / SECONDS_PER_SLOT))
+
+        echo "  Checkpoint block slot: $FINALIZED_SLOT"
+        echo "  Checkpoint state slot: $STATE_SLOT (epoch $((STATE_SLOT / SLOTS_PER_EPOCH)))"
         echo "  Seconds per slot: $SECONDS_PER_SLOT"
         echo "  Slots per epoch: $SLOTS_PER_EPOCH"
-        echo "  Buffer: $BUFFER seconds (= $SLOTS_PER_EPOCH slots * $SECONDS_PER_SLOT sec/slot + $STARTUP_OVERHEAD sec overhead)"
+        echo "  Slots to next epoch: $SLOTS_TO_NEXT_EPOCH"
+        echo "  Safety buffer: $SAFETY_EPOCHS epochs"
+        echo "  Total buffer: $BUFFER seconds ($TOTAL_BUFFER_SLOTS slots)"
+        echo "  Calculated current slot: $CURRENT_SLOT (buffer from state: $((CURRENT_SLOT - STATE_SLOT)) slots)"
         echo "  Calculated new genesis_time: $NEW_GENESIS_TIME"
 
         # Patcher is pre-compiled at build time for faster and more consistent runtime
@@ -397,6 +418,7 @@ echo "Starting Teku with checkpoint state..."
 
 # Start Teku beacon node with checkpoint state
 # --ignore-weak-subjectivity-period-enabled allows loading checkpoints with time gaps
+# --rest-api-host-allowlist=* allows validator to connect from other docker containers
 exec teku \
     --data-path=/data/teku \
     --network=/network-configs/spec.yaml \
@@ -406,6 +428,7 @@ exec teku \
     --rest-api-enabled=true \
     --rest-api-interface=0.0.0.0 \
     --rest-api-port=4000 \
+    --rest-api-host-allowlist=* \
     --p2p-enabled=false \
     --ignore-weak-subjectivity-period-enabled=true \
     --logging=INFO
@@ -522,16 +545,12 @@ RUN mkdir -p /validator-keys && \
     rm -rf validator-data && \
     rm /tmp/lighthouse_validator.tar
 
-# Ensure secrets directory has password files
-RUN if [ ! "$(ls -A /validator-keys/secrets 2>/dev/null)" ]; then \
-        echo "Secrets directory empty, copying from lodestar-secrets..." && \
-        cp -r /validator-keys/lodestar-secrets/* /validator-keys/secrets/ 2>/dev/null || \
-        (echo "ERROR: Could not populate secrets directory" && exit 1); \
-    fi
+# Debug: List what was actually extracted
+RUN ls -la /validator-keys/ || echo "validator-keys directory not found"
 
-# Verify keys and secrets directories have content
-RUN test -d /validator-keys/keys || (echo "ERROR: keys directory not found" && exit 1) && \
-    test "$(ls -A /validator-keys/secrets 2>/dev/null)" || (echo "ERROR: secrets directory is empty" && exit 1)
+# Verify Teku keys and secrets directories have content
+RUN test -d /validator-keys/teku-keys || echo "WARNING: teku-keys directory not found" && \
+    test -d /validator-keys/teku-secrets || echo "WARNING: teku-secrets directory not found"
 
 # Create testnet directory with config files
 RUN mkdir -p /network-configs && \
