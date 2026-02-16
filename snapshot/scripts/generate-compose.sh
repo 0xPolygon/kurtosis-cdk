@@ -153,18 +153,17 @@ services:
     image: snapshot-validator:$TAG
     container_name: $SNAPSHOT_ID-validator
     hostname: validator
-    command:
-      - "validator-client"
-      - "--data-path=/data/teku-vc"
-      - "--network=/network-configs/spec.yaml"
-      - "--beacon-node-api-endpoint=http://beacon:4000"
-      - "--validator-keys=/validator-keys/teku-keys:/validator-keys/teku-secrets"
-      - "--validators-proposer-default-fee-recipient=0x0000000000000000000000000000000000000000"
-      - "--logging=INFO"
+    # Command is handled by validator-entrypoint.sh which gates startup on beacon sync
     depends_on:
       beacon:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "validator-client"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 EOF
 
 # Add agglayer service if found

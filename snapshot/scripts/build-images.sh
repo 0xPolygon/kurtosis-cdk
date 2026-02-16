@@ -187,7 +187,7 @@ ELECTRA_FORK_EPOCH: 18446744073709551615
 
 # Time parameters (extracted from chain-spec.yaml, not hardcoded)
 SECONDS_PER_SLOT: ${SECONDS_PER_SLOT_VALUE:-12}
-SLOTS_PER_EPOCH: 32
+SLOTS_PER_EPOCH: 8
 MIN_VALIDATOR_WITHDRAWABILITY_DELAY: 256
 SHARD_COMMITTEE_PERIOD: 256
 MIN_EPOCHS_TO_INACTIVITY_PENALTY: 4
@@ -329,6 +329,7 @@ fi
 # Read checkpoint metadata
 SNAPSHOT_TIME=$(jq -r '.snapshot_time' /checkpoint/checkpoint_metadata.json)
 FINALIZED_EPOCH=$(jq -r '.finalized_epoch' /checkpoint/checkpoint_metadata.json)
+EPOCH_START_SLOT=$(jq -r '.epoch_start_slot // "0"' /checkpoint/checkpoint_metadata.json)
 FINALIZED_SLOT=$(jq -r '.finalized_slot // "0"' /checkpoint/checkpoint_metadata.json)
 NOW=$(date +%s)
 TIME_GAP=$((NOW - SNAPSHOT_TIME))
@@ -337,12 +338,20 @@ echo "Snapshot was taken at: $(date -d @$SNAPSHOT_TIME -u)"
 echo "Current time: $(date -d @$NOW -u)"
 echo "Time gap: $TIME_GAP seconds ($((TIME_GAP / 3600)) hours)"
 echo "Checkpoint finalized epoch: $FINALIZED_EPOCH"
-echo "Checkpoint finalized slot: $FINALIZED_SLOT"
+echo "Checkpoint epoch start slot: $EPOCH_START_SLOT"
+echo "Checkpoint finalized slot (actual): $FINALIZED_SLOT"
 echo ""
 
-# Patch checkpoint genesis time at runtime
-if [ "$FINALIZED_SLOT" != "0" ] && [ "$FINALIZED_SLOT" != "null" ] && [ -n "$FINALIZED_SLOT" ]; then
-    echo "Patching checkpoint genesis time..."
+# EXPERIMENTAL: Skip genesis time patching to preserve checkpoint integrity
+# Patching breaks Teku's checkpoint validation - "initial state is too recent" error
+# Trade-off: Snapshots must be run within ~1 hour of creation
+SKIP_GENESIS_PATCHING=${SKIP_GENESIS_PATCHING:-false}
+
+if [ "$SKIP_GENESIS_PATCHING" = "true" ]; then
+    echo "Skipping genesis time patching (SKIP_GENESIS_PATCHING=true)"
+    echo "Using original checkpoint state without modifications"
+elif [ "$EPOCH_START_SLOT" != "0" ] && [ "$EPOCH_START_SLOT" != "null" ] && [ -n "$EPOCH_START_SLOT" ]; then
+    echo "Patching checkpoint genesis time (epoch-aligned)..."
 
     # Extract SECONDS_PER_SLOT from config files (try spec.yaml first, fall back to config.yaml)
     # Use exact match to avoid picking up SECONDS_PER_ETH1_BLOCK
@@ -355,25 +364,35 @@ if [ "$FINALIZED_SLOT" != "0" ] && [ "$FINALIZED_SLOT" != "null" ] && [ -n "$FIN
     fi
 
     if [ -n "$SECONDS_PER_SLOT" ]; then
-        # Calculate target slot based on actual elapsed time since snapshot
-        # target_slot = checkpoint_slot + floor((now - snapshot_time) / seconds_per_slot)
-        # new_genesis_time = now - target_slot * seconds_per_slot - 120 (small buffer)
+        # Genesis time calculation with increased slack to bypass "too recent" errors
+        # target_slot = finalized_slot + 3*SLOTS_PER_EPOCH
+        # new_genesis_time = now - target_slot * SECONDS_PER_SLOT - 30
+        # This puts current_slot about 4 epochs ahead of finalized_slot
 
-        ELAPSED_TIME=$((NOW - SNAPSHOT_TIME))
-        ELAPSED_SLOTS=$((ELAPSED_TIME / SECONDS_PER_SLOT))
-        TARGET_SLOT=$((FINALIZED_SLOT + ELAPSED_SLOTS))
-        BUFFER_SECONDS=120  # Small fixed buffer for startup overhead
-        NEW_GENESIS_TIME=$((NOW - (TARGET_SLOT * SECONDS_PER_SLOT) - BUFFER_SECONDS))
+        # Extract SLOTS_PER_EPOCH from config
+        SLOTS_PER_EPOCH=32  # Default
+        if [ -f /network-configs/spec.yaml ]; then
+            SLOTS_PER_EPOCH_FROM_CONFIG=$(grep "^SLOTS_PER_EPOCH:" /network-configs/spec.yaml | awk '{print $2}')
+            if [ -n "$SLOTS_PER_EPOCH_FROM_CONFIG" ]; then
+                SLOTS_PER_EPOCH="$SLOTS_PER_EPOCH_FROM_CONFIG"
+            fi
+        fi
+
+        TARGET_SLOT=$((FINALIZED_SLOT + 3 * SLOTS_PER_EPOCH))
+        NEW_GENESIS_TIME=$((NOW - (TARGET_SLOT * SECONDS_PER_SLOT) - 30))
+
+        CALCULATED_CURRENT_SLOT=$(( (NOW - NEW_GENESIS_TIME) / SECONDS_PER_SLOT ))
 
         echo "  Snapshot time: $SNAPSHOT_TIME"
         echo "  Current time: $NOW"
-        echo "  Elapsed time: $ELAPSED_TIME seconds"
-        echo "  Finalized slot at snapshot: $FINALIZED_SLOT"
-        echo "  Elapsed slots: $ELAPSED_SLOTS"
-        echo "  Target slot: $TARGET_SLOT"
+        echo "  Elapsed time since snapshot: $((NOW - SNAPSHOT_TIME)) seconds"
+        echo "  Finalized slot: $FINALIZED_SLOT"
+        echo "  SLOTS_PER_EPOCH: $SLOTS_PER_EPOCH"
+        echo "  Target slot (finalized + 3*SLOTS_PER_EPOCH): $TARGET_SLOT"
         echo "  Seconds per slot: $SECONDS_PER_SLOT"
-        echo "  Buffer: $BUFFER_SECONDS seconds"
         echo "  Calculated new genesis_time: $NEW_GENESIS_TIME"
+        echo "  Current slot after patching: $CALCULATED_CURRENT_SLOT"
+        echo "  Slots ahead of finalized: $((CALCULATED_CURRENT_SLOT - FINALIZED_SLOT))"
 
         # Patcher is pre-compiled at build time for faster and more consistent runtime
 
@@ -418,6 +437,8 @@ exec teku \
     --rest-api-port=4000 \
     --rest-api-host-allowlist=* \
     --p2p-enabled=false \
+    --p2p-discovery-enabled=false \
+    --p2p-peer-lower-bound=0 \
     --ignore-weak-subjectivity-period-enabled=true \
     --logging=INFO
 ENTRYPOINT_EOF
@@ -512,11 +533,92 @@ else
     echo "PRESET_BASE: 'minimal'" > "$VALIDATOR_BUILD_DIR/spec.yaml"
 fi
 
-# Create Dockerfile
+# Create validator entrypoint script with startup gating
+cat > "$VALIDATOR_BUILD_DIR/validator-entrypoint.sh" << 'VALIDATOR_ENTRYPOINT_EOF'
+#!/bin/bash
+set -e
+
+echo "Validator entrypoint: Waiting for beacon node to be ready..."
+
+# Wait for beacon API to be available
+MAX_WAIT=60
+ELAPSED=0
+while [ $ELAPSED -lt $MAX_WAIT ]; do
+    if curl -sf http://beacon:4000/eth/v1/node/health > /dev/null 2>&1; then
+        echo "  ✓ Beacon API is responding"
+        break
+    fi
+    echo "  Waiting for beacon API... ($ELAPSED/$MAX_WAIT seconds)"
+    sleep 2
+    ELAPSED=$((ELAPSED + 2))
+done
+
+if [ $ELAPSED -ge $MAX_WAIT ]; then
+    echo "  ERROR: Beacon API did not become available within $MAX_WAIT seconds"
+    exit 1
+fi
+
+# Wait for beacon node to finish syncing
+echo "Checking beacon node sync status..."
+MAX_WAIT=120
+ELAPSED=0
+while [ $ELAPSED -lt $MAX_WAIT ]; do
+    SYNC_STATUS=$(curl -sf http://beacon:4000/eth/v1/node/syncing 2>/dev/null || echo "")
+    if [ -n "$SYNC_STATUS" ]; then
+        IS_SYNCING=$(echo "$SYNC_STATUS" | jq -r '.data.is_syncing // true')
+        HEAD_SLOT=$(echo "$SYNC_STATUS" | jq -r '.data.head_slot // "0"')
+
+        echo "  Beacon sync status: is_syncing=$IS_SYNCING, head_slot=$HEAD_SLOT"
+
+        if [ "$IS_SYNCING" = "false" ] && [ "$HEAD_SLOT" != "0" ]; then
+            echo "  ✓ Beacon node is synced and ready"
+            break
+        fi
+    fi
+
+    echo "  Beacon is still syncing... ($ELAPSED/$MAX_WAIT seconds)"
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+done
+
+if [ $ELAPSED -ge $MAX_WAIT ]; then
+    echo "  WARNING: Beacon did not finish syncing within $MAX_WAIT seconds"
+    echo "  Starting validator anyway - it may skip duties until sync completes"
+fi
+
+# Verify active validators are loaded in beacon node
+echo "Checking active validators..."
+VALIDATORS_COUNT=$(curl -sf http://beacon:4000/eth/v1/beacon/states/head/validators 2>/dev/null | jq -r '.data | length // 0')
+echo "  Active validators in beacon node: $VALIDATORS_COUNT"
+
+if [ "$VALIDATORS_COUNT" -eq 0 ]; then
+    echo "  WARNING: No validators found in beacon node state"
+fi
+
+# Start Teku validator client
+echo ""
+echo "Starting Teku validator client..."
+
+exec teku validator-client \
+    --data-path=/data/teku-vc \
+    --network=/network-configs/spec.yaml \
+    --beacon-node-api-endpoint=http://beacon:4000 \
+    --validator-keys=/validator-keys/teku-keys:/validator-keys/teku-secrets \
+    --validators-proposer-default-fee-recipient=0x0000000000000000000000000000000000000000 \
+    --validators-graffiti="snapshot-validator" \
+    --logging=INFO
+VALIDATOR_ENTRYPOINT_EOF
+
+chmod +x "$VALIDATOR_BUILD_DIR/validator-entrypoint.sh"
+
+# Create Dockerfile with entrypoint
 cat > "$VALIDATOR_BUILD_DIR/Dockerfile" << 'EOF'
 FROM consensys/teku:24.12.0
 
 USER root
+
+# Install curl and jq for startup gating
+RUN apt-get update && apt-get install -y curl jq && rm -rf /var/lib/apt/lists/*
 
 # Copy validator datadir
 COPY lighthouse_validator.tar /tmp/lighthouse_validator.tar
@@ -524,6 +626,10 @@ COPY lighthouse_validator.tar /tmp/lighthouse_validator.tar
 # Copy chain-spec and Teku spec.yaml
 COPY chain-spec.yaml /tmp/chain-spec.yaml
 COPY spec.yaml /tmp/spec.yaml
+
+# Copy validator entrypoint script
+COPY validator-entrypoint.sh /usr/local/bin/validator-entrypoint.sh
+RUN chmod +x /usr/local/bin/validator-entrypoint.sh
 
 # Extract datadir and keep validator-keys structure intact
 RUN mkdir -p /validator-keys && \
@@ -556,8 +662,8 @@ RUN mkdir -p /network-configs && \
 # Set permissions
 RUN chmod -R 755 /validator-keys
 
-# Default command (will be overridden by docker-compose)
-CMD ["teku", "validator-client"]
+# Use entrypoint script instead of direct command
+ENTRYPOINT ["/usr/local/bin/validator-entrypoint.sh"]
 EOF
 
 log "  Building snapshot-validator:$TAG..."

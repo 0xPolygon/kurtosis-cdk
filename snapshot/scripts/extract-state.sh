@@ -105,15 +105,71 @@ FINALIZED_ROOT=$(echo "$FINALIZED_DATA" | jq -r '.data.finalized.root')
 log "  Finalized epoch: $FINALIZED_EPOCH"
 log "  Finalized root: $FINALIZED_ROOT"
 
-# Get finalized state slot (needed for genesis time patching)
+# Get beacon chain config to determine SLOTS_PER_EPOCH
+log "  Querying beacon chain config..."
+BEACON_CONFIG=$(curl -s "$BEACON_API/eth/v1/config/spec")
+SLOTS_PER_EPOCH=$(echo "$BEACON_CONFIG" | jq -r '.data.SLOTS_PER_EPOCH // "32"')
+log "  Slots per epoch: $SLOTS_PER_EPOCH"
+
+# Calculate epoch start slot for Teku compatibility
+# Teku requires checkpoints to be from the START of an epoch
+EPOCH_START_SLOT=$((FINALIZED_EPOCH * SLOTS_PER_EPOCH))
+
+log "  Calculated epoch start slot: $EPOCH_START_SLOT"
+
+# Get finalized state slot (for comparison)
 log "  Querying finalized state slot..."
 FINALIZED_HEADER=$(curl -s "$BEACON_API/eth/v1/beacon/headers/finalized")
 FINALIZED_SLOT=$(echo "$FINALIZED_HEADER" | jq -r '.data.header.message.slot // .data.slot // "0"')
 
-log "  Finalized slot: $FINALIZED_SLOT"
+log "  Finalized slot (actual): $FINALIZED_SLOT"
 
-# Download finalized state SSZ
-log "  Downloading checkpoint state SSZ..."
+# Find a non-empty block near epoch boundary to get state_root
+# Scan forward from epoch_start_slot within the epoch to find a block
+log "  Scanning for non-empty block near epoch boundary (starting from slot $EPOCH_START_SLOT)..."
+
+STATE_ROOT=""
+CHECKPOINT_BLOCK_ROOT=""
+CHECKPOINT_SLOT=""
+
+# Scan up to SLOTS_PER_EPOCH slots forward from epoch start
+for ((offset=0; offset<SLOTS_PER_EPOCH; offset++)); do
+    SCAN_SLOT=$((EPOCH_START_SLOT + offset))
+
+    # Query block header at this slot
+    HEADER_DATA=$(curl -s "$BEACON_API/eth/v1/beacon/headers/$SCAN_SLOT" 2>/dev/null || echo "")
+
+    if [ -n "$HEADER_DATA" ] && echo "$HEADER_DATA" | jq -e '.data' &>/dev/null; then
+        # Extract state_root (not block root!) from the header
+        STATE_ROOT=$(echo "$HEADER_DATA" | jq -r '.data.header.message.state_root // empty')
+        CHECKPOINT_BLOCK_ROOT=$(echo "$HEADER_DATA" | jq -r '.data.root // empty')
+        CHECKPOINT_SLOT="$SCAN_SLOT"
+
+        if [ -n "$STATE_ROOT" ] && [ "$STATE_ROOT" != "null" ]; then
+            log "  Found block at slot $CHECKPOINT_SLOT with state root: $STATE_ROOT"
+            break
+        fi
+    fi
+done
+
+# Fallback to finalized checkpoint if no block found near epoch boundary
+if [ -z "$STATE_ROOT" ] || [ "$STATE_ROOT" = "null" ]; then
+    log "  No block found near epoch boundary, using finalized checkpoint"
+    FINALIZED_HEADER=$(curl -s "$BEACON_API/eth/v1/beacon/headers/finalized")
+    STATE_ROOT=$(echo "$FINALIZED_HEADER" | jq -r '.data.header.message.state_root // empty')
+    CHECKPOINT_BLOCK_ROOT="$FINALIZED_ROOT"
+    CHECKPOINT_SLOT="$FINALIZED_SLOT"
+
+    if [ -z "$STATE_ROOT" ] || [ "$STATE_ROOT" = "null" ]; then
+        log "ERROR: Could not determine state root"
+        exit 1
+    fi
+    log "  Using finalized state root: $STATE_ROOT"
+fi
+
+# Download finalized state directly (Lighthouse keeps this available)
+# Note: Downloading by state_root doesn't work with Lighthouse as it prunes historical states
+log "  Downloading finalized checkpoint state..."
 curl -s "$BEACON_API/eth/v2/debug/beacon/states/finalized" \
     -H "Accept: application/octet-stream" \
     -o "$OUTPUT_DIR/datadirs/checkpoint_state.ssz"
@@ -123,9 +179,9 @@ if [ ! -f "$OUTPUT_DIR/datadirs/checkpoint_state.ssz" ]; then
     exit 1
 fi
 
-# Download finalized block SSZ
-log "  Downloading checkpoint block SSZ..."
-curl -s "$BEACON_API/eth/v2/beacon/blocks/$FINALIZED_ROOT" \
+# Download checkpoint block
+log "  Downloading checkpoint block (root: $CHECKPOINT_BLOCK_ROOT)..."
+curl -s "$BEACON_API/eth/v2/beacon/blocks/$CHECKPOINT_BLOCK_ROOT" \
     -H "Accept: application/octet-stream" \
     -o "$OUTPUT_DIR/datadirs/checkpoint_block.ssz"
 
@@ -134,18 +190,28 @@ if [ ! -f "$OUTPUT_DIR/datadirs/checkpoint_block.ssz" ]; then
     exit 1
 fi
 
+# Update metadata with the actual checkpoint slot we're using
+FINALIZED_SLOT="$CHECKPOINT_SLOT"
+
 # Get seconds_per_slot from beacon config
 log "  Querying beacon chain config..."
 BEACON_CONFIG=$(curl -s "$BEACON_API/eth/v1/config/spec")
 SECONDS_PER_SLOT=$(echo "$BEACON_CONFIG" | jq -r '.data.SECONDS_PER_SLOT // "2"')
 log "  Seconds per slot: $SECONDS_PER_SLOT"
 
-# Save checkpoint metadata
+# Get execution block number from finalized beacon state
+log "  Querying execution block number from finalized state..."
+EXEC_PAYLOAD_HEADER=$(curl -s "$BEACON_API/eth/v2/beacon/blocks/finalized" | jq -r '.data.message.body.execution_payload.block_number // .data.message.body.execution_payload_header.block_number // "0"')
+log "  Execution block number: $EXEC_PAYLOAD_HEADER"
+
+# Save checkpoint metadata with epoch-aligned slot
 cat > "$OUTPUT_DIR/datadirs/checkpoint_metadata.json" << EOF
 {
     "finalized_epoch": "$FINALIZED_EPOCH",
+    "epoch_start_slot": "$EPOCH_START_SLOT",
     "finalized_slot": "$FINALIZED_SLOT",
     "finalized_root": "$FINALIZED_ROOT",
+    "execution_block_number": "$EXEC_PAYLOAD_HEADER",
     "snapshot_time": "$(date -u +%s)",
     "seconds_per_slot": "$SECONDS_PER_SLOT"
 }
@@ -158,12 +224,12 @@ log "  Checkpoint block extracted: $(du -h "$OUTPUT_DIR/datadirs/checkpoint_bloc
 # STEP 2: Stop containers gracefully
 # ============================================================================
 
-log "Stopping containers gracefully..."
+log "Stopping containers gracefully (IMMEDIATELY to prevent state drift)..."
 
 for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
     if docker ps -q --filter "name=$container" | grep -q .; then
         log "  Stopping $container..."
-        docker stop "$container" --time 30
+        docker stop "$container" --time 5
 
         # Wait for container to fully stop
         timeout=30
@@ -203,6 +269,104 @@ for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; d
 done
 
 log "All containers confirmed stopped"
+
+# ============================================================================
+# STEP 2.5: Verify Execution Layer Synchronization
+# ============================================================================
+
+log "Verifying execution layer block matches checkpoint..."
+
+# Query geth's latest block from the stopped container's database
+# We need to briefly restart geth to query its state
+log "  Temporarily starting geth to query block number..."
+docker start "$GETH_CONTAINER" > /dev/null 2>&1
+
+# Wait for geth to be queryable
+sleep 3
+
+# Get geth's current block
+GETH_PORT=$(docker port "$GETH_CONTAINER" 8545 2>/dev/null | cut -d: -f2 || echo "")
+if [ -n "$GETH_PORT" ]; then
+    GETH_BLOCK_HEX=$(curl -s "http://localhost:$GETH_PORT" \
+        -X POST \
+        -H "Content-Type: application/json" \
+        --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' 2>/dev/null \
+        | jq -r '.result // "0x0"')
+
+    GETH_BLOCK=$((16#${GETH_BLOCK_HEX#0x}))
+    log "  Geth block number: $GETH_BLOCK"
+    log "  Checkpoint execution block: $EXEC_PAYLOAD_HEADER"
+
+    BLOCK_DIFF=$((GETH_BLOCK - EXEC_PAYLOAD_HEADER))
+    if [ "$BLOCK_DIFF" -gt 0 ]; then
+        log "  WARNING: Geth is $BLOCK_DIFF blocks ahead of checkpoint!"
+        log "  Attempting to rollback geth to block $EXEC_PAYLOAD_HEADER..."
+
+        # Convert checkpoint block to hex for RPC call
+        CHECKPOINT_HEX=$(printf "0x%x" "$EXEC_PAYLOAD_HEADER")
+
+        # Use debug_setHead to rollback geth's chain
+        ROLLBACK_RESULT=$(curl -s "http://localhost:$GETH_PORT" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data "{\"jsonrpc\":\"2.0\",\"method\":\"debug_setHead\",\"params\":[\"$CHECKPOINT_HEX\"],\"id\":1}" 2>/dev/null)
+
+        log "  Rollback result: $ROLLBACK_RESULT"
+
+        # Verify rollback succeeded
+        sleep 2
+        GETH_BLOCK_AFTER_HEX=$(curl -s "http://localhost:$GETH_PORT" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' 2>/dev/null \
+            | jq -r '.result // "0x0"')
+
+        GETH_BLOCK_AFTER=$((16#${GETH_BLOCK_AFTER_HEX#0x}))
+        if [ "$GETH_BLOCK_AFTER" -eq "$EXEC_PAYLOAD_HEADER" ]; then
+            log "  ✓ Geth successfully rolled back to block $EXEC_PAYLOAD_HEADER"
+            GETH_BLOCK="$GETH_BLOCK_AFTER"
+        else
+            log "  ERROR: Rollback failed! Geth is at block $GETH_BLOCK_AFTER, expected $EXEC_PAYLOAD_HEADER"
+            log "  Continuing anyway - snapshot may have sync issues"
+        fi
+    elif [ "$BLOCK_DIFF" -lt 0 ]; then
+        log "  WARNING: Geth is $((BLOCK_DIFF * -1)) blocks behind checkpoint!"
+        log "  This should not happen - checkpoint may be invalid"
+    else
+        log "  ✓ Geth block matches checkpoint exactly"
+    fi
+else
+    log "  WARNING: Could not query geth block number"
+    GETH_BLOCK="unknown"
+fi
+
+# Stop geth again
+docker stop "$GETH_CONTAINER" --time 5 > /dev/null 2>&1
+sleep 2
+
+# Save the actual geth block to metadata
+if [ "$GETH_BLOCK" != "unknown" ]; then
+    GETH_BLOCK_FOR_JSON="$GETH_BLOCK"
+else
+    GETH_BLOCK_FOR_JSON="null"
+fi
+
+# Update checkpoint metadata with geth block info
+cat > "$OUTPUT_DIR/datadirs/checkpoint_metadata.json" << EOF
+{
+    "finalized_epoch": "$FINALIZED_EPOCH",
+    "epoch_start_slot": "$EPOCH_START_SLOT",
+    "finalized_slot": "$FINALIZED_SLOT",
+    "finalized_root": "$FINALIZED_ROOT",
+    "execution_block_number": "$EXEC_PAYLOAD_HEADER",
+    "geth_actual_block_number": $GETH_BLOCK_FOR_JSON,
+    "block_drift": $((GETH_BLOCK - EXEC_PAYLOAD_HEADER)),
+    "snapshot_time": "$(date -u +%s)",
+    "seconds_per_slot": "$SECONDS_PER_SLOT"
+}
+EOF
+
+log "Checkpoint verification complete"
 
 # ============================================================================
 # STEP 3: Extract Geth datadir
