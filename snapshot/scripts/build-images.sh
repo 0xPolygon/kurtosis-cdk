@@ -538,9 +538,9 @@ cat > "$VALIDATOR_BUILD_DIR/validator-entrypoint.sh" << 'VALIDATOR_ENTRYPOINT_EO
 #!/bin/bash
 set -e
 
-echo "Validator entrypoint: Waiting for beacon node to be ready..."
+echo "Validator entrypoint: Waiting for beacon API..."
 
-# Wait for beacon API to be available
+# Wait for beacon API to be available (only check needed)
 MAX_WAIT=60
 ELAPSED=0
 while [ $ELAPSED -lt $MAX_WAIT ]; do
@@ -548,7 +548,6 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
         echo "  ✓ Beacon API is responding"
         break
     fi
-    echo "  Waiting for beacon API... ($ELAPSED/$MAX_WAIT seconds)"
     sleep 2
     ELAPSED=$((ELAPSED + 2))
 done
@@ -558,45 +557,7 @@ if [ $ELAPSED -ge $MAX_WAIT ]; then
     exit 1
 fi
 
-# Wait for beacon node to finish syncing
-echo "Checking beacon node sync status..."
-MAX_WAIT=120
-ELAPSED=0
-while [ $ELAPSED -lt $MAX_WAIT ]; do
-    SYNC_STATUS=$(curl -sf http://beacon:4000/eth/v1/node/syncing 2>/dev/null || echo "")
-    if [ -n "$SYNC_STATUS" ]; then
-        IS_SYNCING=$(echo "$SYNC_STATUS" | jq -r '.data.is_syncing // true')
-        HEAD_SLOT=$(echo "$SYNC_STATUS" | jq -r '.data.head_slot // "0"')
-
-        echo "  Beacon sync status: is_syncing=$IS_SYNCING, head_slot=$HEAD_SLOT"
-
-        if [ "$IS_SYNCING" = "false" ] && [ "$HEAD_SLOT" != "0" ]; then
-            echo "  ✓ Beacon node is synced and ready"
-            break
-        fi
-    fi
-
-    echo "  Beacon is still syncing... ($ELAPSED/$MAX_WAIT seconds)"
-    sleep 5
-    ELAPSED=$((ELAPSED + 5))
-done
-
-if [ $ELAPSED -ge $MAX_WAIT ]; then
-    echo "  WARNING: Beacon did not finish syncing within $MAX_WAIT seconds"
-    echo "  Starting validator anyway - it may skip duties until sync completes"
-fi
-
-# Verify active validators are loaded in beacon node
-echo "Checking active validators..."
-VALIDATORS_COUNT=$(curl -sf http://beacon:4000/eth/v1/beacon/states/head/validators 2>/dev/null | jq -r '.data | length // 0')
-echo "  Active validators in beacon node: $VALIDATORS_COUNT"
-
-if [ "$VALIDATORS_COUNT" -eq 0 ]; then
-    echo "  WARNING: No validators found in beacon node state"
-fi
-
-# Start Teku validator client
-echo ""
+# Start immediately - beacon needs the validator to produce blocks before it can "sync"
 echo "Starting Teku validator client..."
 
 exec teku validator-client \
