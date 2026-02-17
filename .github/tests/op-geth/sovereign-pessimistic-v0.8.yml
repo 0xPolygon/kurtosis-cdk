@@ -1,8 +1,0 @@
-args:
-  sequencer_type: op-geth
-  consensus_contract_type: pessimistic
-  aggkit_image: ghcr.io/agglayer/aggkit:0.8.0
-
-  # Override additional_services to exclude bridge_spammer
-  additional_services:
-    - agglogger
