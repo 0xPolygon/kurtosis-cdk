@@ -179,9 +179,9 @@ DEFAULT_L1_ARGS = {
     # Please note that minimal preset requires alternative client images.
     "l1_preset": "minimal",
     # L1 Electra fork epoch. Default: 0 (activated at genesis).
-    "l1_electra_fork_epoch": 999999,
+    "l1_electra_fork_epoch": 0,
     # L1 Fulu fork epoch. Default: 1 (blocks are not finalized if fulu hard fork is activated at genesis).
-    "l1_fulu_fork_epoch": 999999,
+    "l1_fulu_fork_epoch": 1,
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 2,
