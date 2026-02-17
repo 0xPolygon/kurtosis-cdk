@@ -249,6 +249,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     volumes:
       - ./config/$prefix/jwt.hex:/jwt/jwtsecret:ro
       - ./config/$prefix/l2-genesis.json:/genesis-ro/l2-genesis.json:ro
+      - ./config/$prefix/rollup.json:/rollup-ro/rollup.json:ro
       - ./config/$prefix/op-geth-entrypoint.sh:/entrypoint/op-geth-entrypoint.sh:ro
       - l2-shared-$prefix:/shared
     ports:
@@ -264,7 +265,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
       interval: 2s
       timeout: 3s
       retries: 3
-      start_period: 10s
+      start_period: 180s
 EOF
 
         log "    ✓ op-geth-$prefix service added"
@@ -307,7 +308,7 @@ EOF
       interval: 2s
       timeout: 3s
       retries: 3
-      start_period: 20s
+      start_period: 240s
 EOF
 
         log "    ✓ op-node-$prefix service added"
