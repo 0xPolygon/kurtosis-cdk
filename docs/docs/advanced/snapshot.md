@@ -1,16 +1,16 @@
 ---
 sidebar_position: 7
-title: "L1 Snapshot Tool"
+title: "Kurtosis CDK Snapshot Tool"
 description: "Create and restore deterministic snapshots of Kurtosis-managed Ethereum L1 devnets"
 ---
 
-# Ethereum L1 Snapshot Tool
+# Ethereum Kurtosis CDK Snapshot Tool
 
-A reusable, fully scripted snapshot system for Kurtosis-managed Ethereum L1 devnets (Geth + Lighthouse Beacon + Lighthouse Validator).
+A reusable, fully scripted snapshot system for Kurtosis CDK devnets
 
 ## Overview
 
-This tool creates deterministic, repeatable snapshots of L1 state that can be:
+This tool creates deterministic, repeatable snapshots of am enclave that can be:
 - Triggered at any time to freeze and capture L1 state
 - Packaged into Docker images with state baked in
 - Reproduced via Docker Compose to resume from exact state
@@ -22,7 +22,7 @@ This tool creates deterministic, repeatable snapshots of L1 state that can be:
 ### Agglayer Settlement Constraint
 - **L2 networks must NOT have settled any transactions through the agglayer**
 - Snapshots capture the L1 state at a specific point in time, but do not capture the agglayer's internal settlement state
-- If the agglayer has processed settlements that are not yet reflected on L1, restarting from the snapshot will cause inconsistencies
+- If the agglayer has processed settlements that are reflected on L1, restarting from the snapshot will cause inconsistencies (as the agglayer can not recover by just syncing L1)
 
 ### Recommended Enclave Configuration
 To ensure clean snapshots:
@@ -63,14 +63,6 @@ snapshots/
 ```
 
 **Note:** Temporary files (datadirs/, artifacts/, images/, metadata/, discovery.json, etc.) are automatically removed after snapshot generation to keep the output clean and ready for distribution.
-
-## Requirements
-
-- Docker (for container operations)
-- Kurtosis CLI (for enclave discovery)
-- jq (for JSON processing)
-- curl (for RPC queries)
-- tar (for datadir archiving)
 
 ## Architecture
 
@@ -125,23 +117,6 @@ Validates a snapshot by booting it and verifying block progression.
 - Blocks continue to progress after boot
 - All services are healthy
 
-## Image Tags
-
-Images are tagged with: `snapshot-{component}:{ENCLAVE}-{TIMESTAMP}[-{TAG}]`
-
-Examples:
-- `snapshot-geth:snapshot-test-20260202-115500`
-- `snapshot-beacon:snapshot-test-20260202-115500`
-- `snapshot-validator:snapshot-test-20260202-115500`
-
-## Safety Features
-
-- **Validator Check**: Fails immediately if no validator datadir found
-- **Clean Shutdown**: Containers stopped gracefully before extraction
-- **State Consistency**: All components frozen before extraction
-- **Checksum Validation**: SHA256 manifest for all tarballs
-- **Idempotent**: Re-running creates new snapshot, doesn't modify existing
-
 ## Troubleshooting
 
 ### No containers found
@@ -172,24 +147,6 @@ Examples:
 - Ensure no bridge spammer or cross-chain transactions were run before snapshotting
 - See "Prerequisites for Snapshot Creation" section above for proper enclave preparation
 
-## Maintenance
-
-### Cleanup old snapshots
-```bash
-# Remove snapshots older than 7 days
-find snapshots/ -name '*-202*' -mtime +7 -exec rm -rf {} \;
-```
-
-### List all snapshot images
-```bash
-docker images | grep snapshot-
-```
-
-### Remove old snapshot images
-```bash
-docker images | grep snapshot- | awk '{print $3}' | xargs docker rmi
-```
-
 ## Technical Details
 
 ### Snapshot Process Flow
@@ -209,22 +166,3 @@ docker images | grep snapshot- | awk '{print $3}' | xargs docker rmi
 - The snapshot process temporarily stops the L1 containers to ensure consistent state capture, but automatically restarts them afterward. This allows the original enclave to continue producing blocks while the snapshot artifacts are being prepared.
 - Verification is performed automatically at the end, testing that the snapshot can boot and produce blocks. This adds 1-2 minutes to the snapshot process but ensures quality.
 - After verification, all temporary and intermediate files are automatically cleaned up, leaving only the essential files needed to run the snapshot.
-
-### Network Configuration
-
-The generated Docker Compose creates a bridge network with:
-- Geth RPC: `8545` (HTTP), `8546` (WS), `30303` (P2P)
-- Beacon API: `4000` (HTTP), `9000` (P2P)
-- Validator: No exposed ports (internal only)
-
-### State Reproduction
-
-Images contain complete state:
-- No external volumes required
-- All data baked into image layers
-- JWT secret included for engine API auth
-- Genesis and chain specs embedded
-
-## License
-
-Part of the kurtosis-cdk project.
