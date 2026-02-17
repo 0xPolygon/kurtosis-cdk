@@ -117,8 +117,8 @@ def run(plan, args):
             "bellatrix_fork_epoch": 0,
             "capella_fork_epoch": 0,
             "deneb_fork_epoch": 0,
-            "electra_fork_epoch": 999999,  # Disabled - set to far future
-            "fulu_fork_epoch": 999999,  # Disabled - set to far future
+            "electra_fork_epoch": args["l1_electra_fork_epoch"],
+            "fulu_fork_epoch": args["l1_fulu_fork_epoch"],
         },
         "additional_services": args["l1_additional_services"],
         "port_publisher": port_publisher,

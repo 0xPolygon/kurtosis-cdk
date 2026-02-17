@@ -26,12 +26,6 @@ args:
   # Note this will noticeably increase the deployment time because of the increased L1 finality.
   l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
 
-  # Override additional_services to exclude bridge_spammer
-  additional_services:
-    - agglogger
-    - test_runner
-    - agglayer_dashboard
-
 optimism_package:
   predeployed_contracts: true
   chains:
