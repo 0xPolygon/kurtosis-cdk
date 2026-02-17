@@ -38,7 +38,7 @@ def get_assertoor_config(plan, args):
     assertoor_data = {
         "assertoor_endpoint_name": "assertoor_web_ui",
         "execution_client_url": args["l1_rpc_url"],
-        "consensus_client_url": args["l1_conensus_rpc_url"],
+        "consensus_client_url": args["l1_consensus_rpc_url"],
         "http_port_number": HTTP_PORT_NUMBER,
     }
 

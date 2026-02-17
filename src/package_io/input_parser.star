@@ -490,7 +490,7 @@ def parse_args(plan, user_args):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
 
-    # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
+    # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawals to work.
     if "assertoor" in args["l1_additional_services"]:
         plan.print(
             "Assertoor is detected - changing l1_preset to mainnet and l1_participant_count to 2"

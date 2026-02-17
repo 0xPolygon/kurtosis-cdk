@@ -139,7 +139,7 @@ kurtosis service stop "$STACK_NAME" $SVC_RPC
 kurtosis service stop "$STACK_NAME" $SVC_SEQUENCER
 kurtosis service stop "$STACK_NAME" $SVC_SLESS_EXECUTOR
 
-# Depoly verifier
+# Deploy verifier
 echo "Deploying verifier..."
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS \
     ". /opt/commands.sh && \

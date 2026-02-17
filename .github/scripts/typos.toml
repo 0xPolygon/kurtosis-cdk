@@ -13,6 +13,7 @@ supress_rpc_check = "supress_rpc_check" # typo in blutgang config
 
 [default.extend-words]
 UPnP = "UPnP"
+Pn = "Pn"
 
 [files]
 extend-exclude = ["*go.mod", "*go.sum", "*.excalidraw"]
