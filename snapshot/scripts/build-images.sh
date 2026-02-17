@@ -159,6 +159,17 @@ if [ -f "$OUTPUT_DIR/artifacts/chain-spec.yaml" ]; then
     GENESIS_FORK_VERSION=$(grep "^GENESIS_FORK_VERSION:" "$OUTPUT_DIR/artifacts/chain-spec.yaml" | awk '{print $2}')
     SECONDS_PER_SLOT_VALUE=$(grep "^SECONDS_PER_SLOT:" "$OUTPUT_DIR/artifacts/chain-spec.yaml" | awk '{print $2}')
 
+    # Extract fork epochs from chain-spec.yaml (use far future as default if not present)
+    FAR_FUTURE=18446744073709551615
+    ELECTRA_FORK_EPOCH_VALUE=$(grep "^ELECTRA_FORK_EPOCH:" "$OUTPUT_DIR/artifacts/chain-spec.yaml" | awk '{print $2}')
+    ELECTRA_FORK_EPOCH_VALUE=${ELECTRA_FORK_EPOCH_VALUE:-$FAR_FUTURE}
+    FULU_FORK_EPOCH_VALUE=$(grep "^FULU_FORK_EPOCH:" "$OUTPUT_DIR/artifacts/chain-spec.yaml" | awk '{print $2}')
+    FULU_FORK_EPOCH_VALUE=${FULU_FORK_EPOCH_VALUE:-$FAR_FUTURE}
+    FULU_FORK_VERSION_VALUE=$(grep "^FULU_FORK_VERSION:" "$OUTPUT_DIR/artifacts/chain-spec.yaml" | awk '{print $2}')
+    FULU_FORK_VERSION_VALUE=${FULU_FORK_VERSION_VALUE:-0x70000038}
+
+    log "  Fork epochs from chain-spec: ELECTRA=$ELECTRA_FORK_EPOCH_VALUE, FULU=$FULU_FORK_EPOCH_VALUE"
+
     # Create minimal consensus-spec format config for Teku
     cat > "$BEACON_BUILD_DIR/spec.yaml" << SPECEOF
 # Teku consensus-spec format config
