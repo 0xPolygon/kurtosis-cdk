@@ -82,7 +82,7 @@ exec op-node \
     --rollup.config=/tmp/rollup.json \
     --l1=http://geth:8545 \
     --l1.beacon=http://beacon:4000 \
-    --l2=http://${OP_GETH_HOST:-op-geth-001}:8551 \
+    --l2=http://"${OP_GETH_HOST:-op-geth-001}":8551 \
     --l2.jwt-secret=/jwt/jwtsecret \
     --rpc.addr=0.0.0.0 \
     --rpc.port=8547 \

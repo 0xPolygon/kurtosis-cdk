@@ -32,3 +32,7 @@ anvil_state.json
 
 # snapshots
 snapshots
+
+# Solidity build artifacts
+out/
+cache/

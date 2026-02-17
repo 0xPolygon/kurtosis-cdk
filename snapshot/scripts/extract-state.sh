@@ -439,7 +439,7 @@ if [ ! -f "$OUTPUT_DIR/datadirs/validator-data/validator-keys/keys/slashing_prot
 fi
 
 # Count validators
-VALIDATOR_COUNT=$(ls -1 "$OUTPUT_DIR/datadirs/validator-data/validator-keys/keys" | grep "^0x" | wc -l)
+VALIDATOR_COUNT=$(find "$OUTPUT_DIR/datadirs/validator-data/validator-keys/keys" -maxdepth 1 -name "0x*" | wc -l)
 log "  Found $VALIDATOR_COUNT validators with slashing protection"
 
 # Create tarball
@@ -533,9 +533,11 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         # Rollup config (critical for op-node) - with timestamp suffix pattern
         ROLLUP_FILE=$(docker exec "$OP_NODE_SEQ" find /network-configs -name "rollup-*.json" | head -1)
         if [ -n "$ROLLUP_FILE" ]; then
-            docker cp "$OP_NODE_SEQ:$ROLLUP_FILE" "$OUTPUT_DIR/config/$prefix/rollup.json" && \
-                log "    ✓ rollup.json extracted from $ROLLUP_FILE" || \
+            if docker cp "$OP_NODE_SEQ:$ROLLUP_FILE" "$OUTPUT_DIR/config/$prefix/rollup.json"; then
+                log "    ✓ rollup.json extracted from $ROLLUP_FILE"
+            else
                 log "    WARNING: Failed to extract $ROLLUP_FILE"
+            fi
         else
             log "    WARNING: rollup-*.json not found"
         fi
@@ -543,57 +545,73 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         # Genesis file (may be needed) - with timestamp suffix pattern
         GENESIS_FILE=$(docker exec "$OP_NODE_SEQ" find /network-configs -name "genesis-*.json" | head -1)
         if [ -n "$GENESIS_FILE" ]; then
-            docker cp "$OP_NODE_SEQ:$GENESIS_FILE" "$OUTPUT_DIR/config/$prefix/l2-genesis.json" && \
-                log "    ✓ l2-genesis.json extracted from $GENESIS_FILE" || \
+            if docker cp "$OP_NODE_SEQ:$GENESIS_FILE" "$OUTPUT_DIR/config/$prefix/l2-genesis.json"; then
+                log "    ✓ l2-genesis.json extracted from $GENESIS_FILE"
+            else
                 log "    WARNING: Failed to extract $GENESIS_FILE"
+            fi
         else
             log "    WARNING: genesis-*.json not found"
         fi
 
         # L1 genesis (needed by op-node for --rollup.l1-chain-config)
         # Extract from the running op-node container itself (it has the compatible version)
-        docker cp "$OP_NODE_SEQ:/l1/genesis.json" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" 2>/dev/null && \
-            log "    ✓ l1-genesis.json extracted from op-node" || \
+        if docker cp "$OP_NODE_SEQ:/l1/genesis.json" "$OUTPUT_DIR/config/$prefix/l1-genesis.json" 2>/dev/null; then
+            log "    ✓ l1-genesis.json extracted from op-node"
+        else
             log "    WARNING: Failed to extract L1 genesis.json from op-node"
+        fi
 
         # Extract op-geth configuration
         log "  Extracting op-geth configuration..."
 
         # Genesis file (op-geth may have its own)
         if [ ! -f "$OUTPUT_DIR/config/$prefix/l2-genesis.json" ]; then
-            docker cp "$OP_GETH_SEQ:/network-configs/genesis.json" "$OUTPUT_DIR/config/$prefix/l2-genesis.json" 2>/dev/null && \
-                log "    ✓ l2-genesis.json extracted from op-geth" || \
+            if docker cp "$OP_GETH_SEQ:/network-configs/genesis.json" "$OUTPUT_DIR/config/$prefix/l2-genesis.json" 2>/dev/null; then
+                log "    ✓ l2-genesis.json extracted from op-geth"
+            else
                 log "    WARNING: l2-genesis.json not found in op-geth"
+            fi
         fi
 
         # JWT secret (shared between op-geth and op-node)
-        docker cp "$OP_GETH_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null && \
-            log "    ✓ jwt.hex extracted" || \
-            docker cp "$OP_NODE_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null && \
-            log "    ✓ jwt.hex extracted from op-node" || \
+        if docker cp "$OP_GETH_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null; then
+            log "    ✓ jwt.hex extracted"
+        elif docker cp "$OP_NODE_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null; then
+            log "    ✓ jwt.hex extracted from op-node"
+        else
             log "    WARNING: jwt.hex not found"
+        fi
 
         # Extract aggkit configuration if present
         if [ -n "$AGGKIT_CONTAINER" ] && [ "$AGGKIT_CONTAINER" != "null" ]; then
             log "  Extracting aggkit configuration for network $prefix..."
 
             # Config file
-            docker cp "$AGGKIT_CONTAINER:/etc/aggkit/config.toml" "$OUTPUT_DIR/config/$prefix/aggkit-config.toml" 2>/dev/null && \
-                log "    ✓ aggkit-config.toml extracted" || \
+            if docker cp "$AGGKIT_CONTAINER:/etc/aggkit/config.toml" "$OUTPUT_DIR/config/$prefix/aggkit-config.toml" 2>/dev/null; then
+                log "    ✓ aggkit-config.toml extracted"
+            else
                 log "    WARNING: aggkit-config.toml not found"
+            fi
 
             # Keystores
-            docker cp "$AGGKIT_CONTAINER:/etc/aggkit/sequencer.keystore" "$OUTPUT_DIR/config/$prefix/sequencer.keystore" 2>/dev/null && \
-                log "    ✓ sequencer.keystore extracted" || \
+            if docker cp "$AGGKIT_CONTAINER:/etc/aggkit/sequencer.keystore" "$OUTPUT_DIR/config/$prefix/sequencer.keystore" 2>/dev/null; then
+                log "    ✓ sequencer.keystore extracted"
+            else
                 log "    WARNING: sequencer.keystore not found"
+            fi
 
-            docker cp "$AGGKIT_CONTAINER:/etc/aggkit/aggoracle.keystore" "$OUTPUT_DIR/config/$prefix/aggoracle.keystore" 2>/dev/null && \
-                log "    ✓ aggoracle.keystore extracted" || \
+            if docker cp "$AGGKIT_CONTAINER:/etc/aggkit/aggoracle.keystore" "$OUTPUT_DIR/config/$prefix/aggoracle.keystore" 2>/dev/null; then
+                log "    ✓ aggoracle.keystore extracted"
+            else
                 log "    WARNING: aggoracle.keystore not found"
+            fi
 
-            docker cp "$AGGKIT_CONTAINER:/etc/aggkit/sovereignadmin.keystore" "$OUTPUT_DIR/config/$prefix/sovereignadmin.keystore" 2>/dev/null && \
-                log "    ✓ sovereignadmin.keystore extracted" || \
+            if docker cp "$AGGKIT_CONTAINER:/etc/aggkit/sovereignadmin.keystore" "$OUTPUT_DIR/config/$prefix/sovereignadmin.keystore" 2>/dev/null; then
+                log "    ✓ sovereignadmin.keystore extracted"
+            else
                 log "    WARNING: sovereignadmin.keystore not found"
+            fi
 
             docker cp "$AGGKIT_CONTAINER:/etc/aggkit/claimsponsor.keystore" "$OUTPUT_DIR/config/$prefix/claimsponsor.keystore" 2>/dev/null || true
 
@@ -610,7 +628,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         MISSING_CRITICAL=0
         for file in "${CRITICAL_FILES[@]}"; do
             if [ ! -f "$file" ]; then
-                log "  ERROR: Critical file missing: $(basename $file)"
+                log "  ERROR: Critical file missing: $(basename "$file")"
                 MISSING_CRITICAL=$((MISSING_CRITICAL + 1))
             fi
         done
@@ -675,7 +693,7 @@ log "Configuration artifacts extracted"
 
 log "State extraction complete!"
 log "Extracted files:"
-ls -lh "$OUTPUT_DIR/datadirs/"*.tar | awk '{print "  " $9 " (" $5 ")"}'
+find "$OUTPUT_DIR/datadirs/" -maxdepth 1 -name "*.tar" -exec ls -lh {} + | awk '{print "  " $9 " (" $5 ")"}'
 
 log "Artifacts:"
 find "$OUTPUT_DIR/artifacts" -type f | sed 's/^/  /'

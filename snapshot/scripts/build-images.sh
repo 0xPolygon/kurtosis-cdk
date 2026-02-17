@@ -652,17 +652,17 @@ cat > "$OUTPUT_DIR/images/IMAGE_INFO.json" << EOF
     "geth": {
       "name": "snapshot-geth:$TAG",
       "base_image": "$GETH_IMAGE",
-      "size": "$(docker images --format "{{.Size}}" snapshot-geth:$TAG)"
+      "size": "$(docker images --format "{{.Size}}" snapshot-geth:"$TAG")"
     },
     "beacon": {
       "name": "snapshot-beacon:$TAG",
       "base_image": "$BEACON_IMAGE",
-      "size": "$(docker images --format "{{.Size}}" snapshot-beacon:$TAG)"
+      "size": "$(docker images --format "{{.Size}}" snapshot-beacon:"$TAG")"
     },
     "validator": {
       "name": "snapshot-validator:$TAG",
       "base_image": "$VALIDATOR_IMAGE",
-      "size": "$(docker images --format "{{.Size}}" snapshot-validator:$TAG)"
+      "size": "$(docker images --format "{{.Size}}" snapshot-validator:"$TAG")"
     }
   }
 }
@@ -677,9 +677,9 @@ log "Image metadata saved: $OUTPUT_DIR/images/IMAGE_INFO.json"
 log "Docker images built successfully!"
 log ""
 log "Images created:"
-log "  snapshot-geth:$TAG ($(docker images --format "{{.Size}}" snapshot-geth:$TAG))"
-log "  snapshot-beacon:$TAG ($(docker images --format "{{.Size}}" snapshot-beacon:$TAG))"
-log "  snapshot-validator:$TAG ($(docker images --format "{{.Size}}" snapshot-validator:$TAG))"
+log "  snapshot-geth:$TAG ($(docker images --format "{{.Size}}" snapshot-geth:"$TAG"))"
+log "  snapshot-beacon:$TAG ($(docker images --format "{{.Size}}" snapshot-beacon:"$TAG"))"
+log "  snapshot-validator:$TAG ($(docker images --format "{{.Size}}" snapshot-validator:"$TAG"))"
 log ""
 log "To verify images:"
 log "  docker images | grep snapshot-"

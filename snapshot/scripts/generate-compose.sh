@@ -18,6 +18,7 @@ DISCOVERY_JSON="$1"
 OUTPUT_DIR="$2"
 
 # Check dependencies
+# shellcheck disable=SC2043
 for cmd in jq; do
     if ! command -v "$cmd" &> /dev/null; then
         echo "ERROR: Required command '$cmd' not found" >&2

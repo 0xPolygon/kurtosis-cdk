@@ -182,7 +182,7 @@ if [ -d "$OUTPUT_DIR/datadirs" ]; then
     (
         cd "$OUTPUT_DIR/datadirs"
         # Use absolute path or redirect properly from subshell
-        sha256sum *.tar 2>/dev/null || true
+        sha256sum ./*.tar 2>/dev/null || true
     ) > "$MANIFEST_FILE"
 
     if [ -f "$MANIFEST_FILE" ]; then
@@ -325,9 +325,9 @@ Validator: $VALIDATOR_IMAGE
 
 Datadir Sizes
 -------------
-Geth: $(numfmt --to=iec $GETH_SIZE 2>/dev/null || echo "$GETH_SIZE bytes")
-Beacon: $(numfmt --to=iec $BEACON_SIZE 2>/dev/null || echo "$BEACON_SIZE bytes")
-Validator: $(numfmt --to=iec $VALIDATOR_SIZE 2>/dev/null || echo "$VALIDATOR_SIZE bytes")
+Geth: $(numfmt --to=iec "$GETH_SIZE" 2>/dev/null || echo "$GETH_SIZE bytes")
+Beacon: $(numfmt --to=iec "$BEACON_SIZE" 2>/dev/null || echo "$BEACON_SIZE bytes")
+Validator: $(numfmt --to=iec "$VALIDATOR_SIZE" 2>/dev/null || echo "$VALIDATOR_SIZE bytes")
 
 Files
 -----

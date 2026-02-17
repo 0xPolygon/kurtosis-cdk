@@ -111,7 +111,7 @@ EOF
 
 # Create temporary directory for compilation
 WORK_DIR=$(mktemp -d)
-trap "rm -rf $WORK_DIR" EXIT
+trap 'rm -rf "$WORK_DIR"' EXIT
 
 # Make directory readable and writable by Docker container
 chmod 777 "$WORK_DIR"

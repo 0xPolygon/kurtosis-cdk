@@ -20,7 +20,7 @@ OUTPUT_DIR="$2"
 # Create temp directory for intermediate files to avoid "Argument list too long" errors
 TEMP_DIR="${OUTPUT_DIR}/.tmp_summary_$$"
 mkdir -p "$TEMP_DIR"
-trap "rm -rf '$TEMP_DIR'" EXIT
+trap 'rm -rf "$TEMP_DIR"' EXIT
 
 # Check dependencies
 for cmd in jq curl; do
@@ -88,8 +88,10 @@ build_private_key_map() {
 
     for i in $(seq 0 $((count - 1))); do
         # Derive address and private key
-        local addr=$(cast wallet address --mnemonic "$mnemonic" --mnemonic-index $i 2>/dev/null || echo "")
-        local pk=$(cast wallet private-key --mnemonic "$mnemonic" --mnemonic-index $i 2>/dev/null || echo "")
+        local addr
+        addr=$(cast wallet address --mnemonic "$mnemonic" --mnemonic-index "$i" 2>/dev/null || echo "")
+        local pk
+        pk=$(cast wallet private-key --mnemonic "$mnemonic" --mnemonic-index "$i" 2>/dev/null || echo "")
 
         if [ -n "$addr" ] && [ -n "$pk" ]; then
             # Add to map (convert address to lowercase for matching)
@@ -209,8 +211,10 @@ extract_l1_contracts() {
     # Extract from agglayer config if it exists
     local agglayer_config="$output_dir/config/agglayer/config.toml"
     if [ -f "$agglayer_config" ]; then
-        local rollup_manager=$(grep -m1 "rollup-manager-contract" "$agglayer_config" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
-        local ger_contract=$(grep -m1 "polygon-zkevm-global-exit-root-v2-contract" "$agglayer_config" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
+        local rollup_manager
+        rollup_manager=$(grep -m1 "rollup-manager-contract" "$agglayer_config" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
+        local ger_contract
+        ger_contract=$(grep -m1 "polygon-zkevm-global-exit-root-v2-contract" "$agglayer_config" | sed 's/.*= *"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
 
         contracts=$(jq -n \
             --arg rollup_manager "$rollup_manager" \
@@ -224,9 +228,12 @@ extract_l1_contracts() {
     # Also extract from first L2 aggkit config if available
     local aggkit_config="$output_dir/config/001/aggkit-config.toml"
     if [ -f "$aggkit_config" ]; then
-        local bridge_addr=$(grep "^BridgeAddr" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
-        local pol_token=$(grep "polTokenAddress" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
-        local deposit_contract=$(jq -r '.config.depositContractAddress // empty' "$output_dir/artifacts/genesis.json" 2>/dev/null || echo "")
+        local bridge_addr
+        bridge_addr=$(grep "^BridgeAddr" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+        local pol_token
+        pol_token=$(grep "polTokenAddress" "$aggkit_config" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+        local deposit_contract
+        deposit_contract=$(jq -r '.config.depositContractAddress // empty' "$output_dir/artifacts/genesis.json" 2>/dev/null || echo "")
 
         contracts=$(echo "$contracts" | jq \
             --arg bridge "$bridge_addr" \
@@ -256,8 +263,8 @@ if command -v cast &> /dev/null; then
     log "  Deriving private keys from L2 mnemonic..."
     # Append L2 private keys to the same map
     for i in $(seq 0 49); do
-        addr=$(cast wallet address --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index $i 2>/dev/null || echo "")
-        pk=$(cast wallet private-key --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index $i 2>/dev/null || echo "")
+        addr=$(cast wallet address --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index "$i" 2>/dev/null || echo "")
+        pk=$(cast wallet private-key --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index "$i" 2>/dev/null || echo "")
 
         if [ -n "$addr" ] && [ -n "$pk" ]; then
             jq --arg addr "${addr,,}" --arg pk "$pk" '. + {($addr): $pk}' "$TEMP_DIR/pk_map.json" > "$TEMP_DIR/pk_map_tmp.json"
