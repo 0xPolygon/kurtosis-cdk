@@ -195,6 +195,7 @@ extract_keystore_address() {
 }
 
 # Extract private key from keystore file (if possible - usually encrypted)
+# shellcheck disable=SC2317
 extract_keystore_privkey() {
     local keystore_file="$1"
 

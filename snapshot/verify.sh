@@ -242,7 +242,7 @@ log "Testing Geth RPC endpoint..."
 
 # Wait up to 30 seconds for RPC to be ready
 RPC_READY=false
-for i in {1..30}; do
+for _ in {1..30}; do
     if curl -s http://localhost:8545 \
         -X POST \
         -H "Content-Type: application/json" \
@@ -377,7 +377,7 @@ log "Testing Beacon API endpoint..."
 
 # Check beacon health
 BEACON_READY=false
-for i in {1..30}; do
+for _ in {1..30}; do
     if curl -s http://localhost:4000/eth/v1/node/health &> /dev/null; then
         BEACON_READY=true
         log_info "  Beacon API is accessible"
@@ -416,7 +416,7 @@ for service in "${SERVICES[@]}"; do
         grep -v "Error processing HTTP API request" | \
         grep -v "Gateway does not support UPnP" | \
         grep -v "404 Not Found" | \
-        wc -l | tr -d '[:space:]' || echo 0)
+        grep -c "" || echo 0)
 
     if [ "$ERROR_COUNT" -gt 5 ]; then
         log_warn "  $service: $ERROR_COUNT error-like messages found"
@@ -441,7 +441,7 @@ log_step "TEST 9: L2 Block Progression"
 log "Checking L2 chains for block progression..."
 
 # Find L2 RPC endpoints from docker-compose
-L2_RPCS=$(docker-compose -f docker-compose.yml config | grep -E "op-geth-[0-9]+" -A 5 | grep "8545:8545" | wc -l || echo 0)
+L2_RPCS=$(docker-compose -f docker-compose.yml config | grep -E "op-geth-[0-9]+" -A 5 | grep -c "8545:8545" || echo 0)
 
 if [ "$L2_RPCS" -eq 0 ]; then
     log_warn "No L2 chains found in snapshot, skipping L2 block progression test"
