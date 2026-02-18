@@ -11,5 +11,9 @@ SP1_VERIFIER_GATEWAY_GROTH16 = "SP1_VERIFIER_GATEWAY_GROTH16"
 AceptableInacctivityTime = "AceptableInacctivityTime" # typos in legacy node config
 supress_rpc_check = "supress_rpc_check" # typo in blutgang config
 
+[default.extend-words]
+UPnP = "UPnP"
+Pn = "Pn"
+
 [files]
 extend-exclude = ["*go.mod", "*go.sum", "*.excalidraw"]

@@ -178,6 +178,10 @@ DEFAULT_L1_ARGS = {
     # 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults
     # Please note that minimal preset requires alternative client images.
     "l1_preset": "minimal",
+    # L1 Electra fork epoch. Default: 0 (activated at genesis).
+    "l1_electra_fork_epoch": 0,
+    # L1 Fulu fork epoch. Default: 1 (blocks are not finalized if fulu hard fork is activated at genesis).
+    "l1_fulu_fork_epoch": 1,
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 2,
@@ -486,7 +490,7 @@ def parse_args(plan, user_args):
         plan.print("Using static ports.")
         args = DEFAULT_STATIC_PORTS | args
 
-    # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawls to work.
+    # When using assertoor to test L1 scenarios, l1_preset should be mainnet for deposits and withdrawals to work.
     if "assertoor" in args["l1_additional_services"]:
         plan.print(
             "Assertoor is detected - changing l1_preset to mainnet and l1_participant_count to 2"

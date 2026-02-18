@@ -29,3 +29,10 @@ anvil_state.json
 
 # tests
 .kurtosis-test/
+
+# snapshots
+snapshots
+
+# Solidity build artifacts
+out/
+cache/
