@@ -44,13 +44,13 @@ _wait_for_rpc_to_be_available() {
     local rpc_url="$1"
     local mnemonic="$2"
 
-    counter=0
-    max_retries=20
-    until cast send --rpc-url "$rpc_url" --mnemonic "$mnemonic" --value 0 "{{.l2_sequencer_address}}" &> /dev/null; do
+    local max_retries=40
+    local counter=0
+    until cast send --rpc-url "$rpc_url" --mnemonic "$mnemonic" --value 0 "$(cast az)" &> /dev/null; do
         ((counter++))
-        _echo_ts "Can't send L1 transfers yet... Retrying ($counter)..."
+        echo "Check ${counter}/${max_retries} for ${rpc_url}: RPC not ready..."
         if [[ $counter -ge $max_retries ]]; then
-            _echo_ts "Exceeded maximum retry attempts. Exiting."
+            echo "Exceeded maximum retry attempts. Exiting."
             exit 1
         fi
         sleep 5
@@ -1029,21 +1029,19 @@ l2_legacy_fund_accounts() {
     fi
 
     _wait_for_rpc_to_be_available() {
-        local counter=0
-        local max_retries=20
-        local retry_interval=5
+        local rpc_url="$1"
+        local private_key="$2"
 
-        until cast send --legacy \
-                        --rpc-url "$l2_rpc_url" \
-                        --private-key "{{.l2_admin_private_key}}" \
-                        --value 0 "{{.l2_sequencer_address}}" &> /dev/null; do
+        local max_retries=40
+        local counter=0
+        until cast send --rpc-url "$rpc_url" --private-key "$private_key" --value 0 --legacy "$(cast az)" &> /dev/null; do
             ((counter++))
-            _echo_ts "Can't send L2 transfers yet... Retrying ($counter)..."
+            echo "Check ${counter}/${max_retries} for ${rpc_url}: RPC not ready..."
             if [[ $counter -ge $max_retries ]]; then
-                _echo_ts "Exceeded maximum retry attempts. Exiting."
+                echo "Exceeded maximum retry attempts. Exiting."
                 exit 1
             fi
-            sleep $retry_interval
+            sleep 5
         done
     }
 
@@ -1072,7 +1070,7 @@ l2_legacy_fund_accounts() {
     fi
 
     _echo_ts "Waiting for the L2 RPC to be available"
-    _wait_for_rpc_to_be_available
+    _wait_for_rpc_to_be_available "$l2_rpc_url" "{{.l2_admin_private_key}}"
     _echo_ts "L2 RPC is now available"
 
     eth_address="$(cast wallet address --private-key "{{.l2_admin_private_key}}")"
