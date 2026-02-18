@@ -2,6 +2,10 @@ name: kurtosis-pre-run
 description: Prepare the environment for deploying Kurtosis packages.
 
 inputs:
+  kurtosis_version:
+    description: The version of Kurtosis to install
+    required: false
+    default: 1.15.2
   docker_username:
     description: The username for Docker Hub
     required: false
@@ -33,7 +37,7 @@ runs:
       run: |
         echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
-        sudo apt install -y kurtosis-cli=1.14.1
+        sudo apt install -y kurtosis-cli=${{ inputs.kurtosis_version }}
         kurtosis analytics disable
         kurtosis version
 
@@ -117,9 +121,9 @@ runs:
       run: |
         registry="europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/virtual"
         images=(
-          "kurtosistech/engine:1.14.1"
-          "kurtosistech/core:1.14.1"
-          "kurtosistech/files-artifacts-expander:1.14.1"
+          "kurtosistech/engine:${{ inputs.kurtosis_version }}"
+          "kurtosistech/core:${{ inputs.kurtosis_version }}"
+          "kurtosistech/files-artifacts-expander:${{ inputs.kurtosis_version }}"
           "timberio/vector:0.45.0-debian"
           "traefik:2.10.6"
           "alpine:3.17"

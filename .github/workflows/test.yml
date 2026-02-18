@@ -16,6 +16,7 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
+  KURTOSIS_VERSION: 1.15.2
 
 jobs:
   lint:
@@ -30,7 +31,7 @@ jobs:
         run: |
           echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
-          sudo apt install -y kurtosis-cli=1.14.1
+          sudo apt install -y kurtosis-cli=${{ env.KURTOSIS_VERSION }}
           kurtosis analytics disable
 
       - name: Install yamllint
