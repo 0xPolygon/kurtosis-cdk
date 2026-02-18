@@ -465,7 +465,7 @@ ENTRYPOINT_EOF
 
 # Create Dockerfile for Teku beacon node
 cat > "$BEACON_BUILD_DIR/Dockerfile" << 'EOF'
-FROM consensys/teku:24.12.0
+FROM consensys/teku:26.2.0
 
 # Install curl for healthcheck, jq for JSON parsing
 USER root
@@ -594,7 +594,7 @@ chmod +x "$VALIDATOR_BUILD_DIR/validator-entrypoint.sh"
 
 # Create Dockerfile with entrypoint
 cat > "$VALIDATOR_BUILD_DIR/Dockerfile" << 'EOF'
-FROM consensys/teku:24.12.0
+FROM consensys/teku:26.2.0
 
 USER root
 
