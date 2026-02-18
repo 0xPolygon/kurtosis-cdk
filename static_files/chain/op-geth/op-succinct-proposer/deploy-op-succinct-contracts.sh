@@ -4,11 +4,14 @@ export FOUNDRY_DISABLE_NIGHTLY_WARNING=1
 set -x
 
 wait_for_rpc_to_be_available() {
-    counter=0
-    max_retries=40
-    until cast send --rpc-url "{{.l1_rpc_url}}" --mnemonic "{{.l1_preallocated_mnemonic}}" --value 0 "$(cast az)" &> /dev/null; do
+    local rpc_url="$1"
+    local mnemonic="$2"
+
+    local max_retries=40
+    local counter=0
+    until cast send --rpc-url "$rpc_url" --mnemonic "$mnemonic" --value 0 "$(cast az)" &> /dev/null; do
         ((counter++))
-        echo "Can't send L1 transfers yet... Retrying ($counter)..."
+        echo "Check ${counter}/${max_retries} for ${rpc_url}: RPC not ready..."
         if [[ $counter -ge $max_retries ]]; then
             echo "Exceeded maximum retry attempts. Exiting."
             exit 1
@@ -42,7 +45,7 @@ function deploy_create2() {
 }
 
 echo "Waiting for the L1 RPC to be available"
-wait_for_rpc_to_be_available "{{.l1_rpc_url}}"
+wait_for_rpc_to_be_available "{{.l1_rpc_url}}" "{{.l1_preallocated_mnemonic}}"
 deploy_create2
 
 

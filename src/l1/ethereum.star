@@ -1,6 +1,6 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@6.0.0"
-)  # 2026-01-05
+    "github.com/ethpandaops/ethereum-package/main.star@e0c96ff24829d91ced75b9ce0594e589e4b463e4"
+)  # 2026-02-17
 constants = import_module("../package_io/constants.star")
 
 only_smc_genesis = "../../static_files/contracts/genesis/only-smc-deployed-genesis.json"
