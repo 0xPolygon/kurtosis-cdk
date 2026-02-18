@@ -108,7 +108,7 @@ DEFAULT_IMAGES = {
     # Type 1 cdk-erigon sovereign image.
     # The cdk_erigon_sovereign_image is provided for reference only and is not actively used in this package.
     # For example: .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml
-    "cdk_erigon_sovereign_image": "ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC2",
+    "cdk_erigon_sovereign_image": "ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC3",
     "cdk_node_image": "ghcr.io/0xpolygon/cdk:0.5.4",
     "db_image": "postgres:17.6",
     "mongodb_image": "mongo:7.0.29",
