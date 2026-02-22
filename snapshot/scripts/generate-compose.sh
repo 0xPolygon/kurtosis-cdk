@@ -124,10 +124,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
-      interval: 2s
-      timeout: 3s
+      interval: 1s
+      timeout: 2s
       retries: 3
-      start_period: 10s
+      start_period: 5s
 
   beacon:
     image: snapshot-beacon:$TAG
@@ -145,7 +145,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/eth/v1/node/health"]
-      interval: 3s
+      interval: 1s
       timeout: 5s
       retries: 5
       start_period: 30s
@@ -161,10 +161,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "pgrep", "-f", "validator-client"]
-      interval: 10s
-      timeout: 5s
+      interval: 2s
+      timeout: 2s
       retries: 3
-      start_period: 60s
+      start_period: 15s
 EOF
 
 # Add agglayer service if found
@@ -194,10 +194,10 @@ if [ "$AGGLAYER_FOUND" = "true" ]; then
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-c", "test -f /proc/1/cmdline"]
-      interval: 2s
-      timeout: 3s
+      interval: 1s
+      timeout: 2s
       retries: 3
-      start_period: 10s
+      start_period: 5s
     environment:
       - RUST_BACKTRACE=1
 EOF
@@ -263,10 +263,10 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
-      interval: 2s
-      timeout: 3s
+      interval: 1s
+      timeout: 2s
       retries: 3
-      start_period: 180s
+      start_period: 30s
 EOF
 
         log "    ✓ op-geth-$prefix service added"
@@ -306,10 +306,10 @@ EOF
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "--post-data={\"jsonrpc\":\"2.0\",\"method\":\"optimism_syncStatus\",\"params\":[],\"id\":1}", "--header=Content-Type:application/json", "http://localhost:8547"]
-      interval: 2s
-      timeout: 3s
+      interval: 1s
+      timeout: 2s
       retries: 3
-      start_period: 240s
+      start_period: 45s
 EOF
 
         log "    ✓ op-node-$prefix service added"
@@ -410,8 +410,8 @@ set -euo pipefail
 docker-compose -f docker-compose.yml up -d
 
 echo ""
-echo "Waiting for services to be healthy..."
-sleep 5
+echo "Waiting for services to be ready..."
+sleep 2
 
 echo ""
 echo "Service status:"
