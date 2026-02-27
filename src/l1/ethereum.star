@@ -78,7 +78,7 @@ def run(plan, args):
             "seconds_per_slot": args["l1_seconds_per_slot"],
             # The "minimal" preset is useful for rapid testing and development.
             # It takes 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults.
-            "preset": "minimal",
+            "preset": args["l1_preset"],
             # Ethereum hard fork configurations.
             # Supported fork epochs are documented in `static_files/genesis-generation-config/el-cl/values.env.tmpl`.
             # in the ethereum package repository.

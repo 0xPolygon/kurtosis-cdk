@@ -172,6 +172,15 @@ DEFAULT_L1_ARGS = {
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 2,
+    # Preset for the network.
+    # Default: "mainnet"
+    # Options:
+    #   - mainnet
+    #   - minimal
+    # "minimal" preset will spin up a network with minimal preset. This is useful for rapid testing and development.
+    # 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults
+    # Please note that minimal preset requires alternative client images.
+    "l1_preset": "minimal",
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
