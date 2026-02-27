@@ -18,6 +18,11 @@ OUTPUT_DIR="$1"
 DISCOVERY_JSON="$2"
 CHECKPOINT_JSON="$3"
 
+# L1 client types (override via environment variables)
+L1_EL_TYPE="${L1_EL_TYPE:-reth}"
+L1_CL_TYPE="${L1_CL_TYPE:-lighthouse}"
+L1_EL_SERVICE="el-1-${L1_EL_TYPE}-${L1_CL_TYPE}"
+
 # Log function
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"
@@ -196,11 +201,11 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         cp "$AGGKIT_CONFIG" "$AGGKIT_CONFIG.bak"
 
         # Replace Kurtosis container names with docker-compose service names
-        # L1 geth: el-1-geth-lighthouse -> geth
+        # L1: el-1-<el_type>-<cl_type> -> geth
         # L2 geth: op-el-1-op-geth-op-node-<prefix> -> op-geth-<prefix>
         # op-node: op-cl-1-op-node-op-geth-<prefix> -> op-node-<prefix>
 
-        sed -i "s|http://el-1-geth-lighthouse:8545|http://geth:8545|g" "$AGGKIT_CONFIG"
+        sed -i "s|http://${L1_EL_SERVICE}:8545|http://geth:8545|g" "$AGGKIT_CONFIG"
         sed -i "s|http://op-el-1-op-geth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGKIT_CONFIG"
         sed -i "s|http://op-cl-1-op-node-op-geth-$prefix:8547|http://op-node-$prefix:8547|g" "$AGGKIT_CONFIG"
 

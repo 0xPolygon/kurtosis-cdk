@@ -17,6 +17,11 @@ fi
 CONFIG_DIR="$1"
 CONFIG_FILE="$CONFIG_DIR/config.toml"
 
+# L1 client types (override via environment variables)
+L1_EL_TYPE="${L1_EL_TYPE:-reth}"
+L1_CL_TYPE="${L1_CL_TYPE:-lighthouse}"
+L1_EL_SERVICE="el-1-${L1_EL_TYPE}-${L1_CL_TYPE}"
+
 # Check if config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "ERROR: Config file not found: $CONFIG_FILE" >&2
@@ -38,9 +43,9 @@ log "Backup created: $CONFIG_FILE.bak"
 # Perform adaptations using sed
 log "Applying adaptations..."
 
-# 1. Replace L1 node URLs: el-1-geth-lighthouse -> geth
-sed -i 's|http://el-1-geth-lighthouse:8545|http://geth:8545|g' "$CONFIG_FILE"
-sed -i 's|ws://el-1-geth-lighthouse:8546|ws://geth:8546|g' "$CONFIG_FILE"
+# 1. Replace L1 node URLs: el-1-<el_type>-<cl_type> -> geth
+sed -i "s|http://${L1_EL_SERVICE}:8545|http://geth:8545|g" "$CONFIG_FILE"
+sed -i "s|ws://${L1_EL_SERVICE}:8546|ws://geth:8546|g" "$CONFIG_FILE"
 log "  ✓ Updated L1 RPC endpoints to use 'geth' hostname"
 
 # 2. Comment out L2 RPC if present (since L2 won't be in the snapshot by default)
@@ -83,7 +88,7 @@ cat > "$CONFIG_FILE.tmp" << 'EOF'
 # This configuration has been adapted from the Kurtosis enclave for use in
 # a docker-compose environment. Key changes:
 #
-# - L1 RPC endpoints changed to use 'geth' hostname (from el-1-geth-lighthouse)
+# - L1 RPC endpoints changed to use 'geth' hostname (from Kurtosis service name)
 # - L2 RPC endpoints commented out (L2 stack not included in L1-only snapshot)
 # - Gas price floor configured (1 gwei minimum to ensure L1 miners accept txs)
 # - All contract addresses and keys preserved from original deployment

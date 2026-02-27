@@ -13,6 +13,8 @@ permissions:
 env:
   ENCLAVE_NAME: cdk
   DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
+  L1_EL_TYPE: reth
+  L1_CL_TYPE: lighthouse
 
 jobs:
   check-version-matrix:
@@ -433,7 +435,7 @@ jobs:
           printf "[profile.default]\nsrc = 'contracts'\nout = 'out'\nlibs = ['node_modules']\n" > foundry.toml
 
           echo "Deploying gas token to L1..."
-          l1_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-geth-lighthouse rpc)
+          l1_rpc_url=$(kurtosis port print ${{ env.ENCLAVE_NAME }} el-1-${{ env.L1_EL_TYPE }}-${{ env.L1_CL_TYPE }} rpc)
           forge create \
             --broadcast \
             --json \

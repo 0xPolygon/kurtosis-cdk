@@ -29,11 +29,42 @@ def run(plan, args):
         custom_genesis = ""
 
     log_format = args.get("log_format")
-    geth_log_format_mapping = {
-        constants.LOG_FORMAT.json: "json",
-        constants.LOG_FORMAT.pretty: "terminal",
-    }
-    geth_log_format = geth_log_format_mapping.get(log_format)
+    el_type = args.get("l1_el_type")
+    cl_type = args.get("l1_cl_type")
+
+    # Resolve client images: look up "<type>_image" in args, falling back to
+    # the ethereum-package default when the key does not exist.
+    el_image = args.get(el_type + "_image", "")
+    cl_image = args.get(cl_type + "_image", "")
+
+    # Client-specific EL extra params.
+    el_extra_params = {
+        "reth": [
+            "--rpc.eth-proof-window=1000000",
+        ],
+        "geth": [
+            "--log.format={}".format(
+                "json" if log_format == constants.LOG_FORMAT.json else "terminal"
+            ),
+            "--gcmode archive",
+        ],
+    }.get(el_type, [])
+
+    # Client-specific CL extra params.
+    cl_extra_params = {
+        "lighthouse": [
+            "--disable-optimistic-finalized-sync",
+            "--disable-backfill-rate-limiting",
+        ]
+        + (["--log-format=JSON"] if log_format == constants.LOG_FORMAT.json else []),
+    }.get(cl_type, [])
+
+    # Client-specific VC extra params.
+    vc_extra_params = {
+        "lighthouse": ["--log-format=JSON"]
+        if log_format == constants.LOG_FORMAT.json
+        else [],
+    }.get(cl_type, [])
 
     port_publisher = generate_port_publisher_config(args)
     l1_args = {
@@ -42,39 +73,17 @@ def run(plan, args):
                 # General
                 "count": args.get("l1_participants_count"),
                 # Consensus client
-                "cl_type": "lighthouse",
-                "cl_image": args.get("lighthouse_image"),
-                "cl_extra_params": [
-                    # Disable optimistic finalized sync. This will force Lighthouse to
-                    # verify every execution block hash with the execution client during
-                    # finalized sync. By default block hashes will be checked in Lighthouse
-                    # and only passed to the EL if initial verification fails.
-                    "--disable-optimistic-finalized-sync",
-                    # Disable the backfill sync rate-limiting. This allow users to just sync
-                    # the entire chain as fast as possible, however it can result in
-                    # resource contention which degrades staking performance. Stakers should
-                    # generally choose to avoid this flag since backfill sync is not
-                    # required for staking.
-                    "--disable-backfill-rate-limiting",
-                ]
-                + (
-                    ["--log-format=JSON"]
-                    if log_format == constants.LOG_FORMAT.json
-                    else []
-                ),
+                "cl_type": cl_type,
+                "cl_image": cl_image,
+                "cl_extra_params": cl_extra_params,
                 # Execution client
-                "el_type": "geth",
-                "el_image": args.get("geth_image"),
-                "el_extra_params": [
-                    "--log.format={}".format(geth_log_format),
-                    "--gcmode archive",
-                ],
+                "el_type": el_type,
+                "el_image": el_image,
+                "el_extra_params": el_extra_params,
                 # Validator client
-                "vc_type": "lighthouse",
-                "vc_image": args.get("lighthouse_image"),
-                "vc_extra_params": ["--log-format=JSON"]
-                if log_format == constants.LOG_FORMAT.json
-                else [],
+                "vc_type": cl_type,
+                "vc_image": cl_image,
+                "vc_extra_params": vc_extra_params,
                 # Fulu hard fork config
                 # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
                 # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and

@@ -32,12 +32,17 @@ check_variable() {
 # ENCLAVE
 enclave="cdk"
 
+# L1 client types (override via environment variables)
+L1_EL_TYPE="${L1_EL_TYPE:-reth}"
+L1_CL_TYPE="${L1_CL_TYPE:-lighthouse}"
+L1_EL_SERVICE="el-1-${L1_EL_TYPE}-${L1_CL_TYPE}"
+
 if [[ "$enclave" != "" ]] && ! kurtosis enclave inspect "$enclave"; then
   exit 1
 fi
 
 # LOCAL KURTOSIS-CDK
-l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+l1_rpc_url="$(kurtosis port print "$enclave" "$L1_EL_SERVICE" rpc)"
 l2_sequencer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 rpc)"
 l2_datastreamer_url="$(kurtosis port print "$enclave" cdk-erigon-sequencer-001 data-streamer | sed 's|datastream://||')"
 l2_rpc_url="$(kurtosis port print "$enclave" cdk-erigon-rpc-001 rpc)"
@@ -45,7 +50,7 @@ rollup_manager_addr="0x2F50ef6b8e8Ee4E579B17619A92dE3E2ffbD8AD2"
 rollup_id=1
 
 # LOCAL KURTOSIS-CDK-ERIGON (XAVI)
-# l1_rpc_url="$(kurtosis port print "$enclave" el-1-geth-lighthouse rpc)"
+# l1_rpc_url="$(kurtosis port print "$enclave" "$L1_EL_SERVICE" rpc)"
 # l2_sequencer_url="$(kurtosis port print "$enclave" sequencer001 sequencer8123)"
 # l2_datastreamer_url="$(kurtosis port print "$enclave" sequencer001 sequencer6900)"
 # l2_rpc_url="$(kurtosis port print "$enclave" rpc001 rpc8123)"

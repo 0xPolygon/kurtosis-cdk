@@ -32,6 +32,11 @@ fi
 SOURCE_FORKID=$1
 TARGET_FORKID=$2
 ERIGON_IMAGE=hermeznetwork/cdk-erigon:v2.61.4-RC1
+
+# L1 client types (override via environment variables)
+L1_EL_TYPE="${L1_EL_TYPE:-reth}"
+L1_CL_TYPE="${L1_CL_TYPE:-lighthouse}"
+L1_EL_SERVICE="el-1-${L1_EL_TYPE}-${L1_CL_TYPE}"
 STACK_NAME=upgradeCDK-$(
     tr -dc A-Za-z0-9 </dev/urandom | head -c 13
     echo
@@ -89,7 +94,7 @@ kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "cd /opt/agglayer-contracts &
 
 # create env file for the commands we need to execute on contracts service
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'cd /opt' > /opt/commands.sh"
-kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'export ETH_RPC_URL=http://el-1-geth-lighthouse:8545' >> /opt/commands.sh"
+kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'export ETH_RPC_URL=http://${L1_EL_SERVICE}:8545' >> /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'ROLLUP_MAN=\$(cat zkevm/combined.json  | jq -r .polygonRollupManagerAddress)' >> /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'ROLLUP=\$(cat zkevm/combined.json | jq -r .rollupAddress)' >> /opt/commands.sh"
 kurtosis service exec "$STACK_NAME" $SVC_CONTRACTS "echo 'GENESIS=\$(cat zkevm/combined.json  | jq -r .genesis)' >> /opt/commands.sh"

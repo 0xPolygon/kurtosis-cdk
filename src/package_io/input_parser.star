@@ -126,9 +126,16 @@ DEFAULT_ACCOUNTS = {
 
 LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
 
+_DEFAULT_L1_EL_TYPE = "geth"
+_DEFAULT_L1_CL_TYPE = "lighthouse"
+
 DEFAULT_L1_ARGS = {
     # The L1 engine to use, either "geth" or "anvil".
     "l1_engine": "geth",
+    # The L1 execution layer client type (e.g. "reth", "geth").
+    "l1_el_type": _DEFAULT_L1_EL_TYPE,
+    # The L1 consensus layer client type (e.g. "lighthouse", "prysm").
+    "l1_cl_type": _DEFAULT_L1_CL_TYPE,
     # The L1 network identifier.
     "l1_chain_id": 271828,
     # Custom L1 genesis
@@ -141,11 +148,11 @@ DEFAULT_L1_ARGS = {
     # cast wallet private-key --mnemonic $l1_preallocated_mnemonic
     "l1_preallocated_private_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # The L1 HTTP RPC endpoint.
-    "l1_rpc_url": "http://el-1-geth-lighthouse:8545",
+    "l1_rpc_url": "http://el-1-{}-{}:8545".format(_DEFAULT_L1_EL_TYPE, _DEFAULT_L1_CL_TYPE),
     # The L1 WS RPC endpoint.
-    "l1_ws_url": "ws://el-1-geth-lighthouse:8546",
+    "l1_ws_url": "ws://el-1-{}-{}:8546".format(_DEFAULT_L1_EL_TYPE, _DEFAULT_L1_CL_TYPE),
     # The L1 consensus layer RPC endpoint.
-    "l1_beacon_url": "http://cl-1-lighthouse-geth:4000",
+    "l1_beacon_url": "http://cl-1-{}-{}:4000".format(_DEFAULT_L1_CL_TYPE, _DEFAULT_L1_EL_TYPE),
     # The additional services to spin up.
     # Default: []
     # Options:
@@ -435,6 +442,9 @@ def parse_args(plan, user_args):
     # As it changes L1 config it needs to be run before other functions/checks
     set_anvil_args(plan, args, user_args)
 
+    # Recompute L1 URLs if the user overrode the client types but not the URLs
+    set_l1_client_args(args, user_args)
+
     # Sanity check step for incompatible parameters
     args_sanity_check(plan, deployment_stages, args, user_args)
 
@@ -603,6 +613,17 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
 
     fork_name = constants.FORK_ID_TO_NAME[fork_id]
     return (fork_id, fork_name)
+
+
+def set_l1_client_args(args, user_args):
+    el_type = args["l1_el_type"]
+    cl_type = args["l1_cl_type"]
+    if not user_args.get("args", {}).get("l1_rpc_url"):
+        args["l1_rpc_url"] = "http://el-1-{}-{}:8545".format(el_type, cl_type)
+    if not user_args.get("args", {}).get("l1_ws_url"):
+        args["l1_ws_url"] = "ws://el-1-{}-{}:8546".format(el_type, cl_type)
+    if not user_args.get("args", {}).get("l1_beacon_url"):
+        args["l1_beacon_url"] = "http://cl-1-{}-{}:4000".format(cl_type, el_type)
 
 
 def set_anvil_args(plan, args, user_args):
