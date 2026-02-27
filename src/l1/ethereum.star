@@ -37,13 +37,6 @@ def run(plan, args):
     }
     geth_log_format = geth_log_format_mapping.get(log_format)
 
-    # Lighthouse log  format configuration.
-    lighthouse_log_format_mapping = {
-        constants.LOG_FORMAT.json: "json",
-        constants.LOG_FORMAT.pretty: "pretty",
-    }
-    lighthouse_log_format = lighthouse_log_format_mapping.get(log_format)
-
     l1_args = {
         "participants": [
             {
@@ -52,7 +45,11 @@ def run(plan, args):
                 # Consensus client
                 "cl_type": "lighthouse",
                 "cl_image": args.get("lighthouse_image"),
-                "cl_extra_params": ["--log-format={}".format(lighthouse_log_format)],
+                "cl_extra_params": (
+                    ["--log-format=JSON"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
                 # Execution client
                 "el_type": "geth",
                 "el_image": args.get("geth_image"),
@@ -61,7 +58,11 @@ def run(plan, args):
                 "use_separate_vc": True,
                 "vc_type": "lighthouse",
                 "vc_image": args.get("lighthouse_image"),
-                "vc_extra_params": ["--log-format={}".format(lighthouse_log_format)],
+                "vc_extra_params": (
+                    ["--log-format=JSON"]
+                    if log_format == constants.LOG_FORMAT.json
+                    else []
+                ),
                 # Fulu hard fork config
                 # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
                 # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
