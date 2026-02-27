@@ -8,6 +8,7 @@ op_rollup_created_genesis = "../../static_files/contracts/genesis/op-genesis.jso
 
 
 def run(plan, args):
+    # Custom genesis configuration.
     if args.get("l1_custom_genesis"):
         if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.pessimistic:
             plan.print(
@@ -28,6 +29,7 @@ def run(plan, args):
         plan.print("Custom genesis is disabled, using the default ethereum package.")
         custom_genesis = ""
 
+    # Geth log format configuration.
     log_format = args.get("log_format")
     geth_log_format_mapping = {
         constants.LOG_FORMAT.json: "json",
@@ -92,7 +94,6 @@ def run(plan, args):
         },
         "additional_services": args["l1_additional_services"],
     }
-
     result = ethereum_package.run(plan, l1_args)
 
     cl_rpc_url = result.all_participants[0].cl_context.beacon_http_url
