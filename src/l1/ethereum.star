@@ -56,10 +56,7 @@ def run(plan, args):
                 # Execution client
                 "el_type": "geth",
                 "el_image": args.get("geth_image"),
-                "el_extra_params": [
-                    "--log.format={}".format(geth_log_format),
-                    # "--gcmode archive",
-                ],
+                "el_extra_params": ["--log.format={}".format(geth_log_format)],
                 # Validator client
                 "use_separate_vc": True,
                 "vc_type": "lighthouse",
