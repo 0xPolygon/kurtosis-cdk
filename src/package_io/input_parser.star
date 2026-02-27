@@ -126,7 +126,7 @@ DEFAULT_ACCOUNTS = {
 
 LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
 
-_DEFAULT_L1_EL_TYPE = "geth"
+_DEFAULT_L1_EL_TYPE = "reth"
 _DEFAULT_L1_CL_TYPE = "lighthouse"
 
 DEFAULT_L1_ARGS = {
