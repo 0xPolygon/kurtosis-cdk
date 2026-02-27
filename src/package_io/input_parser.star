@@ -169,26 +169,11 @@ DEFAULT_L1_ARGS = {
     #   - tracoor
     # Check the ethereum-package for more details: https://github.com/ethpandaops/ethereum-package
     "l1_additional_services": [],
-    # Preset for the network.
-    # Default: "mainnet"
-    # Options:
-    #   - mainnet
-    #   - minimal
-    # "minimal" preset will spin up a network with minimal preset. This is useful for rapid testing and development.
-    # 192 seconds to get to finalized epoch vs 1536 seconds with mainnet defaults
-    # Please note that minimal preset requires alternative client images.
-    "l1_preset": "minimal",
-    # L1 Electra fork epoch. Default: 0 (activated at genesis).
-    "l1_electra_fork_epoch": 0,
-    # L1 Fulu fork epoch. Default: 1 (blocks are not finalized if fulu hard fork is activated at genesis).
-    "l1_fulu_fork_epoch": 1,
     # Number of seconds per slot on the Beacon chain
     # Default: 12
     "l1_seconds_per_slot": 2,
     # The amount of ETH sent to the admin, sequence, aggregator, sequencer and other chosen addresses.
     "l1_funding_amount": "1000000ether",
-    # Default: 2
-    "l1_participants_count": 1,
     # Whether to deploy https://github.com/AggLayer/lxly-bridge-and-call
     "l1_deploy_lxly_bridge_and_call": True,
     # Anvil: l1_anvil_slots_in_epoch will set the gap of blocks finalized vs safe vs latest
