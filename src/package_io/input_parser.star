@@ -148,11 +148,17 @@ DEFAULT_L1_ARGS = {
     # cast wallet private-key --mnemonic $l1_preallocated_mnemonic
     "l1_preallocated_private_key": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
     # The L1 HTTP RPC endpoint.
-    "l1_rpc_url": "http://el-1-{}-{}:8545".format(_DEFAULT_L1_EL_TYPE, _DEFAULT_L1_CL_TYPE),
+    "l1_rpc_url": "http://el-1-{}-{}:8545".format(
+        _DEFAULT_L1_EL_TYPE, _DEFAULT_L1_CL_TYPE
+    ),
     # The L1 WS RPC endpoint.
-    "l1_ws_url": "ws://el-1-{}-{}:8546".format(_DEFAULT_L1_EL_TYPE, _DEFAULT_L1_CL_TYPE),
+    "l1_ws_url": "ws://el-1-{}-{}:8546".format(
+        _DEFAULT_L1_EL_TYPE, _DEFAULT_L1_CL_TYPE
+    ),
     # The L1 consensus layer RPC endpoint.
-    "l1_beacon_url": "http://cl-1-{}-{}:4000".format(_DEFAULT_L1_CL_TYPE, _DEFAULT_L1_EL_TYPE),
+    "l1_beacon_url": "http://cl-1-{}-{}:4000".format(
+        _DEFAULT_L1_CL_TYPE, _DEFAULT_L1_EL_TYPE
+    ),
     # The additional services to spin up.
     # Default: []
     # Options:
