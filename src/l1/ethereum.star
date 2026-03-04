@@ -36,8 +36,8 @@ def run(plan, args):
 
     # Resolve client images: look up "<type>_image" in args, falling back to
     # the ethereum-package default when the key does not exist.
-    el_image = args.get(el_type + "_image", "")
-    cl_image = args.get(cl_type + "_image", "")
+    el_image = args.get(el_type + "_image")
+    cl_image = args.get(cl_type + "_image")
 
     # Client-specific EL extra params.
     el_extra_params = {
@@ -50,7 +50,7 @@ def run(plan, args):
             ),
             "--gcmode archive",
         ],
-    }.get(el_type, [])
+    }.get(el_type)
 
     # Client-specific CL extra params.
     cl_extra_params = {
@@ -59,14 +59,14 @@ def run(plan, args):
             "--disable-backfill-rate-limiting",
         ]
         + (["--log-format=JSON"] if log_format == constants.LOG_FORMAT.json else []),
-    }.get(cl_type, [])
+    }.get(cl_type)
 
     # Client-specific VC extra params.
     vc_extra_params = {
         "lighthouse": ["--log-format=JSON"]
         if log_format == constants.LOG_FORMAT.json
         else [],
-    }.get(cl_type, [])
+    }.get(cl_type)
 
     l1_args = {
         "participants": [
