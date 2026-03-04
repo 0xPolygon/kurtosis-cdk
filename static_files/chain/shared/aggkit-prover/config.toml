@@ -30,6 +30,7 @@ evm-sketch-genesis = "/etc/aggkit-prover/evm-sketch-genesis.json" # TODO: The or
 
 [aggchain-proof-service.proposer-service]
 l1-rpc-endpoint = "{{ .l1_rpc_url }}"
+l2-consensus-layer-rpc-endpoint = "{{ .l2_cl_rpc_url }}"
 mock = {{ .op_succinct_mock }}
 
 [aggchain-proof-service.proposer-service.client]
@@ -37,6 +38,9 @@ proposer-endpoint = "{{ .proposer_url }}"
 sp1-cluster-endpoint = "{{ .sp1_cluster_endpoint }}"
 request-timeout = 600
 proving-timeout = 3600
+
+[aggchain-proof-service.proposer-service.database]
+database-url = "{{.database_url}}"
 
 [primary-prover.{{ .primary_prover }}]
 proving-timeout = "1h"
