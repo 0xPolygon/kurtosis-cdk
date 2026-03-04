@@ -68,32 +68,34 @@ def run(plan, args):
         else [],
     }.get(cl_type)
 
+    participant = {
+        # General
+        "count": 1,
+        # Consensus client
+        "cl_type": cl_type,
+        "cl_extra_params": cl_extra_params,
+        # Execution client
+        "el_type": el_type,
+        "el_extra_params": el_extra_params,
+        # Validator client
+        "use_separate_vc": True,
+        "vc_type": cl_type,
+        "vc_extra_params": vc_extra_params,
+        # Fulu hard fork config
+        # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
+        # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
+        # broadcasting data on behalf of the proposer.
+        # Since we don't enable perfect PeerDAS in the config, we need to have at least one supernode.
+        "supernode": True,
+    }
+    if el_image:
+        participant["el_image"] = el_image
+    if cl_image:
+        participant["cl_image"] = cl_image
+        participant["vc_image"] = cl_image
+
     l1_args = {
-        "participants": [
-            {
-                # General
-                "count": 1,
-                # Consensus client
-                "cl_type": cl_type,
-                "cl_image": cl_image,
-                "cl_extra_params": cl_extra_params,
-                # Execution client
-                "el_type": el_type,
-                "el_image": el_image,
-                "el_extra_params": el_extra_params,
-                # Validator client
-                "use_separate_vc": True,
-                "vc_type": cl_type,
-                "vc_image": cl_image,
-                "vc_extra_params": vc_extra_params,
-                # Fulu hard fork config
-                # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
-                # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
-                # broadcasting data on behalf of the proposer.
-                # Since we don't enable perfect PeerDAS in the config, we need to have at least one supernode.
-                "supernode": True,
-            }
-        ],
+        "participants": [participant],
         "network_params": {
             "network_id": str(args["l1_chain_id"]),
             "additional_preloaded_contracts": custom_genesis,
