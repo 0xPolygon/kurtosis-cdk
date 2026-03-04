@@ -38,9 +38,9 @@ Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as t
 | agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
 | op-batcher | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
-| op-geth | [1.101609.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.0) | [1.101609.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.0) | ✅ matches stable |
-| op-node | [1.16.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.6) | [1.16.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.6) | ✅ matches stable |
-| op-proposer | [1.10.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.2) | [1.10.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.2) | ✅ matches stable |
+| op-geth | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | ✅ matches stable |
+| op-node | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | ✅ matches stable |
+| op-proposer | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 
 ### cdk-opgeth-sovereign-pessimistic
@@ -54,9 +54,9 @@ Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as t
 | agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
 | op-batcher | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
-| op-geth | [1.101609.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.0) | [1.101609.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.0) | ✅ matches stable |
-| op-node | [1.16.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.6) | [1.16.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.6) | ✅ matches stable |
-| op-proposer | [1.10.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.2) | [1.10.2](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.10.2) | ✅ matches stable |
+| op-geth | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | ✅ matches stable |
+| op-node | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | ✅ matches stable |
+| op-proposer | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 
 ### cdk-opgeth-zkrollup
@@ -71,8 +71,8 @@ Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as t
 | agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
 | op-batcher | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
-| op-geth | [1.101609.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.0) | [1.101609.0](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.0) | ✅ matches stable |
-| op-node | [1.16.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.6) | [1.16.6](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.6) | ✅ matches stable |
+| op-geth | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | ✅ matches stable |
+| op-node | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | ✅ matches stable |
 | op-succinct-proposer | [3.5.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.5.0-agglayer) | [3.5.0-rc.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.5.0-rc.1-agglayer) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 
@@ -139,5 +139,5 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
-| geth | [1.16.9](https://github.com/ethereum/go-ethereum/releases/tag/v1.16.9) | [1.17.0](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.0) | 🚨 behind stable |
-| lighthouse | [8.1.0](https://github.com/sigp/lighthouse/releases/tag/v8.1.0) | [8.1.0](https://github.com/sigp/lighthouse/releases/tag/v8.1.0) | ✅ matches stable |
+| geth | [1.17.1](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.1) | [1.17.1](https://github.com/ethereum/go-ethereum/releases/tag/v1.17.1) | ✅ matches stable |
+| lighthouse | [8.1.1](https://github.com/sigp/lighthouse/releases/tag/v8.1.1) | [8.1.1](https://github.com/sigp/lighthouse/releases/tag/v8.1.1) | ✅ matches stable |
