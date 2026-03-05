@@ -135,7 +135,7 @@ def run(plan, args, contract_setup_addresses, genesis_artifact):
 # On aggkit/cdk-node point of view, only the agglayer_image version is important. Both services can work with both grpc/readrpc and this depends on the agglayer version.
 # On Kurtosis point of view, we are checking whether the cdk-node or the aggkit node is being used to filter the grpc/readrpc.
 def get_agglayer_endpoint(plan, args):
-    if args.get("sequencer_type") == constants.SEQUENCER_TYPE.op_geth or (
+    if args.get("sequencer_type") == constants.SEQUENCER_TYPE.op_reth or (
         "0.3" in args.get("agglayer_image")
         and args.get("consensus_contract_type")
         == constants.CONSENSUS_TYPE.ecdsa_multisig

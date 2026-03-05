@@ -41,7 +41,7 @@ def test_parse_args_with_empty_args(plan):
     node1 = participants.get("sequencer1")
     expect.eq(
         node1.get("el").get("image"),
-        constants.DEFAULT_IMAGES.get("op_geth_image"),
+        constants.DEFAULT_IMAGES.get("op_reth_image"),
     )
     expect.eq(
         node1.get("cl").get("image"),
@@ -136,7 +136,7 @@ def test_parse_args_with_user_overrides(plan):
 
     # defaults
     expect.eq(
-        sequencer1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
+        sequencer1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_reth_image")
     )
     expect.eq(
         proposer_params1.get("image"),
@@ -190,7 +190,7 @@ def test_parse_args_with_user_overrides(plan):
 
     # defaults
     expect.eq(
-        node3.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
+        node3.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_reth_image")
     )
     expect.eq(
         node3.get("cl").get("image"), constants.DEFAULT_IMAGES.get("op_node_image")
@@ -305,7 +305,7 @@ def test_parse_participants_with_partial_config(plan):
     rpc1 = result.get("rpc1")
     expect.eq(rpc1.get("cl").get("image"), "custom-node:latest")
     expect.eq(
-        rpc1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_geth_image")
+        rpc1.get("el").get("image"), constants.DEFAULT_IMAGES.get("op_reth_image")
     )
 
 

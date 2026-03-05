@@ -3,7 +3,7 @@ deployment_stages:
   deploy_op_succinct: false
 
 args:
-  sequencer_type: op-geth
+  sequencer_type: op-reth
   consensus_contract_type: ecdsa-multisig # new sovereign consensus
 
   # aggsender-validator related params

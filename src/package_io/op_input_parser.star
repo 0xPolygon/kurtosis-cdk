@@ -11,10 +11,10 @@ def _default_participant(log_format=constants.LOG_FORMAT.json):
     return _sort_dict_by_values(
         {
             "el": {
-                "type": "op-geth",
-                "image": constants.DEFAULT_IMAGES.get("op_geth_image"),
+                "type": "op-reth",
+                "image": constants.DEFAULT_IMAGES.get("op_reth_image"),
                 "extra_params": (
-                    ["--log.format=json"]
+                    ["--log.stdout.format=json"]
                     if log_format == constants.LOG_FORMAT.json
                     else []
                 ),
@@ -98,7 +98,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@cc841d7f27d2e6febc8f9724249241b210436fc4",  # overlay/main - 2025-12-31
+        "source": "github.com/agglayer/optimism-package/main.star@ff36695ce966d361fad27985d178f857cc8afb1e",  # overlay/main - 2025-12-31
         "predeployed_contracts": True,
     }
 )
