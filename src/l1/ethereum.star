@@ -48,7 +48,8 @@ def run(plan, args):
             "--log.format={}".format(
                 "json" if log_format == constants.LOG_FORMAT.json else "terminal"
             ),
-            "--gcmode archive",
+            "--gcmode=archive",
+            "--syncmode=full",
         ],
     }.get(el_type)
 
