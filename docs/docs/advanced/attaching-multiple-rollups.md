@@ -10,7 +10,7 @@ This guide should walk through the setup and configuration required to launch th
 
 - L1 Ethereum blockchain ([lighthouse/geth](https://github.com/ethpandaops/ethereum-package))
 - Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer service](https://github.com/agglayer/agglayer), and [mock prover](https://github.com/agglayer/provers))
-- L2 Optimism blockchain ([op-geth](https://github.com/ethereum-optimism/op-geth) / [op-node](https://github.com/ethereum-optimism/optimism/tree/develop/op-node)) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity
+- L2 Optimism blockchain ([op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth) / [op-node](https://github.com/ethereum-optimism/optimism/tree/develop/op-node)) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity
 - L2 CDK-Erigon blockchain ([cdk-erigon](https://github.com/0xPolygonHermez/cdk-erigon), [zkevm-pool-manager](https://github.com/0xPolygon/zkevm-pool-manager), [zkevm-prover](https://github.com/0xPolygonHermez/zkevm-prover)and executor, [cdk-node](https://github.com/0xPolygon/cdk)). Three different CDK-Erigon consensus will be used in the guide:
   - Validium
   - Rollup
@@ -23,7 +23,7 @@ This guide should walk through the setup and configuration required to launch th
 
 ### Deployment
 
-By default, the Kurtosis CDK environment spins up an OP Geth environment. This needs to be changed to deploy a CDK Erigon Validium environment first.
+By default, the Kurtosis CDK environment spins up an OP Reth environment. This needs to be changed to deploy a CDK Erigon Validium environment first.
 
 To deploy this environment:
 

@@ -23,7 +23,7 @@ Along with the existing Kurtosis CDK prerequisites, we will also need the depend
 
 ### Deployment
 
-Deploy the default Kurtosis CDK setup without any arguments. This will spin up a CDK-OP-Geth stack deployment.
+Deploy the default Kurtosis CDK setup without any arguments. This will spin up a CDK-OP-Reth stack deployment.
 
 ```bash
 kurtosis run --enclave=cdk .

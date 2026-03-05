@@ -33,7 +33,7 @@ kurtosis enclave inspect cdk
 Let's store the L2 RPC URL in an environment variable for use with `cast`.
 
 ```bash
-export ETH_RPC_URL=$(kurtosis port print cdk op-el-1-op-geth-op-node-001 rpc)
+export ETH_RPC_URL=$(kurtosis port print cdk op-el-1-op-reth-op-node-001 rpc)
 echo $ETH_RPC_URL
 ```
 

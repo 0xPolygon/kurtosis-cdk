@@ -28,9 +28,9 @@ Do not combine an args file with on-the-fly arguments as Kurtosis cannot merge p
 
 Below are some sample configurations to help you get started. Feel free to copy and adapt these examples to fit your use case. You can find more examples in the `.github/tests/` directory.
 
-### [CDK OP Geth](./examples/cdk-opgeth.md)
+### [CDK OP Reth](./examples/cdk-opreth.md)
 
-Based on [op-geth](https://github.com/ethereum-optimism/op-geth).
+Based on [op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth).
 
 Designed for fast, high-throughput deployments and OP Stack familiarity, with native Agglayer integration.
 
