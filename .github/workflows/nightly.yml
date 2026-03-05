@@ -13,7 +13,7 @@ permissions:
 env:
   ENCLAVE_NAME: cdk
   DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
-  L1_EL_TYPE: reth
+  L1_EL_TYPE: geth
   L1_CL_TYPE: lighthouse
 
 jobs:

@@ -33,7 +33,7 @@ check_variable() {
 enclave="cdk"
 
 # L1 client types (override via environment variables)
-L1_EL_TYPE="${L1_EL_TYPE:-reth}"
+L1_EL_TYPE="${L1_EL_TYPE:-geth}"
 L1_CL_TYPE="${L1_CL_TYPE:-lighthouse}"
 L1_EL_SERVICE="el-1-${L1_EL_TYPE}-${L1_CL_TYPE}"
 

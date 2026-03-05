@@ -131,7 +131,7 @@ _DEFAULT_L1_CL_TYPE = "lighthouse"
 
 DEFAULT_L1_ARGS = {
     # The L1 engine to use, either "ethereum-package" or "anvil".
-    "l1_engine": "ethereum-package",
+    "l1_engine": constants.L1_ENGINE.ethereum_package,
     # The L1 execution layer client type (e.g. "reth", "geth").
     "l1_el_type": _DEFAULT_L1_EL_TYPE,
     # The L1 consensus layer client type (e.g. "lighthouse", "prysm").
