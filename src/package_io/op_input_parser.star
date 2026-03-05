@@ -101,7 +101,7 @@ def _default_args(log_format=constants.LOG_FORMAT.json):
 
 DEFAULT_NON_NATIVE_ARGS = _sort_dict_by_values(
     {
-        "source": "github.com/agglayer/optimism-package/main.star@ff36695ce966d361fad27985d178f857cc8afb1e",  # overlay/main - 2025-12-31
+        "source": "github.com/agglayer/optimism-package/main.star@ff36695ce966d361fad27985d178f857cc8afb1e",  # chore/bump-op-reth - 2026/03/05
         "predeployed_contracts": True,
     }
 )
