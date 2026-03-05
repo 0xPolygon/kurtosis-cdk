@@ -75,13 +75,16 @@ def run(plan, args):
         # Consensus client
         "cl_type": cl_type,
         "cl_extra_params": cl_extra_params,
+        "cl_image": cl_image,
         # Execution client
         "el_type": el_type,
         "el_extra_params": el_extra_params,
+        "el_image": el_image,
         # Validator client
         "use_separate_vc": True,
         "vc_type": cl_type,
         "vc_extra_params": vc_extra_params,
+        "vc_image": cl_image,
         # Fulu hard fork config
         # In PeerDAS, a supernode is a node that custodies and samples all data columns (i.e. holds full awareness
         # of the erasure-coded blob data) and helps with distributed blob building — computing proofs and
@@ -89,11 +92,6 @@ def run(plan, args):
         # Since we don't enable perfect PeerDAS in the config, we need to have at least one supernode.
         "supernode": True,
     }
-    if el_image:
-        participant["el_image"] = el_image
-    if cl_image:
-        participant["cl_image"] = cl_image
-        participant["vc_image"] = cl_image
 
     l1_args = {
         "participants": [participant],
