@@ -5,7 +5,7 @@ ethereum = import_module("./ethereum.star")
 
 def launch(plan, args):
     l1_engine = args.get("l1_engine")
-    if l1_engine == constants.L1_ENGINE.geth:
+    if l1_engine == constants.L1_ENGINE.ethereum_package:
         result = ethereum.run(plan, args)
         # private_key = wallet.derive_private_key(plan, mnemonic)
         return struct(

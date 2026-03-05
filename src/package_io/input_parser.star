@@ -126,12 +126,12 @@ DEFAULT_ACCOUNTS = {
 
 LEGACY_DEFAULT_ACCOUNTS = {"zkevm_{}".format(k): v for k, v in DEFAULT_ACCOUNTS.items()}
 
-_DEFAULT_L1_EL_TYPE = "reth"
+_DEFAULT_L1_EL_TYPE = "geth"
 _DEFAULT_L1_CL_TYPE = "lighthouse"
 
 DEFAULT_L1_ARGS = {
-    # The L1 engine to use, either "geth" or "anvil".
-    "l1_engine": "geth",
+    # The L1 engine to use, either "ethereum-package" or "anvil".
+    "l1_engine": "ethereum-package",
     # The L1 execution layer client type (e.g. "reth", "geth").
     "l1_el_type": _DEFAULT_L1_EL_TYPE,
     # The L1 consensus layer client type (e.g. "lighthouse", "prysm").
@@ -409,7 +409,7 @@ VALID_SEQUENCER_TYPES = [
 ]
 
 VALID_L1_ENGINES = [
-    constants.L1_ENGINE.geth,
+    constants.L1_ENGINE.ethereum_package,
     constants.L1_ENGINE.anvil,
 ]
 

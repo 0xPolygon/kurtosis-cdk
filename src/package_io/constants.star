@@ -72,7 +72,7 @@ TOOLBOX_IMAGE = (
 )
 
 L1_ENGINE = struct(
-    geth="geth",
+    ethereum_package="ethereum-package",
     anvil="anvil",
 )
 
