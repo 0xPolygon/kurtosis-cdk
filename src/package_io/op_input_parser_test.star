@@ -90,7 +90,7 @@ def test_parse_args_with_user_overrides(plan):
                 "participants": {
                     "sequencer1": {
                         "el": {
-                            "image": "op-geth:latest",
+                            "image": "op-reth:latest",
                         },
                     },
                 },
@@ -159,7 +159,7 @@ def test_parse_args_with_user_overrides(plan):
     network_params2 = chain2.get("network_params")
 
     # overrides
-    expect.eq(node2.get("el").get("image"), "op-geth:latest")
+    expect.eq(node2.get("el").get("image"), "op-reth:latest")
     expect.eq(network_params2.get("seconds_per_slot"), 12)
 
     # defaults

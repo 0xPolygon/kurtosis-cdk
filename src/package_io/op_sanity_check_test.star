@@ -14,7 +14,7 @@ def test_sanity_check_success(plan):
                 "participants": {
                     "node1": {
                         "el": {
-                            "el_image": "op-geth:latest",
+                            "el_image": "op-reth:latest",
                         },
                         "cl": {
                             "cl_image": "op-node:latest",
@@ -47,7 +47,7 @@ def test_sanity_check_failure(plan):
                 "participants": {
                     "node1": {
                         "el": {
-                            "el_image": "op-geth:latest",
+                            "el_image": "op-reth:latest",
                         },
                         "cl": {
                             "cl_image": "op-node:latest",
