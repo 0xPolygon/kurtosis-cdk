@@ -504,7 +504,7 @@ else
 fi
 
 # ============================================================================
-# STEP 6.5: Extract L2 Configurations (op-geth and op-node)
+# STEP 6.5: Extract L2 Configurations (op-reth and op-node)
 # ============================================================================
 
 if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
@@ -516,12 +516,12 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         log "Processing L2 network: $prefix"
 
         # Get container names for this network
-        OP_GETH_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_geth_sequencer.container_name" "$DISCOVERY_JSON")
+        OP_RETH_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.container_name" "$DISCOVERY_JSON")
         OP_NODE_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.container_name" "$DISCOVERY_JSON")
         AGGKIT_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].aggkit.container_name // empty" "$DISCOVERY_JSON")
 
         log "  Containers:"
-        log "    op-geth sequencer: $OP_GETH_SEQ"
+        log "    op-reth sequencer: $OP_RETH_SEQ"
         log "    op-node sequencer: $OP_NODE_SEQ"
         if [ -n "$AGGKIT_CONTAINER" ] && [ "$AGGKIT_CONTAINER" != "null" ]; then
             log "    aggkit: $AGGKIT_CONTAINER"
@@ -562,20 +562,20 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             log "    WARNING: Failed to extract L1 genesis.json from op-node"
         fi
 
-        # Extract op-geth configuration
-        log "  Extracting op-geth configuration..."
+        # Extract op-reth configuration
+        log "  Extracting op-reth configuration..."
 
-        # Genesis file (op-geth may have its own)
+        # Genesis file (op-reth may have its own)
         if [ ! -f "$OUTPUT_DIR/config/$prefix/l2-genesis.json" ]; then
-            if docker cp "$OP_GETH_SEQ:/network-configs/genesis.json" "$OUTPUT_DIR/config/$prefix/l2-genesis.json" 2>/dev/null; then
-                log "    ✓ l2-genesis.json extracted from op-geth"
+            if docker cp "$OP_RETH_SEQ:/network-configs/genesis.json" "$OUTPUT_DIR/config/$prefix/l2-genesis.json" 2>/dev/null; then
+                log "    ✓ l2-genesis.json extracted from op-reth"
             else
-                log "    WARNING: l2-genesis.json not found in op-geth"
+                log "    WARNING: l2-genesis.json not found in op-reth"
             fi
         fi
 
-        # JWT secret (shared between op-geth and op-node)
-        if docker cp "$OP_GETH_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null; then
+        # JWT secret (shared between op-reth and op-node)
+        if docker cp "$OP_RETH_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null; then
             log "    ✓ jwt.hex extracted"
         elif docker cp "$OP_NODE_SEQ:/jwt/jwtsecret" "$OUTPUT_DIR/config/$prefix/jwt.hex" 2>/dev/null; then
             log "    ✓ jwt.hex extracted from op-node"

@@ -452,17 +452,17 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             --arg aggkit_rpc_port "$L2_AGGKIT_RPC_PORT" \
             --arg aggkit_rest_port "$L2_AGGKIT_REST_PORT" \
             '{
-                "op-geth": {
+                "op-reth": {
                     http_rpc: {
-                        internal: ("http://op-geth-" + $prefix + ":8545"),
+                        internal: ("http://op-reth-" + $prefix + ":8545"),
                         external: ("http://localhost:" + $http_port)
                     },
                     ws_rpc: {
-                        internal: ("ws://op-geth-" + $prefix + ":8546"),
+                        internal: ("ws://op-reth-" + $prefix + ":8546"),
                         external: ("ws://localhost:" + $ws_port)
                     },
                     engine_api: {
-                        internal: ("http://op-geth-" + $prefix + ":8551"),
+                        internal: ("http://op-reth-" + $prefix + ":8551"),
                         external: ("http://localhost:" + $engine_port)
                     }
                 },
