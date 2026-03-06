@@ -15,7 +15,7 @@ PathRWData = "{{.zkevm_path_rw_data}}"
 L1URL = "{{.l1_rpc_url}}"
 {{- if eq .sequencer_type "cdk-erigon"}}
 L2URL = "{{.l2_rpc_url}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 L2URL = "{{.op_el_rpc_url}}"
 {{- else}}
 L2URL = ""
@@ -31,7 +31,7 @@ AggLayerURL = "{{.agglayer_readrpc_url}}"
 
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port_number}}"
 
-{{- if or (eq .sequencer_type "op-geth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
+{{- if or (eq .sequencer_type "op-reth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
@@ -43,7 +43,7 @@ SequencerPrivateKeyPassword  = ""
 polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
-{{- if eq .sequencer_type "op-geth" }}
+{{- if eq .sequencer_type "op-reth" }}
 RPCURL = "{{.op_el_rpc_url}}"
 {{- end}}
 
@@ -92,7 +92,7 @@ polTokenAddress = "{{.pol_token_address}}"
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 polygonZkEVMAddress = "{{.rollup_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
 {{- else }}
 polygonZkEVMAddress = ""
@@ -115,7 +115,7 @@ BridgeAddr = "{{.l1_bridge_address}}"
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootAddr = "{{.l2_ger_address}}"
 BridgeAddr = "{{.l2_bridge_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
@@ -407,7 +407,7 @@ EnableAggOracleCommittee = false
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootL2 = "{{.l2_ger_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
 GlobalExitRootL2 = ""
@@ -552,7 +552,7 @@ L1ChainID = "{{.l2_chain_id}}"
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 BridgeAddr = "{{.l2_bridge_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
 {{- else }}
 BridgeAddr = ""
@@ -657,7 +657,7 @@ BlockFinality = "LatestBlock"
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 SovereignRollupAddr = "{{.rollup_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
 {{- else }}
 SovereignRollupAddr = ""
@@ -669,7 +669,7 @@ SovereignRollupAddr = ""
 # ------------------------------------------------------------------------------
 {{- if eq .sequencer_type "cdk-erigon" }}
 GlobalExitRootL2 = "{{.l2_ger_address}}"
-{{- else if eq .sequencer_type "op-geth" }}
+{{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
 {{- else }}
 GlobalExitRootL2 = ""

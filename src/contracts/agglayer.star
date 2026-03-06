@@ -196,7 +196,7 @@ def run(plan, args, deployment_stages, op_stack_args):
             config={
                 "deploy-op-succinct-contracts.sh": struct(
                     template=read_file(
-                        src="../../static_files/chain/op-geth/op-succinct-proposer/deploy-op-succinct-contracts.sh"
+                        src="../../static_files/chain/op-reth/op-succinct-proposer/deploy-op-succinct-contracts.sh"
                     ),
                     data=args,
                 ),
@@ -419,7 +419,7 @@ def run(plan, args, deployment_stages, op_stack_args):
 def is_vanilla_client(args, deployment_stages):
     if (
         args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig
-        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
     ):
         return True
     else:

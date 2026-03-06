@@ -23,7 +23,7 @@ echo "http://$(kurtosis port print cdk el-1-geth-lighthouse rpc)"
 After starting your environment, run:
 
 ```bash
-kurtosis port print cdk op-el-1-op-geth-op-node-001 rpc
+kurtosis port print cdk op-el-1-op-reth-op-node-001 rpc
 ```
 
 This is in the case you deployed a heimdall/bor devnet, otherwise you may need to update the name of the service.
@@ -33,7 +33,7 @@ This is in the case you deployed a heimdall/bor devnet, otherwise you may need t
 You can use [cast](https://www.getfoundry.sh/reference/cast/send):
 
 ```bash
-export ETH_RPC_URL=$(kurtosis port print cdk op-el-1-op-geth-op-node-001 rpc)
+export ETH_RPC_URL=$(kurtosis port print cdk op-el-1-op-reth-op-node-001 rpc)
 pk="0x12d7de8621a77640c9241b2595ba78ce443d05e94090365ab3bb5e19df82c625"
 cast send --private-key $pk --value 0.01ether $(cast address-zero)
 ```

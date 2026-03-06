@@ -124,11 +124,11 @@ else
     done
 fi
 
-# Find all op-geth services
-OP_GETH_SERVICES=$(grep -E "^  op-geth-[0-9]+:" "$COMPOSE_FILE" | sed 's/://g' | awk '{print $1}' || true)
+# Find all op-reth services
+OP_RETH_SERVICES=$(grep -E "^  op-reth-[0-9]+:" "$COMPOSE_FILE" | sed 's/://g' | awk '{print $1}' || true)
 
-if [ -n "$OP_GETH_SERVICES" ]; then
-    for service in $OP_GETH_SERVICES; do
+if [ -n "$OP_RETH_SERVICES" ]; then
+    for service in $OP_RETH_SERVICES; do
         check_service_healthcheck "$service" false
     done
 fi

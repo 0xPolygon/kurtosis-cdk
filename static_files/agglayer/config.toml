@@ -6,7 +6,7 @@ mock-verifier = {{.mock_verifier}}
 {{end}}
 
 [full-node-rpcs]
-{{- if eq .sequencer_type "op-geth" }}
+{{- if eq .sequencer_type "op-reth" }}
 # OP Stack RPC
 1 = "{{.op_el_rpc_url}}"
 {{- else }}

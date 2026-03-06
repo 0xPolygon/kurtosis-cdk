@@ -142,22 +142,22 @@ else
 fi
 
 # ============================================================================
-# Discover L2 Chains (op-geth + op-node) - OPTIONAL
+# Discover L2 Chains (op-reth + op-node) - OPTIONAL
 # ============================================================================
 
-log "Discovering L2 chains (op-geth based)..."
+log "Discovering L2 chains (op-reth based)..."
 
-# Find all op-geth execution layer containers (including stopped)
-# Pattern: op-el-{participant_id}-op-geth-op-node-{network_prefix}
+# Find all op-reth execution layer containers (including stopped)
+# Pattern: op-el-{participant_id}-op-reth-op-node-{network_prefix}
 OP_EL_CONTAINERS=$(docker ps -a \
     --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
-    --format "{{.Names}}" | grep -E "^op-el-.*-op-geth-op-node" || true)
+    --format "{{.Names}}" | grep -E "^op-el-.*-op-reth-op-node" || true)
 
 # Find all op-node consensus layer containers (including stopped)
-# Pattern: op-cl-{participant_id}-op-node-op-geth-{network_prefix}
+# Pattern: op-cl-{participant_id}-op-node-op-reth-{network_prefix}
 OP_CL_CONTAINERS=$(docker ps -a \
     --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
-    --format "{{.Names}}" | grep -E "^op-cl-.*-op-node-op-geth" || true)
+    --format "{{.Names}}" | grep -E "^op-cl-.*-op-node-op-reth" || true)
 
 # Find all aggkit containers (including stopped)
 # Pattern: aggkit-{network_prefix}
@@ -168,7 +168,7 @@ AGGKIT_CONTAINERS=$(docker ps -a \
 # Extract unique network prefixes from discovered containers
 declare -A L2_NETWORKS
 for container in $OP_EL_CONTAINERS $OP_CL_CONTAINERS $AGGKIT_CONTAINERS; do
-    # Extract network prefix (e.g., "001" from "op-el-1-op-geth-op-node-001")
+    # Extract network prefix (e.g., "001" from "op-el-1-op-reth-op-node-001")
     if [[ "$container" =~ -([0-9]{3})--[a-f0-9]+$ ]]; then
         prefix="${BASH_REMATCH[1]}"
         L2_NETWORKS[$prefix]=1
@@ -183,12 +183,12 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     log "  Discovering L2 network: $prefix"
 
     # Find sequencer (participant 1)
-    OP_EL_SEQ=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-1-op-geth-op-node-$prefix--" | head -1 || true)
-    OP_CL_SEQ=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-1-op-node-op-geth-$prefix--" | head -1 || true)
+    OP_EL_SEQ=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-1-op-reth-op-node-$prefix--" | head -1 || true)
+    OP_CL_SEQ=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-1-op-node-op-reth-$prefix--" | head -1 || true)
 
     # Find RPC node (participant 2) - optional
-    OP_EL_RPC=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-2-op-geth-op-node-$prefix--" | head -1 || true)
-    OP_CL_RPC=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-2-op-node-op-geth-$prefix--" | head -1 || true)
+    OP_EL_RPC=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-2-op-reth-op-node-$prefix--" | head -1 || true)
+    OP_CL_RPC=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-2-op-node-op-reth-$prefix--" | head -1 || true)
 
     # Find aggkit for this network
     AGGKIT=$(echo "$AGGKIT_CONTAINERS" | grep -E "^aggkit-$prefix--" | head -1 || true)
@@ -199,11 +199,11 @@ for prefix in "${!L2_NETWORKS[@]}"; do
         continue
     fi
 
-    log "    ✓ op-geth sequencer: $OP_EL_SEQ"
+    log "    ✓ op-reth sequencer: $OP_EL_SEQ"
     log "    ✓ op-node sequencer: $OP_CL_SEQ"
 
     if [ -n "$OP_EL_RPC" ]; then
-        log "    ✓ op-geth rpc: $OP_EL_RPC"
+        log "    ✓ op-reth rpc: $OP_EL_RPC"
     fi
     if [ -n "$OP_CL_RPC" ]; then
         log "    ✓ op-node rpc: $OP_CL_RPC"
@@ -222,7 +222,7 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     L2_CHAIN_JSON=$(cat <<EOF
     "$prefix": {
       "prefix": "$prefix",
-      "op_geth_sequencer": {
+      "op_reth_sequencer": {
         "container_name": "$OP_EL_SEQ",
         "container_id": "$OP_EL_SEQ_ID",
         "image": "$OP_EL_SEQ_IMAGE"
@@ -240,7 +240,7 @@ EOF
         OP_EL_RPC_ID=$(docker inspect --format='{{.Id}}' "$OP_EL_RPC")
         OP_EL_RPC_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$OP_EL_RPC")
         L2_CHAIN_JSON+=",
-      \"op_geth_rpc\": {
+      \"op_reth_rpc\": {
         \"container_name\": \"$OP_EL_RPC\",
         \"container_id\": \"$OP_EL_RPC_ID\",
         \"image\": \"$OP_EL_RPC_IMAGE\"

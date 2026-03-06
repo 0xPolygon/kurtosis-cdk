@@ -10,11 +10,11 @@ sidebar_position: 3
 
 This section lists all test environments with their configurations and component versions, organized by execution client.
 
-### CDK OP Geth
+### CDK OP Reth
 
-- [cdk-opgeth-sovereign-ecdsa-multisig](#cdk-opgeth-sovereign-ecdsa-multisig)
-- [cdk-opgeth-sovereign-pessimistic](#cdk-opgeth-sovereign-pessimistic)
-- [cdk-opgeth-zkrollup](#cdk-opgeth-zkrollup)
+- [cdk-opreth-sovereign-ecdsa-multisig](#cdk-opreth-sovereign-ecdsa-multisig)
+- [cdk-opreth-sovereign-pessimistic](#cdk-opreth-sovereign-pessimistic)
+- [cdk-opreth-zkrollup](#cdk-opreth-zkrollup)
 
 ### CDK Erigon
 
@@ -23,13 +23,13 @@ This section lists all test environments with their configurations and component
 - [cdk-erigon-validium](#cdk-erigon-validium)
 - [cdk-erigon-zkrollup](#cdk-erigon-zkrollup)
 
-## CDK OP Geth
+## CDK OP Reth
 
-Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as the L2 execution client.
+Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth) as the L2 execution client.
 
-### cdk-opgeth-sovereign-ecdsa-multisig
+### cdk-opreth-sovereign-ecdsa-multisig
 
-- File path: `.github/tests/op-geth/sovereign-ecdsa-multisig.yml`
+- File path: `.github/tests/op-reth/sovereign-ecdsa-multisig.yml`
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
@@ -38,14 +38,14 @@ Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as t
 | agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
 | op-batcher | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
-| op-geth | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | ✅ matches stable |
 | op-node | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | ✅ matches stable |
 | op-proposer | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | ✅ matches stable |
+| op-reth | [1.11.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v1.11.0) | [1.11.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v1.11.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 
-### cdk-opgeth-sovereign-pessimistic
+### cdk-opreth-sovereign-pessimistic
 
-- File path: `.github/tests/op-geth/sovereign-pessimistic.yml`
+- File path: `.github/tests/op-reth/sovereign-pessimistic.yml`
 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
@@ -54,12 +54,12 @@ Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as t
 | agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
 | op-batcher | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
-| op-geth | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | ✅ matches stable |
 | op-node | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | ✅ matches stable |
 | op-proposer | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | [1.16.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-proposer/v1.16.0) | ✅ matches stable |
+| op-reth | [1.11.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v1.11.0) | [1.11.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v1.11.0) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 
-### cdk-opgeth-zkrollup
+### cdk-opreth-zkrollup
 
 - File path: `.github/tests/op-succinct/mock-prover.yml`
 
@@ -71,8 +71,8 @@ Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as t
 | agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
 | op-batcher | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | [1.16.4](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.4) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
-| op-geth | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | [1.101609.1](https://github.com/ethereum-optimism/op-geth/releases/tag/v1.101609.1) | ✅ matches stable |
 | op-node | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | [1.16.7](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.7) | ✅ matches stable |
+| op-reth | [1.11.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v1.11.0) | [1.11.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v1.11.0) | ✅ matches stable |
 | op-succinct-proposer | [3.5.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.5.0-agglayer) | [3.5.0-rc.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.5.0-rc.1-agglayer) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 

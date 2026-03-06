@@ -47,17 +47,17 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
 
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
-    op_geth="op-geth",
+    op_reth="op-reth",
 )
 
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
-    SEQUENCER_TYPE.op_geth: "op-el-1-op-geth-op-node",
+    SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
-    SEQUENCER_TYPE.op_geth: "op-el-2-op-geth-op-node",
+    SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
 }
 
 FORK_ID_TO_NAME = {
@@ -117,7 +117,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.4",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.6.0-rc.3-cdk",
-    "op_geth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101609.1",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v1.11.0",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.7",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.0",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.5.0-agglayer",

@@ -60,19 +60,19 @@ sidebar_position: 3
         test_environments = data.get('test_environments', {})
         
         # Categorize environments by execution client
-        op_geth_envs = {}
+        op_reth_envs = {}
         cdk_erigon_envs = {}
         
         for env_key, environment in test_environments.items():
-            if 'cdk-opgeth' in env_key:
-                op_geth_envs[env_key] = environment
+            if 'cdk-opreth' in env_key:
+                op_reth_envs[env_key] = environment
             elif 'cdk-erigon' in env_key:
                 cdk_erigon_envs[env_key] = environment
 
         # Generate table of contents
-        if op_geth_envs:
-            md += "### CDK OP Geth\n\n"
-            for env_key, environment in sorted(op_geth_envs.items()):
+        if op_reth_envs:
+            md += "### CDK OP Reth\n\n"
+            for env_key, environment in sorted(op_reth_envs.items()):
                 environment_type = environment.get('type')
                 md += f"- [{environment_type}](#{environment_type})\n"
             md += "\n"
@@ -84,12 +84,12 @@ sidebar_position: 3
                 md += f"- [{environment_type}](#{environment_type})\n"
             md += "\n"
 
-        # Generate CDK OP Geth section
-        if op_geth_envs:
-            md += "## CDK OP Geth\n\n"
-            md += "Environments using [op-geth](https://github.com/ethereum-optimism/optimism) as the L2 execution client.\n\n"
+        # Generate CDK OP Reth section
+        if op_reth_envs:
+            md += "## CDK OP Reth\n\n"
+            md += "Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth) as the L2 execution client.\n\n"
             
-            for env_key, environment in sorted(op_geth_envs.items()):
+            for env_key, environment in sorted(op_reth_envs.items()):
                 environment_type = environment.get('type', 'unknown')
                 config_file_path = environment.get('config_file_path', '')
                 components = environment.get('components', {})

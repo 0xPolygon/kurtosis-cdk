@@ -1,7 +1,7 @@
 constants = import_module("./src/package_io/constants.star")
 input_parser = import_module("./src/package_io/input_parser.star")
 contracts_util = import_module("./src/contracts/util.star")
-op_succinct_package = import_module("./src/chain/op-geth/op_succinct_proposer.star")
+op_succinct_package = import_module("./src/chain/op-reth/op_succinct_proposer.star")
 
 # Main service packages.
 additional_services_launcher = import_module("./src/additional_services/launcher.star")
@@ -77,7 +77,7 @@ def run(plan, args={}):
             plan, args, deployment_stages, op_stack_args
         )
 
-        if sequencer_type == constants.SEQUENCER_TYPE.op_geth:
+        if sequencer_type == constants.SEQUENCER_TYPE.op_reth:
             # Deploy Sovereign contracts (maybe a better name is creating sovereign rollup)
             # TODO rename this and understand what this does in the case where there are predeployed contracts
             # TODO Call the create rollup script

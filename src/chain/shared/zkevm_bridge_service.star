@@ -27,7 +27,7 @@ def run(
             constants.CONSENSUS_TYPE.pessimistic,
             constants.CONSENSUS_TYPE.ecdsa_multisig,
         ]
-        and sequencer_type == constants.SEQUENCER_TYPE.op_geth
+        and sequencer_type == constants.SEQUENCER_TYPE.op_reth
     ) or consensus_contract_type == constants.CONSENSUS_TYPE.fep
 
     db_configs = databases.get_db_configs(args["deployment_suffix"], sequencer_type)

@@ -54,14 +54,14 @@ Make sure to set the correct env vars as the test setup, and then run:
 bats tests/lxly/lxly.bats
 ```
 
-## Attach Multiple PP CDK-OP-Geth to the Agglayer
+## Attach Multiple PP CDK-OP-Reth to the Agglayer
 
-First, run a PP OP-Geth network:
+First, run a PP OP-Reth network:
 ```bash
 kurtosis run --enclave=cdk --args-file=./.github/tests/nightly/op-rollup/op-default.yml .
 ```
 
-Then simply run another PP OP-Geth network in the same enclave:
+Then simply run another PP OP-Reth network in the same enclave:
 ```bash
 kurtosis run --enclave=cdk --args-file=./.github/tests/chains/op2.yml .
 ```

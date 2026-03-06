@@ -1,10 +1,10 @@
 #!/bin/sh
 set -e
 
-# Install jq (not included in op-geth Alpine image)
+# Install jq (not included in op-reth image)
 apk add --no-cache jq > /dev/null 2>&1
 
-echo "=== op-geth entrypoint ==="
+echo "=== op-reth entrypoint ==="
 
 # If already initialized (container restart), skip patching and just start geth
 if [ -d "/data/geth" ] && [ -f "/shared/l2_genesis_hash" ]; then
@@ -84,7 +84,7 @@ mv /tmp/genesis-patched.json /tmp/genesis.json
 echo "$NOW" > /shared/l2_genesis_time
 
 # Initialize geth
-echo "Initializing op-geth with patched genesis..."
+echo "Initializing op-reth with patched genesis..."
 geth init --datadir=/data /tmp/genesis.json
 
 # Extract genesis block hash by briefly starting geth with RPC
@@ -120,7 +120,7 @@ else
     exit 1
 fi
 
-echo "=== op-geth entrypoint: starting geth ==="
+echo "=== op-reth entrypoint: starting geth ==="
 
 exec geth \
     --http \

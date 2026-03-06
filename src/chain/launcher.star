@@ -1,7 +1,7 @@
 cdk_erigon_launcher = import_module("./cdk-erigon/launcher.star")
 constants = import_module("../package_io/constants.star")
 input_parser = import_module("../package_io/input_parser.star")
-op_geth_launcher = import_module("./op-geth/launcher.star")
+op_reth_launcher = import_module("./op-reth/launcher.star")
 zkevm_bridge_service = import_module("./shared/zkevm_bridge_service.star")
 
 
@@ -24,12 +24,12 @@ def launch(
             deployment_stages,
             genesis_artifact,
         )
-    elif sequencer_type == constants.SEQUENCER_TYPE.op_geth:
-        plan.print("Deploying op-geth chain")
+    elif sequencer_type == constants.SEQUENCER_TYPE.op_reth:
+        plan.print("Deploying op-reth chain")
         deploy_cdk_bridge_infra = deployment_stages.get(
             "deploy_cdk_bridge_infra", False
         )
-        context = op_geth_launcher.launch(
+        context = op_reth_launcher.launch(
             plan,
             args,
             contract_setup_addresses,

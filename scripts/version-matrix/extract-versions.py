@@ -48,7 +48,7 @@ class VersionMatrixExtractor:
         self.constants_path = repo_root / "src" / "package_io" / "constants.star"
 
         cdk_erigon_tests_path = repo_root / ".github" / "tests" / "cdk-erigon"
-        op_geth_tests_path = repo_root / ".github" / "tests" / "op-geth"
+        op_reth_tests_path = repo_root / ".github" / "tests" / "op-reth"
         op_succinct_tests_path = repo_root / ".github" / "tests" / "op-succinct"
         self.test_files_paths = [
             # cdk-erigon
@@ -56,10 +56,10 @@ class VersionMatrixExtractor:
             ("cdk-erigon-validium", cdk_erigon_tests_path / "validium.yml"),
             ("cdk-erigon-sovereign-pessimistic", cdk_erigon_tests_path / "sovereign-pessimistic.yml"),
             ("cdk-erigon-sovereign-ecdsa-multisig", cdk_erigon_tests_path / "sovereign-ecdsa-multisig.yml"),
-            # op-geth
-            ("cdk-opgeth-sovereign-pessimistic", op_geth_tests_path / "sovereign-pessimistic.yml"),
-            ("cdk-opgeth-sovereign-ecdsa-multisig", op_geth_tests_path / "sovereign-ecdsa-multisig.yml"),
-            ("cdk-opgeth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
+            # op-reth
+            ("cdk-opreth-sovereign-pessimistic", op_reth_tests_path / "sovereign-pessimistic.yml"),
+            ("cdk-opreth-sovereign-ecdsa-multisig", op_reth_tests_path / "sovereign-ecdsa-multisig.yml"),
+            ("cdk-opreth-zkrollup", op_succinct_tests_path / "mock-prover.yml"),
         ]
 
         # Component mapping
@@ -74,7 +74,7 @@ class VersionMatrixExtractor:
             "lighthouse_image": "lighthouse",
             "op_batcher_image": "op-batcher",
             "op_contract_deployer_image": "op-deployer",
-            "op_geth_image": "op-geth",
+            "op_reth_image": "op-reth",
             "op_node_image": "op-node",
             "op_proposer_image": "op-proposer",
             "op_succinct_proposer_image": "op-succinct-proposer",
@@ -94,7 +94,7 @@ class VersionMatrixExtractor:
             "cdk-node",
             "op-batcher",
             "op-deployer", 
-            "op-geth",
+            "op-reth",
             "op-node",
             "op-proposer",
             "op-succinct-proposer",
@@ -121,7 +121,7 @@ class VersionMatrixExtractor:
             # optimism components
             "op-batcher": "ethereum-optimism/optimism",
             "op-deployer": "ethereum-optimism/optimism",
-            "op-geth": "ethereum-optimism/op-geth",
+            "op-reth": "ethereum-optimism/optimism",
             "op-node": "ethereum-optimism/optimism",
             "op-proposer": "ethereum-optimism/optimism",
             # succinct components
@@ -229,7 +229,7 @@ class VersionMatrixExtractor:
                 if comp_name == 'agglayer' and version == '0.4.4-remove-agglayer-prover':
                     return f"https://github.com/{repo}/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f"
 
-                if comp_name in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
+                if comp_name in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer', 'op-reth']:
                     return f"https://github.com/{repo}/releases/tag/{comp_name}/v{version.lstrip('v')}"
 
                 if version not in ['latest', 'main', 'master']:
@@ -245,7 +245,7 @@ class VersionMatrixExtractor:
             return None
 
         try:
-            if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer']:
+            if component in ['op-batcher', 'op-deployer', 'op-node', 'op-proposer', 'op-reth']:
                 url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
                 response = requests.get(url, timeout=10, headers={
                     'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
@@ -467,30 +467,30 @@ class VersionMatrixExtractor:
                 'zkevm-bridge-service',
                 'zkevm-pool-manager',
             ],
-            # cdk-opgeth
-            "cdk-opgeth-sovereign-pessimistic": [
+            # cdk-opreth
+            "cdk-opreth-sovereign-pessimistic": [
                 'aggkit',
                 'agglayer',
                 'agglayer-contracts',
                 'op-batcher',
                 'op-deployer',
                 'op-node',
-                'op-geth',
+                'op-reth',
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            "cdk-opgeth-sovereign-ecdsa-multisig": [
+            "cdk-opreth-sovereign-ecdsa-multisig": [
                 'aggkit',
                 'agglayer',
                 'agglayer-contracts',
                 'op-batcher',
                 'op-deployer',
                 'op-node',
-                'op-geth',
+                'op-reth',
                 'op-proposer',
                 'zkevm-bridge-service',
             ],
-            "cdk-opgeth-zkrollup": [
+            "cdk-opreth-zkrollup": [
                 'aggkit',
                 'aggkit-prover',
                 'agglayer',
@@ -498,8 +498,8 @@ class VersionMatrixExtractor:
                 'op-batcher',
                 'op-deployer',
                 'op-node',
-                'op-geth',
-                'op-succinct-proposer',  # different from cdk-opgeth-sovereign
+                'op-reth',
+                'op-succinct-proposer',  # different from cdk-opreth-sovereign
                 'zkevm-bridge-service',
             ],
         }
@@ -551,18 +551,18 @@ class VersionMatrixExtractor:
             if not isinstance(chain_config, dict):
                 continue
                 
-            # Extract from participants (op-node and op-geth)
+            # Extract from participants (op-node and op-reth)
             participants = chain_config.get('participants', {})
             for participant_name, participant_config in participants.items():
                 if not isinstance(participant_config, dict):
                     continue
                     
-                # Extract op-geth from el (execution layer)
+                # Extract op-reth from el (execution layer)
                 el_config = participant_config.get('el', {})
                 if isinstance(el_config, dict) and 'image' in el_config:
                     image = el_config['image']
-                    if 'op-geth' in image:
-                        name = 'op-geth'
+                    if 'op-reth' in image:
+                        name = 'op-reth'
                         version = self._extract_version_from_image(image)
                         version_source_url = self._get_source_url(name, version)
                         latest_version = self._get_latest_version(name)
@@ -673,8 +673,8 @@ class VersionMatrixExtractor:
         }
         for environment in test_environments.values():
             architecture = 'unknown'
-            if environment.type.startswith('cdk-opgeth'):
-                architecture = 'cdk-opgeth'
+            if environment.type.startswith('cdk-opreth'):
+                architecture = 'cdk-opreth'
             elif environment.type.startswith('cdk-erigon'):
                 architecture = 'cdk-erigon'
 
