@@ -6,13 +6,13 @@ apk add --no-cache jq > /dev/null 2>&1
 
 echo "=== op-node entrypoint: patching rollup.json timestamps ==="
 
-# Wait for op-geth to share genesis info
-echo "Waiting for op-geth to provide L2 genesis info..."
+# Wait for op-reth to share genesis info
+echo "Waiting for op-reth to provide L2 genesis info..."
 MAX_WAIT=120
 ELAPSED=0
 while [ ! -f /shared/l2_genesis_time ] || [ ! -f /shared/l2_genesis_hash ]; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
-        echo "ERROR: Timed out waiting for op-geth genesis info"
+        echo "ERROR: Timed out waiting for op-reth genesis info"
         exit 1
     fi
     sleep 1
@@ -82,7 +82,7 @@ exec op-node \
     --rollup.config=/tmp/rollup.json \
     --l1=http://geth:8545 \
     --l1.beacon=http://beacon:4000 \
-    --l2=http://"${OP_GETH_HOST:-op-geth-001}":8551 \
+    --l2=http://"${OP_RETH_HOST:-op-reth-001}":8551 \
     --l2.jwt-secret=/jwt/jwtsecret \
     --rpc.addr=0.0.0.0 \
     --rpc.port=8547 \

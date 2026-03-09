@@ -6,13 +6,13 @@ sidebar_position: 3
 
 ## Introduction
 
-This configuration is ideal for development teams requiring a complete testing environment with comprehensive monitoring. It deploys the default [CDK OP Geth](./cdk-opgeth.md) setup enhanced with debugging and observability tools, making it perfect for development, testing, and troubleshooting.
+This configuration is ideal for development teams requiring a complete testing environment with comprehensive monitoring. It deploys the default [CDK OP Reth](./cdk-opreth.md) setup enhanced with debugging and observability tools, making it perfect for development, testing, and troubleshooting.
 
 ### What's Deployed?
 
 - L1 Ethereum blockchain ([lighthouse/geth](https://github.com/ethpandaops/ethereum-package))
 - Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer service](https://github.com/agglayer/agglayer), and [mock prover](https://github.com/agglayer/provers))
-- L2 Optimism blockchain ([op-geth](https://github.com/ethereum-optimism/op-geth) / [op-node](https://github.com/ethereum-optimism/optimism/tree/develop/op-node)) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity
+- L2 Optimism blockchain ([op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth) / [op-node](https://github.com/ethereum-optimism/optimism/tree/develop/op-node)) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity
 - zkEVM bridge ([zkevm-bridge-service](https://github.com/0xPolygonHermez/zkevm-bridge-service)) to facilitate asset bridging between L1 and L2
 - Additional services:
   - Blockchain explorer: [Blockscout](https://www.blockscout.com/)

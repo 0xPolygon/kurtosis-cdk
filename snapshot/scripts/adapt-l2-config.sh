@@ -143,12 +143,12 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
             # Compute new genesis hash using geth in a temporary container
             log "    Computing new L2 genesis hash..."
 
-            # Get the op-geth image from discovery
-            OP_GETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_geth_sequencer.image // empty" "$DISCOVERY_JSON" 2>/dev/null || echo "")
+            # Get the op-reth image from discovery
+            OP_RETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.image // empty" "$DISCOVERY_JSON" 2>/dev/null || echo "")
 
-            if [ -z "$OP_GETH_IMAGE" ]; then
-                log "    ⚠ WARNING: Could not find op-geth image, using default"
-                OP_GETH_IMAGE="us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101411.3"
+            if [ -z "$OP_RETH_IMAGE" ]; then
+                log "    ⚠ WARNING: Could not find op-reth image, using default"
+                OP_RETH_IMAGE="us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v1.11.0"
             fi
 
             # Create temp directory for genesis init
@@ -158,7 +158,7 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
             # Initialize genesis and extract the hash using geth console
             NEW_L2_HASH=$(docker run --rm --entrypoint /bin/sh \
                 -v "$TEMP_DIR:/tmp/genesis-init" \
-                "$OP_GETH_IMAGE" \
+                "$OP_RETH_IMAGE" \
                 -c "geth init --datadir=/tmp/datadir /tmp/genesis-init/genesis.json >/dev/null 2>&1 && geth --datadir=/tmp/datadir --exec 'eth.getBlock(0).hash' console 2>/dev/null | head -1" \
                 | tr -d '"' || echo "")
 
@@ -202,12 +202,12 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
 
         # Replace Kurtosis container names with docker-compose service names
         # L1: el-1-<el_type>-<cl_type> -> geth
-        # L2 geth: op-el-1-op-geth-op-node-<prefix> -> op-geth-<prefix>
-        # op-node: op-cl-1-op-node-op-geth-<prefix> -> op-node-<prefix>
+        # L2 reth: op-el-1-op-reth-op-node-<prefix> -> op-reth-<prefix>
+        # op-node: op-cl-1-op-node-op-reth-<prefix> -> op-node-<prefix>
 
         sed -i "s|http://${L1_EL_SERVICE}:8545|http://geth:8545|g" "$AGGKIT_CONFIG"
-        sed -i "s|http://op-el-1-op-geth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGKIT_CONFIG"
-        sed -i "s|http://op-cl-1-op-node-op-geth-$prefix:8547|http://op-node-$prefix:8547|g" "$AGGKIT_CONFIG"
+        sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-reth-$prefix:8545|g" "$AGGKIT_CONFIG"
+        sed -i "s|http://op-cl-1-op-node-op-reth-$prefix:8547|http://op-node-$prefix:8547|g" "$AGGKIT_CONFIG"
 
         log "    ✓ aggkit config adapted for docker-compose"
         log "    ✓ Original saved to aggkit-config.toml.bak"
@@ -231,11 +231,11 @@ if [ -f "$AGGLAYER_CONFIG" ]; then
     fi
 
     # Replace Kurtosis L2 RPC endpoints with docker-compose service names
-    # Pattern: op-el-1-op-geth-op-node-<prefix> -> op-geth-<prefix>
+    # Pattern: op-el-1-op-reth-op-node-<prefix> -> op-reth-<prefix>
     # Need to update all L2 networks in the [full-node-rpcs] section
 
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
-        sed -i "s|http://op-el-1-op-geth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGLAYER_CONFIG"
+        sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-reth-$prefix:8545|g" "$AGGLAYER_CONFIG"
         log "  ✓ Updated L2 RPC endpoint for network $prefix"
     done
 

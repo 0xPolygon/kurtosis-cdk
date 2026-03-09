@@ -3,7 +3,7 @@ set -euo pipefail
 
 # This script monitors the progress of a blockchain rollup.
 # Usage: ./monitor.sh <enclave_name> <sequencer_type> <consensus_contract_type>
-# Example: ./monitor.sh cdk op-geth ecdsa-multisig
+# Example: ./monitor.sh cdk op-reth ecdsa-multisig
 
 # Helper function to get the current timestamp
 _timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
@@ -33,7 +33,7 @@ if [[ -z "${enclave_name}" ]]; then
 fi
 log_info "Using enclave name: ${enclave_name}"
 
-sequencer_type=${2:-"op-geth"}
+sequencer_type=${2:-"op-reth"}
 if [[ -z "${sequencer_type}" ]]; then
   log_error "Sequencer type must be provided"
   exit 1
@@ -53,8 +53,8 @@ case "${sequencer_type}" in
   "cdk-erigon")
     rpc_name="cdk-erigon-rpc-001"
     ;;
-  "op-geth")
-    rpc_name="op-el-1-op-geth-op-node-001"
+  "op-reth")
+    rpc_name="op-el-1-op-reth-op-node-001"
     ;;
   *)
     log_error "Unsupported sequencer type: ${sequencer_type}"
@@ -72,7 +72,7 @@ case "${sequencer_type}" in
   "cdk-erigon")
     target=20 # batches
     ;;
-  "op-geth")
+  "op-reth")
     target=50 # blocks
     ;;
   *)
@@ -109,7 +109,7 @@ for step in $(seq 1 "${num_steps}"); do
             exit 0
           fi
           ;;
-        "op-geth")
+        "op-reth")
           LATEST_BLOCK=$(cast bn --rpc-url "${rpc_url}")
           SAFE_BLOCK=$(cast bn safe --rpc-url "${rpc_url}")
           FINALIZED_BLOCK=$(cast bn finalized --rpc-url "${rpc_url}")
@@ -174,7 +174,7 @@ case "${consensus_contract_type}" in
       "cdk-erigon")
         log_error "Target batches have not been reached for latest batch type"
         ;;
-      "op-geth")
+      "op-reth")
         log_error "Target blocks have not been reached for all block types (latest, safe and finalized)"
         ;;
       *)

@@ -512,7 +512,7 @@ create_agglayer_rollup() {
     fi
 
     # Do not create another rollup in the case of an optimism rollup. This will be done in run-sovereign-setup.sh
-    if [[ "{{.sequencer_type}}" != "op-geth" ]]; then
+    if [[ "{{.sequencer_type}}" != "op-reth" ]]; then
         _echo_ts "Step 5: Creating Rollup/Validium/ECDSAMultisig"
         npx hardhat run deployment/v2/4_createRollup.ts --network localhost 2>&1 | tee 05_create_rollup.out
         # Support for new output file format
@@ -975,7 +975,7 @@ fund_addresses() {
     fi
 
     # The op l2 's rpc url
-    EXPECT_URL="http://op-el-1-op-geth-op-node$DEPLOYMENT_SUFFIX:8545"
+    EXPECT_URL="http://op-el-1-op-reth-op-node$DEPLOYMENT_SUFFIX:8545"
 
     # Set private key based on RPC_URL
     if [[ "$RPC_URL" == "$EXPECT_URL" ]]; then

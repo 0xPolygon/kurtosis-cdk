@@ -205,7 +205,7 @@ EOF
 fi
 
 # ============================================================================
-# Add L2 services (op-geth + op-node + aggkit) if found
+# Add L2 services (op-reth + op-node + aggkit) if found
 # ============================================================================
 
 L2_CHAINS_COUNT=$(jq -r '.l2_chains | length // 0' "$DISCOVERY_JSON" 2>/dev/null || echo "0")
@@ -217,7 +217,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         log "  Adding L2 network: $prefix"
 
         # Get container info
-        OP_GETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_geth_sequencer.image" "$DISCOVERY_JSON")
+        OP_RETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.image" "$DISCOVERY_JSON")
         OP_NODE_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.image" "$DISCOVERY_JSON")
         AGGKIT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggkit.image // empty" "$DISCOVERY_JSON")
 
@@ -234,24 +234,24 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
 
         # ====================================================================
-        # op-geth service (with runtime L2 genesis timestamp patching)
+        # op-reth service (with runtime L2 genesis timestamp patching)
         # ====================================================================
 
         # Copy entrypoint script to config dir for mounting
-        cp "$(dirname "$0")/op-geth-entrypoint.sh" "$OUTPUT_DIR/config/$prefix/"
+        cp "$(dirname "$0")/op-reth-entrypoint.sh" "$OUTPUT_DIR/config/$prefix/"
 
         cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
-  op-geth-$prefix:
-    image: $OP_GETH_IMAGE
-    container_name: $SNAPSHOT_ID-op-geth-$prefix
-    hostname: op-geth-$prefix
-    entrypoint: ["/bin/sh", "/entrypoint/op-geth-entrypoint.sh"]
+  op-reth-$prefix:
+    image: $OP_RETH_IMAGE
+    container_name: $SNAPSHOT_ID-op-reth-$prefix
+    hostname: op-reth-$prefix
+    entrypoint: ["/bin/sh", "/entrypoint/op-reth-entrypoint.sh"]
     volumes:
       - ./config/$prefix/jwt.hex:/jwt/jwtsecret:ro
       - ./config/$prefix/l2-genesis.json:/genesis-ro/l2-genesis.json:ro
       - ./config/$prefix/rollup.json:/rollup-ro/rollup.json:ro
-      - ./config/$prefix/op-geth-entrypoint.sh:/entrypoint/op-geth-entrypoint.sh:ro
+      - ./config/$prefix/op-reth-entrypoint.sh:/entrypoint/op-reth-entrypoint.sh:ro
       - l2-shared-$prefix:/shared
     ports:
       - "$L2_HTTP_PORT:8545"    # HTTP RPC
@@ -269,7 +269,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
       start_period: 180s
 EOF
 
-        log "    ✓ op-geth-$prefix service added"
+        log "    ✓ op-reth-$prefix service added"
 
         # ====================================================================
         # op-node service (with runtime rollup.json timestamp patching)
@@ -286,7 +286,7 @@ EOF
     hostname: op-node-$prefix
     entrypoint: ["/bin/sh", "/entrypoint/op-node-entrypoint.sh"]
     environment:
-      - OP_GETH_HOST=op-geth-$prefix
+      - OP_RETH_HOST=op-reth-$prefix
     volumes:
       - ./config/$prefix/rollup.json:/rollup-ro/rollup.json:ro
       - ./config/$prefix/l1-genesis.json:/network-configs/l1-genesis.json:ro
@@ -301,7 +301,7 @@ EOF
         condition: service_healthy
       beacon:
         condition: service_healthy
-      op-geth-$prefix:
+      op-reth-$prefix:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
@@ -322,7 +322,7 @@ EOF
             # Build depends_on section dynamically
             AGGKIT_DEPENDS="      geth:
         condition: service_healthy
-      op-geth-$prefix:
+      op-reth-$prefix:
         condition: service_healthy
       op-node-$prefix:
         condition: service_healthy"
@@ -371,7 +371,7 @@ else
     log "No L2 networks to add"
 fi
 
-# Add shared volumes for L2 genesis info exchange between op-geth and op-node
+# Add shared volumes for L2 genesis info exchange between op-reth and op-node
 if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
@@ -600,9 +600,9 @@ EOF
         cat >> "$OUTPUT_DIR/USAGE.md" << EOF
 
 **L2 Network $prefix:**
-- **op-geth HTTP RPC:** http://localhost:$L2_HTTP_PORT
-- **op-geth WebSocket:** ws://localhost:$L2_WS_PORT
-- **op-geth Engine API:** http://localhost:$L2_ENGINE_PORT
+- **op-reth HTTP RPC:** http://localhost:$L2_HTTP_PORT
+- **op-reth WebSocket:** ws://localhost:$L2_WS_PORT
+- **op-reth Engine API:** http://localhost:$L2_ENGINE_PORT
 - **op-node RPC:** http://localhost:$L2_NODE_RPC_PORT
 - **op-node Metrics:** http://localhost:$L2_NODE_METRICS_PORT
 EOF
@@ -637,8 +637,8 @@ fi
 
 if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
-        SERVICES_LIST="$SERVICES_LIST, op-geth-$prefix, op-node-$prefix"
-        CONTAINER_NAMES_LIST="$CONTAINER_NAMES_LIST, $SNAPSHOT_ID-op-geth-$prefix, $SNAPSHOT_ID-op-node-$prefix"
+        SERVICES_LIST="$SERVICES_LIST, op-reth-$prefix, op-node-$prefix"
+        CONTAINER_NAMES_LIST="$CONTAINER_NAMES_LIST, $SNAPSHOT_ID-op-reth-$prefix, $SNAPSHOT_ID-op-node-$prefix"
 
         AGGKIT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggkit.image // empty" "$DISCOVERY_JSON")
         if [ -n "$AGGKIT_IMAGE" ] && [ "$AGGKIT_IMAGE" != "null" ]; then
@@ -701,7 +701,7 @@ This snapshot includes $L2_CHAINS_COUNT L2 network(s) with adapted configuration
 - L1 connectivity is configured to use the snapshot's geth and beacon services
 
 **L2 Components per network:**
-- **op-geth**: Execution layer (Optimism Geth fork)
+- **op-reth**: Execution layer (Optimism Reth fork)
 - **op-node**: Consensus/rollup layer
 - **aggkit**: AggSender and AggOracle for Agglayer integration (if present)
 
@@ -714,7 +714,7 @@ EOF
   - \`rollup.json\` - Rollup configuration
   - \`l1-genesis.json\` - L1 genesis for op-node
   - \`l2-genesis.json\` - L2 genesis (optional)
-  - \`jwt.hex\` - JWT secret for op-geth <-> op-node auth
+  - \`jwt.hex\` - JWT secret for op-reth <-> op-node auth
 EOF
 
         AGGKIT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggkit.image // empty" "$DISCOVERY_JSON")

@@ -441,7 +441,7 @@ log_step "TEST 9: L2 Block Progression"
 log "Checking L2 chains for block progression..."
 
 # Find L2 RPC endpoints from docker-compose
-L2_RPCS=$(docker-compose -f docker-compose.yml config | grep -E "op-geth-[0-9]+" -A 5 | grep -c "8545:8545" || echo 0)
+L2_RPCS=$(docker-compose -f docker-compose.yml config | grep -E "op-reth-[0-9]+" -A 5 | grep -c "8545:8545" || echo 0)
 
 if [ "$L2_RPCS" -eq 0 ]; then
     log_warn "No L2 chains found in snapshot, skipping L2 block progression test"
@@ -449,7 +449,7 @@ else
     log "Found L2 chains, testing block progression..."
 
     # Get L2 container names
-    L2_CONTAINERS=$(docker ps --filter "name=${SNAPSHOT_ID}-op-geth" --format "{{.Names}}" || echo "")
+    L2_CONTAINERS=$(docker ps --filter "name=${SNAPSHOT_ID}-op-reth" --format "{{.Names}}" || echo "")
 
     if [ -z "$L2_CONTAINERS" ]; then
         log_warn "No L2 containers running, skipping L2 test"
@@ -457,8 +457,8 @@ else
         L2_ALL_PASSED=true
 
         while IFS= read -r container; do
-            # Extract L2 ID from container name (e.g., cdk-xxx-op-geth-001 -> 001)
-            L2_ID=$(echo "$container" | grep -oP 'op-geth-\K[0-9]+$' || echo "unknown")
+            # Extract L2 ID from container name (e.g., cdk-xxx-op-reth-001 -> 001)
+            L2_ID=$(echo "$container" | grep -oP 'op-reth-\K[0-9]+$' || echo "unknown")
             log "Testing L2 chain: $L2_ID (container: $container)"
 
             # Get the port mapping for this L2's RPC
@@ -514,7 +514,7 @@ else
                 log_info "  ✓ L2 is producing blocks (at block $FINAL_BLOCK)"
             else
                 log_error "  ✗ L2 blocks are NOT progressing (stuck at block 0)"
-                log_error "  Check op-node and op-geth logs for errors"
+                log_error "  Check op-node and op-reth logs for errors"
                 L2_ALL_PASSED=false
             fi
 

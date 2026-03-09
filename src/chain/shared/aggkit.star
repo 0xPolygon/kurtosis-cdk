@@ -3,7 +3,7 @@ constants = import_module("../../package_io/constants.star")
 databases = import_module("../shared/databases.star")
 ports_package = import_module("./ports.star")
 contracts_util = import_module("../../contracts/util.star")
-op_succinct = import_module("../op-geth/op_succinct_proposer.star")
+op_succinct = import_module("../op-reth/op_succinct_proposer.star")
 
 
 def run_aggkit_cdk_node(plan, args, contract_setup_addresses):

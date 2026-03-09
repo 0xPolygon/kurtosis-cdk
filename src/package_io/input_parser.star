@@ -294,9 +294,9 @@ DEFAULT_ROLLUP_ARGS = {
     # https://github.com/0xPolygon/cdk/blob/d0e76a3d1361158aa24135f25d37ecc4af959755/config/default.go#L50
     "zkevm_path_rw_data": "/tmp",
     # OP Stack EL RPC URL. Will be dynamically updated by args_sanity_check() function.
-    "op_el_rpc_url": "http://op-el-1-op-geth-op-node-001:8545",
+    "op_el_rpc_url": "http://op-el-1-op-reth-op-node-001:8545",
     # OP Stack CL Node URL. Will be dynamically updated by args_sanity_check() function.
-    "op_cl_rpc_url": "http://op-cl-1-op-node-op-geth-001:8547",
+    "op_cl_rpc_url": "http://op-cl-1-op-node-op-reth-001:8547",
     # If the OP Succinct will use the Network Prover or CPU(Mock) Prover
     # true = mock
     # false = network
@@ -344,8 +344,8 @@ DEFAULT_ARGS = (
         # The type of the sequencer to deploy.
         # Options:
         # - 'cdk-erigon': Use the cdk-erigon sequencer (https://github.com/0xPolygonHermez/cdk-erigon).
-        # - 'op-geth': Use the OP stack sequencer (https://github.com/ethereum-optimism/op-geth).
-        "sequencer_type": constants.SEQUENCER_TYPE.op_geth,
+        # - 'op-reth': Use the OP stack sequencer (https://github.com/paradigmxyz/op-reth).
+        "sequencer_type": constants.SEQUENCER_TYPE.op_reth,
         # The type of consensus contract to use.
         # Consensus Options:
         # - 'rollup': Transaction data is stored on-chain on L1.
@@ -405,7 +405,7 @@ VALID_CONSENSUS_TYPES = [
 
 VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.cdk_erigon,
-    constants.SEQUENCER_TYPE.op_geth,
+    constants.SEQUENCER_TYPE.op_reth,
 ]
 
 VALID_L1_ENGINES = [
@@ -585,7 +585,7 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
             constants.CONSENSUS_TYPE.ecdsa_multisig,
             constants.CONSENSUS_TYPE.fep,
         ]
-        or sequencer_type == constants.SEQUENCER_TYPE.op_geth
+        or sequencer_type == constants.SEQUENCER_TYPE.op_reth
     ):
         return (0, "aggchain")
 
@@ -741,30 +741,30 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
     # Fix the op stack el rpc urls according to the deployment_suffix.
     if (
         args["op_el_rpc_url"]
-        != "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
-        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
+        != "http://op-el-1-op-reth-op-node" + args["deployment_suffix"] + ":8545"
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
     ):
         plan.print(
-            "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-geth-op-node{}:8545'".format(
+            "op_el_rpc_url is set to '{}', changing to 'http://op-el-1-op-reth-op-node{}:8545'".format(
                 args["op_el_rpc_url"], args["deployment_suffix"]
             )
         )
         args["op_el_rpc_url"] = (
-            "http://op-el-1-op-geth-op-node" + args["deployment_suffix"] + ":8545"
+            "http://op-el-1-op-reth-op-node" + args["deployment_suffix"] + ":8545"
         )
     # Fix the op stack cl rpc urls according to the deployment_suffix.
     if (
         args["op_cl_rpc_url"]
-        != "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
-        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth
+        != "http://op-cl-1-op-node-op-reth" + args["deployment_suffix"] + ":8547"
+        and args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth
     ):
         plan.print(
-            "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-geth{}:8547'".format(
+            "op_cl_rpc_url is set to '{}', changing to 'http://op-cl-1-op-node-op-reth{}:8547'".format(
                 args["op_cl_rpc_url"], args["deployment_suffix"]
             )
         )
         args["op_cl_rpc_url"] = (
-            "http://op-cl-1-op-node-op-geth" + args["deployment_suffix"] + ":8547"
+            "http://op-cl-1-op-node-op-reth" + args["deployment_suffix"] + ":8547"
         )
 
     # Unsupported L1 engine check
@@ -780,7 +780,7 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         fail("normalcy and strict mode cannot be enabled together")
 
     # OP rollup deploy_optimistic_rollup and consensus_contract_type check
-    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth:
         if args["consensus_contract_type"] != constants.CONSENSUS_TYPE.pessimistic:
             if (
                 args["consensus_contract_type"] != constants.CONSENSUS_TYPE.fep
@@ -797,9 +797,9 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
 
     # If OP-Succinct is enabled, OP-Rollup must be enabled
     if deployment_stages.get("deploy_op_succinct", False):
-        if args["sequencer_type"] != constants.SEQUENCER_TYPE.op_geth:
+        if args["sequencer_type"] != constants.SEQUENCER_TYPE.op_reth:
             fail(
-                "OP Succinct requires OP Rollup to be enabled. Change the sequencer_type parameter to 'op-geth'."
+                "OP Succinct requires OP Rollup to be enabled. Change the sequencer_type parameter to 'op-reth'."
             )
         if args["sp1_prover_key"] == None or args["sp1_prover_key"] == "":
             fail("OP Succinct requires a valid SPN key. Change the sp1_prover_key")

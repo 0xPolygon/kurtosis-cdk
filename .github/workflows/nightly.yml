@@ -160,7 +160,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-geth/*.yml)
+          file_paths=$(ls -R ./.github/tests/cdk-erigon/*.yml ./.github/tests/op-reth/*.yml)
           echo "file_paths:"
           echo "${file_paths}"
           echo
@@ -168,7 +168,7 @@ jobs:
           matrix=$(echo "${file_paths}" | while read -r file_path; do
             file_name=$(basename -s ".yml" "${file_path}")
             folder_name=$(basename $(dirname "${file_path}"))
-            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-geth" ]]; then
+            if [[ "${folder_name}" == "cdk-erigon" ]] || [[ "${folder_name}" == "op-reth" ]]; then
               job_name="${folder_name}-${file_name}"
             elif [[ "${folder_name}" == "nightly" ]]; then
               job_name="nightly-${file_name}"
@@ -243,7 +243,7 @@ jobs:
 
       - name: Monitor rollup progress
         working-directory: .github/scripts
-        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-geth fep
+        run: ./monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
@@ -267,7 +267,7 @@ jobs:
         with:
           repository: agglayer/e2e
           path: agglayer-e2e
-          ref: ae92165db92fcda4dd6bab323ab2b7b8fe579d82
+          ref: 3fb8af01358583e8c6df167beac9c1d2b06961c1 # 2026-03-05
 
       - name: Run bridge tests and op optimistic mode tests
         run: |
@@ -296,7 +296,7 @@ jobs:
         uses: ./.github/actions/kurtosis-post-run
         with:
           enclave_name: ${{ env.ENCLAVE_NAME }}
-          args_filename: cdk-op-geth-succinct
+          args_filename: cdk-op-reth-succinct
 
   run-with-additional-services:
     runs-on: ubuntu-latest

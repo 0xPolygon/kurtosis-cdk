@@ -250,7 +250,7 @@ def test_get_fork_id(plan):
         # optimism rollup
         [
             constants.CONSENSUS_TYPE.pessimistic,
-            constants.SEQUENCER_TYPE.op_geth,
+            constants.SEQUENCER_TYPE.op_reth,
             "image:v1.0.0-fork.12",
             0,
             "aggchain",

@@ -6,13 +6,13 @@ sidebar_position: 4
 
 ## Introduction
 
-This configuration deploys the default [CDK OP Geth](./cdk-opgeth.md) setup enhanced with the [bridge hub API](https://github.com/agglayer/agglayer-bridge-hub-api) and its dedicated UI, called [Agglayer dev UI](https://github.com/agglayer/agglayer-dev-ui), providing a user-friendly browser interface for bridging assets between L1 and L2.
+This configuration deploys the default [CDK OP Reth](./cdk-opreth.md) setup enhanced with the [bridge hub API](https://github.com/agglayer/agglayer-bridge-hub-api) and its dedicated UI, called [Agglayer dev UI](https://github.com/agglayer/agglayer-dev-ui), providing a user-friendly browser interface for bridging assets between L1 and L2.
 
 ### What's Deployed?
 
 - L1 Ethereum blockchain (lighthouse/geth).
 - Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer service](https://github.com/agglayer/agglayer) and [mock prover](https://github.com/agglayer/provers)).
-- L2 Optimism blockchain (op-geth/op-node) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity.
+- L2 Optimism blockchain (op-reth/op-node) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity.
 - [zkEVM bridge](https://github.com/0xPolygonHermez/zkevm-bridge-service) to facilitate asset bridging between L1 and L2 chains.
 - Additional services:
   - [Bridge Hub API](https://github.com/agglayer/agglayer-bridge-hub-api): indexes bridge and claim transactions

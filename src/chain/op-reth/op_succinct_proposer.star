@@ -107,7 +107,7 @@ def create_evm_sketch_genesis(plan, args):
         config={
             "parse-evm-sketch-genesis.sh": struct(
                 template=read_file(
-                    src="../../../static_files/chain/op-geth/op-succinct-proposer/parse-evm-sketch-genesis.sh"
+                    src="../../../static_files/chain/op-reth/op-succinct-proposer/parse-evm-sketch-genesis.sh"
                 ),
                 data=args,
             ),
@@ -115,18 +115,18 @@ def create_evm_sketch_genesis(plan, args):
         description="Create parse-evm-sketch-genesis.sh files artifact",
     )
 
-    op_geth_genesis = plan.store_service_files(
-        service_name="op-el-1-op-geth-op-node" + args["deployment_suffix"],
-        name="op_geth_genesis.json",
+    op_reth_genesis = plan.store_service_files(
+        service_name="op-el-1-op-reth-op-node" + args["deployment_suffix"],
+        name="op_reth_genesis.json",
         src="/network-configs/genesis-" + str(args["l2_chain_id"]) + ".json",
-        description="Storing OP Geth genesis.json for evm-sketch-genesis field in aggkit-prover.",
+        description="Storing OP Reth genesis.json for evm-sketch-genesis field in aggkit-prover.",
     )
 
     # Add a temporary service using the contracts image
     temp_service_name = "temp-contracts"
 
     files = {}
-    files["/opt/op-succinct/"] = Directory(artifact_names=[op_geth_genesis])
+    files["/opt/op-succinct/"] = Directory(artifact_names=[op_reth_genesis])
 
     files[constants.SCRIPTS_DIR] = Directory(
         artifact_names=[parse_evm_sketch_genesis_artifact]

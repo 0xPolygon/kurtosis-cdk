@@ -1,4 +1,4 @@
-op_succinct = import_module("../op-geth/op_succinct_proposer.star")
+op_succinct = import_module("../op-reth/op_succinct_proposer.star")
 
 
 # Port identifiers and numbers.

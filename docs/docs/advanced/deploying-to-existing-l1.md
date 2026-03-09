@@ -8,7 +8,7 @@ If you want to deploy Kurtosis CDK to an existing L1, whether it be a different 
 ### What's Deployed?
 
 - Agglayer stack ([contracts](https://github.com/agglayer/agglayer-contracts), [agglayer service](https://github.com/agglayer/agglayer), and [mock prover](https://github.com/agglayer/provers))
-- L2 Optimism blockchain ([op-geth](https://github.com/ethereum-optimism/op-geth) / [op-node](https://github.com/ethereum-optimism/optimism/tree/develop/op-node)) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity
+- L2 Optimism blockchain ([op-reth](https://github.com/ethereum-optimism/optimism/tree/develop/rust/op-reth) / [op-node](https://github.com/ethereum-optimism/optimism/tree/develop/op-node)) enhanced with [AggKit](https://github.com/agglayer/aggkit) for seamless Agglayer connectivity
 
 ### Use Cases
 

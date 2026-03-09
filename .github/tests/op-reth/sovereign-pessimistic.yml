@@ -1,4 +1,4 @@
 args:
-  sequencer_type: op-geth
+  sequencer_type: op-reth
   consensus_contract_type: pessimistic # former sovereign consensus
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4

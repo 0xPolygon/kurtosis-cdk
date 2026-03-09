@@ -13,7 +13,7 @@ def get_contract_setup_addresses(plan, args, deployment_stages):
         "pol_token_address": "fromjson | .polTokenAddress",
         "admin_address": "fromjson | .admin",
     }
-    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_geth:
+    if args["sequencer_type"] == constants.SEQUENCER_TYPE.op_reth:
         extract["agglayer_gateway_address"] = "fromjson | .AgglayerGateway"
 
     if args.get("consensus_contract_type") == constants.CONSENSUS_TYPE.cdk_validium:
