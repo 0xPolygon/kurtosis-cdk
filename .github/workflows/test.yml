@@ -79,7 +79,7 @@ jobs:
             --verbose
             --no-progress
             --exclude-loopback
-            --accept 429
+            --accept '100..=103,200..=299,429'
             --exclude-path .kurtosis-test/
             --exclude-path docs/node_modules/
             --exclude file://
