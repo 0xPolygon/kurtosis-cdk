@@ -12,6 +12,3 @@ https://polygon.technology/careers
 
 ## Polygon security contact details.
 security@polygon.technology
-
-## The URL for accessing the security.txt file.
-Canonical: https://polygon.technology/security.txt
