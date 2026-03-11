@@ -35,7 +35,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.9.0-rc2](https://github.com/agglayer/aggkit/releases/tag/v0.9.0-rc2) | [0.8.2](https://github.com/agglayer/aggkit/releases/tag/v0.8.2) | ⚡️ newer than stable |
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | op-batcher | [1.16.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.5) | [1.16.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.5) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
 | op-node | [1.16.8](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.8) | [1.16.8](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.8) | ✅ matches stable |
@@ -51,7 +51,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.8.2](https://github.com/agglayer/aggkit/releases/tag/v0.8.2) | 🚨 behind stable |
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | op-batcher | [1.16.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.5) | [1.16.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.5) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
 | op-node | [1.16.8](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.8) | [1.16.8](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.8) | ✅ matches stable |
@@ -68,7 +68,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | aggkit | [0.9.0-rc2](https://github.com/agglayer/aggkit/releases/tag/v0.9.0-rc2) | [0.8.2](https://github.com/agglayer/aggkit/releases/tag/v0.8.2) | ⚡️ newer than stable |
 | aggkit-prover | [1.9.2](https://github.com/agglayer/provers/releases/tag/v1.9.2) | [1.9.2](https://github.com/agglayer/provers/releases/tag/v1.9.2) | ✅ matches stable |
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | op-batcher | [1.16.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.5) | [1.16.5](https://github.com/ethereum-optimism/optimism/releases/tag/op-batcher/v1.16.5) | ✅ matches stable |
 | op-deployer | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | [0.6.0-rc.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.6.0-rc.3) | ✅ matches stable |
 | op-node | [1.16.8](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.8) | [1.16.8](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.16.8) | ✅ matches stable |
@@ -88,7 +88,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.9.0-rc2](https://github.com/agglayer/aggkit/releases/tag/v0.9.0-rc2) | [0.8.2](https://github.com/agglayer/aggkit/releases/tag/v0.8.2) | ⚡️ newer than stable |
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | cdk-erigon | [2.65.0-RC3](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC3) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
@@ -101,7 +101,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 |-----------|-------------------------------|-----------------------|--------|
 | aggkit | [0.5.4](https://github.com/agglayer/aggkit/releases/tag/v0.5.4) | [0.8.2](https://github.com/agglayer/aggkit/releases/tag/v0.8.2) | 🚨 behind stable |
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | cdk-erigon | [2.65.0-RC3](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.65.0-RC3) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | ⚡️ newer than stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
 | zkevm-pool-manager | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | [0.1.3](https://github.com/0xPolygon/zkevm-pool-manager/releases/tag/v0.1.3) | ✅ matches stable |
@@ -113,7 +113,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | cdk-data-availability | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | [0.0.13](https://github.com/0xPolygon/cdk-data-availability/releases/tag/v0.0.13) | ✅ matches stable |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | 🚨 behind stable |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | ✅ matches stable |
@@ -128,7 +128,7 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | Component | Version Deployed in Kurtosis	 | Latest Stable Version | Status |
 |-----------|-------------------------------|-----------------------|--------|
 | agglayer | [0.4.4-remove-agglayer-prover](https://github.com/agglayer/agglayer/tree/38ffe04e71bb6b0eb22a244dbd40d189e1b0d78f) | [0.4.4](https://github.com/agglayer/agglayer/releases/tag/v0.4.4) | ⚡️ newer than stable |
-| agglayer-contracts | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | [12.2.2](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.2) | ✅ matches stable |
+| agglayer-contracts | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | [12.2.3](https://github.com/agglayer/agglayer-contracts/releases/tag/v12.2.3) | ✅ matches stable |
 | cdk-erigon | [2.61.24](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.61.24) | [2.64.2](https://github.com/0xPolygon/cdk-erigon/releases/tag/v2.64.2) | 🚨 behind stable |
 | cdk-node | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | [0.5.4](https://github.com/0xPolygon/cdk/releases/tag/v0.5.4) | ✅ matches stable |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | ✅ matches stable |
