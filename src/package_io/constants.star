@@ -117,7 +117,7 @@ DEFAULT_IMAGES = {
     "mitm_image": "mitmproxy/mitmproxy:11.1.3",
     "op_batcher_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.16.6",
     "op_contract_deployer_image": "europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/op-deployer:v0.6.0-rc.3-cdk",
-    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v1.11.3",
+    "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v1.11.5",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.10",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.2",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.5.0-agglayer",
