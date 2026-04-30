@@ -256,6 +256,9 @@ class VersionMatrixExtractor:
                         if 'tag_name' in release:
                             tag_name = release['tag_name']
                             if tag_name.startswith(component):
+                                # Skip alpha/beta prereleases; rc is acceptable
+                                if re.search(r'-(alpha|beta)', tag_name, re.IGNORECASE):
+                                    continue
                                 version = re.sub(
                                     r'^v?', '', tag_name.split("/")[-1])
                                 return version
@@ -282,7 +285,11 @@ class VersionMatrixExtractor:
                             # Don't consider v9 tags for zkevm-prover
                             if component == 'zkevm-prover' and tag_name.startswith('v9'):
                                 continue
-    
+
+                            # Skip alpha/beta prereleases; rc is acceptable
+                            if re.search(r'-(alpha|beta)', tag_name, re.IGNORECASE):
+                                continue
+
                             latest_version = re.sub(r'^v?', '', tag_name)
                             return latest_version
                 else:
