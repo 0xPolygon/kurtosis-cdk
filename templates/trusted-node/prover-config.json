@@ -69,7 +69,7 @@
      * requests. Running this service most likely requires 700GB+ of
      * physical memory.
      */ -}}
-    "runAggregatorClient": false,
+    "runAggregatorClient": {{.zkevm_use_real_prover_client}},
 
 {{- /*
      * runAggregatorClientMock acts the same way as
@@ -81,7 +81,7 @@
     {{if .stateless_executor}}
     "runAggregatorClientMock": false,
     {{else}}
-    "runAggregatorClientMock": true,
+    "runAggregatorClientMock": {{.zkevm_use_mock_prover_client}},
     {{end}}
 
 
