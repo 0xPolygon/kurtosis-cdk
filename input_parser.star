@@ -314,6 +314,11 @@ DEFAULT_ROLLUP_ARGS = {
     # Change to true to deploy a real verifier which will require a real prover.
     # Note: This will require a lot of memory to run!
     "zkevm_use_real_verifier": False,
+    # Set to true to run the prover with real proof generation (runAggregatorClient).
+    # Requires 700GB+ RAM on the Kurtosis host. When false, mock proofs are used.
+    "zkevm_use_real_prover_client": False,
+    # Set to false when zkevm_use_real_prover_client is true (mutually exclusive).
+    "zkevm_use_mock_prover_client": True,
     # ForkID for the consensus contract. Must be 0 for AggchainFEP consensus.
     "fork_id": 12,
     # This flag will enable a stateless executor to verify the execution of the batches.
