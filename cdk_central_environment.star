@@ -28,7 +28,7 @@ def run(plan, args, deployment_stages, contract_setup_addresses):
     )
 
     if (
-        not args["zkevm_use_real_verifier"]
+        (not args["zkevm_use_real_verifier"] or args["zkevm_use_real_prover_client"])
         and not args["enable_normalcy"]
         and not args["consensus_contract_type"] == constants.CONSENSUS_TYPE.pessimistic
     ):
