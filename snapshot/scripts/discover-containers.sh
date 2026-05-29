@@ -142,6 +142,75 @@ else
 fi
 
 # ============================================================================
+# Discover op-succinct FEP services (proposer + prover postgres) - OPTIONAL
+# Kurtosis service names: op-succinct-proposer<suffix>, postgres<suffix>
+# (see src/chain/op-reth/op_succinct_proposer.star). The proposer carries the
+# FEP prover wiring; its prover DB lives in the postgres companion service.
+# ============================================================================
+
+log "Discovering op-succinct FEP services (proposer/prover)..."
+
+OP_SUCCINCT_CONTAINERS=$(docker ps -a \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^op-succinct-proposer" || true)
+
+if [ -z "$OP_SUCCINCT_CONTAINERS" ]; then
+    OP_SUCCINCT_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^op-succinct-proposer" || true)
+fi
+
+# ============================================================================
+# Discover cdk-erigon chain services - OPTIONAL
+# Kurtosis service names (see src/chain/cdk-erigon/*.star):
+#   cdk-erigon-sequencer<suffix>, cdk-erigon-rpc<suffix>, cdk-node<suffix>,
+#   cdk-data-availability<suffix> (DAC committee member)
+# ============================================================================
+
+log "Discovering cdk-erigon chain services..."
+
+CDK_ERIGON_CONTAINERS=$(docker ps -a \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^cdk-erigon-(sequencer|rpc)" || true)
+
+if [ -z "$CDK_ERIGON_CONTAINERS" ]; then
+    CDK_ERIGON_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^cdk-erigon-(sequencer|rpc)" || true)
+fi
+
+CDK_NODE_CONTAINERS=$(docker ps -a \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^cdk-node" || true)
+
+if [ -z "$CDK_NODE_CONTAINERS" ]; then
+    CDK_NODE_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^cdk-node" || true)
+fi
+
+# ============================================================================
+# Discover committee / DAC services - OPTIONAL
+# Kurtosis service name: cdk-data-availability<suffix>
+# (see src/chain/cdk-erigon/cdk_data_availability.star)
+# ============================================================================
+
+log "Discovering committee / DAC services..."
+
+DAC_CONTAINERS=$(docker ps -a \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^cdk-data-availability" || true)
+
+if [ -z "$DAC_CONTAINERS" ]; then
+    DAC_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^cdk-data-availability" || true)
+fi
+
+# Helper: emit a compact container JSON object ("name"/id/image) for a given
+# container, or empty string if not found. Used by the topology blocks below.
+container_json() {
+    local cname="$1"
+    [ -z "$cname" ] && return 0
+    local cid cimg
+    cid=$(docker inspect --format='{{.Id}}' "$cname" 2>/dev/null || echo "")
+    cimg=$(docker inspect --format='{{.Config.Image}}' "$cname" 2>/dev/null || echo "")
+    printf '{ "container_name": "%s", "container_id": "%s", "image": "%s" }' "$cname" "$cid" "$cimg"
+}
+
+# ============================================================================
 # Discover L2 Chains (op-reth + op-node) - OPTIONAL
 # ============================================================================
 
@@ -165,10 +234,16 @@ AGGKIT_CONTAINERS=$(docker ps -a \
     --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
     --format "{{.Names}}" | grep -E "^aggkit-" || true)
 
-# Extract unique network prefixes from discovered containers
+# Extract unique network prefixes from discovered containers.
+# Includes op-stack (op-reth/op-node/aggkit), cdk-erigon, op-succinct FEP and DAC
+# containers so erigon-only / FEP-only / DAC topologies are also discovered as
+# L2 networks keyed by their 3-digit deployment prefix.
 declare -A L2_NETWORKS
-for container in $OP_EL_CONTAINERS $OP_CL_CONTAINERS $AGGKIT_CONTAINERS; do
-    # Extract network prefix (e.g., "001" from "op-el-1-op-reth-op-node-001")
+for container in $OP_EL_CONTAINERS $OP_CL_CONTAINERS $AGGKIT_CONTAINERS \
+                 $CDK_ERIGON_CONTAINERS $CDK_NODE_CONTAINERS \
+                 $OP_SUCCINCT_CONTAINERS $DAC_CONTAINERS; do
+    # Extract network prefix (e.g., "001" from "op-el-1-op-reth-op-node-001--<uuid>"
+    # or "cdk-erigon-sequencer-001--<uuid>")
     if [[ "$container" =~ -([0-9]{3})--[a-f0-9]+$ ]]; then
         prefix="${BASH_REMATCH[1]}"
         L2_NETWORKS[$prefix]=1
@@ -193,14 +268,41 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     # Find aggkit for this network
     AGGKIT=$(echo "$AGGKIT_CONTAINERS" | grep -E "^aggkit-$prefix--" | head -1 || true)
 
-    # Validate we have at least the sequencer components
-    if [ -z "$OP_EL_SEQ" ] || [ -z "$OP_CL_SEQ" ]; then
-        log "    WARNING: Incomplete L2 network $prefix (missing sequencer components), skipping"
+    # Find cdk-erigon / cdk-node / op-succinct / DAC components for this network
+    CDK_ERIGON_SEQ=$(echo "$CDK_ERIGON_CONTAINERS" | grep -E "^cdk-erigon-sequencer-$prefix--" | head -1 || true)
+    CDK_ERIGON_RPC=$(echo "$CDK_ERIGON_CONTAINERS" | grep -E "^cdk-erigon-rpc-$prefix--" | head -1 || true)
+    CDK_NODE=$(echo "$CDK_NODE_CONTAINERS" | grep -E "^cdk-node-$prefix--" | head -1 || true)
+    OP_SUCCINCT_PROPOSER=$(echo "$OP_SUCCINCT_CONTAINERS" | grep -E "^op-succinct-proposer-$prefix--" | head -1 || true)
+    DAC=$(echo "$DAC_CONTAINERS" | grep -E "^cdk-data-availability-$prefix--" | head -1 || true)
+
+    # A network is valid if it has EITHER an op-stack sequencer (op-reth+op-node)
+    # OR a cdk-erigon sequencer. This lets erigon-only / FEP-only topologies be
+    # captured alongside op-stack topologies.
+    HAS_OP_STACK=false
+    HAS_ERIGON=false
+    if [ -n "$OP_EL_SEQ" ] && [ -n "$OP_CL_SEQ" ]; then
+        HAS_OP_STACK=true
+    fi
+    if [ -n "$CDK_ERIGON_SEQ" ]; then
+        HAS_ERIGON=true
+    fi
+
+    if [ "$HAS_OP_STACK" != true ] && [ "$HAS_ERIGON" != true ]; then
+        log "    WARNING: Incomplete L2 network $prefix (no op-stack or cdk-erigon sequencer), skipping"
         continue
     fi
 
-    log "    ✓ op-reth sequencer: $OP_EL_SEQ"
-    log "    ✓ op-node sequencer: $OP_CL_SEQ"
+    if [ "$HAS_OP_STACK" = true ]; then
+        log "    ✓ op-reth sequencer: $OP_EL_SEQ"
+        log "    ✓ op-node sequencer: $OP_CL_SEQ"
+    fi
+    if [ "$HAS_ERIGON" = true ]; then
+        log "    ✓ cdk-erigon sequencer: $CDK_ERIGON_SEQ"
+        [ -n "$CDK_ERIGON_RPC" ] && log "    ✓ cdk-erigon rpc: $CDK_ERIGON_RPC"
+        [ -n "$CDK_NODE" ] && log "    ✓ cdk-node: $CDK_NODE"
+    fi
+    [ -n "$OP_SUCCINCT_PROPOSER" ] && log "    ✓ op-succinct proposer (FEP): $OP_SUCCINCT_PROPOSER"
+    [ -n "$DAC" ] && log "    ✓ cdk-data-availability (committee/DAC): $DAC"
 
     if [ -n "$OP_EL_RPC" ]; then
         log "    ✓ op-reth rpc: $OP_EL_RPC"
@@ -212,28 +314,37 @@ for prefix in "${!L2_NETWORKS[@]}"; do
         log "    ✓ aggkit: $AGGKIT"
     fi
 
-    # Get container IDs and images
-    OP_EL_SEQ_ID=$(docker inspect --format='{{.Id}}' "$OP_EL_SEQ")
-    OP_CL_SEQ_ID=$(docker inspect --format='{{.Id}}' "$OP_CL_SEQ")
-    OP_EL_SEQ_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$OP_EL_SEQ")
-    OP_CL_SEQ_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$OP_CL_SEQ")
+    # Build JSON for this L2 network. The chain "type" is recorded so the
+    # downstream extract/compose/summary steps know which datadir layout and
+    # service keys to emit (op-stack vs cdk-erigon).
+    if [ "$HAS_OP_STACK" = true ]; then
+        CHAIN_TYPE="op-stack"
+    else
+        CHAIN_TYPE="cdk-erigon"
+    fi
 
-    # Build JSON for this L2 network
-    L2_CHAIN_JSON=$(cat <<EOF
-    "$prefix": {
-      "prefix": "$prefix",
-      "op_reth_sequencer": {
-        "container_name": "$OP_EL_SEQ",
-        "container_id": "$OP_EL_SEQ_ID",
-        "image": "$OP_EL_SEQ_IMAGE"
+    L2_CHAIN_JSON="    \"$prefix\": {
+      \"prefix\": \"$prefix\",
+      \"chain_type\": \"$CHAIN_TYPE\""
+
+    # op-stack sequencer components (only when present)
+    if [ "$HAS_OP_STACK" = true ]; then
+        OP_EL_SEQ_ID=$(docker inspect --format='{{.Id}}' "$OP_EL_SEQ")
+        OP_CL_SEQ_ID=$(docker inspect --format='{{.Id}}' "$OP_CL_SEQ")
+        OP_EL_SEQ_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$OP_EL_SEQ")
+        OP_CL_SEQ_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$OP_CL_SEQ")
+        L2_CHAIN_JSON+=",
+      \"op_reth_sequencer\": {
+        \"container_name\": \"$OP_EL_SEQ\",
+        \"container_id\": \"$OP_EL_SEQ_ID\",
+        \"image\": \"$OP_EL_SEQ_IMAGE\"
       },
-      "op_node_sequencer": {
-        "container_name": "$OP_CL_SEQ",
-        "container_id": "$OP_CL_SEQ_ID",
-        "image": "$OP_CL_SEQ_IMAGE"
-      }
-EOF
-)
+      \"op_node_sequencer\": {
+        \"container_name\": \"$OP_CL_SEQ\",
+        \"container_id\": \"$OP_CL_SEQ_ID\",
+        \"image\": \"$OP_CL_SEQ_IMAGE\"
+      }"
+    fi
 
     # Add RPC nodes if present
     if [ -n "$OP_EL_RPC" ]; then
@@ -268,6 +379,36 @@ EOF
         \"container_id\": \"$AGGKIT_ID\",
         \"image\": \"$AGGKIT_IMAGE\"
       }"
+    fi
+
+    # Add cdk-erigon sequencer (custom datadir layout, distinct from op-geth)
+    if [ -n "$CDK_ERIGON_SEQ" ]; then
+        L2_CHAIN_JSON+=",
+      \"cdk_erigon_sequencer\": $(container_json "$CDK_ERIGON_SEQ")"
+    fi
+
+    # Add cdk-erigon rpc node if present
+    if [ -n "$CDK_ERIGON_RPC" ]; then
+        L2_CHAIN_JSON+=",
+      \"cdk_erigon_rpc\": $(container_json "$CDK_ERIGON_RPC")"
+    fi
+
+    # Add cdk-node (sequence-sender/aggregator) if present
+    if [ -n "$CDK_NODE" ]; then
+        L2_CHAIN_JSON+=",
+      \"cdk_node\": $(container_json "$CDK_NODE")"
+    fi
+
+    # Add op-succinct proposer (FEP prover/proposer wiring) if present
+    if [ -n "$OP_SUCCINCT_PROPOSER" ]; then
+        L2_CHAIN_JSON+=",
+      \"op_succinct_proposer\": $(container_json "$OP_SUCCINCT_PROPOSER")"
+    fi
+
+    # Add cdk-data-availability (committee/DAC member) if present
+    if [ -n "$DAC" ]; then
+        L2_CHAIN_JSON+=",
+      \"cdk_data_availability\": $(container_json "$DAC")"
     fi
 
     L2_CHAIN_JSON+="

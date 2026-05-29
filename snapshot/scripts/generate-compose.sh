@@ -216,10 +216,17 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         log "  Adding L2 network: $prefix"
 
+        # Chain type drives which EL/CL services we emit (op-stack vs cdk-erigon)
+        CHAIN_TYPE=$(jq -r ".l2_chains[\"$prefix\"].chain_type // \"op-stack\"" "$DISCOVERY_JSON")
+        log "    Chain type: $CHAIN_TYPE"
+
         # Get container info
-        OP_RETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.image" "$DISCOVERY_JSON")
-        OP_NODE_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.image" "$DISCOVERY_JSON")
+        OP_RETH_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.image // empty" "$DISCOVERY_JSON")
+        OP_NODE_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.image // empty" "$DISCOVERY_JSON")
         AGGKIT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggkit.image // empty" "$DISCOVERY_JSON")
+        CDK_ERIGON_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].cdk_erigon_sequencer.image // empty" "$DISCOVERY_JSON")
+        OP_SUCCINCT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_succinct_proposer.image // empty" "$DISCOVERY_JSON")
+        DAC_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].cdk_data_availability.image // empty" "$DISCOVERY_JSON")
 
         # Calculate port offsets for this L2 network (prefix as number, e.g., 001 -> 1)
         # Network 001: ports 10545, 10546, 10547, ...
@@ -232,7 +239,10 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        L2_DAC_PORT=$((10000 + PREFIX_NUM * 1000 + 484))
+        L2_SUCCINCT_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
+      if [ "$CHAIN_TYPE" = "op-stack" ]; then
         # ====================================================================
         # op-geth service (with runtime L2 genesis timestamp patching)
         #
@@ -319,19 +329,155 @@ EOF
 EOF
 
         log "    ✓ op-node-$prefix service added"
+      fi  # end op-stack EL/CL emission
 
         # ====================================================================
-        # aggkit service (if present)
+        # cdk-erigon service (multi-chain, incl. custom-gas chains)
+        #
+        # Distinct datadir layout from op-geth: the erigon chain DB tar
+        # (cdk-erigon-<prefix>.tar) is mounted into /home/erigon/data and the
+        # /etc/cdk-erigon config (carrying the custom gas-token chain config)
+        # is bind-mounted. Emitted as service "cdk-erigon-<prefix>" so it is
+        # distinguishable from op-geth in the restored compose.
+        # ====================================================================
+        if [ "$CHAIN_TYPE" = "cdk-erigon" ] && [ -n "$CDK_ERIGON_IMAGE" ] && [ "$CDK_ERIGON_IMAGE" != "null" ]; then
+            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+  cdk-erigon-$prefix:
+    image: $CDK_ERIGON_IMAGE
+    container_name: $SNAPSHOT_ID-cdk-erigon-$prefix
+    hostname: cdk-erigon-$prefix
+    environment:
+      - CDK_ERIGON_SEQUENCER=1
+    command: ["cdk-erigon", "--config", "/etc/cdk-erigon/config.yaml"]
+    volumes:
+      - ./config/$prefix/cdk-erigon/etc:/etc/cdk-erigon:ro
+      - cdk-erigon-data-$prefix:/home/erigon/data
+    ports:
+      - "$L2_HTTP_PORT:8545"    # HTTP RPC
+      - "$L2_WS_PORT:8546"    # WebSocket RPC
+    depends_on:
+      geth:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
+      interval: 2s
+      timeout: 3s
+      retries: 3
+      start_period: 180s
+EOF
+            log "    ✓ cdk-erigon-$prefix service added"
+        fi
+
+        # ====================================================================
+        # op-succinct proposer (FEP prover/proposer)
+        #
+        # Wired but NOT settled: the proposer is restored with its captured env
+        # so it can resume proving after restore, but no settlement is forced
+        # at snapshot time (consistent with snapshot.sh STEP-3 L1-stop-before-
+        # extract). The prover DB (postgres) starts fresh unless a dump exists.
+        # ====================================================================
+        if [ -n "$OP_SUCCINCT_IMAGE" ] && [ "$OP_SUCCINCT_IMAGE" != "null" ]; then
+            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+  postgres-$prefix:
+    image: postgres:16-alpine
+    container_name: $SNAPSHOT_ID-postgres-$prefix
+    hostname: postgres-$prefix
+    environment:
+      - POSTGRES_USER=op_succinct_user
+      - POSTGRES_PASSWORD=op_succinct_password
+      - POSTGRES_DB=op_succinct_db
+    volumes:
+      - op-succinct-pg-$prefix:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U op_succinct_user -d op_succinct_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  op-succinct-proposer-$prefix:
+    image: $OP_SUCCINCT_IMAGE
+    container_name: $SNAPSHOT_ID-op-succinct-proposer-$prefix
+    hostname: op-succinct-proposer-$prefix
+    # env_file restores the captured proposer wiring (L2OO addr, prover mode,
+    # agglayer gateway). Generated from proposer-env.json during restore.
+    env_file:
+      - ./config/$prefix/op-succinct/proposer.env
+    volumes:
+      - ./config/$prefix/op-succinct/configs:/app/configs:ro
+    ports:
+      - "$L2_SUCCINCT_METRICS_PORT:8080"    # Prometheus metrics
+    depends_on:
+      geth:
+        condition: service_healthy
+      postgres-$prefix:
+        condition: service_healthy
+    restart: unless-stopped
+EOF
+            # Materialize the env_file + a fresh-DB seed from the captured state.
+            if [ -f "$OUTPUT_DIR/config/$prefix/op-succinct/proposer-env.json" ]; then
+                jq -r '.[]' "$OUTPUT_DIR/config/$prefix/op-succinct/proposer-env.json" \
+                    > "$OUTPUT_DIR/config/$prefix/op-succinct/proposer.env" 2>/dev/null || true
+            else
+                : > "$OUTPUT_DIR/config/$prefix/op-succinct/proposer.env" 2>/dev/null || true
+            fi
+            log "    ✓ op-succinct-proposer-$prefix (FEP, wired/not-settled) + postgres-$prefix added"
+        fi
+
+        # ====================================================================
+        # cdk-data-availability (committee / DAC member)
+        # Restored with its config + dac.keystore so the committee signs again.
+        # ====================================================================
+        if [ -n "$DAC_IMAGE" ] && [ "$DAC_IMAGE" != "null" ]; then
+            DAC_DEPENDS="      geth:
+        condition: service_healthy"
+            if [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+                DAC_DEPENDS="$DAC_DEPENDS
+      cdk-erigon-$prefix:
+        condition: service_healthy"
+            fi
+            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+  cdk-data-availability-$prefix:
+    image: $DAC_IMAGE
+    container_name: $SNAPSHOT_ID-cdk-data-availability-$prefix
+    hostname: cdk-data-availability-$prefix
+    entrypoint: ["/app/cdk-data-availability"]
+    command: ["run", "--cfg", "/etc/cdk-data-availability/config.toml"]
+    volumes:
+      - ./config/$prefix/dac/etc:/etc/cdk-data-availability:ro
+    ports:
+      - "$L2_DAC_PORT:8484"    # DAC RPC
+    depends_on:
+$DAC_DEPENDS
+    restart: unless-stopped
+EOF
+            log "    ✓ cdk-data-availability-$prefix (committee/DAC) service added"
+        fi
+
+        # ====================================================================
+        # aggkit service (if present) — attaches to op-stack OR cdk-erigon
         # ====================================================================
 
         if [ -n "$AGGKIT_IMAGE" ] && [ "$AGGKIT_IMAGE" != "null" ]; then
-            # Build depends_on section dynamically
+            # Build depends_on section dynamically based on chain type
             AGGKIT_DEPENDS="      geth:
-        condition: service_healthy
+        condition: service_healthy"
+            if [ "$CHAIN_TYPE" = "op-stack" ]; then
+                AGGKIT_DEPENDS="$AGGKIT_DEPENDS
       op-geth-$prefix:
         condition: service_healthy
       op-node-$prefix:
         condition: service_healthy"
+            elif [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+                AGGKIT_DEPENDS="$AGGKIT_DEPENDS
+      cdk-erigon-$prefix:
+        condition: service_healthy"
+            fi
 
             # Add agglayer dependency if present
             if [ "$AGGLAYER_FOUND" = "true" ]; then
@@ -377,16 +523,34 @@ else
     log "No L2 networks to add"
 fi
 
-# Add shared volumes for L2 genesis info exchange between op-reth and op-node
+# Add named volumes:
+#  - l2-shared-<prefix>: op-reth <-> op-node genesis handshake (op-stack)
+#  - cdk-erigon-data-<prefix>: cdk-erigon chain DB (cdk-erigon)
+#  - op-succinct-pg-<prefix>: FEP prover postgres DB (op-succinct)
 if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
 volumes:
 EOF
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
-        cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+        CHAIN_TYPE=$(jq -r ".l2_chains[\"$prefix\"].chain_type // \"op-stack\"" "$DISCOVERY_JSON")
+        OP_SUCCINCT_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_succinct_proposer.image // empty" "$DISCOVERY_JSON")
+
+        if [ "$CHAIN_TYPE" = "op-stack" ]; then
+            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
   l2-shared-$prefix:
 EOF
+        elif [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+  cdk-erigon-data-$prefix:
+EOF
+        fi
+
+        if [ -n "$OP_SUCCINCT_IMAGE" ] && [ "$OP_SUCCINCT_IMAGE" != "null" ]; then
+            cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+  op-succinct-pg-$prefix:
+EOF
+        fi
     done
 else
     cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF

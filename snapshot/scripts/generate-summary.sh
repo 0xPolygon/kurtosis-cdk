@@ -401,6 +401,11 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         log "  Processing L2 network: $prefix"
 
+        # Chain type + optional topology components present for this network
+        CHAIN_TYPE=$(jq -r ".l2_chains[\"$prefix\"].chain_type // \"op-stack\"" "$DISCOVERY_JSON")
+        HAS_OP_SUCCINCT=$(jq -r ".l2_chains[\"$prefix\"].op_succinct_proposer != null" "$DISCOVERY_JSON" 2>/dev/null || echo "false")
+        HAS_DAC=$(jq -r ".l2_chains[\"$prefix\"].cdk_data_availability != null" "$DISCOVERY_JSON" 2>/dev/null || echo "false")
+
         # Calculate port offsets
         PREFIX_NUM=$((10#$prefix))
         L2_HTTP_PORT=$((10000 + PREFIX_NUM * 1000 + 545))
@@ -410,12 +415,23 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         L2_NODE_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 300))
         L2_AGGKIT_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 576))
         L2_AGGKIT_REST_PORT=$((10000 + PREFIX_NUM * 1000 + 577))
+        L2_DAC_PORT=$((10000 + PREFIX_NUM * 1000 + 484))
+        L2_SUCCINCT_METRICS_PORT=$((10000 + PREFIX_NUM * 1000 + 80))
 
         # Get L2 chain ID
         ROLLUP_FILE="$OUTPUT_DIR/config/$prefix/rollup.json"
         L2_CHAIN_ID="unknown"
         if [ -f "$ROLLUP_FILE" ]; then
             L2_CHAIN_ID=$(jq -r '.l2_chain_id // .genesis.l2.chain_id // "unknown"' "$ROLLUP_FILE")
+        fi
+
+        # cdk-erigon chains don't ship a rollup.json; read chainId from the
+        # dynamic chain-config artifact captured under config/<prefix>/cdk-erigon.
+        if [ "$L2_CHAIN_ID" = "unknown" ] && [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+            ERIGON_CHAIN_CONFIG=$(find "$OUTPUT_DIR/config/$prefix/cdk-erigon" -name "dynamic-*-conf.json" -o -name "*chain-config*.json" 2>/dev/null | head -1 || true)
+            if [ -n "$ERIGON_CHAIN_CONFIG" ] && [ -f "$ERIGON_CHAIN_CONFIG" ]; then
+                L2_CHAIN_ID=$(jq -r '.chainId // .config.chainId // "unknown"' "$ERIGON_CHAIN_CONFIG" 2>/dev/null || echo "unknown")
+            fi
         fi
 
         # Extract contract addresses from aggkit config
@@ -441,42 +457,113 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                 }')
         fi
 
-        # L2 service URLs
-        L2_SERVICES=$(jq -n \
-            --arg prefix "$prefix" \
-            --arg http_port "$L2_HTTP_PORT" \
-            --arg ws_port "$L2_WS_PORT" \
-            --arg engine_port "$L2_ENGINE_PORT" \
-            --arg node_rpc_port "$L2_NODE_RPC_PORT" \
-            --arg node_metrics_port "$L2_NODE_METRICS_PORT" \
-            --arg aggkit_rpc_port "$L2_AGGKIT_RPC_PORT" \
-            --arg aggkit_rest_port "$L2_AGGKIT_REST_PORT" \
-            '{
-                "op-geth": {
-                    http_rpc: {
-                        internal: ("http://op-geth-" + $prefix + ":8545"),
-                        external: ("http://localhost:" + $http_port)
-                    },
-                    ws_rpc: {
-                        internal: ("ws://op-geth-" + $prefix + ":8546"),
-                        external: ("ws://localhost:" + $ws_port)
-                    },
-                    engine_api: {
-                        internal: ("http://op-geth-" + $prefix + ":8551"),
-                        external: ("http://localhost:" + $engine_port)
+        # Surface the gas-token contract for custom-gas chains (cdk-erigon).
+        # The gas-token address is recorded in the aggkit/erigon config; expose
+        # it under contracts.gas_token so loaders can detect a custom-gas chain.
+        GAS_TOKEN=""
+        if [ -f "$AGGKIT_CONFIG" ]; then
+            GAS_TOKEN=$(grep -iE "gasTokenAddress|GasTokenAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+        fi
+        if [ -z "$GAS_TOKEN" ] && [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+            ERIGON_CFG_FILE=$(find "$OUTPUT_DIR/config/$prefix/cdk-erigon" -name "*.toml" -o -name "*.yaml" -o -name "*.json" 2>/dev/null | head -20 | xargs grep -liE "gastoken|gas_token" 2>/dev/null | head -1 || true)
+            if [ -n "$ERIGON_CFG_FILE" ]; then
+                GAS_TOKEN=$(grep -iE "gastoken|gas_token" "$ERIGON_CFG_FILE" | grep -oE "0x[a-fA-F0-9]{40}" | head -1 || echo "")
+            fi
+        fi
+        if [ -n "$GAS_TOKEN" ]; then
+            L2_CONTRACTS=$(echo "$L2_CONTRACTS" | jq --arg gt "$GAS_TOKEN" '. + {gas_token: $gt}')
+        fi
+
+        # L2 service URLs. op-stack chains emit op-geth + op-node; cdk-erigon
+        # chains emit a "cdk-erigon" service key (distinct EL) with the same
+        # external RPC/WS ports.
+        if [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+            L2_SERVICES=$(jq -n \
+                --arg prefix "$prefix" \
+                --arg http_port "$L2_HTTP_PORT" \
+                --arg ws_port "$L2_WS_PORT" \
+                '{
+                    "cdk-erigon": {
+                        http_rpc: {
+                            internal: ("http://cdk-erigon-" + $prefix + ":8545"),
+                            external: ("http://localhost:" + $http_port)
+                        },
+                        ws_rpc: {
+                            internal: ("ws://cdk-erigon-" + $prefix + ":8546"),
+                            external: ("ws://localhost:" + $ws_port)
+                        }
                     }
-                },
-                "op-node": {
-                    rpc: {
-                        internal: ("http://op-node-" + $prefix + ":8547"),
-                        external: ("http://localhost:" + $node_rpc_port)
+                }')
+        else
+            L2_SERVICES=$(jq -n \
+                --arg prefix "$prefix" \
+                --arg http_port "$L2_HTTP_PORT" \
+                --arg ws_port "$L2_WS_PORT" \
+                --arg engine_port "$L2_ENGINE_PORT" \
+                --arg node_rpc_port "$L2_NODE_RPC_PORT" \
+                --arg node_metrics_port "$L2_NODE_METRICS_PORT" \
+                --arg aggkit_rpc_port "$L2_AGGKIT_RPC_PORT" \
+                --arg aggkit_rest_port "$L2_AGGKIT_REST_PORT" \
+                '{
+                    "op-geth": {
+                        http_rpc: {
+                            internal: ("http://op-geth-" + $prefix + ":8545"),
+                            external: ("http://localhost:" + $http_port)
+                        },
+                        ws_rpc: {
+                            internal: ("ws://op-geth-" + $prefix + ":8546"),
+                            external: ("ws://localhost:" + $ws_port)
+                        },
+                        engine_api: {
+                            internal: ("http://op-geth-" + $prefix + ":8551"),
+                            external: ("http://localhost:" + $engine_port)
+                        }
                     },
-                    metrics: {
-                        internal: ("http://op-node-" + $prefix + ":7300"),
-                        external: ("http://localhost:" + $node_metrics_port)
+                    "op-node": {
+                        rpc: {
+                            internal: ("http://op-node-" + $prefix + ":8547"),
+                            external: ("http://localhost:" + $node_rpc_port)
+                        },
+                        metrics: {
+                            internal: ("http://op-node-" + $prefix + ":7300"),
+                            external: ("http://localhost:" + $node_metrics_port)
+                        }
                     }
-                }
-            }')
+                }')
+        fi
+
+        # Add op-succinct proposer (FEP) service if present. The "settled"
+        # marker records that the FEP prover is wired but has NOT settled at
+        # snapshot time (preserves the no-settlement-before-snapshot guarantee).
+        if [ "$HAS_OP_SUCCINCT" = "true" ]; then
+            L2_SERVICES=$(echo "$L2_SERVICES" | jq \
+                --arg prefix "$prefix" \
+                --arg metrics_port "$L2_SUCCINCT_METRICS_PORT" \
+                '. + {
+                    "op-succinct-proposer": {
+                        metrics: {
+                            internal: ("http://op-succinct-proposer-" + $prefix + ":8080"),
+                            external: ("http://localhost:" + $metrics_port)
+                        },
+                        settled: false
+                    }
+                }')
+        fi
+
+        # Add committee / DAC service if present.
+        if [ "$HAS_DAC" = "true" ]; then
+            L2_SERVICES=$(echo "$L2_SERVICES" | jq \
+                --arg prefix "$prefix" \
+                --arg dac_port "$L2_DAC_PORT" \
+                '. + {
+                    "cdk-data-availability": {
+                        rpc: {
+                            internal: ("http://cdk-data-availability-" + $prefix + ":8484"),
+                            external: ("http://localhost:" + $dac_port)
+                        }
+                    }
+                }')
+        fi
 
         # Add aggkit services if present
         if [ -f "$AGGKIT_CONFIG" ]; then
@@ -573,6 +660,22 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 
             # Merge with L2 accounts
             L2_ACCOUNTS=$(jq -s '.[0] + .[1]' <(echo "$L2_ACCOUNTS") <(echo "$AGGKIT_ACCOUNTS"))
+        fi
+
+        # Committee / DAC member account from dac.keystore (if captured)
+        DAC_KEYSTORE="$OUTPUT_DIR/config/$prefix/dac/etc/dac.keystore"
+        if [ -f "$DAC_KEYSTORE" ]; then
+            DAC_ADDR=$(extract_keystore_address "$DAC_KEYSTORE")
+            if [ -n "$DAC_ADDR" ]; then
+                [[ "$DAC_ADDR" != 0x* ]] && DAC_ADDR="0x$DAC_ADDR"
+                L2_ACCOUNTS=$(echo "$L2_ACCOUNTS" | jq \
+                    --arg addr "$DAC_ADDR" \
+                    '. + [{
+                        address: $addr,
+                        private_key: "(encrypted in keystore)",
+                        description: "DAC committee member account (signs data-availability batches)"
+                    }]')
+            fi
         fi
 
         # Build L2 network object

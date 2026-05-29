@@ -515,18 +515,31 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
         log "Processing L2 network: $prefix"
 
+        # Determine the chain type so we extract the correct datadir layout.
+        CHAIN_TYPE=$(jq -r ".l2_chains[\"$prefix\"].chain_type // \"op-stack\"" "$DISCOVERY_JSON")
+        log "  Chain type: $CHAIN_TYPE"
+
         # Get container names for this network
-        OP_RETH_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.container_name" "$DISCOVERY_JSON")
-        OP_NODE_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.container_name" "$DISCOVERY_JSON")
+        OP_RETH_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_reth_sequencer.container_name // empty" "$DISCOVERY_JSON")
+        OP_NODE_SEQ=$(jq -r ".l2_chains[\"$prefix\"].op_node_sequencer.container_name // empty" "$DISCOVERY_JSON")
         AGGKIT_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].aggkit.container_name // empty" "$DISCOVERY_JSON")
+        CDK_ERIGON_SEQ=$(jq -r ".l2_chains[\"$prefix\"].cdk_erigon_sequencer.container_name // empty" "$DISCOVERY_JSON")
+        CDK_NODE_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].cdk_node.container_name // empty" "$DISCOVERY_JSON")
+        OP_SUCCINCT_PROPOSER=$(jq -r ".l2_chains[\"$prefix\"].op_succinct_proposer.container_name // empty" "$DISCOVERY_JSON")
+        DAC_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].cdk_data_availability.container_name // empty" "$DISCOVERY_JSON")
 
         log "  Containers:"
-        log "    op-reth sequencer: $OP_RETH_SEQ"
-        log "    op-node sequencer: $OP_NODE_SEQ"
+        [ -n "$OP_RETH_SEQ" ] && log "    op-reth sequencer: $OP_RETH_SEQ"
+        [ -n "$OP_NODE_SEQ" ] && log "    op-node sequencer: $OP_NODE_SEQ"
         if [ -n "$AGGKIT_CONTAINER" ] && [ "$AGGKIT_CONTAINER" != "null" ]; then
             log "    aggkit: $AGGKIT_CONTAINER"
         fi
+        [ -n "$CDK_ERIGON_SEQ" ] && log "    cdk-erigon sequencer: $CDK_ERIGON_SEQ"
+        [ -n "$OP_SUCCINCT_PROPOSER" ] && log "    op-succinct proposer: $OP_SUCCINCT_PROPOSER"
+        [ -n "$DAC_CONTAINER" ] && log "    cdk-data-availability: $DAC_CONTAINER"
 
+      # ----- op-stack (op-reth + op-node) extraction (only when present) -----
+      if [ -n "$OP_NODE_SEQ" ] && [ -n "$OP_RETH_SEQ" ]; then
         # Extract op-node configuration
         log "  Extracting op-node configuration..."
 
@@ -638,6 +651,116 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             log "  This network may not function properly in the snapshot"
         else
             log "  ✓ L2 network $prefix: all critical files extracted"
+        fi
+      fi  # end op-stack extraction
+
+        # ====================================================================
+        # cdk-erigon multi-chain extraction (incl. custom-gas chains)
+        # Datadir layout differs from op-geth: cdk-erigon stores its chain DB
+        # under /home/erigon/data/dynamic-<chain_name>-sequencer and its config
+        # under /etc/cdk-erigon. We tar the datadir for a restartable snapshot
+        # and copy the config + dynamic chain artifacts (genesis allocs, chain
+        # config incl. the custom gas-token settings).
+        # ====================================================================
+        if [ -n "$CDK_ERIGON_SEQ" ]; then
+            log "  Extracting cdk-erigon sequencer datadir + config (network $prefix)..."
+            mkdir -p "$OUTPUT_DIR/config/$prefix/cdk-erigon"
+
+            # Config (config.yaml + dynamic chain artifacts: chain-config,
+            # allocs, first-batch — these carry custom-gas-token settings).
+            if docker cp "$CDK_ERIGON_SEQ:/etc/cdk-erigon" "$OUTPUT_DIR/config/$prefix/cdk-erigon/etc" 2>/dev/null; then
+                log "    ✓ /etc/cdk-erigon extracted"
+            else
+                log "    WARNING: /etc/cdk-erigon not found"
+            fi
+
+            # Datadir (chain DB) — locate the dynamic-*-sequencer dir under
+            # /home/erigon/data and tar it for restartability.
+            ERIGON_DATADIR=$(docker exec "$CDK_ERIGON_SEQ" sh -c 'ls -d /home/erigon/data/dynamic-*-sequencer 2>/dev/null | head -1' 2>/dev/null || echo "")
+            if [ -n "$ERIGON_DATADIR" ]; then
+                log "    Datadir: $ERIGON_DATADIR"
+                if docker cp "$CDK_ERIGON_SEQ:$ERIGON_DATADIR" "$OUTPUT_DIR/datadirs/cdk-erigon-$prefix-data" 2>/dev/null; then
+                    tar -czf "$OUTPUT_DIR/datadirs/cdk-erigon-$prefix.tar" -C "$OUTPUT_DIR/datadirs" "cdk-erigon-$prefix-data"
+                    rm -rf "$OUTPUT_DIR/datadirs/cdk-erigon-$prefix-data"
+                    log "    ✓ cdk-erigon datadir extracted ($(du -h "$OUTPUT_DIR/datadirs/cdk-erigon-$prefix.tar" | cut -f1))"
+                else
+                    log "    WARNING: failed to copy cdk-erigon datadir"
+                fi
+            else
+                log "    WARNING: cdk-erigon datadir (dynamic-*-sequencer) not found"
+            fi
+
+            # cdk-node config (sequence-sender / aggregator) if present
+            if [ -n "$CDK_NODE_CONTAINER" ]; then
+                if docker cp "$CDK_NODE_CONTAINER:/etc/cdk" "$OUTPUT_DIR/config/$prefix/cdk-node" 2>/dev/null; then
+                    log "    ✓ cdk-node config extracted"
+                else
+                    log "    WARNING: cdk-node config (/etc/cdk) not found"
+                fi
+            fi
+        fi
+
+        # ====================================================================
+        # op-succinct FEP prover/proposer extraction
+        # The proposer service holds the FEP prover wiring. Its persistent
+        # prover state is the postgres DB; we capture the proposer service
+        # config/env and (best-effort) the prover DB so the FEP topology is
+        # restartable. We intentionally do NOT trigger settlement here — the
+        # proposer is captured "wired but not settled" (see snapshot.sh STEP 3
+        # L1-stop-before-extract; no proof submission is performed).
+        # ====================================================================
+        if [ -n "$OP_SUCCINCT_PROPOSER" ]; then
+            log "  Extracting op-succinct proposer (FEP) state (network $prefix)..."
+            mkdir -p "$OUTPUT_DIR/config/$prefix/op-succinct"
+
+            # Capture the proposer container env (L2OO address, prover mode,
+            # agglayer wiring) for deterministic restart.
+            if docker inspect --format '{{json .Config.Env}}' "$OP_SUCCINCT_PROPOSER" \
+                > "$OUTPUT_DIR/config/$prefix/op-succinct/proposer-env.json" 2>/dev/null; then
+                log "    ✓ proposer env captured"
+            else
+                log "    WARNING: failed to capture proposer env"
+            fi
+
+            # Mounted L1 genesis config used by the proposer.
+            if docker cp "$OP_SUCCINCT_PROPOSER:/app/configs" "$OUTPUT_DIR/config/$prefix/op-succinct/configs" 2>/dev/null; then
+                log "    ✓ proposer /app/configs extracted"
+            else
+                log "    WARNING: proposer /app/configs not found"
+            fi
+
+            # FEP prover state lives in the companion postgres service (DB:
+            # op_succinct_db). Best-effort logical dump so proof-request state
+            # survives restore. Marked optional: a fresh DB also restarts cleanly.
+            PG_CONTAINER=$(docker ps -a --format '{{.Names}}' | grep -E "^postgres-$prefix--" | head -1 || true)
+            if [ -n "$PG_CONTAINER" ]; then
+                log "    Found prover postgres: $PG_CONTAINER"
+                if docker exec "$PG_CONTAINER" sh -c 'pg_dump -U op_succinct_user op_succinct_db' \
+                    > "$OUTPUT_DIR/config/$prefix/op-succinct/op_succinct_db.sql" 2>/dev/null; then
+                    log "    ✓ prover DB dumped"
+                else
+                    log "    WARNING: prover DB dump failed (fresh DB will be used on restore)"
+                    rm -f "$OUTPUT_DIR/config/$prefix/op-succinct/op_succinct_db.sql"
+                fi
+            else
+                log "    NOTE: no prover postgres companion found for network $prefix"
+            fi
+        fi
+
+        # ====================================================================
+        # Committee / DAC extraction (cdk-data-availability)
+        # Captures the DAC member config + keystore so the committee restarts
+        # with its signing identity intact.
+        # ====================================================================
+        if [ -n "$DAC_CONTAINER" ]; then
+            log "  Extracting committee/DAC config + keystore (network $prefix)..."
+            mkdir -p "$OUTPUT_DIR/config/$prefix/dac"
+
+            if docker cp "$DAC_CONTAINER:/etc/cdk-data-availability" "$OUTPUT_DIR/config/$prefix/dac/etc" 2>/dev/null; then
+                log "    ✓ /etc/cdk-data-availability (config + dac.keystore) extracted"
+            else
+                log "    WARNING: /etc/cdk-data-availability not found"
+            fi
         fi
 
         log "  L2 network $prefix configuration extraction complete"

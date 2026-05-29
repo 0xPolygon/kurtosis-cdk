@@ -142,6 +142,33 @@ if [ -n "$AGGKIT_SERVICES" ]; then
     done
 fi
 
+# Check cdk-erigon EL services (multi-chain / custom-gas topology)
+CDK_ERIGON_SERVICES=$(grep -E "^  cdk-erigon-[0-9]+:" "$COMPOSE_FILE" | sed 's/://g' | awk '{print $1}' || true)
+
+if [ -n "$CDK_ERIGON_SERVICES" ]; then
+    for service in $CDK_ERIGON_SERVICES; do
+        check_service_healthcheck "$service" false
+    done
+fi
+
+# Check op-succinct proposer services (FEP topology) — healthcheck optional
+OP_SUCCINCT_SERVICES=$(grep -E "^  op-succinct-proposer-[0-9]+:" "$COMPOSE_FILE" | sed 's/://g' | awk '{print $1}' || true)
+
+if [ -n "$OP_SUCCINCT_SERVICES" ]; then
+    for service in $OP_SUCCINCT_SERVICES; do
+        check_service_healthcheck "$service" false
+    done
+fi
+
+# Check committee / DAC services
+DAC_SERVICES=$(grep -E "^  cdk-data-availability-[0-9]+:" "$COMPOSE_FILE" | sed 's/://g' | awk '{print $1}' || true)
+
+if [ -n "$DAC_SERVICES" ]; then
+    for service in $DAC_SERVICES; do
+        check_service_healthcheck "$service" false
+    done
+fi
+
 # Check agglayer
 log ""
 log "=== Checking Agglayer Service ==="
