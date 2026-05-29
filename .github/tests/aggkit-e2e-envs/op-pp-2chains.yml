@@ -1,0 +1,94 @@
+# aggkit-e2e env preset: op-pp-2chains
+# ---------------------------------------------------------------------------
+# Topology: TWO OP "pessimistic" (ecdsa-multisig consensus) L2s sharing one
+#           L1 + agglayer:
+#             - chain "001" (l2_chain_id 20201, network_id 1) -> deploys L1
+#               + agglayer.
+#             - chain "002" (l2_chain_id 20202, network_id 2) -> reuses the L1
+#               + agglayer (deploy_l1: false, deploy_agglayer: false).
+#
+# main.star deploys exactly ONE L2 per `kurtosis run`. The legacy aggkit CI
+# brings up multi-chain by running each per-chain args-file sequentially into
+# the SAME enclave (see agglayer/e2e .github/workflows/aggkit-e2e-multi-chains.yml:
+# `kurtosis run --enclave <name> --args-file args-1` then `--args-file args-2`).
+# This preset is therefore a MULTI-DOCUMENT YAML: each `---` document is a
+# standalone single-chain args-file, applied IN ORDER to one shared enclave.
+#
+# Provenance (faithful mirror; deep-merged last-wins per document):
+#   Document 1 (chain 001) == aggkit CI `kurtosis-cdk-args-1`:
+#     1. .github/test_e2e_op_args_base.json
+#     2. .github/test_e2e_op_args_chain_1.json
+#   Document 2 (chain 002) == aggkit CI `kurtosis-cdk-args-2`:
+#     1. .github/test_e2e_op_args_base.json
+#     2. .github/test_e2e_op_args_chain_2.json
+#
+# The 2nd chain's deploy toggles `deploy_l1: false` / `deploy_agglayer: false`
+# come verbatim from test_e2e_op_args_chain_2.json deployment_stages.
+#
+# Snapshot-clean: both source compositions already set
+# `additional_services: []` (no bridge_spammer); preserved as-is. No
+# settlement-inducing service is added.
+#
+# Invocation (apply both documents IN ORDER to one enclave):
+#   yq 'select(documents() == 0)' .github/tests/aggkit-e2e-envs/op-pp-2chains.yml > /tmp/op-pp-1.yml
+#   yq 'select(documents() == 1)' .github/tests/aggkit-e2e-envs/op-pp-2chains.yml > /tmp/op-pp-2.yml
+#   kurtosis run --enclave op-pp --args-file /tmp/op-pp-1.yml .
+#   kurtosis run --enclave op-pp --args-file /tmp/op-pp-2.yml .
+# ---------------------------------------------------------------------------
+
+# === Document 1: chain "001" (deploys shared L1 + agglayer) ===
+deployment_stages:
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+
+args:
+  aggkit_image: aggkit:local
+  consensus_contract_type: ecdsa-multisig
+  use_agg_sender_validator: true
+  agg_sender_multisig_threshold: 2
+  agg_sender_validator_total_number: 3
+  log_level: debug
+  additional_services: []
+  binary_name: aggkit
+  aggkit_components: aggsender,aggoracle
+  l2_chain_id: 20201
+  l2_network_id: 1
+
+optimism_package:
+  predeployed_contracts: true
+  chains:
+    "001":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20201"
+
+---
+# === Document 2: chain "002" (reuses the shared L1 + agglayer) ===
+deployment_stages:
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+  deploy_l1: false
+  deploy_agglayer: false
+
+args:
+  aggkit_image: aggkit:local
+  consensus_contract_type: ecdsa-multisig
+  use_agg_sender_validator: true
+  agg_sender_multisig_threshold: 2
+  agg_sender_validator_total_number: 3
+  log_level: debug
+  additional_services: []
+  binary_name: aggkit
+  aggkit_components: aggsender,aggoracle
+  l2_chain_id: 20202
+  l2_network_id: 2
+  deployment_suffix: "-002"
+
+optimism_package:
+  chains:
+    "002":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20202"

@@ -1,0 +1,65 @@
+# aggkit-e2e env preset: op-fep-committee
+# ---------------------------------------------------------------------------
+# Topology: single OP-succinct L2 (chain "001"), FEP consensus, op-succinct
+#           MOCK prover, agglayer integration, PLUS AggOracle committee
+#           (quorum 2 of 3 total members).
+#
+# Provenance (faithful mirror of the aggkit CI composition
+# `op_succinct_aggoracle_committee_args`, put_args
+# op_succinct_aggoracle_committee_args). Deep-merged last-wins in this order:
+#   1. .github/test_e2e_op_args_base.json
+#   2. .github/test_e2e_op_succinct_args_base.json
+#   3. .github/test_e2e_single_chain_op_succinct_aggoracle_committee_args.json
+#
+# AggOracle committee keys come verbatim from
+# test_e2e_single_chain_op_succinct_aggoracle_committee_args.json:
+#   use_agg_oracle_committee: true
+#   agg_oracle_committee_quorum: 2
+#   agg_oracle_committee_total_members: 3
+# and that file also sets optimism_package chain "001" network_params
+# seconds_per_slot: 1.
+#
+# DEVIATION (plan step P1, snapshot-clean):
+#   - DROPPED `bridge_spammer` from `additional_services` (same reason as
+#     op-fep). Source composition has ["bridge_spammer"]; set to [].
+#
+# Invocation:
+#   kurtosis run --enclave op-fep-committee \
+#     --args-file .github/tests/aggkit-e2e-envs/op-fep-committee.yml .
+# ---------------------------------------------------------------------------
+deployment_stages:
+  deploy_op_succinct: true
+  deploy_cdk_bridge_infra: false
+
+args:
+  aggkit_image: aggkit:local
+  consensus_contract_type: fep
+  use_agg_sender_validator: true
+  agg_sender_multisig_threshold: 2
+  agg_sender_validator_total_number: 3
+  log_level: debug
+  # DEVIATION (P1): bridge_spammer removed for a snapshot-clean enclave.
+  additional_services: []
+  binary_name: aggkit
+  aggkit_components: aggsender,aggoracle
+  l2_chain_id: 20201
+  l2_network_id: 1
+  op_succinct_mock: true
+  op_succinct_agglayer: true
+  op_succinct_agg_proof_mode: compressed
+  op_succinct_submission_interval: "1"
+  op_succinct_max_concurrent_proof_requests: "1"
+  op_succinct_max_concurrent_witness_gen: "1"
+  op_succinct_range_proof_interval: "60"
+  use_agg_oracle_committee: true
+  agg_oracle_committee_quorum: 2
+  agg_oracle_committee_total_members: 3
+
+optimism_package:
+  chains:
+    "001":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20201"
+        seconds_per_slot: 1

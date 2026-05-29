@@ -1,0 +1,136 @@
+# aggkit-e2e env preset: cdk-erigon-3chains
+# ---------------------------------------------------------------------------
+# Topology: THREE cdk-erigon L2s (ecdsa-multisig consensus) sharing one
+#           L1 + agglayer:
+#             - chain "001" (l2_chain_id 20201, network_id 1) -> deploys L1
+#               + agglayer; CUSTOM GAS TOKEN (gas_token_enabled: true).
+#             - chain "002" (l2_chain_id 20202, network_id 2) -> reuses L1
+#               + agglayer (deploy_l1/agglayer: false); CUSTOM GAS TOKEN.
+#             - chain "003" (l2_chain_id 20203, network_id 3) -> reuses L1
+#               + agglayer; NATIVE gas token (gas_token_enabled: false).
+#
+# As with op-pp-2chains, main.star deploys one L2 per `kurtosis run`; the
+# legacy aggkit CI runs each per-chain args-file sequentially into one shared
+# enclave (agglayer/e2e aggkit-e2e-multi-chains.yml, number-of-chains: 3).
+# This preset is a MULTI-DOCUMENT YAML: each `---` document is a standalone
+# single-chain args-file, applied IN ORDER to one shared enclave.
+#
+# Provenance (faithful mirror; deep-merged last-wins per document; matches the
+# aggkit CI put_args calls in .github/workflows/test-e2e.yml):
+#   Document 1 (chain 001) == aggkit CI `kurtosis-cdk-args-3`:
+#     1. .github/test_e2e_cdk_erigon_args_base.json
+#     2. .github/test_e2e_cdk_erigon_custom_gas_token.json
+#   Document 2 (chain 002) == aggkit CI `kurtosis-cdk-args-4`:
+#     1. .github/test_e2e_cdk_erigon_args_base.json
+#     2. .github/test_e2e_cdk_erigon_multi_chains_args_2.json
+#     3. .github/test_e2e_cdk_erigon_custom_gas_token.json
+#   Document 3 (chain 003) == aggkit CI `kurtosis-cdk-args-5`:
+#     1. .github/test_e2e_cdk_erigon_args_base.json
+#     2. .github/test_e2e_cdk_erigon_multi_chains_args_3.json
+#
+# DEVIATION / NOTE (plan step P1): custom gas token applies to chains 001 AND
+#   002 (NOT a single custom-gas chain). This mirrors legacy CI: args-3 =
+#   base + custom-gas (chain 001), args-4 = base + multi-2 + custom-gas
+#   (chain 002), args-5 = base + multi-3 (chain 003, native). Confirmed by
+#   reading put_args kurtosis-cdk-args-{3,4,5}.
+#
+# Snapshot-clean: every source composition sets `additional_services: []`
+# (no bridge_spammer / no settlement-inducing service); preserved as-is.
+#
+# Invocation (apply all three documents IN ORDER to one enclave):
+#   yq 'select(documents() == 0)' .github/tests/aggkit-e2e-envs/cdk-erigon-3chains.yml > /tmp/cdk-1.yml
+#   yq 'select(documents() == 1)' .github/tests/aggkit-e2e-envs/cdk-erigon-3chains.yml > /tmp/cdk-2.yml
+#   yq 'select(documents() == 2)' .github/tests/aggkit-e2e-envs/cdk-erigon-3chains.yml > /tmp/cdk-3.yml
+#   kurtosis run --enclave cdk-erigon --args-file /tmp/cdk-1.yml .
+#   kurtosis run --enclave cdk-erigon --args-file /tmp/cdk-2.yml .
+#   kurtosis run --enclave cdk-erigon --args-file /tmp/cdk-3.yml .
+# ---------------------------------------------------------------------------
+
+# === Document 1: chain "001" (deploys shared L1 + agglayer; custom gas) ===
+deployment_stages:
+  deploy_l2_contracts: true
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+
+args:
+  consensus_contract_type: ecdsa-multisig
+  use_agg_sender_validator: false
+  agg_sender_multisig_threshold: 1
+  agg_sender_validator_total_number: 0
+  binary_name: aggkit
+  log_level: debug
+  aggkit_components: aggsender
+  aggkit_image: aggkit:local
+  agglayer_prover_primary_prover: mock-prover
+  zkevm_use_real_verifier: false
+  sp1_prover_key: ""
+  sequencer_type: cdk-erigon
+  cdk_erigon_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1
+  enable_normalcy: true
+  erigon_strict_mode: false
+  gas_token_enabled: true
+  gas_token_address: ""
+  additional_services: []
+
+---
+# === Document 2: chain "002" (reuses shared L1 + agglayer; custom gas) ===
+deployment_stages:
+  deploy_l2_contracts: true
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+  deploy_l1: false
+  deploy_agglayer: false
+
+args:
+  consensus_contract_type: ecdsa-multisig
+  use_agg_sender_validator: false
+  agg_sender_multisig_threshold: 1
+  agg_sender_validator_total_number: 0
+  binary_name: aggkit
+  log_level: debug
+  aggkit_components: aggsender
+  aggkit_image: aggkit:local
+  agglayer_prover_primary_prover: mock-prover
+  zkevm_use_real_verifier: false
+  sp1_prover_key: ""
+  sequencer_type: cdk-erigon
+  cdk_erigon_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1
+  enable_normalcy: true
+  erigon_strict_mode: false
+  gas_token_enabled: true
+  gas_token_address: ""
+  additional_services: []
+  deployment_suffix: "-002"
+  l2_chain_id: 20202
+  l2_network_id: 2
+
+---
+# === Document 3: chain "003" (reuses shared L1 + agglayer; NATIVE gas) ===
+deployment_stages:
+  deploy_l2_contracts: true
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+  deploy_l1: false
+  deploy_agglayer: false
+
+args:
+  consensus_contract_type: ecdsa-multisig
+  use_agg_sender_validator: false
+  agg_sender_multisig_threshold: 1
+  agg_sender_validator_total_number: 0
+  binary_name: aggkit
+  log_level: debug
+  aggkit_components: aggsender
+  aggkit_image: aggkit:local
+  agglayer_prover_primary_prover: mock-prover
+  zkevm_use_real_verifier: false
+  sp1_prover_key: ""
+  sequencer_type: cdk-erigon
+  cdk_erigon_image: europe-west2-docker.pkg.dev/prj-polygonlabs-devtools-dev/public/cdk-erigon:v2.65.0-RC1
+  enable_normalcy: true
+  erigon_strict_mode: false
+  gas_token_enabled: false
+  additional_services: []
+  deployment_suffix: "-003"
+  l2_chain_id: 20203
+  l2_network_id: 3
