@@ -295,6 +295,15 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     OP_SUCCINCT_PROPOSER=$(echo "$OP_SUCCINCT_CONTAINERS" | grep -E "^op-succinct-proposer-$prefix--" | head -1 || true)
     DAC=$(echo "$DAC_CONTAINERS" | grep -E "^cdk-data-availability-$prefix--" | head -1 || true)
 
+    # Find the contracts deployer container for this network. It holds the
+    # per-chain deployment output (combined-<prefix>.json) under /opt/output,
+    # which is the authoritative source for the custom gas-token address on
+    # cdk-erigon custom-gas chains (not present in aggkit/erigon config files).
+    # Optional: only emitted for chains that ran a contracts deployer.
+    CONTRACTS_DEPLOYER=$(docker ps -a \
+        --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+        --format "{{.Names}}" | grep -E "^contracts-$prefix--" | head -1 || true)
+
     # AggOracle committee members for this network: aggkit-<prefix>-aggoracle-committee-00N--<uuid>
     COMMITTEE_MEMBERS=$(echo "$COMMITTEE_CONTAINERS" | grep -E "^aggkit-$prefix-aggoracle-committee-[0-9]+--" | sort || true)
 
@@ -425,6 +434,13 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     if [ -n "$CDK_NODE" ]; then
         L2_CHAIN_JSON+=",
       \"cdk_node\": $(container_json "$CDK_NODE")"
+    fi
+
+    # Add contracts deployer (carries combined-<prefix>.json deployment output,
+    # the authoritative gas-token source for custom-gas cdk-erigon chains).
+    if [ -n "$CONTRACTS_DEPLOYER" ]; then
+        L2_CHAIN_JSON+=",
+      \"contracts_deployer\": $(container_json "$CONTRACTS_DEPLOYER")"
     fi
 
     # Add op-succinct proposer (FEP prover/proposer wiring) if present

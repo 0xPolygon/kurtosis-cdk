@@ -725,6 +725,41 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                     log "    WARNING: cdk-node config (/etc/cdk) not found"
                 fi
             fi
+
+            # aggkit configuration + keystores for this cdk-erigon network. These
+            # carry the L2 bridge / GER / rollup-manager contract addresses (under
+            # the aggkit TOML [L1Config]/[L2Config] sections) and the keystores the
+            # loader decrypts. Mirrors the op-stack aggkit extraction above so the
+            # loader path is identical regardless of sequencer type.
+            if [ -n "$AGGKIT_CONTAINER" ] && [ "$AGGKIT_CONTAINER" != "null" ]; then
+                log "  Extracting aggkit configuration for cdk-erigon network $prefix..."
+                if docker cp "$AGGKIT_CONTAINER:/etc/aggkit/config.toml" "$OUTPUT_DIR/config/$prefix/aggkit-config.toml" 2>/dev/null; then
+                    log "    ✓ aggkit-config.toml extracted"
+                else
+                    log "    WARNING: aggkit-config.toml not found"
+                fi
+                docker cp "$AGGKIT_CONTAINER:/etc/aggkit/sequencer.keystore" "$OUTPUT_DIR/config/$prefix/sequencer.keystore" 2>/dev/null \
+                    && log "    ✓ sequencer.keystore extracted" || log "    WARNING: sequencer.keystore not found"
+                docker cp "$AGGKIT_CONTAINER:/etc/aggkit/aggoracle.keystore" "$OUTPUT_DIR/config/$prefix/aggoracle.keystore" 2>/dev/null \
+                    && log "    ✓ aggoracle.keystore extracted" || log "    WARNING: aggoracle.keystore not found"
+                docker cp "$AGGKIT_CONTAINER:/etc/aggkit/sovereignadmin.keystore" "$OUTPUT_DIR/config/$prefix/sovereignadmin.keystore" 2>/dev/null \
+                    && log "    ✓ sovereignadmin.keystore extracted" || log "    WARNING: sovereignadmin.keystore not found"
+                docker cp "$AGGKIT_CONTAINER:/etc/aggkit/claimsponsor.keystore" "$OUTPUT_DIR/config/$prefix/claimsponsor.keystore" 2>/dev/null || true
+            fi
+
+            # Contract deployment output (combined-<prefix>.json) from the contracts
+            # deployer container. This is the authoritative source for the custom
+            # gas-token address (gasTokenAddress) on custom-gas chains; the aggkit
+            # and erigon configs do not record it. Native chains record the zero
+            # address here, which generate-summary treats as "no custom gas token".
+            CONTRACTS_DEPLOYER=$(jq -r ".l2_chains[\"$prefix\"].contracts_deployer.container_name // empty" "$DISCOVERY_JSON")
+            if [ -n "$CONTRACTS_DEPLOYER" ] && [ "$CONTRACTS_DEPLOYER" != "null" ]; then
+                if docker cp "$CONTRACTS_DEPLOYER:/opt/output/combined-$prefix.json" "$OUTPUT_DIR/config/$prefix/combined.json" 2>/dev/null; then
+                    log "    ✓ combined.json (deployment output, gas-token source) extracted"
+                else
+                    log "    WARNING: combined-$prefix.json not found in contracts deployer"
+                fi
+            fi
         fi
 
         # ====================================================================

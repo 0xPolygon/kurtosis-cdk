@@ -87,6 +87,15 @@ services:
     image: snapshot-geth:$TAG
     container_name: $SNAPSHOT_ID-geth
     hostname: geth
+    # Alias the restored L1 EL under its original kurtosis service name so
+    # components that hardcode the kurtosis L1 RPC hostname keep resolving it.
+    # cdk-erigon's captured config.yaml references zkevm.l1-rpc-url as
+    # http://el-1-geth-lighthouse:8545; op-stack instead has its L1 hostnames
+    # rewritten to "geth" during adaptation. The alias is harmless for op-stack.
+    networks:
+      default:
+        aliases:
+          - el-1-geth-lighthouse
     command:
       - "--http"
       - "--http.addr=0.0.0.0"
@@ -372,9 +381,25 @@ EOF
     image: $CDK_ERIGON_IMAGE
     container_name: $SNAPSHOT_ID-cdk-erigon-$prefix
     hostname: cdk-erigon-$prefix
+    # Alias the restored EL under the kurtosis RPC service name as well, since
+    # the captured aggkit config dials the L2 over http://cdk-erigon-rpc-<prefix>:8545.
+    # In the snapshot the single restored erigon node serves both roles.
+    networks:
+      default:
+        aliases:
+          - cdk-erigon-rpc-$prefix
+    # Run as root (uid/gid 0), matching how kurtosis launches cdk-erigon
+    # (user=User(uid=0, gid=0)). The image's default user is "erigon", which
+    # cannot create its datadir under the root-owned named volume, so without
+    # this the node panics with "mkdir /home/erigon/data/...: permission denied".
+    user: "0:0"
     environment:
       - CDK_ERIGON_SEQUENCER=1
-    command: ["cdk-erigon", "--config", "/etc/cdk-erigon/config.yaml"]
+    # The image ENTRYPOINT is already ["cdk-erigon"]; pass only the flags so we
+    # don't turn "cdk-erigon" into an (invalid) subcommand. Set entrypoint
+    # explicitly for clarity/robustness across image variants.
+    entrypoint: ["cdk-erigon"]
+    command: ["--config", "/etc/cdk-erigon/config.yaml"]
     volumes:
       - ./config/$prefix/cdk-erigon/etc:/etc/cdk-erigon:ro
       - cdk-erigon-data-$prefix:/home/erigon/data
@@ -528,6 +553,21 @@ EOF
         condition: service_healthy"
             fi
 
+            # aggkit components per sequencer type. op-stack chains restore their
+            # full state (incl. the initialized L2 GER manager) so the aggoracle
+            # component runs. cdk-erigon chains in a snapshot-clean capture boot
+            # their EL from a fresh datadir and re-derive blocks as a sequencer,
+            # which does NOT replay the post-genesis L2 GER-manager initialization
+            # (globalExitRootUpdater() reverts), so the aggoracle component would
+            # crash-loop on startup. The aggsender + bridge components do not need
+            # it; we run those so the bridge REST service (the loader's readiness
+            # dependency) and aggsender come up. This keeps the restored env
+            # bootable and loadable without changing op-stack behavior.
+            AGGKIT_COMPONENTS="aggsender,aggoracle,bridge"
+            if [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+                AGGKIT_COMPONENTS="aggsender,bridge"
+            fi
+
             cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
   aggkit-$prefix:
@@ -538,7 +578,7 @@ EOF
     command:
       - "run"
       - "--cfg=/etc/aggkit/config.toml"
-      - "--components=aggsender,aggoracle,bridge"
+      - "--components=$AGGKIT_COMPONENTS"
     volumes:
       - ./config/$prefix/aggkit-config.toml:/etc/aggkit/config.toml:ro
       - ./config/$prefix/sequencer.keystore:/etc/aggkit/sequencer.keystore:ro

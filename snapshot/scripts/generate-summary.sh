@@ -78,6 +78,12 @@ L2_CHAINS_COUNT=$(jq -r '.l2_chains | length // 0' "$DISCOVERY_JSON" 2>/dev/null
 # Default mnemonics used for test accounts
 DEFAULT_L1_MNEMONIC="giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete"
 DEFAULT_L2_MNEMONIC="test test test test test test test test test test test junk"
+# cdk-erigon (zkEVM) chains pre-fund their accounts (admin, sequencer,
+# aggregator, aggoracle, sovereignadmin, claimsponsor) from this well-known
+# kurtosis-cdk mnemonic rather than the op-stack "test...junk" one. It is added
+# to the same pk_map so cdk-erigon L2 genesis-funded accounts (e.g. the admin
+# EOA carrying the chain's prefunded balance) resolve to a usable private key.
+DEFAULT_CDK_L2_MNEMONIC="lab code glass agree maid neutral vessel horror deny frequent favorite soft gate galaxy proof vintage once figure diary virtual scissors marble shrug drop"
 
 # Build a map of address -> private key from mnemonic
 build_private_key_map() {
@@ -122,7 +128,10 @@ extract_genesis_accounts() {
     # Extract accounts with meaningful balance, excluding precompiles and optionally OP contracts
     if [ "$exclude_op_contracts" = "true" ]; then
         jq --arg desc "$description_prefix" --argjson pk_map "$pk_map" '
-            .alloc // {} | to_entries |
+            # Use the .alloc wrapper when present (op-stack / standard genesis);
+            # fall back to the top-level object for cdk-erigon dynamic allocs,
+            # which are a flat address->{balance,...} map with no .alloc wrapper.
+            (.alloc // .) | to_entries |
             map(select(
                 # Exclude precompile addresses (0x0000...0000 through 0x0000...00ff)
                 (.key | test("^0x000000000000000000000000000000000000") | not) and
@@ -152,7 +161,10 @@ extract_genesis_accounts() {
         ' "$genesis_file" 2>/dev/null || echo "[]"
     else
         jq --arg desc "$description_prefix" --argjson pk_map "$pk_map" '
-            .alloc // {} | to_entries |
+            # Use the .alloc wrapper when present (op-stack / standard genesis);
+            # fall back to the top-level object for cdk-erigon dynamic allocs,
+            # which are a flat address->{balance,...} map with no .alloc wrapper.
+            (.alloc // .) | to_entries |
             map(select(
                 # Exclude precompile addresses (0x0000...0000 through 0x0000...00ff)
                 (.key | test("^0x000000000000000000000000000000000000") | not) and
@@ -262,15 +274,19 @@ if command -v cast &> /dev/null; then
     build_private_key_map "$DEFAULT_L1_MNEMONIC" 50
 
     log "  Deriving private keys from L2 mnemonic..."
-    # Append L2 private keys to the same map
-    for i in $(seq 0 49); do
-        addr=$(cast wallet address --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index "$i" 2>/dev/null || echo "")
-        pk=$(cast wallet private-key --mnemonic "$DEFAULT_L2_MNEMONIC" --mnemonic-index "$i" 2>/dev/null || echo "")
+    # Append L2 private keys to the same map (op-stack "test...junk" accounts and
+    # the cdk-erigon "lab code glass..." accounts; both are additive so a single
+    # map serves every topology and op-stack behavior is unchanged).
+    for mnemonic in "$DEFAULT_L2_MNEMONIC" "$DEFAULT_CDK_L2_MNEMONIC"; do
+        for i in $(seq 0 49); do
+            addr=$(cast wallet address --mnemonic "$mnemonic" --mnemonic-index "$i" 2>/dev/null || echo "")
+            pk=$(cast wallet private-key --mnemonic "$mnemonic" --mnemonic-index "$i" 2>/dev/null || echo "")
 
-        if [ -n "$addr" ] && [ -n "$pk" ]; then
-            jq --arg addr "${addr,,}" --arg pk "$pk" '. + {($addr): $pk}' "$TEMP_DIR/pk_map.json" > "$TEMP_DIR/pk_map_tmp.json"
-            mv "$TEMP_DIR/pk_map_tmp.json" "$TEMP_DIR/pk_map.json"
-        fi
+            if [ -n "$addr" ] && [ -n "$pk" ]; then
+                jq --arg addr "${addr,,}" --arg pk "$pk" '. + {($addr): $pk}' "$TEMP_DIR/pk_map.json" > "$TEMP_DIR/pk_map_tmp.json"
+                mv "$TEMP_DIR/pk_map_tmp.json" "$TEMP_DIR/pk_map.json"
+            fi
+        done
     done
 fi
 
@@ -426,11 +442,21 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         fi
 
         # cdk-erigon chains don't ship a rollup.json; read chainId from the
-        # dynamic chain-config artifact captured under config/<prefix>/cdk-erigon.
+        # dynamic chain-spec artifact captured under config/<prefix>/cdk-erigon.
+        # The chainId lives in dynamic-*-chainspec.json (top-level "chainId"); the
+        # dynamic-*-conf.json only carries genesis root/timestamp/gasLimit. Prefer
+        # the chainspec, then fall back to the erigon config.yaml zkevm.l2-chain-id.
         if [ "$L2_CHAIN_ID" = "unknown" ] && [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
-            ERIGON_CHAIN_CONFIG=$(find "$OUTPUT_DIR/config/$prefix/cdk-erigon" -name "dynamic-*-conf.json" -o -name "*chain-config*.json" 2>/dev/null | head -1 || true)
-            if [ -n "$ERIGON_CHAIN_CONFIG" ] && [ -f "$ERIGON_CHAIN_CONFIG" ]; then
-                L2_CHAIN_ID=$(jq -r '.chainId // .config.chainId // "unknown"' "$ERIGON_CHAIN_CONFIG" 2>/dev/null || echo "unknown")
+            ERIGON_CHAINSPEC=$(find "$OUTPUT_DIR/config/$prefix/cdk-erigon" -name "dynamic-*-chainspec.json" -o -name "*chain-config*.json" 2>/dev/null | head -1 || true)
+            if [ -n "$ERIGON_CHAINSPEC" ] && [ -f "$ERIGON_CHAINSPEC" ]; then
+                L2_CHAIN_ID=$(jq -r '.chainId // .config.chainId // "unknown"' "$ERIGON_CHAINSPEC" 2>/dev/null || echo "unknown")
+            fi
+            if [ "$L2_CHAIN_ID" = "unknown" ]; then
+                ERIGON_CONFIG_YAML=$(find "$OUTPUT_DIR/config/$prefix/cdk-erigon" -name "config.yaml" 2>/dev/null | head -1 || true)
+                if [ -n "$ERIGON_CONFIG_YAML" ] && [ -f "$ERIGON_CONFIG_YAML" ]; then
+                    L2_CHAIN_ID=$(grep -E "^zkevm\.l2-chain-id:" "$ERIGON_CONFIG_YAML" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"' || echo "unknown")
+                    [ -z "$L2_CHAIN_ID" ] && L2_CHAIN_ID="unknown"
+                fi
             fi
         fi
 
@@ -469,10 +495,18 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         fi
 
         # Surface the gas-token contract for custom-gas chains (cdk-erigon).
-        # The gas-token address is recorded in the aggkit/erigon config; expose
-        # it under contracts.gas_token so loaders can detect a custom-gas chain.
+        # Primary source is the per-chain contract deployment output
+        # (config/<prefix>/combined.json -> gasTokenAddress), which is the only
+        # place the deployed custom gas-token address is reliably recorded. The
+        # aggkit/erigon configs are kept as fallbacks. A zero address means the
+        # chain is native (no custom gas token) and is NOT surfaced, so loaders
+        # treat the absence of contracts.gas_token as "native gas".
         GAS_TOKEN=""
-        if [ -f "$AGGKIT_CONFIG" ]; then
+        COMBINED_JSON="$OUTPUT_DIR/config/$prefix/combined.json"
+        if [ -f "$COMBINED_JSON" ]; then
+            GAS_TOKEN=$(jq -r '.gasTokenAddress // .gasTokenAddr // empty' "$COMBINED_JSON" 2>/dev/null || echo "")
+        fi
+        if [ -z "$GAS_TOKEN" ] && [ -f "$AGGKIT_CONFIG" ]; then
             GAS_TOKEN=$(grep -iE "gasTokenAddress|GasTokenAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
         fi
         if [ -z "$GAS_TOKEN" ] && [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
@@ -480,6 +514,10 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             if [ -n "$ERIGON_CFG_FILE" ]; then
                 GAS_TOKEN=$(grep -iE "gastoken|gas_token" "$ERIGON_CFG_FILE" | grep -oE "0x[a-fA-F0-9]{40}" | head -1 || echo "")
             fi
+        fi
+        # Drop the zero address (native gas) so it is not surfaced as a custom token.
+        if [ "$GAS_TOKEN" = "0x0000000000000000000000000000000000000000" ]; then
+            GAS_TOKEN=""
         fi
         if [ -n "$GAS_TOKEN" ]; then
             L2_CONTRACTS=$(echo "$L2_CONTRACTS" | jq --arg gt "$GAS_TOKEN" '. + {gas_token: $gt}')
@@ -619,8 +657,15 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             done
         fi
 
-        # L2 accounts from genesis (exclude OP predeploy contracts)
+        # L2 accounts from genesis (exclude OP predeploy contracts). op-stack
+        # chains ship an l2-genesis.json; cdk-erigon chains instead carry their
+        # genesis allocations in the dynamic-*-allocs.json artifact (a flat
+        # address->{balance,...} map), which holds the pre-funded admin EOA.
         L2_GENESIS_FILE="$OUTPUT_DIR/config/$prefix/l2-genesis.json"
+        if [ ! -f "$L2_GENESIS_FILE" ] && [ "$CHAIN_TYPE" = "cdk-erigon" ]; then
+            ERIGON_ALLOCS=$(find "$OUTPUT_DIR/config/$prefix/cdk-erigon" -name "dynamic-*-allocs.json" 2>/dev/null | head -1 || true)
+            [ -n "$ERIGON_ALLOCS" ] && L2_GENESIS_FILE="$ERIGON_ALLOCS"
+        fi
         L2_ACCOUNTS=$(extract_genesis_accounts "$L2_GENESIS_FILE" "L2 network $prefix" "true")
 
         # Add aggkit accounts from keystores
