@@ -255,6 +255,19 @@ TARGET_BLOBS_PER_BLOCK_ELECTRA: 6
 BLOB_SIDECAR_SUBNET_COUNT_ELECTRA: 9
 MAX_REQUEST_BLOB_SIDECARS_ELECTRA: 1152
 MIN_PER_EPOCH_CHURN_LIMIT_ELECTRA: 128000000000
+
+# Fulu / PeerDAS (EIP-7594) parameters. Teku validates these eagerly whenever
+# FULU_FORK_EPOCH activates (finite epoch), and aborts at startup if any are
+# missing. Single-node restored devnets do not exercise data-column sampling,
+# but the constants must be present and well-formed for the spec to load.
+NUMBER_OF_CUSTODY_GROUPS: 128
+DATA_COLUMN_SIDECAR_SUBNET_COUNT: 128
+SAMPLES_PER_SLOT: 8
+CUSTODY_REQUIREMENT: 4
+VALIDATOR_CUSTODY_REQUIREMENT: 8
+BALANCE_PER_ADDITIONAL_CUSTODY_GROUP: 32000000000
+MIN_EPOCHS_FOR_DATA_COLUMN_SIDECARS_REQUESTS: 4096
+MAX_REQUEST_DATA_COLUMN_SIDECARS: 16384
 SPECEOF
 else
     log "  WARNING: chain-spec.yaml not found, using default spec.yaml"
@@ -416,20 +429,30 @@ elif [ "$EPOCH_START_SLOT" != "0" ] && [ "$EPOCH_START_SLOT" != "null" ] && [ -n
 
         # Patcher is pre-compiled at build time for faster and more consistent runtime
 
-        # Run patcher on checkpoint state
+        # Run patcher on checkpoint state. Teku boots from this file
+        # (--initial-state), so it MUST succeed.
         echo "  Patching checkpoint_state.ssz..."
         java -cp '/opt/teku/lib/*:/patcher' GenesisTimePatcher \
             /network-configs/spec.yaml \
             /checkpoint/checkpoint_state.ssz \
             $NEW_GENESIS_TIME
 
-        # Also patch genesis.ssz if it exists
+        # Also patch genesis.ssz if it exists. This file is NOT used by Teku at
+        # boot (--initial-state points at checkpoint_state.ssz); it is patched
+        # only as a best-effort convenience. On post-Fulu (PeerDAS) states the
+        # standalone GenesisTimePatcher deserialization can fail on this file
+        # even though the checkpoint state patches fine, so a failure here must
+        # NOT abort the entrypoint (which runs under `set -e`).
         if [ -f /network-configs/genesis.ssz ]; then
-            echo "  Patching genesis.ssz..."
-            java -cp '/opt/teku/lib/*:/patcher' GenesisTimePatcher \
+            echo "  Patching genesis.ssz (best-effort)..."
+            if java -cp '/opt/teku/lib/*:/patcher' GenesisTimePatcher \
                 /network-configs/spec.yaml \
                 /network-configs/genesis.ssz \
-                $NEW_GENESIS_TIME
+                $NEW_GENESIS_TIME; then
+                echo "  genesis.ssz patched"
+            else
+                echo "  WARNING: genesis.ssz patch failed; continuing (Teku boots from checkpoint_state.ssz)"
+            fi
         fi
 
         echo "  Genesis time patching complete"

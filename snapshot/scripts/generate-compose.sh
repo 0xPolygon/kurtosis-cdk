@@ -264,9 +264,16 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 
         # Detect the real EL client from the discovered image string.
         EL_ENTRYPOINT_SCRIPT="op-geth-entrypoint.sh"
+        # Healthcheck differs by client: op-geth answers a bare HTTP GET on the
+        # RPC port (200), but op-reth (like most JSON-RPC servers) rejects GET
+        # with 405, so the op-geth `wget GET` probe would never pass and op-node
+        # (gated on EL service_healthy) would never start. Use a JSON-RPC POST
+        # for op-reth so the healthcheck reflects real EL readiness.
+        EL_HEALTHCHECK_TEST='["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]'
         case "$OP_RETH_IMAGE" in
             *op-reth*|*/reth:*|*reth:*)
                 EL_ENTRYPOINT_SCRIPT="op-reth-entrypoint.sh"
+                EL_HEALTHCHECK_TEST='["CMD", "wget", "-q", "-O", "-", "--post-data={\"jsonrpc\":\"2.0\",\"method\":\"eth_chainId\",\"params\":[],\"id\":1}", "--header=Content-Type:application/json", "http://localhost:8545"]'
                 ;;
         esac
         log "    EL image $OP_RETH_IMAGE -> entrypoint $EL_ENTRYPOINT_SCRIPT"
@@ -296,7 +303,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8545"]
+      test: $EL_HEALTHCHECK_TEST
       interval: 2s
       timeout: 3s
       retries: 3
@@ -426,7 +433,10 @@ EOF
     env_file:
       - ./config/$prefix/op-succinct/proposer.env
     volumes:
-      - ./config/$prefix/op-succinct/configs:/app/configs:ro
+      # Writable: the validity-proposer writes derived config/workspace files
+      # under /app/configs at startup; a read-only mount makes it fail with
+      # "Read-only file system (os error 30)" before it can run.
+      - ./config/$prefix/op-succinct/configs:/app/configs:rw
     ports:
       - "$L2_SUCCINCT_METRICS_PORT:8080"    # Prometheus metrics
     depends_on:
@@ -438,8 +448,22 @@ EOF
 EOF
             # Materialize the env_file + a fresh-DB seed from the captured state.
             if [ -f "$OUTPUT_DIR/config/$prefix/op-succinct/proposer-env.json" ]; then
+                PROPOSER_ENV="$OUTPUT_DIR/config/$prefix/op-succinct/proposer.env"
                 jq -r '.[]' "$OUTPUT_DIR/config/$prefix/op-succinct/proposer-env.json" \
-                    > "$OUTPUT_DIR/config/$prefix/op-succinct/proposer.env" 2>/dev/null || true
+                    > "$PROPOSER_ENV" 2>/dev/null || true
+                # Rewrite the captured kurtosis service hostnames to the restored
+                # docker-compose service names, exactly as adapt-l2-config.sh does
+                # for the aggkit/agglayer configs. Without this the proposer's
+                # L2_RPC / L2_NODE_RPC / L1 endpoints point at the original
+                # enclave DNS names (op-el-1-op-reth-op-node-<prefix>,
+                # op-cl-1-op-node-op-reth-<prefix>, el-1-geth-lighthouse,
+                # cl-1-lighthouse-geth) which do not exist in the compose network,
+                # so the proposer restart-loops on "Temporary failure in name
+                # resolution".
+                sed -i "s|op-el-1-op-reth-op-node-$prefix:8545|op-geth-$prefix:8545|g" "$PROPOSER_ENV"
+                sed -i "s|op-cl-1-op-node-op-reth-$prefix:8547|op-node-$prefix:8547|g" "$PROPOSER_ENV"
+                sed -i "s|el-1-geth-lighthouse:8545|geth:8545|g" "$PROPOSER_ENV"
+                sed -i "s|cl-1-lighthouse-geth:4000|beacon:4000|g" "$PROPOSER_ENV"
             else
                 : > "$OUTPUT_DIR/config/$prefix/op-succinct/proposer.env" 2>/dev/null || true
             fi
