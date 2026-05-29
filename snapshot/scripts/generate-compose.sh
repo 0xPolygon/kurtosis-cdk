@@ -244,17 +244,35 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
 
       if [ "$CHAIN_TYPE" = "op-stack" ]; then
         # ====================================================================
-        # op-geth service (with runtime L2 genesis timestamp patching)
+        # L2 execution-layer service (with runtime L2 genesis timestamp patching)
         #
-        # NOTE: The Kurtosis op-stack EL service is internally named "op-reth"
-        # (sequencer-type label), but the underlying image is op-geth and the
-        # consumed summary schema (aggkit loader.go / op-pp) expects the
-        # service key "op-geth". We therefore emit the restored service as
-        # "op-geth-<prefix>" so the snapshot is loader-compatible.
+        # NOTE: The restored EL service is ALWAYS emitted under the loader-facing
+        # service key "op-geth-<prefix>" because the consumed summary schema
+        # (aggkit loader.go / op-pp) expects the logical key "op-geth". The
+        # ACTUAL client binary, however, depends on the discovered image:
+        #   - op-pp / classic op-stack: the discovered image is genuinely
+        #     op-geth, so we run op-geth-entrypoint.sh (apk add jq; geth init;
+        #     exec geth ...).
+        #   - FEP / op-succinct: the discovered EL image is op-reth, on which
+        #     `apk`/`geth` do not exist (it would exit 127). We must instead run
+        #     op-reth-entrypoint.sh (apt install jq/wget; op-reth init; exec
+        #     op-reth node ...).
+        # The selection is conditional on the actual image so op-pp stays
+        # byte-identical while op-reth-backed FEP envs boot correctly. The
+        # summary.json logical key stays "op-geth" in BOTH cases.
         # ====================================================================
 
+        # Detect the real EL client from the discovered image string.
+        EL_ENTRYPOINT_SCRIPT="op-geth-entrypoint.sh"
+        case "$OP_RETH_IMAGE" in
+            *op-reth*|*/reth:*|*reth:*)
+                EL_ENTRYPOINT_SCRIPT="op-reth-entrypoint.sh"
+                ;;
+        esac
+        log "    EL image $OP_RETH_IMAGE -> entrypoint $EL_ENTRYPOINT_SCRIPT"
+
         # Copy entrypoint script to config dir for mounting
-        cp "$(dirname "$0")/op-geth-entrypoint.sh" "$OUTPUT_DIR/config/$prefix/"
+        cp "$(dirname "$0")/$EL_ENTRYPOINT_SCRIPT" "$OUTPUT_DIR/config/$prefix/"
 
         cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
 
@@ -262,12 +280,12 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
     image: $OP_RETH_IMAGE
     container_name: $SNAPSHOT_ID-op-geth-$prefix
     hostname: op-geth-$prefix
-    entrypoint: ["/bin/sh", "/entrypoint/op-geth-entrypoint.sh"]
+    entrypoint: ["/bin/sh", "/entrypoint/$EL_ENTRYPOINT_SCRIPT"]
     volumes:
       - ./config/$prefix/jwt.hex:/jwt/jwtsecret:ro
       - ./config/$prefix/l2-genesis.json:/genesis-ro/l2-genesis.json:ro
       - ./config/$prefix/rollup.json:/rollup-ro/rollup.json:ro
-      - ./config/$prefix/op-geth-entrypoint.sh:/entrypoint/op-geth-entrypoint.sh:ro
+      - ./config/$prefix/$EL_ENTRYPOINT_SCRIPT:/entrypoint/$EL_ENTRYPOINT_SCRIPT:ro
       - l2-shared-$prefix:/shared
     ports:
       - "$L2_HTTP_PORT:8545"    # HTTP RPC
