@@ -202,11 +202,14 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
 
         # Replace Kurtosis container names with docker-compose service names
         # L1: el-1-<el_type>-<cl_type> -> geth
-        # L2 reth: op-el-1-op-reth-op-node-<prefix> -> op-reth-<prefix>
+        # L2 EL: op-el-1-op-reth-op-node-<prefix> -> op-geth-<prefix>
+        #        (Kurtosis names the op-stack EL "op-reth" by sequencer-type
+        #         label, but the snapshot emits it as "op-geth-<prefix>" to
+        #         match the loader/op-pp summary schema.)
         # op-node: op-cl-1-op-node-op-reth-<prefix> -> op-node-<prefix>
 
         sed -i "s|http://${L1_EL_SERVICE}:8545|http://geth:8545|g" "$AGGKIT_CONFIG"
-        sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-reth-$prefix:8545|g" "$AGGKIT_CONFIG"
+        sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGKIT_CONFIG"
         sed -i "s|http://op-cl-1-op-node-op-reth-$prefix:8547|http://op-node-$prefix:8547|g" "$AGGKIT_CONFIG"
 
         log "    ✓ aggkit config adapted for docker-compose"
@@ -231,11 +234,11 @@ if [ -f "$AGGLAYER_CONFIG" ]; then
     fi
 
     # Replace Kurtosis L2 RPC endpoints with docker-compose service names
-    # Pattern: op-el-1-op-reth-op-node-<prefix> -> op-reth-<prefix>
+    # Pattern: op-el-1-op-reth-op-node-<prefix> -> op-geth-<prefix>
     # Need to update all L2 networks in the [full-node-rpcs] section
 
     for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
-        sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-reth-$prefix:8545|g" "$AGGLAYER_CONFIG"
+        sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$AGGLAYER_CONFIG"
         log "  ✓ Updated L2 RPC endpoint for network $prefix"
     done
 
