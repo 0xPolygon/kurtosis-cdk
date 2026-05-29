@@ -557,6 +557,60 @@ EOF
             log "    ✓ aggkit-$prefix service added"
         fi
 
+        # ====================================================================
+        # AggOracle committee member services (extra aggkit aggoracle signers)
+        # Each restored with its own config + aggoracle.keystore so the on-chain
+        # AggOracleCommittee keeps its full M-of-N signer set after restore.
+        # ====================================================================
+        COMMITTEE_COUNT=$(jq -r ".l2_chains[\"$prefix\"].aggoracle_committee_members | length // 0" "$DISCOVERY_JSON" 2>/dev/null || echo 0)
+        if [ "$COMMITTEE_COUNT" != "0" ] && [ "$COMMITTEE_COUNT" != "null" ] && [ -n "$COMMITTEE_COUNT" ]; then
+            cm_idx=0
+            while [ "$cm_idx" -lt "$COMMITTEE_COUNT" ]; do
+                CM_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggoracle_committee_members[$cm_idx].image // empty" "$DISCOVERY_JSON")
+                CM_PAD=$(printf '%03d' "$cm_idx")
+                CM_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 600 + cm_idx))
+                if [ -n "$CM_IMAGE" ] && [ "$CM_IMAGE" != "null" ]; then
+                    CM_DEPENDS="      geth:
+        condition: service_healthy"
+                    if [ "$CHAIN_TYPE" = "op-stack" ]; then
+                        CM_DEPENDS="$CM_DEPENDS
+      op-geth-$prefix:
+        condition: service_healthy
+      op-node-$prefix:
+        condition: service_healthy"
+                    fi
+                    if [ "$AGGLAYER_FOUND" = "true" ]; then
+                        CM_DEPENDS="$CM_DEPENDS
+      agglayer:
+        condition: service_healthy"
+                    fi
+                    cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+  aggkit-$prefix-aggoracle-committee-$CM_PAD:
+    image: $CM_IMAGE
+    container_name: $SNAPSHOT_ID-aggkit-$prefix-aggoracle-committee-$CM_PAD
+    hostname: aggkit-$prefix-aggoracle-committee-$CM_PAD
+    entrypoint: ["/usr/local/bin/aggkit"]
+    command:
+      - "run"
+      - "--cfg=/etc/aggkit/config.toml"
+      - "--components=aggoracle"
+    volumes:
+      - ./config/$prefix/committee/$CM_PAD/etc:/etc/aggkit:ro
+    ports:
+      - "$CM_RPC_PORT:5576"    # committee member RPC
+    depends_on:
+$CM_DEPENDS
+    restart: unless-stopped
+    environment:
+      - RUST_BACKTRACE=1
+EOF
+                    log "    ✓ aggkit-$prefix-aggoracle-committee-$CM_PAD service added"
+                fi
+                cm_idx=$((cm_idx + 1))
+            done
+        fi
+
         log "  L2 network $prefix services added to docker-compose"
     done
 

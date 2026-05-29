@@ -199,6 +199,26 @@ if [ -z "$DAC_CONTAINERS" ]; then
     DAC_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^cdk-data-availability" || true)
 fi
 
+# ============================================================================
+# Discover AggOracle committee member services - OPTIONAL
+# Kurtosis service name: aggkit<suffix>-aggoracle-committee-00<N>
+# (see src/chain/shared/aggkit.star _deploy_committee_member). These are extra
+# aggkit services (--components=aggoracle) each running with a distinct
+# committee keystore; together with the primary aggkit's aggoracle they form
+# the on-chain AggOracleCommittee (quorum M-of-N). Captured so the restored
+# committee restarts with every signing identity intact.
+# ============================================================================
+
+log "Discovering AggOracle committee member services..."
+
+COMMITTEE_CONTAINERS=$(docker ps -a \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^aggkit-.*-aggoracle-committee-[0-9]+" || true)
+
+if [ -z "$COMMITTEE_CONTAINERS" ]; then
+    COMMITTEE_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^aggkit-.*-aggoracle-committee-[0-9]+" || true)
+fi
+
 # Helper: emit a compact container JSON object ("name"/id/image) for a given
 # container, or empty string if not found. Used by the topology blocks below.
 container_json() {
@@ -275,6 +295,9 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     OP_SUCCINCT_PROPOSER=$(echo "$OP_SUCCINCT_CONTAINERS" | grep -E "^op-succinct-proposer-$prefix--" | head -1 || true)
     DAC=$(echo "$DAC_CONTAINERS" | grep -E "^cdk-data-availability-$prefix--" | head -1 || true)
 
+    # AggOracle committee members for this network: aggkit-<prefix>-aggoracle-committee-00N--<uuid>
+    COMMITTEE_MEMBERS=$(echo "$COMMITTEE_CONTAINERS" | grep -E "^aggkit-$prefix-aggoracle-committee-[0-9]+--" | sort || true)
+
     # A network is valid if it has EITHER an op-stack sequencer (op-reth+op-node)
     # OR a cdk-erigon sequencer. This lets erigon-only / FEP-only topologies be
     # captured alongside op-stack topologies.
@@ -303,6 +326,11 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     fi
     [ -n "$OP_SUCCINCT_PROPOSER" ] && log "    ✓ op-succinct proposer (FEP): $OP_SUCCINCT_PROPOSER"
     [ -n "$DAC" ] && log "    ✓ cdk-data-availability (committee/DAC): $DAC"
+    if [ -n "$COMMITTEE_MEMBERS" ]; then
+        for cm in $COMMITTEE_MEMBERS; do
+            log "    ✓ aggoracle committee member: $cm"
+        done
+    fi
 
     if [ -n "$OP_EL_RPC" ]; then
         log "    ✓ op-reth rpc: $OP_EL_RPC"
@@ -409,6 +437,20 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     if [ -n "$DAC" ]; then
         L2_CHAIN_JSON+=",
       \"cdk_data_availability\": $(container_json "$DAC")"
+    fi
+
+    # Add AggOracle committee member services (extra aggkit aggoracle signers)
+    # as an array so extract/compose/summary can restore each signing identity.
+    if [ -n "$COMMITTEE_MEMBERS" ]; then
+        CM_JSON=""
+        CM_FIRST=1
+        for cm in $COMMITTEE_MEMBERS; do
+            [ $CM_FIRST -eq 0 ] && CM_JSON+=","
+            CM_JSON+=" $(container_json "$cm")"
+            CM_FIRST=0
+        done
+        L2_CHAIN_JSON+=",
+      \"aggoracle_committee_members\": [$CM_JSON ]"
     fi
 
     L2_CHAIN_JSON+="

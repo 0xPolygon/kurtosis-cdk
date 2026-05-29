@@ -444,17 +444,28 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             ROLLUP_MANAGER=$(grep "RollupManagerAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
             GER_CONTRACT=$(grep -A10 "^\[L2Config\]" "$AGGKIT_CONFIG" | grep "^GlobalExitRootAddr" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
 
+            # AggOracle committee proxy address (present only when
+            # EnableAggOracleCommittee = true). Sourced from the aggkit config's
+            # AggOracleCommitteeAddr; lets loaders bind the on-chain
+            # AggOracleCommittee contract to read quorum / members.
+            AGGORACLE_COMMITTEE=""
+            if grep -qiE "^EnableAggOracleCommittee[[:space:]]*=[[:space:]]*true" "$AGGKIT_CONFIG" 2>/dev/null; then
+                AGGORACLE_COMMITTEE=$(grep -iE "^AggOracleCommitteeAddr" "$AGGKIT_CONFIG" | head -1 | cut -d'"' -f2 2>/dev/null || echo "")
+            fi
+
             L2_CONTRACTS=$(jq -n \
                 --arg l1_bridge "$L1_BRIDGE" \
                 --arg l2_bridge "$L2_BRIDGE" \
                 --arg rollup_manager "$ROLLUP_MANAGER" \
                 --arg ger "$GER_CONTRACT" \
+                --arg aggoracle_committee "$AGGORACLE_COMMITTEE" \
                 '{
                     l1_bridge: (if $l1_bridge != "" then $l1_bridge else null end),
                     l2_bridge: (if $l2_bridge != "" then $l2_bridge else null end),
                     rollup_manager: (if $rollup_manager != "" then $rollup_manager else null end),
                     global_exit_root: (if $ger != "" then $ger else null end)
-                }')
+                }
+                + (if $aggoracle_committee != "" then {aggoracle_committee: $aggoracle_committee} else {} end)')
         fi
 
         # Surface the gas-token contract for custom-gas chains (cdk-erigon).
@@ -585,6 +596,29 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                 }')
         fi
 
+        # Add AggOracle committee member services (extra aggkit aggoracle signers)
+        COMMITTEE_COUNT=$(jq -r ".l2_chains[\"$prefix\"].aggoracle_committee_members | length // 0" "$DISCOVERY_JSON" 2>/dev/null || echo 0)
+        if [ "$COMMITTEE_COUNT" != "0" ] && [ "$COMMITTEE_COUNT" != "null" ] && [ -n "$COMMITTEE_COUNT" ]; then
+            cm_idx=0
+            while [ "$cm_idx" -lt "$COMMITTEE_COUNT" ]; do
+                CM_PAD=$(printf '%03d' "$cm_idx")
+                CM_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 600 + cm_idx))
+                L2_SERVICES=$(echo "$L2_SERVICES" | jq \
+                    --arg prefix "$prefix" \
+                    --arg pad "$CM_PAD" \
+                    --arg rpc_port "$CM_RPC_PORT" \
+                    '. + {
+                        ("aggoracle-committee-" + $pad): {
+                            rpc: {
+                                internal: ("http://aggkit-" + $prefix + "-aggoracle-committee-" + $pad + ":5576"),
+                                external: ("http://localhost:" + $rpc_port)
+                            }
+                        }
+                    }')
+                cm_idx=$((cm_idx + 1))
+            done
+        fi
+
         # L2 accounts from genesis (exclude OP predeploy contracts)
         L2_GENESIS_FILE="$OUTPUT_DIR/config/$prefix/l2-genesis.json"
         L2_ACCOUNTS=$(extract_genesis_accounts "$L2_GENESIS_FILE" "L2 network $prefix" "true")
@@ -676,6 +710,34 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                         description: "DAC committee member account (signs data-availability batches)"
                     }]')
             fi
+        fi
+
+        # AggOracle committee member accounts (one aggoracle-N.keystore per
+        # extra committee aggkit). Together with the primary aggkit's aggoracle
+        # they make up the on-chain AggOracleCommittee signer set (M-of-N).
+        if [ "$COMMITTEE_COUNT" != "0" ] && [ "$COMMITTEE_COUNT" != "null" ] && [ -n "$COMMITTEE_COUNT" ]; then
+            cm_idx=0
+            while [ "$cm_idx" -lt "$COMMITTEE_COUNT" ]; do
+                CM_PAD=$(printf '%03d' "$cm_idx")
+                CM_ETC="$OUTPUT_DIR/config/$prefix/committee/$CM_PAD/etc"
+                # The member-specific keystore is the highest-numbered aggoracle-N.keystore.
+                CM_KS=$(ls -1 "$CM_ETC"/aggoracle-*.keystore 2>/dev/null | sort -V | tail -1 || true)
+                if [ -n "$CM_KS" ] && [ -f "$CM_KS" ]; then
+                    CM_ADDR=$(extract_keystore_address "$CM_KS")
+                    if [ -n "$CM_ADDR" ]; then
+                        [[ "$CM_ADDR" != 0x* ]] && CM_ADDR="0x$CM_ADDR"
+                        L2_ACCOUNTS=$(echo "$L2_ACCOUNTS" | jq \
+                            --arg addr "$CM_ADDR" \
+                            --arg pad "$CM_PAD" \
+                            '. + [{
+                                address: $addr,
+                                private_key: "(encrypted in keystore)",
+                                description: ("AggOracle committee member " + $pad + " (extra aggoracle signer)")
+                            }]')
+                    fi
+                fi
+                cm_idx=$((cm_idx + 1))
+            done
         fi
 
         # Build L2 network object

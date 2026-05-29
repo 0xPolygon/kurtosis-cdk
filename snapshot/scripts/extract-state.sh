@@ -229,10 +229,35 @@ log "Stopping containers gracefully (IMMEDIATELY to prevent state drift)..."
 for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
     if docker ps -q --filter "name=$container" | grep -q .; then
         log "  Stopping $container..."
-        docker stop "$container" --time 5
+        # Give the L1 execution client (geth) a generous SIGTERM grace period so
+        # it flushes its chain head/state DB to disk before SIGKILL. A short
+        # timeout can race geth mid-write, persisting a stale head (observed: a
+        # committee snapshot whose restored geth came back many blocks behind
+        # its rollup L1-origin, so op-reth could never reach the origin block).
+        # Beacon/validator hold no execution state and stop fast.
+        if [ "$container" = "$GETH_CONTAINER" ]; then
+            # The L1 execution client (geth, --gcmode=archive) keeps most of the
+            # chain in memory and only persists its full state/chain DB to disk
+            # during a CLEAN graceful shutdown. It MUST be allowed to finish that
+            # flush — a SIGKILL (or a too-short SIGTERM grace) leaves only the
+            # genesis/early blocks on disk, so the restored geth comes back many
+            # blocks behind its rollup L1-origin and the restored op-reth can
+            # never reach the origin block (it boot-loops "waiting for L1 block
+            # N"). So give geth a long SIGTERM grace and DO NOT force-kill it.
+            log "  Stopping geth with a long graceful grace period (flush to disk)..."
+            docker stop "$container" --time 180
+        else
+            # Beacon/validator hold no execution state and are safe to force-kill.
+            # Wrap in a wall-clock timeout + docker kill fallback because a wedged
+            # `docker stop` on these has hung the whole capture for >30min before.
+            if ! timeout 30 docker stop "$container" --time 5; then
+                log "  WARNING: 'docker stop $container' did not return; forcing 'docker kill'"
+                docker kill "$container" >/dev/null 2>&1 || true
+            fi
+        fi
 
         # Wait for container to fully stop
-        timeout=30
+        timeout=40
         while [ $timeout -gt 0 ]; do
             state=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "gone")
             if [ "$state" = "exited" ]; then
@@ -340,8 +365,10 @@ else
     GETH_BLOCK="unknown"
 fi
 
-# Stop geth again
-docker stop "$GETH_CONTAINER" --time 5 > /dev/null 2>&1
+# Stop geth again — long graceful grace so the (possibly rolled-back) chain head
+# and full archive state are flushed to disk before the datadir is tarred in
+# STEP 3. Never force-kill geth here (see the STEP 2 note).
+docker stop "$GETH_CONTAINER" --time 180 > /dev/null 2>&1
 sleep 2
 
 # Save the actual geth block to metadata
@@ -761,6 +788,39 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             else
                 log "    WARNING: /etc/cdk-data-availability not found"
             fi
+        fi
+
+        # ====================================================================
+        # AggOracle committee member extraction
+        # Each committee member is an extra aggkit service (--components=aggoracle)
+        # with its own config.toml + aggoracle.keystore. Capture them under
+        # config/<prefix>/committee/00N/ so the restored env restarts every
+        # signer and the on-chain AggOracleCommittee keeps its M-of-N quorum.
+        # ====================================================================
+        COMMITTEE_COUNT=$(jq -r ".l2_chains[\"$prefix\"].aggoracle_committee_members | length // 0" "$DISCOVERY_JSON" 2>/dev/null || echo 0)
+        if [ "$COMMITTEE_COUNT" != "0" ] && [ -n "$COMMITTEE_COUNT" ]; then
+            log "  Extracting $COMMITTEE_COUNT AggOracle committee member(s) (network $prefix)..."
+            idx=0
+            while [ "$idx" -lt "$COMMITTEE_COUNT" ]; do
+                CM_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].aggoracle_committee_members[$idx].container_name // empty" "$DISCOVERY_JSON")
+                if [ -n "$CM_CONTAINER" ]; then
+                    CM_DIR="$OUTPUT_DIR/config/$prefix/committee/$(printf '%03d' "$idx")"
+                    mkdir -p "$CM_DIR"
+                    # Copy the WHOLE /etc/aggkit so each member's config.toml plus its
+                    # exact keystore set (aggoracle-N.keystore + sequencer/sovereignadmin)
+                    # are preserved verbatim. The committee member's config.toml
+                    # references a member-specific keystore path (e.g.
+                    # /etc/aggkit/aggoracle-2.keystore), so we mount the dir as-is.
+                    if docker cp "$CM_CONTAINER:/etc/aggkit/." "$CM_DIR/etc" 2>/dev/null; then
+                        log "    ✓ committee member $idx /etc/aggkit extracted ($CM_CONTAINER)"
+                    elif docker cp "$CM_CONTAINER:/etc/aggkit" "$CM_DIR/etc" 2>/dev/null; then
+                        log "    ✓ committee member $idx /etc/aggkit extracted ($CM_CONTAINER)"
+                    else
+                        log "    WARNING: committee member $idx /etc/aggkit not found"
+                    fi
+                fi
+                idx=$((idx + 1))
+            done
         fi
 
         log "  L2 network $prefix configuration extraction complete"
