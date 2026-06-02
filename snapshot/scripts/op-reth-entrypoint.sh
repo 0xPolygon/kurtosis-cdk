@@ -46,13 +46,13 @@ if [ -d "$DATADIR/db" ] && [ -f "/shared/l2_genesis_hash" ]; then
         --http \
         --http.addr=0.0.0.0 \
         --http.port=8545 \
-        --http.api=admin,net,eth,web3,debug,txpool \
+        --http.api=admin,net,eth,web3,debug,txpool,miner \
         --http.corsdomain='*' \
         --ws \
         --ws.addr=0.0.0.0 \
         --ws.port=8546 \
         --ws.origins='*' \
-        --ws.api=admin,net,eth,web3,debug,txpool \
+        --ws.api=admin,net,eth,web3,debug,txpool,miner \
         --authrpc.addr=0.0.0.0 \
         --authrpc.port=8551 \
         --authrpc.jwtsecret=/jwt/jwtsecret \
@@ -153,19 +153,23 @@ fi
 
 echo "=== op-reth entrypoint: starting op-reth ==="
 
+# NOTE: `miner` is included in --http.api / --ws.api so op-batcher v1.16.9 can
+# call miner_setMaxDASize (DA throttling) at startup. Without it the batcher
+# hits a critical RPC error and shuts down -> the restored L2 safe head sticks at
+# genesis and never finalizes. Mirrors the op-geth-entrypoint.sh miner fix.
 exec op-reth node \
     --chain="$GENESIS" \
     --datadir="$DATADIR" \
     --http \
     --http.addr=0.0.0.0 \
     --http.port=8545 \
-    --http.api=admin,net,eth,web3,debug,txpool \
+    --http.api=admin,net,eth,web3,debug,txpool,miner \
     --http.corsdomain='*' \
     --ws \
     --ws.addr=0.0.0.0 \
     --ws.port=8546 \
     --ws.origins='*' \
-    --ws.api=admin,net,eth,web3,debug,txpool \
+    --ws.api=admin,net,eth,web3,debug,txpool,miner \
     --authrpc.addr=0.0.0.0 \
     --authrpc.port=8551 \
     --authrpc.jwtsecret=/jwt/jwtsecret \
