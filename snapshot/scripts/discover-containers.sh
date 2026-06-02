@@ -236,17 +236,20 @@ container_json() {
 
 log "Discovering L2 chains (op-reth based)..."
 
-# Find all op-reth execution layer containers (including stopped)
-# Pattern: op-el-{participant_id}-op-reth-op-node-{network_prefix}
+# Find all op-stack execution layer containers (including stopped).
+# Pattern: op-el-{participant_id}-{el_type}-op-node-{network_prefix}, where
+# {el_type} is op-reth (optimism-package default) OR op-geth (e.g. the op-pp
+# e2e preset pins op-geth because op-reth was flaky on loaded hosts). Match BOTH.
 OP_EL_CONTAINERS=$(docker ps -a \
     --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
-    --format "{{.Names}}" | grep -E "^op-el-.*-op-reth-op-node" || true)
+    --format "{{.Names}}" | grep -E "^op-el-.*-(op-reth|op-geth)-op-node" || true)
 
-# Find all op-node consensus layer containers (including stopped)
-# Pattern: op-cl-{participant_id}-op-node-op-reth-{network_prefix}
+# Find all op-node consensus layer containers (including stopped).
+# Pattern: op-cl-{participant_id}-op-node-{el_type}-{network_prefix} (el_type =
+# op-reth or op-geth, mirroring the EL above).
 OP_CL_CONTAINERS=$(docker ps -a \
     --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
-    --format "{{.Names}}" | grep -E "^op-cl-.*-op-node-op-reth" || true)
+    --format "{{.Names}}" | grep -E "^op-cl-.*-op-node-(op-reth|op-geth)" || true)
 
 # Find all aggkit containers (including stopped)
 # Pattern: aggkit-{network_prefix}
@@ -277,13 +280,13 @@ L2_COUNT=0
 for prefix in "${!L2_NETWORKS[@]}"; do
     log "  Discovering L2 network: $prefix"
 
-    # Find sequencer (participant 1)
-    OP_EL_SEQ=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-1-op-reth-op-node-$prefix--" | head -1 || true)
-    OP_CL_SEQ=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-1-op-node-op-reth-$prefix--" | head -1 || true)
+    # Find sequencer (participant 1). EL type may be op-reth or op-geth.
+    OP_EL_SEQ=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-1-(op-reth|op-geth)-op-node-$prefix--" | head -1 || true)
+    OP_CL_SEQ=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-1-op-node-(op-reth|op-geth)-$prefix--" | head -1 || true)
 
     # Find RPC node (participant 2) - optional
-    OP_EL_RPC=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-2-op-reth-op-node-$prefix--" | head -1 || true)
-    OP_CL_RPC=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-2-op-node-op-reth-$prefix--" | head -1 || true)
+    OP_EL_RPC=$(echo "$OP_EL_CONTAINERS" | grep -E "^op-el-2-(op-reth|op-geth)-op-node-$prefix--" | head -1 || true)
+    OP_CL_RPC=$(echo "$OP_CL_CONTAINERS" | grep -E "^op-cl-2-op-node-(op-reth|op-geth)-$prefix--" | head -1 || true)
 
     # Find aggkit for this network
     AGGKIT=$(echo "$AGGKIT_CONTAINERS" | grep -E "^aggkit-$prefix--" | head -1 || true)

@@ -17,12 +17,12 @@ if [ -d "/data/geth" ] && [ -f "/shared/l2_genesis_hash" ]; then
         --http.port=8545 \
         --http.vhosts='*' \
         --http.corsdomain='*' \
-        --http.api=admin,engine,net,eth,web3,debug,txpool \
+        --http.api=admin,engine,net,eth,web3,debug,txpool,miner \
         --ws \
         --ws.addr=0.0.0.0 \
         --ws.port=8546 \
         --ws.origins='*' \
-        --ws.api=admin,engine,net,eth,web3,debug,txpool \
+        --ws.api=admin,engine,net,eth,web3,debug,txpool,miner \
         --authrpc.addr=0.0.0.0 \
         --authrpc.port=8551 \
         --authrpc.vhosts='*' \
@@ -128,12 +128,12 @@ exec geth \
     --http.port=8545 \
     --http.vhosts='*' \
     --http.corsdomain='*' \
-    --http.api=admin,engine,net,eth,web3,debug,txpool \
+    --http.api=admin,engine,net,eth,web3,debug,txpool,miner \
     --ws \
     --ws.addr=0.0.0.0 \
     --ws.port=8546 \
     --ws.origins='*' \
-    --ws.api=admin,engine,net,eth,web3,debug,txpool \
+    --ws.api=admin,engine,net,eth,web3,debug,txpool,miner \
     --authrpc.addr=0.0.0.0 \
     --authrpc.port=8551 \
     --authrpc.vhosts='*' \

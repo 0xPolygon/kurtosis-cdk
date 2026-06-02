@@ -393,8 +393,12 @@ EOF
                 | gsub("el-1-geth-lighthouse:8545"; "geth:8545")
                 | gsub("op-el-1-op-reth-op-node-" + $prefix + ":8545"; "op-geth-" + $prefix + ":8545")
                 | gsub("op-el-2-op-reth-op-node-" + $prefix + ":8545"; "op-geth-" + $prefix + ":8545")
+                | gsub("op-el-1-op-geth-op-node-" + $prefix + ":8545"; "op-geth-" + $prefix + ":8545")
+                | gsub("op-el-2-op-geth-op-node-" + $prefix + ":8545"; "op-geth-" + $prefix + ":8545")
                 | gsub("op-cl-1-op-node-op-reth-" + $prefix + ":8547"; "op-node-" + $prefix + ":8547")
                 | gsub("op-cl-2-op-node-op-reth-" + $prefix + ":8547"; "op-node-" + $prefix + ":8547")
+                | gsub("op-cl-1-op-node-op-geth-" + $prefix + ":8547"; "op-node-" + $prefix + ":8547")
+                | gsub("op-cl-2-op-node-op-geth-" + $prefix + ":8547"; "op-node-" + $prefix + ":8547")
                 | "      - \"" + (gsub("\""; "\\\"")) + "\""
                 ' "$DISCOVERY_JSON")
 

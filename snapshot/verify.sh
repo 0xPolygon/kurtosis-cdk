@@ -181,11 +181,20 @@ if docker-compose -f docker-compose.yml ps | grep -q "Up"; then
     sleep 5
 fi
 
-# Clean up any old snapshot containers that might conflict with ports
-log "Checking for conflicting snapshot containers..."
-OLD_SNAPSHOTS=$(docker ps -a --filter "name=cdk-" --format "{{.Names}}" | grep -v "$SNAPSHOT_ID" || true)
+# Clean up THIS snapshot's own leftover containers that might conflict with ports.
+#
+# SAFETY: scope strictly to "${SNAPSHOT_ID}-*". The previous "name=cdk-" filter
+# matched EVERY container whose name began with "cdk-" (the legacy default
+# snapshot prefix) and then `docker stop`+`docker rm`'d them. On a shared host
+# that catches UNRELATED running stacks (e.g. another user's committed e2e env
+# whose container prefix is also "cdk-<timestamp>-..."), silently destroying
+# them. Match only the exact prefix this verify run owns. (Compose `up` will
+# anyway recreate name-conflicting containers it owns, so a broad pre-clean was
+# never necessary.)
+log "Checking for conflicting ${SNAPSHOT_ID} containers..."
+OLD_SNAPSHOTS=$(docker ps -a --filter "name=^${SNAPSHOT_ID}-" --format "{{.Names}}" || true)
 if [ -n "$OLD_SNAPSHOTS" ]; then
-    log_warn "Found old snapshot containers, cleaning up..."
+    log_warn "Found old ${SNAPSHOT_ID} containers, cleaning up..."
     echo "$OLD_SNAPSHOTS" | xargs -r docker stop &> /dev/null || true
     echo "$OLD_SNAPSHOTS" | xargs -r docker rm &> /dev/null || true
     sleep 2

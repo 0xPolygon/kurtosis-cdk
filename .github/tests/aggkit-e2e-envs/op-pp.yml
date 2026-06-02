@@ -1,0 +1,109 @@
+# aggkit-e2e env preset: op-pp
+# ---------------------------------------------------------------------------
+# Topology: SINGLE OP "pessimistic" (ecdsa-multisig consensus) L2 (chain
+#           "001", l2_chain_id 20201, network_id 1) on one L1 + agglayer.
+#           Native ETH gas. Deploys the shared L1 + agglayer (defaults:
+#           deploy_l1: true / deploy_agglayer: true). FEP/op-succinct OFF
+#           (deploy_op_succinct: false) -> pessimistic proof only.
+#
+# Provenance (faithful mirror of the aggkit CI single-chain OP-PP composition,
+# == op-pp-2chains.yml Document 1 (chain "001"), i.e. the deep-merge last-wins of:
+#   1. .github/test_e2e_op_args_base.json
+#   2. .github/test_e2e_op_args_chain_1.json
+# kept identical here so this single-chain preset and the 2-chain preset's
+# chain-001 stay in lockstep.
+#
+# === Two deliberate, load-bearing additions vs. the optimism-package defaults ===
+# These make a *restored / native* OP-Stack L2 actually FINALIZE on the fast
+# (l1_seconds_per_slot=2) kurtosis devnet L1. Proven natively (op-pp run, L2
+# finalized 0 -> 110 -> kept climbing) and required for the committed e2e
+# snapshot env to finalize after restore. See aggkit-envs
+# test/e2e/envs/README.md (op-pp provenance) for the proof tables.
+#
+#   1. EL pinned to OP-GETH (not the op-reth default).
+#      The optimism-package default participant EL is op-reth:v2.2.5, which was
+#      flaky on this loaded host (engine API authrpc froze, op-node "context
+#      deadline exceeded", chain stalled). op-geth:v1.101605.0 ran rock-solid
+#      and finalized 0 -> 110. Pinned on BOTH participants (sequencer1, rpc1).
+#
+#   2. op-node finality flags via cl.extra_params (BOTH participants).
+#      The optimism-package default cl.extra_params is just
+#      ["--rollup.l1-chain-config=/l1/genesis.json"]. Overriding extra_params
+#      REPLACES the list (deep-merge per-key), so we re-state that required
+#      default and ADD the two finality flags:
+#        --l1.http-poll-interval=2s   : match the L1 slot time (2s). The op-node
+#            default is 12s, which on a 2s L1 skips ~6 contiguous blocks per poll
+#            and op-node misreads that as an L1 re-org -> chronic derivation
+#            engine resets -> local_safe/cross_safe/finalized wiped to genesis
+#            every cycle -> the chain NEVER finalizes.
+#        --l1.epoch-poll-interval=12s : refresh L1 safe/finalized fast. The
+#            op-node default is 6m24s, so even without the false re-orgs the L2
+#            finalized head only advances every ~6m24s -> impractically slow.
+#            12s makes finality prompt and continuous.
+#
+# op-batcher: NOT disabled -> the optimism-package deploys one batcher per chain
+# by default (op-batcher:v1.16.9, --data-availability-type=calldata). The batcher
+# is what posts L2 batch data to the L1 batch-inbox, advancing L2 safe and then
+# (once its L1 origin finalizes) L2 finalized. The snapshot tool captures it.
+#
+# Snapshot-clean: additional_services: [] (no bridge_spammer); no
+# settlement-inducing service. proposer_params.enabled: false (PP, not FEP).
+#
+# Invocation:
+#   kurtosis run --enclave op-pp \
+#     --args-file .github/tests/aggkit-e2e-envs/op-pp.yml .
+# ---------------------------------------------------------------------------
+deployment_stages:
+  deploy_op_succinct: false
+  deploy_cdk_bridge_infra: false
+
+args:
+  aggkit_image: aggkit:local
+  consensus_contract_type: ecdsa-multisig
+  use_agg_sender_validator: true
+  agg_sender_multisig_threshold: 2
+  agg_sender_validator_total_number: 3
+  log_level: debug
+  additional_services: []
+  binary_name: aggkit
+  aggkit_components: aggsender,aggoracle
+  l2_chain_id: 20201
+  l2_network_id: 1
+
+optimism_package:
+  predeployed_contracts: true
+  chains:
+    "001":
+      participants:
+        # NOTE: providing a participant key skips the _default_chain sequencer
+        # role assignment (sequencer1 -> sequencer:true, rpc1 -> sequencer:
+        # "sequencer1"), so we re-state the roles explicitly. el/cl are
+        # deep-merged over the default participant (op_input_parser.star
+        # _parse_participants), but a provided extra_params REPLACES the default
+        # list, so we re-state --rollup.l1-chain-config=/l1/genesis.json too.
+        sequencer1:
+          sequencer: true
+          el:
+            type: op-geth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
+        rpc1:
+          sequencer: sequencer1
+          el:
+            type: op-geth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: "20201"
