@@ -29,6 +29,33 @@
 # `additional_services: []` (no bridge_spammer); preserved as-is. No
 # settlement-inducing service is added.
 #
+# === Two deliberate, load-bearing additions vs. optimism-package defaults ===
+# Applied to BOTH chains (001 and 002), identical to the op-pp.yml single-chain
+# preset, so a restored / native OP-Stack L2 actually FINALIZES on the fast
+# (l1_seconds_per_slot=2) kurtosis devnet L1. Proven on op-pp (restored L2
+# finalized 0 -> 156 -> 191 -> 239, kept climbing). See aggkit-envs
+# test/e2e/envs/README.md for the proof tables.
+#
+#   1. EL pinned to OP-GETH (not the op-reth default), on BOTH participants
+#      (sequencer1, rpc1) of EACH chain. op-reth was EL-flaky on this loaded
+#      host; op-geth:v1.101605.0 ran rock-solid.
+#   2. op-node finality flags via cl.extra_params (BOTH participants, EACH chain).
+#      Overriding extra_params REPLACES the default list, so the required default
+#      --rollup.l1-chain-config=/l1/genesis.json is re-stated alongside the two
+#      added finality flags:
+#        --l1.http-poll-interval=2s   : match the 2s L1 slot time. The 12s default
+#            skips ~6 contiguous blocks per poll -> op-node false-detects an L1
+#            re-org -> chronic derivation engine resets -> never finalizes.
+#        --l1.epoch-poll-interval=12s : refresh L1 safe/finalized fast. The 6m24s
+#            default makes finality impractically slow.
+#   Providing a participant key skips the _default_chain sequencer-role
+#   assignment, so sequencer roles are re-stated explicitly per chain.
+#
+# op-batcher: NOT disabled -> the optimism-package deploys one batcher PER CHAIN
+# by default (op-batcher:v1.16.9, --data-availability-type=calldata). The
+# snapshot tool's per-network discovery loop captures BOTH chains' batchers
+# (op-batcher-001 and op-batcher-002).
+#
 # Invocation (apply both documents IN ORDER to one enclave):
 #   yq 'select(documents() == 0)' .github/tests/aggkit-e2e-envs/op-pp-2chains.yml > /tmp/op-pp-1.yml
 #   yq 'select(documents() == 1)' .github/tests/aggkit-e2e-envs/op-pp-2chains.yml > /tmp/op-pp-2.yml
@@ -58,6 +85,29 @@ optimism_package:
   predeployed_contracts: true
   chains:
     "001":
+      participants:
+        sequencer1:
+          sequencer: true
+          el:
+            type: op-geth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
+        rpc1:
+          sequencer: sequencer1
+          el:
+            type: op-geth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
       proposer_params:
         enabled: false
       network_params:
@@ -88,6 +138,29 @@ args:
 optimism_package:
   chains:
     "002":
+      participants:
+        sequencer1:
+          sequencer: true
+          el:
+            type: op-geth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
+        rpc1:
+          sequencer: sequencer1
+          el:
+            type: op-geth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
       proposer_params:
         enabled: false
       network_params:
