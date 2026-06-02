@@ -23,6 +23,41 @@
 #   - DROPPED `bridge_spammer` from `additional_services` (same reason as
 #     op-fep). Source composition has ["bridge_spammer"]; set to [].
 #
+# === Finality additions (make a restored OP-Stack L2 actually FINALIZE) ===
+# Same load-bearing fix set proven on op-pp / op-pp-2chains / op-fep, adapted for
+# the FEP + AggOracle-committee topology:
+#
+#   EL CHOICE = op-reth (NOT op-geth). Like op-fep, op-fep-committee MUST keep the
+#   op-reth EL. The kurtosis-cdk op-succinct / FEP deployment path is hard-coupled
+#   to op-reth:
+#     - input_parser.star validate(): `deploy_op_succinct` requires the global
+#       `sequencer_type == op-reth`, else fail("OP Succinct requires OP Rollup
+#       ... Change the sequencer_type parameter to 'op-reth'.").
+#     - op_succinct_proposer.create_evm_sketch_genesis() does
+#       store_service_files(service_name="op-el-1-op-reth-op-node-001", ...) and
+#       sovereign.star / agglayer.star reference the op-reth EL hostname. With an
+#       op-geth EL those hostnames don't exist -> the FEP contract-deploy step
+#       fails during bring-up. So op-reth is required here; op-geth is not an
+#       option for the op-succinct topology.
+#
+#   op-node finality flags via cl.extra_params (BOTH participants) — identical to
+#   op-fep. Overriding extra_params REPLACES the default list, so we re-state the
+#   required --rollup.l1-chain-config=/l1/genesis.json and ADD:
+#     --l1.http-poll-interval=2s   : match the L1 slot time. op-node's 12s default
+#         skips contiguous L1 blocks/poll -> misread as L1 re-org -> chronic
+#         derivation engine resets -> finalized wiped to genesis -> the chain
+#         NEVER finalizes.
+#     --l1.epoch-poll-interval=12s : refresh L1 safe/finalized fast. The 6m24s
+#         default makes finalized advance impractically slowly.
+#   (For FEP this is doubly important: op-succinct settlement proves against the
+#   finalized L1 batch data.)
+#
+#   op-batcher: NOT disabled -> optimism-package deploys one batcher per chain
+#   (op-batcher:v1.16.9, --data-availability-type=calldata). It posts L2 batch
+#   data to the L1 batch-inbox, advancing L2 safe then finalized. The snapshot
+#   tool captures it and, for op-reth ELs, adds the `miner` API namespace to the
+#   restored op-reth-entrypoint.sh so op-batcher's miner_setMaxDASize succeeds.
+#
 # Invocation:
 #   kurtosis run --enclave op-fep-committee \
 #     --args-file .github/tests/aggkit-e2e-envs/op-fep-committee.yml .
@@ -58,6 +93,36 @@ args:
 optimism_package:
   chains:
     "001":
+      participants:
+        # NOTE: providing a participant key skips the _default_chain sequencer
+        # role assignment (sequencer1 -> sequencer:true, rpc1 -> sequencer:
+        # "sequencer1"), so we re-state the roles explicitly. el/cl are
+        # deep-merged over the default participant (op_input_parser.star
+        # _parse_participants), but a provided extra_params REPLACES the default
+        # list, so we re-state --rollup.l1-chain-config=/l1/genesis.json too.
+        # EL is pinned to op-reth (the op-succinct/FEP-required EL — see header).
+        sequencer1:
+          sequencer: true
+          el:
+            type: op-reth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.2.5
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
+        rpc1:
+          sequencer: sequencer1
+          el:
+            type: op-reth
+            image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.2.5
+          cl:
+            type: op-node
+            extra_params:
+              - --rollup.l1-chain-config=/l1/genesis.json
+              - --l1.http-poll-interval=2s
+              - --l1.epoch-poll-interval=12s
       proposer_params:
         enabled: false
       network_params:
