@@ -421,6 +421,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         CHAIN_TYPE=$(jq -r ".l2_chains[\"$prefix\"].chain_type // \"op-stack\"" "$DISCOVERY_JSON")
         HAS_OP_SUCCINCT=$(jq -r ".l2_chains[\"$prefix\"].op_succinct_proposer != null" "$DISCOVERY_JSON" 2>/dev/null || echo "false")
         HAS_DAC=$(jq -r ".l2_chains[\"$prefix\"].cdk_data_availability != null" "$DISCOVERY_JSON" 2>/dev/null || echo "false")
+        HAS_OP_BATCHER=$(jq -r ".l2_chains[\"$prefix\"].op_batcher != null" "$DISCOVERY_JSON" 2>/dev/null || echo "false")
 
         # Calculate port offsets
         PREFIX_NUM=$((10#$prefix))
@@ -595,6 +596,26 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                             external: ("http://localhost:" + $metrics_port)
                         },
                         settled: false
+                    }
+                }')
+        fi
+
+        # Add op-batcher service if present (op-stack only). Records that batch
+        # submission to the L1 batch-inbox is wired, so the restored L2 safe/
+        # finalized heads advance (not just unsafe). batches_to_l1: true is the
+        # marker that this snapshot captures a working settlement-data path.
+        if [ "$HAS_OP_BATCHER" = "true" ]; then
+            L2_BATCHER_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 548))
+            L2_SERVICES=$(echo "$L2_SERVICES" | jq \
+                --arg prefix "$prefix" \
+                --arg rpc_port "$L2_BATCHER_RPC_PORT" \
+                '. + {
+                    "op-batcher": {
+                        rpc: {
+                            internal: ("http://op-batcher-" + $prefix + ":8548"),
+                            external: ("http://localhost:" + $rpc_port)
+                        },
+                        batches_to_l1: true
                     }
                 }')
         fi

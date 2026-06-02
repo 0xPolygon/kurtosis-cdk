@@ -295,6 +295,21 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     OP_SUCCINCT_PROPOSER=$(echo "$OP_SUCCINCT_CONTAINERS" | grep -E "^op-succinct-proposer-$prefix--" | head -1 || true)
     DAC=$(echo "$DAC_CONTAINERS" | grep -E "^cdk-data-availability-$prefix--" | head -1 || true)
 
+    # op-batcher for this op-stack network. The optimism-package deploys one
+    # batcher per chain as kurtosis service "op-batcher-<prefix>" (label
+    # com.kurtosistech.custom.op.kind=batcher). The batcher submits the
+    # sequencer's L2 batches to the L1 batch-inbox, which is what advances the
+    # L2 safe/finalized heads (op-node alone only advances the unsafe head).
+    # Without it a restored OP-Stack env sequences blocks but never finalizes.
+    # Optional: only present on op-stack chains.
+    OP_BATCHER=$(docker ps -a \
+        --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+        --filter "label=com.kurtosistech.custom.op.kind=batcher" \
+        --format "{{.Names}}" | grep -E "^op-batcher-$prefix--" | head -1 || true)
+    if [ -z "$OP_BATCHER" ]; then
+        OP_BATCHER=$(docker ps -a --format "{{.Names}}" | grep -E "^op-batcher-$prefix--" | head -1 || true)
+    fi
+
     # Find the contracts deployer container for this network. It holds the
     # per-chain deployment output (combined-<prefix>.json) under /opt/output,
     # which is the authoritative source for the custom gas-token address on
@@ -335,6 +350,7 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     fi
     [ -n "$OP_SUCCINCT_PROPOSER" ] && log "    ✓ op-succinct proposer (FEP): $OP_SUCCINCT_PROPOSER"
     [ -n "$DAC" ] && log "    ✓ cdk-data-availability (committee/DAC): $DAC"
+    [ -n "$OP_BATCHER" ] && log "    ✓ op-batcher: $OP_BATCHER"
     if [ -n "$COMMITTEE_MEMBERS" ]; then
         for cm in $COMMITTEE_MEMBERS; do
             log "    ✓ aggoracle committee member: $cm"
@@ -453,6 +469,30 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     if [ -n "$DAC" ]; then
         L2_CHAIN_JSON+=",
       \"cdk_data_availability\": $(container_json "$DAC")"
+    fi
+
+    # Add op-batcher (op-stack only). The batcher is effectively stateless: its
+    # entire configuration lives in its launch CMD (L1/L2/rollup RPC endpoints,
+    # DA type, poll interval, AND the funded batcher --private-key). We capture
+    # the exact Entrypoint + Cmd arrays so generate-compose can reproduce the
+    # service verbatim (rewriting only the kurtosis service hostnames to the
+    # restored geth/op-geth/op-node hostnames). No datadir to extract.
+    if [ -n "$OP_BATCHER" ]; then
+        OP_BATCHER_ID=$(docker inspect --format='{{.Id}}' "$OP_BATCHER")
+        OP_BATCHER_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$OP_BATCHER")
+        OP_BATCHER_ENTRYPOINT=$(docker inspect --format='{{json .Config.Entrypoint}}' "$OP_BATCHER")
+        OP_BATCHER_CMD=$(docker inspect --format='{{json .Config.Cmd}}' "$OP_BATCHER")
+        # Normalise json null -> [] so jq downstream always sees an array.
+        [ "$OP_BATCHER_ENTRYPOINT" = "null" ] && OP_BATCHER_ENTRYPOINT="[]"
+        [ "$OP_BATCHER_CMD" = "null" ] && OP_BATCHER_CMD="[]"
+        L2_CHAIN_JSON+=",
+      \"op_batcher\": {
+        \"container_name\": \"$OP_BATCHER\",
+        \"container_id\": \"$OP_BATCHER_ID\",
+        \"image\": \"$OP_BATCHER_IMAGE\",
+        \"entrypoint\": $OP_BATCHER_ENTRYPOINT,
+        \"cmd\": $OP_BATCHER_CMD
+      }"
     fi
 
     # Add AggOracle committee member services (extra aggkit aggoracle signers)

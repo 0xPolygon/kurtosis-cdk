@@ -363,6 +363,67 @@ EOF
 EOF
 
         log "    ✓ op-node-$prefix service added"
+
+        # ====================================================================
+        # op-batcher service (op-stack only)
+        #
+        # The batcher posts the sequencer's L2 batches to the L1 batch-inbox;
+        # this is what advances the L2 safe/finalized heads. Without it the
+        # restored L2 sequences unsafe blocks forever but never finalizes (and,
+        # in FEP mode, the ZKP has no L1 batch data to prove against).
+        #
+        # The batcher is stateless: its full launch CMD (incl. the funded
+        # --private-key, DA type, poll/safety params, and the L1/L2/rollup RPC
+        # endpoints) was captured verbatim by discover-containers.sh. We rewrite
+        # ONLY the kurtosis enclave service hostnames to the restored compose
+        # hostnames (geth / op-geth-<prefix> / op-node-<prefix>) and replay the
+        # entrypoint + cmd unchanged, so the restored batcher signs L1 txs from
+        # the same funded batcher account.
+        # ====================================================================
+        OP_BATCHER_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].op_batcher.image // empty" "$DISCOVERY_JSON")
+        if [ -n "$OP_BATCHER_IMAGE" ] && [ "$OP_BATCHER_IMAGE" != "null" ]; then
+            log "    Adding op-batcher-$prefix service..."
+
+            # Build the rewritten entrypoint+cmd YAML lists. Each captured token
+            # has its enclave hostnames swapped for restored-compose hostnames.
+            OP_BATCHER_ARGS_YAML=$(jq -r \
+                --arg prefix "$prefix" '
+                ((.l2_chains[$prefix].op_batcher.entrypoint // [])
+                 + (.l2_chains[$prefix].op_batcher.cmd // []))[]
+                | gsub("el-1-geth-lighthouse:8545"; "geth:8545")
+                | gsub("op-el-1-op-reth-op-node-" + $prefix + ":8545"; "op-geth-" + $prefix + ":8545")
+                | gsub("op-el-2-op-reth-op-node-" + $prefix + ":8545"; "op-geth-" + $prefix + ":8545")
+                | gsub("op-cl-1-op-node-op-reth-" + $prefix + ":8547"; "op-node-" + $prefix + ":8547")
+                | gsub("op-cl-2-op-node-op-reth-" + $prefix + ":8547"; "op-node-" + $prefix + ":8547")
+                | "      - \"" + (gsub("\""; "\\\"")) + "\""
+                ' "$DISCOVERY_JSON")
+
+            # Batcher RPC admin port (per-prefix host mapping, mirrors other
+            # services: 10000 + prefix*1000 + 548).
+            L2_BATCHER_RPC_PORT=$((10000 + PREFIX_NUM * 1000 + 548))
+
+            {
+                echo ""
+                echo "  op-batcher-$prefix:"
+                echo "    image: $OP_BATCHER_IMAGE"
+                echo "    container_name: $SNAPSHOT_ID-op-batcher-$prefix"
+                echo "    hostname: op-batcher-$prefix"
+                echo "    command:"
+                echo "$OP_BATCHER_ARGS_YAML"
+                echo "    ports:"
+                echo "      - \"$L2_BATCHER_RPC_PORT:8548\"    # batcher RPC/admin"
+                echo "    depends_on:"
+                echo "      geth:"
+                echo "        condition: service_healthy"
+                echo "      op-geth-$prefix:"
+                echo "        condition: service_healthy"
+                echo "      op-node-$prefix:"
+                echo "        condition: service_healthy"
+                echo "    restart: unless-stopped"
+            } >> "$OUTPUT_DIR/docker-compose.yml"
+
+            log "    ✓ op-batcher-$prefix service added"
+        fi
       fi  # end op-stack EL/CL emission
 
         # ====================================================================

@@ -554,6 +554,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         CDK_NODE_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].cdk_node.container_name // empty" "$DISCOVERY_JSON")
         OP_SUCCINCT_PROPOSER=$(jq -r ".l2_chains[\"$prefix\"].op_succinct_proposer.container_name // empty" "$DISCOVERY_JSON")
         DAC_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].cdk_data_availability.container_name // empty" "$DISCOVERY_JSON")
+        OP_BATCHER_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].op_batcher.container_name // empty" "$DISCOVERY_JSON")
 
         log "  Containers:"
         [ -n "$OP_RETH_SEQ" ] && log "    op-reth sequencer: $OP_RETH_SEQ"
@@ -564,6 +565,7 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
         [ -n "$CDK_ERIGON_SEQ" ] && log "    cdk-erigon sequencer: $CDK_ERIGON_SEQ"
         [ -n "$OP_SUCCINCT_PROPOSER" ] && log "    op-succinct proposer: $OP_SUCCINCT_PROPOSER"
         [ -n "$DAC_CONTAINER" ] && log "    cdk-data-availability: $DAC_CONTAINER"
+        [ -n "$OP_BATCHER_CONTAINER" ] && log "    op-batcher: $OP_BATCHER_CONTAINER (stateless; config captured from CMD)"
 
       # ----- op-stack (op-reth + op-node) extraction (only when present) -----
       if [ -n "$OP_NODE_SEQ" ] && [ -n "$OP_RETH_SEQ" ]; then
@@ -621,6 +623,19 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             log "    ✓ jwt.hex extracted from op-node"
         else
             log "    WARNING: jwt.hex not found"
+        fi
+
+        # op-batcher: stateless. Its only "state" is the launch CMD (already in
+        # the discovery JSON, incl. the funded --private-key). Persist the
+        # captured entrypoint/cmd next to the chain config so the snapshot is
+        # self-contained and human-auditable; generate-compose reads the
+        # discovery JSON (rewriting hostnames) to emit the service.
+        if [ -n "$OP_BATCHER_CONTAINER" ] && [ "$OP_BATCHER_CONTAINER" != "null" ]; then
+            log "  Capturing op-batcher launch config for network $prefix (stateless)..."
+            jq -c "{entrypoint: .l2_chains[\"$prefix\"].op_batcher.entrypoint, cmd: .l2_chains[\"$prefix\"].op_batcher.cmd, image: .l2_chains[\"$prefix\"].op_batcher.image}" \
+                "$DISCOVERY_JSON" > "$OUTPUT_DIR/config/$prefix/op-batcher-cmd.json" 2>/dev/null \
+                && log "    ✓ op-batcher-cmd.json written" \
+                || log "    WARNING: failed to write op-batcher-cmd.json"
         fi
 
         # Extract aggkit configuration if present
