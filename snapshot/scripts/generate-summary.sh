@@ -678,6 +678,32 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             done
         fi
 
+        # Add aggsender-validator member services (extra aggkit signers, gRPC :5578)
+        VALIDATOR_COUNT=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members | length // 0" "$DISCOVERY_JSON" 2>/dev/null || echo 0)
+        if [ "$VALIDATOR_COUNT" != "0" ] && [ "$VALIDATOR_COUNT" != "null" ] && [ -n "$VALIDATOR_COUNT" ]; then
+            vm_idx=0
+            while [ "$vm_idx" -lt "$VALIDATOR_COUNT" ]; do
+                VM_HOST=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members[$vm_idx].hostname // empty" "$DISCOVERY_JSON")
+                VM_PAD=$(printf '%03d' "$vm_idx")
+                VM_GRPC_PORT=$((10000 + PREFIX_NUM * 1000 + 700 + vm_idx))
+                if [ -n "$VM_HOST" ]; then
+                    L2_SERVICES=$(echo "$L2_SERVICES" | jq \
+                        --arg host "$VM_HOST" \
+                        --arg pad "$VM_PAD" \
+                        --arg grpc_port "$VM_GRPC_PORT" \
+                        '. + {
+                            ("aggsender-validator-" + $pad): {
+                                grpc: {
+                                    internal: ("http://" + $host + ":5578"),
+                                    external: ("http://localhost:" + $grpc_port)
+                                }
+                            }
+                        }')
+                fi
+                vm_idx=$((vm_idx + 1))
+            done
+        fi
+
         # L2 accounts from genesis (exclude OP predeploy contracts). op-stack
         # chains ship an l2-genesis.json; cdk-erigon chains instead carry their
         # genesis allocations in the dynamic-*-allocs.json artifact (a flat
@@ -803,6 +829,34 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
                     fi
                 fi
                 cm_idx=$((cm_idx + 1))
+            done
+        fi
+
+        # aggsender-validator member accounts (one aggsendervalidator-N.keystore
+        # per extra validator aggkit). Together with the primary aggsender's
+        # sequencer signer they make up the on-chain multisig signer set (M-of-N).
+        if [ "$VALIDATOR_COUNT" != "0" ] && [ "$VALIDATOR_COUNT" != "null" ] && [ -n "$VALIDATOR_COUNT" ]; then
+            vm_idx=0
+            while [ "$vm_idx" -lt "$VALIDATOR_COUNT" ]; do
+                VM_PAD=$(printf '%03d' "$vm_idx")
+                VM_ETC="$OUTPUT_DIR/config/$prefix/aggsender-validator/$VM_PAD/etc"
+                # The member-specific keystore is the highest-numbered aggsendervalidator-N.keystore.
+                VM_KS=$(ls -1 "$VM_ETC"/aggsendervalidator-*.keystore 2>/dev/null | sort -V | tail -1 || true)
+                if [ -n "$VM_KS" ] && [ -f "$VM_KS" ]; then
+                    VM_ADDR=$(extract_keystore_address "$VM_KS")
+                    if [ -n "$VM_ADDR" ]; then
+                        [[ "$VM_ADDR" != 0x* ]] && VM_ADDR="0x$VM_ADDR"
+                        L2_ACCOUNTS=$(echo "$L2_ACCOUNTS" | jq \
+                            --arg addr "$VM_ADDR" \
+                            --arg pad "$VM_PAD" \
+                            '. + [{
+                                address: $addr,
+                                private_key: "(encrypted in keystore)",
+                                description: ("aggsender-validator member " + $pad + " (extra multisig signer)")
+                            }]')
+                    fi
+                fi
+                vm_idx=$((vm_idx + 1))
             done
         fi
 

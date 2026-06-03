@@ -234,6 +234,25 @@ for prefix in $(jq -r '.l2_chains | keys[]' "$DISCOVERY_JSON" 2>/dev/null); do
             log "    ✓ committee member config adapted"
         done
     fi
+
+    # Adapt aggsender-validator member configs the same way. These configs were
+    # captured verbatim from each validator aggkit's /etc/aggkit, so they still
+    # reference the Kurtosis L1/L2 service hostnames; without this rewrite the
+    # restored validators fail to dial L1/L2 (DNS lookup of
+    # el-1-geth-lighthouse / op-el-1-op-reth-op-node-<prefix>) and crash-loop,
+    # which would prevent the primary aggsender from reaching its multisig
+    # quorum (the validators must be up and reachable on their gRPC port).
+    if [ -d "$OUTPUT_DIR/config/$prefix/aggsender-validator" ]; then
+        for VM_CONFIG in "$OUTPUT_DIR/config/$prefix/aggsender-validator"/*/etc/config.toml; do
+            [ -f "$VM_CONFIG" ] || continue
+            log "  Adapting aggsender-validator member config: $VM_CONFIG"
+            cp "$VM_CONFIG" "$VM_CONFIG.bak"
+            sed -i "s|http://${L1_EL_SERVICE}:8545|http://geth:8545|g" "$VM_CONFIG"
+            sed -i "s|http://op-el-1-op-reth-op-node-$prefix:8545|http://op-geth-$prefix:8545|g" "$VM_CONFIG"
+            sed -i "s|http://op-cl-1-op-node-op-reth-$prefix:8547|http://op-node-$prefix:8547|g" "$VM_CONFIG"
+            log "    ✓ aggsender-validator member config adapted"
+        done
+    fi
 done
 
 # ========================================================================

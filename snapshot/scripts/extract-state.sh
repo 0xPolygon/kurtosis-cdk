@@ -885,6 +885,40 @@ if [ "$L2_CHAINS_COUNT" != "null" ] && [ "$L2_CHAINS_COUNT" -gt 0 ]; then
             done
         fi
 
+        # ====================================================================
+        # aggsender-validator member extraction
+        # Each validator is an extra aggkit service (--components=aggsender-validator)
+        # with its own config.toml + aggsendervalidator-N.keystore. Capture them
+        # under config/<prefix>/aggsender-validator/00N/ so the restored env
+        # restarts every validator and the primary aggsender can reach its
+        # multisig quorum (the on-chain signer URLs point at these hostnames).
+        # ====================================================================
+        VALIDATOR_COUNT=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members | length // 0" "$DISCOVERY_JSON" 2>/dev/null || echo 0)
+        if [ "$VALIDATOR_COUNT" != "0" ] && [ -n "$VALIDATOR_COUNT" ]; then
+            log "  Extracting $VALIDATOR_COUNT aggsender-validator member(s) (network $prefix)..."
+            vidx=0
+            while [ "$vidx" -lt "$VALIDATOR_COUNT" ]; do
+                VM_CONTAINER=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members[$vidx].container_name // empty" "$DISCOVERY_JSON")
+                if [ -n "$VM_CONTAINER" ]; then
+                    VM_DIR="$OUTPUT_DIR/config/$prefix/aggsender-validator/$(printf '%03d' "$vidx")"
+                    mkdir -p "$VM_DIR"
+                    # Copy the WHOLE /etc/aggkit so each validator's config.toml plus
+                    # its exact keystore set (aggsendervalidator-N.keystore +
+                    # sequencer/sovereignadmin) are preserved verbatim. The config.toml
+                    # references a member-specific keystore path (e.g.
+                    # /etc/aggkit/aggsendervalidator-2.keystore), so mount the dir as-is.
+                    if docker cp "$VM_CONTAINER:/etc/aggkit/." "$VM_DIR/etc" 2>/dev/null; then
+                        log "    ✓ aggsender-validator member $vidx /etc/aggkit extracted ($VM_CONTAINER)"
+                    elif docker cp "$VM_CONTAINER:/etc/aggkit" "$VM_DIR/etc" 2>/dev/null; then
+                        log "    ✓ aggsender-validator member $vidx /etc/aggkit extracted ($VM_CONTAINER)"
+                    else
+                        log "    WARNING: aggsender-validator member $vidx /etc/aggkit not found"
+                    fi
+                fi
+                vidx=$((vidx + 1))
+            done
+        fi
+
         log "  L2 network $prefix configuration extraction complete"
     done
 

@@ -716,6 +716,67 @@ EOF
             done
         fi
 
+        # ====================================================================
+        # aggsender-validator member services (extra aggkit signers, gRPC :5578)
+        # Each restored with its own config + aggsendervalidator-N.keystore. The
+        # service HOSTNAME is set to the captured bare kurtosis service name
+        # (e.g. aggkit-001-aggsender-validator-002), which is exactly the host in
+        # the on-chain aggchainParams.signers multisig URL. This lets the primary
+        # aggkit's aggsender reach every validator over gRPC and gather signatures
+        # up to the multisig threshold (no "validatorPoller threshold not reached"
+        # stall). The container_name is prefixed with the snapshot id for
+        # isolation, but the hostname is NOT prefixed so it matches the on-chain URL.
+        # ====================================================================
+        VALIDATOR_COUNT=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members | length // 0" "$DISCOVERY_JSON" 2>/dev/null || echo 0)
+        if [ "$VALIDATOR_COUNT" != "0" ] && [ "$VALIDATOR_COUNT" != "null" ] && [ -n "$VALIDATOR_COUNT" ]; then
+            vm_idx=0
+            while [ "$vm_idx" -lt "$VALIDATOR_COUNT" ]; do
+                VM_IMAGE=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members[$vm_idx].image // empty" "$DISCOVERY_JSON")
+                VM_HOST=$(jq -r ".l2_chains[\"$prefix\"].aggsender_validator_members[$vm_idx].hostname // empty" "$DISCOVERY_JSON")
+                VM_PAD=$(printf '%03d' "$vm_idx")
+                VM_GRPC_PORT=$((10000 + PREFIX_NUM * 1000 + 700 + vm_idx))
+                if [ -n "$VM_IMAGE" ] && [ "$VM_IMAGE" != "null" ] && [ -n "$VM_HOST" ]; then
+                    VM_DEPENDS="      geth:
+        condition: service_healthy"
+                    if [ "$CHAIN_TYPE" = "op-stack" ]; then
+                        VM_DEPENDS="$VM_DEPENDS
+      op-geth-$prefix:
+        condition: service_healthy
+      op-node-$prefix:
+        condition: service_healthy"
+                    fi
+                    if [ "$AGGLAYER_FOUND" = "true" ]; then
+                        VM_DEPENDS="$VM_DEPENDS
+      agglayer:
+        condition: service_healthy"
+                    fi
+                    cat >> "$OUTPUT_DIR/docker-compose.yml" << EOF
+
+  $VM_HOST:
+    image: $VM_IMAGE
+    container_name: $SNAPSHOT_ID-$VM_HOST
+    hostname: $VM_HOST
+    entrypoint: ["/usr/local/bin/aggkit"]
+    command:
+      - "run"
+      - "--cfg=/etc/aggkit/config.toml"
+      - "--components=aggsender-validator"
+    volumes:
+      - ./config/$prefix/aggsender-validator/$VM_PAD/etc:/etc/aggkit:ro
+    ports:
+      - "$VM_GRPC_PORT:5578"    # aggsender-validator gRPC
+    depends_on:
+$VM_DEPENDS
+    restart: unless-stopped
+    environment:
+      - RUST_BACKTRACE=1
+EOF
+                    log "    ✓ $VM_HOST (aggsender-validator) service added"
+                fi
+                vm_idx=$((vm_idx + 1))
+            done
+        fi
+
         log "  L2 network $prefix services added to docker-compose"
     done
 

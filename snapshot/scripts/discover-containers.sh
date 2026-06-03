@@ -219,6 +219,33 @@ if [ -z "$COMMITTEE_CONTAINERS" ]; then
     COMMITTEE_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^aggkit-.*-aggoracle-committee-[0-9]+" || true)
 fi
 
+# ============================================================================
+# Discover aggsender-validator member services - OPTIONAL
+# Kurtosis service name: aggkit<suffix>-aggsender-validator-00<N>
+# (see src/chain/shared/aggkit.star _deploy_validator_service). These are extra
+# aggkit services (--components=aggsender-validator, gRPC port 5578) each running
+# with a distinct aggsendervalidator-N.keystore. Their hostnames are written
+# verbatim into the on-chain aggchainParams.signers multisig URLs by
+# static_files/contracts/contracts.sh (configure_contract_container_*):
+#   http://aggkit<suffix>-aggsender-validator-00<N>:5578
+# The primary aggsender polls those URLs over gRPC to gather signatures up to
+# the multisig threshold. If the restored compose does not start validator
+# containers whose hostnames+addresses match the on-chain members, the aggsender
+# is stuck in a "validatorPoller threshold not reached" retry loop. Captured so
+# the restored env restarts every validator identity and the aggsender reaches
+# its M-of-N quorum.
+# ============================================================================
+
+log "Discovering aggsender-validator member services..."
+
+VALIDATOR_MEMBER_CONTAINERS=$(docker ps -a \
+    --filter "label=com.kurtosistech.enclave-id=$ENCLAVE_UUID" \
+    --format "{{.Names}}" | grep -E "^aggkit-.*-aggsender-validator-[0-9]+" || true)
+
+if [ -z "$VALIDATOR_MEMBER_CONTAINERS" ]; then
+    VALIDATOR_MEMBER_CONTAINERS=$(docker ps -a --format "{{.Names}}" | grep -E "^aggkit-.*-aggsender-validator-[0-9]+" || true)
+fi
+
 # Helper: emit a compact container JSON object ("name"/id/image) for a given
 # container, or empty string if not found. Used by the topology blocks below.
 container_json() {
@@ -325,6 +352,9 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     # AggOracle committee members for this network: aggkit-<prefix>-aggoracle-committee-00N--<uuid>
     COMMITTEE_MEMBERS=$(echo "$COMMITTEE_CONTAINERS" | grep -E "^aggkit-$prefix-aggoracle-committee-[0-9]+--" | sort || true)
 
+    # aggsender-validator members for this network: aggkit-<prefix>-aggsender-validator-00N--<uuid>
+    VALIDATOR_MEMBERS=$(echo "$VALIDATOR_MEMBER_CONTAINERS" | grep -E "^aggkit-$prefix-aggsender-validator-[0-9]+--" | sort || true)
+
     # A network is valid if it has EITHER an op-stack sequencer (op-reth+op-node)
     # OR a cdk-erigon sequencer. This lets erigon-only / FEP-only topologies be
     # captured alongside op-stack topologies.
@@ -357,6 +387,11 @@ for prefix in "${!L2_NETWORKS[@]}"; do
     if [ -n "$COMMITTEE_MEMBERS" ]; then
         for cm in $COMMITTEE_MEMBERS; do
             log "    ✓ aggoracle committee member: $cm"
+        done
+    fi
+    if [ -n "$VALIDATOR_MEMBERS" ]; then
+        for vm in $VALIDATOR_MEMBERS; do
+            log "    ✓ aggsender validator member: $vm"
         done
     fi
 
@@ -510,6 +545,27 @@ for prefix in "${!L2_NETWORKS[@]}"; do
         done
         L2_CHAIN_JSON+=",
       \"aggoracle_committee_members\": [$CM_JSON ]"
+    fi
+
+    # Add aggsender-validator member services as an array so extract/compose/
+    # summary can restore each signing identity. Each entry also carries the
+    # bare kurtosis "hostname" (container name with the --<uuid> suffix stripped)
+    # which is exactly the host used in the on-chain multisig URL, so the
+    # restored container's hostname can be set to match.
+    if [ -n "$VALIDATOR_MEMBERS" ]; then
+        VM_JSON=""
+        VM_FIRST=1
+        for vm in $VALIDATOR_MEMBERS; do
+            [ $VM_FIRST -eq 0 ] && VM_JSON+=","
+            VM_ID=$(docker inspect --format='{{.Id}}' "$vm" 2>/dev/null || echo "")
+            VM_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$vm" 2>/dev/null || echo "")
+            # Strip the kurtosis "--<uuid>" suffix to get the on-chain multisig host.
+            VM_HOST="${vm%%--*}"
+            VM_JSON+=" { \"container_name\": \"$vm\", \"container_id\": \"$VM_ID\", \"image\": \"$VM_IMAGE\", \"hostname\": \"$VM_HOST\" }"
+            VM_FIRST=0
+        done
+        L2_CHAIN_JSON+=",
+      \"aggsender_validator_members\": [$VM_JSON ]"
     fi
 
     L2_CHAIN_JSON+="
