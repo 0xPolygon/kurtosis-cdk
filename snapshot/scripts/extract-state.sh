@@ -224,17 +224,22 @@ log "  Checkpoint block extracted: $(du -h "$OUTPUT_DIR/datadirs/checkpoint_bloc
 # STEP 2: Stop containers gracefully
 # ============================================================================
 
-log "Stopping containers gracefully (IMMEDIATELY to prevent state drift)..."
+log "Stopping containers GRACEFULLY and SERIALLY (IMMEDIATELY to prevent state drift)..."
 
+# IMPORTANT (loaded-host wedge fix): stop every L1 container with a GRACEFUL,
+# SERIAL `docker stop --time <grace>` wrapped in a generous wall-clock `timeout`,
+# and NEVER fall back to `docker kill`. On an I/O-pressured host a `docker kill`
+# (SIGKILL) on a beacon/validator (or any reth/op-reth-style EL whose
+# containerd-shim is mid-flush) has driven the shim into an unreapable state:
+# the process became a zombie (Z), the shim would not reap it, and every
+# subsequent `docker stop|kill|rm` returned "tried to kill container, but did
+# not receive an exit event" — wedging the whole capture for >30min. A graceful
+# SIGTERM lets the runtime drain cleanly even under I/O pressure; the wall-clock
+# `timeout` only bounds how long WE wait for that call to return (we do NOT
+# escalate to kill). geth additionally MUST flush (see per-container note below).
 for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; do
     if docker ps -q --filter "name=$container" | grep -q .; then
         log "  Stopping $container..."
-        # Give the L1 execution client (geth) a generous SIGTERM grace period so
-        # it flushes its chain head/state DB to disk before SIGKILL. A short
-        # timeout can race geth mid-write, persisting a stale head (observed: a
-        # committee snapshot whose restored geth came back many blocks behind
-        # its rollup L1-origin, so op-reth could never reach the origin block).
-        # Beacon/validator hold no execution state and stop fast.
         if [ "$container" = "$GETH_CONTAINER" ]; then
             # The L1 execution client (geth, --gcmode=archive) keeps most of the
             # chain in memory and only persists its full state/chain DB to disk
@@ -245,14 +250,21 @@ for container in "$GETH_CONTAINER" "$BEACON_CONTAINER" "$VALIDATOR_CONTAINER"; d
             # never reach the origin block (it boot-loops "waiting for L1 block
             # N"). So give geth a long SIGTERM grace and DO NOT force-kill it.
             log "  Stopping geth with a long graceful grace period (flush to disk)..."
-            docker stop "$container" --time 180
+            # 180s SIGTERM grace, bounded by a 300s wall-clock so a wedged dockerd
+            # cannot hang the capture indefinitely. No docker kill fallback.
+            if ! timeout 300 docker stop "$container" --time 180; then
+                log "  WARNING: 'docker stop $container' did not return within wall-clock timeout (host I/O wedge?); NOT force-killing geth"
+            fi
         else
-            # Beacon/validator hold no execution state and are safe to force-kill.
-            # Wrap in a wall-clock timeout + docker kill fallback because a wedged
-            # `docker stop` on these has hung the whole capture for >30min before.
-            if ! timeout 30 docker stop "$container" --time 5; then
-                log "  WARNING: 'docker stop $container' did not return; forcing 'docker kill'"
-                docker kill "$container" >/dev/null 2>&1 || true
+            # Beacon/validator hold no execution state, but under I/O pressure a
+            # `docker kill` here is exactly what wedged the containerd-shim before.
+            # Mirror the geth treatment: a generous GRACEFUL `docker stop --time
+            # 120` bounded by a 180s wall-clock, NO docker kill fallback. They
+            # normally drain in well under a second, so the long grace is harmless
+            # on healthy hosts and only helps under load.
+            log "  Stopping $container gracefully (no force-kill; mirrors geth)..."
+            if ! timeout 180 docker stop "$container" --time 120; then
+                log "  WARNING: 'docker stop $container' did not return within wall-clock timeout (host I/O wedge?); NOT force-killing"
             fi
         fi
 
