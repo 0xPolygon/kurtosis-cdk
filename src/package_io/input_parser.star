@@ -301,6 +301,16 @@ DEFAULT_ROLLUP_ARGS = {
     # true = mock
     # false = network
     "op_succinct_mock": False,
+    # Optional overrides for the op-succinct verification keys used by the aggkit-prover.
+    # Leave empty ("") to use the vkeys embedded in aggkit_prover_image (resolved from its
+    # bundled op-succinct ELFs). Set a value to pin/override it via the generated
+    # [aggchain-proof-service.op-succinct] config section — e.g. when the prover image's
+    # embedded ELFs differ from op_succinct_proposer_image. The section is only written
+    # when at least one of these is non-empty.
+    #   op_succinct_aggregation_vkey:      full bincode-serialized SP1 aggregation vkey
+    #   op_succinct_range_vkey_commitment: bytes32 range vkey commitment
+    "op_succinct_aggregation_vkey": "",
+    "op_succinct_range_vkey_commitment": "",
     "aggkit_components": "aggsender,aggoracle",
     # Toggle to enable the claimsponsor on the aggkit node.
     # Note: aggkit will only start the claimsponsor if the bridge is also enabled.

@@ -21,6 +21,13 @@ args:
   # Size of the range proof.
   op_succinct_range_proof_interval: "60"
 
+  # Optional: override the op-succinct vkeys embedded in the aggkit-prover image.
+  # Leave unset to use the image's embedded vkeys; set these (e.g. when the prover
+  # image's ELFs differ from op_succinct_proposer_image) to write them into the
+  # aggkit-prover [aggchain-proof-service.op-succinct] section.
+  # op_succinct_aggregation_vkey: "0x00001f3000007804000000004c57a3b3367f85525b2c9bc777dc33ae58311fcd0f6ec72f2ef02cb15b00284576517cb96f3292441f959a397328264469895662250d93ce143aaf5f5ad4237d01d26385287ca799524611c4338f4ac3645b1a1a1483d29b00000000"
+  # op_succinct_range_vkey_commitment: "0x1b04822373ca65680026b5610c1edf424798421b032ef9117b2c264661de246f"
+
   # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
   # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
   # Note this will noticeably increase the deployment time because of the increased L1 finality.

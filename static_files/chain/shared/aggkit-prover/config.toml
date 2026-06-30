@@ -37,6 +37,17 @@ proposer-endpoint = "{{ .proposer_url }}"
 sp1-cluster-endpoint = "{{ .sp1_cluster_endpoint }}"
 request-timeout = 600
 proving-timeout = 3600
+{{- if or .op_succinct_aggregation_vkey .op_succinct_range_vkey_commitment }}
+
+# Optional override of the op-succinct vkeys embedded in the aggkit-prover image.
+[aggchain-proof-service.op-succinct]
+{{- if .op_succinct_aggregation_vkey }}
+aggregation-vkey = "{{ .op_succinct_aggregation_vkey }}"
+{{- end }}
+{{- if .op_succinct_range_vkey_commitment }}
+range-vkey-commitment = "{{ .op_succinct_range_vkey_commitment }}"
+{{- end }}
+{{- end }}
 
 [primary-prover.{{ .primary_prover }}]
 proving-timeout = "1h"

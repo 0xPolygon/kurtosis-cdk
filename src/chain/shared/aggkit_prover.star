@@ -56,6 +56,13 @@ def run(plan, args, contract_setup_addresses, sovereign_contract_setup_addresses
                     "l2_network_id": args["l2_network_id"],
                     "sp1_cluster_endpoint": args["sp1_cluster_endpoint"],
                     "op_succinct_mock": args["op_succinct_mock"],
+                    # Optional op-succinct vkey overrides. When both are empty the
+                    # [aggchain-proof-service.op-succinct] section is omitted and the
+                    # prover uses the vkeys embedded in its image.
+                    "op_succinct_aggregation_vkey": args["op_succinct_aggregation_vkey"],
+                    "op_succinct_range_vkey_commitment": args[
+                        "op_succinct_range_vkey_commitment"
+                    ],
                     "aggkit_legacy": aggkit_legacy,
                 },
             )
