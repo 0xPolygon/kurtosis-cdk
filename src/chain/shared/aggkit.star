@@ -31,6 +31,10 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
                 | contract_setup_addresses
                 | {
                     "l2_rpc_url": l2_rpc_url,
+                    "aggkit_use_legacy_bridge_addr": _extract_aggkit_version(
+                        args.get("aggkit_image")
+                    )
+                    < (0, 8),
                 },
             )
         },
@@ -452,7 +456,9 @@ def _build_config_data(args, deployment_context, extra_data=None):
         args
         | {
             "agglayer_endpoint": agglayer_endpoint,
-            "aggkit_version": aggkit_version,
+            # aggkit < 0.8 expects the deprecated top-level polygonBridgeAddr;
+            # 0.8+ fatals on it (use L1Config.BridgeAddr / L2Config.BridgeAddr).
+            "aggkit_use_legacy_bridge_addr": aggkit_version < (0, 8),
             "l2_rpc_url": deployment_context.l2_rpc_url,
             "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
         }
@@ -676,35 +682,38 @@ def _get_agglayer_endpoint(aggkit_image):
 
     # Extract the aggkit version from the image name.
     version = _extract_aggkit_version(aggkit_image)
-    if version >= 0.3:
+    if version >= (0, 3):
         return "grpc"
     else:
         return "readrpc"
 
 
 def _extract_aggkit_version(aggkit_image):
-    """Extract the version from the aggkit image name and return a float."""
+    """Extract the (major, minor) version from the aggkit image tag.
+
+    Returns an integer (major, minor) tuple so versions compare correctly
+    component-by-component. A float cannot represent this: "0.10" and "0.1"
+    both parse to 0.1, which made aggkit 0.10 sort *below* 0.8 and 0.3 and
+    emit the deprecated polygonBridgeAddr field that 0.10 rejects.
+    """
 
     # ghcr.io/agglayer/aggkit:v0.5.0-beta1 -> v0.5.0-beta1
     tag = aggkit_image.split(":")[-1]
 
     # Aggkit CI will use aggkit:local to test latest changes.
-    # Assume local is the latest version
+    # Assume local is the newest possible version.
     if tag == "local":
-        return 999.9
+        return (9999, 0)
 
-    # v0.5.0-beta1 -> v0.5.0
-    tag_without_suffix = tag.split("-")[0]
-
-    # v0.5.0-beta1 -> 0.5.0
-    version = tag_without_suffix
-    for i in range(len(tag_without_suffix)):
-        if tag_without_suffix[i].isdigit():
-            version = tag_without_suffix[i:]
+    # v0.5.0-beta1 -> v0.5.0 -> 0.5.0
+    version = tag.split("-")[0]
+    for i in range(len(version)):
+        if version[i].isdigit():
+            version = version[i:]
             break
 
-    # return a float
-    if version.count(".") > 1:
-        split = version.split(".")
-        return float("{}.{}".format(split[0], split[1]))
-    return float(version)
+    # 0.5.0 -> (0, 5)
+    parts = version.split(".")
+    major = int(parts[0])
+    minor = int(parts[1]) if len(parts) > 1 else 0
+    return (major, minor)
