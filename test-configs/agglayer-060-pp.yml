@@ -1,0 +1,19 @@
+# Test config: agglayer v0.6.0-rc.2 on a PP (pessimistic proof) network.
+#
+# Mirrors the agglayer CI validated matrix for 0.6.0-rc.2 (op-reth sequencer + reth L1 +
+# aggkit 0.5.4 + pessimistic consensus). This is the known-good baseline for exercising the
+# new settlement service and the per-epoch rate-limiting removal on a fresh devnet.
+#
+# Launch:
+#   kurtosis run --enclave agglayer-060-pp --args-file test-configs/agglayer-060-pp.yml .
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: pessimistic # former sovereign consensus
+  aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+  l1_el_type: reth # match the agglayer CI's reth L1 (default is geth); enables reth RPC tests
+  # reth_image is REQUIRED when l1_el_type=reth — kurtosis-cdk HEAD has no reth_image default,
+  # so omitting it crashes Starlark (el_image=None). Matches the agglayer CI matrix pin.
+  reth_image: ghcr.io/paradigmxyz/reth:v1.11.3
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.2
+  # Set true to exercise the optional dual-wallet (second tx-settlement signer) path.
+  # agglayer_use_second_signer: true

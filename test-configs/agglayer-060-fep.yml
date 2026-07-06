@@ -1,0 +1,36 @@
+# Test config: agglayer v0.6.0-rc.2 on a FEP (op-succinct / AggchainFEP) network, mock prover.
+#
+# Based on .github/tests/op-succinct/mock-prover.yml (the CI-verified fast FEP path). FEP adds
+# the op-succinct-proposer-001 and aggkit-prover-001 services and uses the default aggkit
+# (0.9.0-rc3) + aggkit-prover (1.9.2). The mock prover avoids needing a real SP1 network key.
+#
+# Launch:
+#   kurtosis run --enclave agglayer-060-fep --args-file test-configs/agglayer-060-fep.yml .
+deployment_stages:
+  deploy_op_succinct: true
+
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: fep
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.2
+  # true = mock/CPU prover (no real SP1 network key needed); false = network prover.
+  op_succinct_mock: true
+  # Enable the integration with the Agglayer.
+  op_succinct_agglayer: true
+  # Proof type. Must match the verifier gateway contract type. Options: plonk, groth16, compressed, core.
+  op_succinct_agg_proof_mode: compressed
+  # Minimum interval in L2 blocks at which checkpoints must be submitted.
+  op_succinct_submission_interval: "1"
+  op_succinct_max_concurrent_proof_requests: "1"
+  op_succinct_max_concurrent_witness_gen: "1"
+  # Size of the range proof.
+  op_succinct_range_proof_interval: "60"
+  # Fast L1 slot time is acceptable for the mock prover (no real proving load).
+  l1_seconds_per_slot: 2
+
+optimism_package:
+  predeployed_contracts: true
+  chains:
+    "001":
+      proposer_params:
+        enabled: false # the op-succinct-proposer replaces the standard OP proposer
