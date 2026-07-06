@@ -8,7 +8,7 @@
 Preferred-Languages: en
 
 ## Security-related job openings at Polygon.
-https://polygon.technology/careers
+https://jobs.ashbyhq.com/polygon-labs/
 
 ## Polygon security contact details.
 security@polygon.technology
