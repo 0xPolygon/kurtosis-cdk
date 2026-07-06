@@ -316,6 +316,11 @@ DEFAULT_ROLLUP_ARGS = {
     # The below parameter will be used for aggsender multisig to have "agg_sender_validator_total_number" aggsender validators.
     "agg_sender_validator_total_number": 0,
     "agg_sender_multisig_threshold": 1,
+    # When true, the agglayer node is configured with a second (tx-settlement) signer in
+    # [auth.local] private-keys, mirroring the production dual-wallet deployment. The second
+    # signer reuses the already-funded sequencer account keystore (distinct from the aggregator
+    # pp-settlement signer). Default false = single wallet (identical to today's behavior).
+    "agglayer_use_second_signer": False,
     # Maps to TriggerCertMode parameter in the aggkit configs. It is the mode used to trigger certificate sending.
     # Valid values are: "EpochBased", "NewBridge", "ASAP", "Auto"
     # EpochBased: this is the legacy mode that waits until reach a percentage of a epoch (you can configure here: AggSender.TriggerEpochBased)
