@@ -24,7 +24,7 @@ sp1-cluster-endpoint = "{{.sp1_cluster_endpoint}}"
 {{- else }}
 [prover.mock-prover]
 proving-timeout = "5m"
-proving_request_timeout = "300s"
+proving-request-timeout = "300s"
 {{- end }}
 
 [rpc]
