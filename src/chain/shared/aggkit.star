@@ -31,7 +31,9 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
                 | contract_setup_addresses
                 | {
                     "l2_rpc_url": l2_rpc_url,
-                    "aggkit_legacy_bridge_addr": not _aggkit_version_gte(args.get("aggkit_image"), 0, 8),
+                    "aggkit_legacy_bridge_addr": not _aggkit_version_gte(
+                        args.get("aggkit_image"), 0, 8
+                    ),
                 },
             )
         },
@@ -454,7 +456,9 @@ def _build_config_data(args, deployment_context, extra_data=None):
         | {
             "agglayer_endpoint": agglayer_endpoint,
             "aggkit_version": aggkit_version,
-            "aggkit_legacy_bridge_addr": not _aggkit_version_gte(args.get("aggkit_image"), 0, 8),
+            "aggkit_legacy_bridge_addr": not _aggkit_version_gte(
+                args.get("aggkit_image"), 0, 8
+            ),
             "l2_rpc_url": deployment_context.l2_rpc_url,
             "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
         }
