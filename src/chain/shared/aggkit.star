@@ -680,7 +680,7 @@ def _get_agglayer_endpoint(aggkit_image):
     if "local" in aggkit_image:
         return "grpc"
 
-    # Compare major.minor numerically so 0.10+ is not mis-read as 0.1 (< 0.3).
+    # Compare major.minor numerically so 0.10+ is not misread as 0.1 (< 0.3).
     if _aggkit_version_gte(aggkit_image, 0, 3):
         return "grpc"
     else:
@@ -720,7 +720,7 @@ def _aggkit_version_gte(aggkit_image, major, minor):
 
     Compares major/minor as integers so double-digit minors order correctly
     (0.10 > 0.9 > 0.8). _extract_aggkit_version returns a float where "0.10"
-    collapses to 0.1 (< 0.8), which silently mis-gates version-conditional
+    collapses to 0.1 (< 0.8), which silently breaks version-conditional
     config for aggkit >= 0.10; use this for those gates instead.
     """
     if "local" in aggkit_image:
