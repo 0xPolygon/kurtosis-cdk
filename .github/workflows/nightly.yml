@@ -13,7 +13,9 @@ permissions:
 env:
   ENCLAVE_NAME: cdk
   DEVTOOLS_SLACK_ALERTS_CHANNEL_ID: C04DS0SG599
-  L1_EL_TYPE: geth
+  # reth is the default L1 execution client (geth breaks agglayer 0.6.0 settlement); this must
+  # match so the gas-token job's `el-1-${L1_EL_TYPE}-${L1_CL_TYPE}` service lookup resolves.
+  L1_EL_TYPE: reth
   L1_CL_TYPE: lighthouse
 
 jobs:
