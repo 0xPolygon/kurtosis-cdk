@@ -14,17 +14,22 @@ args:
   op_succinct_agg_proof_mode: compressed
   # The minimum interval in L2 blocks at which checkpoints must be submitted. An aggregation proof can be posted for any range larger than this interval.
   op_succinct_submission_interval: "1"
-  # The maximum number of concurrent proof requests to send to the `op-succinct-server`
-  op_succinct_max_concurrent_proof_requests: "1"
+  # Concurrency for the range/aggregation proofs. Each time L1 finality advances (an epoch), a
+  # batch of newly-finalized L2 ranges becomes provable at once. The aggsender's aggchain proof
+  # only succeeds once the proposer has proven up to the requested (finalized) block, so the
+  # proposer must clear that batch well within the claim window. With the mock prover the proofs
+  # are cheap, so allow several in parallel instead of serialising them one range per poll.
+  op_succinct_max_concurrent_proof_requests: "8"
   # The maximum number of concurrent witness generation processes to run on the `op-succinct-server`
-  op_succinct_max_concurrent_witness_gen: "1"
+  op_succinct_max_concurrent_witness_gen: "8"
   # Size of the range proof.
   op_succinct_range_proof_interval: "60"
 
-  # OP Networks rely on L1 blocks to have finalization on L2. This means if the L1 blocktime is very fast, OP Succinct proof requests will have to bundle many L1 blocks into a single proof.
-  # This will significantly increase cycles even if the L2 network is empty. Instead of having 2s, for OP Succinct deployments, we recommend 12s.
-  # Note this will noticeably increase the deployment time because of the increased L1 finality.
-  l1_seconds_per_slot: 2 # TEMPORARY - DO NOT MERGE
+  # Keep the default 2s L1 slot time. op-succinct needs L2 finality to advance promptly (the
+  # proposer only proves finalized L2 blocks), which is handled by op-node's L1 head poll interval
+  # (see --l1.http-poll-interval in src/package_io/op_input_parser.star), not by slowing the L1.
+  # A 12s L1 would break the op-deployer superchain deploy, whose transactor gives up before the
+  # slower blocks confirm.
 
 optimism_package:
   predeployed_contracts: true
