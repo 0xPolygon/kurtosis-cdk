@@ -39,7 +39,7 @@ SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 {{- end}}
 
-{{- if lt .aggkit_version "0.8" }}
+{{- if .aggkit_legacy_bridge_addr }}
 polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 

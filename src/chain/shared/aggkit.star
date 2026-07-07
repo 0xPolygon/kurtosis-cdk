@@ -31,6 +31,7 @@ def run_aggkit_cdk_node(plan, args, contract_setup_addresses):
                 | contract_setup_addresses
                 | {
                     "l2_rpc_url": l2_rpc_url,
+                    "aggkit_legacy_bridge_addr": not _aggkit_version_gte(args.get("aggkit_image"), 0, 8),
                 },
             )
         },
@@ -453,6 +454,7 @@ def _build_config_data(args, deployment_context, extra_data=None):
         | {
             "agglayer_endpoint": agglayer_endpoint,
             "aggkit_version": aggkit_version,
+            "aggkit_legacy_bridge_addr": not _aggkit_version_gte(args.get("aggkit_image"), 0, 8),
             "l2_rpc_url": deployment_context.l2_rpc_url,
             "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
         }
@@ -674,9 +676,8 @@ def _get_agglayer_endpoint(aggkit_image):
     if "local" in aggkit_image:
         return "grpc"
 
-    # Extract the aggkit version from the image name.
-    version = _extract_aggkit_version(aggkit_image)
-    if version >= 0.3:
+    # Compare major.minor numerically so 0.10+ is not mis-read as 0.1 (< 0.3).
+    if _aggkit_version_gte(aggkit_image, 0, 3):
         return "grpc"
     else:
         return "readrpc"
@@ -708,3 +709,32 @@ def _extract_aggkit_version(aggkit_image):
         split = version.split(".")
         return float("{}.{}".format(split[0], split[1]))
     return float(version)
+
+
+def _aggkit_version_gte(aggkit_image, major, minor):
+    """Return True if the aggkit image version is >= major.minor.
+
+    Compares major/minor as integers so double-digit minors order correctly
+    (0.10 > 0.9 > 0.8). _extract_aggkit_version returns a float where "0.10"
+    collapses to 0.1 (< 0.8), which silently mis-gates version-conditional
+    config for aggkit >= 0.10; use this for those gates instead.
+    """
+    if "local" in aggkit_image:
+        return True
+
+    tag = aggkit_image.split(":")[-1]
+    if tag == "local":
+        return True
+
+    # v0.10.0-rc7 -> 0.10.0 (strip suffix, then any leading "v").
+    tag_without_suffix = tag.split("-")[0]
+    ver = tag_without_suffix
+    for i in range(len(tag_without_suffix)):
+        if tag_without_suffix[i].isdigit():
+            ver = tag_without_suffix[i:]
+            break
+
+    parts = ver.split(".")
+    v_major = int(parts[0]) if len(parts) > 0 and parts[0].isdigit() else 0
+    v_minor = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+    return (v_major, v_minor) >= (major, minor)
