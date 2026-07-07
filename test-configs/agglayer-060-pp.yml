@@ -9,11 +9,10 @@
 args:
   sequencer_type: op-reth
   consensus_contract_type: pessimistic # former sovereign consensus
+  # Pessimistic stays on aggkit 0.5.4: 0.10.x requires an on-chain validator/multisig committee
+  # that this consensus does not deploy, so its cert submission reverts. reth L1 is the repo
+  # default now, so l1_el_type/reth_image no longer need to be set here.
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
-  l1_el_type: reth # match the agglayer CI's reth L1 (default is geth); enables reth RPC tests
-  # reth_image is REQUIRED when l1_el_type=reth — kurtosis-cdk HEAD has no reth_image default,
-  # so omitting it crashes Starlark (el_image=None). Matches the agglayer CI matrix pin.
-  reth_image: ghcr.io/paradigmxyz/reth:v1.11.3
   agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.4
   # Set true to exercise the optional dual-wallet (second tx-settlement signer) path.
   # agglayer_use_second_signer: true
