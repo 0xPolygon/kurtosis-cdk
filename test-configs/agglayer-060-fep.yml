@@ -2,7 +2,8 @@
 #
 # Based on .github/tests/op-succinct/mock-prover.yml (the CI-verified fast FEP path). FEP adds
 # the op-succinct-proposer-001 and aggkit-prover-001 services and uses the default aggkit
-# (0.9.0-rc3) + aggkit-prover (1.9.2). The mock prover avoids needing a real SP1 network key.
+# (0.10.0-rc7) + aggkit-prover (2.1.0) + op-succinct-proposer (v3.10.0), which emit the SP1 v6
+# aggchain proofs required by agglayer 0.6.0. The mock prover avoids needing a real SP1 network key.
 #
 # Launch:
 #   kurtosis run --enclave agglayer-060-fep --args-file test-configs/agglayer-060-fep.yml .
