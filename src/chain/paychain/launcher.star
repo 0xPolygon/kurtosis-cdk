@@ -3,6 +3,31 @@ constants = import_module("../../package_io/constants.star")
 ports_package = import_module("../shared/ports.star")
 
 
+def genesis_alloc_flags(args):
+    """The genesis-determining paychain-node flags: `--ger-updater` plus one
+    `--alloc addr:balance` per genesis-funded account.
+
+    These are the ONLY flags that affect paychain-node's height-0 (genesis)
+    state root (see `genesis_state` in paychain-node/src/node.rs). Shared by
+    `launch()` (the node runtime) and `paychain-node genesis-root` (invoked from
+    contracts/agglayer.star to seed the AggchainPayments contract's initial
+    `lastStateRoot`) so the contract's initial root is computed from EXACTLY the
+    same inputs as the node's block-0 state root, by construction.
+    """
+    flags = ["--ger-updater", args["l2_aggoracle_address"]]
+    genesis_balance = "1000000000000000000000000"
+    for addr in [
+        args.get("l2_admin_address"),
+        args.get("l2_sequencer_address"),
+        args.get("l2_aggoracle_address"),
+        args.get("l2_sovereignadmin_address"),
+        args.get("l2_claimsponsor_address"),
+    ]:
+        if addr:
+            flags += ["--alloc", "{}:{}".format(addr, genesis_balance)]
+    return flags
+
+
 def launch(
     plan,
     args,
@@ -64,8 +89,6 @@ def launch(
         contract_setup_addresses.get("l2_bridge_address", ""),
         "--ger-manager",
         contract_setup_addresses.get("l2_ger_address", ""),
-        "--ger-updater",
-        args["l2_aggoracle_address"],
         "--seal-ms",
         str(seal_ms),
         "--prover-mode",
@@ -74,19 +97,14 @@ def launch(
         "0.0.0.0:9100",
     ]
 
-    # Genesis-fund the L2 accounts the demo transacts with (admin, sequencer,
-    # aggoracle, sovereign admin, claim sponsor) so GER-injection, autoclaims,
-    # and the bridge spammer all have balance. 1e6 ether each.
-    genesis_balance = "1000000000000000000000000"
-    for addr in [
-        args.get("l2_admin_address"),
-        args.get("l2_sequencer_address"),
-        args.get("l2_aggoracle_address"),
-        args.get("l2_sovereignadmin_address"),
-        args.get("l2_claimsponsor_address"),
-    ]:
-        if addr:
-            cmd += ["--alloc", "{}:{}".format(addr, genesis_balance)]
+    # Genesis-determining flags: --ger-updater (the aggoracle EOA) plus one
+    # --alloc per genesis-funded L2 account the demo transacts with (admin,
+    # sequencer, aggoracle, sovereign admin, claim sponsor) so GER-injection,
+    # autoclaims, and the bridge spammer all have balance (1e6 ether each).
+    # Shared with the AggchainPayments genesis-root seeding (agglayer.star) via
+    # genesis_alloc_flags() so the contract's initial lastStateRoot == the
+    # node's block-0 state root by construction.
+    cmd += genesis_alloc_flags(args)
 
     plan.add_service(
         name=service_name,

@@ -1,6 +1,7 @@
 aggchain_vkey = import_module("../vkey/aggchain.star")
 agglayer_vkey = import_module("../vkey/agglayer.star")
 paychain_vkey = import_module("../vkey/paychain.star")
+paychain_launcher = import_module("../chain/paychain/launcher.star")
 constants = import_module("../package_io/constants.star")
 contracts_util = import_module("./util.star")
 cdk_data_availability = import_module("../chain/cdk-erigon/cdk_data_availability.star")
@@ -90,8 +91,23 @@ def run(plan, args, deployment_stages, op_stack_args):
             plan, args.get("paychain_node_image")
         )
         aggchain_vkey_selector = "0x10000001"
+        # Compute paychain-node's deterministic height-0 (genesis) state root
+        # from the SAME genesis-determining flags the node runs with, and seed
+        # it as the AggchainPayments contract's initial lastStateRoot (via the
+        # create_new_rollup.json aggchainParams.startingStateRoot below). This
+        # makes the contract's initial root == the node's block-0 state root by
+        # construction, so the first certificate's on-chain getAggchainHash
+        # matches the cert's aggchain_params and the cert can settle (D1b-fix2).
+        paychain_genesis_root = paychain_vkey.get_genesis_root(
+            plan,
+            args.get("paychain_node_image"),
+            paychain_launcher.genesis_alloc_flags(args),
+        )
     else:
         aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
+        # Only the payments flavor seeds a genesis state root; other flavors
+        # leave the (unused-by-them) startingStateRoot at the zero hash.
+        paychain_genesis_root = BYTES32_ZERO_HASH
         if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
             aggchain_vkey_selector = "0x00000000"
         else:
@@ -131,6 +147,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         "pp_vkey_selector": pp_vkey_selector,
         "aggchain_vkey_hash": aggchain_vkey_hash,
         "aggchain_vkey_selector": aggchain_vkey_selector,
+        "paychain_genesis_root": paychain_genesis_root,
         "program_vkey": program_vkey,
         "contracts_dir": constants.CONTRACTS_DIR,
         "keystores_dir": constants.KEYSTORES_DIR,
