@@ -94,17 +94,25 @@ rollup_exit_root() {
 # ---------------------------------------------------------------------------
 log "Waiting up to ${SETTLE_TIMEOUT}s for a settled certificate"
 ZERO="0x0000000000000000000000000000000000000000000000000000000000000000"
+# Capture the pre-settlement rollup exit root as a baseline: on a freshly
+# created AggchainPayments rollup this is already NON-ZERO, so "settled" means
+# the value CHANGED from this baseline (the pessimistic-proof verification path
+# updated it), not merely "non-zero".
+BASELINE_RER="$(rollup_exit_root || true)"
+echo "BASELINE rollup exit root = ${BASELINE_RER:-<unavailable>}"
 deadline=$(( $(date +%s) + SETTLE_TIMEOUT ))
 settled_log=""
 rer=""
 while (( $(date +%s) < deadline )); do
   logs="$(kurtosis service logs "$ENCLAVE" "$AGGKIT_SVC" 2>/dev/null)"
-  settled_log="$(echo "$logs" | grep -iE 'certificate.*settled|status.*Settled|InSettled' | tail -3)"
+  settled_log="$(echo "$logs" | grep -iE 'certificate.*settled|status.*Settled|new settled certificate' | tail -3)"
   rer="$(rollup_exit_root || true)"
-  if [[ -n "$settled_log" ]] || { [[ -n "$rer" && "$rer" != "$ZERO" ]]; }; then
+  rer_changed=""
+  [[ -n "$rer" && "$rer" != "$ZERO" && "$rer" != "$BASELINE_RER" ]] && rer_changed="yes"
+  if [[ -n "$settled_log" && -n "$rer_changed" ]] || [[ -n "$rer_changed" ]]; then
     log "SETTLED"
     echo "--- aggsender settlement log ---"; echo "$settled_log"
-    echo "--- L1 rollup exit root ---"; echo "${rer:-<unavailable>}"
+    echo "--- L1 rollup exit root: baseline -> current ---"; echo "${BASELINE_RER} -> ${rer}"
     echo "--- last settle tx in agglayer logs ---"
     kurtosis service logs "$ENCLAVE" agglayer 2>/dev/null | grep -iE 'settl|verifyPessimistic|onVerifyPessimistic' | tail -5
     exit 0
