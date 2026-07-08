@@ -416,7 +416,7 @@ create_agglayer_rollup() {
 
     cp "$input_dir"/deploy_parameters.json "$contracts_dir"/deployment/v2/deploy_parameters.json
     # shellcheck disable=SC1054,SC1072,SC1083
-    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+    {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
     cp "$input_dir"/create_new_rollup.json "$contracts_dir"/deployment/v2/create_rollup_parameters.json
     # shellcheck disable=SC1073,1009
     {{ else }}
@@ -438,7 +438,7 @@ create_agglayer_rollup() {
         # Foundry cache is corrupted/invalid at this point for some reason
         # Maybe the source image has cached older contract versions
         rm -fr out cache
-            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+            {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
             forge create \
                 --broadcast \
                 --json \
@@ -469,7 +469,7 @@ create_agglayer_rollup() {
             {{ end }}
         {{ else }}
         _echo_ts "Using L1 pre-deployed gas token: {{ .gas_token_address }}"
-            {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+            {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
             jq \
                 --arg c "{{ .gas_token_address }}" \
                 '.gasTokenAddress = $c' \
@@ -487,7 +487,7 @@ create_agglayer_rollup() {
 
     cp "$contracts_dir"/deployment/v2/genesis.json "$output_dir"/
 
-    {{ if eq .consensus_contract_type "ecdsa-multisig" }}
+    {{ if or (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
     # Set gasTokenAddress and sovereignWETHAddress to zero address if they have "<no value>"
     jq 'walk(if type == "object" then 
             with_entries(

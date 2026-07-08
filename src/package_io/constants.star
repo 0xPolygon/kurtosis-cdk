@@ -35,6 +35,7 @@ CONSENSUS_TYPE = struct(
     pessimistic="pessimistic",
     ecdsa_multisig="ecdsa-multisig",
     fep="fep",
+    payments="payments",
 )
 
 CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
@@ -43,21 +44,25 @@ CONSENSUS_TYPE_TO_CONTRACT_MAPPING = {
     CONSENSUS_TYPE.pessimistic: "PolygonPessimisticConsensus",
     CONSENSUS_TYPE.ecdsa_multisig: "AggchainECDSAMultisig",
     CONSENSUS_TYPE.fep: "AggchainFEP",
+    CONSENSUS_TYPE.payments: "AggchainPayments",
 }
 
 SEQUENCER_TYPE = struct(
     cdk_erigon="cdk-erigon",
     op_reth="op-reth",
+    paychain="paychain",
 )
 
 L2_SEQUENCER_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-sequencer",
     SEQUENCER_TYPE.op_reth: "op-el-1-op-reth-op-node",
+    SEQUENCER_TYPE.paychain: "paychain-node",
 }
 
 L2_RPC_MAPPING = {
     SEQUENCER_TYPE.cdk_erigon: "cdk-erigon-rpc",
     SEQUENCER_TYPE.op_reth: "op-el-2-op-reth-op-node",
+    SEQUENCER_TYPE.paychain: "paychain-node",
 }
 
 FORK_ID_TO_NAME = {
@@ -121,6 +126,8 @@ DEFAULT_IMAGES = {
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.16.12",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.3",
     "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.5.0-agglayer",
+    # Placeholder image ref. Real ref wired up in a follow-up step (D1b).
+    "paychain_node_image": "paychain-node:local",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.8",
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",

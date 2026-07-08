@@ -17,6 +17,8 @@ L1URL = "{{.l1_rpc_url}}"
 L2URL = "{{.l2_rpc_url}}"
 {{- else if eq .sequencer_type "op-reth" }}
 L2URL = "{{.op_el_rpc_url}}"
+{{- else if eq .sequencer_type "paychain" }}
+L2URL = "{{.l2_rpc_url}}"
 {{- else}}
 L2URL = ""
 {{- end }}
@@ -29,9 +31,14 @@ AggLayerURL = "{{.agglayer_grpc_url}}"
 AggLayerURL = "{{.agglayer_readrpc_url}}"
 {{- end }}
 
+{{- if eq .sequencer_type "paychain" }}
+# paychain-node itself serves the AggchainProofService gRPC facade; no separate aggkit-prover.
+AggchainProofURL= "{{.l2_rpc_name}}{{.deployment_suffix}}:{{.paychain_grpc_port_number}}"
+{{- else }}
 AggchainProofURL= "{{.aggkit_prover_grpc_url_prefix}}{{.deployment_suffix}}:{{.aggkit_prover_grpc_port_number}}"
+{{- end }}
 
-{{- if or (eq .sequencer_type "op-reth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") }}
+{{- if or (eq .sequencer_type "op-reth") (eq .consensus_contract_type "pessimistic") (eq .consensus_contract_type "ecdsa-multisig") (eq .consensus_contract_type "payments") }}
 SequencerPrivateKeyPath = "/etc/aggkit/sequencer.keystore"
 SequencerPrivateKeyPassword  = "{{.l2_keystore_password}}"
 {{- else }}
@@ -94,6 +101,8 @@ polTokenAddress = "{{.pol_token_address}}"
 polygonZkEVMAddress = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 polygonZkEVMAddress = "{{.sovereign_rollup_addr}}"
+{{- else if eq .sequencer_type "paychain" }}
+polygonZkEVMAddress = "{{.rollup_address}}"
 {{- else }}
 polygonZkEVMAddress = ""
 {{- end }}
@@ -118,6 +127,9 @@ BridgeAddr = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootAddr = "{{.sovereign_ger_proxy_addr}}"
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else if eq .sequencer_type "paychain" }}
+GlobalExitRootAddr = "{{.l2_ger_address}}"
+BridgeAddr = "{{.l2_bridge_address}}"
 {{- else }}
 GlobalExitRootAddr = ""
 BridgeAddr = ""
@@ -409,6 +421,8 @@ EnableAggOracleCommittee = false
 GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
+{{- else if eq .sequencer_type "paychain" }}
+GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else }}
 GlobalExitRootL2 = ""
 {{- end }}
@@ -554,8 +568,19 @@ L1ChainID = "{{.l2_chain_id}}"
 BridgeAddr = "{{.l2_bridge_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+{{- else if eq .sequencer_type "paychain" }}
+BridgeAddr = "{{.l2_bridge_address}}"
 {{- else }}
 BridgeAddr = ""
+{{- end }}
+
+# ------------------------------------------------------------------------------
+# SyncFromInBridges gates whether bridgesync extracts tx-internal from-addresses
+# via debug_traceTransaction for Asset events. paychain-node does not implement
+# debug_traceTransaction, so this must be false for the paychain sequencer.
+# ------------------------------------------------------------------------------
+{{- if eq .sequencer_type "paychain" }}
+SyncFromInBridges = "false"
 {{- end }}
 
 # ------------------------------------------------------------------------------
@@ -659,6 +684,8 @@ BlockFinality = "LatestBlock"
 SovereignRollupAddr = "{{.rollup_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 SovereignRollupAddr = "{{.sovereign_rollup_addr}}"
+{{- else if eq .sequencer_type "paychain" }}
+SovereignRollupAddr = "{{.rollup_address}}"
 {{- else }}
 SovereignRollupAddr = ""
 {{- end }}
@@ -671,6 +698,8 @@ SovereignRollupAddr = ""
 GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else if eq .sequencer_type "op-reth" }}
 GlobalExitRootL2 = "{{.sovereign_ger_proxy_addr}}"
+{{- else if eq .sequencer_type "paychain" }}
+GlobalExitRootL2 = "{{.l2_ger_address}}"
 {{- else }}
 GlobalExitRootL2 = ""
 {{- end }}

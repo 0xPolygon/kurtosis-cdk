@@ -1,5 +1,6 @@
 aggchain_vkey = import_module("../vkey/aggchain.star")
 agglayer_vkey = import_module("../vkey/agglayer.star")
+paychain_vkey = import_module("../vkey/paychain.star")
 constants = import_module("../package_io/constants.star")
 contracts_util = import_module("./util.star")
 cdk_data_availability = import_module("../chain/cdk-erigon/cdk_data_availability.star")
@@ -81,11 +82,22 @@ def run(plan, args, deployment_stages, op_stack_args):
     )
 
     aggkit_prover_image = args.get("aggkit_prover_image")
-    aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
-    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
-        aggchain_vkey_selector = "0x00000000"
+    if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.payments:
+        # The paychain program vkey comes from paychain-node itself, not from
+        # aggkit-prover, and is registered as an owned vkey under the fixed
+        # selector 0x1000‖0001 (AGGLAYER_PAYMENTS_v2.md §8, v1 spec §7.4).
+        aggchain_vkey_hash = paychain_vkey.get_hash(
+            plan, args.get("paychain_node_image")
+        )
+        aggchain_vkey_selector = "0x10000001"
     else:
-        aggchain_vkey_selector = aggchain_vkey.get_selector(plan, aggkit_prover_image)
+        aggchain_vkey_hash = aggchain_vkey.get_hash(plan, aggkit_prover_image)
+        if args["consensus_contract_type"] == constants.CONSENSUS_TYPE.ecdsa_multisig:
+            aggchain_vkey_selector = "0x00000000"
+        else:
+            aggchain_vkey_selector = aggchain_vkey.get_selector(
+                plan, aggkit_prover_image
+            )
 
     # Set program vkey based on the consensus type.
     # For non pessimistic consensus types, we use the bytes32 zero hash.
@@ -95,6 +107,7 @@ def run(plan, args, deployment_stages, op_stack_args):
         constants.CONSENSUS_TYPE.rollup,
         constants.CONSENSUS_TYPE.cdk_validium,
         constants.CONSENSUS_TYPE.ecdsa_multisig,
+        constants.CONSENSUS_TYPE.payments,
     ]:
         program_vkey = BYTES32_ZERO_HASH
 

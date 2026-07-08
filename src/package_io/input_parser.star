@@ -229,6 +229,8 @@ DEFAULT_L2_ARGS = {
     "chain_name": "kurtosis",
     # Config name for OP stack rollup
     "sovereign_chain_name": "op-sovereign",
+    # Block sealing interval (seconds) for the paychain-node sequencer.
+    "paychain_block_time": 1,
 }
 
 DEFAULT_ROLLUP_ARGS = {
@@ -401,11 +403,13 @@ VALID_CONSENSUS_TYPES = [
     constants.CONSENSUS_TYPE.pessimistic,
     constants.CONSENSUS_TYPE.fep,
     constants.CONSENSUS_TYPE.ecdsa_multisig,
+    constants.CONSENSUS_TYPE.payments,
 ]
 
 VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.cdk_erigon,
     constants.SEQUENCER_TYPE.op_reth,
+    constants.SEQUENCER_TYPE.paychain,
 ]
 
 VALID_L1_ENGINES = [
@@ -584,6 +588,7 @@ def get_fork_id(consensus_contract_type, sequencer_type, zkevm_prover_image):
         in [
             constants.CONSENSUS_TYPE.ecdsa_multisig,
             constants.CONSENSUS_TYPE.fep,
+            constants.CONSENSUS_TYPE.payments,
         ]
         or sequencer_type == constants.SEQUENCER_TYPE.op_reth
     ):
@@ -817,6 +822,23 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         "l1_additional_services", []
     ):
         fail("Blockscout is only supported to target L2 network.")
+
+    # The payments consensus contract type and the paychain sequencer are a fixed pair:
+    # paychain-node is the only L2 service that speaks the AggchainPayments settlement flow.
+    if (
+        args["consensus_contract_type"] == constants.CONSENSUS_TYPE.payments
+        and args["sequencer_type"] != constants.SEQUENCER_TYPE.paychain
+    ):
+        fail(
+            "consensus_contract_type 'payments' requires sequencer_type 'paychain'"
+        )
+    if (
+        args["sequencer_type"] == constants.SEQUENCER_TYPE.paychain
+        and args["consensus_contract_type"] != constants.CONSENSUS_TYPE.payments
+    ):
+        fail(
+            "sequencer_type 'paychain' requires consensus_contract_type 'payments'"
+        )
 
 
 def validate_consensus_type(consensus_type):

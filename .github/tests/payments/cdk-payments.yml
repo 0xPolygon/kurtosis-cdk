@@ -1,0 +1,33 @@
+deployment_stages:
+  deploy_cdk_bridge_infra: true
+
+args:
+  consensus_contract_type: payments
+  sequencer_type: paychain
+
+  # Placeholder image refs. Real refs are wired up in a follow-up step (D1b).
+  paychain_node_image: paychain-node:local
+  agglayer_contracts_image: agglayer-contracts:local
+
+  # aggkit related params
+  aggkit_components: aggsender,aggoracle
+
+  # aggsender-validator related params (no aggsender-validator for paychain)
+  use_agg_sender_validator: false
+  agg_sender_multisig_threshold: 1
+  agg_sender_validator_total_number: 0
+
+  # agglayer related params
+  agglayer_prover_primary_prover: mock-prover
+  zkevm_use_real_verifier: false
+  sp1_prover_key: ""
+
+  # gas token
+  gas_token_enabled: false
+
+  additional_services:
+    - agglogger
+    - bridge_spammer
+    - test_runner
+    - agglayer_dashboard
+    - bridge_ui

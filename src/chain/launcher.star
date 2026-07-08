@@ -2,6 +2,7 @@ cdk_erigon_launcher = import_module("./cdk-erigon/launcher.star")
 constants = import_module("../package_io/constants.star")
 input_parser = import_module("../package_io/input_parser.star")
 op_reth_launcher = import_module("./op-reth/launcher.star")
+paychain_launcher = import_module("./paychain/launcher.star")
 zkevm_bridge_service = import_module("./shared/zkevm_bridge_service.star")
 
 
@@ -30,6 +31,15 @@ def launch(
             "deploy_cdk_bridge_infra", False
         )
         context = op_reth_launcher.launch(
+            plan,
+            args,
+            contract_setup_addresses,
+            sovereign_contract_setup_addresses,
+            deployment_stages,
+        )
+    elif sequencer_type == constants.SEQUENCER_TYPE.paychain:
+        plan.print("Deploying paychain-node chain")
+        context = paychain_launcher.launch(
             plan,
             args,
             contract_setup_addresses,
