@@ -56,6 +56,15 @@ def run(plan, args, contract_setup_addresses):
                 "L1_BRIDGE_ADDRESS": contract_setup_addresses.get("l1_bridge_address"),
                 "L2_BRIDGE_ADDRESS": contract_setup_addresses.get("l2_bridge_address"),
                 "L2_NETWORK_ID": str(args.get("l2_network_id")),
+                # Whether the spammer also bridges L2->L1 (withdraws). Default
+                # true (unchanged for existing flavors). The payments/paychain
+                # flavor sets bridge_spammer_l2_to_l1=false so it only deposits
+                # (L1->L2): withdrawing genesis-prefunded native that never
+                # entered via a claimed deposit underflows agglayer's PP local
+                # balance tree. See static_files/.../bridge-spammer/bridge.sh.
+                "BRIDGE_L2_TO_L1": "true"
+                if args.get("bridge_spammer_l2_to_l1", True)
+                else "false",
             },
             entrypoint=["bash", "-c"],
             cmd=["chmod +x {0}/{1} && {0}/{1}".format(SCRIPT_FOLDER_PATH, SCRIPT_NAME)],

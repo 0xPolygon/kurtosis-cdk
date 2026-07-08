@@ -330,6 +330,13 @@ DEFAULT_ADDITIONAL_SERVICES_PARAMS = {
     "blockscout_params": {
         "blockscout_public_port": DEFAULT_PORTS.get("blockscout_frontend_port"),
     },
+    # Whether the bridge_spammer additional service also bridges L2->L1
+    # (withdraws). Default True (unchanged for existing flavors). The
+    # payments/paychain flavor overrides this to False so the spammer only
+    # deposits (L1->L2) — withdrawing genesis-prefunded native that never
+    # entered via a claimed deposit underflows agglayer's pessimistic-proof
+    # local balance tree.
+    "bridge_spammer_l2_to_l1": True,
 }
 
 DEFAULT_ARGS = (
@@ -829,16 +836,12 @@ def args_sanity_check(plan, deployment_stages, args, user_args):
         args["consensus_contract_type"] == constants.CONSENSUS_TYPE.payments
         and args["sequencer_type"] != constants.SEQUENCER_TYPE.paychain
     ):
-        fail(
-            "consensus_contract_type 'payments' requires sequencer_type 'paychain'"
-        )
+        fail("consensus_contract_type 'payments' requires sequencer_type 'paychain'")
     if (
         args["sequencer_type"] == constants.SEQUENCER_TYPE.paychain
         and args["consensus_contract_type"] != constants.CONSENSUS_TYPE.payments
     ):
-        fail(
-            "sequencer_type 'paychain' requires consensus_contract_type 'payments'"
-        )
+        fail("sequencer_type 'paychain' requires consensus_contract_type 'payments'")
 
 
 def validate_consensus_type(consensus_type):

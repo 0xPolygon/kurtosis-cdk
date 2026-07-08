@@ -81,7 +81,23 @@ until [[ "$finalized_block_number" -gt "$current_block_number" ]]; do
   finalized_block_number="$(cast block-number --rpc-url "$L1_RPC_URL" finalized)"
 done
 
-# Start depositing on L2 and back to L1.
+# Whether to also bridge L2->L1 (withdraw). Default "true" preserves the
+# original behaviour for all existing flavors. The agglayer-payments (paychain)
+# flavor sets this to "false": agglayer's pessimistic proof enforces value
+# conservation, so a network cannot bridge OUT more native than has been
+# bridged IN and CLAIMED on it (credited to its local balance tree). The demo
+# does not autoclaim deposits on paychain, so any L2->L1 withdrawal of
+# genesis-`--alloc`-prefunded native has no matching imported bridge exit and
+# underflows the LBT (TypeConversionError(BalanceUnderflow)). The periodic
+# L1->L2 deposits below are still valuable: they keep the L1 GER advancing, so
+# the aggoracle keeps injecting GERs into paychain, which drives a steady,
+# small-range certificate cadence that settles cleanly. A proper
+# deposit->claim->(<=deposit) withdrawal path is exercised separately (see the
+# payments flavor's scripts/e1-withdraw.sh).
+BRIDGE_L2_TO_L1="${BRIDGE_L2_TO_L1:-true}"
+log_info "BRIDGE_L2_TO_L1: $BRIDGE_L2_TO_L1"
+
+# Start depositing on L2 and (optionally) back to L1.
 while true; do
   log_info "Bridging from L1 to L2"
   polycli ulxly bridge asset \
@@ -95,16 +111,18 @@ while true; do
     --chain-id "$L1_CHAIN_ID" \
     --pretty-logs=false
   sleep 60
-  log_info "Bridging from L2 to L1"
-  polycli ulxly bridge asset \
-    --value "$(date +%s)" \
-    --gas-limit "1250000" \
-    --bridge-address "$L2_BRIDGE_ADDRESS" \
-    --destination-address "$eth_address" \
-    --destination-network 0 \
-    --rpc-url "$L2_RPC_URL" \
-    --private-key "$PRIVATE_KEY" \
-    --chain-id "$L2_CHAIN_ID" \
-    --pretty-logs=false
-  sleep 1
+  if [[ "$BRIDGE_L2_TO_L1" == "true" ]]; then
+    log_info "Bridging from L2 to L1"
+    polycli ulxly bridge asset \
+      --value "$(date +%s)" \
+      --gas-limit "1250000" \
+      --bridge-address "$L2_BRIDGE_ADDRESS" \
+      --destination-address "$eth_address" \
+      --destination-network 0 \
+      --rpc-url "$L2_RPC_URL" \
+      --private-key "$PRIVATE_KEY" \
+      --chain-id "$L2_CHAIN_ID" \
+      --pretty-logs=false
+    sleep 1
+  fi
 done

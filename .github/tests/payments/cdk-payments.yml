@@ -28,6 +28,30 @@ args:
   # gas token
   gas_token_enabled: false
 
+  # D1b-fix3: the bridge_spammer runs in DEPOSIT-ONLY mode for paychain (see
+  # bridge_spammer_l2_to_l1 below). agglayer's pessimistic proof enforces value
+  # conservation — a network cannot bridge OUT more native than has been bridged
+  # IN and CLAIMED on it (its local balance tree only credits *claimed* imported
+  # bridge exits, never genesis balances). The old default (spammer also
+  # withdrawing L2->L1) bridged out genesis-`--alloc`-prefunded native that
+  # never entered via a claimed deposit, so the 5th certificate underflowed the
+  # LBT (TypeConversionError(BalanceUnderflow(TokenInfo{origin_network:0,
+  # origin_token:0x0}))) and the chain got stuck InError. Deposit-only keeps the
+  # L1 GER advancing so the aggoracle keeps injecting GERs into paychain, which
+  # drives a steady, small-range certificate cadence that settles cleanly (a
+  # heavy L2 tx flood, by contrast, produces block ranges too large for the mock
+  # aggchain prover in a single certificate). A deposit->(<=deposit)
+  # withdrawal->settle path (for E1) is exercised separately via
+  # scripts/e1-withdraw.sh, which deposits and CLAIMS on paychain first so the
+  # LBT is credited before the withdrawal.
+  #
+  # PRODUCTION MODEL (recorded, not a chain change): in production paychain has
+  # NO genesis balance — it holds only tokens deposited through agglayer and
+  # claimed on paychain (credited into the PP LBT). Genesis `--alloc` prefunding
+  # here is purely a DEMO convenience. Real value flows (withdrawals) must always
+  # be backed by prior deposits/claims.
+  bridge_spammer_l2_to_l1: false
+
   additional_services:
     - agglogger
     - bridge_spammer
