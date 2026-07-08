@@ -88,16 +88,26 @@ if [[ -z "$ROLLUP_MGR" ]]; then
 fi
 echo "L1_RPC=$L1_RPC  ROLLUP_MGR=$ROLLUP_MGR"
 
-# cast helper: prefer host cast, else the foundry container.
-cast_call() {
-  if command -v cast >/dev/null 2>&1; then cast "$@";
-  else docker run --rm --network host ghcr.io/foundry-rs/foundry:latest cast "$@"; fi
+# RPC reader via curl (raw eth_call). We deliberately avoid `cast` here: the
+# `kurtosis port print ... rpc` mapping is a schemeless host:port, and some cast
+# builds fail to connect to that loopback docker-proxy port ("Connection
+# refused") while curl connects fine; curl is also always present. Normalize the
+# endpoint to a full http:// URL.
+L1_URL="$L1_RPC"; [[ -n "$L1_URL" && "$L1_URL" != http* ]] && L1_URL="http://$L1_URL"
+
+# eth_call <to> <4byte-selector-or-calldata> -> 0x-prefixed return data (or empty)
+eth_call() {
+  local to="$1" data="$2"
+  [[ -n "$L1_URL" && -n "$to" ]] || return 1
+  curl -s -m 10 "$L1_URL" -H 'content-type: application/json' \
+    -d "{\"jsonrpc\":\"2.0\",\"method\":\"eth_call\",\"params\":[{\"to\":\"$to\",\"data\":\"$data\"},\"latest\"],\"id\":1}" \
+    2>/dev/null | grep -oE '"result":"0x[0-9a-fA-F]*"' | grep -oE '0x[0-9a-fA-F]+' | head -1
 }
 
 rollup_exit_root() {
-  # RollupManager.getRollupExitRoot() -> bytes32
-  [[ -n "$L1_RPC" && -n "$ROLLUP_MGR" ]] || return 1
-  cast_call call "$ROLLUP_MGR" 'getRollupExitRoot()(bytes32)' --rpc-url "$L1_RPC" 2>/dev/null
+  # RollupManager.getRollupExitRoot() -> bytes32. Selector keccak("getRollupExitRoot()")[:4]=0xa2967d99
+  [[ -n "$ROLLUP_MGR" ]] || return 1
+  eth_call "$ROLLUP_MGR" '0xa2967d99'
 }
 
 # ---------------------------------------------------------------------------
