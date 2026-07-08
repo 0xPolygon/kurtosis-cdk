@@ -5,7 +5,9 @@ inputs:
   kurtosis_version:
     description: The version of Kurtosis to install
     required: false
-    default: 1.15.2
+    # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks, so
+    # L2->L1 bridge claims never become ready; 1.18.2 syncs correctly. See test.yml for details.
+    default: 1.18.2
   docker_username:
     description: The username for Docker Hub
     required: false

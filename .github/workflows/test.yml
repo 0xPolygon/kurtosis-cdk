@@ -16,7 +16,10 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-  KURTOSIS_VERSION: 1.15.2
+  # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks (the
+  # syncer freezes at ~block 120 while the L2 chain keeps advancing), so the aggsender never
+  # certifies the L2->L1 deposit and the bridge claim never becomes ready. 1.18.2 syncs correctly.
+  KURTOSIS_VERSION: 1.18.2
 
 jobs:
   lint:
