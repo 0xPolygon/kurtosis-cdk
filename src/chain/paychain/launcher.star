@@ -19,18 +19,74 @@ def launch(
     """
     service_name = args["l2_rpc_name"] + args["deployment_suffix"]
 
+    # paychain-node computes the SP1 guest vkey (client.setup) at startup before
+    # it binds RPC/gRPC — ~45-60s. Give the RPC port a generous readiness wait so
+    # add_service blocks until the node is actually serving; otherwise downstream
+    # consumers (zkevm-bridge-service, aggkit) start first and crash on a refused
+    # connection to paychain-node:8545.
     ports = {
         ports_package.HTTP_RPC_PORT_ID: PortSpec(
             ports_package.HTTP_RPC_PORT_NUMBER,
             application_protocol="http",
-            wait=None,
+            wait="180s",
         ),
         ports_package.PAYCHAIN_GRPC_PORT_ID: PortSpec(
             ports_package.PAYCHAIN_GRPC_PORT_NUMBER,
             application_protocol="grpc",
-            wait=None,
+            wait="180s",
         ),
     }
+
+    # paychain-node CLI (see paychain-node/src/main.rs): flags are `--name value`
+    # (space-separated, not `--name=value`), the binary rejects unknown flags, and
+    # there are no gas-token flags. Facade/GER addresses come from the L1-side
+    # sovereign deploy (contract_setup_addresses); --ger-updater is the aggoracle
+    # EOA that is permitted to call insertGlobalExitRoot on the GER facade.
+    #
+    # Note on facades: v2 spec's illustrative fixed addresses (bridge
+    # 0x2a3D…2EDe, GER 0xa40D…b8fA) were standalone-genesis values; here the
+    # node is configured directly off the sovereign deploy's l2_bridge_address /
+    # l2_ger_address so the node facades, aggkit bridgesync, and the aggoracle
+    # target all agree on the same addresses.
+    seal_ms = int(args.get("paychain_block_time", 1) * 1000)
+    cmd = [
+        "--rpc",
+        "0.0.0.0:{}".format(ports_package.HTTP_RPC_PORT_NUMBER),
+        "--grpc",
+        "0.0.0.0:{}".format(ports_package.PAYCHAIN_GRPC_PORT_NUMBER),
+        "--data-dir",
+        "/data",
+        "--chain-id",
+        str(args["l2_chain_id"]),
+        "--network-id",
+        str(args["l2_network_id"]),
+        "--bridge",
+        contract_setup_addresses.get("l2_bridge_address", ""),
+        "--ger-manager",
+        contract_setup_addresses.get("l2_ger_address", ""),
+        "--ger-updater",
+        args["l2_aggoracle_address"],
+        "--seal-ms",
+        str(seal_ms),
+        "--prover-mode",
+        "mock",
+        "--metrics",
+        "0.0.0.0:9100",
+    ]
+
+    # Genesis-fund the L2 accounts the demo transacts with (admin, sequencer,
+    # aggoracle, sovereign admin, claim sponsor) so GER-injection, autoclaims,
+    # and the bridge spammer all have balance. 1e6 ether each.
+    genesis_balance = "1000000000000000000000000"
+    for addr in [
+        args.get("l2_admin_address"),
+        args.get("l2_sequencer_address"),
+        args.get("l2_aggoracle_address"),
+        args.get("l2_sovereignadmin_address"),
+        args.get("l2_claimsponsor_address"),
+    ]:
+        if addr:
+            cmd += ["--alloc", "{}:{}".format(addr, genesis_balance)]
 
     plan.add_service(
         name=service_name,
@@ -38,23 +94,16 @@ def launch(
             image=args["paychain_node_image"],
             ports=ports,
             entrypoint=["/usr/local/bin/paychain-node"],
-            cmd=[
-                "--rpc.addr=0.0.0.0:{}".format(ports_package.HTTP_RPC_PORT_NUMBER),
-                "--grpc.addr=0.0.0.0:{}".format(ports_package.PAYCHAIN_GRPC_PORT_NUMBER),
-                "--chain-id={}".format(args["l2_chain_id"]),
-                "--block-time={}s".format(args.get("paychain_block_time", 1)),
-                "--bridge-addr={}".format(
-                    contract_setup_addresses.get("l2_bridge_address", "")
+            cmd=cmd,
+            # info-level so the unknown-method / unknown-selector WARNs
+            # (target `paychain::rpc`) B4's compat discipline emits are visible
+            # in `kurtosis service logs` for the M2 triage.
+            env_vars={"RUST_LOG": "info"},
+            files={
+                "/data": Directory(
+                    persistent_key="paychain-data" + args["deployment_suffix"]
                 ),
-                "--ger-addr={}".format(
-                    contract_setup_addresses.get("l2_ger_address", "")
-                ),
-                "--ger-updater-addr={}".format(args["l2_aggoracle_address"]),
-                "--gas-token-enabled={}".format(args.get("gas_token_enabled", False)),
-                "--gas-token-address={}".format(
-                    args.get("gas_token_address", constants.ZERO_ADDRESS)
-                ),
-            ],
+            },
         ),
     )
 

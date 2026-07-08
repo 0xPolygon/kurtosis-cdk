@@ -673,7 +673,10 @@ create_agglayer_rollup() {
     _echo_ts "Transformation complete. Output written to dynamic-{{.chain_name}}-allocs.json"
     if [[ -e create_rollup_output.json ]]; then
         jq '{"root": .root, "timestamp": 0, "gasLimit": 0, "difficulty": 0}' "$output_dir"/genesis.json > "dynamic-{{.chain_name}}-conf.json"
-        batch_timestamp=$(jq '.firstBatchData.timestamp' combined.json)
+        # firstBatchData is only an object for cdk-erigon rollups; for sovereign
+        # rollups (op-reth, paychain) it is "" — default the batch timestamp to 0
+        # rather than crash on `.firstBatchData.timestamp` ("Cannot index string").
+        batch_timestamp=$(jq '(.firstBatchData | if type == "object" then .timestamp else 0 end) // 0' combined.json)
         jq --arg bt "$batch_timestamp" '.timestamp |= ($bt | tonumber)' "dynamic-{{.chain_name}}-conf.json" > tmp_output.json
         mv tmp_output.json "dynamic-{{.chain_name}}-conf.json"
     else

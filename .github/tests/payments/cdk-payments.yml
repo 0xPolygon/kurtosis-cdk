@@ -5,9 +5,12 @@ args:
   consensus_contract_type: payments
   sequencer_type: paychain
 
-  # Placeholder image refs. Real refs are wired up in a follow-up step (D1b).
+  # Real image refs (D1b). paychain_node_image is built from paychain/Dockerfile;
+  # agglayer_contracts_image is the hardhat tooling image built from the
+  # agglayer-contracts feat/aggchain-payments branch (Dockerfile.kurtosis),
+  # which adds AggchainPayments + the payments create-rollup path.
   paychain_node_image: paychain-node:local
-  agglayer_contracts_image: agglayer-contracts:local
+  agglayer_contracts_image: agglayer-contracts:payments-local
 
   # aggkit related params
   aggkit_components: aggsender,aggoracle
