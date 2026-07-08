@@ -690,8 +690,8 @@ def _extract_aggkit_version(aggkit_image):
     tag = aggkit_image.split(":")[-1]
 
     # Aggkit CI will use aggkit:local to test latest changes.
-    # Assume local is the latest version
-    if tag == "local":
+    # Assume any local build (e.g. aggkit:local, aggkit:autoclaim-local) is the latest version.
+    if "local" in tag:
         return 999.9
 
     # v0.5.0-beta1 -> v0.5.0

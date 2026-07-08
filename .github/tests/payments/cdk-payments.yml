@@ -13,7 +13,11 @@ args:
   agglayer_contracts_image: agglayer-contracts:payments-local
 
   # aggkit related params
-  aggkit_components: aggsender,aggoracle
+  # aggkit:autoclaim-local is built from agglayer/aggkit feat/autoclaim-l2-lx
+  # (docker build -t aggkit:autoclaim-local .); it is the only build carrying the
+  # `autoclaim` component, which auto-claims L1->paychain deposits on paychain.
+  aggkit_image: aggkit:autoclaim-local
+  aggkit_components: aggsender,aggoracle,autoclaim
 
   # aggsender-validator related params (no aggsender-validator for paychain)
   use_agg_sender_validator: false

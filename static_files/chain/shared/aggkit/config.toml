@@ -191,12 +191,27 @@ Port = "{{.cdk_node_rpc_port}}"
 # |_| \_\_____|____/ |_|
 #
 # ------------------------------------------------------------------------------
+{{- if eq .sequencer_type "paychain" }}
+# ------------------------------------------------------------------------------
+# The v0.10 aggkit build (feat/autoclaim-l2-lx, which carries the autoclaim
+# component) removed the deprecated [REST] section and rejects it as a fatal
+# "found deprecated fields" error. It is split into PublicREST (bridge REST +
+# autoclaim public API) and AdminREST (autoclaim admin API). See aggkit
+# test/e2e/envs/op-pp/config/001/aggkit-config.toml.
+# ------------------------------------------------------------------------------
+[PublicREST]
+Port = "{{.aggkit_node_rest_api_port}}"
+
+[AdminREST]
+Port = "5579"
+{{- else }}
 [REST]
 # ------------------------------------------------------------------------------
 # Port will configure the port that the REST API HTTP server will
 # listen on
 # ------------------------------------------------------------------------------
 Port = "{{.aggkit_node_rest_api_port}}"
+{{- end }}
 
 # ==============================================================================
 #     _    ____  ____ ____  _____ _   _ ____  _____ ____
@@ -774,4 +789,83 @@ Capacity = 100
 [Validator.AgglayerClient.GRPC]
 URL = "{{.agglayer_grpc_url}}"
 UseTLS = false
+
+# ==============================================================================
+#     _   _   _ _____ ___     ____ _        _    ___ __  __
+#    / \ | | | |_   _/ _ \   / ___| |      / \  |_ _|  \/  |
+#   / _ \| | | | | || | | | | |   | |     / _ \  | || |\/| |
+#  / ___ \ |_| | | || |_| | | |___| |___ / ___ \ | || |  | |
+# /_/   \_\___/  |_| \___/   \____|_____/_/   \_\___|_|  |_|
+#
+# Auto Claim automatically claims L1->paychain deposits on paychain (via the
+# sovereign bridge `claimAsset` facade), so a scripted L1 deposit is credited on
+# paychain with no manual claim step. Only active for the paychain sequencer,
+# and only runs when the `autoclaim` component is included in --components.
+# Modeled on aggkit/test/e2e/envs/op-pp/config/001/aggkit-config.toml.
+# ------------------------------------------------------------------------------
+{{- if eq .sequencer_type "paychain" }}
+[AutoClaim]
+DryRun = false
+StoragePath = "{{.zkevm_path_rw_data}}/autoclaim.sqlite"
+
+[AutoClaim.API]
+Enabled = false
+
+[AutoClaim.L1ToL2BridgeDetector]
+Enabled = true
+StartBlock = 0
+PollInterval = "2s"
+RetryAfterErrorPeriod = "1s"
+MaxRetryAttemptsAfterError = -1
+EtrogL1UpgradeBlock = 0
+
+[AutoClaim.L2ToLxBridgeDetector]
+Enabled = false
+
+# Claimer that submits claimAsset on paychain (destination network = paychain).
+[[AutoClaim.Claimers]]
+Enabled = true
+ID = "paychain-autoclaim"
+NetworkType = "EVM"
+NetworkID = {{.l2_network_id}}
+URLRPC = "{{.l2_rpc_url}}"
+BridgeAddr = "{{.l2_bridge_address}}"
+PolicyName = "allow-all"
+GasOffset = 100000
+WaitPeriod = "1s"
+RetryAfter = "1s"
+MaxRetries = 180
+
+[AutoClaim.Claimers.Policy]
+AllowMessageClaims = false
+AllowedOrigins = [0]
+AllowedTokens = []
+ManualFallback = false
+MaxGas = 500000
+
+[AutoClaim.Claimers.EthTxManager]
+FrequencyToMonitorTxs = "1s"
+WaitTxToBeMined = "2s"
+WaitReceiptMaxTime = "250ms"
+WaitReceiptCheckInterval = "1s"
+# The aggkit sequencer/claim key signs the paychain claim txs.
+PrivateKeys = [
+    {Method = "local", Path = "/etc/aggkit/sequencer.keystore", Password = "{{.l2_keystore_password}}"},
+]
+ForcedGas = 0
+GasPriceMarginFactor = 1
+MaxGasPriceLimit = 0
+StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-autoclaim.sqlite"
+ReadPendingL1Txs = false
+SafeStatusL1NumberOfBlocks = 0
+FinalizedStatusL1NumberOfBlocks = 0
+EstimateGasMaxRetries = 1
+
+[AutoClaim.Claimers.EthTxManager.Etherman]
+# Claim txs are sent to paychain, so the ethtxmanager L1ChainID is paychain's.
+URL = "{{.l2_rpc_url}}"
+MultiGasProvider = false
+L1ChainID = {{.l2_chain_id}}
+HTTPHeaders = {}
+{{- end }}
 
