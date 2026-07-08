@@ -72,8 +72,20 @@ log "Resolving L1 RPC + rollup manager"
 L1_RPC="$(kurtosis port print "$ENCLAVE" el-1-geth-lighthouse rpc 2>/dev/null \
        || kurtosis port print "$ENCLAVE" el-1-geth-teku rpc 2>/dev/null \
        || true)"
-COMBINED="$(kurtosis service exec "$ENCLAVE" "$CONTRACTS_SVC" 'cat /opt/zkevm/combined.json' 2>/dev/null | sed -n '/{/,/}/p')"
-ROLLUP_MGR="$(echo "$COMBINED" | grep -oE '"AgglayerManager"[^,]*' | grep -oE '0x[0-9a-fA-F]{40}' | head -1)"
+# combined.json is a flat JSON object printed verbatim by `kurtosis service exec`
+# (no wrapper/prefix). Do NOT range-filter with sed '/{/,/}/p': the file has
+# nested objects (e.g. pessimisticVKeyRouteALGateway {...}) and the first nested
+# '}' would truncate the stream *before* the manager address, yielding empty.
+# Read the whole object and grep the specific key. Prefer the canonical
+# polygonRollupManagerAddress; fall back to the AgglayerManager alias.
+addr_field() { grep -oE "\"$1\"[[:space:]]*:[[:space:]]*\"0x[0-9a-fA-F]{40}\"" | grep -oE '0x[0-9a-fA-F]{40}' | head -1; }
+COMBINED="$(kurtosis service exec "$ENCLAVE" "$CONTRACTS_SVC" 'cat /opt/zkevm/combined.json' 2>/dev/null)"
+ROLLUP_MGR="$(echo "$COMBINED" | addr_field 'polygonRollupManagerAddress')"
+[[ -z "$ROLLUP_MGR" ]] && ROLLUP_MGR="$(echo "$COMBINED" | addr_field 'AgglayerManager')"
+if [[ -z "$ROLLUP_MGR" ]]; then
+  fail "could not resolve ROLLUP_MGR from ${CONTRACTS_SVC}:/opt/zkevm/combined.json"
+  echo "$COMBINED" | head -40
+fi
 echo "L1_RPC=$L1_RPC  ROLLUP_MGR=$ROLLUP_MGR"
 
 # cast helper: prefer host cast, else the foundry container.
