@@ -3,5 +3,5 @@ args:
   consensus_contract_type: pessimistic # former sovereign consensus
   # aggkit 0.10.x requires an on-chain validator/multisig committee (it queries the signature
   # threshold) which the pessimistic consensus does not deploy, so cert submission reverts there.
-  # Pessimistic must stay on 0.5.4 (validated with agglayer 0.6.0-rc.4 + the default reth L1).
+  # Pessimistic must stay on 0.5.4 (validated with agglayer 0.6.0-rc.5 + the default reth L1).
   aggkit_image: ghcr.io/agglayer/aggkit:0.5.4

@@ -1,4 +1,4 @@
-# Test config: agglayer v0.6.0-rc.4 on a FEP (op-succinct / AggchainFEP) network, mock prover.
+# Test config: agglayer v0.6.0-rc.5 on a FEP (op-succinct / AggchainFEP) network, mock prover.
 #
 # Based on .github/tests/op-succinct/mock-prover.yml (the CI-verified fast FEP path). FEP adds
 # the op-succinct-proposer-001 and aggkit-prover-001 services and uses the default aggkit
@@ -13,7 +13,7 @@ deployment_stages:
 args:
   sequencer_type: op-reth
   consensus_contract_type: fep
-  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.4
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.5
   # true = mock/CPU prover (no real SP1 network key needed); false = network prover.
   op_succinct_mock: true
   # Enable the integration with the Agglayer.
