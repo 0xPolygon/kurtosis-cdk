@@ -70,7 +70,9 @@ class VersionMatrixExtractor:
             "agglayer_contracts_image": "agglayer-contracts",
             "cdk_erigon_image": "cdk-erigon",
             "cdk_node_image": "cdk-node",
+            "status_checker_image": "status-checker",
             "geth_image": "geth",
+            "reth_image": "reth",
             "lighthouse_image": "lighthouse",
             "op_batcher_image": "op-batcher",
             "op_contract_deployer_image": "op-deployer",
@@ -113,6 +115,7 @@ class VersionMatrixExtractor:
             "agglayer-contracts": "agglayer/agglayer-contracts",
             "cdk-erigon": "0xPolygon/cdk-erigon",
             "cdk-node": "0xPolygon/cdk",
+            "status-checker": "0xPolygon/status-checker",
             # legacy zkevm components
             "cdk-data-availability": "0xPolygon/cdk-data-availability",
             "zkevm-bridge-service": "0xPolygon/zkevm-bridge-service",
@@ -128,6 +131,7 @@ class VersionMatrixExtractor:
             "op-succinct-proposer": "agglayer/op-succinct",
             # ethereum components
             "geth": "ethereum/go-ethereum",
+            "reth": "paradigmxyz/reth",
             "lighthouse": "sigp/lighthouse",
         }
 
