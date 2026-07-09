@@ -1,0 +1,61 @@
+# Multi-L2 e2e — Network 3 (OPT-IN): op-succinct / FEP rollup.
+#
+# THIRD `kurtosis run` into the shared enclave, enabled only when the workflow_dispatch input
+# `num_chains == 3`. This is the heaviest / most experimental network: FEP consensus with the
+# op-succinct proposer + (mock) SP1 prover. It attaches to the network-1 L1 + agglayer.
+#
+# Best-effort: FEP L2->L1 claims need continuous L1 GlobalExitRoot activity within the claim
+# window (see the run-with-op-succinct notes in test.yml) — network-1's bridge-spammer provides
+# that. Mirrors the CI-proven single-network config .github/tests/op-succinct/mock-prover.yml plus
+# the attach settings (distinct suffix / ids / accounts).
+#
+# Role accounts below are derived, matching the repo convention, via
+#   polycli wallet inspect --mnemonic "<network-3 mnemonic>" --addresses 7
+# (admin is intentionally left as the shared default).
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: true
+
+args:
+  deployment_suffix: "-003"
+  l2_network_id: 3
+  l2_chain_id: 30303
+
+  sequencer_type: op-reth
+  consensus_contract_type: fep
+  # Mock SP1 prover (real verifier contract is still deployed); integrate FEP with the agglayer.
+  op_succinct_mock: true
+  op_succinct_agglayer: true
+  op_succinct_agg_proof_mode: compressed
+  op_succinct_submission_interval: "1"
+  op_succinct_max_concurrent_proof_requests: "8"
+  op_succinct_max_concurrent_witness_gen: "8"
+  op_succinct_range_proof_interval: "60"
+
+  gas_token_enabled: false
+  additional_services: []
+
+  # Distinct role accounts for rollup-003 (admin stays default/shared).
+  l2_sequencer_address: "0x9a721B51821E01544cEFEA36507dE495854E44e9"
+  l2_sequencer_private_key: "0x22808459345f6ad97422f4ee6e929be56f4d9b277e136b8dc9f046c9c927a58d"
+  l2_aggregator_address: "0x2576AfDc1470A291A8Ce44f94A4a6f7f5CB6cf12"
+  l2_aggregator_private_key: "0x08270cc33609598702b5f0df97c8f374e023b2e027cd0d9246c2fede57da659b"
+  l2_dac_address: "0xaE870A4340da1a3CDbc3abB4f571932911fE495a"
+  l2_dac_private_key: "0x4a6dac6aaec8195f854a29973829d0f3a0ee81d7554fac0e7279a851c7e721d3"
+  l2_aggoracle_address: "0xb59a37D46746296dd41e3d4B8cfA686bDDEbb04d"
+  l2_aggoracle_private_key: "0x28d74978b64ec507e9a4dd49b22e6ca813585850e45b7f6ec8123f30481856e2"
+  l2_sovereignadmin_address: "0xaDe26b74505D1Dd9BaAdb567f38e6F8c5aF7c44c"
+  l2_sovereignadmin_private_key: "0xdd84669fff17d7ff91f6322a864ac9ecae065164b84e72d210e6c0bfb146a393"
+  l2_claimsponsor_address: "0x01C6a0CfEA4d725a0186F0D64AE530622C282d74"
+  l2_claimsponsor_private_key: "0x776fdccad5f84e46ce1fa0f832b2b24440423d5f3f1a79d2ffaee02b922ab57e"
+
+optimism_package:
+  predeployed_contracts: true
+  chains:
+    "003":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: 30303
+        seconds_per_slot: 1

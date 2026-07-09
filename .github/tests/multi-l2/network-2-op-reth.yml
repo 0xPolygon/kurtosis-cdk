@@ -1,0 +1,70 @@
+# Multi-L2 e2e — Network 2: cdk-op-reth sovereign rollup (ecdsa-multisig).
+#
+# SECOND `kurtosis run` into the shared enclave. Attaches to the L1 + agglayer deployed by
+# network-1 (deploy_l1 / deploy_agglayer: false). A distinct deployment_suffix / l2_network_id /
+# l2_chain_id and a distinct set of L2 role accounts keep everything from colliding with
+# rollup-001. Chosen as an op-reth stack (vs network-1's cdk-erigon) to maximize sequencer-type
+# coverage in a single enclave.
+#
+# Mirrors the CI-proven single-network config .github/tests/op-reth/sovereign-ecdsa-multisig.yml.
+# additional_services is emptied to keep the multi-stack enclave light; the reused
+# agglayer/e2e bats (tests/aggkit/bridge-e2e-2-chains.bats) drive the L2<->L2 bridging and register
+# this rollup with the shared agglayer during setup.
+#
+# Role accounts below are derived, matching the repo convention, via
+#   polycli wallet inspect --mnemonic "<network-2 mnemonic>" --addresses 7
+# (admin is intentionally left as the shared default — the RollupManager admin is a single entity
+# across all rollups; only the per-rollup roles are overridden).
+deployment_stages:
+  deploy_l1: false
+  deploy_agglayer: false
+  deploy_op_succinct: false
+
+args:
+  deployment_suffix: "-002"
+  l2_network_id: 2
+  l2_chain_id: 20202
+
+  sequencer_type: op-reth
+  consensus_contract_type: ecdsa-multisig # sovereign consensus (agglayer 0.6.0 path)
+  # op-reth sovereign relies on aggoracle to inject L1 GlobalExitRoots into the L2 GER contract
+  # (unlike cdk-erigon, which self-injects). Without aggoracle, claims *into* this rollup can never
+  # find the injected L1 info leaf, its Local Balance Tree stays empty, and its certificate never
+  # settles. Matches the default and the .github/tests/op-reth/sovereign-ecdsa-multisig.yml baseline.
+  aggkit_components: aggsender,aggoracle
+
+  # aggsender-validator related params (match the op-reth ecdsa-multisig baseline)
+  use_agg_sender_validator: true
+  agg_sender_validator_total_number: 1
+  agg_sender_multisig_threshold: 1
+
+  # agglayer / prover related params
+  agglayer_prover_primary_prover: mock-prover
+  zkevm_use_real_verifier: false
+  sp1_prover_key: ""
+
+  gas_token_enabled: false
+  additional_services: []
+
+  # Distinct role accounts for rollup-002 (admin stays default/shared).
+  l2_sequencer_address: "0x1c76182A97e5F8A8B3E838C9640a4F6EC430da04"
+  l2_sequencer_private_key: "0x61c880b9bd6d169b0114d718f08569401cabb6b374f681a3e67b2d411d4e20a6"
+  l2_aggregator_address: "0x359d3B66eA1664B0a61c06f17042c1f0F5D818cf"
+  l2_aggregator_private_key: "0x45c3839204cf818df5eca13b975abc635716ee7b5291239fd23fb303852bc37a"
+  l2_dac_address: "0x29DDC366b199f8a43D5c7Db47Bb334143C8e77e2"
+  l2_dac_private_key: "0xb2f4945e0bf906e965091ffc247329d98d39a0f38512ee3d14b49f0b39668747"
+  l2_aggoracle_address: "0x56a4bCaDF93e6eeeb239fBe6E270f2AD7272fc3b"
+  l2_aggoracle_private_key: "0xc8b9367f836e53345ab78e9b4d84b0331ee08ce13caf9db19b56fc266f8d9fb0"
+  l2_sovereignadmin_address: "0xF17820AA0E217CAf46b9e69141BAe25D85943F64"
+  l2_sovereignadmin_private_key: "0xcf94ba067cfb761f68139dc13a4da2326ee2d4902c98da1d5312dac805edfd28"
+  l2_claimsponsor_address: "0x1756C1D970501216A3D53fD578E43385C482F1b9"
+  l2_claimsponsor_private_key: "0xa88cf1a4bc72b0087c08c83dbe2e4c8fd94c74d400a3412040bf550d9bd3a2f8"
+
+optimism_package:
+  chains:
+    "002":
+      proposer_params:
+        enabled: false
+      network_params:
+        network_id: 20202
+        seconds_per_slot: 1

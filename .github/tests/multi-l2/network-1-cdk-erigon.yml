@@ -1,0 +1,37 @@
+# Multi-L2 e2e — Network 1: cdk-erigon sovereign rollup (ecdsa-multisig).
+#
+# This is the FIRST `kurtosis run` into the shared enclave for the nightly `run-with-multi-l2`
+# job: it deploys the L1, the agglayer stack, and rollup-001. Networks 2/3 attach to THIS L1 +
+# agglayer (they set deploy_l1 / deploy_agglayer: false).
+#
+# Mirrors the CI-proven single-network config .github/tests/cdk-erigon/sovereign-ecdsa-multisig.yml.
+# Uses the default accounts and the default rollup id / chain id (l2_network_id 1,
+# l2_chain_id 2151908). Mock prover + native gas token keep the (already heavy) multi-stack
+# enclave within CI resource limits. additional_services is left at the package default so the
+# bridge-spammer keeps L1<->L2 / GER activity flowing while the reused agglayer/e2e bats drive the
+# actual L2<->L2 bridging.
+deployment_stages:
+  deploy_l2_contracts: true
+  deploy_cdk_bridge_infra: true
+
+args:
+  consensus_contract_type: ecdsa-multisig # sovereign consensus (agglayer 0.6.0 path)
+  aggkit_components: aggsender
+
+  # aggsender-validator related params
+  use_agg_sender_validator: false
+  agg_sender_validator_total_number: 0
+  agg_sender_multisig_threshold: 1
+
+  # agglayer / prover related params
+  agglayer_prover_primary_prover: mock-prover
+  zkevm_use_real_verifier: false
+  sp1_prover_key: ""
+
+  # cdk-erigon related params
+  sequencer_type: cdk-erigon
+  # Sovereign-capable cdk-erigon image (see constants.star cdk_erigon_sovereign_image).
+  cdk_erigon_image: ghcr.io/0xpolygon/cdk-erigon:v2.65.0-RC3
+  enable_normalcy: true
+  erigon_strict_mode: false
+  gas_token_enabled: false
