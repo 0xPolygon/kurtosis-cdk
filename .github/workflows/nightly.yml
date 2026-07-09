@@ -556,30 +556,23 @@ jobs:
       # L1<->L2 bridging for EACH rollup, using the repo's canonical native-safe bridge tests run in
       # that rollup's in-enclave test-runner-00X (the same mechanism as ./.github/actions/bridge-tests,
       # extended per rollup). These tests guard the WETH lookup behind a native-gas-token check, so
-      # they work on our native rollups. The bridge-spammer is deliberately left running so L1
-      # GlobalExitRoot activity keeps flowing (attached rollups' certs depend on L1 epochs advancing).
+      # they work on our native rollups.
       - name: Run L1<->L2 bridge tests (per rollup)
         run: |
           set -eo pipefail
-          # These tests read depositCount() then claim that exact --deposit-count, so a concurrent
-          # bridge-spammer deposit on the shared L1 bridge (or rollup-001's L2 bridge) can race the
-          # index — which is why the canonical ./.github/actions/bridge-tests stops the spammer.
-          #
-          # EXCEPTION: when the op-succinct/FEP rollup-003 is present (num_chains=3), its L2->L1 claim
-          # needs L1 GlobalExitRoot activity to keep flowing throughout the claim wait. The FEP
-          # proposer can only prove up to the L2 safe head derived from the finalized L1-info-tree
-          # leaf, and that leaf only advances while the GER is updated on L1; freezing the spammer
-          # strands the aggchain proof and the claim times out ("the deposit seems to be stuck").
-          # So we keep the spammer running in that case, exactly like the run-with-op-succinct job,
-          # accepting the same small depositCount race it accepts. For the PP-only 2-chain path we
-          # stop it (no FEP dependency; both PP rollups settle L2->L1 from epoch progression alone,
-          # which is time/block-based) and restart it afterwards for the L2<->L2 + settlement steps.
-          keep_spammer_running=false
-          [[ "${NUM_CHAINS}" == "3" ]] && keep_spammer_running=true
-
-          if [[ "${keep_spammer_running}" == "false" ]]; then
-            kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          fi
+          # Stop the bridge-spammer for the duration of the bridge tests, exactly like the canonical
+          # ./.github/actions/bridge-tests and the single-network run-with-op-succinct job. Two reasons:
+          #   1. Correctness: these tests read depositCount() then claim that exact --deposit-count, so a
+          #      concurrent bridge-spammer deposit on the shared L1 bridge (or rollup-001's L2 bridge)
+          #      can race the index. This applies to every rollup, including the PP ones (001/002).
+          #   2. Throughput: on this shared multi-stack runner the op-succinct/FEP rollup-003 L2->L1
+          #      claim is gated on the aggkit-prover generating the aggchain proof for the certificate
+          #      carrying the L2 exit, whose witness generation (eth_getProof/eth_call against op-reth)
+          #      is the actual bottleneck; freeing the spammer's CPU/IO load helps that settle in time.
+          # The FEP claim does NOT need the spammer: L2 finality tracks L1 block production, and the L1
+          # GlobalExitRoot keeps advancing from the rollups' own certificate settlements (the PP rollups
+          # settle continuously) — so the aggchain proof is never "stranded" by stopping the spammer.
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
           suffixes="001 002"
           [[ "${NUM_CHAINS}" == "3" ]] && suffixes="001 002 003"
@@ -592,9 +585,8 @@ jobs:
             echo "::endgroup::"
           done
 
-          if [[ "${keep_spammer_running}" == "false" ]]; then
-            kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
-          fi
+          # Restart the spammer for the subsequent L2<->L2 + certificate-settlement steps.
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1

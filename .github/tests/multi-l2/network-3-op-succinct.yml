@@ -4,10 +4,14 @@
 # `num_chains == 3`. This is the heaviest / most experimental network: FEP consensus with the
 # op-succinct proposer + (mock) SP1 prover. It attaches to the network-1 L1 + agglayer.
 #
-# Best-effort: FEP L2->L1 claims need continuous L1 GlobalExitRoot activity within the claim
-# window (see the run-with-op-succinct notes in test.yml) — network-1's bridge-spammer provides
-# that. Mirrors the CI-proven single-network config .github/tests/op-succinct/mock-prover.yml plus
-# the attach settings (distinct suffix / ids / accounts).
+# Best-effort: this is the heaviest network, and its FEP L2->L1 claim is slow to settle on the
+# shared multi-stack runner. The claim only unblocks once the certificate carrying the L2 exit
+# settles, which is gated on the deposit's L2 block first becoming finalized+proven (L1 finalization
+# lag) and then the aggkit-prover generating that certificate's aggchain proof — the latter's witness
+# generation (eth_getProof/eth_call against the CPU/IO-contended op-reth) is the real bottleneck.
+# That is why test_runner_claim_wait_duration below is widened past the sequencer-rollup default.
+# Mirrors the CI-proven single-network config .github/tests/op-succinct/mock-prover.yml plus the
+# attach settings (distinct suffix / ids / accounts).
 #
 # Role accounts below are derived, matching the repo convention, via
 #   polycli wallet inspect --mnemonic "<network-3 mnemonic>" --addresses 7
@@ -38,6 +42,15 @@ args:
   # native-safe L1<->L2 bridge tests (tests/agglayer/bridges.bats) against this rollup.
   additional_services:
     - test_runner
+  # FEP L2->L1 claims settle much slower than the sequencer rollups (001/002): the claim only
+  # unblocks once the certificate carrying the L2 exit settles, which requires the deposit's L2
+  # block to first become finalized+proven (L1 finalization lag, ~9 min in CI) and then the
+  # aggkit-prover to generate that certificate's aggchain proof. On this shared multi-stack runner
+  # the aggchain-proof witness generation (eth_getProof/eth_call against the CPU/IO-contended
+  # op-reth node) is slow, so the whole path routinely needs ~25-30 min end-to-end. The 20m
+  # sequencer-rollup default times out ("the deposit seems to be stuck after 20m0s"); give the FEP
+  # rollup a wider window (the job's own timeout-minutes is 120, with ample headroom).
+  test_runner_claim_wait_duration: "45m"
 
   # Distinct role accounts for rollup-003 (admin stays default/shared).
   l2_sequencer_address: "0x9a721B51821E01544cEFEA36507dE495854E44e9"
