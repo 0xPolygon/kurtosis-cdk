@@ -51,7 +51,14 @@ def run(
                 "L2_RPC_URL": l2_rpc_url,
                 "L2_BRIDGE_ADDR": l2_bridge_address,
                 # Other parameters.
-                "CLAIM_WAIT_DURATION": "20m",  # default: 10m
+                # Max time the bridge bats wait for an L2->L1 claim to become ready. Configurable
+                # per rollup: the op-succinct/FEP path needs more than the sequencer-rollup default
+                # because its claim only unblocks once the certificate carrying the L2 exit settles
+                # (L1 finalization lag + aggkit-prover aggchain-proof generation), both of which are
+                # slow on a resource-constrained multi-stack CI runner.
+                "CLAIM_WAIT_DURATION": args.get(
+                    "test_runner_claim_wait_duration", "20m"
+                ),
                 "TX_RECEIPT_TIMEOUT_SECONDS": "900",  # default: 60
             },
             entrypoint=["bash", "-c"],
