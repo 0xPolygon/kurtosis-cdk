@@ -489,10 +489,12 @@ jobs:
   # Resource-intensive multi-L2 scenario: deploy 2-3 heterogeneous CDK networks that share a single
   # L1 + agglayer, then exercise bridging in both directions and assert every rollup's certificate
   # settles. This catches integration regressions that only surface with multiple rollups attached
-  # to the same agglayer (production-like), before testnet/prod. Coverage:
+  # to the same agglayer (production-like), before testnet/prod. Coverage (full bridge mesh):
   #   - L1<->L2 per rollup: the repo's canonical native-safe tests/agglayer/bridges.bats, run in each
-  #     rollup's in-enclave test-runner-00X.
-  #   - L2<->L2: the native-safe agglayer/e2e 'Transfer message L2 to L2' case (rollup-001<->002).
+  #     rollup's in-enclave test-runner-00X (both directions, L1->L2 and L2->L1, for every rollup).
+  #   - L2<->L2 all pairs: for every ordered pair of attached rollups (1<->2, and with num_chains=3
+  #     also 1<->3 and 2<->3, both directions) bridge a message src->dst and claim it on dst
+  #     (.github/tests/multi-l2/l2-to-l2-all-pairs.bats, reusing the agglayer/e2e helpers).
   # All rollups use native gas (gas_token_enabled: false), so we deliberately avoid the agglayer/e2e
   # bridge-e2e-3-chains cases: those query the L2 WETHToken(), which is the zero address on a
   # native-gas chain (no WETH wrapper is deployed), and so only apply to custom-gas-token rollups.
@@ -506,7 +508,10 @@ jobs:
   # attach an op-succinct/FEP rollup.
   run-with-multi-l2:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # Headroom for the full bridge mesh: with num_chains=3 the FEP rollup contributes both a slow
+    # L2->L1 claim (per-rollup step) and slow L2->L1-settled L2->L2 claims (all-pairs step), each
+    # gated on aggchain-proof settlement on a contended runner.
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 
@@ -627,7 +632,7 @@ jobs:
           kurtosis service exec ${{ env.ENCLAVE_NAME }} agglayer \
             'mkdir -p /etc/zkevm && printf "[full-node-rpcs]\n2 = \"stub\"\n3 = \"stub\"\n[proof-signers]\n" > /etc/zkevm/agglayer-config.toml'
 
-      - name: Run L2<->L2 bridge test
+      - name: Run L2<->L2 bridge tests (all pairs)
         run: |
           set -eo pipefail
           pushd agglayer-e2e || exit 1
@@ -650,14 +655,14 @@ jobs:
           export GAS_TOKEN_ADDRESS_ROLLUP_02=0x0000000000000000000000000000000000000000
           export GAS_TOKEN_ADDRESS_ROLLUP_03=0x0000000000000000000000000000000000000000
 
-          # Native-safe L2<->L2 case: bridges a message from rollup-001 to rollup-002 and claims it
-          # via process_bridge_claim (injected-leaf polling), settling implicitly. It uses only the
-          # native token (no WETHToken() lookup), unlike the bridge-e2e-3-chains cases. We do NOT run
-          # the sibling "Test L2 to L2 bridge" asset case: it calls
-          # wait_to_settle_certificate_containing_global_index, which needs the aggsender-find-imported-bridge
-          # host binary ($AGGSENDER_IMPORTED_BRIDGE_PATH, built from the aggkit repo and only provided
-          # by agglayer/e2e's own workflows).
-          bats --filter 'Transfer message L2 to L2' ./tests/aggkit/bridge-e2e-2-chains.bats
+          # Full-mesh native-safe L2<->L2 coverage: for every ordered pair of attached rollups
+          # (1<->2, and with num_chains=3 also 1<->3 and 2<->3, both directions) bridge a message
+          # src -> dst and claim it on dst via injected-leaf polling. The test lives in kurtosis-cdk
+          # and reuses the agglayer/e2e helpers via PROJECT_ROOT. Message bridging is native-safe (no
+          # WETHToken() lookup, unlike the bridge-e2e-3-chains asset cases) and needs neither a custom
+          # gas token nor the aggsender-find-imported-bridge host binary that the asset case's
+          # wait_to_settle_certificate_containing_global_index requires.
+          NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/l2-to-l2-all-pairs.bats"
 
       # Belt-and-suspenders: independently confirm every rollup has a SETTLED certificate on the
       # shared agglayer (the user's core requirement), on top of the bats claim assertions.
