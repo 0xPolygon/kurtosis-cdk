@@ -561,12 +561,26 @@ jobs:
       - name: Run L1<->L2 bridge tests (per rollup)
         run: |
           set -eo pipefail
-          # Stop the bridge-spammer for these tests, exactly like ./.github/actions/bridge-tests:
-          # they read depositCount() then claim that specific --deposit-count, so a concurrent spammer
-          # deposit on the shared L1 bridge (or rollup-001's L2 bridge) would race the index and make
-          # the claim assert against the wrong deposit. It is restarted right after so L1 GlobalExitRoot
-          # activity resumes for the L2<->L2 and certificate-settlement steps below.
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          # These tests read depositCount() then claim that exact --deposit-count, so a concurrent
+          # bridge-spammer deposit on the shared L1 bridge (or rollup-001's L2 bridge) can race the
+          # index — which is why the canonical ./.github/actions/bridge-tests stops the spammer.
+          #
+          # EXCEPTION: when the op-succinct/FEP rollup-003 is present (num_chains=3), its L2->L1 claim
+          # needs L1 GlobalExitRoot activity to keep flowing throughout the claim wait. The FEP
+          # proposer can only prove up to the L2 safe head derived from the finalized L1-info-tree
+          # leaf, and that leaf only advances while the GER is updated on L1; freezing the spammer
+          # strands the aggchain proof and the claim times out ("the deposit seems to be stuck").
+          # So we keep the spammer running in that case, exactly like the run-with-op-succinct job,
+          # accepting the same small depositCount race it accepts. For the PP-only 2-chain path we
+          # stop it (no FEP dependency; both PP rollups settle L2->L1 from epoch progression alone,
+          # which is time/block-based) and restart it afterwards for the L2<->L2 + settlement steps.
+          keep_spammer_running=false
+          [[ "${NUM_CHAINS}" == "3" ]] && keep_spammer_running=true
+
+          if [[ "${keep_spammer_running}" == "false" ]]; then
+            kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          fi
+
           suffixes="001 002"
           [[ "${NUM_CHAINS}" == "3" ]] && suffixes="001 002 003"
           for s in ${suffixes}; do
@@ -577,7 +591,10 @@ jobs:
               "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
             echo "::endgroup::"
           done
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+
+          if [[ "${keep_spammer_running}" == "false" ]]; then
+            kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          fi
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
