@@ -491,13 +491,15 @@ jobs:
   # rollup's certificate settles. This catches integration regressions that only surface with
   # multiple rollups attached to the same agglayer (production-like), before testnet/prod.
   #
-  # Runs on the 0xPolygon org's larger runner (2-3 full stacks won't fit the default ubuntu-latest).
-  # ubuntu-latest-8-cores is the same larger runner the sibling 0xPolygon/pos-e2e repo uses for its
-  # resource-intensive kurtosis devnets, so this repo has access to it. Default is 2 networks
+  # Runs on the same standard ubuntu-latest runner as every other job in this repo — kurtosis-cdk
+  # has no larger-runner labels available (ubuntu-latest-8-cores / -16-cores never get picked up).
+  # This is by far the heaviest job (2-3 full CDK stacks + shared L1 + agglayer), so it leans on the
+  # kurtosis-pre-run free-disk-space step, mock-prover, and trimmed additional_services to fit; if it
+  # OOMs or times out, cut back to 2 networks or drop more services. Default is 2 networks
   # (cdk-erigon + op-reth) for sequencer-type coverage; a manual run can set num_chains: 3 to also
   # attach an op-succinct/FEP rollup.
   run-with-multi-l2:
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
