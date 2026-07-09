@@ -34,7 +34,10 @@ args:
   op_succinct_range_proof_interval: "60"
 
   gas_token_enabled: false
-  additional_services: []
+  # test_runner provides the in-enclave test-runner-003 service, used to run the repo's canonical
+  # native-safe L1<->L2 bridge tests (tests/agglayer/bridges.bats) against this rollup.
+  additional_services:
+    - test_runner
 
   # Distinct role accounts for rollup-003 (admin stays default/shared).
   l2_sequencer_address: "0x9a721B51821E01544cEFEA36507dE495854E44e9"
