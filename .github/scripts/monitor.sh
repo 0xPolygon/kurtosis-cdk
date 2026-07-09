@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # This script monitors the progress of a blockchain rollup.
-# Usage: ./monitor.sh <enclave_name> <sequencer_type> <consensus_contract_type>
+# Usage: ./monitor.sh <enclave_name> <sequencer_type> <consensus_contract_type> [deployment_suffix]
 # Example: ./monitor.sh cdk op-reth ecdsa-multisig
+# Example: ./monitor.sh cdk op-reth ecdsa-multisig -002   # monitor a second (attached) rollup
 
 # Helper function to get the current timestamp
 _timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
@@ -47,14 +48,20 @@ if [[ -z "${consensus_contract_type}" ]]; then
 fi
 log_info "Using consensus contract type: ${consensus_contract_type}"
 
+# The deployment suffix identifies which rollup to monitor. Defaults to "-001" (the first/only
+# rollup), so existing single-network callers are unaffected; a multi-network job can pass "-002"
+# etc. to monitor an attached rollup.
+deployment_suffix=${4:-"-001"}
+log_info "Using deployment suffix: ${deployment_suffix}"
+
 # Determine the rpc service and url based on the sequencer type
 rpc_name=""
 case "${sequencer_type}" in
   "cdk-erigon")
-    rpc_name="cdk-erigon-rpc-001"
+    rpc_name="cdk-erigon-rpc${deployment_suffix}"
     ;;
   "op-reth")
-    rpc_name="op-el-1-op-reth-op-node-001"
+    rpc_name="op-el-1-op-reth-op-node${deployment_suffix}"
     ;;
   *)
     log_error "Unsupported sequencer type: ${sequencer_type}"
