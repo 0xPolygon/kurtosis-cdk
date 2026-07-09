@@ -487,9 +487,15 @@ jobs:
           args_filename: pre-deployed-gas-token
 
   # Resource-intensive multi-L2 scenario: deploy 2-3 heterogeneous CDK networks that share a single
-  # L1 + agglayer, then reuse the agglayer/e2e multi-chain bats to bridge L2<->L2 and assert every
-  # rollup's certificate settles. This catches integration regressions that only surface with
-  # multiple rollups attached to the same agglayer (production-like), before testnet/prod.
+  # L1 + agglayer, then exercise bridging in both directions and assert every rollup's certificate
+  # settles. This catches integration regressions that only surface with multiple rollups attached
+  # to the same agglayer (production-like), before testnet/prod. Coverage:
+  #   - L1<->L2 per rollup: the repo's canonical native-safe tests/agglayer/bridges.bats, run in each
+  #     rollup's in-enclave test-runner-00X.
+  #   - L2<->L2: the native-safe agglayer/e2e 'Transfer message L2 to L2' case (rollup-001<->002).
+  # All rollups use native gas (gas_token_enabled: false), so we deliberately avoid the agglayer/e2e
+  # bridge-e2e-3-chains cases: those query the L2 WETHToken(), which is the zero address on a
+  # native-gas chain (no WETH wrapper is deployed), and so only apply to custom-gas-token rollups.
   #
   # Runs on the same standard ubuntu-latest runner as every other job in this repo — kurtosis-cdk
   # has no larger-runner labels available (ubuntu-latest-8-cores / -16-cores never get picked up).
@@ -547,6 +553,32 @@ jobs:
         if: env.NUM_CHAINS == '3'
         run: ./.github/scripts/monitor.sh ${{ env.ENCLAVE_NAME }} op-reth fep -003
 
+      # L1<->L2 bridging for EACH rollup, using the repo's canonical native-safe bridge tests run in
+      # that rollup's in-enclave test-runner-00X (the same mechanism as ./.github/actions/bridge-tests,
+      # extended per rollup). These tests guard the WETH lookup behind a native-gas-token check, so
+      # they work on our native rollups. The bridge-spammer is deliberately left running so L1
+      # GlobalExitRoot activity keeps flowing (attached rollups' certs depend on L1 epochs advancing).
+      - name: Run L1<->L2 bridge tests (per rollup)
+        run: |
+          set -eo pipefail
+          # Stop the bridge-spammer for these tests, exactly like ./.github/actions/bridge-tests:
+          # they read depositCount() then claim that specific --deposit-count, so a concurrent spammer
+          # deposit on the shared L1 bridge (or rollup-001's L2 bridge) would race the index and make
+          # the claim assert against the wrong deposit. It is restarted right after so L1 GlobalExitRoot
+          # activity resumes for the L2<->L2 and certificate-settlement steps below.
+          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          suffixes="001 002"
+          [[ "${NUM_CHAINS}" == "3" ]] && suffixes="001 002 003"
+          for s in ${suffixes}; do
+            echo "::group::L1<->L2 bridge tests for rollup ${s}"
+            kurtosis service exec ${{ env.ENCLAVE_NAME }} "test-runner-${s}" \
+              "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+            kurtosis service exec ${{ env.ENCLAVE_NAME }} "test-runner-${s}" \
+              "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
+            echo "::endgroup::"
+          done
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
         with:
@@ -586,7 +618,7 @@ jobs:
           kurtosis service exec ${{ env.ENCLAVE_NAME }} agglayer \
             'mkdir -p /etc/zkevm && printf "[full-node-rpcs]\n2 = \"stub\"\n3 = \"stub\"\n[proof-signers]\n" > /etc/zkevm/agglayer-config.toml'
 
-      - name: Run multi-chain L2<->L2 bridge tests
+      - name: Run L2<->L2 bridge test
         run: |
           set -eo pipefail
           pushd agglayer-e2e || exit 1
@@ -603,23 +635,20 @@ jobs:
           # kurtosis-cdk deploys a separate contracts-00X service per rollup (each with its own
           # combined.json), whereas the multi-setup helper looks for combined-00X.json inside
           # contracts-001. All our networks use native gas (gas_token_enabled: false), so pin the
-          # per-rollup gas token to the zero address via env to skip that download entirely.
+          # per-rollup gas token to the zero address via env — the correct native value — to skip
+          # that download entirely.
           export GAS_TOKEN_ADDRESS_ROLLUP_01=0x0000000000000000000000000000000000000000
           export GAS_TOKEN_ADDRESS_ROLLUP_02=0x0000000000000000000000000000000000000000
           export GAS_TOKEN_ADDRESS_ROLLUP_03=0x0000000000000000000000000000000000000000
 
-          if [[ "${NUM_CHAINS}" == "3" ]]; then
-            # The custom-gas-token cases mint real ERC20 gas tokens on rollups 1/2, which aren't
-            # deployed here (all networks use native gas), so run only the native cross-rollup cases.
-            bats --filter 'native' ./tests/aggkit/bridge-e2e-3-chains.bats
-          else
-            # Run the message-bridge case: it exercises the L2<->L2 message bridge + claim via
-            # process_bridge_claim (injected-leaf polling) and settles implicitly. The sibling
-            # "Test L2 to L2 bridge" asset case instead calls wait_to_settle_certificate_containing_global_index,
-            # which needs the aggsender-find-imported-bridge host binary ($AGGSENDER_IMPORTED_BRIDGE_PATH,
-            # built from the aggkit repo and only provided by agglayer/e2e's own workflows) — so we skip it here.
-            bats --filter 'Transfer message L2 to L2' ./tests/aggkit/bridge-e2e-2-chains.bats
-          fi
+          # Native-safe L2<->L2 case: bridges a message from rollup-001 to rollup-002 and claims it
+          # via process_bridge_claim (injected-leaf polling), settling implicitly. It uses only the
+          # native token (no WETHToken() lookup), unlike the bridge-e2e-3-chains cases. We do NOT run
+          # the sibling "Test L2 to L2 bridge" asset case: it calls
+          # wait_to_settle_certificate_containing_global_index, which needs the aggsender-find-imported-bridge
+          # host binary ($AGGSENDER_IMPORTED_BRIDGE_PATH, built from the aggkit repo and only provided
+          # by agglayer/e2e's own workflows).
+          bats --filter 'Transfer message L2 to L2' ./tests/aggkit/bridge-e2e-2-chains.bats
 
       # Belt-and-suspenders: independently confirm every rollup has a SETTLED certificate on the
       # shared agglayer (the user's core requirement), on top of the bats claim assertions.
