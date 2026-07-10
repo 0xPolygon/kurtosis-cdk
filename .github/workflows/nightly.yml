@@ -565,18 +565,10 @@ jobs:
       - name: Run L1<->L2 bridge tests (per rollup)
         run: |
           set -eo pipefail
-          # Stop the bridge-spammer for the duration of the bridge tests, exactly like the canonical
-          # ./.github/actions/bridge-tests and the single-network run-with-op-succinct job. Two reasons:
-          #   1. Correctness: these tests read depositCount() then claim that exact --deposit-count, so a
-          #      concurrent bridge-spammer deposit on the shared L1 bridge (or rollup-001's L2 bridge)
-          #      can race the index. This applies to every rollup, including the PP ones (001/002).
-          #   2. Throughput: on this shared multi-stack runner the op-succinct/FEP rollup-003 L2->L1
-          #      claim is gated on the aggkit-prover generating the aggchain proof for the certificate
-          #      carrying the L2 exit, whose witness generation (eth_getProof/eth_call against op-reth)
-          #      is the actual bottleneck; freeing the spammer's CPU/IO load helps that settle in time.
-          # The FEP claim does NOT need the spammer: L2 finality tracks L1 block production, and the L1
-          # GlobalExitRoot keeps advancing from the rollups' own certificate settlements (the PP rollups
-          # settle continuously) — so the aggchain proof is never "stranded" by stopping the spammer.
+          # Stop the bridge-spammer while running the bridge tests, exactly like the canonical
+          # ./.github/actions/bridge-tests action. These tests read depositCount() and then claim that
+          # exact --deposit-count, so a concurrent spammer deposit on the shared L1 bridge (L1->L2
+          # direction) or on rollup-001's L2 bridge (L2->L1 direction) can race the index.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
 
           suffixes="001 002"
@@ -585,13 +577,38 @@ jobs:
             echo "::group::L1<->L2 bridge tests for rollup ${s}"
             kurtosis service exec ${{ env.ENCLAVE_NAME }} "test-runner-${s}" \
               "bats --filter 'bridge native ETH from L1 to L2' tests/agglayer/bridges.bats"
+
+            # The op-succinct/FEP rollup (003) is the exception for the L2->L1 direction: its claim only
+            # becomes ready once the certificate carrying the L2 exit settles, and that certificate's
+            # aggchain proof can only be produced while the L1 GlobalExitRoot keeps advancing. The
+            # op-succinct proposer aggregates range proofs only up to the L2 safe head derived from the
+            # latest *finalized* L1-info-tree leaf, and that leaf advances only when a new GER is added
+            # on L1. With no L1 GER activity the cap freezes at the last leaf: the proposer returns
+            # "Proposer service returned an error" for every aggchain-proof request past it and the
+            # claim times out ("the deposit seems to be stuck"). Once rollups 001/002 finish their
+            # tests they go quiet (empty certificates do not update the exit root, so they add no new
+            # L1-info-tree leaves), so nothing else keeps the GER moving. Restart the spammer for 003's
+            # L2->L1 wait: its L1->L2 leg adds a fresh L1-info-tree leaf roughly once a minute, keeping
+            # the cap advancing so the deposit's certificate can settle. This does NOT race the
+            # depositCount read — the L2->L1 test reads rollup-003's OWN L2 bridge count, while the
+            # spammer only touches rollup-001's L2 bridge and the shared L1 bridge. The PP rollups
+            # (001/002) don't need this: their pessimistic certificates settle from epoch progression
+            # alone, so they stay under the stopped-spammer window above.
+            #
+            # No `|| true` here (unlike the post-loop start): the spammer is definitely stopped at this
+            # point, so a failed start is a real problem and should fail the step loudly rather than let
+            # 003's L2->L1 run into a guaranteed cap-freeze timeout.
+            if [[ "${s}" == "003" ]]; then
+              kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+            fi
             kurtosis service exec ${{ env.ENCLAVE_NAME }} "test-runner-${s}" \
               "bats --filter 'bridge native ETH from L2 to L1' tests/agglayer/bridges.bats"
             echo "::endgroup::"
           done
 
-          # Restart the spammer for the subsequent L2<->L2 + certificate-settlement steps.
-          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          # Ensure the spammer is running for the subsequent L2<->L2 + certificate-settlement steps
+          # (already running when the FEP rollup was present; the guard makes this a no-op then).
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
 
       - name: Install bats
         uses: bats-core/bats-action@42fcc8700f773c075a16a90eb11674c0318ad507 # 3.0.1
