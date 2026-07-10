@@ -53,14 +53,18 @@ setup() {
 # but with larger retry budgets: a claim only becomes ready once the SOURCE
 # rollup's certificate carrying the exit settles on L1 (and the destination's
 # aggoracle injects the resulting GER). For the op-succinct/FEP rollup that
-# settlement is slow (~25 min on a contended CI runner), which exceeds
-# process_bridge_claim's fixed 50x25s (~20 min) per-step caps.
+# settlement is slow on a contended CI runner (finalization lag + aggchain-proof
+# witness gen, and it only progresses while the L1 GlobalExitRoot keeps advancing),
+# which exceeds process_bridge_claim's fixed 50x25s (~20 min) per-step caps. The
+# per-step retry budget is env-tunable (L2L2_CLAIM_MAX_ATTEMPTS / L2L2_CLAIM_POLL);
+# fast PP-source pairs exit their polls early, so a wide budget only extends the wait
+# for the actually-slow FEP-source (3->*) pairs.
 #   $1 ctx  $2 origin_net  $3 tx_hash  $4 dst_net  $5 bridge_addr
 #   $6 origin_bridge_url  $7 dst_bridge_url  $8 dst_rpc_url
 _claim_l2_to_l2() {
     local ctx="$1" origin_net="$2" tx="$3" dst_net="$4" bridge_addr="$5"
     local origin_url="$6" dst_url="$7" dst_rpc="$8"
-    local max_attempts=90 poll=20  # up to ~30 min per step, covers slow FEP settlement
+    local max_attempts="${L2L2_CLAIM_MAX_ATTEMPTS:-90}" poll="${L2L2_CLAIM_POLL:-20}"
     local bridge deposit_count l1_info_tree_index injected proof global_index
 
     bridge="$(get_bridge "$ctx" "$origin_net" "$tx" "$max_attempts" "$poll" "$origin_url")" || return 1
