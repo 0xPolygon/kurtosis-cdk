@@ -236,9 +236,9 @@ jobs:
 
   run-with-op-succinct:
     runs-on: ubuntu-latest
-    # FEP settlement is slow/resource-bound; the L2->L1 bridge claim waits up to 45m (on top of the
+    # FEP settlement is slow/resource-bound; the L2->L1 bridge claim waits up to 60m (on top of the
     # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -295,7 +295,7 @@ jobs:
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
           # FEP settlement is slow on a contended runner; give the claim a generous wall-clock wait.
-          export CLAIM_WAIT_DURATION="45m"
+          export CLAIM_WAIT_DURATION="60m"
 
           # Run op optimistic mode tests
           bats ./tests/op/optimistic-mode.bats || exit 1
@@ -519,7 +519,7 @@ jobs:
   run-with-multi-l2:
     runs-on: ubuntu-latest
     # Headroom for the full bridge mesh: with num_chains=3 the FEP rollup contributes both a slow
-    # L2->L1 claim (per-rollup step, up to ~45m) and slow L2->L1-settled L2->L2 claims (all-pairs
+    # L2->L1 claim (per-rollup step, up to ~60m) and slow L2->L1-settled L2->L2 claims (all-pairs
     # step, up to ~90m for the 3->* pairs), each gated on aggchain-proof settlement that is slow and
     # resource-bound on a contended runner. 240m covers deploy (~22m) + monitors + both slow FEP
     # waits with margin. (num_chains=3 is a manual workflow_dispatch run; the nightly default is 2.)

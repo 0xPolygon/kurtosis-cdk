@@ -53,8 +53,8 @@ args:
   # L2->L1 wait; see the "Run L1<->L2 bridge tests" step in nightly.yml), and (3) the aggkit-prover
   # to generate the certificate's aggchain proof (slow witness gen under multi-stack contention). The
   # 20m sequencer-rollup default times out ("the deposit seems to be stuck after 20m0s"); give the
-  # FEP rollup a wider window (the job's own timeout-minutes has ample headroom).
-  test_runner_claim_wait_duration: "45m"
+  # FEP rollup a generous window (the job's own timeout-minutes has ample headroom).
+  test_runner_claim_wait_duration: "60m"
 
   # Distinct role accounts for rollup-003 (admin stays default/shared).
   l2_sequencer_address: "0x9a721B51821E01544cEFEA36507dE495854E44e9"
