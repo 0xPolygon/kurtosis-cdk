@@ -636,19 +636,12 @@ jobs:
           # (tests/aggkit/bridge-e2e-{2,3}-chains.bats + the multi-setup helpers).
           ref: c63f991dbd77003cd3c28cb7142d15f066f55f18
 
-      # The agglayer/e2e add_network_to_agglayer helper still patches the legacy config path
-      # (/etc/zkevm/agglayer-config.toml); the current agglayer image reads /etc/agglayer/config.toml
-      # and, for ecdsa-multisig/pessimistic consensus, does not need a [full-node-rpcs] entry for
-      # certificate settlement (the aggsender pushes certs over gRPC). Seed a stub at the legacy path
-      # containing the attached-rollup entries so the helper's idempotency grep short-circuits (a
-      # no-op) instead of failing setup() on a missing file. If a network's cert never settles (the
-      # assertion below fails), real registration IS needed and the agglayer/e2e helper must be
-      # fixed to target /etc/agglayer/config.toml.
-      - name: Stub legacy agglayer config path for the e2e helper
-        run: |
-          kurtosis service exec ${{ env.ENCLAVE_NAME }} agglayer \
-            'mkdir -p /etc/zkevm && printf "[full-node-rpcs]\n2 = \"stub\"\n3 = \"stub\"\n[proof-signers]\n" > /etc/zkevm/agglayer-config.toml'
-
+      # NOTE: no agglayer-registration step here. The l2-to-l2-all-pairs.bats setup intentionally
+      # does not call the e2e add_network_to_agglayer helper: the attached rollups are already
+      # registered at deploy time, and our pessimistic/FEP aggsenders push certificates to agglayer
+      # over gRPC (no [full-node-rpcs] entry needed to settle). The helper would otherwise restart
+      # agglayer (kurtosis service stop/start) on the settlement critical path, which intermittently
+      # fails with a container-name conflict and aborts the test. See the note in the bats setup().
       - name: Run L2<->L2 bridge tests (all pairs)
         run: |
           set -eo pipefail

@@ -35,13 +35,18 @@ setup() {
 
     _agglayer_cdk_common_multi_setup "${NUM_CHAINS:-2}"
 
-    # Register the attached rollups with agglayer (idempotent; the workflow seeds a
-    # stub legacy config so this short-circuits to a no-op — the networks are
-    # already registered at deploy time).
-    add_network_to_agglayer 2 "$l2_rpc_url_2"
-    if [[ "${NUM_CHAINS:-2}" -eq 3 ]]; then
-        add_network_to_agglayer 3 "$l2_rpc_url_3"
-    fi
+    # NOTE: we deliberately do NOT call add_network_to_agglayer here. The attached
+    # rollups are already registered with agglayer at deploy time, and for the
+    # pessimistic/ecdsa-multisig and FEP consensus we run, the aggsender pushes
+    # certificates to agglayer over gRPC — agglayer needs no [full-node-rpcs] entry
+    # to settle them (confirmed: certs settle and every L2<->L2 claim below succeeds
+    # without it). The e2e helper only patches the LEGACY config path
+    # (/etc/zkevm/agglayer-config.toml, not the image's /etc/agglayer/config.toml),
+    # and whenever its idempotency grep does not short-circuit it runs
+    # `kurtosis service stop/start agglayer` — a needless restart on the settlement
+    # critical path that intermittently fails ("container name already in use") and
+    # aborts setup. Since the registration is a genuine no-op for us, we skip the
+    # call entirely rather than paper over it with a seeded stub file.
 }
 
 # Claim an L2->L2 bridge on the destination rollup. Mirrors process_bridge_claim
