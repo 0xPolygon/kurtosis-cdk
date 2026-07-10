@@ -236,7 +236,9 @@ jobs:
 
   run-with-op-succinct:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # FEP settlement is slow/resource-bound; the L2->L1 bridge claim waits up to 45m (on top of the
+    # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -292,14 +294,22 @@ jobs:
           export BATS_LIB_PATH="$PWD/core/helpers/lib"
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          export CLAIM_WAIT_DURATION="20m"
+          # FEP settlement is slow on a contended runner; give the claim a generous wall-clock wait.
+          export CLAIM_WAIT_DURATION="45m"
 
           # Run op optimistic mode tests
           bats ./tests/op/optimistic-mode.bats || exit 1
 
-          # Run bridge tests
+          # Run bridge tests. Stop the spammer for the L1->L2 direction (its L1-bridge deposits would
+          # race the shared-L1-bridge depositCount() the test pre-reads), but KEEP it running for the
+          # L2->L1 direction. The FEP L2->L1 claim only settles while the L1 GlobalExitRoot keeps
+          # advancing (the op-succinct proposer's aggregation cap = L2 safe head at the latest
+          # finalized L1-info-tree leaf); with no PP rollups in this single-network job, the spammer's
+          # L1->L2 leg is the ONLY thing that advances it. Stopping it freezes the cap and the claim
+          # times out ("deposit stuck") — the same cap-freeze fixed in the multi-l2 job and test.yml.
           kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001
           bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
 
       - name: Post kurtosis run
@@ -510,9 +520,10 @@ jobs:
     runs-on: ubuntu-latest
     # Headroom for the full bridge mesh: with num_chains=3 the FEP rollup contributes both a slow
     # L2->L1 claim (per-rollup step, up to ~45m) and slow L2->L1-settled L2->L2 claims (all-pairs
-    # step, up to ~50m for the 3->* pairs), each gated on aggchain-proof settlement on a contended
-    # runner. 180m keeps comfortable margin over deploy (~22m) + monitors + both slow FEP waits.
-    timeout-minutes: 180
+    # step, up to ~90m for the 3->* pairs), each gated on aggchain-proof settlement that is slow and
+    # resource-bound on a contended runner. 240m covers deploy (~22m) + monitors + both slow FEP
+    # waits with margin. (num_chains=3 is a manual workflow_dispatch run; the nightly default is 2.)
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
 
@@ -671,12 +682,13 @@ jobs:
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
           export CLAIM_WAIT_DURATION="20m"
 
-          # FEP source-certificate settlement is slow on the contended multi-stack runner, so give
-          # _claim_l2_to_l2's per-step polling a wide budget. Fast PP-source pairs (1->*, 2->*) exit
-          # their polls as soon as the index/proof is available, so this only extends the wait for the
-          # 3->* pairs. 150 x 20s = ~50 min per step, well above the ~30 min that timed out, and the
-          # job timeout-minutes has room for it.
-          export L2L2_CLAIM_MAX_ATTEMPTS=150
+          # FEP source-certificate settlement is slow and resource-bound on the contended multi-stack
+          # runner (3 full stacks on one ubuntu-latest). Give _claim_l2_to_l2's per-step polling a
+          # generous wall-clock budget; fast PP-source pairs (1->*, 2->*) exit as soon as the
+          # index/proof is available, so this only extends the wait for the slow FEP-source (3->*)
+          # pairs. 90 min is well above the ~50 min that previously timed out; the job timeout-minutes
+          # below is sized to cover it.
+          export L2L2_CLAIM_TIMEOUT_MIN=90
           export L2L2_CLAIM_POLL=20
 
           # kurtosis-cdk deploys a separate contracts-00X service per rollup (each with its own

@@ -225,7 +225,9 @@ jobs:
   run-with-op-succinct:
     needs: [lint, unit]
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # FEP settlement is slow/resource-bound; the L2->L1 bridge claim waits up to 45m (on top of the
+    # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -281,7 +283,8 @@ jobs:
           export BATS_LIB_PATH="$PWD/core/helpers/lib"
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          export CLAIM_WAIT_DURATION="20m"
+          # FEP settlement is slow on a contended runner; give the claim a generous wall-clock wait.
+          export CLAIM_WAIT_DURATION="45m"
 
           # Run op optimistic mode tests
           bats ./tests/op/optimistic-mode.bats || exit 1
