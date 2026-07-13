@@ -742,11 +742,13 @@ jobs:
           done
 
       # Robustness coverage: shut the singleton agglayer node service down DURING live bridging (while
-      # certificates for the just-bridged exits are being generated/pushed), restart it, and prove the
-      # end-to-end flow survives — every bridge issued around the outage stays claimable on its
-      # destination and a NEW certificate settles after the restart. Runs LAST so this deliberate
-      # disruption never jeopardizes the healthy-path coverage above. The PP source (rollup-1 -> rollup-2)
-      # runs on every nightly; the FEP source (rollup-3 -> rollup-1) case is skipped unless num_chains=3.
+      # certificates for the just-bridged exits are being generated/communicated), restart it, and prove
+      # the flow survives. Runs LAST so this deliberate disruption never jeopardizes the healthy-path
+      # coverage above. The PP source (rollup-1 -> rollup-2) runs on every nightly and does the full
+      # end-to-end claim; the FEP source (rollup-3) case (num_chains=3 only) does a cheap communication-
+      # recovery check (asserts its known cert height advances after the restart) instead of the full
+      # cross-network claim, whose deposit-count lookup is slow and flaky under runner contention — FEP
+      # end-to-end claimability is already covered by the "Run L2<->L2 bridge tests (all pairs)" step.
       - name: Agglayer restart resilience (bridging during agglayer downtime)
         run: |
           set -eo pipefail
@@ -769,8 +771,10 @@ jobs:
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
           export CLAIM_WAIT_DURATION="20m"
-          # Generous per-step claim budget for the slow FEP-source recovery; PP-source claims exit early.
-          export L2L2_CLAIM_TIMEOUT_MIN=90
+          # Per-step claim budget. Only the PP source (1->2) does a full claim here and it settles
+          # fast, so a modest budget is plenty (the flaky slow FEP-source claim was dropped in favour
+          # of the cheap known-height communication-recovery check below).
+          export L2L2_CLAIM_TIMEOUT_MIN=30
           export L2L2_CLAIM_POLL=20
           # All networks use native gas (gas_token_enabled: false); pin the per-rollup gas token to the
           # zero address to skip the combined-00X.json lookup, exactly like the all-pairs step.
@@ -784,6 +788,10 @@ jobs:
           # outage open until it catches that, to cover the certificate-communication phase).
           export AGGLAYER_DOWNTIME_SEC=60
           export AGGLAYER_OUTAGE_BRIDGES=3
+          # FEP comm-recovery check budget: after the restart, wait up to this long for the FEP
+          # aggsender to re-communicate a cert to agglayer (its known cert height to advance). It is
+          # a single cheap RPC poll that exits as soon as the height moves.
+          export AGGLAYER_KNOWN_TIMEOUT_MIN=30
 
           NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/agglayer-restart-resilience.bats"
 
