@@ -779,7 +779,10 @@ jobs:
           export GAS_TOKEN_ADDRESS_ROLLUP_03=0x0000000000000000000000000000000000000000
 
           # Resilience knobs: agglayer downtime window and number of bridges issued during it.
-          export AGGLAYER_DOWNTIME_SEC=45
+          # 60s comfortably exceeds the ~30-40s gRPC dial timeout after which the aggsender's
+          # failure to communicate with the down agglayer surfaces in its log (the test holds the
+          # outage open until it catches that, to cover the certificate-communication phase).
+          export AGGLAYER_DOWNTIME_SEC=60
           export AGGLAYER_OUTAGE_BRIDGES=3
 
           NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/agglayer-restart-resilience.bats"

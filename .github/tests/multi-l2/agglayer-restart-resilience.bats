@@ -9,18 +9,24 @@
 # does not break certificate generation/settlement or the end-to-end bridge flow.
 #
 # For a source rollup S we:
-#   1. record S's baseline settled certificate height,
+#   1. record S's baseline settled AND known (communicated) certificate heights,
 #   2. bridge a message S -> D (starts cert generation for a fresh exit),
 #   3. stop the `agglayer` service (the outage begins),
 #   4. issue a burst of further bridges WHILE agglayer is down (their exits are
 #      created during the outage, so their cert generation/communication overlaps it),
+#   4b. hold the outage open until we CATCH the aggsender failing to COMMUNICATE a
+#      certificate to the down agglayer (proof the downtime overlapped the certificate-
+#      communication phase, not just idle time),
 #   5. explicitly assert settlement is impossible while agglayer is down (service
 #      STOPPED + settlement RPC unreachable),
 #   6. restart agglayer (stop-then-start to dodge the container-name flake) and wait
 #      until its read-rpc answers again,
-#   7. claim EVERY bridge (pre-outage + burst) on D and assert the 0xbeef payload, and
+#   7. claim EVERY bridge (pre-outage + burst) on D and assert the 0xbeef payload,
 #   8. assert S's settled certificate height advanced past the baseline (a new cert
-#      settled after the restart, covering the exits created during the outage).
+#      settled after the restart, covering the exits created during the outage), and
+#   9. assert S's known certificate height advanced past baseline too — since agglayer
+#      could not receive anything while down, this proves the certificate-communication
+#      path itself recovered (the aggsender re-communicated after the restart).
 #
 # It is intentionally self-contained (does NOT modify the CI-fragile
 # l2-to-l2-all-pairs.bats): the setup() and _claim_l2_to_l2 helper below are copied
@@ -74,6 +80,29 @@ _settled_height() {
         | jq -r '.height // empty' 2>/dev/null || true
 }
 
+# Latest KNOWN certificate height for a network id — the height of the most recent certificate
+# the aggsender has COMMUNICATED to agglayer (received but not necessarily settled yet). Used to
+# prove the certificate-communication path recovered after the outage, distinct from settlement.
+_known_height() {
+    local nid="$1" readrpc="$2"
+    cast rpc --rpc-url "$readrpc" interop_getLatestKnownCertificateHeader "$nid" 2>/dev/null \
+        | jq -r '.height // empty' 2>/dev/null || true
+}
+
+# Scan the source rollup's aggsender (aggkit-00X) log for evidence that a certificate
+# COMMUNICATION to the (currently down) agglayer failed — i.e. the outage overlapped the
+# certificate-communication phase, not just idle downtime. Echoes the matching line(s) (empty
+# if none matched). Best-effort: the wording is aggkit-version-sensitive, so callers must treat
+# an empty result as "not observed", not as a failure.
+_aggsender_comm_failure() {
+    local src="$1" svc
+    svc="$(printf 'aggkit-%03d' "$src")"
+    kurtosis service logs "$ENCLAVE_NAME" "$svc" --num 400 2>/dev/null \
+        | grep -Ei 'certificate|agglayer|aggsender' \
+        | grep -Ei 'connection refused|transport|unavailable|dial tcp|failed to send|error sending|cannot send|send.*fail|rpc error' \
+        | tail -n 3 || true
+}
+
 # True (exit 0) only when the enclave lists the service named EXACTLY "agglayer" as STOPPED.
 # Mirrors the STOPPED-detection in .github/actions/kurtosis-post-run (grep STOPPED then $2=Name).
 # Matching the Name column exactly avoids the "agglayer-dashboard" substring collision.
@@ -119,7 +148,10 @@ _run_resilience_case() {
     local src_net="${!src_net_var}" dst_net="${!dst_net_var}"
     local src_url="${!src_url_var}" dst_url="${!dst_url_var}"
 
-    local downtime="${AGGLAYER_DOWNTIME_SEC:-45}"
+    # The aggsender's failure to reach a DOWN agglayer surfaces as a gRPC dial timeout ~30-40s
+    # into an outage, so the window must comfortably exceed that to catch the communication
+    # failure (step 4b). 60s gives margin; PP settlement after restart is still fast.
+    local downtime="${AGGLAYER_DOWNTIME_SEC:-60}"
     local burst="${AGGLAYER_OUTAGE_BRIDGES:-3}"
     # bridge_message reads these from the caller's scope (dynamic scoping), exactly like
     # l2-to-l2-all-pairs.bats sets them before each call: a native zero-value message with a
@@ -129,12 +161,16 @@ _run_resilience_case() {
     local destination_net="$dst_net"
     local amount=0
 
-    # 1. Baseline: source rollup's current settled certificate height (-1 if none yet).
-    local readrpc h0
+    # 1. Baseline: source rollup's current settled AND known (communicated) cert heights (-1
+    #    if none yet). We assert both advance after the outage: settled proves settlement
+    #    recovered, known proves the certificate-COMMUNICATION path recovered.
+    local readrpc h0 k0
     readrpc="$(_agglayer_readrpc)"
     h0="$(_settled_height "$src_net" "$readrpc")"
     [[ -z "$h0" ]] && h0=-1
-    echo "=== [baseline] rollup ${src} net=${src_net} settled height=${h0}" >&3
+    k0="$(_known_height "$src_net" "$readrpc")"
+    [[ -z "$k0" ]] && k0=-1
+    echo "=== [baseline] rollup ${src} net=${src_net} settled height=${h0} known height=${k0}" >&3
 
     # 2. Pre-outage bridge — starts certificate generation for a fresh exit.
     local -a txs=()
@@ -150,21 +186,31 @@ _run_resilience_case() {
     run _agglayer_stopped
     assert_success
 
-    # 4. Bridge burst DURING the outage, spread across the downtime window, so these
-    #    exits' cert generation/communication is guaranteed to overlap the outage. Bridge
-    #    txs land on L2 fine — the L2 RPC is independent of agglayer.
-    local interval=$(( downtime / (burst + 1) ))
-    (( interval < 1 )) && interval=1
+    # 4. Bridge burst right after the outage starts (a few seconds apart) so several exits are
+    #    created WHILE agglayer is down; their certificates can only be communicated/settled
+    #    after the restart. Bridge txs land on L2 fine — the L2 RPC is independent of agglayer.
     local i
     for (( i = 1; i <= burst; i++ )); do
-        sleep "$interval"
         run bridge_message "$native_token_addr" "$src_rpc" "$l2_bridge_addr"
         assert_success
         txs+=("$output")
         echo "=== [bridge during-outage ${i}/${burst}] L2(${src})->L2(${dst}) tx=${output}" >&3
+        sleep 3
     done
-    # Pad out the remainder so the outage clearly spans a full generation/communication cycle.
-    sleep "$interval"
+
+    # 4b. Hold the outage open until we CATCH the aggsender failing to COMMUNICATE with the down
+    #     agglayer — proof the downtime overlapped the certificate-communication phase, not just
+    #     idle time. The aggsender's gRPC dial to agglayer times out ~30-40s into an outage, so
+    #     poll its log every 5s (up to the downtime window) for that transport/Unavailable
+    #     failure and break as soon as we see one. Best-effort: the wording is aggkit-version-
+    #     sensitive, so absence does not fail the test — the deterministic proof is the known +
+    #     settled height advance after recovery (steps 8-9).
+    local comm_evidence="" held=0
+    while (( held < downtime )); do
+        comm_evidence="$(_aggsender_comm_failure "$src")"
+        [[ -n "$comm_evidence" ]] && break
+        sleep 5; held=$(( held + 5 ))
+    done
 
     # 5. Explicitly assert settlement/communication is impossible while agglayer is down.
     run _agglayer_stopped
@@ -174,16 +220,11 @@ _run_resilience_case() {
     run cast rpc --rpc-url "$readrpc" interop_getLatestSettledCertificateHeader "$src_net"
     assert_failure
     echo "=== [outage] confirmed agglayer down: settlement RPC unreachable" >&3
-    # Best-effort corroboration from the source aggsender's own logs (non-fatal — log
-    # wording is version-sensitive; the two assertions above are the hard proof).
-    local aggkit_svc err_lines
-    aggkit_svc="$(printf 'aggkit-%03d' "$src")"
-    err_lines="$(kurtosis service logs "$ENCLAVE_NAME" "$aggkit_svc" 2>/dev/null \
-        | grep -Ei 'connection refused|transport|unavailable|dial tcp|failed to send|error sending certificate' \
-        | tail -n 5 || true)"
-    if [[ -n "$err_lines" ]]; then
-        echo "=== [outage] ${aggkit_svc} push/connection errors during downtime:" >&3
-        echo "$err_lines" >&3
+    if [[ -n "$comm_evidence" ]]; then
+        echo "=== [outage] caught aggsender FAILING TO COMMUNICATE a cert to the down agglayer:" >&3
+        echo "$comm_evidence" >&3
+    else
+        echo "=== [outage] no explicit aggsender comm-failure line matched (version-sensitive); relying on the known/settled height-advance assertions after recovery" >&3
     fi
 
     # 6. Restart agglayer (stop-then-start dodges the "container name already in use" flake)
@@ -237,6 +278,24 @@ _run_resilience_case() {
     echo "=== [recovery] rollup ${src} settled height after restart=${h2} (baseline=${h0})" >&3
     if (( h2 <= h0 )); then
         fail "settled certificate height did not advance across the outage (baseline=${h0}, after=${h2})"
+    fi
+
+    # 9. The certificate-COMMUNICATION path recovered: the known certificate height (what
+    #    agglayer has received from the aggsender) must have advanced past baseline too. Since
+    #    agglayer could not receive anything while it was down, a higher known height proves the
+    #    aggsender successfully re-communicated a certificate after the restart. (Settlement
+    #    implies prior communication, so this normally already holds once h2>h0; asserting it
+    #    explicitly pins the communication-phase recovery.)
+    local k2=""
+    for read_try in $(seq 1 5); do
+        k2="$(_known_height "$src_net" "$readrpc")"
+        [[ -n "$k2" ]] && break
+        sleep 3
+    done
+    [[ -z "$k2" ]] && k2=-1
+    echo "=== [recovery] rollup ${src} known height after restart=${k2} (baseline=${k0})" >&3
+    if (( k2 <= k0 )); then
+        fail "known certificate height did not advance across the outage — certificate communication did not recover (baseline=${k0}, after=${k2})"
     fi
 }
 
