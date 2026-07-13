@@ -741,6 +741,49 @@ jobs:
             echo "::endgroup::"
           done
 
+      # Robustness coverage: shut the singleton agglayer node service down DURING live bridging (while
+      # certificates for the just-bridged exits are being generated/pushed), restart it, and prove the
+      # end-to-end flow survives — every bridge issued around the outage stays claimable on its
+      # destination and a NEW certificate settles after the restart. Runs LAST so this deliberate
+      # disruption never jeopardizes the healthy-path coverage above. The PP source (rollup-1 -> rollup-2)
+      # runs on every nightly; the FEP source (rollup-3 -> rollup-1) case is skipped unless num_chains=3.
+      - name: Agglayer restart resilience (bridging during agglayer downtime)
+        run: |
+          set -eo pipefail
+
+          # Keep the bridge-spammer running: the FEP source needs the L1 GlobalExitRoot advancing during
+          # recovery (its aggchain-proof cap only moves with new L1-info-tree leaves — see
+          # network-3-op-succinct.yml), and the spammer's on-chain L1<->L2 bridging keeps adding them even
+          # while agglayer is down. Stop-then-start avoids the "container name already in use" flake.
+          kurtosis service stop  ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+          kurtosis service start ${{ env.ENCLAVE_NAME }} bridge-spammer-001 || true
+
+          pushd agglayer-e2e || exit 1
+
+          set -a
+          source ./tests/.env
+          set +a
+
+          # Same env as the "Run L2<->L2 bridge tests (all pairs)" step so the e2e helpers resolve identically.
+          export BATS_LIB_PATH="$PWD/core/helpers/lib"
+          export PROJECT_ROOT="$PWD"
+          export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
+          export CLAIM_WAIT_DURATION="20m"
+          # Generous per-step claim budget for the slow FEP-source recovery; PP-source claims exit early.
+          export L2L2_CLAIM_TIMEOUT_MIN=90
+          export L2L2_CLAIM_POLL=20
+          # All networks use native gas (gas_token_enabled: false); pin the per-rollup gas token to the
+          # zero address to skip the combined-00X.json lookup, exactly like the all-pairs step.
+          export GAS_TOKEN_ADDRESS_ROLLUP_01=0x0000000000000000000000000000000000000000
+          export GAS_TOKEN_ADDRESS_ROLLUP_02=0x0000000000000000000000000000000000000000
+          export GAS_TOKEN_ADDRESS_ROLLUP_03=0x0000000000000000000000000000000000000000
+
+          # Resilience knobs: agglayer downtime window and number of bridges issued during it.
+          export AGGLAYER_DOWNTIME_SEC=45
+          export AGGLAYER_OUTAGE_BRIDGES=3
+
+          NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/agglayer-restart-resilience.bats"
+
       - name: Post kurtosis run
         if: always()
         uses: ./.github/actions/kurtosis-post-run
