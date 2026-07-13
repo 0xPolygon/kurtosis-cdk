@@ -172,12 +172,17 @@ _run_resilience_case() {
     local burst="${AGGLAYER_OUTAGE_BRIDGES:-3}"
 
     # Known-height recovery budget (step 9). PP (claim mode) advances known immediately via the
-    # claims, so a short wait suffices; FEP (comm mode) re-communicates on its own proof-gated
-    # cadence after the restart, so give it a generous budget. This is a single cheap RPC poll
-    # (not the flaky multi-step claim), so a long budget only extends the wait for a genuinely
-    # slow FEP source and exits early otherwise.
+    # claims, so a short wait suffices. FEP (comm mode) re-communicates on its own proof-gated
+    # cadence after the restart — slow and resource-bound on a contended runner: the op-succinct
+    # proposer must aggregate past the deposit's block, gated on L1 finalization + a live GER — so
+    # give it a large budget and a coarser poll. In CI this budget is set (AGGLAYER_KNOWN_TIMEOUT_MIN)
+    # to EXCEED the job's timeout-minutes, so a genuinely-slow FEP source waits for the job timeout
+    # instead of erroring out early; the poll still exits the instant known height advances.
     local known_poll=10 known_timeout_min=2
-    [[ "$mode" == "comm" ]] && known_timeout_min="${AGGLAYER_KNOWN_TIMEOUT_MIN:-30}"
+    if [[ "$mode" == "comm" ]]; then
+        known_timeout_min="${AGGLAYER_KNOWN_TIMEOUT_MIN:-30}"
+        known_poll="${AGGLAYER_KNOWN_POLL:-30}"
+    fi
     local known_max=$(( known_timeout_min * 60 / known_poll ))
     # bridge_message reads these from the caller's scope (dynamic scoping), exactly like
     # l2-to-l2-all-pairs.bats sets them before each call: a native zero-value message with a

@@ -788,10 +788,15 @@ jobs:
           # outage open until it catches that, to cover the certificate-communication phase).
           export AGGLAYER_DOWNTIME_SEC=60
           export AGGLAYER_OUTAGE_BRIDGES=3
-          # FEP comm-recovery check budget: after the restart, wait up to this long for the FEP
-          # aggsender to re-communicate a cert to agglayer (its known cert height to advance). It is
-          # a single cheap RPC poll that exits as soon as the height moves.
-          export AGGLAYER_KNOWN_TIMEOUT_MIN=30
+          # FEP comm-recovery check budget: after the restart, wait for the FEP aggsender to
+          # re-communicate a cert to agglayer (its known cert height to advance). FEP re-
+          # communication is slow and resource-bound on a contended runner (the op-succinct proposer
+          # must aggregate past the deposit's block, gated on L1 finalization + a live GER), so set
+          # this ABOVE the job's timeout-minutes (240): a genuinely-slow FEP source then waits for
+          # the job timeout rather than erroring out early at a fixed budget. It is a single cheap
+          # RPC poll that exits the instant the height moves, so this only extends the slow case.
+          export AGGLAYER_KNOWN_TIMEOUT_MIN=300
+          export AGGLAYER_KNOWN_POLL=30
 
           NUM_CHAINS="${NUM_CHAINS}" bats "${GITHUB_WORKSPACE}/.github/tests/multi-l2/agglayer-restart-resilience.bats"
 
