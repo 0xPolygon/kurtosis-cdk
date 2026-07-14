@@ -355,6 +355,15 @@ DEFAULT_ARGS = (
         # - 'ecdsa-multisig': Aggchain using an ecdsa_multisig signature with CONSENSUS_TYPE = 1.
         # - 'fep': Generic aggchain using Full Execution Proofs that relies on op-succinct stack.
         "consensus_contract_type": constants.CONSENSUS_TYPE.ecdsa_multisig,
+        # Which backend the "bridge_ui" additional service uses to source
+        # bridge/claim data. Only relevant when "bridge_ui" is included in
+        # additional_services.
+        # Options:
+        # - 'bridge_hub': deploy the full bridge-hub stack (mongo + L1/L2
+        #   consumers + api + autoclaimer) fronted by the haproxy proxy.
+        # - 'aggkit': skip the bridge-hub stack and have the haproxy proxy
+        #   forward directly to the aggkit bridge REST API.
+        "bridge_ui_backend": constants.BRIDGE_UI_BACKEND.bridge_hub,
         # Additional services to run alongside the network.
         # Options:
         # - agglogger
@@ -406,6 +415,11 @@ VALID_CONSENSUS_TYPES = [
 VALID_SEQUENCER_TYPES = [
     constants.SEQUENCER_TYPE.cdk_erigon,
     constants.SEQUENCER_TYPE.op_reth,
+]
+
+VALID_BRIDGE_UI_BACKENDS = [
+    constants.BRIDGE_UI_BACKEND.bridge_hub,
+    constants.BRIDGE_UI_BACKEND.aggkit,
 ]
 
 VALID_L1_ENGINES = [
@@ -466,6 +480,8 @@ def parse_args(plan, user_args):
     args["environment"] = environment
 
     validate_additional_services(args.get("additional_services", []))
+
+    validate_bridge_ui_backend(args.get("bridge_ui_backend"))
 
     # Determine fork id from the agglayer contracts image tag.
     zkevm_prover_image = args.get("zkevm_prover_image")
@@ -833,5 +849,14 @@ def validate_sequencer_type(sequencer_type):
         fail(
             'Invalid sequencer type: "{}". Allowed value(s): {}.'.format(
                 sequencer_type, VALID_SEQUENCER_TYPES
+            )
+        )
+
+
+def validate_bridge_ui_backend(bridge_ui_backend):
+    if bridge_ui_backend not in VALID_BRIDGE_UI_BACKENDS:
+        fail(
+            'Invalid bridge_ui_backend: "{}". Allowed value(s): {}.'.format(
+                bridge_ui_backend, VALID_BRIDGE_UI_BACKENDS
             )
         )

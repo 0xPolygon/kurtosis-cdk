@@ -1,0 +1,8 @@
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: pessimistic # former sovereign consensus
+  aggkit_image: ghcr.io/agglayer/aggkit:feat-autoclaim-l2-lx_2026_07_13_07_54_421ba23
+  additional_services:
+    - bridge_spammer
+    - bridge_ui
+  bridge_ui_backend: aggkit

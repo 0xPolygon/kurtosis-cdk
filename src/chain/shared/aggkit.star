@@ -698,10 +698,21 @@ def _extract_aggkit_version(aggkit_image):
 
     # v0.5.0-beta1 -> 0.5.0
     version = tag_without_suffix
+    found_digit = False
     for i in range(len(tag_without_suffix)):
         if tag_without_suffix[i].isdigit():
             version = tag_without_suffix[i:]
+            found_digit = True
             break
+
+    # Some CI-built tags (e.g. feature-branch build tags like
+    # "feat-autoclaim-l2-lx_2026_07_13_07_54_421ba23") don't start with a
+    # numeric version at all once the first "-"-delimited segment is taken.
+    # Treat these the same as "local": assume they're built from the latest
+    # source and are therefore the latest version (grpc-capable), instead of
+    # hard-failing on float(<non-numeric string>).
+    if not found_digit:
+        return 999.9
 
     # return a float
     if version.count(".") > 1:
