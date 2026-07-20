@@ -1,0 +1,40 @@
+# Test config: agglayer v0.6.0-rc.5 on a FEP (op-succinct / AggchainFEP) network, mock prover.
+#
+# Based on .github/tests/op-succinct/mock-prover.yml (the CI-verified fast FEP path). FEP adds
+# the op-succinct-proposer-001 and aggkit-prover-001 services and uses the default aggkit
+# (0.10.0-rc7) + aggkit-prover (2.1.0) + op-succinct-proposer (v3.10.0), which emit the SP1 v6
+# aggchain proofs required by agglayer 0.6.0. The mock prover avoids needing a real SP1 network key.
+#
+# Launch:
+#   kurtosis run --enclave agglayer-060-fep --args-file test-configs/agglayer-060-fep.yml .
+deployment_stages:
+  deploy_op_succinct: true
+
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: fep
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.5
+  # true = mock/CPU prover (no real SP1 network key needed); false = network prover.
+  op_succinct_mock: true
+  # Enable the integration with the Agglayer.
+  op_succinct_agglayer: true
+  # Proof type. Must match the verifier gateway contract type. Options: plonk, groth16, compressed, core.
+  op_succinct_agg_proof_mode: compressed
+  # Minimum interval in L2 blocks at which checkpoints must be submitted.
+  op_succinct_submission_interval: "1"
+  # Prove several ranges in parallel so the proposer clears each L1-finality batch within the
+  # claim window (mock proofs are cheap); serialising one range per poll lags the finalized tip.
+  op_succinct_max_concurrent_proof_requests: "8"
+  op_succinct_max_concurrent_witness_gen: "8"
+  # Size of the range proof.
+  op_succinct_range_proof_interval: "60"
+  # Default 2s L1 slot time. Prompt L2 finality (needed by the op-succinct proposer, which only
+  # proves finalized L2 blocks) comes from op-node's L1 head poll interval, not a slower L1 — see
+  # --l1.http-poll-interval in src/package_io/op_input_parser.star.
+
+optimism_package:
+  predeployed_contracts: true
+  chains:
+    "001":
+      proposer_params:
+        enabled: false # the op-succinct-proposer replaces the standard OP proposer

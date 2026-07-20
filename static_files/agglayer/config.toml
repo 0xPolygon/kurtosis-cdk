@@ -24,7 +24,7 @@ sp1-cluster-endpoint = "{{.sp1_cluster_endpoint}}"
 {{- else }}
 [prover.mock-prover]
 proving-timeout = "5m"
-proving_request_timeout = "300s"
+proving-request-timeout = "300s"
 {{- end }}
 
 [rpc]
@@ -65,7 +65,12 @@ format = "{{.log_format}}"
 
 [auth.local]
 private-keys = [
+    # First entry = pp-settlement signer (certificate/PP settlement).
     { path = "/etc/agglayer/aggregator.keystore", password = "{{.l2_keystore_password}}" },
+{{- if .agglayer_use_second_signer }}
+    # Second entry = tx-settlement signer (dual-wallet). Reuses the funded sequencer account.
+    { path = "/etc/agglayer/sequencer.keystore", password = "{{.l2_keystore_password}}" },
+{{- end }}
 ]
 
 [l1]

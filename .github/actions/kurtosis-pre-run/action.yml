@@ -5,7 +5,9 @@ inputs:
   kurtosis_version:
     description: The version of Kurtosis to install
     required: false
-    default: 1.15.2
+    # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks, so
+    # L2->L1 bridge claims never become ready; 1.18.2 syncs correctly. See test.yml for details.
+    default: 1.18.2
   docker_username:
     description: The username for Docker Hub
     required: false
@@ -35,7 +37,7 @@ runs:
     - name: Install kurtosis
       shell: bash
       run: |
-        echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+        echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
         sudo apt update
         sudo apt install -y kurtosis-cli=${{ inputs.kurtosis_version }}
         kurtosis analytics disable

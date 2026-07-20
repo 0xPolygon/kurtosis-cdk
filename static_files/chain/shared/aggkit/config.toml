@@ -39,7 +39,7 @@ SequencerPrivateKeyPath = ""
 SequencerPrivateKeyPassword  = ""
 {{- end}}
 
-{{- if lt .aggkit_version "0.8" }}
+{{- if .aggkit_legacy_bridge_addr }}
 polygonBridgeAddr = "{{.l1_bridge_address}}"
 {{- end }}
 
@@ -578,8 +578,21 @@ BlockFinality = "LatestBlock"
 #   - SafeBlock
 #   - PendingBlock
 #   - FinalizedBlock
+#
+# cdk-erigon sovereign chains never advance the "finalized" (nor "safe") block
+# tag past genesis, so the reorg detector never drops finalized blocks from its
+# tracked set. That set then grows without bound and the detector re-queries a
+# header for every tracked block on each check tick; under constrained CI CPU
+# this starves the L2 bridge syncer's downloader and the sync silently stalls,
+# so L2->L1 bridge claims never become ready. op-stack chains advance
+# "finalized" through op-node, so they keep the default tag. Track the latest
+# block for cdk-erigon so the tracked set stays bounded (matches BridgeL2Sync).
 # ------------------------------------------------------------------------------
+{{- if eq .sequencer_type "cdk-erigon" }}
+FinalizedBlock = "LatestBlock"
+{{- else }}
 FinalizedBlock = "FinalizedBlock"
+{{- end }}
 
 # ------------------------------------------------------------------------------
 # DBPath path of the sqlite db

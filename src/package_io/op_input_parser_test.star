@@ -130,7 +130,11 @@ def test_parse_args_with_user_overrides(plan):
     expect.eq(sequencer1.get("cl").get("image"), "op-node:latest")
     expect.eq(
         sequencer1.get("cl").get("extra_params"),
-        ["--rollup.l1-chain-config=/l1/genesis.json", "--log.format=json"],
+        [
+            "--rollup.l1-chain-config=/l1/genesis.json",
+            "--l1.http-poll-interval=1s",
+            "--log.format=json",
+        ],
     )
     expect.eq(proposer_params1.get("enabled"), False)
 

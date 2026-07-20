@@ -1,0 +1,18 @@
+# Test config: agglayer v0.6.0-rc.5 on a PP (pessimistic proof) network.
+#
+# Mirrors the agglayer CI validated matrix for 0.6.0-rc.5 (op-reth sequencer + reth L1 +
+# aggkit 0.5.4 + pessimistic consensus). This is the known-good baseline for exercising the
+# new settlement service and the per-epoch rate-limiting removal on a fresh devnet.
+#
+# Launch:
+#   kurtosis run --enclave agglayer-060-pp --args-file test-configs/agglayer-060-pp.yml .
+args:
+  sequencer_type: op-reth
+  consensus_contract_type: pessimistic # former sovereign consensus
+  # Pessimistic stays on aggkit 0.5.4: 0.10.x requires an on-chain validator/multisig committee
+  # that this consensus does not deploy, so its cert submission reverts. reth L1 is the repo
+  # default now, so l1_el_type/reth_image no longer need to be set here.
+  aggkit_image: ghcr.io/agglayer/aggkit:0.5.4
+  agglayer_image: ghcr.io/agglayer/agglayer:0.6.0-rc.5
+  # Set true to exercise the optional dual-wallet (second tx-settlement signer) path.
+  # agglayer_use_second_signer: true

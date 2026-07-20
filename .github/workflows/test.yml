@@ -16,7 +16,10 @@ concurrency:
 
 env:
   ENCLAVE_NAME: cdk
-  KURTOSIS_VERSION: 1.15.2
+  # 1.15.2 stalls the aggkit L2 bridge syncer on the agglayer 0.6.0 sovereign/FEP stacks (the
+  # syncer freezes at ~block 120 while the L2 chain keeps advancing), so the aggsender never
+  # certifies the L2->L1 deposit and the bridge claim never becomes ready. 1.18.2 syncs correctly.
+  KURTOSIS_VERSION: 1.18.2
 
 jobs:
   lint:
@@ -29,7 +32,7 @@ jobs:
       - name: Install kurtosis
         shell: bash
         run: |
-          echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
+          echo "deb [trusted=yes] https://sdk.kurtosis.com/kurtosis-cli-release-artifacts/ /" | sudo tee /etc/apt/sources.list.d/kurtosis.list
           sudo apt update
           sudo apt install -y kurtosis-cli=${{ env.KURTOSIS_VERSION }}
           kurtosis analytics disable
@@ -222,7 +225,9 @@ jobs:
   run-with-op-succinct:
     needs: [lint, unit]
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # FEP settlement is slow/resource-bound; the L2->L1 bridge claim waits up to 60m (on top of the
+    # optimistic-mode cert wait), so give the job headroom over deploy + monitor + both bats suites.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -278,13 +283,21 @@ jobs:
           export BATS_LIB_PATH="$PWD/core/helpers/lib"
           export PROJECT_ROOT="$PWD"
           export ENCLAVE_NAME="${{ env.ENCLAVE_NAME }}"
-          export CLAIM_WAIT_DURATION="20m"
+          # FEP settlement is slow on a contended runner; give the claim a generous wall-clock wait.
+          export CLAIM_WAIT_DURATION="60m"
 
           # Run op optimistic mode tests
           bats ./tests/op/optimistic-mode.bats || exit 1
 
-          # Run bridge tests
-          kurtosis service stop ${{ env.ENCLAVE_NAME }} bridge-spammer-001
+          # Run bridge tests.
+          # NOTE: unlike the other jobs we deliberately keep the bridge-spammer running here.
+          # op-succinct (FEP) L2->L1 claims need L1 GlobalExitRoot activity to keep flowing during
+          # the claim wait: the proposer can only aggregate range proofs up to the L2 safe head
+          # derived from the aggsender's finalized L1-info-tree leaf, and that leaf only advances
+          # while the GER keeps being updated on L1. Stopping the spammer freezes that safe-head
+          # cap between two range-proof boundaries, so the aggchain proof can never cover the
+          # withdrawal block and the claim times out ("No range proofs found for the requested
+          # range" -> "the deposit seems to be stuck").
           bats --filter 'bridge native ETH from L1 to L2' ./tests/agglayer/bridges.bats || exit 1
           bats --filter 'bridge native ETH from L2 to L1' ./tests/agglayer/bridges.bats || exit 1
 
