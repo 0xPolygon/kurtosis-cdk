@@ -20,6 +20,11 @@ env:
   # syncer freezes at ~block 120 while the L2 chain keeps advancing), so the aggsender never
   # certifies the L2->L1 deposit and the bridge claim never becomes ready. 1.18.2 syncs correctly.
   KURTOSIS_VERSION: 1.18.2
+  # leovct/kurtosis-test is a maintained fork of ethereum-optimism/kurtosis-test (upstream's
+  # last release, v0.0.6, is from 2025-09 and pins kurtosis at 2025-08). v0.0.9 is built against
+  # kurtosis 1.20.0 and ships prebuilt binaries, so we install the release archive instead of
+  # compiling from source.
+  KURTOSIS_TEST_VERSION: v0.0.9
 
 jobs:
   lint:
@@ -101,17 +106,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 1.21
-          cache: false
-
       - name: Install kurtosis-test
         run: |
-          git clone --branch v0.0.6 https://github.com/ethereum-optimism/kurtosis-test.git /tmp/kurtosis-test
-          cd /tmp/kurtosis-test
-          go build -o kurtosis-test cli/main.go
-          cp kurtosis-test /usr/local/bin
+          curl -sSfL "https://github.com/leovct/kurtosis-test/releases/download/${KURTOSIS_TEST_VERSION}/kurtosis-test_Linux_x86_64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin kurtosis-test
 
       - name: Run unit tests
         run: kurtosis-test .
