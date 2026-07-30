@@ -1,7 +1,7 @@
 databases_package = import_module("../chain/shared/databases.star")
 grafana_package = import_module(
-    "github.com/kurtosis-tech/grafana-package/main.star@cc66468b167d16c0fc7153980be5b67550be01be"
-)
+    "github.com/kurtosis-tech/grafana-package/main.star"
+)  # Version pinned in kurtosis.yml
 
 GRAFANA_VERSION = "11.1.4"
 GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/dashboards"

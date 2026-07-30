@@ -6,6 +6,12 @@ sidebar_position: 3
 
 > This document is automatically generated.
 
+## Contents
+
+- [Test Environments](#test-environments)
+- [Default Images](#default-images)
+- [Kurtosis Packages](#kurtosis-packages)
+
 ## Test Environments
 
 This section lists all test environments with their configurations and component versions, organized by execution client.
@@ -143,3 +149,15 @@ Environments using [cdk-erigon](https://github.com/0xPolygon/cdk-erigon) as the 
 | lighthouse | [8.2.1](https://github.com/sigp/lighthouse/releases/tag/v8.2.1) | [8.2.1](https://github.com/sigp/lighthouse/releases/tag/v8.2.1) | ✅ matches stable |
 | reth | [2.4.1](https://github.com/paradigmxyz/reth/releases/tag/v2.4.1) | [2.4.1](https://github.com/paradigmxyz/reth/releases/tag/v2.4.1) | ✅ matches stable |
 | status-checker | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | [0.2.9](https://github.com/0xPolygon/status-checker/releases/tag/v0.2.9) | ✅ matches stable |
+
+## Kurtosis Packages
+
+External Kurtosis packages this package depends on. Versions are pinned in the [`replace` block of `kurtosis.yml`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/kurtosis.yml), which is the single place to bump them.
+
+| Package | Pinned Version | Latest Stable Version | Status |
+|---------|----------------|-----------------------|--------|
+| [github.com/agglayer/optimism-package](https://github.com/agglayer/optimism-package) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | [v2.0.0](https://github.com/agglayer/optimism-package/releases/tag/v2.0.0) | ✅ matches stable |
+| [github.com/ethpandaops/ethereum-package](https://github.com/ethpandaops/ethereum-package) | [b5b3af65248f](https://github.com/ethpandaops/ethereum-package/tree/b5b3af65248f11702216e377d0377bcd8ccf4caf) | [HEAD (b5b3af65248f)](https://github.com/ethpandaops/ethereum-package/tree/b5b3af65248f) | ✅ matches stable |
+| [github.com/kurtosis-tech/grafana-package](https://github.com/kurtosis-tech/grafana-package) | [c8ff0b52d25d](https://github.com/kurtosis-tech/grafana-package/tree/c8ff0b52d25deb0bc4ec95971dcf25b2fca11287) | [1.0.0](https://github.com/kurtosis-tech/grafana-package/releases/tag/1.0.0) | ⚡️ newer than stable — 2 commits ahead of 1.0.0 |
+| [github.com/kurtosis-tech/prometheus-package](https://github.com/kurtosis-tech/prometheus-package) | [f3402ebad8cf](https://github.com/kurtosis-tech/prometheus-package/tree/f3402ebad8cffe98eef990e41ca863f7e8746c21) | [1.1.0](https://github.com/kurtosis-tech/prometheus-package/releases/tag/1.1.0) | ⚡️ newer than stable — 2 commits ahead of 1.1.0 |
+| [github.com/xavier-romero/kurtosis-blockscout](https://github.com/xavier-romero/kurtosis-blockscout) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98c8c357f747ff953fdbc0e39ebc3d) | [9de7765a6c98](https://github.com/xavier-romero/kurtosis-blockscout/tree/9de7765a6c98) | ✅ matches stable |

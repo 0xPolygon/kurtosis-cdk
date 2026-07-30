@@ -66,6 +66,12 @@ jobs:
       - name: Run shellcheck
         run: find . -type f -name '*.sh' | grep -v "./docs" | grep -v "/upgrade_forkid.sh" | sort | xargs -I {} shellcheck -x {}
 
+      - name: Install pyyaml
+        run: pip install pyyaml
+
+      - name: Verify external package pins
+        run: python3 scripts/version-matrix/verify-package-pins.py
+
   typos:
     runs-on: ubuntu-latest
     timeout-minutes: 5

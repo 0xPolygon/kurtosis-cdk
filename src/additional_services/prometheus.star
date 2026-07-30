@@ -1,6 +1,6 @@
 prometheus_package = import_module(
-    "github.com/kurtosis-tech/prometheus-package/main.star@v1.1.0"
-)
+    "github.com/kurtosis-tech/prometheus-package/main.star"
+)  # Version pinned in kurtosis.yml
 
 PROMETHEUS_IMAGE = "prom/prometheus:v3.0.1"
 
