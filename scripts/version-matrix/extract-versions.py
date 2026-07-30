@@ -43,6 +43,7 @@ PINNED_VERSIONS = {
     ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
     ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
     ("cdk-erigon-zkrollup", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+    ("cdk-opreth-zkrollup", "op-succinct-proposer"): "Only supports op-succinct 3.10.x so far.",
 }
 
 

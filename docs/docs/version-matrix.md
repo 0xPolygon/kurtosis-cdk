@@ -73,7 +73,7 @@ Environments using [op-reth](https://github.com/ethereum-optimism/optimism/tree/
 | op-deployer | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | [0.7.1](https://github.com/ethereum-optimism/optimism/releases/tag/op-deployer/v0.7.1) | ✅ matches stable |
 | op-node | [1.19.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.3) | [1.19.3](https://github.com/ethereum-optimism/optimism/releases/tag/op-node/v1.19.3) | ✅ matches stable |
 | op-reth | [2.4.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.0) | [2.4.0](https://github.com/ethereum-optimism/optimism/releases/tag/op-reth/v2.4.0) | ✅ matches stable |
-| op-succinct-proposer | [3.11.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.11.1-agglayer) | [3.11.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.11.1-agglayer) | ✅ matches stable |
+| op-succinct-proposer | [3.10.0-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.10.0-agglayer) | [3.11.1-agglayer](https://github.com/agglayer/op-succinct/releases/tag/v3.11.1-agglayer) | 📌 pinned — Only supports op-succinct 3.10.x so far. |
 | zkevm-bridge-service | [0.6.4-RC2](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.4-RC2) | [0.6.3](https://github.com/0xPolygon/zkevm-bridge-service/releases/tag/v0.6.3) | ⚡️ newer than stable |
 
 ## CDK Erigon

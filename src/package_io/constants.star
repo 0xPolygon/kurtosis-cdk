@@ -121,7 +121,11 @@ DEFAULT_IMAGES = {
     "op_reth_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-reth:v2.4.0",
     "op_node_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.19.3",
     "op_proposer_image": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.16.3",
-    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.11.1-agglayer",
+    # Pinned to v3.10.0: aggkit-prover 2.1.0 embeds the op-succinct-elfs from this
+    # version, and it hard-fails at startup if the aggregation vkey baked into the
+    # AggchainFEP contract (via fetch-l2oo-config, taken from this image) does not
+    # match its own. Bump both together once a newer aggkit-prover ships.
+    "op_succinct_proposer_image": "ghcr.io/agglayer/op-succinct/op-succinct-agglayer:v3.10.0-agglayer",
     "status_checker_image": "ghcr.io/0xpolygon/status-checker:v0.2.9",
     "test_runner_image": "ghcr.io/agglayer/e2e:dda31ee",
     "cdk_data_availability_image": "ghcr.io/0xpolygon/cdk-data-availability:0.0.13",
