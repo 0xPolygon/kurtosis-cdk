@@ -3,7 +3,7 @@ grafana_package = import_module(
     "github.com/kurtosis-tech/grafana-package/main.star"
 )  # Version pinned in kurtosis.yml
 
-GRAFANA_VERSION = "11.1.4"
+GRAFANA_IMAGE = "grafana/grafana-enterprise:11.1.4"
 GRAFANA_DASHBOARDS = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/dashboards"
 GRAFANA_ALERTING_TEMPLATE = "github.com/0xPolygon/kurtosis-cdk/static_files/additional_services/grafana/alerting.yml.tmpl"
 
@@ -47,7 +47,7 @@ def run(plan, args):
         prometheus_url,
         grafana_dashboards_location=GRAFANA_DASHBOARDS,
         name="grafana" + args["deployment_suffix"],
-        grafana_version=GRAFANA_VERSION,
+        image=GRAFANA_IMAGE,
         grafana_alerting_template=GRAFANA_ALERTING_TEMPLATE,
         grafana_alerting_data=grafana_alerting_data,
         postgres_databases=postgres_databases,
