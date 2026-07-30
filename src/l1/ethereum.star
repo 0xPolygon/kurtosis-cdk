@@ -1,6 +1,6 @@
 ethereum_package = import_module(
-    "github.com/ethpandaops/ethereum-package/main.star@6.1.0"
-)  # 2026-04-02
+    "github.com/ethpandaops/ethereum-package/main.star"
+)  # Version pinned in kurtosis.yml
 constants = import_module("../package_io/constants.star")
 
 only_smc_genesis = "../../static_files/contracts/genesis/only-smc-deployed-genesis.json"

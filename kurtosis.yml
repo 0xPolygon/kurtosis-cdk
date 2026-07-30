@@ -1,3 +1,20 @@
 name: github.com/0xPolygon/kurtosis-cdk
 description: |
   A Kurtosis package that deploys a private, portable, and modular Polygon CDK devnet.
+
+# Pinned versions of the external Kurtosis packages we depend on.
+#
+# This is the single source of truth for package versions: `replace` overrides
+# the version requested by every reference in this repo, including transitive
+# dependencies. The `.star` files reference these packages without an
+# `@<version>` suffix so a bump only ever happens here, and the version matrix
+# is generated from this block so new pins are tracked automatically.
+#
+# `scripts/version-matrix/verify-package-pins.py` fails CI if a version is
+# pinned inline in a `.star` file, or if an entry here is missing a version.
+replace:
+  github.com/agglayer/optimism-package: github.com/agglayer/optimism-package@v2.0.0  # 2026-07-30
+  github.com/ethpandaops/ethereum-package: github.com/ethpandaops/ethereum-package@b5b3af65248f11702216e377d0377bcd8ccf4caf  # 2026-07-28, ahead of v6.1.0
+  github.com/kurtosis-tech/prometheus-package: github.com/kurtosis-tech/prometheus-package@f3402ebad8cffe98eef990e41ca863f7e8746c21  # 2026-06-24
+  github.com/kurtosis-tech/grafana-package: github.com/kurtosis-tech/grafana-package@c8ff0b52d25deb0bc4ec95971dcf25b2fca11287  # 2025-03-31
+  github.com/xavier-romero/kurtosis-blockscout: github.com/xavier-romero/kurtosis-blockscout@9de7765a6c98c8c357f747ff953fdbc0e39ebc3d  # 2025-01-29

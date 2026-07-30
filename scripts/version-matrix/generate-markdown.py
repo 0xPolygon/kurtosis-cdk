@@ -53,8 +53,16 @@ sidebar_position: 3
 > This document is automatically generated.
 """
 
+        # Contents overview
+        md += "\n## Contents\n\n"
+        md += "- [Test Environments](#test-environments)\n"
+        md += "- [Default Images](#default-images)\n"
+        if data.get('packages'):
+            md += "- [Kurtosis Packages](#kurtosis-packages)\n"
+        md += "\n"
+
         # Test environments organized by execution client
-        md += "\n## Test Environments\n\n"
+        md += "## Test Environments\n\n"
         md += "This section lists all test environments with their configurations and component versions, organized by execution client.\n\n"
 
         test_environments = data.get('test_environments', {})
@@ -118,7 +126,63 @@ sidebar_position: 3
         md += "## Default Images\n\n"
         md += self._generate_component_table(data.get('default_images', {}))
 
+        # External Kurtosis packages
+        packages = data.get('packages', {})
+        if packages:
+            md += "\n## Kurtosis Packages\n\n"
+            md += "External Kurtosis packages this package depends on. Versions are pinned "
+            md += "in the [`replace` block of `kurtosis.yml`](https://github.com/0xPolygon/kurtosis-cdk/blob/main/kurtosis.yml), "
+            md += "which is the single place to bump them.\n\n"
+            md += self._generate_package_table(packages)
+
         return md
+
+    def _generate_package_table(self, packages: Dict) -> str:
+        """Generate the external Kurtosis packages table."""
+        table = "| Package | Pinned Version | Latest Stable Version | Status |\n"
+        table += "|---------|----------------|-----------------------|--------|\n"
+
+        for package_name, package in sorted(packages.items()):
+            pin = package.get('pin', 'N/A')
+            pin_source_url = package.get('pin_source_url', '#')
+            latest_version = package.get('latest_version', 'N/A')
+            latest_version_source_url = package.get('latest_version_source_url', '#')
+            status = package.get('status')
+            commit_distance = package.get('commit_distance')
+            pin_reason = package.get('pin_reason')
+
+            status_emoji = {
+                'newer than stable': '⚡️',
+                'matches stable': '✅',
+                'behind stable': '🚨',
+                'pinned': '📌',
+                'tracking head': '⚠️',
+            }.get(status, '❓')
+
+            status_display = f"{status_emoji} {status}" if status else 'N/A'
+            if commit_distance:
+                status_display += f" — {commit_distance}"
+            if pin_reason:
+                status_display += f" — {pin_reason}"
+
+            # Commit pins are shortened to keep the column narrow; the status
+            # column already reports how far a pin has drifted.
+            pin_label = pin[:12] if len(pin) > 12 else pin
+            pin_display = f"[{pin_label}]({pin_source_url})" if pin else 'N/A'
+
+            # Head-tracked packages release too rarely for a tag to be a useful
+            # baseline, so the comparison point is the branch tip. Say so rather
+            # than presenting a bare sha as a "stable version".
+            latest_label = latest_version
+            if latest_version and package.get('tracking_mode') == 'head':
+                latest_label = f"HEAD ({latest_version})"
+            latest_display = (
+                f"[{latest_label}]({latest_version_source_url})"
+                if latest_version else 'N/A'
+            )
+
+            table += f"| [{package_name}](https://{package_name}) | {pin_display} | {latest_display} | {status_display} |\n"
+        return table
 
     def _generate_component_table(self, components: Dict) -> str:
         """Generate a components table with header."""
@@ -133,15 +197,19 @@ sidebar_position: 3
             latest_version_source_url = component.get(
                 'latest_version_source_url', '#')
             status = component.get('status', 'N/A')
+            pin_reason = component.get('pin_reason')
 
             # Format status with emoji
             status_emoji = {
                 'newer than stable': '⚡️',
                 'matches stable': '✅',
                 'behind stable': '🚨',
+                'pinned': '📌',
             }.get(status, '❓')
 
             status_display = f"{status_emoji} {status}" if status != 'N/A' and status is not None else 'N/A'
+            if pin_reason:
+                status_display += f" — {pin_reason}"
             version_deployed_display = f"[{version_deployed}]({version_deployed_source_url})" if version_deployed else 'N/A'
             latest_version_display = f"[{latest_version}]({latest_version_source_url})" if latest_version else 'N/A'
 
