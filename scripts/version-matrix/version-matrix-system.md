@@ -77,6 +77,34 @@ The system tracks status types for each component version:
 
 | Status | Icon | Description |
 |--------|------|-------------|
-| **Latest** | ✅ | Current latest release, recommended for use |
-| **Experimental** | 🧪 | Newer than latest release, may be pre-release or beta |
-| **Deprecated** | ⚠️ | Older than latest release but still functional |
+| **matches stable** | ✅ | Current latest release, recommended for use |
+| **newer than stable** | ⚡️ | Newer than latest release, may be pre-release or beta |
+| **behind stable** | 🚨 | Older than latest release and should be bumped |
+| **pinned** | 📌 | Deliberately held back — see the reason in the matrix |
+
+### Pinned versions
+
+Some environments cannot track the latest release yet: for example
+`cdk-opreth-sovereign-pessimistic` and `cdk-erigon-sovereign-pessimistic` only
+support aggkit `0.5.x`, and `cdk-erigon-validium` / `cdk-erigon-zkrollup` are
+held on cdk-erigon `2.61.x`. Without a rule for this, those rows show 🚨
+permanently, which trains everyone to ignore the alarm and hides real
+regressions.
+
+Declare such cases in `PINNED_VERSIONS` in `extract-versions.py`, keyed by
+`(environment, component)` with a short reason:
+
+```python
+PINNED_VERSIONS = {
+    ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+}
+```
+
+Keep every reason in the same short form — `Only supports <component> <line> so
+far.` — so the status column reads consistently and stays narrow.
+
+The pin only ever downgrades a `behind stable` result. Once the pinned
+component catches up with (or overtakes) stable, its real status is reported
+again — that is the signal to delete the entry. Pins are scoped to a single
+environment, so a component pinned in one environment still reports 🚨 in the
+others.

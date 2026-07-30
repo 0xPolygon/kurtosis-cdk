@@ -17,7 +17,7 @@ import yaml
 import requests
 from pathlib import Path
 from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, replace
 from datetime import datetime
 
 
@@ -30,6 +30,20 @@ class ComponentVersion:
     version_source_url: Optional[str] = None
     latest_version_source_url: Optional[str] = None
     status: Optional[str] = None
+    pin_reason: Optional[str] = None
+
+
+# Components deliberately held back from the latest stable release, keyed by
+# (environment, component). These render as "pinned" instead of "behind stable"
+# so that genuine regressions stay visible in the matrix.
+#
+# Keep every reason in the same short form: "Only supports <component> <line> so far."
+PINNED_VERSIONS = {
+    ("cdk-erigon-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
+    ("cdk-opreth-sovereign-pessimistic", "aggkit"): "Only supports aggkit 0.5.x so far.",
+    ("cdk-erigon-validium", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+    ("cdk-erigon-zkrollup", "cdk-erigon"): "Only supports cdk-erigon 2.61.x so far.",
+}
 
 
 @dataclass
@@ -408,8 +422,11 @@ class VersionMatrixExtractor:
                     components_with_defaults = {
                         name: comp for name, comp in components.items()
                     }
+                    # Copy inherited defaults so per-environment adjustments
+                    # (e.g. pinning) don't leak into other environments.
                     components_with_defaults.update({
-                        name: comp for name, comp in default_images.items()
+                        name: replace(comp)
+                        for name, comp in default_images.items()
                         if name not in components
                     })
 
@@ -420,6 +437,8 @@ class VersionMatrixExtractor:
                         name: comp for name, comp in components_with_defaults.items()
                         if name in allowed_components
                     }
+
+                    self._apply_pins(environment_type, filtered_components)
 
                     environments[environment_type] = TestEnvironment(
                         type=environment_type,
@@ -435,6 +454,19 @@ class VersionMatrixExtractor:
             print(f"Error scanning test environments: {e}")
 
         return environments
+
+    def _apply_pins(self, environment_name: str, components: Dict[str, ComponentVersion]):
+        """Re-label deliberately held-back components as pinned.
+
+        Only downgrades a "behind stable" status: if a pinned component ever
+        catches up with (or overtakes) stable, the real status is kept so that
+        the pin can be retired.
+        """
+        for name, component in components.items():
+            reason = PINNED_VERSIONS.get((environment_name, name))
+            if reason and component.status == "behind stable":
+                component.status = "pinned"
+                component.pin_reason = reason
 
     def _get_allowed_components(self, environment_name: str) -> List[str]:
         """Get list of components allowed for a environment type."""

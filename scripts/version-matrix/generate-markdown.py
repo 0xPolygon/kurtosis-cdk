@@ -133,15 +133,19 @@ sidebar_position: 3
             latest_version_source_url = component.get(
                 'latest_version_source_url', '#')
             status = component.get('status', 'N/A')
+            pin_reason = component.get('pin_reason')
 
             # Format status with emoji
             status_emoji = {
                 'newer than stable': '⚡️',
                 'matches stable': '✅',
                 'behind stable': '🚨',
+                'pinned': '📌',
             }.get(status, '❓')
 
             status_display = f"{status_emoji} {status}" if status != 'N/A' and status is not None else 'N/A'
+            if pin_reason:
+                status_display += f" — {pin_reason}"
             version_deployed_display = f"[{version_deployed}]({version_deployed_source_url})" if version_deployed else 'N/A'
             latest_version_display = f"[{latest_version}]({latest_version_source_url})" if latest_version else 'N/A'
 
