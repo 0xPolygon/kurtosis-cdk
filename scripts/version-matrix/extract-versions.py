@@ -85,6 +85,8 @@ PINNED_PACKAGES = {}
 #   against that tag reports "newer than stable" forever and hides real drift.
 PACKAGE_TRACKING_MODE = {
     "github.com/ethpandaops/ethereum-package": "head",
+    # Has never cut a release or tag, so HEAD is the only comparison point.
+    "github.com/xavier-romero/kurtosis-blockscout": "head",
 }
 
 # A head-tracked pin is always behind HEAD on an active upstream, so distance
@@ -848,14 +850,21 @@ class VersionMatrixExtractor:
     def _is_commit_sha(self, ref: str) -> bool:
         return bool(re.fullmatch(r'[0-9a-f]{7,40}', ref or '', re.IGNORECASE))
 
-    def _github_get(self, path: str):
-        """GET a GitHub API path, returning parsed JSON or None."""
+    def _github_get(self, path: str, allow_missing: bool = False):
+        """GET a GitHub API path, returning parsed JSON or None.
+
+        Set allow_missing for endpoints where a 404 is a legitimate answer
+        rather than a failure — a repo that has never cut a release returns 404
+        from /releases/latest, and logging that as an error is just noise.
+        """
         try:
             response = requests.get(
                 f"https://api.github.com/{path}", timeout=10,
                 headers={'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'})
             if response.status_code == 200:
                 return response.json()
+            if response.status_code == 404 and allow_missing:
+                return None
             print(f"Error fetching {path}: {response.status_code}")
         except Exception as e:
             print(f"Error fetching {path}: {e}")
@@ -881,8 +890,15 @@ class VersionMatrixExtractor:
         return None
 
     def _get_latest_package_version(self, repo: str) -> tuple:
-        """Return (version, date) of the newest release, falling back to tags then HEAD."""
-        release = self._github_get(f"repos/{repo}/releases/latest")
+        """Return (version, date) of the newest release, falling back to tags.
+
+        A repo with neither is not release-tracked at all; add it to
+        PACKAGE_TRACKING_MODE as "head" rather than silently comparing it
+        against its own branch tip, which would always look up to date.
+        """
+        # A 404 here just means the repo has never published a release.
+        release = self._github_get(
+            f"repos/{repo}/releases/latest", allow_missing=True)
         if release and release.get('tag_name'):
             return release['tag_name'], (release.get('published_at') or '')[:10] or None
 
@@ -892,14 +908,8 @@ class VersionMatrixExtractor:
             if tag_name:
                 return tag_name, self._get_ref_date(repo, tag_name)
 
-        # Some packages (e.g. kurtosis-blockscout) never cut releases or tags,
-        # so HEAD is the only meaningful comparison point.
-        commits = self._github_get(f"repos/{repo}/commits?per_page=1")
-        if isinstance(commits, list) and commits:
-            sha = commits[0].get('sha', '')
-            date = commits[0].get('commit', {}).get('committer', {}).get('date')
-            return sha[:12] if sha else None, date[:10] if date else None
-
+        print(f"No releases or tags found for {repo}; consider tracking it by "
+              f"head in PACKAGE_TRACKING_MODE.")
         return None, None
 
     def _get_head_version(self, repo: str) -> tuple:

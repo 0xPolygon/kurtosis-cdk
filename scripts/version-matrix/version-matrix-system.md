@@ -157,12 +157,19 @@ true, useless, and hiding months of real drift.
 ```python
 PACKAGE_TRACKING_MODE = {
     "github.com/ethpandaops/ethereum-package": "head",
+    "github.com/xavier-romero/kurtosis-blockscout": "head",
 }
 ```
 
 - `release` (the default) compares the pin against the latest release or tag.
 - `head` compares it against the default branch tip, and the matrix labels the
   column `HEAD (<sha>)` so a sha is never presented as a stable version.
+
+Two kinds of package belong in `head`: those that ship faster than they tag
+(`ethereum-package`), and those that have never tagged at all
+(`kurtosis-blockscout`). Without an entry, the latter falls back to comparing a
+repo against its own branch tip and always looks up to date; the extractor prints
+a hint when it finds a package with no releases *and* no tags.
 
 For a head-tracked package, being behind HEAD is the normal steady state, so
 distance alone cannot be the alarm. Age is: the pin reports `⚠️ tracking head`
@@ -171,6 +178,10 @@ with its commit distance until the pinned commit is older than
 weeks is already a meaningful gap), at which point it escalates to
 `🚨 behind stable`. If the compare API is unavailable, the age check still
 applies on its own rather than reporting nothing.
+
+Age is only consulted when the pin has actually fallen behind: a pin that still
+equals HEAD reports `✅ matches stable` however old it is, so a dormant upstream
+never raises a false alarm.
 
 Add a package here when its upstream expects consumers to pin commits; remove it
 if the project starts tagging releases you can track instead.
