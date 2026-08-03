@@ -182,8 +182,9 @@ def _deploy_main_aggkit_service(plan, args, deployment_context):
         },
     )
 
-    # Log warning if needed
+    # Log warnings if needed
     _log_claim_sponsor_warning(plan, args)
+    _log_autoclaim_warning(plan, args)
 
     # Create and deploy service
     service_name = "aggkit" + args["deployment_suffix"]
@@ -455,6 +456,12 @@ def _build_config_data(args, deployment_context, extra_data=None):
             "aggkit_version": aggkit_version,
             "l2_rpc_url": deployment_context.l2_rpc_url,
             "aggkit_prover_grpc_port_number": aggkit_prover.GRPC_PORT_NUMBER,
+            # Whether THIS instance's own destination network (l2_network_id)
+            # is one of the networks this run wants an AutoClaim claimer for.
+            # See aggkit_autoclaim_destinations in input_parser.star -- never
+            # true for network 0 (L1), since l2_network_id is always an L2.
+            "aggkit_autoclaim_enabled": args.get("l2_network_id")
+            in args.get("aggkit_autoclaim_destinations", []),
         }
         | deployment_context.db_configs
         | deployment_context.contract_setup_addresses
@@ -474,6 +481,21 @@ def _log_claim_sponsor_warning(plan, args):
         if "bridge" not in components:
             plan.print(
                 "⚠️  WARNING: Claim sponsor is enabled, but 'bridge' is not included in aggkit components — the claim sponsor feature will be disabled."
+            )
+
+
+def _log_autoclaim_warning(plan, args):
+    """Warn if this instance's own network is an AutoClaim destination but the
+    'autoclaim' component isn't in aggkit_components -- the [AutoClaim]
+    config section would be rendered but the process would never run it."""
+    is_autoclaim_destination = args.get("l2_network_id") in args.get(
+        "aggkit_autoclaim_destinations", []
+    )
+    if is_autoclaim_destination:
+        components = args.get("aggkit_components", "")
+        if "autoclaim" not in components.split(","):
+            plan.print(
+                "⚠️  WARNING: this network_id is listed in aggkit_autoclaim_destinations, but 'autoclaim' is not included in aggkit_components — Auto Claim will be inert."
             )
 
 

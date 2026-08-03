@@ -21,7 +21,10 @@ args:
   # reverts and L2->L1 exits never settle to L1.
   consensus_contract_type: ecdsa-multisig
   aggkit_image: ghcr.io/agglayer/aggkit:develop_2026_08_03_13_20_56c849c
-  aggkit_components: "aggsender,aggoracle"
+  # S3 (aggkit-proxy-l2l2 plan): "autoclaim" added so this instance's own
+  # destination network (1) gets an AutoClaim claimer -- see
+  # aggkit_autoclaim_destinations below.
+  aggkit_components: "aggsender,aggoracle,autoclaim"
 
   # aggsender multisig committee: 1 validator, threshold 1.
   use_agg_sender_validator: true
@@ -58,6 +61,19 @@ args:
     - network_id: 2
       op_el_rpc_url: "http://op-el-1-op-reth-op-node-002:8545"
       sequencer_address: "0x5b06837A43bdC3dD9F114558DAf4B26ed49842Ed"
+
+  # S3 (aggkit-proxy-l2l2 plan): autoclaim on destinations 1 & 2 only, NEVER
+  # 0 (L1) -- L2->L1 deposits must stay manual-claim-only for the bridge UI.
+  # This run's own l2_network_id is 1 (default), so this instance's claimer
+  # targets network 1 (L1->L2-1 and L2-2->L2-1 deposits). BridgeServiceFinder
+  # needs every participating network's bridge service URL listed statically
+  # (no on-chain BRIDGE_SERVICE_URL metadata registration in this package).
+  aggkit_autoclaim_destinations: [1]
+  aggkit_autoclaim_bridge_urls:
+    - network_id: 1
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002-bridge:5577"
 
 optimism_package:
   chains:

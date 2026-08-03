@@ -746,3 +746,98 @@ Capacity = 100
 URL = "{{.agglayer_grpc_url}}"
 UseTLS = false
 
+# ==============================================================================
+#     _        _____ ___    ____ _        _    ___ __  __
+#    / \ _   _ |_   _/ _ \  / ___| |      / \  |_ _|  \/  |
+#   / _ \ | | |  | || | | || |   | |     / _ \  | || |\/| |
+#  / ___ \|_| |  | || |_| || |___| |___ / ___ \ | || |  | |
+# /_/   \_\__,_|  |_| \___/  \____|_____/_/   \_\___|_|  |_|
+#
+# ------------------------------------------------------------------------------
+# Auto Claim is entirely absent from this template's defaults (the aggkit
+# binary's own config/default.go supplies working, inert defaults --
+# Claimers = [], L2ToLxBridgeDetector.Enabled = false -- when this section is
+# omitted). This block only renders when aggkit_autoclaim_enabled is true,
+# i.e. when this instance's own l2_network_id is listed in
+# aggkit_autoclaim_destinations (see input_parser.star). It configures a
+# SINGLE claimer targeting this instance's own destination network -- never
+# network 0 (L1); deposits destined to L1 must stay manual-claim-only for the
+# bridge UI. Both bridge detectors are enabled (L1ToL2 for L1->L2, L2ToLx for
+# L2->L2 and L2->L1 discovery), but only an L2-destination claimer is ever
+# configured here, so L2->L1 exits are discovered (claim-proof works) without
+# ever being auto-claimed.
+# Requires "autoclaim" to also be listed in aggkit_components (see
+# _log_autoclaim_warning in aggkit.star).
+# ------------------------------------------------------------------------------
+{{- if .aggkit_autoclaim_enabled }}
+[AutoClaim]
+DryRun = false
+StoragePath = "{{.zkevm_path_rw_data}}/autoclaim.sqlite"
+
+[AutoClaim.API]
+Enabled = false
+
+[AutoClaim.L1ToL2BridgeDetector]
+Enabled = true
+StartBlock = 0
+PollInterval = "3s"
+EtrogL1UpgradeBlock = 0
+
+[AutoClaim.L2ToLxBridgeDetector]
+Enabled = true
+StartL1Block = 0
+PollInterval = "3s"
+
+[AutoClaim.BridgeServiceFinder]
+RollupManagerAddr = "{{.rollup_manager_address}}"
+PollInterval = "3s"
+
+[AutoClaim.BridgeServiceFinder.BridgeURLs]
+{{- range .aggkit_autoclaim_bridge_urls }}
+{{.network_id}} = "{{.bridge_url}}"
+{{- end }}
+
+[[AutoClaim.Claimers]]
+Enabled = true
+ID = "autoclaim{{.deployment_suffix}}"
+NetworkType = "EVM"
+NetworkID = {{.l2_network_id}}
+URLRPC = "{{.op_el_rpc_url}}"
+BridgeAddr = "{{.sovereign_bridge_proxy_addr}}"
+PolicyName = "allow-all"
+GasOffset = 100000
+WaitPeriod = "1s"
+RetryAfter = "1s"
+MaxRetries = 180
+
+[AutoClaim.Claimers.Policy]
+AllowMessageClaims = false
+AllowedOrigins = []
+AllowedTokens = []
+ManualFallback = false
+MaxGas = 500000
+
+[AutoClaim.Claimers.EthTxManager]
+FrequencyToMonitorTxs = "1s"
+WaitTxToBeMined = "2s"
+WaitReceiptMaxTime = "250ms"
+WaitReceiptCheckInterval = "1s"
+PrivateKeys = [
+	{Method = "local", Path = "/etc/aggkit/aggoracle.keystore", Password = "{{.l2_keystore_password}}"},
+]
+ForcedGas = 0
+GasPriceMarginFactor = 1
+MaxGasPriceLimit = 0
+StoragePath = "{{.zkevm_path_rw_data}}/ethtxmanager-autoclaim.sqlite"
+ReadPendingL1Txs = false
+SafeStatusL1NumberOfBlocks = 0
+FinalizedStatusL1NumberOfBlocks = 0
+EstimateGasMaxRetries = 1
+
+[AutoClaim.Claimers.EthTxManager.Etherman]
+URL = "{{.op_el_rpc_url}}"
+MultiGasProvider = false
+L1ChainID = {{.l2_chain_id}}
+HTTPHeaders = {}
+{{- end }}
+
