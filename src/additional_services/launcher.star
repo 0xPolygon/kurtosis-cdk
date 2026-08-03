@@ -21,6 +21,10 @@ def launch(
                 sovereign_contract_setup_addresses,
                 sequencer_type,
             )
+        elif svc == constants.ADDITIONAL_SERVICES.aggkit_proxy:
+            import_module("./aggkit_proxy.star").run(
+                plan, args, contract_setup_addresses
+            )
         elif svc == constants.ADDITIONAL_SERVICES.arpeggio:
             import_module("./arpeggio.star").run(plan, args)
         elif svc == constants.ADDITIONAL_SERVICES.assertoor:

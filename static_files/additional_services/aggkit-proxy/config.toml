@@ -1,0 +1,50 @@
+# aggkit-proxy config (proxy component only -- no tracker section rendered,
+# the binary's own defaults for [Tracker] are unused since --components=proxy
+# never starts that component).
+#
+# Values chosen to mirror aggkit's own
+# proxy/scripts/configuration_based_on_kurtosis.sh recipe for a local devnet
+# (LatestBlock instead of FinalizedBlock -- FinalizedBlock lags too much on a
+# local devnet; PollInterval 10s instead of the 30s upstream default;
+# HealthCheckPath "/" since the aggkit bridge REST service serves its health
+# check at the root path, not "/health").
+
+[Log]
+Environment = "development"
+Level = "info"
+Outputs = ["stderr"]
+
+[L1RPC]
+URL = "{{.l1_rpc_url}}"
+Mode = "basic"
+RetryMode = "backoff"
+MaxRetries = 5
+InitialBackoff = "2s"
+MaxBackoff = "10s"
+BackoffMultiplier = 2.0
+
+[BridgeServiceFinder]
+RollupManagerAddr = "{{.rollup_manager_address}}"
+BlockFinality = "LatestBlock"
+PollInterval = "10s"
+BlockChunkSize = 10000
+HealthCheckPath = "/"
+HealthCheckTimeout = "5s"
+RequireAllHealthyOnStart = false
+
+[BridgeServiceFinder.BridgeURLs]
+{{- range .aggkit_proxy_bridge_urls }}
+{{.network_id}} = "{{.bridge_url}}"
+{{- end }}
+
+[BridgeServiceFinder.RPCURLs]
+{{- range .aggkit_proxy_rpc_urls }}
+{{.network_id}} = "{{.rpc_url}}"
+{{- end }}
+
+[REST]
+Host = "0.0.0.0"
+Port = 8080
+ReadTimeout = "5m"
+WriteTimeout = "5m"
+MaxRequestsPerIPAndSecond = 10

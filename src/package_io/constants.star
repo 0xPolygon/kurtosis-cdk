@@ -1,5 +1,6 @@
 ADDITIONAL_SERVICES = struct(
     agglogger="agglogger",
+    aggkit_proxy="aggkit_proxy",
     arpeggio="arpeggio",
     assertoor="assertoor",
     blockscout="blockscout",

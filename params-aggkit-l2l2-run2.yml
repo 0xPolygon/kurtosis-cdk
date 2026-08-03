@@ -26,7 +26,35 @@ args:
   agg_sender_validator_total_number: 1
   agg_sender_multisig_threshold: 1
 
-  additional_services: []
+  # S4 (aggkit-proxy-l2l2 plan): deploy the standalone aggkit-proxy service
+  # (aggkit-proxy-001) here, on run2 -- it needs contract_setup_addresses
+  # (rollup_manager_address), which every run computes independently via its
+  # own contracts-00X service, and it needs to know about BOTH bridge
+  # services, which only exist once run2 has completed anyway.
+  additional_services:
+    - aggkit_proxy
+
+  # S4 (aggkit-proxy-l2l2 plan): static overrides for the aggkit-proxy
+  # BridgeServiceFinder. Required for every network including 0 -- network 0
+  # (L1) is never enumerated on-chain, and the on-chain URLs (trustedSequencerURL
+  # / aggchainMetadata) are enclave-internal hostnames not registered in this
+  # package anyway. Network 0 and network 1 both route to aggkit-001-bridge
+  # (every aggkit bridge instance syncs the L1 side); network 2 routes to
+  # aggkit-002-bridge.
+  aggkit_proxy_bridge_urls:
+    - network_id: 0
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 1
+      bridge_url: "http://aggkit-001-bridge:5577"
+    - network_id: 2
+      bridge_url: "http://aggkit-002-bridge:5577"
+  aggkit_proxy_rpc_urls:
+    - network_id: 0
+      rpc_url: "http://el-1-geth-lighthouse:8545"
+    - network_id: 1
+      rpc_url: "http://op-el-1-op-reth-op-node-001:8545"
+    - network_id: 2
+      rpc_url: "http://op-el-1-op-reth-op-node-002:8545"
 
   deployment_suffix: "-002"
   l2_chain_id: 20202

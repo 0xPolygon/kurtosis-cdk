@@ -335,6 +335,18 @@ DEFAULT_ROLLUP_ARGS = {
     # deterministic-ahead-of-time pattern as agglayer_extra_rollups above.
     # Each entry: {"network_id": <int>, "bridge_url": <str>}.
     "aggkit_autoclaim_bridge_urls": [],
+    # Static network_id -> bridge service base URL map for the standalone
+    # aggkit-proxy service's BridgeServiceFinder (additional service
+    # "aggkit_proxy"). Same rationale/pattern as aggkit_autoclaim_bridge_urls:
+    # no on-chain BRIDGE_SERVICE_URL registration in this package, and network
+    # 0 (L1) is never enumerated on-chain at all, so every network the proxy
+    # should route (including 0) must be listed here explicitly.
+    # Each entry: {"network_id": <int>, "bridge_url": <str>}.
+    "aggkit_proxy_bridge_urls": [],
+    # Static network_id -> JSON-RPC URL map for the standalone aggkit-proxy
+    # service's BridgeServiceFinder. Same rationale as aggkit_proxy_bridge_urls.
+    # Each entry: {"network_id": <int>, "rpc_url": <str>}.
+    "aggkit_proxy_rpc_urls": [],
     "use_agg_oracle_committee": False,
     "agg_oracle_committee_quorum": 0,
     # The below parameter will be automatically populated based on "agg_oracle_committee_total_members"
